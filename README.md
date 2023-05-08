@@ -40,7 +40,7 @@ We welcome contributions from the community. To get started, please follow these
 4. Push your branch to your fork: `git push origin my-feature-branch`
 5. Open a pull request against the main repository.
 
-Please follow the project's coding conventions and ensure that your changes don't break any existing functionality or introduce new bugs. For more information on the contribution process, please see our [CONTRIBUTING.md]() file.
+Please follow the project's coding conventions and ensure that your changes don't break any existing functionality or introduce new bugs. For more information on the contribution process, please see our [CONTRIBUTING.md](CONTRIBUTING.md) file.
 
 License
 This project is licensed under the MIT License. For more details, see the [LICENSE](https://opensource.org/licenses/MIT) file.

@@ -23,7 +23,7 @@ AscendCoopPlatform is an open-source platform built using Ionic and Firebase, ai
 ## Getting Started
 
 1. Install Node.js, npm, Ionic CLI, and Angular CLI on your development machine.
-2. Clone this repository: `git clone https://github.com/your-github-org/AscendCoopPlatform.git`
+2. Clone this repository: `git clone https://github.com/ASCENDynamics-NFP/AscendCoopPlatform.git`
 3. Change to the project directory: `cd AscendCoopPlatform`
 4. Install dependencies: `npm install`
 5. Add your Firebase configuration to the `src/environments/environment.ts` and `src/environments/environment.prod.ts` files.

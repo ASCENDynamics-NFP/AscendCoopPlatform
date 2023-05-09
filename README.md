@@ -30,6 +30,27 @@ AscendCoopPlatform is an open-source platform built using Ionic and Firebase, ai
 6. Run the development server: `ionic serve`
 7. Open your browser and navigate to `http://localhost:8100/` to view the app.
 
+### Prerequisites
+
+- Node.js and npm
+- Ionic CLI
+- Firebase CLI (for deployment)
+
+### Setting up environment variables
+
+1. Create two files in the `src/environments` directory: `.env.production` and `.env.development`.
+2. Add your Firebase credentials to both files. The `.env.production` file should have your production Firebase credentials, and the `.env.development` file should have your development Firebase credentials. Both files should have the following format:
+
+```
+FIREBASE_API_KEY=your_api_key
+FIREBASE_AUTH_DOMAIN=your_auth_domain
+FIREBASE_PROJECT_ID=your_project_id
+FIREBASE_STORAGE_BUCKET=your_storage_bucket
+FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+FIREBASE_APP_ID=your_app_id
+FIREBASE_MEASUREMENT_ID=your_measurement_id
+```
+
 ## Contributing
 
 We welcome contributions from the community. To get started, please follow these steps:

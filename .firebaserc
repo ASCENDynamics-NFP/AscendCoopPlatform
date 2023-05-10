@@ -1,5 +1,9 @@
 {
   "projects": {
-    "default": "ascendcoopplatform"
-  }
+    "default": "ascendcoopplatform-dev",
+    "dev": "ascendcoopplatform-dev",
+    "prod": "ascendcoopplatform"
+  },
+  "targets": {},
+  "etags": {}
 }

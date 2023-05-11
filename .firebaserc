@@ -5,5 +5,9 @@
     "prod": "ascendcoopplatform"
   },
   "targets": {},
-  "etags": {}
+  "etags": {
+    "ascendcoopplatform-dev": {
+      "extensionInstances": {}
+    }
+  }
 }

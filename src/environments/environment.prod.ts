@@ -7,6 +7,6 @@ export const environment = {
     storageBucket: "your-project-id.appspot.com",
     messagingSenderId: "your-messaging-sender-id",
     appId: "your-app-id",
-    measurementId: "your-measurement-id"
-  }
+    measurementId: "your-measurement-id",
+  },
 };

@@ -5,11 +5,13 @@ AscendCoopPlatform is an open-source platform built using Ionic and Firebase, ai
 ## Features
 
 - Worker-Owned Cooperative Incubator
+
   - Identify skill sets needed for worker-owned businesses
   - Connect skilled individuals with worker-owned businesses
   - Provide various services such as technical assistance and advice
 
 - Collaboration Platform
+
   - User and organization profiles
   - Group creation and management
   - Real-time data to address issues

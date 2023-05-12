@@ -11,8 +11,8 @@ export const environment = {
     storageBucket: "ascendcoopplatform-dev.appspot.com",
     messagingSenderId: "360409127691",
     appId: "1:360409127691:web:2f85677b217e07ea0ca00e",
-    measurementId: "G-NP98VWJ3S9"
-  }
+    measurementId: "G-NP98VWJ3S9",
+  },
 };
 
 /*

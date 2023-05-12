@@ -1,10 +1,10 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
-import { ExploreContainerComponent } from '../explore-container/explore-container.component';
+import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {IonicModule} from "@ionic/angular";
+import {ExploreContainerComponent} from "../explore-container/explore-container.component";
 
-import { Tab1Page } from './tab1.page';
+import {Tab1Page} from "./tab1.page";
 
-describe('Tab1Page', () => {
+describe("Tab1Page", () => {
   let component: Tab1Page;
   let fixture: ComponentFixture<Tab1Page>;
 
@@ -18,7 +18,7 @@ describe('Tab1Page', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

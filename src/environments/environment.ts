@@ -5,13 +5,13 @@
 export const environment = {
   production: false,
   firebaseConfig: {
-    apiKey: "AIzaSyB8I4zJL5RrC255pxcRVG6vMoTVHvxklV0",
-    authDomain: "asendcoopplatform-dev.firebaseapp.com",
-    projectId: "asendcoopplatform-dev",
-    storageBucket: "asendcoopplatform-dev.appspot.com",
-    messagingSenderId: "77543651498",
-    appId: "1:77543651498:web:35ff875c85e6138c2a38d3",
-    measurementId: "G-F83Y7T1HM7"
+    apiKey: "AIzaSyANjzfTzU-62ekvFggGw245pW-hGRUVDTs",
+    authDomain: "ascendcoopplatform-dev.firebaseapp.com",
+    projectId: "ascendcoopplatform-dev",
+    storageBucket: "ascendcoopplatform-dev.appspot.com",
+    messagingSenderId: "360409127691",
+    appId: "1:360409127691:web:2f85677b217e07ea0ca00e",
+    measurementId: "G-NP98VWJ3S9"
   }
 };
 

@@ -38,7 +38,7 @@ AscendCoopPlatform is an open-source platform built using Ionic and Firebase, ai
 6. Run the development server: `ionic serve`
 7. Open your browser and navigate to `http://localhost:8100/` to view the app.
 
-## Contributing
+## [Contributing](CONTRIBUTING.md)
 
 We welcome contributions from the community. To get started, please follow these steps:
 

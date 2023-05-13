@@ -45,6 +45,7 @@ module.exports = function (config) {
           '--remote-debugging-port=9222',
         ],
       },
+    },
     singleRun: true,
     restartOnFileChange: true,
   });

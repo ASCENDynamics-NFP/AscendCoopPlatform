@@ -51,7 +51,7 @@ We welcome contributions from the community. To get started, please follow these
 Please follow the project's coding conventions and ensure that your changes don't break any existing functionality or introduce new bugs. For more information on the contribution process, please see our [CONTRIBUTING.md](CONTRIBUTING.md) file.
 
 License
-This project is licensed under the MIT License. For more details, see the [LICENSE](https://opensource.org/licenses/MIT) file.
+This project is licensed under the AGPL License. For more details, see the [LICENSE](https://opensource.org/license/agpl-v3) file.
 
 Support
 If you have any questions or need help with the project, please open an issue on the GitHub repository or reach out to the project maintainers.

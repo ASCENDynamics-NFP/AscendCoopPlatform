@@ -7,6 +7,7 @@ import {defineCustomElements} from "@ionic/pwa-elements/loader";
 import {routes} from "./app/app.routes";
 import {AppComponent} from "./app/app.component";
 import {environment} from "./environments/environment";
+import { initializeApp } from "firebase/app";
 
 // Call the element loader after the platform has been bootstrapped
 defineCustomElements(window);
@@ -21,4 +22,7 @@ bootstrapApplication(AppComponent, {
     importProvidersFrom(IonicModule.forRoot({})),
     provideRouter(routes),
   ],
+}).then(() => {
+  // Initialize Firebase after the application has been bootstrapped
+  initializeApp(environment.firebaseConfig);
 });

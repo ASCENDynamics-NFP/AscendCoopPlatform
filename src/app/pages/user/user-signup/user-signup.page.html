@@ -1,0 +1,25 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>UserSignup</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">UserSignup</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <form [formGroup]="signupForm" (ngSubmit)="signup()">
+    <label>
+      Email:
+      <input type="email" formControlName="email" />
+    </label>
+    <label>
+      Password:
+      <input type="password" formControlName="password" />
+    </label>
+    <button type="submit">Sign Up</button>
+  </form>
+</ion-content>

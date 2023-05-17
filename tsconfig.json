@@ -28,7 +28,5 @@
     "strictInputAccessModifiers": true,
     "strictTemplates": true
   },
-  "include": [
-      "./functions/.eslintrc.js"
-  ]
+  "include": ["./functions/.eslintrc.js"]
 }

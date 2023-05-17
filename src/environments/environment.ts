@@ -2,7 +2,7 @@
 // `ng build` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
 
-// Not sure if I should be including this information in the project, but it is to the Dev environment.  
+// Not sure if I should be including this information in the project, but it is to the Dev environment.
 // If anyone has any suggestions on how to move these variables to somewhere more secure, please open an issue or discussion.
 export const environment = {
   production: false,

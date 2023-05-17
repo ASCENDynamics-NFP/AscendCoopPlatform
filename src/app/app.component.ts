@@ -1,5 +1,4 @@
 import {Component, EnvironmentInjector, inject} from "@angular/core";
-import {AuthService} from "./services/auth.service";
 import {IonicModule} from "@ionic/angular";
 import {CommonModule} from "@angular/common";
 
@@ -12,7 +11,7 @@ import {CommonModule} from "@angular/common";
 })
 export class AppComponent {
   public environmentInjector = inject(EnvironmentInjector);
-  constructor(private authService: AuthService) {
+  constructor() {
     // You can use your AuthService here
   }
 }

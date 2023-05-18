@@ -1,7 +1,8 @@
 import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
+import {IonicModule, NavController} from "@ionic/angular";
+import {AuthService} from "../../../services/auth.service";
 
 @Component({
   selector: "app-user-dashboard",
@@ -11,7 +12,19 @@ import {IonicModule} from "@ionic/angular";
   imports: [IonicModule, CommonModule, FormsModule],
 })
 export class UserDashboardPage implements OnInit {
-  constructor() {}
+  user = this.authService.getCurrentUser();
+  constructor(
+    private authService: AuthService,
+    private navContoller: NavController,
+  ) {}
 
   ngOnInit() {}
+
+  signOut() {
+    this.authService.signOut();
+  }
+
+  openLogin() {
+    this.navContoller.navigateBack("/user-login");
+  }
 }

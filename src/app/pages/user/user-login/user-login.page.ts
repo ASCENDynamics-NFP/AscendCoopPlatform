@@ -142,4 +142,8 @@ export class UserLoginPage {
     });
     await alert.present();
   }
+
+  goToSignUp() {
+    this.router.navigateByUrl("/user-signup", {replaceUrl: false});
+  }
 }

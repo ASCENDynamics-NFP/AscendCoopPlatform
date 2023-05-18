@@ -1,13 +1,22 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>UserDashboard</ion-title>
+    <ion-title>User Dashboard</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="signOut()" *ngIf="user | async">
+        <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+
+      <ion-button (click)="openLogin()" *ngIf="(user | async) === false">
+        Sign In
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">UserDashboard</ion-title>
+      <ion-title size="large">User Dashboard</ion-title>
     </ion-toolbar>
   </ion-header>
 </ion-content>

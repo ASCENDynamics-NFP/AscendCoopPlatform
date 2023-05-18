@@ -12,7 +12,8 @@ import {AuthService} from "../../../services/auth.service";
   imports: [IonicModule, CommonModule, FormsModule],
 })
 export class UserDashboardPage implements OnInit {
-  user = this.authService.getCurrentUser();
+  user = this.authService.user$;
+
   constructor(
     private authService: AuthService,
     private navContoller: NavController,

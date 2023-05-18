@@ -18,7 +18,9 @@ import {
 export class AuthService {
   auth = getAuth();
   private userSubject = new BehaviorSubject<User | boolean>(false); // User | false type
+  // any time the user logs in or out (i.e., when currentUserSubject is updated), all subscribers to currentUser$ will receive the updated user state.
   user$ = this.userSubject.asObservable();
+
   constructor() {
     onAuthStateChanged(this.auth, (user) => {
       if (user) {
@@ -30,6 +32,7 @@ export class AuthService {
       }
     });
   }
+
   // Sign up with email/password
   async signUp(email: string, password: string) {
     try {
@@ -94,7 +97,8 @@ export class AuthService {
     }
   }
 
-  getCurrentUser(): Observable<User | boolean> {
-    return this.user$;
+  // Call method when wanting to pull in user status async
+  getCurrentUser(): User | boolean {
+    return this.userSubject.value;
   }
 }

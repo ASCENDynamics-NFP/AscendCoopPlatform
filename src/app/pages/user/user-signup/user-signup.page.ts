@@ -34,7 +34,7 @@ export class UserSignupPage {
     private router: Router,
     private navCtrl: NavController,
   ) {
-    this.authService.getCurrentUser().subscribe((user) => {
+    this.authService.user$.subscribe((user) => {
       if (user) {
         console.log("GOT USER ON SIGN UP");
         this.router.navigateByUrl("/user-dashboard", {replaceUrl: true});

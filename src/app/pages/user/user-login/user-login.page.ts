@@ -29,7 +29,7 @@ export class UserLoginPage {
     private alertController: AlertController,
     private router: Router,
   ) {
-    this.authService.getCurrentUser().subscribe((user) => {
+    this.authService.user$.subscribe((user) => {
       if (user) {
         console.log("GOT USER ON LOGIN");
         this.router.navigateByUrl("/user-dashboard", {replaceUrl: true});

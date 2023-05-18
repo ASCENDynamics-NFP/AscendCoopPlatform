@@ -1,13 +1,80 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>UserLogin</ion-title>
+    <ion-title>User Login</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">UserLogin</ion-title>
+      <ion-title size="large">User Login</ion-title>
     </ion-toolbar>
   </ion-header>
+  <ion-card>
+    <ion-card-content>
+      <form [formGroup]="loginForm" (ngSubmit)="login()">
+        <ion-label position="stacked"> Email: </ion-label>
+        <ion-input
+          type="email"
+          inputmode="email"
+          formControlName="email"
+        ></ion-input>
+        <ion-note
+          slot="error"
+          *ngIf="(loginForm.controls.email.dirty || loginForm.controls.email.touched) && loginForm.controls.email.errors"
+          >Please insert your email</ion-note
+        >
+        <ion-label position="stacked"> Password: </ion-label>
+        <ion-input
+          type="password"
+          inputmode="text"
+          formControlName="password"
+        ></ion-input>
+        <ion-note
+          slot="error"
+          *ngIf="(loginForm.controls.password.dirty || loginForm.controls.password.touched) && loginForm.controls.password.errors"
+          >Please insert valid password</ion-note
+        >
+        <ion-button
+          type="submit"
+          expend="block"
+          strong="true"
+          [disabled]="loginForm.invalid"
+          >Log In</ion-button
+        >
+
+        <div class="ion-margin-top">
+          <ion-button
+            type="button"
+            expand="block"
+            color="primary"
+            fill="outline"
+            routerLink="user-signup"
+          >
+            <ion-icon name="person-outline" slot="start"></ion-icon>
+            Create Account
+          </ion-button>
+
+          <ion-button
+            type="button"
+            expand="block"
+            color="secondary"
+            (click)="forgotPassword()"
+          >
+            <ion-icon name="key-outline" slot="start"></ion-icon>
+            Forgot password?
+          </ion-button>
+
+          <!-- <ion-button type="button" expand="block" color="tertiary" (click)="getMagicLink()">
+            <ion-icon name="mail-outline" slot="start"></ion-icon>
+            Get a Magic Link
+          </ion-button> -->
+          <!-- <ion-button type="button" expand="block" color="warning" routerLink="groups">
+            <ion-icon name="arrow-forward" slot="start"></ion-icon>
+            Start without account
+          </ion-button> -->
+        </div>
+      </form>
+    </ion-card-content>
+  </ion-card>
 </ion-content>

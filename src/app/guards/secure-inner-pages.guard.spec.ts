@@ -1,10 +1,10 @@
 import {TestBed} from "@angular/core/testing";
 
-import {AuthGuard} from "./auth.guard";
+import {SecureInnerPagesGuard} from "./secure-inner-pages.guard";
 import {AuthService} from "../services/auth.service";
 
-describe("AuthGuard", () => {
-  let guard: AuthGuard;
+describe("SecureInnerPagesGuard", () => {
+  let guard: SecureInnerPagesGuard;
   let service: AuthService;
   let authSpy: any;
 
@@ -14,7 +14,7 @@ describe("AuthGuard", () => {
     });
 
     service = TestBed.inject(AuthService);
-    guard = TestBed.inject(AuthGuard);
+    guard = TestBed.inject(SecureInnerPagesGuard);
   });
 
   it("should be created", () => {

@@ -45,11 +45,11 @@ export class AuthService {
       if (user) {
         // User is signed in.
         this.userSubject.next(user);
-        localStorage.setItem('user', JSON.stringify(user));
-        JSON.parse(localStorage.getItem('user')!);
+        localStorage.setItem("user", JSON.stringify(user));
+        JSON.parse(localStorage.getItem("user")!);
       } else {
-        localStorage.setItem('user', 'null');
-        JSON.parse(localStorage.getItem('user')!);
+        localStorage.setItem("user", "null");
+        JSON.parse(localStorage.getItem("user")!);
         // User is signed out.
         this.userSubject.next(false);
       }
@@ -58,7 +58,7 @@ export class AuthService {
 
   // Returns true when user is looged in and email is verified
   get isLoggedIn(): boolean {
-    const user = JSON.parse(localStorage.getItem('user')!);
+    const user = JSON.parse(localStorage.getItem("user")!);
     return user !== null ? true : false;
   }
 
@@ -155,7 +155,7 @@ export class AuthService {
   async signOut() {
     try {
       await signOut(this.auth).then(() => {
-        localStorage.removeItem('user');
+        localStorage.removeItem("user");
       });
     } catch (error) {
       console.log(error);

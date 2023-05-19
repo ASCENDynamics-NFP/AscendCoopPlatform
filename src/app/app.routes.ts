@@ -1,6 +1,6 @@
 import {Routes} from "@angular/router";
-import { AuthGuard } from "./guards/auth.guard";
-import { SecureInnerPagesGuard } from "./guards/secure-inner-pages.guard";
+import {AuthGuard} from "./guards/auth.guard";
+import {SecureInnerPagesGuard} from "./guards/secure-inner-pages.guard";
 
 export const routes: Routes = [
   // {
@@ -32,7 +32,7 @@ export const routes: Routes = [
       import("./pages/group/group-edit/group-edit.page").then(
         (m) => m.GroupEditPage,
       ),
-      canActivate: [AuthGuard],
+    canActivate: [AuthGuard],
   },
   {
     path: "group-list",
@@ -61,7 +61,7 @@ export const routes: Routes = [
       import("./pages/user/user-dashboard/user-dashboard.page").then(
         (m) => m.UserDashboardPage,
       ),
-      canActivate: [AuthGuard],
+    canActivate: [AuthGuard],
   },
   {
     path: "user-profile",
@@ -76,7 +76,7 @@ export const routes: Routes = [
       import("./pages/user/user-signup/user-signup.page").then(
         (m) => m.UserSignupPage,
       ),
-      canActivate: [SecureInnerPagesGuard],
+    canActivate: [SecureInnerPagesGuard],
   },
   {
     path: "user-login",
@@ -84,7 +84,7 @@ export const routes: Routes = [
       import("./pages/user/user-login/user-login.page").then(
         (m) => m.UserLoginPage,
       ),
-      canActivate: [SecureInnerPagesGuard],
+    canActivate: [SecureInnerPagesGuard],
   },
   {
     path: "user-password-reset",
@@ -99,6 +99,6 @@ export const routes: Routes = [
       import("./pages/user/user-settings/user-settings.page").then(
         (m) => m.UserSettingsPage,
       ),
-      canActivate: [AuthGuard],
+    canActivate: [AuthGuard],
   },
 ];

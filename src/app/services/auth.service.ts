@@ -26,11 +26,21 @@ export class AuthService {
       if (user) {
         // User is signed in.
         this.userSubject.next(user);
+        localStorage.setItem('user', JSON.stringify(user));
+        JSON.parse(localStorage.getItem('user')!);
       } else {
+        localStorage.setItem('user', 'null');
+        JSON.parse(localStorage.getItem('user')!);
         // User is signed out.
         this.userSubject.next(false);
       }
     });
+  }
+
+  // Returns true when user is looged in and email is verified
+  get isLoggedIn(): boolean {
+    const user = JSON.parse(localStorage.getItem('user')!);
+    return user !== null ? true : false;
   }
 
   // Sign up with email/password
@@ -90,7 +100,9 @@ export class AuthService {
   // Sign out
   async signOut() {
     try {
-      await signOut(this.auth);
+      await signOut(this.auth).then(() => {
+        localStorage.removeItem('user');
+      });
     } catch (error) {
       console.log(error);
       throw error;

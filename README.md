@@ -2,6 +2,25 @@
 
 Ascend Co-op Platform is an open-source platform built using Ionic and Firebase, aimed at fostering collaboration and growth for worker-owned cooperatives, nonprofit organizations, and private organizations. It offers features like user profiles, group management, real-time data, and collaboration tools to address various challenges and facilitate communication between organizations.
 
+## Development
+This project uses a continuous development process. As changes are made, they are immediately deployed to a development environment.
+
+## Latest Development Environment
+You can view the latest version of the application in the development environment at the following link: 
+
+[Latest Development Environment Version](https://ascendcoopplatform-dev.web.app/)
+
+We welcome QA contributions, bug reports, and discussions. Please feel free to create issues and discussions in this GitHub repository if you find any problems or have suggestions for improvements.
+
+## Connect With Us
+Join our community and participate in discussions about the Ascend Co-op Platform. We have active communities on the following platforms:
+
+- [Facebook Group](https://www.facebook.com/groups/ascendynamics)
+- [LinkedIn Page](https://www.linkedin.com/company/ascendynamics-nfp)
+- [Join our Slack workspace](https://join.slack.com/t/ascendynamicsnfp/shared_invite/zt-1vkqh53sw-BchYV8NmOhOOkRIp8~L~xw)
+
+We look forward to your contributions and engaging discussions!
+
 ## Features
 
 - Worker-Owned Cooperative Incubator

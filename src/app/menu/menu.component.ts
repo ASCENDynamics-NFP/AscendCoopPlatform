@@ -11,12 +11,16 @@ import {IonicModule} from "@ionic/angular";
   imports: [IonicModule, RouterLink, RouterLinkActive, CommonModule],
 })
 export class MenuComponent implements OnInit {
-  public appPages = [
-    {title: "Login", url: "user-login", icon: "mail"},
-    {title: "Signup", url: "user-signup", icon: "paper-plane"},
+  public userPages = [
     {title: "Dashboard", url: "user-dashboard", icon: "heart"},
     {title: "Profile", url: "user-profile", icon: "archive"},
     {title: "Settings", url: "user-settings", icon: "trash"},
+    {title: "Group List", url: "group-list", icon: "warning"},
+  ];
+  public guestPages = [
+    {title: "Login", url: "user-login", icon: "mail"},
+    {title: "Signup", url: "user-signup", icon: "paper-plane"},
+    {title: "Dashboard", url: "user-dashboard", icon: "heart"},
     {title: "Group List", url: "group-list", icon: "warning"},
   ];
   public labels: Array<string> = [];

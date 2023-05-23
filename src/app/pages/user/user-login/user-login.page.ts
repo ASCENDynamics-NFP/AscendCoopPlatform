@@ -4,6 +4,7 @@ import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
 import {AlertController, IonicModule, LoadingController} from "@ionic/angular";
 import {AuthService} from "../../../services/auth.service";
 import {Router} from "@angular/router";
+import {MenuService} from "../../../services/menu.service";
 
 @Component({
   selector: "app-user-login",
@@ -28,6 +29,7 @@ export class UserLoginPage implements OnInit {
     private loadingController: LoadingController,
     private alertController: AlertController,
     private router: Router,
+    private menuService: MenuService,
   ) {
     this.authService.user$.subscribe((user) => {
       if (user) {
@@ -35,6 +37,14 @@ export class UserLoginPage implements OnInit {
         this.router.navigateByUrl("/user-dashboard", {replaceUrl: true});
       }
     });
+  }
+
+  ionViewWillEnter() {
+    this.menuService.onEnter();
+  }
+
+  ionViewWillLeave() {
+    this.menuService.onLeave();
   }
 
   ngOnInit() {

@@ -12,8 +12,6 @@ import {IonicModule} from "@ionic/angular";
 })
 export class MenuComponent implements OnInit {
   public userPages = [
-    {title: "Login", url: "user-login", icon: "mail"},
-    {title: "Signup", url: "user-signup", icon: "paper-plane"},
     {title: "Dashboard", url: "user-dashboard", icon: "heart"},
     {title: "Profile", url: "user-profile", icon: "archive"},
     {title: "Settings", url: "user-settings", icon: "trash"},

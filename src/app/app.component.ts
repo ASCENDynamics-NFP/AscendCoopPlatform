@@ -11,7 +11,7 @@ import {MenuComponent} from "./menu/menu.component";
   imports: [IonicModule, CommonModule, MenuComponent],
 })
 export class AppComponent {
-  public environmentInjector = inject(EnvironmentInjector);
+  // public environmentInjector = inject(EnvironmentInjector);
   constructor() {
     // You can use your AuthService here
   }

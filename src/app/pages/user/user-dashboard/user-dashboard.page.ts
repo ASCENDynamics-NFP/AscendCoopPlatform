@@ -3,6 +3,7 @@ import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule, NavController} from "@ionic/angular";
 import {AuthService} from "../../../services/auth.service";
+import {MenuService} from "../../../services/menu.service";
 
 @Component({
   selector: "app-user-dashboard",
@@ -17,9 +18,18 @@ export class UserDashboardPage implements OnInit {
   constructor(
     private authService: AuthService,
     private navContoller: NavController,
+    public menuService: MenuService,
   ) {}
 
   ngOnInit() {}
+
+  ionViewWillEnter() {
+    this.menuService.onEnter();
+  }
+
+  ionViewWillLeave() {
+    this.menuService.onLeave();
+  }
 
   signOut() {
     this.authService.signOut();

@@ -6,19 +6,12 @@ import {
 } from "@angular/router";
 import {Observable} from "rxjs";
 import {AuthService} from "../services/auth.service";
-import {MenuController} from "@ionic/angular";
 
 @Injectable({
   providedIn: "root",
 })
 export class AuthGuard {
-  constructor(
-    public authService: AuthService,
-    public menuCtrl: MenuController,
-    public router: Router,
-  ) {
-    this.menuCtrl.enable(false);
-  }
+  constructor(public authService: AuthService, public router: Router) {}
 
   // Used to restrict pages to users when they are logged out
   canActivate(
@@ -30,7 +23,6 @@ export class AuthGuard {
       // window.alert('Access Denied, Login is Required to Access This Page!');
       this.router.navigate(["user-login"]);
     }
-    this.menuCtrl.enable(true);
     return true;
   }
 }

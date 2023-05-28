@@ -14,6 +14,7 @@ import {
   sendPasswordResetEmail,
   signOut,
 } from "firebase/auth";
+import {Router} from "@angular/router";
 
 @Injectable({
   providedIn: "root",
@@ -40,16 +41,12 @@ export class AuthService {
     // dynamicLinkDomain: 'example.page.link'
   };
 
-  constructor() {
+  constructor(public router: Router) {
     onAuthStateChanged(this.auth, (user) => {
       if (user) {
         // User is signed in.
         this.userSubject.next(user);
-        localStorage.setItem("user", JSON.stringify(user));
-        JSON.parse(localStorage.getItem("user")!);
       } else {
-        localStorage.setItem("user", "null");
-        JSON.parse(localStorage.getItem("user")!);
         // User is signed out.
         this.userSubject.next(false);
       }
@@ -58,8 +55,7 @@ export class AuthService {
 
   // Returns true when user is looged in and email is verified
   get isLoggedIn(): boolean {
-    const user = this.getCurrentUser();
-    return user !== false ? true : false;
+    return this.getCurrentUser() !== false ? true : false;
   }
 
   // Sign up with email/password
@@ -135,6 +131,7 @@ export class AuthService {
         // The client SDK will parse the code from the link for you.
         signInWithEmailLink(this.auth, email, window.location.href)
           .then((result) => {
+            console.log(result);
             // Clear email from storage.
             window.localStorage.removeItem("emailForSignIn");
             // You can access the new user via result.user
@@ -144,6 +141,7 @@ export class AuthService {
             // result.additionalUserInfo.isNewUser
           })
           .catch((error) => {
+            console.log(error);
             // Some error occurred, you can inspect the code: error.code
             // Common errors could be invalid email and invalid or expired OTPs.
           });
@@ -152,11 +150,15 @@ export class AuthService {
   }
 
   // Sign out
-  async signOut() {
+  signOut() {
     try {
-      await signOut(this.auth).then(() => {
-        localStorage.removeItem("user");
-      });
+      signOut(this.auth)
+        .then(() => {
+          this.router.navigate(["user-login"]);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     } catch (error) {
       console.log(error);
       throw error;

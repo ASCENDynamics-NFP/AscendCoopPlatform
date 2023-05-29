@@ -2,8 +2,8 @@ import {TestBed} from "@angular/core/testing";
 import {GroupsService} from "./groups.service";
 import {of} from "rxjs";
 import {Timestamp} from "firebase/firestore";
-import { initializeApp } from 'firebase/app';
-import { environment } from '../../environments/environment';
+import {initializeApp} from "firebase/app";
+import {environment} from "../../environments/environment";
 
 initializeApp(environment.firebaseConfig);
 

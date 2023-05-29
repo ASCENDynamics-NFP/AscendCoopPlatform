@@ -43,7 +43,7 @@ export class AuthService {
   };
 
   constructor(public router: Router) {
-   this.auth = getAuth();
+    this.auth = getAuth();
     onAuthStateChanged(this.auth, (user) => {
       if (user) {
         // User is signed in.

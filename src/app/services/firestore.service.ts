@@ -19,7 +19,9 @@ import {
 })
 export class FirestoreService {
   firestore: Firestore;
-  constructor() {this.firestore = getFirestore();}
+  constructor() {
+    this.firestore = getFirestore();
+  }
 
   async getDocument(collectionName: string, documentId: string) {
     try {

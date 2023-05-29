@@ -1,44 +1,46 @@
-import { TestBed } from '@angular/core/testing';
-import { FirestoreService } from './firestore.service';
-import { getFirestore } from 'firebase/firestore';
-import { initializeApp } from 'firebase/app';
-import { environment } from '../../environments/environment';
+import {TestBed} from "@angular/core/testing";
+import {FirestoreService} from "./firestore.service";
+import {getFirestore} from "firebase/firestore";
+import {initializeApp} from "firebase/app";
+import {environment} from "../../environments/environment";
 
 initializeApp(environment.firebaseConfig);
 
-describe('FirestoreService', () => {
+describe("FirestoreService", () => {
   let service: FirestoreService;
   let firestoreSpy: any;
-  let docData = { foo: 'bar' };
-  
+  let docData = {foo: "bar"};
+
   const docStub = {
-    get: jasmine.createSpy('get').and.returnValue(Promise.resolve({ exists: true, data: () => docData })),
-    set: jasmine.createSpy('set').and.returnValue(Promise.resolve()),
-    delete: jasmine.createSpy('delete').and.returnValue(Promise.resolve()),
+    get: jasmine
+      .createSpy("get")
+      .and.returnValue(Promise.resolve({exists: true, data: () => docData})),
+    set: jasmine.createSpy("set").and.returnValue(Promise.resolve()),
+    delete: jasmine.createSpy("delete").and.returnValue(Promise.resolve()),
   };
 
   const collectionStub = {
-    doc: jasmine.createSpy('doc').and.returnValue(docStub),
+    doc: jasmine.createSpy("doc").and.returnValue(docStub),
   };
 
-  firestoreSpy = jasmine.createSpyObj('Firestore', ['collection']);
+  firestoreSpy = jasmine.createSpyObj("Firestore", ["collection"]);
   firestoreSpy.collection.and.returnValue(collectionStub);
 
-beforeEach(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
         FirestoreService,
-        { provide: getFirestore, useValue: firestoreSpy },
+        {provide: getFirestore, useValue: firestoreSpy},
       ],
     });
 
     service = TestBed.inject(FirestoreService);
-    spyOn(service, 'addDocument').and.callThrough();
-    spyOn(service, 'updateDocument').and.callThrough();
-    spyOn(service, 'deleteDocument').and.callThrough();
+    spyOn(service, "addDocument").and.callThrough();
+    spyOn(service, "updateDocument").and.callThrough();
+    spyOn(service, "deleteDocument").and.callThrough();
   });
 
-  it('should be created', () => {
+  it("should be created", () => {
     expect(service).toBeTruthy();
   });
 

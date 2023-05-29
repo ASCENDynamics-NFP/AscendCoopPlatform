@@ -1,8 +1,8 @@
 import {TestBed} from "@angular/core/testing";
 import {RouterTestingModule} from "@angular/router/testing";
 import {AppComponent} from "./app.component";
-import { of } from "rxjs";
-import { AuthService } from "./services/auth.service";
+import {of} from "rxjs";
+import {AuthService} from "./services/auth.service";
 
 describe("AppComponent", () => {
   let service: AuthService;
@@ -13,7 +13,7 @@ describe("AppComponent", () => {
     // Mock user$ as an Observable that emits null
     authSpy.user$ = of(null);
     authSpy.onSignOut.and.returnValue(Promise.resolve());
-    
+
     TestBed.configureTestingModule({
       imports: [RouterTestingModule],
       providers: [{provide: AuthService, useValue: authSpy}],

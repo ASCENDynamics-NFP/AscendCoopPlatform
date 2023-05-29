@@ -10,20 +10,20 @@ import {
   where,
   getDocs,
   deleteDoc,
+  DocumentData,
+  Firestore,
 } from "firebase/firestore";
-
-const db = getFirestore();
 
 @Injectable({
   providedIn: "root",
 })
 export class FirestoreService {
-  firestore = db;
-  constructor() {}
+  firestore: Firestore;
+  constructor() {this.firestore = getFirestore();}
 
   async getDocument(collectionName: string, documentId: string) {
     try {
-      const documentRef = doc(db, collectionName, documentId);
+      const documentRef = doc(this.firestore, collectionName, documentId);
       const documentSnap = await getDoc(documentRef);
 
       if (documentSnap.exists()) {
@@ -34,17 +34,22 @@ export class FirestoreService {
       }
     } catch (error) {
       console.error("Error retrieving document: ", error);
+      return null;
     }
   }
 
-  async addDocument(collectionName: string, documentData: any) {
+  async addDocument(
+    collectionName: string,
+    documentData: any,
+  ): Promise<string | null> {
     try {
-      const collectionRef = collection(db, collectionName);
+      const collectionRef = collection(this.firestore, collectionName);
       const documentRef = await addDoc(collectionRef, documentData);
 
       return documentRef.id;
     } catch (error) {
       console.error("Error adding document: ", error);
+      return null;
     }
   }
 
@@ -54,7 +59,7 @@ export class FirestoreService {
     updatedData: any,
   ) {
     try {
-      const documentRef = doc(db, collectionName, documentId);
+      const documentRef = doc(this.firestore, collectionName, documentId);
       await setDoc(documentRef, updatedData, {merge: true});
     } catch (error) {
       console.error("Error updating document: ", error);
@@ -63,7 +68,7 @@ export class FirestoreService {
 
   async deleteDocument(collectionName: string, documentId: string) {
     try {
-      const documentRef = doc(db, collectionName, documentId);
+      const documentRef = doc(this.firestore, collectionName, documentId);
       await deleteDoc(documentRef);
     } catch (error) {
       console.error("Error deleting document: ", error);
@@ -75,18 +80,19 @@ export class FirestoreService {
     field: string,
     condition: any,
     value: any,
-  ) {
+  ): Promise<DocumentData[] | null> {
     try {
-      const collectionRef = collection(db, collectionName);
+      const collectionRef = collection(this.firestore, collectionName);
       const q = query(collectionRef, where(field, condition, value));
       const querySnapshot = await getDocs(q);
-      const documents: any[] = [];
+      const documents: DocumentData[] = [];
       querySnapshot.forEach((doc) => {
         documents.push(doc.data());
       });
       return documents;
     } catch (error) {
       console.error("Error retrieving collection: ", error);
+      return null;
     }
   }
 }

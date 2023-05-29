@@ -8,6 +8,7 @@ import {
   deleteDoc,
   getDoc,
   doc,
+  DocumentData,
 } from "firebase/firestore";
 
 @Injectable({
@@ -18,18 +19,20 @@ export class UsersService {
 
   constructor(private firestoreService: FirestoreService) {}
 
-  async createUser(user: User) {
+  async createUser(user: User): Promise<string | null> {
     try {
-      await addDoc(
+      const documentRef = await addDoc(
         collection(this.firestoreService.firestore, this.collectionName),
         user,
       );
+      return documentRef.id;
     } catch (error) {
       console.error("Error adding document: ", error);
+      return null;
     }
   }
 
-  async getUser(userId: string) {
+  async getUser(userId: string): Promise<DocumentData | null> {
     try {
       const docSnap = await getDoc(
         doc(this.firestoreService.firestore, this.collectionName, userId),
@@ -39,9 +42,11 @@ export class UsersService {
       } else {
         // doc.data() will be undefined in this case
         console.log("No such document!");
+        return null;
       }
     } catch (error) {
       console.error("Error getting document:", error);
+      return null;
     }
   }
 

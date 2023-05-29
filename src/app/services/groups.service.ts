@@ -8,6 +8,7 @@ import {
   deleteDoc,
   getDoc,
   doc,
+  DocumentData,
 } from "firebase/firestore";
 
 @Injectable({
@@ -18,18 +19,20 @@ export class GroupsService {
 
   constructor(private firestoreService: FirestoreService) {}
 
-  async createGroup(group: Group) {
+  async createGroup(group: Group): Promise<string | null> {
     try {
-      await addDoc(
+      const documentRef = await addDoc(
         collection(this.firestoreService.firestore, this.collectionName),
         group,
       );
+      return documentRef.id;
     } catch (error) {
       console.error("Error adding document: ", error);
+      return null;
     }
   }
 
-  async getGroup(groupId: string) {
+  async getGroup(groupId: string): Promise<DocumentData | null> {
     try {
       const docSnap = await getDoc(
         doc(this.firestoreService.firestore, this.collectionName, groupId),
@@ -39,9 +42,11 @@ export class GroupsService {
       } else {
         // doc.data() will be undefined in this case
         console.log("No such document!");
+        return null;
       }
     } catch (error) {
       console.error("Error getting document:", error);
+      return null;
     }
   }
 

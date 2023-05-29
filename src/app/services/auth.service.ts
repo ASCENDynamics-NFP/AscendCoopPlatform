@@ -1,4 +1,5 @@
 import {
+  Auth,
   User,
   isSignInWithEmailLink,
   sendSignInLinkToEmail,
@@ -20,7 +21,7 @@ import {Router} from "@angular/router";
   providedIn: "root",
 })
 export class AuthService {
-  auth = getAuth();
+  auth: Auth;
   private userSubject = new BehaviorSubject<User | boolean>(false); // User | false type
   // any time the user logs in or out (i.e., when currentUserSubject is updated), all subscribers to currentUser$ will receive the updated user state.
   user$ = this.userSubject.asObservable();
@@ -42,6 +43,7 @@ export class AuthService {
   };
 
   constructor(public router: Router) {
+    this.auth = getAuth();
     onAuthStateChanged(this.auth, (user) => {
       if (user) {
         // User is signed in.

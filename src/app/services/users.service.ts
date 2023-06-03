@@ -9,6 +9,11 @@ import {
   getDoc,
   doc,
   DocumentData,
+  where,
+  getDocs,
+  query,
+  orderBy,
+  limit,
 } from "firebase/firestore";
 
 @Injectable({
@@ -68,6 +73,28 @@ export class UsersService {
       );
     } catch (error) {
       console.error("Error deleting document: ", error);
+    }
+  }
+
+  async getUsersWithCondition(
+    field: string,
+    condition: any,
+    value: any,
+    orderByField: string = "email",
+    recordLimit: number = 1,
+  ): Promise<DocumentData[] | null> {
+    try {
+      const collectionRef = collection(this.firestoreService.firestore, this.collectionName);
+      const q = query(collectionRef, where(field, condition, value), orderBy(orderByField), limit(recordLimit));
+      const querySnapshot = await getDocs(q);
+      const documents: DocumentData[] = [];
+      querySnapshot.forEach((doc) => {
+        documents.push(doc.data());
+      });
+      return documents;
+    } catch (error) {
+      console.error("Error retrieving collection: ", error);
+      return null;
     }
   }
 }

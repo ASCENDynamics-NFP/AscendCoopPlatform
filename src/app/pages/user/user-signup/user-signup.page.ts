@@ -7,8 +7,11 @@ import {
   LoadingController,
   NavController,
 } from "@ionic/angular";
-import {AuthService} from "../../../services/auth.service";
+import {Timestamp} from "firebase/firestore";
 import {Router} from "@angular/router";
+import {AuthService} from "../../../services/auth.service";
+import {User} from "../../../models/user.model";
+import {UsersService} from "../../../services/users.service";
 
 @Component({
   selector: "app-user-signup",
@@ -33,6 +36,7 @@ export class UserSignupPage {
     private alertController: AlertController,
     private router: Router,
     private navCtrl: NavController,
+    private usersService: UsersService,
   ) {
     this.authService.user$.subscribe((user) => {
       if (user) {
@@ -57,11 +61,33 @@ export class UserSignupPage {
       }
 
       this.authService.signUp(email, password).then(async (data) => {
-        await loading.dismiss();
         console.log("data: ", data);
+        const timestamp = Timestamp.now();
+        const user: User = {
+          email: email,
+          displayName: "",
+          profilePicture: "",
+          emailVerified: false,
+          bio: "",
+          createdAt: timestamp,
+          lastLoginAt: timestamp,
+          lastModifiedAt: timestamp,
+          lastModifiedBy: data.user.uid,
+          name: "",
+          id: data.user.uid,
+        };
+        const userId = await this.usersService.createUser(user);
+        await loading.dismiss();
+        if (!userId) {
+          this.showAlert(
+            "Signup failed",
+            "We ran into an error processing your signup. Please try again.",
+          );
+          return;
+        }
 
         this.showAlert("Signup success", "Please confirm your email now!");
-        this.navCtrl.navigateBack("");
+        this.navCtrl.navigateForward("user-profile/" + userId);
       });
     } catch (error) {
       this.showAlert(

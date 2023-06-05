@@ -3,7 +3,7 @@ import {Component, OnInit} from "@angular/core";
 import {RouterLink, RouterLinkActive} from "@angular/router";
 import {IonicModule} from "@ionic/angular";
 import {AuthService} from "../services/auth.service";
-import { User } from "firebase/auth";
+import {User} from "firebase/auth";
 
 @Component({
   selector: "app-menu",
@@ -17,9 +17,21 @@ export class MenuComponent implements OnInit {
   public userPages = {
     // User
     user: [
-      {title: "Profile", url: `user-profile/${this.user?.uid}`, icon: "archive"},
-      {title: "Settings", url: `user-settings/${this.user?.uid}`, icon: "trash"},
-      {title: "Dashboard", url: `user-dashboard/${this.user?.uid}`, icon: "heart"},
+      {
+        title: "Profile",
+        url: `user-profile/${this.user?.uid}`,
+        icon: "archive",
+      },
+      {
+        title: "Settings",
+        url: `user-settings/${this.user?.uid}`,
+        icon: "trash",
+      },
+      {
+        title: "Dashboard",
+        url: `user-dashboard/${this.user?.uid}`,
+        icon: "heart",
+      },
     ],
     // Group
     group: [
@@ -53,10 +65,22 @@ export class MenuComponent implements OnInit {
         console.log("GOT USER ON MENU");
         this.user = user;
         this.userPages.user = [
-            {title: "Profile", url: `user-profile/${this.user?.uid}`, icon: "archive"},
-            {title: "Settings", url: `user-settings/${this.user?.uid}`, icon: "trash"},
-            {title: "Dashboard", url: `user-dashboard/${this.user?.uid}`, icon: "heart"},
-          ];
+          {
+            title: "Profile",
+            url: `user-profile/${this.user?.uid}`,
+            icon: "archive",
+          },
+          {
+            title: "Settings",
+            url: `user-settings/${this.user?.uid}`,
+            icon: "trash",
+          },
+          {
+            title: "Dashboard",
+            url: `user-dashboard/${this.user?.uid}`,
+            icon: "heart",
+          },
+        ];
       }
     });
   }

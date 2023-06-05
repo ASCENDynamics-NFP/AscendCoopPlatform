@@ -1,18 +1,17 @@
 import {Injectable} from "@angular/core";
-import {
-  ActivatedRouteSnapshot,
-  RouterStateSnapshot,
-} from "@angular/router";
+import {ActivatedRouteSnapshot, RouterStateSnapshot} from "@angular/router";
 import {Observable} from "rxjs";
 import {AuthService} from "../services/auth.service";
-import { NavController } from "@ionic/angular";
+import {NavController} from "@ionic/angular";
 
 @Injectable({
   providedIn: "root",
 })
 export class SecureInnerPagesGuard {
-  constructor(public authService: AuthService, 
-    private navCtrl: NavController,) {}
+  constructor(
+    public authService: AuthService,
+    private navCtrl: NavController,
+  ) {}
 
   // Used to restrict pages to users when they are logged in
   canActivate(

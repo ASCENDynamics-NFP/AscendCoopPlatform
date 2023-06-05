@@ -84,8 +84,16 @@ export class UsersService {
     recordLimit: number = 1,
   ): Promise<DocumentData[] | null> {
     try {
-      const collectionRef = collection(this.firestoreService.firestore, this.collectionName);
-      const q = query(collectionRef, where(field, condition, value), orderBy(orderByField), limit(recordLimit));
+      const collectionRef = collection(
+        this.firestoreService.firestore,
+        this.collectionName,
+      );
+      const q = query(
+        collectionRef,
+        where(field, condition, value),
+        orderBy(orderByField),
+        limit(recordLimit),
+      );
       const querySnapshot = await getDocs(q);
       const documents: DocumentData[] = [];
       querySnapshot.forEach((doc) => {

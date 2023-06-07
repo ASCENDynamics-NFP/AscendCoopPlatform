@@ -43,9 +43,7 @@ export class UserLoginPage implements OnInit {
     this.menuService.onEnter();
   }
 
-  ionViewWillLeave() {
-    this.menuService.onLeave();
-  }
+  ionViewWillLeave() {}
 
   ngOnInit() {
     this.authService.onSignInWithEmailLink();

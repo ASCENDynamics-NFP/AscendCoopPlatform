@@ -27,9 +27,7 @@ export class UserDashboardPage implements OnInit {
     this.menuService.onEnter();
   }
 
-  ionViewWillLeave() {
-    this.menuService.onLeave();
-  }
+  ionViewWillLeave() {}
 
   signOut() {
     this.authService.signOut();

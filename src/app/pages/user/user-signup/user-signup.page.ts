@@ -12,6 +12,7 @@ import {Router} from "@angular/router";
 import {AuthService} from "../../../services/auth.service";
 import {User} from "../../../models/user.model";
 import {UsersService} from "../../../services/users.service";
+import {MenuService} from "../../../services/menu.service";
 
 @Component({
   selector: "app-user-signup",
@@ -37,6 +38,7 @@ export class UserSignupPage {
     private router: Router,
     private navCtrl: NavController,
     private usersService: UsersService,
+    private menuService: MenuService,
   ) {
     this.authService.user$.subscribe((user) => {
       if (user) {
@@ -45,6 +47,12 @@ export class UserSignupPage {
       }
     });
   }
+
+  ionViewWillEnter() {
+    this.menuService.onEnter();
+  }
+
+  ionViewWillLeave() {}
 
   async signup() {
     try {

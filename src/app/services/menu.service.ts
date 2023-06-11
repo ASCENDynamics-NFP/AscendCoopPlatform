@@ -11,40 +11,14 @@ export class MenuService {
     public menuCtrl: MenuController,
   ) {}
 
-  onEnter() {
-    this.removeMenu();
-    const user = this.authService.getCurrentUser();
-
-    if (user) {
-      this.showMenuByRole("user");
+  async onEnter() {
+    const isLoggedIn = this.authService.isLoggedIn;
+    if (isLoggedIn) {
+      await this.menuCtrl.enable(false, "guest");
+      await this.menuCtrl.enable(true, "user");
     } else {
-      this.showMenuByRole("guest");
+      await this.menuCtrl.enable(false, "user");
+      await this.menuCtrl.enable(true, "guest");
     }
-  }
-
-  onLeave() {
-    this.removeMenu();
-  }
-
-  showMenuByRole(role: string) {
-    if (role === "admin") {
-      this.showMenuById("admin");
-    } else if (role === "user") {
-      this.showMenuById("user");
-    } else {
-      this.showMenuById("guest");
-    }
-  }
-
-  showMenu() {
-    this.menuCtrl.enable(true);
-  }
-
-  removeMenu() {
-    this.menuCtrl.enable(false);
-  }
-
-  showMenuById(menuId: string) {
-    this.menuCtrl.enable(true, menuId);
   }
 }

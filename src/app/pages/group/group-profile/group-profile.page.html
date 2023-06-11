@@ -13,4 +13,13 @@
       <ion-title size="large">Group Profile</ion-title>
     </ion-toolbar>
   </ion-header>
+  <ion-card *ngIf="group">
+    <ion-card-header>
+      <ion-card-title>{{ group.name }}</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>Description: {{ group.description }}</p>
+      <!-- Include other group details here -->
+    </ion-card-content>
+  </ion-card>
 </ion-content>

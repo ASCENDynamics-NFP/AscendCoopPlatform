@@ -32,7 +32,8 @@ export class GroupsService {
     }
   }
 
-  async getGroup(groupId: string): Promise<DocumentData | null> {
+  async getGroup(groupId: string | null): Promise<DocumentData | null> {
+    if (!groupId) throw new Error("Group must have a groupId");
     try {
       const docSnap = await getDoc(
         doc(this.firestoreService.firestore, this.collectionName, groupId),

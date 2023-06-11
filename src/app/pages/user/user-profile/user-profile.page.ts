@@ -32,14 +32,14 @@ export class UserProfilePage implements OnInit {
   ionViewWillLeave() {}
 
   async getUser() {
-    let uid = this.route.snapshot.paramMap.get("uid");
-    console.log("uid", uid);
-    let userList = await this.usersService.getUsersWithCondition(
-      "id",
-      "==",
-      uid,
-    );
-    this.user = userList?.[0];
-    console.log(this.user, "user");
+    this.usersService.getUser(
+      this.route.snapshot.paramMap.get("uid")
+    ).then(data=>{
+      this.user = data; 
+      console.log(data);
+    }).catch((error) => {
+      console.log(error);
+    });
+
   }
 }

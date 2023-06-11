@@ -14,6 +14,7 @@ import {
   query,
   orderBy,
   limit,
+  setDoc,
 } from "firebase/firestore";
 
 @Injectable({
@@ -24,20 +25,23 @@ export class UsersService {
 
   constructor(private firestoreService: FirestoreService) {}
 
-  async createUser(user: User): Promise<string | null> {
-    try {
-      const documentRef = await addDoc(
-        collection(this.firestoreService.firestore, this.collectionName),
-        user,
-      );
-      return documentRef.id;
-    } catch (error) {
-      console.error("Error adding document: ", error);
-      return null;
-    }
+  createUser(user: User): void {
+    if (!user.uid) throw new Error("User must have a uid");
+    // Create a user document in Firestore
+    setDoc(doc(this.firestoreService.firestore, "users", user.uid), user)
+      .then(() => {
+        console.log("User successfully written!");
+      })
+      .catch((error) => {
+        console.error("Error creating user: ", error);
+      });
   }
 
-  async getUser(userId: string): Promise<DocumentData | null> {
+  async getUser(userId: any): Promise<DocumentData | null> {
+    // if (typeof userId !== "string") {
+    // console.error("Error getting document: userId is not a string");
+    // return null;
+    // }
     try {
       const docSnap = await getDoc(
         doc(this.firestoreService.firestore, this.collectionName, userId),

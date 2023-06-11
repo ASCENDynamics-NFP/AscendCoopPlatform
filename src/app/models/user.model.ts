@@ -1,7 +1,6 @@
 import {Timestamp} from "firebase/firestore";
 
 export interface User {
-  id: string | null; // Firebase User ID
   bio: string | null; // Short bio
   createdAt: Timestamp; // When the user was added
   displayName: string | null; // Full name
@@ -12,5 +11,6 @@ export interface User {
   lastModifiedBy: string | null; // User ID of the user who last modified the user document
   name: string; // First and last name
   profilePicture: string | null; // base64 string
+  uid: string | null; // Firebase User ID
   // Other properties...
 }

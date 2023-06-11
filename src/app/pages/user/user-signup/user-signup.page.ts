@@ -96,7 +96,7 @@ export class UserSignupPage {
         // Handle Errors here.
         switch (errorCode) {
           case "auth/email-already-in-use":
-              errorTitle = "Email already in use";
+            errorTitle = "Email already in use";
             errorMessage =
               "The email address is already in use by another account.";
             break;

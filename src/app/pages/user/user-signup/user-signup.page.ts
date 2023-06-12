@@ -7,8 +7,11 @@ import {
   LoadingController,
   NavController,
 } from "@ionic/angular";
-import {AuthService} from "../../../services/auth.service";
+import {Timestamp} from "firebase/firestore";
 import {Router} from "@angular/router";
+import {AuthService} from "../../../services/auth.service";
+import {User} from "../../../models/user.model";
+import {UsersService} from "../../../services/users.service";
 import {MenuService} from "../../../services/menu.service";
 
 @Component({
@@ -34,6 +37,7 @@ export class UserSignupPage {
     private alertController: AlertController,
     private router: Router,
     private navCtrl: NavController,
+    private usersService: UsersService,
     private menuService: MenuService,
   ) {
     this.authService.user$.subscribe((user) => {
@@ -51,33 +55,75 @@ export class UserSignupPage {
   ionViewWillLeave() {}
 
   async signup() {
-    try {
-      const loading = await this.loadingController.create();
-      await loading.present();
-      const email = this.signupForm.value.email;
-      const password = this.signupForm.value.password;
+    const loading = await this.loadingController.create();
+    await loading.present();
+    const email = this.signupForm.value.email;
+    const password = this.signupForm.value.password;
 
-      if (!email || !password) {
-        // Handle the case where email or password is not provided.
-        console.log("Email and password are required");
-        this.showAlert("Signup failed", "Email and password are required");
-        return;
-      }
+    if (!email || !password) {
+      // Handle the case where email or password is not provided.
+      this.showAlert("Signup failed", "Email and password are required");
+      return;
+    }
 
-      this.authService.signUp(email, password).then(async (data) => {
-        await loading.dismiss();
-        console.log("data: ", data);
+    this.authService
+      .signUp(email, password)
+      .then(async (data) => {
+        const timestamp = Timestamp.now();
+        const user: User = {
+          email: email,
+          displayName: "",
+          profilePicture: "",
+          emailVerified: false,
+          bio: "",
+          createdAt: timestamp,
+          lastLoginAt: timestamp,
+          lastModifiedAt: timestamp,
+          lastModifiedBy: data.user.uid,
+          name: "",
+          uid: data.user.uid,
+        };
+        this.usersService.createUser(user);
 
         this.showAlert("Signup success", "Please confirm your email now!");
-        this.navCtrl.navigateBack("");
+        this.navCtrl.navigateForward("user-profile/" + user.uid);
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        let errorMessage =
+          "We ran into an error processing your signup. Please try again.";
+        let errorTitle = "Signup failed";
+        // Handle Errors here.
+        switch (errorCode) {
+          case "auth/email-already-in-use":
+            errorTitle = "Email already in use";
+            errorMessage =
+              "The email address is already in use by another account.";
+            break;
+          case "auth/invalid-email":
+            errorTitle = "Invalid email";
+            errorMessage = "The email address you have entered is not valid.";
+            break;
+          case "auth/operation-not-allowed":
+            errorMessage = "Email/password accounts are not enabled.";
+            errorMessage =
+              "The type of authentication you're trying to use has not been enabled for this Firebase project.";
+            break;
+          case "auth/weak-password":
+            errorTitle = "Weak password";
+            errorMessage =
+              "The password you have entered is too weak. Please choose a stronger password.";
+            break;
+          default:
+            console.warn("An unknown error occurred: ", error.message);
+            // Handle other errors
+            break;
+        }
+        this.showAlert(errorTitle, errorMessage);
+      })
+      .finally(() => {
+        loading.dismiss();
       });
-    } catch (error) {
-      this.showAlert(
-        "Signup failed",
-        "We ran into an error processing your signup. Please try again.",
-      );
-      console.log(error);
-    }
   }
 
   async showAlert(title: string, message: string) {

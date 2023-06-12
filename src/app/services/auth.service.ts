@@ -22,7 +22,7 @@ import {Router} from "@angular/router";
 })
 export class AuthService {
   auth: Auth;
-  private userSubject = new BehaviorSubject<User | boolean>(false); // User | false type
+  private userSubject = new BehaviorSubject<User | null>(null); // User | null type
   // any time the user logs in or out (i.e., when currentUserSubject is updated), all subscribers to currentUser$ will receive the updated user state.
   user$ = this.userSubject.asObservable();
   actionCodeSettings = {
@@ -50,14 +50,14 @@ export class AuthService {
         this.userSubject.next(user);
       } else {
         // User is signed out.
-        this.userSubject.next(false);
+        this.userSubject.next(null);
       }
     });
   }
 
   // Returns true when user is looged in and email is verified
   get isLoggedIn(): boolean {
-    return this.getCurrentUser() !== false ? true : false;
+    return this.getCurrentUser() !== null ? true : false;
   }
 
   // Sign up with email/password
@@ -168,7 +168,7 @@ export class AuthService {
   }
 
   // Call method when wanting to pull in user status async
-  getCurrentUser(): User | boolean {
+  getCurrentUser(): User | null {
     return this.userSubject.value;
   }
 }

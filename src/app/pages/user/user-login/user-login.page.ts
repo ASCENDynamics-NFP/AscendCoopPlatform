@@ -34,7 +34,9 @@ export class UserLoginPage implements OnInit {
     this.authService.user$.subscribe((user) => {
       if (user) {
         console.log("GOT USER ON LOGIN");
-        this.router.navigateByUrl("/user-dashboard", {replaceUrl: true});
+        this.router.navigateByUrl("/user-dashboard/" + user?.uid, {
+          replaceUrl: true,
+        });
       }
     });
   }

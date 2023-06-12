@@ -56,7 +56,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: "user-dashboard",
+    path: "user-dashboard/:uid",
     loadComponent: () =>
       import("./pages/user/user-dashboard/user-dashboard.page").then(
         (m) => m.UserDashboardPage,
@@ -64,7 +64,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: "user-profile",
+    path: "user-profile/:uid",
     loadComponent: () =>
       import("./pages/user/user-profile/user-profile.page").then(
         (m) => m.UserProfilePage,
@@ -94,7 +94,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: "user-settings",
+    path: "user-settings/:uid",
     loadComponent: () =>
       import("./pages/user/user-settings/user-settings.page").then(
         (m) => m.UserSettingsPage,

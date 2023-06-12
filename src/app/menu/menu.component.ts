@@ -3,6 +3,7 @@ import {Component, OnInit} from "@angular/core";
 import {RouterLink, RouterLinkActive} from "@angular/router";
 import {IonicModule} from "@ionic/angular";
 import {AuthService} from "../services/auth.service";
+import {User} from "firebase/auth";
 
 @Component({
   selector: "app-menu",
@@ -12,12 +13,25 @@ import {AuthService} from "../services/auth.service";
   imports: [IonicModule, RouterLink, RouterLinkActive, CommonModule],
 })
 export class MenuComponent implements OnInit {
+  user: User | null = null;
   public userPages = {
     // User
     user: [
-      {title: "Profile", url: "user-profile", icon: "archive"},
-      {title: "Settings", url: "user-settings", icon: "trash"},
-      {title: "Dashboard", url: "user-dashboard", icon: "heart"},
+      {
+        title: "Profile",
+        url: `user-profile/${this.user?.uid}`,
+        icon: "archive",
+      },
+      {
+        title: "Settings",
+        url: `user-settings/${this.user?.uid}`,
+        icon: "trash",
+      },
+      {
+        title: "Dashboard",
+        url: `user-dashboard/${this.user?.uid}`,
+        icon: "heart",
+      },
     ],
     // Group
     group: [
@@ -45,7 +59,31 @@ export class MenuComponent implements OnInit {
   };
   public labels: Array<string> = [];
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) {
+    this.authService.user$.subscribe((user) => {
+      if (user) {
+        console.log("GOT USER ON MENU");
+        this.user = user;
+        this.userPages.user = [
+          {
+            title: "Profile",
+            url: `user-profile/${this.user?.uid}`,
+            icon: "archive",
+          },
+          {
+            title: "Settings",
+            url: `user-settings/${this.user?.uid}`,
+            icon: "trash",
+          },
+          {
+            title: "Dashboard",
+            url: `user-dashboard/${this.user?.uid}`,
+            icon: "heart",
+          },
+        ];
+      }
+    });
+  }
 
   ngOnInit() {
     this.labels = ["Family", "Friends", "Notes", "Work", "Travel", "Reminders"];

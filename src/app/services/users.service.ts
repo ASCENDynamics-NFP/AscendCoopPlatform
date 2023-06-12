@@ -9,6 +9,12 @@ import {
   getDoc,
   doc,
   DocumentData,
+  where,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  setDoc,
 } from "firebase/firestore";
 
 @Injectable({
@@ -19,20 +25,23 @@ export class UsersService {
 
   constructor(private firestoreService: FirestoreService) {}
 
-  async createUser(user: User): Promise<string | null> {
-    try {
-      const documentRef = await addDoc(
-        collection(this.firestoreService.firestore, this.collectionName),
-        user,
-      );
-      return documentRef.id;
-    } catch (error) {
-      console.error("Error adding document: ", error);
-      return null;
-    }
+  createUser(user: User): void {
+    if (!user.uid) throw new Error("User must have a uid");
+    // Create a user document in Firestore
+    setDoc(doc(this.firestoreService.firestore, "users", user.uid), user)
+      .then(() => {
+        console.log("User successfully written!");
+      })
+      .catch((error) => {
+        console.error("Error creating user: ", error);
+      });
   }
 
-  async getUser(userId: string): Promise<DocumentData | null> {
+  async getUser(userId: any): Promise<DocumentData | null> {
+    // if (typeof userId !== "string") {
+    // console.error("Error getting document: userId is not a string");
+    // return null;
+    // }
     try {
       const docSnap = await getDoc(
         doc(this.firestoreService.firestore, this.collectionName, userId),
@@ -68,6 +77,36 @@ export class UsersService {
       );
     } catch (error) {
       console.error("Error deleting document: ", error);
+    }
+  }
+
+  async getUsersWithCondition(
+    field: string,
+    condition: any,
+    value: any,
+    orderByField: string = "email",
+    recordLimit: number = 1,
+  ): Promise<DocumentData[] | null> {
+    try {
+      const collectionRef = collection(
+        this.firestoreService.firestore,
+        this.collectionName,
+      );
+      const q = query(
+        collectionRef,
+        where(field, condition, value),
+        orderBy(orderByField),
+        limit(recordLimit),
+      );
+      const querySnapshot = await getDocs(q);
+      const documents: DocumentData[] = [];
+      querySnapshot.forEach((doc) => {
+        documents.push(doc.data());
+      });
+      return documents;
+    } catch (error) {
+      console.error("Error retrieving collection: ", error);
+      return null;
     }
   }
 }

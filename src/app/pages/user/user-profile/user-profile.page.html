@@ -13,4 +13,14 @@
       <ion-title size="large">User Profile</ion-title>
     </ion-toolbar>
   </ion-header>
+  <ion-card *ngIf="user">
+    <ion-card-header>
+      <ion-card-title>{{ user.name }}</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>Email: {{ user.email }}</p>
+      <p>Email Verified: {{ user.emailVerified }}</p>
+      <!-- Include other user details here -->
+    </ion-card-content>
+  </ion-card>
 </ion-content>

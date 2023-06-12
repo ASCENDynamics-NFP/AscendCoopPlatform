@@ -19,7 +19,9 @@
     </ion-card-header>
     <ion-card-content>
       <p>Description: {{ group.description }}</p>
-      <!-- Include other group details here -->
+      <!-- Display other group data here -->
+      <p>Number of Members: {{ group.members.length }}</p>
+      <p>Created At: {{ group?.createdAt?.toDate() | date: 'short' }}</p>
     </ion-card-content>
   </ion-card>
 </ion-content>

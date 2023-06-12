@@ -15,12 +15,15 @@ import {Group} from "../../../models/group.model";
   imports: [IonicModule, CommonModule, FormsModule],
 })
 export class GroupProfilePage implements OnInit {
+  groupId: string | null;
   group: Group | any;
   constructor(
     private route: ActivatedRoute,
     private menuService: MenuService,
     private groupsService: GroupsService,
-  ) {}
+  ) {
+    this.groupId = this.route.snapshot.paramMap.get("groupId");
+  }
 
   ngOnInit() {
     this.getGroup();
@@ -32,9 +35,9 @@ export class GroupProfilePage implements OnInit {
 
   ionViewWillLeave() {}
 
-  async getGroup() {
+  getGroup() {
     this.groupsService
-      .getGroup(this.route.snapshot.paramMap.get("groupId"))
+      .getGroup(this.groupId)
       .then((group) => {
         this.group = group;
         console.log(group);

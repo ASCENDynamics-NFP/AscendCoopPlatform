@@ -7,8 +7,13 @@ import {
   updateDoc,
   deleteDoc,
   getDoc,
+  getDocs,
   doc,
   DocumentData,
+  query,
+  where,
+  or,
+  and,
 } from "firebase/firestore";
 
 @Injectable({
@@ -70,5 +75,68 @@ export class GroupsService {
     } catch (error) {
       console.error("Error deleting document: ", error);
     }
+  }
+
+  searchGroups(searchTerm: string): Promise<DocumentData[] | null> {
+    return getDocs(
+      query(
+        collection(this.firestoreService.firestore, this.collectionName),
+        or(
+          // query as-is:
+          and(
+            where("name", ">=", searchTerm),
+            where("name", "<=", searchTerm + "\uf8ff"),
+          ),
+          // capitalize first letter:
+          and(
+            where(
+              "name",
+              ">=",
+              searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1),
+            ),
+            where(
+              "name",
+              "<=",
+              searchTerm.charAt(0).toUpperCase() +
+                searchTerm.slice(1) +
+                "\uf8ff",
+            ),
+          ),
+          // lowercase:
+          and(
+            where("name", ">=", searchTerm.toLowerCase()),
+            where("name", "<=", searchTerm.toLowerCase() + "\uf8ff"),
+          ),
+        ),
+      ),
+    )
+      .then((querySnapshot) => {
+        const documents: DocumentData[] = [];
+        querySnapshot.forEach((doc) => {
+          documents.push(doc.data());
+        });
+        return documents;
+      })
+      .catch((error) => {
+        console.error("Error retrieving collection: ", error);
+        return null;
+      });
+  }
+
+  async getGroups(): Promise<DocumentData[] | null> {
+    return getDocs(
+      collection(this.firestoreService.firestore, this.collectionName),
+    )
+      .then((querySnapshot) => {
+        const documents: DocumentData[] = [];
+        querySnapshot.forEach((doc) => {
+          documents.push(doc.data());
+        });
+        return documents;
+      })
+      .catch((error) => {
+        console.error(error);
+        return null;
+      });
   }
 }

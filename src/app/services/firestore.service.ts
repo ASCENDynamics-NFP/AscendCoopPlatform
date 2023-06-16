@@ -77,24 +77,28 @@ export class FirestoreService {
     }
   }
 
-  async getCollectionWithCondition(
+  getCollectionWithCondition(
     collectionName: string,
     field: string,
     condition: any,
     value: any,
   ): Promise<DocumentData[] | null> {
-    try {
-      const collectionRef = collection(this.firestore, collectionName);
-      const q = query(collectionRef, where(field, condition, value));
-      const querySnapshot = await getDocs(q);
-      const documents: DocumentData[] = [];
-      querySnapshot.forEach((doc) => {
-        documents.push(doc.data());
+    return getDocs(
+      query(
+        collection(this.firestore, collectionName),
+        where(field, condition, value),
+      ),
+    )
+      .then((querySnapshot) => {
+        const documents: DocumentData[] = [];
+        querySnapshot.forEach((doc) => {
+          documents.push(doc.data());
+        });
+        return documents;
+      })
+      .catch((error) => {
+        console.error("Error retrieving collection: ", error);
+        return null;
       });
-      return documents;
-    } catch (error) {
-      console.error("Error retrieving collection: ", error);
-      return null;
-    }
   }
 }

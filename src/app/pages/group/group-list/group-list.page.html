@@ -13,4 +13,29 @@
       <ion-title size="large">Group List</ion-title>
     </ion-toolbar>
   </ion-header>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Group Search</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-input
+          [(ngModel)]="searchTerm"
+          label="Search Group"
+          labelPlacement="fixed"
+          placeholder="Group Name"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-button expand="full" (click)="search()">Search</ion-button>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-list lines="full">
+    <ion-item *ngFor="let group of groups; let i = index">
+      <ion-label>{{group['name']}}</ion-label>
+    </ion-item>
+  </ion-list>
 </ion-content>

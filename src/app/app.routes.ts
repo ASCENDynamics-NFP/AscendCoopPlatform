@@ -49,7 +49,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: "group-profile",
+    path: "group-profile/:groupId",
     loadComponent: () =>
       import("./pages/group/group-profile/group-profile.page").then(
         (m) => m.GroupProfilePage,

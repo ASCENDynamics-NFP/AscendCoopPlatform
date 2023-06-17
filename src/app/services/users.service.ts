@@ -1,6 +1,6 @@
 import {Injectable} from "@angular/core";
 import {FirestoreService} from "./firestore.service";
-import {User} from "../models/user.model";
+import {AppUser} from "../models/user.model";
 import {
   addDoc,
   collection,
@@ -25,7 +25,7 @@ export class UsersService {
 
   constructor(private firestoreService: FirestoreService) {}
 
-  createUser(user: User): void {
+  createUser(user: Partial<AppUser>): void {
     if (!user.uid) throw new Error("User must have a uid");
     // Create a user document in Firestore
     setDoc(doc(this.firestoreService.firestore, "users", user.uid), user)
@@ -59,10 +59,11 @@ export class UsersService {
     }
   }
 
-  async updateUser(userId: string, user: Partial<User>) {
+  async updateUser(user: Partial<AppUser>) {
+    if (!user.uid) throw new Error("User must have a uid");
     try {
       await updateDoc(
-        doc(this.firestoreService.firestore, this.collectionName, userId),
+        doc(this.firestoreService.firestore, this.collectionName, user?.uid),
         user,
       );
     } catch (error) {

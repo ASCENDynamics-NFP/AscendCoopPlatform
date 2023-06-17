@@ -5,6 +5,9 @@ import {AlertController, IonicModule, LoadingController} from "@ionic/angular";
 import {AuthService} from "../../../services/auth.service";
 import {Router} from "@angular/router";
 import {MenuService} from "../../../services/menu.service";
+import {getAdditionalUserInfo} from "firebase/auth";
+import {UsersService} from "../../../services/users.service";
+import {Timestamp} from "firebase/firestore";
 
 @Component({
   selector: "app-user-login",
@@ -30,6 +33,7 @@ export class UserLoginPage implements OnInit {
     private alertController: AlertController,
     private router: Router,
     private menuService: MenuService,
+    private usersService: UsersService,
   ) {
     this.authService.user$.subscribe((user) => {
       if (user) {
@@ -148,6 +152,55 @@ export class UserLoginPage implements OnInit {
       ],
     });
     await alert.present();
+  }
+
+  async signInWithGoogle() {
+    const loading = await this.loadingController.create();
+    await loading.present();
+    this.authService
+      .signInWithGoogle()
+      .then((result) => {
+        // handle successful sign in
+        // Check if the user is new or existing.
+        if (getAdditionalUserInfo(result)?.isNewUser) {
+          // This is a new user
+          this.usersService.createUser({
+            email: result?.user?.email,
+            displayName: result?.user?.displayName,
+            profilePicture: result?.user?.photoURL,
+            emailVerified: result?.user?.emailVerified,
+            bio: "I enjoy volunteering and helping others.",
+            createdAt: Timestamp.now(),
+            lastLoginAt: Timestamp.now(),
+            lastModifiedAt: Timestamp.now(),
+            lastModifiedBy: result?.user?.uid,
+            name: result?.user?.displayName,
+            uid: result?.user?.uid,
+            locale: "en",
+          });
+          this.showAlert(
+            "Success",
+            "You're user account has been successfully created!",
+          );
+        } else {
+          console.log("This is an existing user");
+          this.usersService.updateUser({
+            lastLoginAt: Timestamp.now(),
+            lastModifiedAt: Timestamp.now(),
+            lastModifiedBy: result?.user?.uid,
+            uid: result?.user?.uid,
+          });
+          this.showAlert("Success", "Welcome back!");
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        // handle sign in error
+        this.showAlert("Failed", error.message);
+      })
+      .finally(() => {
+        loading.dismiss();
+      });
   }
 
   async showAlert(title: string, message: string) {

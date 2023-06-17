@@ -10,7 +10,7 @@ import {
 import {Timestamp} from "firebase/firestore";
 import {Router} from "@angular/router";
 import {AuthService} from "../../../services/auth.service";
-import {User} from "../../../models/user.model";
+import {AppUser} from "../../../models/user.model";
 import {UsersService} from "../../../services/users.service";
 import {MenuService} from "../../../services/menu.service";
 
@@ -70,7 +70,7 @@ export class UserSignupPage {
       .signUp(email, password)
       .then(async (data) => {
         const timestamp = Timestamp.now();
-        const user: User = {
+        const user: Partial<AppUser> = {
           email: email,
           displayName: "",
           profilePicture: "",

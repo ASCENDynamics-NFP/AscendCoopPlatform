@@ -81,6 +81,16 @@
             <ion-icon name="mail-outline" slot="start"></ion-icon>
             Get Email SignIn Link
           </ion-button>
+
+          <ion-button
+            type="button"
+            expand="block"
+            color="danger"
+            (click)="signInWithGoogle()"
+          >
+            <ion-icon name="logo-google" slot="start"></ion-icon>
+            Sign In with Google
+          </ion-button>
           <!-- <ion-button type="button" expand="block" color="warning" routerLink="groups">
             <ion-icon name="arrow-forward" slot="start"></ion-icon>
             Start Without Account

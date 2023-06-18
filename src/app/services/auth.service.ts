@@ -1,20 +1,20 @@
 import {
   Auth,
-  User,
-  isSignInWithEmailLink,
-  sendSignInLinkToEmail,
-} from "firebase/auth"; // import User type
-import {BehaviorSubject} from "rxjs";
-import {Injectable} from "@angular/core";
-import {
   getAuth,
+  GoogleAuthProvider,
   createUserWithEmailAndPassword,
+  isSignInWithEmailLink,
   onAuthStateChanged,
+  sendPasswordResetEmail,
+  sendSignInLinkToEmail,
   signInWithEmailAndPassword,
   signInWithEmailLink,
-  sendPasswordResetEmail,
+  signInWithPopup,
   signOut,
+  User,
 } from "firebase/auth";
+import {BehaviorSubject} from "rxjs";
+import {Injectable} from "@angular/core";
 import {Router} from "@angular/router";
 
 @Injectable({
@@ -54,13 +54,19 @@ export class AuthService {
       }
     });
   }
-
+  /* CURRENT USER METHODS */
   // Returns true when user is looged in and email is verified
   get isLoggedIn(): boolean {
     return this.getCurrentUser() !== null ? true : false;
   }
 
-  // Sign up with email/password
+  // Call method when wanting to pull in user status async
+  getCurrentUser(): User | null {
+    return this.userSubject.value;
+  }
+
+  /* SIGN UP METHODS */
+  // Sign Up With Email/Password
   async signUp(email: string, password: string) {
     try {
       const result = await createUserWithEmailAndPassword(
@@ -75,7 +81,13 @@ export class AuthService {
     }
   }
 
-  // Sign in with email/password
+  /* SIGN IN METHODS */
+  // Sign In With Google
+  signInWithGoogle() {
+    return signInWithPopup(this.auth, new GoogleAuthProvider());
+  }
+
+  // Sign In With Email/Password
   async signIn(email: string, password: string) {
     try {
       const result = await signInWithEmailAndPassword(
@@ -90,16 +102,7 @@ export class AuthService {
     }
   }
 
-  onSendPasswordResetEmail(email: string): Promise<void> {
-    try {
-      const result = sendPasswordResetEmail(this.auth, email);
-      return result;
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  }
-
+  // Email Link Sign In
   async onSendSignInLinkToEmail(email: string) {
     try {
       const result = await sendSignInLinkToEmail(
@@ -114,6 +117,7 @@ export class AuthService {
     }
   }
 
+  // Confirm Email Link Sign In
   onSignInWithEmailLink() {
     // Confirm the link is a sign-in with email link.
     if (isSignInWithEmailLink(this.auth, window.location.href)) {
@@ -151,7 +155,7 @@ export class AuthService {
     }
   }
 
-  // Sign out
+  /* SIGN OUT METHOD */
   signOut() {
     try {
       signOut(this.auth)
@@ -167,8 +171,14 @@ export class AuthService {
     }
   }
 
-  // Call method when wanting to pull in user status async
-  getCurrentUser(): User | null {
-    return this.userSubject.value;
+  /* PASSWORD RESET METHODS */
+  onSendPasswordResetEmail(email: string): Promise<void> {
+    try {
+      const result = sendPasswordResetEmail(this.auth, email);
+      return result;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 }

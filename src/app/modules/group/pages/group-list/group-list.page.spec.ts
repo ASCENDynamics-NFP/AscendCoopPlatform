@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {GroupListPage} from "./group-list.page";
-import {AuthService} from "../../../../services/auth.service";
+import {AuthService} from "../../../../core/services/auth.service";
 
 describe("GroupListPage", () => {
   let component: GroupListPage;

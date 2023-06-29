@@ -1,6 +1,6 @@
 import {Injectable} from "@angular/core";
 import {FirestoreService} from "./firestore.service";
-import {Group} from "../models/group.model";
+import {Group} from "../../models/group.model";
 import {
   addDoc,
   collection,

@@ -9,10 +9,10 @@ import {
 } from "@ionic/angular";
 import {Timestamp} from "firebase/firestore";
 import {Router} from "@angular/router";
-import {AuthService} from "../../../../services/auth.service";
+import {AuthService} from "../../../../core/services/auth.service";
 import {AppUser} from "../../../../models/user.model";
-import {UsersService} from "../../../../services/users.service";
-import {MenuService} from "../../../../services/menu.service";
+import {UsersService} from "../../../../core/services/users.service";
+import {MenuService} from "../../../../core/services/menu.service";
 
 @Component({
   selector: "app-user-signup",

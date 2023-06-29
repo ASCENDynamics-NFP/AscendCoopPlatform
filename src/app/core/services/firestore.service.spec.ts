@@ -2,7 +2,7 @@ import {TestBed} from "@angular/core/testing";
 import {FirestoreService} from "./firestore.service";
 import {getFirestore} from "firebase/firestore";
 import {initializeApp} from "firebase/app";
-import {environment} from "../../environments/environment";
+import {environment} from "../../../environments/environment";
 
 initializeApp(environment.firebaseConfig);
 

@@ -8,7 +8,7 @@ import {routes} from "./app/app.routes";
 import {AppComponent} from "./app/app.component";
 import {environment} from "./environments/environment";
 import {initializeApp} from "firebase/app";
-import {AuthService} from "./app/services/auth.service";
+import {AuthService} from "./app/core/services/auth.service";
 // LANGUAGE
 import {TranslateModule, TranslateLoader} from "@ngx-translate/core";
 import {TranslateHttpLoader} from "@ngx-translate/http-loader";

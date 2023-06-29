@@ -1,6 +1,6 @@
 import {Routes} from "@angular/router";
-import {AuthGuard} from "./guards/auth.guard";
-import {SecureInnerPagesGuard} from "./guards/secure-inner-pages.guard";
+import {AuthGuard} from "./core/guards/auth.guard";
+import {SecureInnerPagesGuard} from "./core/guards/secure-inner-pages.guard";
 
 export const routes: Routes = [
   // {

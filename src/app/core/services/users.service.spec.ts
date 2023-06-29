@@ -1,7 +1,7 @@
 import {TestBed} from "@angular/core/testing";
 import {UsersService} from "./users.service";
 import {initializeApp} from "firebase/app";
-import {environment} from "../../environments/environment";
+import {environment} from "../../../environments/environment";
 
 initializeApp(environment.firebaseConfig);
 

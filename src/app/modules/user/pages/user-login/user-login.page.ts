@@ -2,11 +2,11 @@ import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
 import {AlertController, IonicModule, LoadingController} from "@ionic/angular";
-import {AuthService} from "../../../../services/auth.service";
+import {AuthService} from "../../../../core/services/auth.service";
 import {Router} from "@angular/router";
-import {MenuService} from "../../../../services/menu.service";
+import {MenuService} from "../../../../core/services/menu.service";
 import {getAdditionalUserInfo} from "firebase/auth";
-import {UsersService} from "../../../../services/users.service";
+import {UsersService} from "../../../../core/services/users.service";
 import {Timestamp} from "firebase/firestore";
 
 @Component({

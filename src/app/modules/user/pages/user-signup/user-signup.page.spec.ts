@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {UserSignupPage} from "./user-signup.page";
-import {AuthService} from "../../../../services/auth.service";
+import {AuthService} from "../../../../core/services/auth.service";
 import {of} from "rxjs";
 
 describe("UserSignupPage", () => {

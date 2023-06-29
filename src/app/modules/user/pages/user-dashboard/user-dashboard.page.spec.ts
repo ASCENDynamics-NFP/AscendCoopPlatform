@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {UserDashboardPage} from "./user-dashboard.page";
-import {AuthService} from "../../../../services/auth.service";
+import {AuthService} from "../../../../core/services/auth.service";
 import {of} from "rxjs";
 
 describe("UserDashboardPage", () => {

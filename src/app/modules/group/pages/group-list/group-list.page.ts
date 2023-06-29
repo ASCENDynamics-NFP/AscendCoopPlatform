@@ -2,8 +2,8 @@ import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule, LoadingController} from "@ionic/angular";
-import {MenuService} from "../../../../services/menu.service";
-import {GroupsService} from "../../../../services/groups.service";
+import {MenuService} from "../../../../core/services/menu.service";
+import {GroupsService} from "../../../../core/services/groups.service";
 import {DocumentData} from "firebase/firestore";
 
 @Component({

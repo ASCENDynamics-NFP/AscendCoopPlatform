@@ -1,7 +1,7 @@
 import {Component} from "@angular/core";
 import {IonicModule} from "@ionic/angular";
 import {CommonModule} from "@angular/common";
-import {MenuComponent} from "./menu/menu.component";
+import {MenuComponent} from "./shared/components/menu/menu.component";
 import {TranslateService} from "@ngx-translate/core";
 
 @Component({

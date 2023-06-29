@@ -1,7 +1,9 @@
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
-import {IonicModule} from "@ionic/angular";
-
 import {LanguageSelectorComponent} from "./language-selector.component";
+import {TranslateLoader, TranslateModule, TranslateStore } from "@ngx-translate/core";
+import { HttpClient } from "@angular/common/http";
+import { HttpClientTestingModule } from "@angular/common/http/testing";
+import { createTranslateLoader } from "../../../../app.component.spec";
 
 describe("LanguageSelectorComponent", () => {
   let component: LanguageSelectorComponent;
@@ -9,8 +11,17 @@ describe("LanguageSelectorComponent", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [LanguageSelectorComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [
+        HttpClientTestingModule,
+        TranslateModule.forRoot({
+          loader: {
+            provide: TranslateLoader,
+            useFactory: createTranslateLoader,
+            deps: [HttpClient]
+          }
+        })
+      ],
+      providers: [TranslateStore]
     }).compileComponents();
 
     fixture = TestBed.createComponent(LanguageSelectorComponent);

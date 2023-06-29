@@ -1,7 +1,8 @@
 import {Component} from "@angular/core";
 import {IonicModule} from "@ionic/angular";
 import {CommonModule} from "@angular/common";
-import {MenuComponent} from "./menu/menu.component";
+import {MenuComponent} from "./shared/components/menu/menu.component";
+import {TranslateService} from "@ngx-translate/core";
 
 @Component({
   selector: "app-root",
@@ -12,7 +13,9 @@ import {MenuComponent} from "./menu/menu.component";
 })
 export class AppComponent {
   // public environmentInjector = inject(EnvironmentInjector);
-  constructor() {
+  constructor(private translate: TranslateService) {
+    this.translate.setDefaultLang("en");
+    this.translate.addLangs(["en", "fr"]);
     // You can use your AuthService here
   }
 }

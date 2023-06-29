@@ -4,8 +4,8 @@ import {SecureInnerPagesGuard} from "./guards/secure-inner-pages.guard";
 
 export const routes: Routes = [
   // {
-  //   path: "tabs",
-  //   loadChildren: () => import("./tabs/tabs.routes").then((m) => m.routes),
+  //   path: "user",
+  //   loadChildren: () => import("./modules/user/user.routes").then((m) => m.routes),
   // },
   {
     path: "",
@@ -15,21 +15,21 @@ export const routes: Routes = [
   {
     path: "group-create",
     loadComponent: () =>
-      import("./pages/group/group-create/group-create.page").then(
+      import("./modules/group/pages/group-create/group-create.page").then(
         (m) => m.GroupCreatePage,
       ),
   },
   {
     path: "group-detail",
     loadComponent: () =>
-      import("./pages/group/group-detail/group-detail.page").then(
+      import("./modules/group/pages/group-detail/group-detail.page").then(
         (m) => m.GroupDetailPage,
       ),
   },
   {
     path: "group-edit",
     loadComponent: () =>
-      import("./pages/group/group-edit/group-edit.page").then(
+      import("./modules/group/pages/group-edit/group-edit.page").then(
         (m) => m.GroupEditPage,
       ),
     canActivate: [AuthGuard],
@@ -37,28 +37,28 @@ export const routes: Routes = [
   {
     path: "group-list",
     loadComponent: () =>
-      import("./pages/group/group-list/group-list.page").then(
+      import("./modules/group/pages/group-list/group-list.page").then(
         (m) => m.GroupListPage,
       ),
   },
   {
     path: "group-members",
     loadComponent: () =>
-      import("./pages/group/group-members/group-members.page").then(
+      import("./modules/group/pages/group-members/group-members.page").then(
         (m) => m.GroupMembersPage,
       ),
   },
   {
     path: "group-profile/:groupId",
     loadComponent: () =>
-      import("./pages/group/group-profile/group-profile.page").then(
+      import("./modules/group/pages/group-profile/group-profile.page").then(
         (m) => m.GroupProfilePage,
       ),
   },
   {
     path: "user-dashboard/:uid",
     loadComponent: () =>
-      import("./pages/user/user-dashboard/user-dashboard.page").then(
+      import("./modules/user/pages/user-dashboard/user-dashboard.page").then(
         (m) => m.UserDashboardPage,
       ),
     canActivate: [AuthGuard],
@@ -66,14 +66,14 @@ export const routes: Routes = [
   {
     path: "user-profile/:uid",
     loadComponent: () =>
-      import("./pages/user/user-profile/user-profile.page").then(
+      import("./modules/user/pages/user-profile/user-profile.page").then(
         (m) => m.UserProfilePage,
       ),
   },
   {
     path: "user-signup",
     loadComponent: () =>
-      import("./pages/user/user-signup/user-signup.page").then(
+      import("./modules/user/pages/user-signup/user-signup.page").then(
         (m) => m.UserSignupPage,
       ),
     canActivate: [SecureInnerPagesGuard],
@@ -81,7 +81,7 @@ export const routes: Routes = [
   {
     path: "user-login",
     loadComponent: () =>
-      import("./pages/user/user-login/user-login.page").then(
+      import("./modules/user/pages/user-login/user-login.page").then(
         (m) => m.UserLoginPage,
       ),
     canActivate: [SecureInnerPagesGuard],
@@ -89,14 +89,14 @@ export const routes: Routes = [
   {
     path: "user-password-reset",
     loadComponent: () =>
-      import("./pages/user/user-password-reset/user-password-reset.page").then(
-        (m) => m.UserPasswordResetPage,
-      ),
+      import(
+        "./modules/user/pages/user-password-reset/user-password-reset.page"
+      ).then((m) => m.UserPasswordResetPage),
   },
   {
     path: "user-settings/:uid",
     loadComponent: () =>
-      import("./pages/user/user-settings/user-settings.page").then(
+      import("./modules/user/pages/user-settings/user-settings.page").then(
         (m) => m.UserSettingsPage,
       ),
     canActivate: [AuthGuard],

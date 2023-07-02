@@ -8,7 +8,7 @@ export interface Group {
   id: string | null; // Firestore document ID
   lastModifiedAt: Timestamp | null; // When the group document was last modified
   lastModifiedBy: string | null; // User ID of the user who last modified the group
-  lastModifiedByDisplayName: string | null; // Display name of the user who last modified the group
+  // lastModifiedByDisplayName: string | null; // Display name of the user who last modified the group
   name: string; // Name of group
   // Other properties...
 }

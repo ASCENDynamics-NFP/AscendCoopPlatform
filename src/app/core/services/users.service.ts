@@ -2,7 +2,6 @@ import {Injectable} from "@angular/core";
 import {FirestoreService} from "./firestore.service";
 import {AppUser} from "../../models/user.model";
 import {
-  addDoc,
   collection,
   updateDoc,
   deleteDoc,

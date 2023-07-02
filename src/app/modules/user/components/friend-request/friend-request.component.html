@@ -1,0 +1,51 @@
+<ion-list>
+  <ion-item>
+    <!-- For demo purposes, we're using a single hardcoded request. -->
+    <!-- In a real-world app, you'd typically loop over an array of requests. -->
+    <ion-card *ngFor="let request of friendRequestList; let i = index">
+      <ion-card-header>
+        <ion-card-title>Friend Request from {{ request.name }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>{{ request.description }}</p>
+        <img [src]="request.image" />
+        <ion-button expand="full" (click)="acceptFriendRequest(i)"
+          >Accept</ion-button
+        >
+        <ion-button expand="full" (click)="rejectFriendRequest(i)"
+          >Reject</ion-button
+        >
+        <ion-button expand="full" (click)="viewFriendProfile(i)"
+          >View Profile</ion-button
+        >
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Form to send a new friend request -->
+    <ion-list *ngFor="let request of friendRequestList">
+      <ion-item>
+        <ion-label position="stacked">Receiver ID</ion-label>
+        <ion-input [(ngModel)]="request.receiverId"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Type</ion-label>
+        <ion-input [(ngModel)]="request.type"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Name</ion-label>
+        <ion-input [(ngModel)]="request.name"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Image URL</ion-label>
+        <ion-input [(ngModel)]="request.image"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Description</ion-label>
+        <ion-textarea [(ngModel)]="request.description"></ion-textarea>
+      </ion-item>
+      <ion-button expand="full" (click)="sendFriendRequest()"
+        >Send Request</ion-button
+      >
+    </ion-list>
+  </ion-item>
+</ion-list>

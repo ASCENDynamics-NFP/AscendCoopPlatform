@@ -3,6 +3,7 @@ import {Timestamp} from "firebase/firestore";
 export interface AppUser {
   bio: string | null; // Short bio
   createdAt: Timestamp; // When the user was added
+  createdBy: string | null; // User ID of the user who created the user document
   displayName: string | null; // Full name
   email: string | null; // Email address
   emailVerified: boolean; // Whether the user's email is verified

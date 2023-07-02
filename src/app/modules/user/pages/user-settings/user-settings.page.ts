@@ -5,6 +5,8 @@ import {IonicModule} from "@ionic/angular";
 import {MenuService} from "../../../../core/services/menu.service";
 import {TranslateModule} from "@ngx-translate/core";
 import {LanguageSelectorComponent} from "../../components/language-selector/language-selector.component";
+import {FriendRequestComponent} from "../../components/friend-request/friend-request.component";
+import {AuthService} from "../../../../core/services/auth.service";
 
 @Component({
   selector: "app-user-settings",
@@ -17,10 +19,15 @@ import {LanguageSelectorComponent} from "../../components/language-selector/lang
     FormsModule,
     TranslateModule,
     LanguageSelectorComponent,
+    FriendRequestComponent,
   ],
 })
 export class UserSettingsPage implements OnInit {
-  constructor(private menuService: MenuService) {}
+  user = this.authService.getCurrentUser();
+  constructor(
+    private menuService: MenuService,
+    private authService: AuthService,
+  ) {}
 
   ngOnInit() {}
 

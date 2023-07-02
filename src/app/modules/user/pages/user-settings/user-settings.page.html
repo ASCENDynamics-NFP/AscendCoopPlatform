@@ -21,5 +21,8 @@
       <ion-label translate> user.welcome_message </ion-label>
       <p translate>user.logout</p>
     </ion-item>
+    <ion-item>
+      <app-friend-request *ngIf="user" [user]="user"></app-friend-request>
+    </ion-item>
   </ion-list>
 </ion-content>

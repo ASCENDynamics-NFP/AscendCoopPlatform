@@ -16,6 +16,9 @@
   <ion-list>
     <ion-item>
       <ion-card style="width: 100% !important">
+        <ion-card-header>
+          <ion-card-title>POC: Language Selector</ion-card-title>
+        </ion-card-header>
         <ion-item>
           <app-language-selector></app-language-selector>
         </ion-item>
@@ -28,9 +31,7 @@
       </ion-card>
     </ion-item>
     <ion-item>
-      <ion-card>
-        <app-friend-request *ngIf="user" [user]="user"></app-friend-request>
-      </ion-card>
+      <app-friend-request *ngIf="user" [user]="user"></app-friend-request>
     </ion-item>
   </ion-list>
 </ion-content>

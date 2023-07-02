@@ -1,39 +1,38 @@
-<ion-list>
-  <ion-item>
-    <!-- For demo purposes, we're using a single hardcoded request. -->
-    <!-- In a real-world app, you'd typically loop over an array of requests. -->
-    <ion-card *ngFor="let request of friendRequestList; let i = index">
-      <ion-card-header>
-        <ion-card-title>Friend Request from {{ request.name }}</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <p>{{ request.description }}</p>
-        <img [src]="request.image" />
-        <p>Status: {{ request.status }}</p>
-        <ion-button expand="full" (click)="acceptFriendRequest(i)"
-          >Accept</ion-button
-        >
-        <ion-button expand="full" (click)="rejectFriendRequest(i)"
-          >Reject</ion-button
-        >
-        <ion-button expand="full" (click)="viewFriendProfile(i)"
-          >View Profile</ion-button
-        >
-      </ion-card-content>
-    </ion-card>
-  </ion-item>
-</ion-list>
-<ion-list>
-  <ion-item *ngFor="let user of userList">
-    <ion-avatar slot="start">
-      <img [src]="user['profilePicture']" />
-    </ion-avatar>
-    <ion-label>
-      <h2>{{ user["displayName"] }}</h2>
-      <p>{{ user["bio"] }}</p>
-    </ion-label>
-    <ion-button slot="end" expand="full" (click)="sendFriendRequest(user)"
-      >Send Request</ion-button
-    >
-  </ion-item>
-</ion-list>
+<ion-card>
+  <ion-card-header>
+    <ion-card-title>POC: Friend Request Component</ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <ion-list>
+      <ion-item>
+        <!-- For demo purposes, we're using a single hardcoded request. -->
+        <!-- In a real-world app, you'd typically loop over an array of requests. -->
+        <ion-card *ngFor="let request of friendRequestList; let i = index">
+          <ion-card-header>
+            <ion-card-title>Friend Request from {{ request.name }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <p>{{ request.description }}</p>
+            <img [src]="request.image" />
+            <p>Status: {{ request.status }}</p>
+            <ion-button expand="full" (click)="acceptFriendRequest(i)">Accept</ion-button>
+            <ion-button expand="full" (click)="rejectFriendRequest(i)">Reject</ion-button>
+            <ion-button expand="full" (click)="viewFriendProfile(i)">View Profile</ion-button>
+          </ion-card-content>
+        </ion-card>
+      </ion-item>
+    </ion-list>
+    <ion-list>
+      <ion-item *ngFor="let user of userList">
+        <ion-avatar slot="start">
+          <img [src]="user['profilePicture']" />
+        </ion-avatar>
+        <ion-label>
+          <h2>{{ user["displayName"] }}</h2>
+          <p>{{ user["bio"] }}</p>
+        </ion-label>
+        <ion-button slot="end" expand="full" (click)="sendFriendRequest(user)">Send Request</ion-button>
+      </ion-item>
+    </ion-list>
+  </ion-card-content>
+</ion-card>

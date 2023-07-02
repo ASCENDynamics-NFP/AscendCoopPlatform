@@ -18,22 +18,7 @@ import {DocumentData, Timestamp} from "firebase/firestore";
 export class FriendRequestComponent implements OnInit {
   @Input() user: User | null = null; // define your user here
   userList: DocumentData[] | null = []; // define your user list here
-  friendRequestList: AppRequest[] = [
-    {
-      createdAt: null,
-      createdBy: null,
-      id: null,
-      senderId: "",
-      receiverId: "",
-      type: "",
-      status: "",
-      name: "",
-      image: "",
-      description: "",
-      lastModifiedAt: null,
-      lastModifiedBy: null,
-    },
-  ]; // define your request body here
+  friendRequestList: AppRequest[] = []; // define your request body here
   constructor(
     private requestService: RequestService,
     private usersService: UsersService,

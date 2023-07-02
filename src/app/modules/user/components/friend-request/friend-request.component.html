@@ -9,6 +9,7 @@
       <ion-card-content>
         <p>{{ request.description }}</p>
         <img [src]="request.image" />
+        <p>Status: {{ request.status }}</p>
         <ion-button expand="full" (click)="acceptFriendRequest(i)"
           >Accept</ion-button
         >
@@ -29,7 +30,6 @@
     </ion-avatar>
     <ion-label>
       <h2>{{ user["displayName"] }}</h2>
-      <!-- <h3>ID: {{ user['uid'] }}</h3> -->
       <p>{{ user["bio"] }}</p>
     </ion-label>
     <ion-button slot="end" expand="full" (click)="sendFriendRequest(user)"

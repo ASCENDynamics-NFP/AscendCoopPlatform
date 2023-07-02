@@ -1,9 +1,13 @@
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {LanguageSelectorComponent} from "./language-selector.component";
-import {TranslateLoader, TranslateModule, TranslateStore } from "@ngx-translate/core";
-import { HttpClient } from "@angular/common/http";
-import { HttpClientTestingModule } from "@angular/common/http/testing";
-import { createTranslateLoader } from "../../../../app.component.spec";
+import {
+  TranslateLoader,
+  TranslateModule,
+  TranslateStore,
+} from "@ngx-translate/core";
+import {HttpClient} from "@angular/common/http";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {createTranslateLoader} from "../../../../app.component.spec";
 
 describe("LanguageSelectorComponent", () => {
   let component: LanguageSelectorComponent;
@@ -17,11 +21,11 @@ describe("LanguageSelectorComponent", () => {
           loader: {
             provide: TranslateLoader,
             useFactory: createTranslateLoader,
-            deps: [HttpClient]
-          }
-        })
+            deps: [HttpClient],
+          },
+        }),
       ],
-      providers: [TranslateStore]
+      providers: [TranslateStore],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LanguageSelectorComponent);

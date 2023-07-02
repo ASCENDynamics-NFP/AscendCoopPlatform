@@ -15,11 +15,23 @@
   </ion-header>
   <ion-list>
     <ion-item>
-      <app-language-selector></app-language-selector>
+      <ion-card style="width: 100% !important">
+        <ion-card-header>
+          <ion-card-title>POC: Language Selector</ion-card-title>
+        </ion-card-header>
+        <ion-item>
+          <app-language-selector></app-language-selector>
+        </ion-item>
+        <ion-item>
+          <p translate>user.welcome_message</p>
+        </ion-item>
+        <ion-item>
+          <p translate>user.logout</p>
+        </ion-item>
+      </ion-card>
     </ion-item>
     <ion-item>
-      <ion-label translate> user.welcome_message </ion-label>
-      <p translate>user.logout</p>
+      <app-friend-request *ngIf="user" [user]="user"></app-friend-request>
     </ion-item>
   </ion-list>
 </ion-content>

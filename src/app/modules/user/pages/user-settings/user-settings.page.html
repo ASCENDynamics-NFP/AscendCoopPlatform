@@ -15,14 +15,22 @@
   </ion-header>
   <ion-list>
     <ion-item>
-      <app-language-selector></app-language-selector>
+      <ion-card style="width: 100% !important;">
+        <ion-item>
+          <app-language-selector></app-language-selector>
+        </ion-item>
+        <ion-item>
+          <p translate> user.welcome_message </p>
+        </ion-item>
+        <ion-item>
+          <p translate> user.logout </p>
+        </ion-item>
+      </ion-card>
     </ion-item>
     <ion-item>
-      <ion-label translate> user.welcome_message </ion-label>
-      <p translate>user.logout</p>
-    </ion-item>
-    <ion-item>
-      <app-friend-request *ngIf="user" [user]="user"></app-friend-request>
+      <ion-card>
+        <app-friend-request *ngIf="user" [user]="user"></app-friend-request>
+      </ion-card>
     </ion-item>
   </ion-list>
 </ion-content>

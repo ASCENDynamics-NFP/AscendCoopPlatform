@@ -1,7 +1,6 @@
 import {Injectable} from "@angular/core";
 import {FirestoreService} from "./firestore.service";
 import {
-  setDoc,
   doc,
   updateDoc,
   getDoc,
@@ -9,6 +8,7 @@ import {
   collection,
   where,
   getDocs,
+  addDoc,
 } from "firebase/firestore";
 import {AppRequest} from "../../models/request.model";
 
@@ -20,17 +20,18 @@ export class RequestService {
 
   constructor(private firestoreService: FirestoreService) {}
 
-  sendRequest(requestBody: AppRequest) {
-    setDoc(
-      doc(this.firestoreService.firestore, this.collectionName),
-      requestBody,
-    )
-      .then(() => {
-        console.log("Request successfully written!");
-      })
-      .catch((error) => {
-        console.error("Error creating request: ", error);
-      });
+  async sendRequest(requestBody: AppRequest) {
+    try {
+      console.log(requestBody);
+      const documentRef = await addDoc(
+        collection(this.firestoreService.firestore, this.collectionName),
+        requestBody,
+      );
+      return documentRef.id;
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      return null;
+    }
   }
 
   async updateRequestStatus(id: string | null, status: string) {

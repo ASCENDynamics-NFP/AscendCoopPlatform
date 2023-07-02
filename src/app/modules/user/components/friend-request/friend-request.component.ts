@@ -5,6 +5,8 @@ import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {User} from "firebase/auth";
+import {UsersService} from "../../../../core/services/users.service";
+import {DocumentData, Timestamp} from "firebase/firestore";
 
 @Component({
   selector: "app-friend-request",
@@ -15,6 +17,7 @@ import {User} from "firebase/auth";
 })
 export class FriendRequestComponent implements OnInit {
   @Input() user: User | null = null; // define your user here
+  userList: DocumentData[] | null = []; // define your user list here
   friendRequestList: AppRequest[] = [
     {
       createdAt: null,
@@ -31,7 +34,10 @@ export class FriendRequestComponent implements OnInit {
       lastModifiedBy: null,
     },
   ]; // define your request body here
-  constructor(private requestService: RequestService) {} // inject your Firebase service
+  constructor(
+    private requestService: RequestService,
+    private usersService: UsersService,
+  ) {} // inject your Firebase service
 
   ngOnInit(): void {
     console.log(this.user);
@@ -44,22 +50,29 @@ export class FriendRequestComponent implements OnInit {
           this.friendRequestList = requests;
         });
     }
+
+    this.usersService
+      .getUsersWithCondition("name", "!=", null, "name", 5)
+      .then((users) => {
+        console.log("userList", users);
+        this.userList = users;
+      });
   }
 
-  sendFriendRequest() {
+  sendFriendRequest(user: DocumentData) {
     let friendRequest: AppRequest = {
       id: null,
       senderId: this.user?.uid ? this.user.uid : "",
-      receiverId: "user",
+      receiverId: user["uid"],
       type: "friend",
       status: "pending",
-      name: "n/a",
-      image: "n/a",
-      description: "n/a",
-      createdAt: null,
-      createdBy: null,
-      lastModifiedAt: null,
-      lastModifiedBy: null,
+      name: user["displayName"],
+      image: user["profilePicture"],
+      description: user["bio"],
+      createdBy: this.user?.uid ? this.user.uid : "",
+      createdAt: Timestamp.now(),
+      lastModifiedBy: this.user?.uid ? this.user.uid : "",
+      lastModifiedAt: Timestamp.now(),
     };
     // this is a simplification, you'll likely have more complex logic here
     this.requestService.sendRequest(friendRequest);

@@ -1,13 +1,10 @@
 import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
-import {AlertController, IonicModule, LoadingController} from "@ionic/angular";
+import {AlertController, IonicModule} from "@ionic/angular";
 import {AuthService} from "../../../../core/services/auth.service";
 import {Router} from "@angular/router";
 import {MenuService} from "../../../../core/services/menu.service";
-import {getAdditionalUserInfo} from "firebase/auth";
-import {UsersService} from "../../../../core/services/users.service";
-import {Timestamp} from "firebase/firestore";
 
 @Component({
   selector: "app-user-login",
@@ -29,11 +26,9 @@ export class UserLoginPage implements OnInit {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private loadingController: LoadingController,
     private alertController: AlertController,
     private router: Router,
     private menuService: MenuService,
-    private usersService: UsersService,
   ) {
     this.authService.user$.subscribe((user) => {
       if (user) {
@@ -55,22 +50,11 @@ export class UserLoginPage implements OnInit {
     this.authService.onSignInWithEmailLink();
   }
 
-  async login() {
+  login() {
     const email = this.loginForm.value.email;
     const password = this.loginForm.value.password;
 
-    if (!email || !password) {
-      // Handle the case where email or password is not provided.
-      console.log("Email and password are required");
-      return;
-    }
-
-    try {
-      const user = await this.authService.signIn(email, password);
-      console.log(user);
-    } catch (error) {
-      console.log(error);
-    }
+    this.authService.signIn(email, password);
   }
 
   async forgotPassword() {
@@ -91,14 +75,7 @@ export class UserLoginPage implements OnInit {
         {
           text: "Reset password",
           handler: async (result) => {
-            const loading = await this.loadingController.create();
-            await loading.present();
             this.authService.onSendPasswordResetEmail(result.email);
-            await loading.dismiss();
-            this.showAlert(
-              "Success",
-              "Please check your email for further instructions!",
-            );
           },
         },
       ],
@@ -125,28 +102,7 @@ export class UserLoginPage implements OnInit {
         {
           text: "Get an Email SignIn Link",
           handler: async (result) => {
-            const loading = await this.loadingController.create();
-            await loading.present();
-            this.authService
-              .onSendSignInLinkToEmail(result.email)
-              .then(() => {
-                // The link was successfully sent. Inform the user.
-                // Save the email locally so you don't need to ask the user for it again
-                // if they open the link on the same device.
-                window.localStorage.setItem("emailForSignIn", result.email);
-                this.showAlert(
-                  "Success",
-                  "Please check your email for further instructions!",
-                );
-              })
-              .catch((error) => {
-                const errorCode = error.code;
-                const errorMessage = error.message;
-                this.showAlert("Failed", error.message);
-              })
-              .finally(() => {
-                loading.dismiss();
-              });
+            this.authService.onSendSignInLinkToEmail(result.email);
           },
         },
       ],
@@ -154,62 +110,8 @@ export class UserLoginPage implements OnInit {
     await alert.present();
   }
 
-  async signInWithGoogle() {
-    const loading = await this.loadingController.create();
-    await loading.present();
-    this.authService
-      .signInWithGoogle()
-      .then((result) => {
-        // handle successful sign in
-        // Check if the user is new or existing.
-        if (getAdditionalUserInfo(result)?.isNewUser) {
-          // This is a new user
-          this.usersService.createUser({
-            email: result?.user?.email,
-            displayName: result?.user?.displayName,
-            profilePicture: result?.user?.photoURL,
-            emailVerified: result?.user?.emailVerified,
-            bio: "I enjoy volunteering and helping others.",
-            createdAt: Timestamp.now(),
-            lastLoginAt: Timestamp.now(),
-            lastModifiedAt: Timestamp.now(),
-            lastModifiedBy: result?.user?.uid,
-            name: result?.user?.displayName,
-            uid: result?.user?.uid,
-            locale: "en",
-          });
-          this.showAlert(
-            "Success",
-            "You're user account has been successfully created!",
-          );
-        } else {
-          console.log("This is an existing user");
-          this.usersService.updateUser({
-            lastLoginAt: Timestamp.now(),
-            lastModifiedAt: Timestamp.now(),
-            lastModifiedBy: result?.user?.uid,
-            uid: result?.user?.uid,
-          });
-          this.showAlert("Success", "Welcome back!");
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-        // handle sign in error
-        this.showAlert("Failed", error.message);
-      })
-      .finally(() => {
-        loading.dismiss();
-      });
-  }
-
-  async showAlert(title: string, message: string) {
-    const alert = await this.alertController.create({
-      header: title,
-      message: message,
-      buttons: ["OK"],
-    });
-    await alert.present();
+  signInWithGoogle() {
+    this.authService.signInWithGoogle();
   }
 
   goToSignUp() {

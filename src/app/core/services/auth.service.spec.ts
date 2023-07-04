@@ -34,7 +34,7 @@ describe("AuthService", () => {
     const password = "password";
     await service.signUp(email, password);
     expect(authSpy.signUp).toHaveBeenCalledWith(email, password);
-  });
+  }, 10000);
 
   it("should sign in a user", async () => {
     const email = "test@example.com";

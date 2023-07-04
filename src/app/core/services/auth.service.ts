@@ -12,10 +12,17 @@ import {
   signInWithPopup,
   signOut,
   User,
+  getAdditionalUserInfo,
 } from "firebase/auth";
 import {BehaviorSubject} from "rxjs";
 import {Injectable} from "@angular/core";
 import {Router} from "@angular/router";
+import {ErrorHandlerService} from "./error-handler.service";
+import {SuccessHandlerService} from "./success-handler.service";
+import {LoadingController} from "@ionic/angular";
+import {Timestamp} from "firebase/firestore";
+import {UsersService} from "./users.service";
+import {AppUser} from "../../models/user.model";
 
 @Injectable({
   providedIn: "root",
@@ -42,7 +49,13 @@ export class AuthService {
     // dynamicLinkDomain: 'example.page.link'
   };
 
-  constructor(public router: Router) {
+  constructor(
+    private router: Router,
+    private errorHandler: ErrorHandlerService,
+    private loadingController: LoadingController,
+    private successHandler: SuccessHandlerService,
+    private usersService: UsersService,
+  ) {
     this.auth = getAuth();
     onAuthStateChanged(this.auth, (user) => {
       if (user) {
@@ -67,58 +80,163 @@ export class AuthService {
 
   /* SIGN UP METHODS */
   // Sign Up With Email/Password
-  async signUp(email: string, password: string) {
-    try {
-      const result = await createUserWithEmailAndPassword(
-        this.auth,
-        email,
-        password,
-      );
-      return result;
-    } catch (error) {
-      console.log(error);
-      throw error;
+  async signUp(
+    email: string | null | undefined,
+    password: string | null | undefined,
+  ) {
+    if (!email || !password) {
+      // Handle the case where email or password is not provided.
+      this.errorHandler.handleFirebaseAuthError({
+        code: "",
+        message: "Email and password are required!",
+      });
+      return;
     }
+
+    const loading = await this.loadingController.create();
+    await loading.present();
+    createUserWithEmailAndPassword(this.auth, email, password)
+      .then(async (result) => {
+        // Send verification email
+        await this.sendVerificationMail(email);
+        // Set user data
+        const timestamp = Timestamp.now();
+        const user: Partial<AppUser> = {
+          email: email,
+          displayName: "",
+          profilePicture: "",
+          emailVerified: false,
+          bio: "",
+          createdAt: timestamp,
+          lastLoginAt: timestamp,
+          lastModifiedAt: timestamp,
+          lastModifiedBy: result.user.uid,
+          name: "",
+          uid: result.user.uid,
+        };
+        await this.usersService.createUser(user);
+
+        this.successHandler.handleSuccess(
+          "Successfully signed up! Please verify your email.",
+        );
+        this.router.navigate(["user-profile/" + user.uid]);
+      })
+      .catch((error) => {
+        this.errorHandler.handleFirebaseAuthError(error);
+      })
+      .finally(() => {
+        loading.dismiss();
+      });
+  }
+
+  sendVerificationMail(email: string) {
+    sendSignInLinkToEmail(this.auth, email, this.actionCodeSettings)
+      .then(() => {
+        this.successHandler.handleSuccess(
+          "Verification email sent! Please check your inbox.",
+        );
+      })
+      .catch((error) => {
+        this.errorHandler.handleFirebaseAuthError(error);
+      });
   }
 
   /* SIGN IN METHODS */
   // Sign In With Google
-  signInWithGoogle() {
-    return signInWithPopup(this.auth, new GoogleAuthProvider());
+  async signInWithGoogle() {
+    const loading = await this.loadingController.create();
+    await loading.present();
+    signInWithPopup(this.auth, new GoogleAuthProvider())
+      .then((result) => {
+        // handle successful sign in
+        // Check if the user is new or existing.
+        if (getAdditionalUserInfo(result)?.isNewUser) {
+          // This is a new user
+          this.usersService.createUser({
+            email: result?.user?.email,
+            displayName: result?.user?.displayName,
+            profilePicture: result?.user?.photoURL,
+            emailVerified: result?.user?.emailVerified,
+            bio: "I enjoy volunteering and helping others.",
+            createdAt: Timestamp.now(),
+            lastLoginAt: Timestamp.now(),
+            lastModifiedAt: Timestamp.now(),
+            lastModifiedBy: result?.user?.uid,
+            name: result?.user?.displayName,
+            uid: result?.user?.uid,
+            locale: "en",
+          });
+        } else {
+          console.log("This is an existing user");
+          this.usersService.updateUser({
+            lastLoginAt: Timestamp.now(),
+            lastModifiedAt: Timestamp.now(),
+            lastModifiedBy: result?.user?.uid,
+            uid: result?.user?.uid,
+          });
+        }
+        console.log(result);
+        this.successHandler.handleSuccess("Successfully signed in!");
+      })
+      .catch((error) => {
+        this.errorHandler.handleFirebaseAuthError(error);
+      })
+      .finally(() => {
+        loading.dismiss();
+      });
   }
 
   // Sign In With Email/Password
-  async signIn(email: string, password: string) {
-    try {
-      const result = await signInWithEmailAndPassword(
-        this.auth,
-        email,
-        password,
-      );
-      return result;
-    } catch (error) {
-      console.log(error);
-      throw error;
+  async signIn(
+    email: string | null | undefined,
+    password: string | null | undefined,
+  ) {
+    if (!email || !password) {
+      // Handle the case where email or password is not provided.
+      this.errorHandler.handleFirebaseAuthError({
+        code: "",
+        message: "Email and password are required!",
+      });
+      return;
     }
+    const loading = await this.loadingController.create();
+    await loading.present();
+    signInWithEmailAndPassword(this.auth, email, password)
+      .then((result) => {
+        console.log(result);
+        this.successHandler.handleSuccess("Successfully signed in!");
+      })
+      .catch((error) => {
+        this.errorHandler.handleFirebaseAuthError(error);
+      })
+      .finally(() => {
+        loading.dismiss();
+      });
   }
 
   // Email Link Sign In
   async onSendSignInLinkToEmail(email: string) {
-    try {
-      const result = await sendSignInLinkToEmail(
-        this.auth,
-        email,
-        this.actionCodeSettings,
-      );
-      return result;
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
+    const loading = await this.loadingController.create();
+    await loading.present();
+    sendSignInLinkToEmail(this.auth, email, this.actionCodeSettings)
+      .then(() => {
+        window.localStorage.setItem("emailForSignIn", email);
+        this.successHandler.handleSuccess(
+          "Email sent! Check your inbox for the magic link.",
+        );
+      })
+      .catch((error) => {
+        this.errorHandler.handleFirebaseAuthError(error);
+        // Some error occurred, you can inspect the code: error.code
+        // Common errors could be invalid email and invalid or expired OTPs.
+      })
+      .finally(() => {
+        loading.dismiss();
+      });
   }
 
   // Confirm Email Link Sign In
-  onSignInWithEmailLink() {
+  async onSignInWithEmailLink() {
     // Confirm the link is a sign-in with email link.
     if (isSignInWithEmailLink(this.auth, window.location.href)) {
       // Additional state parameters can also be passed via URL.
@@ -134,6 +252,8 @@ export class AuthService {
       }
 
       if (email != null) {
+        const loading = await this.loadingController.create();
+        await loading.present();
         // The client SDK will parse the code from the link for you.
         signInWithEmailLink(this.auth, email, window.location.href)
           .then((result) => {
@@ -145,40 +265,50 @@ export class AuthService {
             // result.additionalUserInfo.profile == null
             // You can check if the user is new or existing:
             // result.additionalUserInfo.isNewUser
+            this.successHandler.handleSuccess("You have been signed in!");
           })
           .catch((error) => {
-            console.log(error);
-            // Some error occurred, you can inspect the code: error.code
-            // Common errors could be invalid email and invalid or expired OTPs.
+            this.errorHandler.handleFirebaseAuthError(error);
+          })
+          .finally(() => {
+            loading.dismiss();
           });
       }
     }
   }
 
   /* SIGN OUT METHOD */
-  signOut() {
-    try {
-      signOut(this.auth)
-        .then(() => {
-          this.router.navigate(["user-login"]);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
+  async signOut() {
+    const loading = await this.loadingController.create();
+    await loading.present();
+    signOut(this.auth)
+      .then(() => {
+        this.successHandler.handleSuccess("You have been signed out!");
+        this.router.navigate(["user-login"]);
+      })
+      .catch((error) => {
+        this.errorHandler.handleFirebaseAuthError(error);
+      })
+      .finally(() => {
+        loading.dismiss();
+      });
   }
 
   /* PASSWORD RESET METHODS */
-  onSendPasswordResetEmail(email: string): Promise<void> {
-    try {
-      const result = sendPasswordResetEmail(this.auth, email);
-      return result;
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
+  async onSendPasswordResetEmail(email: string): Promise<void> {
+    const loading = await this.loadingController.create();
+    await loading.present();
+    sendPasswordResetEmail(this.auth, email)
+      .then(() => {
+        this.successHandler.handleSuccess(
+          "Please check your email for further instructions!",
+        );
+      })
+      .catch((error) => {
+        this.errorHandler.handleFirebaseAuthError(error);
+      })
+      .finally(() => {
+        loading.dismiss();
+      });
   }
 }

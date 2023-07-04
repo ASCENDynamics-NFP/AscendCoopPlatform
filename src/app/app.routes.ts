@@ -87,13 +87,6 @@ export const routes: Routes = [
     canActivate: [SecureInnerPagesGuard],
   },
   {
-    path: "user-password-reset",
-    loadComponent: () =>
-      import(
-        "./modules/user/pages/user-password-reset/user-password-reset.page"
-      ).then((m) => m.UserPasswordResetPage),
-  },
-  {
     path: "user-settings/:uid",
     loadComponent: () =>
       import("./modules/user/pages/user-settings/user-settings.page").then(

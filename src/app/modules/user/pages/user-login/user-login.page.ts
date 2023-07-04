@@ -5,13 +5,14 @@ import {AlertController, IonicModule} from "@ionic/angular";
 import {AuthService} from "../../../../core/services/auth.service";
 import {Router} from "@angular/router";
 import {MenuService} from "../../../../core/services/menu.service";
+import {TranslateModule} from "@ngx-translate/core";
 
 @Component({
   selector: "app-user-login",
   templateUrl: "./user-login.page.html",
   styleUrls: ["./user-login.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
+  imports: [IonicModule, CommonModule, ReactiveFormsModule, TranslateModule],
 })
 export class UserLoginPage implements OnInit {
   loginForm = this.fb.nonNullable.group({

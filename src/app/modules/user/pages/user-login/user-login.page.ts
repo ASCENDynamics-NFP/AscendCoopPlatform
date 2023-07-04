@@ -74,7 +74,7 @@ export class UserLoginPage implements OnInit {
         },
         {
           text: "Reset password",
-          handler: async (result) => {
+          handler: (result) => {
             this.authService.onSendPasswordResetEmail(result.email);
           },
         },
@@ -101,7 +101,7 @@ export class UserLoginPage implements OnInit {
         },
         {
           text: "Get an Email SignIn Link",
-          handler: async (result) => {
+          handler: (result) => {
             this.authService.onSendSignInLinkToEmail(result.email);
           },
         },

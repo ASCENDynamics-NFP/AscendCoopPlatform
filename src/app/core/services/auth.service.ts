@@ -22,6 +22,7 @@ import {SuccessHandlerService} from "./success-handler.service";
 import {LoadingController} from "@ionic/angular";
 import {Timestamp} from "firebase/firestore";
 import {UsersService} from "./users.service";
+import {AppUser} from "../../models/user.model";
 
 @Injectable({
   providedIn: "root",
@@ -79,18 +80,60 @@ export class AuthService {
 
   /* SIGN UP METHODS */
   // Sign Up With Email/Password
-  async signUp(email: string, password: string) {
-    try {
-      const result = await createUserWithEmailAndPassword(
-        this.auth,
-        email,
-        password,
-      );
-      return result;
-    } catch (error) {
-      console.log(error);
-      throw error;
+  async signUp(email: string | null | undefined, password: string | null | undefined) {
+    if (!email || !password) {
+      // Handle the case where email or password is not provided.
+      this.errorHandler.handleFirebaseAuthError({
+        code: "",
+        message: "Email and password are required!",
+      });
+      return;
     }
+
+    const loading = await this.loadingController.create();
+    await loading.present();
+    createUserWithEmailAndPassword(this.auth, email, password)
+      .then(async (result) => {
+        // Send verification email
+        await this.sendVerificationMail(email);
+        // Set user data
+        const timestamp = Timestamp.now();
+        const user: Partial<AppUser> = {
+          email: email,
+          displayName: "",
+          profilePicture: "",
+          emailVerified: false,
+          bio: "",
+          createdAt: timestamp,
+          lastLoginAt: timestamp,
+          lastModifiedAt: timestamp,
+          lastModifiedBy: result.user.uid,
+          name: "",
+          uid: result.user.uid,
+        };
+        await this.usersService.createUser(user);
+
+        this.successHandler.handleSuccess(
+          "Successfully signed up! Please verify your email.",
+        );
+        this.router.navigate(["user-profile/" + user.uid]);
+      })
+      .catch((error) => {
+        this.errorHandler.handleFirebaseAuthError(error);
+      })
+      .finally(() => {
+        loading.dismiss();
+      });
+  }
+
+  sendVerificationMail(email: string) {  // Not sure if this is needed, need to check if email is sent automatically
+    sendSignInLinkToEmail(this.auth, email, this.actionCodeSettings)
+      .then(() => {
+        this.successHandler.handleSuccess("Verification email sent! Please check your inbox.");
+      })
+      .catch((error) => {
+        this.errorHandler.handleFirebaseAuthError(error);
+      });
   }
 
   /* SIGN IN METHODS */

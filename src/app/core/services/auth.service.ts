@@ -80,7 +80,10 @@ export class AuthService {
 
   /* SIGN UP METHODS */
   // Sign Up With Email/Password
-  async signUp(email: string | null | undefined, password: string | null | undefined) {
+  async signUp(
+    email: string | null | undefined,
+    password: string | null | undefined,
+  ) {
     if (!email || !password) {
       // Handle the case where email or password is not provided.
       this.errorHandler.handleFirebaseAuthError({
@@ -126,10 +129,12 @@ export class AuthService {
       });
   }
 
-  sendVerificationMail(email: string) {  // Not sure if this is needed, need to check if email is sent automatically
+  sendVerificationMail(email: string) {
     sendSignInLinkToEmail(this.auth, email, this.actionCodeSettings)
       .then(() => {
-        this.successHandler.handleSuccess("Verification email sent! Please check your inbox.");
+        this.successHandler.handleSuccess(
+          "Verification email sent! Please check your inbox.",
+        );
       })
       .catch((error) => {
         this.errorHandler.handleFirebaseAuthError(error);

@@ -271,6 +271,14 @@ export class ErrorHandlerService {
       message:
         "There is no existing user record corresponding to the provided identifier.",
     },
+    "auth/wrong-password": {
+        title: "Oops! Slippery Fingers?",
+        message: "The password you've entered is incorrect. Don't worry, we all forget sometimes! Try again, and remember, your password is case sensitive."
+    },
+    "auth/invalid-action-code": {
+        title: "Hmm, That's a Puzzling Code",
+        message: "The action code in your link seems to be incorrect or expired. Make sure you've copied it right or request a new one!"
+    }
   };
 
   constructor(private toastController: ToastController) {}

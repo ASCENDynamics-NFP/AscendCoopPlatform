@@ -3,21 +3,23 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>User Signup</ion-title>
+    <ion-title translate>user.signup.title</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">User Signup</ion-title>
+      <ion-title size="large" translate>user.signup.title</ion-title>
     </ion-toolbar>
   </ion-header>
   <ion-card>
     <ion-card-content>
       <form [formGroup]="signupForm" (ngSubmit)="signup()">
         <ion-item>
-          <ion-label position="stacked"> Email: </ion-label>
+          <ion-label position="stacked" translate
+            >user.signup.email_label
+          </ion-label>
           <ion-input
             type="email"
             inputmode="email"
@@ -26,11 +28,14 @@
           <ion-note
             slot="error"
             *ngIf="(signupForm.controls.email.dirty || signupForm.controls.email.touched) && signupForm.controls.email.errors"
-            >Please insert your email</ion-note
+            translate
+            >user.signup.email_error</ion-note
           >
         </ion-item>
         <ion-item>
-          <ion-label position="stacked"> Password: </ion-label>
+          <ion-label position="stacked" translate>
+            user.signup.password_label
+          </ion-label>
           <ion-input
             type="password"
             inputmode="text"
@@ -39,7 +44,8 @@
           <ion-note
             slot="error"
             *ngIf="(signupForm.controls.password.dirty || signupForm.controls.password.touched) && signupForm.controls.password.errors"
-            >Please insert valid password</ion-note
+            translate
+            >user.signup.password_error</ion-note
           >
         </ion-item>
         <ion-button
@@ -47,7 +53,8 @@
           expend="block"
           strong="true"
           [disabled]="signupForm.invalid"
-          >Sign Up</ion-button
+          translate
+          >user.signup.submit</ion-button
         >
       </form>
     </ion-card-content>

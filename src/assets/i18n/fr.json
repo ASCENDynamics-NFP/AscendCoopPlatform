@@ -1,6 +1,40 @@
 {
+  "Login": "Connexion",
+  "Sign Up": "Inscription",
+  "Group List": "Liste de groupes",
+  "Group Profile": "Profil du groupe",
+  "Group Create": "Créer un groupe",
+  "Group Detail": "Détail du groupe",
+  "Group Members": "Membres du groupe",
+  "Group Edit": "Modifier le groupe",
+  "Profile": "Profil",
+  "Settings": "Paramètres",
+  "Dashboard": "Tableau de bord",
+  "menu": {
+    "title": "ASCENDynamics NFP"
+  },
   "user": {
-    "welcome_message": "Bienvenue dans notre application!",
-    "logout": "Se déconnecter"
-  }
+    "login": {
+      "title": "Connexion",
+      "email_label": "Email:",
+      "email_error": "Veuillez insérer votre email",
+      "password_label": "Mot de passe:",
+      "password_error": "Veuillez insérer un mot de passe valide",
+      "submit": "Connexion",
+      "forgot_password": "Mot de passe oublié?",
+      "create_account": "Créer un compte",
+      "email_signin_link": "Obtenir le lien de connexion par email",
+      "google_login": "Connexion avec Google"
+    },
+    "signup": {
+      "title": "Inscription",
+      "email_label": "Email:",
+      "email_error": "Veuillez insérer votre email",
+      "password_label": "Mot de passe:",
+      "password_error": "Veuillez insérer un mot de passe valide",
+      "submit": "S'inscrire",
+      "login": "Connexion"
+    }
+  },
+  "group": {}
 }

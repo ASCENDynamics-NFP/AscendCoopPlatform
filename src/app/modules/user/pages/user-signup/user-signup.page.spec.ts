@@ -2,10 +2,12 @@ import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {UserSignupPage} from "./user-signup.page";
 import {AuthService} from "../../../../core/services/auth.service";
 import {of} from "rxjs";
+import {TranslateModule, TranslateService} from "@ngx-translate/core";
 
 describe("UserSignupPage", () => {
   let component: UserSignupPage;
   let fixture: ComponentFixture<UserSignupPage>;
+  let translate: TranslateService;
 
   const mockAuthService = {
     // Add the methods used in your component here.
@@ -16,12 +18,16 @@ describe("UserSignupPage", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [UserSignupPage],
-      providers: [{provide: AuthService, useValue: mockAuthService}],
+      imports: [UserSignupPage, TranslateModule.forRoot()],
+      providers: [
+        {provide: AuthService, useValue: mockAuthService},
+        TranslateService,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(UserSignupPage);
     component = fixture.componentInstance;
+    translate = TestBed.inject(TranslateService); // inject TranslateService
     fixture.detectChanges();
   }));
 

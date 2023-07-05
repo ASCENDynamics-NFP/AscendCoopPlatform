@@ -5,13 +5,14 @@ import {IonicModule} from "@ionic/angular";
 import {Router} from "@angular/router";
 import {AuthService} from "../../../../core/services/auth.service";
 import {MenuService} from "../../../../core/services/menu.service";
+import {TranslateModule} from "@ngx-translate/core";
 
 @Component({
   selector: "app-user-signup",
   templateUrl: "./user-signup.page.html",
   styleUrls: ["./user-signup.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
+  imports: [IonicModule, CommonModule, ReactiveFormsModule, TranslateModule],
 })
 export class UserSignupPage {
   signupForm = this.fb.nonNullable.group({

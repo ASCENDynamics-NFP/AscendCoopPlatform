@@ -1,7 +1,10 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {UserSettingsPage} from "./user-settings.page";
-import {TranslateService} from "@ngx-translate/core";
-import {TranslateModule, TranslateLoader} from "@ngx-translate/core";
+import {
+  TranslateService,
+  TranslateModule,
+  TranslateLoader,
+} from "@ngx-translate/core";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {HttpClient} from "@angular/common/http";
 import {createTranslateLoader} from "../../../../app.component.spec";

@@ -31,7 +31,7 @@ export class FriendRequestComponent implements OnInit {
       this.requestService
         .getRequestsByReceiverId(this.user.uid)
         .then((requests) => {
-          console.log(requests);
+          console.log("requests", requests);
           this.friendRequestList = requests;
         });
     }

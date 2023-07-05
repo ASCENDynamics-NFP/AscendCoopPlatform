@@ -15,6 +15,8 @@ import {
   or,
   and,
 } from "firebase/firestore";
+import { prepareDataForCreate, prepareDataForUpdate } from "../utils/firebase.util";
+import { AuthService } from "./auth.service";
 
 @Injectable({
   providedIn: "root",
@@ -22,13 +24,13 @@ import {
 export class GroupsService {
   private collectionName = "groups";
 
-  constructor(private firestoreService: FirestoreService) {}
+  constructor(private authService: AuthService, private firestoreService: FirestoreService) {}
 
   async createGroup(group: Group): Promise<string | null> {
     try {
       const documentRef = await addDoc(
         collection(this.firestoreService.firestore, this.collectionName),
-        group,
+        prepareDataForCreate(group, this.authService.getCurrentUser()?.uid),
       );
       return documentRef.id;
     } catch (error) {
@@ -60,7 +62,7 @@ export class GroupsService {
     try {
       await updateDoc(
         doc(this.firestoreService.firestore, this.collectionName, groupId),
-        group,
+        prepareDataForUpdate(group, this.authService.getCurrentUser()?.uid),
       );
     } catch (error) {
       console.error("Error updating document: ", error);

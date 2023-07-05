@@ -13,6 +13,7 @@ import {
   signOut,
   User,
   getAdditionalUserInfo,
+  UserCredential,
 } from "firebase/auth";
 import {BehaviorSubject} from "rxjs";
 import {Injectable} from "@angular/core";
@@ -22,7 +23,6 @@ import {SuccessHandlerService} from "./success-handler.service";
 import {LoadingController} from "@ionic/angular";
 import {Timestamp} from "firebase/firestore";
 import {UsersService} from "./users.service";
-import {AppUser} from "../../models/user.model";
 
 @Injectable({
   providedIn: "root",
@@ -101,25 +101,21 @@ export class AuthService {
         await this.sendVerificationMail(email);
         // Set user data
         const timestamp = Timestamp.now();
-        const user: Partial<AppUser> = {
+        await this.usersService.createUser({
           email: email,
           displayName: "",
           profilePicture: "",
           emailVerified: false,
           bio: "",
-          createdAt: timestamp,
           lastLoginAt: timestamp,
-          lastModifiedAt: timestamp,
-          lastModifiedBy: result.user.uid,
           name: "",
           uid: result.user.uid,
-        };
-        await this.usersService.createUser(user);
+        });
 
         this.successHandler.handleSuccess(
           "Successfully signed up! Please verify your email.",
         );
-        this.router.navigate(["user-profile/" + user.uid]);
+        this.router.navigate(["user-profile/" + result.user.uid]);
       })
       .catch((error) => {
         this.errorHandler.handleFirebaseAuthError(error);
@@ -152,30 +148,12 @@ export class AuthService {
         // Check if the user is new or existing.
         if (getAdditionalUserInfo(result)?.isNewUser) {
           // This is a new user
-          this.usersService.createUser({
-            email: result?.user?.email,
-            displayName: result?.user?.displayName,
-            profilePicture: result?.user?.photoURL,
-            emailVerified: result?.user?.emailVerified,
-            bio: "I enjoy volunteering and helping others.",
-            createdAt: Timestamp.now(),
-            lastLoginAt: Timestamp.now(),
-            lastModifiedAt: Timestamp.now(),
-            lastModifiedBy: result?.user?.uid,
-            name: result?.user?.displayName,
-            uid: result?.user?.uid,
-            locale: "en",
-          });
+          this.onLoginCreateUserRecord(result);
         } else {
           console.log("This is an existing user");
-          this.usersService.updateUser({
-            lastLoginAt: Timestamp.now(),
-            lastModifiedAt: Timestamp.now(),
-            lastModifiedBy: result?.user?.uid,
-            uid: result?.user?.uid,
-          });
+          this.onLoginUpdateUserRecord(result?.user?.uid);
         }
-        console.log(result);
+        // console.log(result);
         this.successHandler.handleSuccess("Successfully signed in!");
       })
       .catch((error) => {
@@ -203,7 +181,7 @@ export class AuthService {
     await loading.present();
     signInWithEmailAndPassword(this.auth, email, password)
       .then((result) => {
-        console.log(result);
+        this.onLoginUpdateUserRecord(result?.user?.uid);
         this.successHandler.handleSuccess("Successfully signed in!");
       })
       .catch((error) => {
@@ -266,6 +244,7 @@ export class AuthService {
             // You can check if the user is new or existing:
             // result.additionalUserInfo.isNewUser
             this.successHandler.handleSuccess("You have been signed in!");
+            this.onLoginUpdateUserRecord(result?.user?.uid);
           })
           .catch((error) => {
             this.errorHandler.handleFirebaseAuthError(error);
@@ -310,5 +289,26 @@ export class AuthService {
       .finally(() => {
         loading.dismiss();
       });
+  }
+
+  onLoginUpdateUserRecord(userId: string) {
+    this.usersService.updateUser({
+      lastLoginAt: Timestamp.now(),
+      uid: userId,
+    });
+  }
+
+  onLoginCreateUserRecord(record: UserCredential) {
+    this.usersService.createUser({
+      email: record?.user?.email,
+      displayName: record?.user?.displayName,
+      profilePicture: record?.user?.photoURL,
+      emailVerified: record?.user?.emailVerified,
+      bio: "I enjoy volunteering and helping others.",
+      lastLoginAt: Timestamp.now(),
+      name: record?.user?.displayName,
+      uid: record?.user?.uid,
+      locale: "en",
+    });
   }
 }

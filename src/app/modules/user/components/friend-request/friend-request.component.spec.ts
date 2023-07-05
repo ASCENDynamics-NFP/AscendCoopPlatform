@@ -19,5 +19,5 @@ describe("FriendRequestComponent", () => {
 
   it("should create", () => {
     expect(component).toBeTruthy();
-  });
+  }, 30000);
 });

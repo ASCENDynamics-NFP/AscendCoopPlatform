@@ -2,7 +2,7 @@ import {Timestamp} from "@angular/fire/firestore";
 
 // Preparing data before creating a new document in Firestore
 export function prepareDataForCreate(data: any, userId: string | undefined) {
-  if(!userId) throw new Error("User must have a uid");
+  if (!userId) throw new Error("User must have a uid");
   const timestamp = Timestamp.now();
   return {
     ...data,
@@ -15,7 +15,7 @@ export function prepareDataForCreate(data: any, userId: string | undefined) {
 
 // Preparing data before updating an existing document in Firestore
 export function prepareDataForUpdate(data: any, userId: string | undefined) {
-  if(!userId) throw new Error("User must have a uid");
+  if (!userId) throw new Error("User must have a uid");
   const timestamp = Timestamp.now();
   return {
     ...data,

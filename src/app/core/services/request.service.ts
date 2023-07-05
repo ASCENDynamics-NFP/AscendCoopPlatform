@@ -11,6 +11,11 @@ import {
   addDoc,
 } from "firebase/firestore";
 import {AppRequest} from "../../models/request.model";
+import {
+  prepareDataForCreate,
+  prepareDataForUpdate,
+} from "../utils/firebase.util";
+import {AuthService} from "./auth.service";
 
 @Injectable({
   providedIn: "root",
@@ -18,14 +23,20 @@ import {AppRequest} from "../../models/request.model";
 export class RequestService {
   private collectionName = "requests";
 
-  constructor(private firestoreService: FirestoreService) {}
+  constructor(
+    private firestoreService: FirestoreService,
+    private authService: AuthService,
+  ) {}
 
-  async sendRequest(requestBody: AppRequest) {
+  async sendRequest(requestData: Partial<AppRequest>) {
     try {
-      console.log(requestBody);
+      console.log(requestData);
       const documentRef = await addDoc(
         collection(this.firestoreService.firestore, this.collectionName),
-        requestBody,
+        prepareDataForCreate(
+          requestData,
+          this.authService.getCurrentUser()?.uid,
+        ),
       );
       return documentRef.id;
     } catch (error) {
@@ -39,7 +50,7 @@ export class RequestService {
     try {
       await updateDoc(
         doc(this.firestoreService.firestore, this.collectionName, id),
-        {status},
+        prepareDataForUpdate({status}, this.authService.getCurrentUser()?.uid),
       );
       console.log("Request status updated successfully!");
     } catch (error) {

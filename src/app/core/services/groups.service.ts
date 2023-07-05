@@ -15,8 +15,11 @@ import {
   or,
   and,
 } from "firebase/firestore";
-import { prepareDataForCreate, prepareDataForUpdate } from "../utils/firebase.util";
-import { AuthService } from "./auth.service";
+import {
+  prepareDataForCreate,
+  prepareDataForUpdate,
+} from "../utils/firebase.util";
+import {AuthService} from "./auth.service";
 
 @Injectable({
   providedIn: "root",
@@ -24,7 +27,10 @@ import { AuthService } from "./auth.service";
 export class GroupsService {
   private collectionName = "groups";
 
-  constructor(private authService: AuthService, private firestoreService: FirestoreService) {}
+  constructor(
+    private authService: AuthService,
+    private firestoreService: FirestoreService,
+  ) {}
 
   async createGroup(group: Group): Promise<string | null> {
     try {

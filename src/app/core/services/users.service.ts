@@ -15,6 +15,10 @@ import {
   limit,
   setDoc,
 } from "firebase/firestore";
+import {
+  prepareDataForCreate,
+  prepareDataForUpdate,
+} from "../utils/firebase.util";
 
 @Injectable({
   providedIn: "root",
@@ -27,7 +31,10 @@ export class UsersService {
   createUser(user: Partial<AppUser>): void {
     if (!user.uid) throw new Error("User must have a uid");
     // Create a user document in Firestore
-    setDoc(doc(this.firestoreService.firestore, "users", user.uid), user)
+    setDoc(
+      doc(this.firestoreService.firestore, "users", user.uid),
+      prepareDataForCreate(user, user.uid),
+    )
       .then(() => {
         console.log("User successfully written!");
       })
@@ -62,8 +69,8 @@ export class UsersService {
     if (!user.uid) throw new Error("User must have a uid");
     try {
       await updateDoc(
-        doc(this.firestoreService.firestore, this.collectionName, user?.uid),
-        user,
+        doc(this.firestoreService.firestore, this.collectionName, user.uid),
+        prepareDataForUpdate(user, user.uid),
       );
     } catch (error) {
       console.error("Error updating document: ", error);

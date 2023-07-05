@@ -6,7 +6,7 @@ import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {User} from "firebase/auth";
 import {UsersService} from "../../../../core/services/users.service";
-import {DocumentData, Timestamp} from "firebase/firestore";
+import {DocumentData} from "firebase/firestore";
 
 @Component({
   selector: "app-friend-request",
@@ -31,7 +31,7 @@ export class FriendRequestComponent implements OnInit {
       this.requestService
         .getRequestsByReceiverId(this.user.uid)
         .then((requests) => {
-          console.log(requests);
+          console.log("requests", requests);
           this.friendRequestList = requests;
         });
     }
@@ -45,7 +45,8 @@ export class FriendRequestComponent implements OnInit {
   }
 
   sendFriendRequest(user: DocumentData) {
-    let friendRequest: AppRequest = {
+    // this is a simplification, you'll likely have more complex logic here
+    this.requestService.sendRequest({
       id: null,
       senderId: this.user?.uid ? this.user.uid : "",
       receiverId: user["uid"],
@@ -54,13 +55,7 @@ export class FriendRequestComponent implements OnInit {
       name: user["displayName"],
       image: user["profilePicture"],
       description: user["bio"],
-      createdBy: this.user?.uid ? this.user.uid : "",
-      createdAt: Timestamp.now(),
-      lastModifiedBy: this.user?.uid ? this.user.uid : "",
-      lastModifiedAt: Timestamp.now(),
-    };
-    // this is a simplification, you'll likely have more complex logic here
-    this.requestService.sendRequest(friendRequest);
+    });
   }
 
   acceptFriendRequest(index: number) {

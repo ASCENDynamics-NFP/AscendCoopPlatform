@@ -56,6 +56,7 @@ export class RequestService {
       });
   }
 
+  
   async updateRequestStatus(id: string | null, status: string) {
     if (!id) throw new Error("Id must be provided");
     const loading = await this.loadingController.create();

@@ -1,0 +1,20 @@
+<ion-card>
+  <ion-card-header>
+    <ion-card-title>Group Memberships</ion-card-title>
+    <ion-card-subtitle>5 groups</ion-card-subtitle>
+  </ion-card-header>
+  <ion-card-content>
+    <ion-list>
+      <ion-item *ngFor="let group of groupList | slice:0:4; let i = index" button (click)="goToGroupPage(group['id'])">
+        <ion-thumbnail slot="start">
+          <img *ngIf="group['profilePicture']" [alt]="group['name']" [src]="group['profilePicture']" />
+        </ion-thumbnail>
+        <ion-label>
+          <h3>{{ group["name"] }}</h3>
+          <p>Member</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </ion-card-content>
+  <ion-button fill="clear" (click)="goToGroupList()">View All</ion-button>
+</ion-card>

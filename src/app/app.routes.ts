@@ -71,6 +71,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: "user-profile/:uid/friends",
+    loadComponent: () =>
+      import("./modules/user/pages/friends/friends.page").then(
+        (m) => m.FriendsPage,
+      ),
+  },
+  {
     path: "user-signup",
     loadComponent: () =>
       import("./modules/user/pages/user-signup/user-signup.page").then(
@@ -93,5 +100,12 @@ export const routes: Routes = [
         (m) => m.UserSettingsPage,
       ),
     canActivate: [AuthGuard],
+  },
+  {
+    path: "friends",
+    loadComponent: () =>
+      import("./modules/user/pages/friends/friends.page").then(
+        (m) => m.FriendsPage,
+      ),
   },
 ];

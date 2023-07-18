@@ -1,0 +1,21 @@
+<ion-card>
+  <ion-card-header>
+    <ion-card-title>Friends</ion-card-title>
+    <ion-card-subtitle>5 friends</ion-card-subtitle>
+  </ion-card-header>
+  <ion-card-content>
+    <ion-list>
+      <ion-item *ngFor="let friend of friendList | slice:0:4; let i = index" button
+        (click)="goToUserProfile(friend['uid'])">
+        <ion-thumbnail slot="start">
+          <img *ngIf="friend['profilePicture']" [alt]="friend['name']" [src]="friend['profilePicture']" />
+        </ion-thumbnail>
+        <ion-label>
+          <h3>{{ friend["name"] }}</h3>
+          <p>Friend</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </ion-card-content>
+  <ion-button fill="clear" (click)="goToFriendList()">View All</ion-button>
+</ion-card>

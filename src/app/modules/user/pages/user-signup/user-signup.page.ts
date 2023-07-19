@@ -32,7 +32,7 @@ export class UserSignupPage {
     this.authService.user$.subscribe((user) => {
       if (user) {
         console.log("GOT USER ON SIGN UP");
-        this.router.navigateByUrl("/user-dashboard", {replaceUrl: true});
+        this.router.navigateByUrl("/user-profile/" + user.uid, {replaceUrl: true});
       }
     });
   }

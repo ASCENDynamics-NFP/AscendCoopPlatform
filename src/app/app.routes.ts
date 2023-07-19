@@ -107,9 +107,11 @@ export const routes: Routes = [
       import("./modules/user/pages/friends/friends.page").then(
         (m) => m.FriendsPage,
       ),
+      canActivate: [AuthGuard],
   },
   {
     path: 'users',
-    loadComponent: () => import('./modules/user/pages/users/users.page').then( m => m.UsersPage)
+    loadComponent: () => import('./modules/user/pages/users/users.page').then( m => m.UsersPage),
+    canActivate: [AuthGuard],
   },
 ];

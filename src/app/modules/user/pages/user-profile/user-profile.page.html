@@ -21,7 +21,11 @@
     </ion-row>
     <ion-row>
       <ion-col>
-        <app-details *ngIf="user" [user]="user"></app-details></ion-col>
+        <ion-row>
+          <ion-col>
+            <app-details *ngIf="user" [user]="user"></app-details></ion-col>
+        </ion-row>
+      </ion-col>
       <ion-col>
         <ion-row>
           <ion-col><app-group-membership-list *ngIf="groupIdList"

@@ -108,4 +108,8 @@ export const routes: Routes = [
         (m) => m.FriendsPage,
       ),
   },
+  {
+    path: 'users',
+    loadComponent: () => import('./modules/user/pages/users/users.page').then( m => m.UsersPage)
+  },
 ];

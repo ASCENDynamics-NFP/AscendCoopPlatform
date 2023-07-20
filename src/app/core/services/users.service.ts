@@ -14,6 +14,8 @@ import {
   orderBy,
   limit,
   setDoc,
+  or,
+  and,
 } from "firebase/firestore";
 import {
   prepareDataForCreate,
@@ -115,5 +117,51 @@ export class UsersService {
       console.error("Error retrieving collection: ", error);
       return null;
     }
+  }
+
+  searchUsersByName(searchTerm: string): Promise<DocumentData[] | null> {
+    return getDocs(
+      query(
+        collection(this.firestoreService.firestore, this.collectionName),
+        or(
+          // query as-is:
+          and(
+            where("name", ">=", searchTerm),
+            where("name", "<=", searchTerm + "\uf8ff"),
+          ),
+          // capitalize first letter:
+          and(
+            where(
+              "name",
+              ">=",
+              searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1),
+            ),
+            where(
+              "name",
+              "<=",
+              searchTerm.charAt(0).toUpperCase() +
+                searchTerm.slice(1) +
+                "\uf8ff",
+            ),
+          ),
+          // lowercase:
+          and(
+            where("name", ">=", searchTerm.toLowerCase()),
+            where("name", "<=", searchTerm.toLowerCase() + "\uf8ff"),
+          ),
+        ),
+      ),
+    )
+      .then((querySnapshot) => {
+        const documents: DocumentData[] = [];
+        querySnapshot.forEach((doc) => {
+          documents.push(doc.data());
+        });
+        return documents;
+      })
+      .catch((error) => {
+        console.error("Error retrieving collection: ", error);
+        return null;
+      });
   }
 }

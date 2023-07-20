@@ -74,4 +74,15 @@ export class UsersPage implements OnInit {
       this.router.navigate([`/user-profile/${uid}`]);
     }
   }
+
+  searchUsers(event: any) {
+    const value = event.target.value;
+    console.log("value", value);
+    this.usersService
+      .searchUsersByName(value)
+      .then((users) => {
+        console.log("userList", users);
+        this.userList = users;
+      });
+  }
 }

@@ -15,6 +15,9 @@
     <ion-row>
       <ion-col>
         <ion-card>
+          <ion-card-header>
+            <ion-searchbar [debounce]="1000" (ionInput)="searchUsers($event)"></ion-searchbar>
+          </ion-card-header>
           <ion-list>
             <ion-item *ngFor="let user of userList; let i = index" button>
               <ion-thumbnail slot="start">

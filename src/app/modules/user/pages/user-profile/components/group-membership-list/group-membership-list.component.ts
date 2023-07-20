@@ -3,6 +3,7 @@ import {Router} from "@angular/router";
 import {IonicModule} from "@ionic/angular";
 import {CommonModule} from "@angular/common";
 import {AppRelationship} from "../../../../../../models/relationship.model";
+import {User} from "firebase/auth";
 
 @Component({
   selector: "app-group-membership-list",
@@ -12,7 +13,7 @@ import {AppRelationship} from "../../../../../../models/relationship.model";
   imports: [IonicModule, CommonModule],
 })
 export class GroupMembershipListComponent implements OnInit {
-  @Input() uid: string | null = null; // define your user id here
+  @Input() user: User | null = null; // define your user here
   @Input() groupList: AppRelationship[] = []; // define your user here
 
   constructor(private router: Router) {}
@@ -22,7 +23,7 @@ export class GroupMembershipListComponent implements OnInit {
   get allGroups() {
     let allGroups = [];
     for (let group of this.groupList) {
-      if (group.senderId === this.uid) {
+      if (group.senderId === this.user?.uid) {
         allGroups.push({
           id: group.receiverId,
           name: group.receiverName,

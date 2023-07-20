@@ -52,7 +52,10 @@ export class UserProfilePage implements OnInit {
             relationship.status === "accepted"
           ) {
             this.friendList.push(relationship);
-          } else if (relationship.type === "group") {
+          } else if (
+            relationship.type === "member" &&
+            relationship.status === "accepted"
+          ) {
             this.groupList.push(relationship);
           }
         }

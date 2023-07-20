@@ -18,14 +18,7 @@ export class FriendListComponent implements OnInit {
   @Input() friendList: Partial<AppRelationship>[] = [];
   constructor(private router: Router, private usersService: UsersService) {}
 
-  ngOnInit() {
-    // this.usersService
-    //   .getUsersWithCondition("name", "!=", null, "name", 5)
-    //   .then((users) => {
-    //     console.log("userList", users);
-    //     this.friendList = users;
-    //   });
-  }
+  ngOnInit() {}
 
   get allFriends() {
     let allFriends = [];

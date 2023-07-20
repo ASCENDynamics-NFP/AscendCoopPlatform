@@ -32,17 +32,6 @@ export class UsersPage implements OnInit {
   } // inject your Firebase service
 
   ngOnInit(): void {
-    // console.log(this.user);
-    // if (this.user?.uid) {
-    //   console.log(this.user.uid);
-    //   this.requestService
-    //     .getRequestsByReceiverId(this.user.uid)
-    //     .then((requests) => {
-    //       console.log("requests", requests);
-    //       this.friendRequestList = requests;
-    //     });
-    // }
-
     this.usersService
       .getUsersWithCondition("displayName", "!=", null, "displayName", 100)
       .then((users) => {

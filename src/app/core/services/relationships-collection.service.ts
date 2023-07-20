@@ -59,13 +59,19 @@ export class RelationshipsCollectionService {
       });
   }
 
-  async updateRequestStatus(id: string | null, status: string) {
+  async updateRelationship(
+    id: string | null,
+    relationship: Partial<AppRelationship>,
+  ) {
     if (!id) throw new Error("Id must be provided");
     const loading = await this.loadingController.create();
     await loading.present();
     await updateDoc(
       doc(this.firestoreService.firestore, this.collectionName, id),
-      prepareDataForUpdate({status}, this.authService.getCurrentUser()?.uid),
+      prepareDataForUpdate(
+        relationship,
+        this.authService.getCurrentUser()?.uid,
+      ),
     )
       .then(() => {
         this.successHandler.handleSuccess(
@@ -148,5 +154,10 @@ export class RelationshipsCollectionService {
       .finally(() => {
         loading.dismiss();
       });
+  }
+
+  deleteRelationship(id: string | null) {
+    if (!id) throw new Error("Id must be provided");
+    return this.firestoreService.deleteDocument(this.collectionName, id);
   }
 }

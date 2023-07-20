@@ -1,7 +1,6 @@
 import {Component, Input, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
-import {UsersService} from "../../../../../../core/services/users.service";
 import {Router} from "@angular/router";
 import {User} from "firebase/auth";
 import {AppRelationship} from "../../../../../../models/relationship.model";
@@ -16,7 +15,7 @@ import {AppRelationship} from "../../../../../../models/relationship.model";
 export class FriendListComponent implements OnInit {
   @Input() user: User | null = null; // define your user here
   @Input() friendList: Partial<AppRelationship>[] = [];
-  constructor(private router: Router, private usersService: UsersService) {}
+  constructor(private router: Router) {}
 
   ngOnInit() {}
 

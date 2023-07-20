@@ -1,13 +1,105 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>friends</ion-title>
+    <ion-title>Friends</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">friends</ion-title>
+      <ion-title size="large">Friends</ion-title>
     </ion-toolbar>
   </ion-header>
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Friends</ion-card-title>
+            <ion-card-subtitle
+              >{{ currentFriendsList.length }} friends</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-list>
+            <ion-item
+              *ngFor="let friend of currentFriendsList; let i = index"
+              button
+            >
+              <ion-thumbnail slot="start">
+                <img
+                  *ngIf="friend['name']"
+                  [alt]="friend['name']"
+                  [src]="friend['name']"
+                />
+              </ion-thumbnail>
+              <ion-label>
+                <h3>{{ friend["name"] }}</h3>
+                <p>{{ friend["bio"] }}</p>
+              </ion-label>
+              <ion-button
+                slot="end"
+                expand="full"
+                (click)="goToProfile(friend['userId'])"
+                >View</ion-button
+              >
+            </ion-item>
+          </ion-list>
+        </ion-card>
+        <ion-card *ngIf="pendingFriendsList.length">
+          <ion-card-header>
+            <ion-card-title>Friends</ion-card-title>
+            <ion-card-subtitle
+              >{{ pendingFriendsList.length }} pending
+              friends</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-list>
+            <ion-item
+              *ngFor="let friend of pendingFriendsList; let i = index"
+              button
+            >
+              <ion-thumbnail slot="start">
+                <img
+                  *ngIf="friend['name']"
+                  [alt]="friend['name']"
+                  [src]="friend['name']"
+                />
+              </ion-thumbnail>
+              <ion-label>
+                <h3>{{ friend["name"] }}</h3>
+                <p>{{ friend["bio"] }}</p>
+              </ion-label>
+              <ion-button
+                slot="end"
+                expand="full"
+                (click)="goToProfile(friend['userId'])"
+                >View</ion-button
+              >
+              <ion-button
+                *ngIf="friend['showAcceptRejectButtons']"
+                slot="end"
+                expand="full"
+                (click)="acceptFriendRequest(friend)"
+                >Accept</ion-button
+              >
+              <ion-button
+                *ngIf="friend['showAcceptRejectButtons']"
+                slot="end"
+                expand="full"
+                (click)="rejectFriendRequest(friend)"
+                >Reject</ion-button
+              >
+              <ion-button
+                *ngIf="friend['showRemoveButton']"
+                slot="end"
+                expand="full"
+                (click)="removeFriendRequest(friend)"
+                >Remove</ion-button
+              >
+            </ion-item>
+          </ion-list>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>

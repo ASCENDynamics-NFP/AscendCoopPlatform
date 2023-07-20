@@ -29,7 +29,6 @@ import {AppRelationship} from "../../../../models/relationship.model";
 })
 export class UserProfilePage implements OnInit {
   user: any;
-  groupIdList: [] = []; // define your user here
   friendList: AppRelationship[] = [];
   groupList: AppRelationship[] = [];
   constructor(
@@ -73,7 +72,6 @@ export class UserProfilePage implements OnInit {
       .getUser(this.route.snapshot.paramMap.get("uid"))
       .then((data) => {
         this.user = data;
-        this.groupIdList = []; //data?.['groupIdList'];
         console.log(data);
       })
       .catch((error) => {

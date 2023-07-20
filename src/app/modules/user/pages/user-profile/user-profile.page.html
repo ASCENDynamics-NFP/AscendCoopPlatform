@@ -23,16 +23,28 @@
       <ion-col>
         <ion-row>
           <ion-col>
-            <app-details *ngIf="user" [user]="user"></app-details></ion-col>
+            <app-details *ngIf="user" [user]="user"></app-details
+          ></ion-col>
         </ion-row>
       </ion-col>
       <ion-col>
         <ion-row>
-          <ion-col><app-group-membership-list *ngIf="groupIdList"
-              [groupIdList]="groupIdList"></app-group-membership-list></ion-col>
+          <ion-col
+            ><app-group-membership-list
+              *ngIf="user"
+              [uid]="user['uid']"
+              [groupList]="groupList"
+            ></app-group-membership-list
+          ></ion-col>
         </ion-row>
         <ion-row>
-          <ion-col><app-friend-list *ngIf="user" [user]="user"></app-friend-list></ion-col>
+          <ion-col
+            ><app-friend-list
+              *ngIf="user"
+              [user]="user"
+              [friendList]="friendList"
+            ></app-friend-list
+          ></ion-col>
         </ion-row>
       </ion-col>
     </ion-row>

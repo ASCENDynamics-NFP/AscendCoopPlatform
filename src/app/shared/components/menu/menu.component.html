@@ -18,9 +18,20 @@
           <ion-list-header>
             <ion-label>User</ion-label>
           </ion-list-header>
-          <ion-item routerDirection="root" *ngFor="let p of userPages.user; let i = index" [routerLink]="[p.url]"
-            lines="none" detail="false" routerLinkActive="selected">
-            <ion-icon aria-hidden="true" slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
+          <ion-item
+            routerDirection="root"
+            *ngFor="let p of userPages.user; let i = index"
+            [routerLink]="[p.url]"
+            lines="none"
+            detail="false"
+            routerLinkActive="selected"
+          >
+            <ion-icon
+              aria-hidden="true"
+              slot="start"
+              [ios]="p.icon + '-outline'"
+              [md]="p.icon + '-sharp'"
+            ></ion-icon>
             <ion-label>{{ p.title }}</ion-label>
           </ion-item>
           <!-- <ion-list-header>
@@ -62,9 +73,20 @@
           <ion-list-header>
             <ion-label>User</ion-label>
           </ion-list-header>
-          <ion-item routerDirection="root" *ngFor="let p of guestPages.user; let i = index" [routerLink]="[p.url]"
-            lines="none" detail="false" routerLinkActive="selected">
-            <ion-icon aria-hidden="true" slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
+          <ion-item
+            routerDirection="root"
+            *ngFor="let p of guestPages.user; let i = index"
+            [routerLink]="[p.url]"
+            lines="none"
+            detail="false"
+            routerLinkActive="selected"
+          >
+            <ion-icon
+              aria-hidden="true"
+              slot="start"
+              [ios]="p.icon + '-outline'"
+              [md]="p.icon + '-sharp'"
+            ></ion-icon>
             <ion-label>{{ p.title }}</ion-label>
           </ion-item>
           <!-- <ion-list-header>

@@ -57,7 +57,7 @@ export class MenuComponent implements OnInit {
     const userItems = [
       {title: "Login", url: "user-login", icon: "mail"},
       {title: "Signup", url: "user-signup", icon: "paper-plane"},
-      {title: "Groups", url: "group-list", icon: "business"}
+      {title: "Groups", url: "group-list", icon: "business"},
     ];
     // const groupItems = [
     //   {title: "Group List", url: "group-list", icon: "warning"},

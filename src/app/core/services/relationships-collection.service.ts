@@ -9,6 +9,9 @@ import {
   where,
   getDocs,
   addDoc,
+  and,
+  or,
+  onSnapshot,
 } from "firebase/firestore";
 import {AppRelationship} from "../../models/relationship.model";
 import {
@@ -21,7 +24,7 @@ import {ErrorHandlerService} from "./error-handler.service";
 import {SuccessHandlerService} from "./success-handler.service";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class RelationshipsCollectionService {
   private collectionName = "relationships";
@@ -107,28 +110,43 @@ export class RelationshipsCollectionService {
       });
   }
 
-  // async getProfile(friendId: string | undefined) {
-  //   if (!friendId) throw new Error("Friend id must be provided");
-  //   const loading = await this.loadingController.create();
-  //   await loading.present();
-  //   return await getDoc(doc(this.firestoreService.firestore, "users", friendId))
-  //     .then((doc) => {
-  //       this.successHandler.handleSuccess("Profile data fetched successfully!");
-  //       if (doc.exists()) {
-  //         console.log("Profile data:", doc.data());
-  //         return doc.data();
-  //       } else {
-  //         console.log("No such profile exists!");
-  //         return null;
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       this.errorHandler.handleFirebaseAuthError(error);
-  //       console.error("Error getting profile: ", error);
-  //       return null;
-  //     })
-  //     .finally(() => {
-  //       loading.dismiss();
-  //     });
-  // }
+  async getRelationships(senderOrReceiverId: string | null) {
+    if (!senderOrReceiverId)
+      this.errorHandler.handleFirebaseAuthError({
+        code: "",
+        message: "User id must be provided",
+      });
+    const loading = await this.loadingController.create();
+    await loading.present();
+    return await getDocs(
+      query(
+        collection(this.firestoreService.firestore, this.collectionName),
+        and(
+          where("status", "in", ["pending", "accepted"]),
+          or(
+            where("senderId", "==", senderOrReceiverId),
+            where("receiverId", "==", senderOrReceiverId),
+          ),
+        ),
+      ),
+    )
+      .then((querySnapshot) => {
+        let requests: AppRelationship[] = [];
+        querySnapshot.forEach((doc) => {
+          // doc.data() is never undefined for query doc snapshots
+          console.log(doc.id, " => ", doc.data());
+          const data = doc.data() as AppRelationship;
+          data.id = doc.id; // add this line
+          requests.push(data);
+        });
+        return requests;
+      })
+      .catch((error) => {
+        this.errorHandler.handleFirebaseAuthError(error);
+        return [];
+      })
+      .finally(() => {
+        loading.dismiss();
+      });
+  }
 }

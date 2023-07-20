@@ -1,16 +1,16 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
+import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
+import {IonicModule} from "@ionic/angular";
 
-import { GroupMembershipListComponent } from './group-membership-list.component';
+import {GroupMembershipListComponent} from "./group-membership-list.component";
 
-describe('GroupMembershipListComponent', () => {
+describe("GroupMembershipListComponent", () => {
   let component: GroupMembershipListComponent;
   let fixture: ComponentFixture<GroupMembershipListComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ GroupMembershipListComponent ],
-      imports: [IonicModule.forRoot()]
+      declarations: [GroupMembershipListComponent],
+      imports: [IonicModule.forRoot()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(GroupMembershipListComponent);
@@ -18,7 +18,7 @@ describe('GroupMembershipListComponent', () => {
     fixture.detectChanges();
   }));
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

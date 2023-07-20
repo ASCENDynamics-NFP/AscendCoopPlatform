@@ -1,21 +1,21 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
-import { UsersService } from '../../../../core/services/users.service';
-import { User } from 'firebase/auth';
-import { DocumentData } from 'firebase/firestore';
-import { AuthService } from '../../../../core/services/auth.service';
-import { MenuService } from '../../../../core/services/menu.service';
-import { Router } from '@angular/router';
-import { RelationshipsCollectionService } from '../../../../core/services/relationships-collection.service';
+import {Component, OnInit} from "@angular/core";
+import {CommonModule} from "@angular/common";
+import {FormsModule} from "@angular/forms";
+import {IonicModule} from "@ionic/angular";
+import {UsersService} from "../../../../core/services/users.service";
+import {User} from "firebase/auth";
+import {DocumentData} from "firebase/firestore";
+import {AuthService} from "../../../../core/services/auth.service";
+import {MenuService} from "../../../../core/services/menu.service";
+import {Router} from "@angular/router";
+import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 
 @Component({
-  selector: 'app-users',
-  templateUrl: './users.page.html',
-  styleUrls: ['./users.page.scss'],
+  selector: "app-users",
+  templateUrl: "./users.page.html",
+  styleUrls: ["./users.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule],
 })
 export class UsersPage implements OnInit {
   user: User | null = null; // define your user here
@@ -28,7 +28,8 @@ export class UsersPage implements OnInit {
     private authService: AuthService,
     private router: Router,
   ) {
-    this.user = this.authService.getCurrentUser();} // inject your Firebase service
+    this.user = this.authService.getCurrentUser();
+  } // inject your Firebase service
 
   ngOnInit(): void {
     // console.log(this.user);
@@ -84,11 +85,9 @@ export class UsersPage implements OnInit {
   searchUsers(event: any) {
     const value = event.target.value;
     console.log("value", value);
-    this.usersService
-      .searchUsersByName(value)
-      .then((users) => {
-        console.log("userList", users);
-        this.userList = users;
-      });
+    this.usersService.searchUsersByName(value).then((users) => {
+      console.log("userList", users);
+      this.userList = users;
+    });
   }
 }

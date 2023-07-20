@@ -16,19 +16,36 @@
       <ion-col>
         <ion-card>
           <ion-card-header>
-            <ion-searchbar [debounce]="1000" (ionInput)="searchUsers($event)"></ion-searchbar>
+            <ion-searchbar
+              [debounce]="1000"
+              (ionInput)="searchUsers($event)"
+            ></ion-searchbar>
           </ion-card-header>
           <ion-list>
             <ion-item *ngFor="let user of userList; let i = index" button>
               <ion-thumbnail slot="start">
-                <img *ngIf="user['profilePicture']" [alt]="user['name']" [src]="user['profilePicture']" />
+                <img
+                  *ngIf="user['profilePicture']"
+                  [alt]="user['name']"
+                  [src]="user['profilePicture']"
+                />
               </ion-thumbnail>
               <ion-label>
                 <h3>{{ user["name"] }}</h3>
                 <p>{{ user["bio"] }}</p>
               </ion-label>
-              <ion-button slot="end" expand="full" (click)="goToProfile(user['uid'])">View</ion-button>
-              <ion-button slot="end" expand="full" (click)="sendFriendRequest(user)">Send Request</ion-button>
+              <ion-button
+                slot="end"
+                expand="full"
+                (click)="goToProfile(user['uid'])"
+                >View</ion-button
+              >
+              <ion-button
+                slot="end"
+                expand="full"
+                (click)="sendFriendRequest(user)"
+                >Send Request</ion-button
+              >
             </ion-item>
           </ion-list>
         </ion-card>

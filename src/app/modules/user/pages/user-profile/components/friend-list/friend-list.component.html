@@ -5,10 +5,17 @@
   </ion-card-header>
   <ion-card-content>
     <ion-list>
-      <ion-item *ngFor="let friend of friendList | slice:0:4; let i = index" button
-        (click)="goToUserProfile(friend['uid'])">
+      <ion-item
+        *ngFor="let friend of allFriends | slice : 0 : 4; let i = index"
+        button
+        (click)="goToUserProfile(friend['id'])"
+      >
         <ion-thumbnail slot="start">
-          <img *ngIf="friend['profilePicture']" [alt]="friend['name']" [src]="friend['profilePicture']" />
+          <img
+            *ngIf="friend['image']"
+            [alt]="friend['name']"
+            [src]="friend['image']"
+          />
         </ion-thumbnail>
         <ion-label>
           <h3>{{ friend["name"] }}</h3>

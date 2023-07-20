@@ -5,9 +5,17 @@
   </ion-card-header>
   <ion-card-content>
     <ion-list>
-      <ion-item *ngFor="let group of groupList | slice:0:4; let i = index" button (click)="goToGroupPage(group['id'])">
+      <ion-item
+        *ngFor="let group of allGroups | slice : 0 : 4; let i = index"
+        button
+        (click)="goToGroupPage(group['id'])"
+      >
         <ion-thumbnail slot="start">
-          <img *ngIf="group['profilePicture']" [alt]="group['name']" [src]="group['profilePicture']" />
+          <img
+            *ngIf="group['image']"
+            [alt]="group['name']"
+            [src]="group['image']"
+          />
         </ion-thumbnail>
         <ion-label>
           <h3>{{ group["name"] }}</h3>

@@ -2,13 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { RequestService } from '../../../../core/services/request.service';
 import { UsersService } from '../../../../core/services/users.service';
 import { User } from 'firebase/auth';
 import { DocumentData } from 'firebase/firestore';
 import { AuthService } from '../../../../core/services/auth.service';
 import { MenuService } from '../../../../core/services/menu.service';
 import { Router } from '@angular/router';
+import { RelationshipsCollectionService } from '../../../../core/services/relationships-collection.service';
 
 @Component({
   selector: 'app-users',
@@ -22,7 +22,7 @@ export class UsersPage implements OnInit {
   userList: DocumentData[] | null = []; // define your user list here
 
   constructor(
-    private requestService: RequestService,
+    private relationshipsCollectionService: RelationshipsCollectionService,
     private usersService: UsersService,
     private menuService: MenuService,
     private authService: AuthService,
@@ -57,15 +57,21 @@ export class UsersPage implements OnInit {
   ionViewWillLeave() {}
 
   sendFriendRequest(user: DocumentData) {
-    this.requestService.sendRequest({
+    this.relationshipsCollectionService.sendRequest({
       id: null,
       senderId: this.user?.uid ? this.user.uid : "",
       receiverId: user["uid"],
       type: "friend",
       status: "pending",
-      name: user["displayName"],
-      image: user["profilePicture"],
-      description: user["bio"],
+      membershipRole: "",
+      receiverRelationship: "friend",
+      senderRelationship: "friend",
+      receiverName: user["displayName"],
+      receiverImage: user["profilePicture"],
+      receiverTagline: user["bio"],
+      senderName: this.user?.displayName ? this.user.displayName : "",
+      senderImage: this.user?.photoURL ? this.user.photoURL : "",
+      senderTagline: "",
     });
   }
 

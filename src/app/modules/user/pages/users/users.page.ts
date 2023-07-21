@@ -34,7 +34,6 @@ export class UsersPage implements OnInit {
     this.usersService
       .getUsersWithCondition("displayName", "!=", null, "displayName", 100)
       .then((users) => {
-        console.log("userList", users);
         this.userList = users;
       });
   }
@@ -66,9 +65,7 @@ export class UsersPage implements OnInit {
 
   searchUsers(event: any) {
     const value = event.target.value;
-    console.log("value", value);
     this.usersService.searchUsersByName(value).then((users) => {
-      console.log("userList", users);
       this.userList = users;
     });
   }

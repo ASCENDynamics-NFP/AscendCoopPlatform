@@ -153,7 +153,6 @@ export class AuthService {
           console.log("This is an existing user");
           this.onLoginUpdateUserRecord(result?.user?.uid);
         }
-        // console.log(result);
         this.successHandler.handleSuccess("Successfully signed in!");
       })
       .catch((error) => {
@@ -235,7 +234,6 @@ export class AuthService {
         // The client SDK will parse the code from the link for you.
         signInWithEmailLink(this.auth, email, window.location.href)
           .then((result) => {
-            console.log(result);
             // Clear email from storage.
             window.localStorage.removeItem("emailForSignIn");
             // You can access the new user via result.user

@@ -55,9 +55,7 @@ export class FriendListComponent implements OnInit {
   }
 
   goToFriendList() {
-    console.log(this.user);
     if (this.user?.uid) {
-      console.log(this.user.uid);
       this.router.navigate([`/user-profile/${this.user.uid}/friends`]);
     }
   }

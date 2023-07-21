@@ -42,7 +42,6 @@ export class RequestService {
       prepareDataForCreate(requestData, this.authService.getCurrentUser()?.uid),
     )
       .then((docRef) => {
-        console.log("Document written with ID: ", docRef.id);
         this.successHandler.handleSuccess("Request sent successfully!");
         return docRef.id;
       })
@@ -91,7 +90,6 @@ export class RequestService {
         let requests: AppRequest[] = [];
         querySnapshot.forEach((doc) => {
           // doc.data() is never undefined for query doc snapshots
-          console.log(doc.id, " => ", doc.data());
           const data = doc.data() as AppRequest;
           data.id = doc.id; // add this line
           requests.push(data);
@@ -115,7 +113,6 @@ export class RequestService {
       .then((doc) => {
         this.successHandler.handleSuccess("Profile data fetched successfully!");
         if (doc.exists()) {
-          console.log("Profile data:", doc.data());
           return doc.data();
         } else {
           console.log("No such profile exists!");
@@ -124,7 +121,7 @@ export class RequestService {
       })
       .catch((error) => {
         this.errorHandler.handleFirebaseAuthError(error);
-        console.error("Error getting profile: ", error);
+        // console.error("Error getting profile: ", error);
         return null;
       })
       .finally(() => {

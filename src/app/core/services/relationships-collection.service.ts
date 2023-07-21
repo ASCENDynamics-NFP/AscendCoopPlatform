@@ -45,7 +45,6 @@ export class RelationshipsCollectionService {
       prepareDataForCreate(requestData, this.authService.getCurrentUser()?.uid),
     )
       .then((docRef) => {
-        console.log("Document written with ID: ", docRef.id);
         this.successHandler.handleSuccess("Request sent successfully!");
         return docRef.id;
       })
@@ -100,7 +99,6 @@ export class RelationshipsCollectionService {
         let requests: AppRelationship[] = [];
         querySnapshot.forEach((doc) => {
           // doc.data() is never undefined for query doc snapshots
-          console.log(doc.id, " => ", doc.data());
           const data = doc.data() as AppRelationship;
           data.id = doc.id; // add this line
           requests.push(data);
@@ -140,7 +138,6 @@ export class RelationshipsCollectionService {
         let requests: AppRelationship[] = [];
         querySnapshot.forEach((doc) => {
           // doc.data() is never undefined for query doc snapshots
-          console.log(doc.id, " => ", doc.data());
           const data = doc.data() as AppRelationship;
           data.id = doc.id; // add this line
           requests.push(data);

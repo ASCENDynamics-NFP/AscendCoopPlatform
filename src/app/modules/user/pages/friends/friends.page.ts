@@ -32,7 +32,6 @@ export class FriendsPage implements OnInit {
       .getRelationships(this.userId)
       .then((relationships) => {
         this.currentUser = this.authService.getCurrentUser();
-        console.log("relationships", relationships);
         for (let relationship of relationships) {
           if (
             relationship.type === "friend" &&

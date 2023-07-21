@@ -44,7 +44,6 @@ export class UserProfilePage implements OnInit {
     this.relationshipsCollectionService
       .getRelationships(this.route.snapshot.paramMap.get("uid"))
       .then((relationships) => {
-        console.log("relationships", relationships);
         for (let relationship of relationships) {
           if (
             relationship.type === "friend" &&
@@ -72,7 +71,6 @@ export class UserProfilePage implements OnInit {
       .getUser(this.route.snapshot.paramMap.get("uid"))
       .then((data) => {
         this.user = data;
-        console.log(data);
       })
       .catch((error) => {
         console.log(error);

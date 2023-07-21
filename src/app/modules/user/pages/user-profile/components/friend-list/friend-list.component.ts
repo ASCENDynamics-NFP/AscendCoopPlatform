@@ -22,6 +22,7 @@ export class FriendListComponent implements OnInit {
   get allFriends() {
     let allFriends = [];
     for (let friend of this.friendList) {
+      if (friend.status !== "accepted") continue;
       if (friend.senderId === this.user?.uid) {
         allFriends.push({
           id: friend.receiverId,

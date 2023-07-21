@@ -23,6 +23,7 @@ export class GroupMembershipListComponent implements OnInit {
   get allGroups() {
     let allGroups = [];
     for (let group of this.groupList) {
+      if (group.status !== "accepted") continue;
       if (group.senderId === this.user?.uid) {
         allGroups.push({
           id: group.receiverId,

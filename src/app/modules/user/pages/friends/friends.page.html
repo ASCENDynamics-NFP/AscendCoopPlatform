@@ -23,13 +23,14 @@
           <ion-list>
             <ion-item
               *ngFor="let friend of currentFriendsList; let i = index"
+              routerLink="/user-profile/{{friend['userId']}}"
               button
             >
               <ion-thumbnail slot="start">
                 <img
-                  *ngIf="friend['name']"
+                  *ngIf="friend['image']"
                   [alt]="friend['name']"
-                  [src]="friend['name']"
+                  [src]="friend['image']"
                 />
               </ion-thumbnail>
               <ion-label>
@@ -37,10 +38,12 @@
                 <p>{{ friend["bio"] }}</p>
               </ion-label>
               <ion-button
+                *ngIf="friend['showRemoveButton']"
                 slot="end"
-                expand="full"
-                (click)="goToProfile(friend['userId'])"
-                >View</ion-button
+                expand="block"
+                color="secondary"
+                (click)="$event.stopPropagation();$event.preventDefault();removeFriendRequest(friend);"
+                >Remove</ion-button
               >
             </ion-item>
           </ion-list>
@@ -56,13 +59,14 @@
           <ion-list>
             <ion-item
               *ngFor="let friend of pendingFriendsList; let i = index"
+              routerLink="/user-profile/{{friend['userId']}}"
               button
             >
               <ion-thumbnail slot="start">
                 <img
-                  *ngIf="friend['name']"
+                  *ngIf="friend['image']"
                   [alt]="friend['name']"
-                  [src]="friend['name']"
+                  [src]="friend['image']"
                 />
               </ion-thumbnail>
               <ion-label>
@@ -70,30 +74,26 @@
                 <p>{{ friend["bio"] }}</p>
               </ion-label>
               <ion-button
-                slot="end"
-                expand="full"
-                (click)="goToProfile(friend['userId'])"
-                >View</ion-button
-              >
-              <ion-button
                 *ngIf="friend['showAcceptRejectButtons']"
                 slot="end"
-                expand="full"
-                (click)="acceptFriendRequest(friend)"
+                expand="block"
+                (click)="$event.stopPropagation();$event.preventDefault();acceptFriendRequest(friend);"
                 >Accept</ion-button
               >
               <ion-button
                 *ngIf="friend['showAcceptRejectButtons']"
                 slot="end"
-                expand="full"
-                (click)="rejectFriendRequest(friend)"
+                expand="block"
+                color="secondary"
+                (click)="$event.stopPropagation();$event.preventDefault();rejectFriendRequest(friend);"
                 >Reject</ion-button
               >
               <ion-button
                 *ngIf="friend['showRemoveButton']"
                 slot="end"
-                expand="full"
-                (click)="removeFriendRequest(friend)"
+                expand="block"
+                color="secondary"
+                (click)="$event.stopPropagation();$event.preventDefault();removeFriendRequest(friend);"
                 >Remove</ion-button
               >
             </ion-item>

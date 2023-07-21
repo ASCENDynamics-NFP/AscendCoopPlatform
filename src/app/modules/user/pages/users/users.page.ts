@@ -7,7 +7,7 @@ import {User} from "firebase/auth";
 import {DocumentData} from "firebase/firestore";
 import {AuthService} from "../../../../core/services/auth.service";
 import {MenuService} from "../../../../core/services/menu.service";
-import {Router} from "@angular/router";
+import {RouterModule} from "@angular/router";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 
 @Component({
@@ -15,7 +15,7 @@ import {RelationshipsCollectionService} from "../../../../core/services/relation
   templateUrl: "./users.page.html",
   styleUrls: ["./users.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
 export class UsersPage implements OnInit {
   user: User | null = null; // define your user here
@@ -26,7 +26,6 @@ export class UsersPage implements OnInit {
     private usersService: UsersService,
     private menuService: MenuService,
     private authService: AuthService,
-    private router: Router,
   ) {
     this.user = this.authService.getCurrentUser();
   } // inject your Firebase service
@@ -63,12 +62,6 @@ export class UsersPage implements OnInit {
       senderImage: this.user?.photoURL ? this.user.photoURL : "",
       senderTagline: "",
     });
-  }
-
-  goToProfile(uid: String) {
-    if (uid) {
-      this.router.navigate([`/user-profile/${uid}`]);
-    }
   }
 
   searchUsers(event: any) {

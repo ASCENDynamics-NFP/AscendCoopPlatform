@@ -3,25 +3,27 @@ import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {MenuService} from "../../../../core/services/menu.service";
-import {ActivatedRoute, Router} from "@angular/router";
+import {ActivatedRoute, RouterModule} from "@angular/router";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
+import {AuthService} from "../../../../core/services/auth.service";
 
 @Component({
   selector: "app-friends",
   templateUrl: "./friends.page.html",
   styleUrls: ["./friends.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
 export class FriendsPage implements OnInit {
   currentFriendsList: any[] = [];
   pendingFriendsList: any[] = [];
   userId: string | null = null;
+  currentUser: any;
   constructor(
+    private authService: AuthService,
     private menuService: MenuService,
     private activatedRoute: ActivatedRoute,
     private relationshipsCollectionService: RelationshipsCollectionService,
-    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -29,6 +31,7 @@ export class FriendsPage implements OnInit {
     this.relationshipsCollectionService
       .getRelationships(this.userId)
       .then((relationships) => {
+        this.currentUser = this.authService.getCurrentUser();
         console.log("relationships", relationships);
         for (let relationship of relationships) {
           if (
@@ -40,7 +43,8 @@ export class FriendsPage implements OnInit {
             );
           } else if (
             relationship.type === "friend" &&
-            relationship.status === "pending"
+            relationship.status === "pending" &&
+            this.currentUser?.uid === this.userId
           ) {
             this.pendingFriendsList.push(
               this.relationshipToFriend(relationship),
@@ -56,16 +60,13 @@ export class FriendsPage implements OnInit {
 
   ionViewWillLeave() {}
 
-  goToProfile(id: string | undefined) {
-    this.router.navigate([`/user-profile/${id}`]);
-  }
-
   acceptFriendRequest(friend: any) {
     this.relationshipsCollectionService
       .updateRelationship(friend.id, {
         status: "accepted",
       })
       .then(() => {
+        friend.showRemoveButton = true;
         this.currentFriendsList.push(friend);
         this.pendingFriendsList = this.pendingFriendsList.filter(
           (pendingFriend) => pendingFriend.id !== friend.id,
@@ -99,6 +100,8 @@ export class FriendsPage implements OnInit {
   }
 
   relationshipToFriend(relationship: any) {
+    this.userId = this.userId ? this.userId : "";
+    const isCurrentUser = this.currentUser?.uid === this.userId;
     if (relationship.senderId === this.userId) {
       // my requests
       return {
@@ -108,7 +111,7 @@ export class FriendsPage implements OnInit {
         image: relationship.receiverImage,
         tagline: relationship.receiverTagline,
         isPending: relationship.status === "pending",
-        showRemoveButton: true,
+        showRemoveButton: isCurrentUser,
         showAcceptRejectButtons: false,
       };
     } else {
@@ -120,8 +123,8 @@ export class FriendsPage implements OnInit {
         image: relationship.senderImage,
         tagline: relationship.senderTagline,
         isPending: relationship.status === "pending",
-        showRemoveButton: false,
-        showAcceptRejectButtons: true,
+        showRemoveButton: relationship.status === "accepted" && isCurrentUser,
+        showAcceptRejectButtons: isCurrentUser,
       };
     }
   }

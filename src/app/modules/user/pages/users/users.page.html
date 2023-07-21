@@ -22,7 +22,11 @@
             ></ion-searchbar>
           </ion-card-header>
           <ion-list>
-            <ion-item *ngFor="let user of userList; let i = index" button>
+            <ion-item
+              *ngFor="let user of userList; let i = index"
+              routerLink="/user-profile/{{user['uid']}}"
+              button
+            >
               <ion-thumbnail slot="start">
                 <img
                   *ngIf="user['profilePicture']"
@@ -36,14 +40,9 @@
               </ion-label>
               <ion-button
                 slot="end"
-                expand="full"
-                (click)="goToProfile(user['uid'])"
-                >View</ion-button
-              >
-              <ion-button
-                slot="end"
-                expand="full"
-                (click)="sendFriendRequest(user)"
+                mode="md"
+                expand="block"
+                (click)="$event.stopPropagation();$event.preventDefault();sendFriendRequest(user);"
                 >Send Request</ion-button
               >
             </ion-item>

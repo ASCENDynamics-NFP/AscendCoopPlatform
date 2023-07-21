@@ -9,7 +9,6 @@ describe("GroupMembershipListComponent", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [GroupMembershipListComponent],
       imports: [IonicModule.forRoot()],
     }).compileComponents();
 

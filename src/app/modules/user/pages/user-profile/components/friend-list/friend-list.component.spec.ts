@@ -9,7 +9,6 @@ describe("FriendListComponent", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [FriendListComponent],
       imports: [IonicModule.forRoot()],
     }).compileComponents();
 

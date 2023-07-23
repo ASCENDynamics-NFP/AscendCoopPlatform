@@ -39,7 +39,7 @@
                 <p>{{ item["bio"] }}</p>
               </ion-label>
               <ion-button
-                *ngIf="(user && !item['friends']?.includes(user.uid) && user.uid !== item['id'])"
+                *ngIf="(user && !item['friends']?.includes(user.uid) && user.uid !== item['id'] && !item['pendingFriends']?.includes(user.uid))"
                 slot="end"
                 mode="md"
                 expand="block"

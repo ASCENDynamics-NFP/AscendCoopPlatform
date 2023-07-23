@@ -17,6 +17,8 @@ export interface AppUser {
   locale: string; // User's locale
   language: string; // User's language
   friends: string[]; // Array of user IDs of the user's friends
+  pendingFriends: string[]; // Array of user IDs of the user's pending friends
   groups: string[]; // Array of group IDs of the groups the user belongs to
+  pendingGroups: string[]; // Array of group IDs of the groups the user has requested to join
   // Other properties...
 }

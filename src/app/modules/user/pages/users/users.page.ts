@@ -46,22 +46,42 @@ export class UsersPage implements OnInit {
   ionViewWillLeave() {}
 
   sendFriendRequest(user: DocumentData) {
-    this.relationshipsCollectionService.sendRequest({
-      id: null,
-      senderId: this.user?.uid ? this.user.uid : "",
-      receiverId: user["uid"],
-      type: "friend",
-      status: "pending",
-      membershipRole: "",
-      receiverRelationship: "friend",
-      senderRelationship: "friend",
-      receiverName: user["displayName"],
-      receiverImage: user["profilePicture"],
-      receiverTagline: user["bio"],
-      senderName: this.user?.displayName ? this.user.displayName : "",
-      senderImage: this.user?.photoURL ? this.user.photoURL : "",
-      senderTagline: "",
-    });
+    this.relationshipsCollectionService
+      .sendRequest({
+        id: null,
+        senderId: this.user?.uid ? this.user.uid : "",
+        receiverId: user["id"],
+        type: "friend",
+        status: "pending",
+        membershipRole: "",
+        receiverRelationship: "friend",
+        senderRelationship: "friend",
+        receiverName: user["displayName"],
+        receiverImage: user["profilePicture"],
+        receiverTagline: user["bio"],
+        senderName: this.user?.displayName ? this.user.displayName : "",
+        senderImage: this.user?.photoURL ? this.user.photoURL : "",
+        senderTagline: "",
+      })
+      .then(() => {
+        // updated friends list on userList item to include receiverId in friends list so that the button doesn't show
+        this.userList =
+          this.userList?.map((userListItem: Partial<AppUser>) => {
+            if (userListItem.id === user["id"]) {
+              if (!userListItem.pendingFriends) {
+                userListItem.pendingFriends = [];
+              }
+              return {
+                ...userListItem,
+                pendingFriends: this.user?.uid
+                  ? [...userListItem.pendingFriends, this.user.uid]
+                  : [...userListItem.pendingFriends],
+              };
+            } else {
+              return userListItem;
+            }
+          }) ?? [];
+      });
   }
 
   searchUsers(event: any) {

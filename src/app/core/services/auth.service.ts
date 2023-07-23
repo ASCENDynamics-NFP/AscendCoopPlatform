@@ -309,7 +309,7 @@ export class AuthService {
       lastLoginAt: Timestamp.now(),
       name: record?.user?.displayName ? record.user.displayName : "",
       id: record.user.uid,
-      locale: "en",
+      language: "en",
     });
   }
 }

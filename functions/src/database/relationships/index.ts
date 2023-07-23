@@ -43,6 +43,46 @@ export const onRelationshipCreation = functions.firestore
     }
   });
 
+export const onRelationshipUpdate = functions.firestore
+  .document("relationships/{relationshipId}")
+  .onUpdate(async (change, _context) => {
+    const before = change.before.data();
+    const after = change.after.data();
+
+    if (
+      before &&
+      after &&
+      before.status !== after.status &&
+      after.type === "friend"
+    ) {
+      const senderId = after.senderId;
+      const receiverId = after.receiverId;
+
+      logger.info("senderId: ", senderId, "receiverId: ", receiverId);
+
+      if (senderId && receiverId) {
+        // Use a transaction to ensure atomic update
+        return db.runTransaction(async (transaction) => {
+          const sender = await fetchUser(transaction, senderId);
+          const receiver = await fetchUser(transaction, receiverId);
+
+          logger.info("sender: ", sender.data(), "receiver: ", receiver.data());
+
+          if (after.status === "pending") {
+            // Add each user to the other's pendingFriends array
+            requestedFriends(transaction, senderId, receiverId);
+          } else if (after.status === "accepted") {
+            // Add each user to the other's friends array
+            acceptedFriends(transaction, senderId, receiverId);
+          } else if (after.status === "rejected") {
+            // Remove each user from the other's pendingFriends and friends arrays
+            removeFriend(transaction, senderId, receiverId);
+          }
+        });
+      }
+    }
+  });
+
 export const onRelationshipDeletion = functions.firestore
   .document("relationships/{relationshipId}")
   .onDelete(async (snapshot, _context) => {

@@ -20,6 +20,7 @@
 import {
   onRelationshipCreation,
   onRelationshipDeletion,
-} from "./database/relationships";
+  onRelationshipUpdate,
+} from "./database/relationships"; // relationships triggers
 
-export {onRelationshipCreation, onRelationshipDeletion};
+export {onRelationshipCreation, onRelationshipDeletion, onRelationshipUpdate}; // relationships triggers

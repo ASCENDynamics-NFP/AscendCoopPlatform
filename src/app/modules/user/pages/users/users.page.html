@@ -23,26 +23,27 @@
           </ion-card-header>
           <ion-list>
             <ion-item
-              *ngFor="let user of userList; let i = index"
-              routerLink="/user-profile/{{user['uid']}}"
+              *ngFor="let item of userList; let i = index"
+              routerLink="/user-profile/{{item['id']}}"
               button
             >
               <ion-thumbnail slot="start">
                 <img
-                  *ngIf="user['profilePicture']"
-                  [alt]="user['name']"
-                  [src]="user['profilePicture']"
+                  *ngIf="item['profilePicture']"
+                  [alt]="item['name']"
+                  [src]="item['profilePicture']"
                 />
               </ion-thumbnail>
               <ion-label>
-                <h3>{{ user["name"] }}</h3>
-                <p>{{ user["bio"] }}</p>
+                <h3>{{ item["name"] }}</h3>
+                <p>{{ item["bio"] }}</p>
               </ion-label>
               <ion-button
+                *ngIf="(user && !item['friends']?.includes(user.uid) && user.uid !== item['id'])"
                 slot="end"
                 mode="md"
                 expand="block"
-                (click)="$event.stopPropagation();$event.preventDefault();sendFriendRequest(user);"
+                (click)="$event.stopPropagation();$event.preventDefault();sendFriendRequest(item);"
                 >Send Request</ion-button
               >
             </ion-item>

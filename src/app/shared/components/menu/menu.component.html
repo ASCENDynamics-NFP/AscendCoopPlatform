@@ -12,12 +12,12 @@
     </ion-header>
     <ion-content>
       <ion-list id="inbox-list">
-        <ion-note>Info</ion-note>
+        <!-- <ion-note>Info</ion-note> -->
 
         <ion-menu-toggle auto-hide="false">
-          <ion-list-header>
+          <!-- <ion-list-header>
             <ion-label>User</ion-label>
-          </ion-list-header>
+          </ion-list-header> -->
           <ion-item
             routerDirection="root"
             *ngFor="let p of userPages.user; let i = index"
@@ -70,9 +70,9 @@
     <ion-content>
       <ion-list id="inbox-list">
         <ion-menu-toggle auto-hide="false">
-          <ion-list-header>
+          <!-- <ion-list-header>
             <ion-label>User</ion-label>
-          </ion-list-header>
+          </ion-list-header> -->
           <ion-item
             routerDirection="root"
             *ngFor="let p of guestPages.user; let i = index"

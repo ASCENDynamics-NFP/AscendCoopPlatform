@@ -109,7 +109,7 @@ export class AuthService {
           bio: "",
           lastLoginAt: timestamp,
           name: "",
-          uid: result.user.uid,
+          id: result.user.uid,
         });
 
         this.successHandler.handleSuccess(
@@ -292,20 +292,23 @@ export class AuthService {
   onLoginUpdateUserRecord(userId: string) {
     this.usersService.updateUser({
       lastLoginAt: Timestamp.now(),
-      uid: userId,
+      id: userId,
     });
   }
 
   onLoginCreateUserRecord(record: UserCredential) {
+    if (!record.user || !record.user.uid || !record.user.email) {
+      throw new Error("Could not create user record");
+    }
     this.usersService.createUser({
-      email: record?.user?.email,
-      displayName: record?.user?.displayName,
-      profilePicture: record?.user?.photoURL,
-      emailVerified: record?.user?.emailVerified,
+      email: record.user.email,
+      displayName: record.user.displayName ? record.user.displayName : "",
+      profilePicture: record.user.photoURL ? record.user.photoURL : "",
+      emailVerified: record.user.emailVerified,
       bio: "I enjoy volunteering and helping others.",
       lastLoginAt: Timestamp.now(),
-      name: record?.user?.displayName,
-      uid: record?.user?.uid,
+      name: record?.user?.displayName ? record.user.displayName : "",
+      id: record.user.uid,
       locale: "en",
     });
   }

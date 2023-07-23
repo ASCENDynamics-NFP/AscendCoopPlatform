@@ -100,6 +100,11 @@ export class MenuComponent implements OnInit {
         url: `user-settings/${this.user?.uid}`,
         icon: "settings",
       },
+      {
+        title: "Feedback",
+        url: `user-settings/${this.user?.uid}`,
+        icon: "ear",
+      },
       // {
       //   title: "Dashboard",
       //   url: `user-dashboard/${this.user?.uid}`,

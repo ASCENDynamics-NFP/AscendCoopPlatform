@@ -9,6 +9,7 @@ import {AuthService} from "../../../../core/services/auth.service";
 import {MenuService} from "../../../../core/services/menu.service";
 import {RouterModule} from "@angular/router";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
+import {AppUser} from "../../../../models/user.model";
 
 @Component({
   selector: "app-users",
@@ -19,7 +20,7 @@ import {RelationshipsCollectionService} from "../../../../core/services/relation
 })
 export class UsersPage implements OnInit {
   user: User | null = null; // define your user here
-  userList: DocumentData[] | null = []; // define your user list here
+  userList: Partial<AppUser>[] | null = []; // define your user list here
 
   constructor(
     private relationshipsCollectionService: RelationshipsCollectionService,
@@ -34,7 +35,7 @@ export class UsersPage implements OnInit {
     this.usersService
       .getUsersWithCondition("displayName", "!=", null, "displayName", 100)
       .then((users) => {
-        this.userList = users;
+        this.userList = users as Partial<AppUser>[];
       });
   }
 

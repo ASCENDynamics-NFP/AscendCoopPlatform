@@ -14,6 +14,8 @@ import {
   orderBy,
   limit,
   setDoc,
+  or,
+  and,
 } from "firebase/firestore";
 import {
   prepareDataForCreate,
@@ -29,11 +31,11 @@ export class UsersService {
   constructor(private firestoreService: FirestoreService) {}
 
   createUser(user: Partial<AppUser>): void {
-    if (!user.uid) throw new Error("User must have a uid");
+    if (!user.id) throw new Error("User must have a id");
     // Create a user document in Firestore
     setDoc(
-      doc(this.firestoreService.firestore, "users", user.uid),
-      prepareDataForCreate(user, user.uid),
+      doc(this.firestoreService.firestore, "users", user.id),
+      prepareDataForCreate(user, user.id),
     )
       .then(() => {
         console.log("User successfully written!");
@@ -66,11 +68,11 @@ export class UsersService {
   }
 
   async updateUser(user: Partial<AppUser>) {
-    if (!user.uid) throw new Error("User must have a uid");
+    if (!user.id) throw new Error("User must have a id");
     try {
       await updateDoc(
-        doc(this.firestoreService.firestore, this.collectionName, user.uid),
-        prepareDataForUpdate(user, user.uid),
+        doc(this.firestoreService.firestore, this.collectionName, user.id),
+        prepareDataForUpdate(user, user.id),
       );
     } catch (error) {
       console.error("Error updating document: ", error);
@@ -108,12 +110,60 @@ export class UsersService {
       const querySnapshot = await getDocs(q);
       const documents: DocumentData[] = [];
       querySnapshot.forEach((doc) => {
-        documents.push(doc.data());
+        const data = doc.data() as AppUser;
+        data.id = doc.id; // add this line
+        documents.push(data);
       });
       return documents;
     } catch (error) {
       console.error("Error retrieving collection: ", error);
       return null;
     }
+  }
+
+  searchUsersByName(searchTerm: string): Promise<DocumentData[] | null> {
+    return getDocs(
+      query(
+        collection(this.firestoreService.firestore, this.collectionName),
+        or(
+          // query as-is:
+          and(
+            where("name", ">=", searchTerm),
+            where("name", "<=", searchTerm + "\uf8ff"),
+          ),
+          // capitalize first letter:
+          and(
+            where(
+              "name",
+              ">=",
+              searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1),
+            ),
+            where(
+              "name",
+              "<=",
+              searchTerm.charAt(0).toUpperCase() +
+                searchTerm.slice(1) +
+                "\uf8ff",
+            ),
+          ),
+          // lowercase:
+          and(
+            where("name", ">=", searchTerm.toLowerCase()),
+            where("name", "<=", searchTerm.toLowerCase() + "\uf8ff"),
+          ),
+        ),
+      ),
+    )
+      .then((querySnapshot) => {
+        const documents: DocumentData[] = [];
+        querySnapshot.forEach((doc) => {
+          documents.push(doc.data());
+        });
+        return documents;
+      })
+      .catch((error) => {
+        console.error("Error retrieving collection: ", error);
+        return null;
+      });
   }
 }

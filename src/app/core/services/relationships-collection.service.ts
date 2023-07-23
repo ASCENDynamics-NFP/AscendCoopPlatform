@@ -9,8 +9,11 @@ import {
   where,
   getDocs,
   addDoc,
+  and,
+  or,
+  onSnapshot,
 } from "firebase/firestore";
-import {AppRequest} from "../../models/request.model";
+import {AppRelationship} from "../../models/relationship.model";
 import {
   prepareDataForCreate,
   prepareDataForUpdate,
@@ -23,8 +26,8 @@ import {SuccessHandlerService} from "./success-handler.service";
 @Injectable({
   providedIn: "root",
 })
-export class RequestService {
-  private collectionName = "requests";
+export class RelationshipsCollectionService {
+  private collectionName = "relationships";
 
   constructor(
     private firestoreService: FirestoreService,
@@ -34,7 +37,7 @@ export class RequestService {
     private successHandler: SuccessHandlerService,
   ) {}
 
-  async sendRequest(requestData: Partial<AppRequest>) {
+  async sendRequest(requestData: Partial<AppRelationship>) {
     const loading = await this.loadingController.create();
     await loading.present();
     return await addDoc(
@@ -55,13 +58,19 @@ export class RequestService {
       });
   }
 
-  async updateRequestStatus(id: string | null, status: string) {
+  async updateRelationship(
+    id: string | null,
+    relationship: Partial<AppRelationship>,
+  ) {
     if (!id) throw new Error("Id must be provided");
     const loading = await this.loadingController.create();
     await loading.present();
     await updateDoc(
       doc(this.firestoreService.firestore, this.collectionName, id),
-      prepareDataForUpdate({status}, this.authService.getCurrentUser()?.uid),
+      prepareDataForUpdate(
+        relationship,
+        this.authService.getCurrentUser()?.uid,
+      ),
     )
       .then(() => {
         this.successHandler.handleSuccess(
@@ -87,10 +96,10 @@ export class RequestService {
       ),
     )
       .then((querySnapshot) => {
-        let requests: AppRequest[] = [];
+        let requests: AppRelationship[] = [];
         querySnapshot.forEach((doc) => {
           // doc.data() is never undefined for query doc snapshots
-          const data = doc.data() as AppRequest;
+          const data = doc.data() as AppRelationship;
           data.id = doc.id; // add this line
           requests.push(data);
         });
@@ -105,27 +114,47 @@ export class RequestService {
       });
   }
 
-  async getProfile(friendId: string | undefined) {
-    if (!friendId) throw new Error("Friend id must be provided");
+  async getRelationships(senderOrReceiverId: string | null) {
+    if (!senderOrReceiverId)
+      this.errorHandler.handleFirebaseAuthError({
+        code: "",
+        message: "User id must be provided",
+      });
     const loading = await this.loadingController.create();
     await loading.present();
-    return await getDoc(doc(this.firestoreService.firestore, "users", friendId))
-      .then((doc) => {
-        this.successHandler.handleSuccess("Profile data fetched successfully!");
-        if (doc.exists()) {
-          return doc.data();
-        } else {
-          console.log("No such profile exists!");
-          return null;
-        }
+    return await getDocs(
+      query(
+        collection(this.firestoreService.firestore, this.collectionName),
+        and(
+          where("status", "in", ["pending", "accepted"]),
+          or(
+            where("senderId", "==", senderOrReceiverId),
+            where("receiverId", "==", senderOrReceiverId),
+          ),
+        ),
+      ),
+    )
+      .then((querySnapshot) => {
+        let requests: AppRelationship[] = [];
+        querySnapshot.forEach((doc) => {
+          // doc.data() is never undefined for query doc snapshots
+          const data = doc.data() as AppRelationship;
+          data.id = doc.id; // add this line
+          requests.push(data);
+        });
+        return requests;
       })
       .catch((error) => {
         this.errorHandler.handleFirebaseAuthError(error);
-        // console.error("Error getting profile: ", error);
-        return null;
+        return [];
       })
       .finally(() => {
         loading.dismiss();
       });
+  }
+
+  deleteRelationship(id: string | null) {
+    if (!id) throw new Error("Id must be provided");
+    return this.firestoreService.deleteDocument(this.collectionName, id);
   }
 }

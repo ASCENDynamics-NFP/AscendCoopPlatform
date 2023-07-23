@@ -39,7 +39,6 @@ export class GroupListPage implements OnInit {
     this.groupService
       .getGroups()
       .then((groups) => {
-        console.log(groups);
         this.groups = groups;
         // Do something with the groups
       })
@@ -57,7 +56,6 @@ export class GroupListPage implements OnInit {
     this.groupService
       .searchGroups(this.searchTerm)
       .then((groups) => {
-        console.log(groups);
         this.groups = groups;
       })
       .catch((error) => {

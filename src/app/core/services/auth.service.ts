@@ -109,7 +109,7 @@ export class AuthService {
           bio: "",
           lastLoginAt: timestamp,
           name: "",
-          uid: result.user.uid,
+          id: result.user.uid,
         });
 
         this.successHandler.handleSuccess(
@@ -153,7 +153,6 @@ export class AuthService {
           console.log("This is an existing user");
           this.onLoginUpdateUserRecord(result?.user?.uid);
         }
-        // console.log(result);
         this.successHandler.handleSuccess("Successfully signed in!");
       })
       .catch((error) => {
@@ -235,7 +234,6 @@ export class AuthService {
         // The client SDK will parse the code from the link for you.
         signInWithEmailLink(this.auth, email, window.location.href)
           .then((result) => {
-            console.log(result);
             // Clear email from storage.
             window.localStorage.removeItem("emailForSignIn");
             // You can access the new user via result.user
@@ -294,20 +292,23 @@ export class AuthService {
   onLoginUpdateUserRecord(userId: string) {
     this.usersService.updateUser({
       lastLoginAt: Timestamp.now(),
-      uid: userId,
+      id: userId,
     });
   }
 
   onLoginCreateUserRecord(record: UserCredential) {
+    if (!record.user || !record.user.uid || !record.user.email) {
+      throw new Error("Could not create user record");
+    }
     this.usersService.createUser({
-      email: record?.user?.email,
-      displayName: record?.user?.displayName,
-      profilePicture: record?.user?.photoURL,
-      emailVerified: record?.user?.emailVerified,
+      email: record.user.email,
+      displayName: record.user.displayName ? record.user.displayName : "",
+      profilePicture: record.user.photoURL ? record.user.photoURL : "",
+      emailVerified: record.user.emailVerified,
       bio: "I enjoy volunteering and helping others.",
       lastLoginAt: Timestamp.now(),
-      name: record?.user?.displayName,
-      uid: record?.user?.uid,
+      name: record?.user?.displayName ? record.user.displayName : "",
+      id: record.user.uid,
       locale: "en",
     });
   }

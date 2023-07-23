@@ -13,14 +13,40 @@
       <ion-title size="large">User Profile</ion-title>
     </ion-toolbar>
   </ion-header>
-  <ion-card *ngIf="user">
-    <ion-card-header>
-      <ion-card-title>{{ user.name }}</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <p>Email: {{ user.email }}</p>
-      <p>Email Verified: {{ user.emailVerified }}</p>
-      <!-- Include other user details here -->
-    </ion-card-content>
-  </ion-card>
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <app-hero *ngIf="user" [user]="user"></app-hero>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-row>
+          <ion-col>
+            <app-details *ngIf="user" [user]="user"></app-details
+          ></ion-col>
+        </ion-row>
+      </ion-col>
+      <ion-col>
+        <ion-row>
+          <ion-col
+            ><app-group-membership-list
+              *ngIf="user"
+              [user]="user"
+              [groupList]="groupList"
+            ></app-group-membership-list
+          ></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col
+            ><app-friend-list
+              *ngIf="user"
+              [user]="user"
+              [friendList]="friendList"
+            ></app-friend-list
+          ></ion-col>
+        </ion-row>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>

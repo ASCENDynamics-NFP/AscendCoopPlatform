@@ -40,7 +40,6 @@ export class GroupProfilePage implements OnInit {
       .getGroup(this.groupId)
       .then((group) => {
         this.group = group;
-        console.log(group);
       })
       .catch((error) => {
         console.log(error);

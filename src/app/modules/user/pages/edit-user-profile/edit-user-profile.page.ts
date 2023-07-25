@@ -46,20 +46,20 @@ export class EditUserProfilePage implements OnInit {
   editProfileForm = this.fb.group({
     displayName: ["", Validators.required],
     email: ["", [Validators.required, Validators.email]],
-    phoneNumber: [""],
     bio: [""],
     tagline: [""],
     name: [""],
     language: [""],
-    phoneCountryCode: [""],
+    phoneCountryCode: ["", [Validators.pattern("^[0-9]*$")]],
+    phoneNumber: ["", [Validators.pattern("^\\d{10}$")]],
     phoneType: [""],
     addressName: [""],
-    addressStreet: [""],
-    addressCity: [""],
-    addressState: [""],
-    addressZipcode: ["", [Validators.pattern("^\\d{5}(-\\d{4})?$")]],
-    addressCountry: [""],
-    dateOfBirth: [new Date()], //, [Validators.required, this.ageValidator(18)]],
+    addressStreet: ["", Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
+    addressCity: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+    addressState: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+    addressZipcode: ["", Validators.pattern("^[0-9]*$")],
+    addressCountry: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+    dateOfBirth: [new Date().toISOString()], //, [Validators.required, this.ageValidator(18)]],
   });
 
   constructor(
@@ -93,7 +93,7 @@ export class EditUserProfilePage implements OnInit {
             addressState: this.user.addressState,
             addressZipcode: this.user.addressZipcode,
             addressCountry: this.user.addressCountry,
-            dateOfBirth: this.user.dateOfBirth?.toDate(), // Make sure dateOfBirth is a Date object
+            dateOfBirth: this.user.dateOfBirth?.toDate().toISOString(), // Make sure dateOfBirth is a Date object
           });
         }
       });
@@ -126,7 +126,7 @@ export class EditUserProfilePage implements OnInit {
       addressZipcode: this.editProfileForm.value.addressZipcode || "",
       addressCountry: this.editProfileForm.value.addressCountry || "",
       dateOfBirth: Timestamp.fromDate(
-        this.editProfileForm.value.dateOfBirth || new Date(),
+        new Date(this.editProfileForm.value.dateOfBirth || ""),
       ),
     };
 

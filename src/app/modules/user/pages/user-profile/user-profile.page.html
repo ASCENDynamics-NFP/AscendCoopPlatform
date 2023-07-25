@@ -23,7 +23,11 @@
       <ion-col>
         <ion-row>
           <ion-col>
-            <app-details *ngIf="user" [user]="user"></app-details
+            <app-details
+              *ngIf="user"
+              [user]="user"
+              [isProfileOwner]="isProfileOwner"
+            ></app-details
           ></ion-col>
         </ion-row>
       </ion-col>

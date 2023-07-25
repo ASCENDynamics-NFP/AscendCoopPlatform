@@ -35,17 +35,13 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
       <ion-item>
         <ion-icon name="mail" slot="start"></ion-icon>
-        <ion-label
-          >Email Verified: {{ user.emailVerified ? "Yes" : "No" }}</ion-label
-        >
+        <ion-label>Email Verified: {{ user.emailVerified ? "Yes" : "No" }}</ion-label>
       </ion-item>
 
       <ion-item>
         <ion-icon name="call" slot="start"></ion-icon>
-        <ion-label
-          >{{ user.phoneType }} Phone: {{ user.phoneCountryCode }}
-          {{ user.phoneNumber | phoneFormat }}</ion-label
-        >
+        <ion-label>{{ user.phoneType }} Phone: {{ user.phoneCountryCode }}
+          {{ user.phoneNumber | phoneFormat }}</ion-label>
       </ion-item>
       <!-- 
       <ion-item>
@@ -65,9 +61,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
       <ion-item>
         <ion-icon name="calendar" slot="start"></ion-icon>
-        <ion-label
-          >Date of Birth: {{ dateOfBirth | date : "mediumDate" }}</ion-label
-        >
+        <ion-label>Date of Birth: {{ dateOfBirth | date : "mediumDate" }}</ion-label>
       </ion-item>
 
       <ion-item>
@@ -76,12 +70,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-item>
     </ion-list>
   </ion-card-content>
-  <ion-button
-    *ngIf="isProfileOwner"
-    expend="block"
-    fill="full"
-    color="primary"
-    routerLink="/user-profile/{{ user.id }}/edit"
-    >Edit Profile</ion-button
-  >
+  <ion-button *ngIf="isProfileOwner" expend="block" fill="full" color="primary"
+    routerLink="/user-profile/{{ user.id }}/edit">Edit Profile</ion-button>
 </ion-card>

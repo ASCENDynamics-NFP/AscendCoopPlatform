@@ -30,7 +30,7 @@ import {IonicModule} from "@ionic/angular";
 import {MenuService} from "../../../../core/services/menu.service";
 import {AppGroup} from "../../../../models/group.model";
 import {GroupsService} from "../../../../core/services/groups.service";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {Timestamp} from "firebase/firestore";
 
 @Component({
@@ -66,6 +66,7 @@ export class GroupEditPage implements OnInit {
     private menuService: MenuService,
     private groupsService: GroupsService,
     private activatedRoute: ActivatedRoute,
+    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -102,7 +103,6 @@ export class GroupEditPage implements OnInit {
   ionViewWillLeave() {}
 
   onSubmit() {
-    console.log(this.editGroupForm.value);
     // Call the API to save changes
     const group: Partial<AppGroup> = {
       id: this.group?.id ? this.group.id : this.groupId ? this.groupId : "",
@@ -125,5 +125,13 @@ export class GroupEditPage implements OnInit {
     };
 
     this.groupsService.updateGroup(group);
+  }
+
+  deleteGroup() {
+    if (this.groupId) this.groupsService.deleteGroup(this.groupId);
+  }
+
+  toGroupPage() {
+    this.router.navigate(["/group-profile/", this.groupId]);
   }
 }

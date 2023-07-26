@@ -30,7 +30,7 @@ import {IonicModule} from "@ionic/angular";
 import {MenuService} from "../../../../core/services/menu.service";
 import {AppUser} from "../../../../models/user.model";
 import {UsersService} from "../../../../core/services/users.service";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {Timestamp} from "firebase/firestore";
 
 @Component({
@@ -67,6 +67,7 @@ export class EditUserProfilePage implements OnInit {
     private menuService: MenuService,
     private userService: UsersService,
     private activatedRoute: ActivatedRoute,
+    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -106,7 +107,6 @@ export class EditUserProfilePage implements OnInit {
   ionViewWillLeave() {}
 
   onSubmit() {
-    console.log(this.editProfileForm.value);
     // Call the API to save changes
     const user: Partial<AppUser> = {
       id: this.user?.id,
@@ -131,6 +131,10 @@ export class EditUserProfilePage implements OnInit {
     };
 
     this.userService.updateUser(user);
+  }
+
+  backToProfile() {
+    this.router.navigate(["/user-profile/", this.user?.id]);
   }
 
   // ageValidator(minAge: number): ValidatorFn {

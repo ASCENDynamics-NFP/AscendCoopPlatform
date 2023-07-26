@@ -223,10 +223,28 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 <ion-row>
                   <ion-col>
                     <ion-button
-                      expand="full"
+                      expand="block"
                       type="submit"
                       [disabled]="!editGroupForm.valid"
                       >Save Changes</ion-button
+                    >
+                  </ion-col>
+                  <ion-col>
+                    <ion-button
+                      expand="block"
+                      type="submit"
+                      color="secondary"
+                      (click)="toGroupPage()"
+                      >Back To Group Page</ion-button
+                    >
+                  </ion-col>
+                  <ion-col>
+                    <ion-button
+                      expand="block"
+                      type="button"
+                      color="warning"
+                      (click)="deleteGroup()"
+                      >Delete Group</ion-button
                     >
                   </ion-col>
                 </ion-row>

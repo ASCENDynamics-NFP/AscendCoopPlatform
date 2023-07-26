@@ -30,6 +30,7 @@ import {HeroComponent} from "./components/hero/hero.component";
 import {DetailsComponent} from "./components/details/details.component";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 import {AppRelationship} from "../../../../models/relationship.model";
+import {AuthService} from "../../../../core/services/auth.service";
 
 @Component({
   selector: "app-user-profile",
@@ -50,7 +51,9 @@ export class UserProfilePage implements OnInit {
   user: any;
   friendList: AppRelationship[] = [];
   groupList: AppRelationship[] = [];
+  isProfileOwner: boolean = false;
   constructor(
+    private authService: AuthService,
     private route: ActivatedRoute,
     private usersService: UsersService,
     private menuService: MenuService,
@@ -59,9 +62,9 @@ export class UserProfilePage implements OnInit {
 
   ngOnInit() {
     this.getUser();
-
+    const uid = this.route.snapshot.paramMap.get("uid");
     this.relationshipsCollectionService
-      .getRelationships(this.route.snapshot.paramMap.get("uid"))
+      .getRelationships(uid)
       .then((relationships) => {
         for (let relationship of relationships) {
           if (
@@ -76,6 +79,7 @@ export class UserProfilePage implements OnInit {
             this.groupList.push(relationship);
           }
         }
+        this.isProfileOwner = uid === this.authService.getCurrentUser()?.uid;
       });
   }
 

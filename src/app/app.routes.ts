@@ -134,4 +134,11 @@ export const routes: Routes = [
       import("./modules/user/pages/users/users.page").then((m) => m.UsersPage),
     canActivate: [AuthGuard],
   },
+  {
+    path: "user-profile/:uid/edit",
+    loadComponent: () =>
+      import(
+        "./modules/user/pages/edit-user-profile/edit-user-profile.page"
+      ).then((m) => m.EditUserProfilePage),
+  },
 ];

@@ -17,30 +17,36 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {CommonModule} from "@angular/common";
-import {Component, Input, OnInit} from "@angular/core";
-import {IonicModule} from "@ionic/angular";
-import {AppUser} from "../../../../../../models/user.model";
-import {RouterModule} from "@angular/router";
-import {PhoneFormatPipe} from "../../../../../../shared/pipes/phone-format.pipe";
+import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {EditUserProfilePage} from "./edit-user-profile.page";
+import {ActivatedRoute} from "@angular/router";
 
-@Component({
-  selector: "app-details",
-  templateUrl: "./details.component.html",
-  styleUrls: ["./details.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, RouterModule, PhoneFormatPipe],
-})
-export class DetailsComponent implements OnInit {
-  @Input() user: AppUser | null = null; // define your user here
-  @Input() isProfileOwner: boolean = false; // define your user here
-  dateOfBirth = new Date().toISOString(); // default initialization
+describe("EditUserProfilePage", () => {
+  let component: EditUserProfilePage;
+  let fixture: ComponentFixture<EditUserProfilePage>;
 
-  constructor() {}
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [],
+      providers: [
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              paramMap: {
+                get: () => "123", // provide your mock value here
+              },
+            },
+          },
+        },
+      ],
+    }).compileComponents();
+    fixture = TestBed.createComponent(EditUserProfilePage);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-  ngOnInit() {
-    // If user and dateOfBirth exist, convert to Date, otherwise leave as default Date
-    this.dateOfBirth =
-      this.user?.dateOfBirth?.toDate().toISOString() || this.dateOfBirth;
-  }
-}
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

@@ -92,13 +92,10 @@ describe("GroupsService", () => {
     GroupsServiceSpy.updateGroup.and.returnValue(Promise.resolve());
 
     // Act
-    await service.updateGroup(updatedGroup.id, updatedGroup);
+    await service.updateGroup(updatedGroup);
 
     // Assert
-    expect(GroupsServiceSpy.updateGroup).toHaveBeenCalledWith(
-      updatedGroup.id,
-      updatedGroup,
-    );
+    expect(GroupsServiceSpy.updateGroup).toHaveBeenCalledWith(updatedGroup);
   });
 
   it("should delete a group", async () => {

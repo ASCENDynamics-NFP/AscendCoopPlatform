@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 import {Injectable} from "@angular/core";
 import {FirestoreService} from "./firestore.service";
-import {Group} from "../../models/group.model";
+import {AppGroup} from "../../models/group.model";
 import {
   addDoc,
   collection,
@@ -51,7 +51,7 @@ export class GroupsService {
     private firestoreService: FirestoreService,
   ) {}
 
-  async createGroup(group: Group): Promise<string | null> {
+  async createGroup(group: AppGroup): Promise<string | null> {
     try {
       const documentRef = await addDoc(
         collection(this.firestoreService.firestore, this.collectionName),
@@ -83,10 +83,11 @@ export class GroupsService {
     }
   }
 
-  async updateGroup(groupId: string, group: Partial<Group>) {
+  async updateGroup(group: Partial<AppGroup>) {
     try {
+      if (!group.id) throw new Error("Group must have a groupId");
       await updateDoc(
-        doc(this.firestoreService.firestore, this.collectionName, groupId),
+        doc(this.firestoreService.firestore, this.collectionName, group.id),
         prepareDataForUpdate(group, this.authService.getCurrentUser()?.uid),
       );
     } catch (error) {

@@ -19,12 +19,28 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {GroupEditPage} from "./group-edit.page";
+import {ActivatedRoute} from "@angular/router";
 
 describe("GroupEditPage", () => {
   let component: GroupEditPage;
   let fixture: ComponentFixture<GroupEditPage>;
 
   beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [],
+      providers: [
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              paramMap: {
+                get: () => "123", // provide your mock value here
+              },
+            },
+          },
+        },
+      ],
+    }).compileComponents();
     fixture = TestBed.createComponent(GroupEditPage);
     component = fixture.componentInstance;
     fixture.detectChanges();

@@ -35,10 +35,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
       <ion-item *ngIf="group.phoneNumber" lines="none">
         <ion-icon name="call" slot="start"></ion-icon>
-        <ion-label
-          >Phone: {{ group.phoneCountryCode }}
-          {{ group.phoneNumber | phoneFormat }}</ion-label
-        >
+        <ion-label>Phone: {{ group.phoneCountryCode }}
+          {{ group.phoneNumber | phoneFormat }}</ion-label>
       </ion-item>
       <!-- 
       <ion-item>
@@ -58,25 +56,15 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
       <ion-item lines="none">
         <ion-icon name="calendar" slot="start"></ion-icon>
-        <ion-label
-          >Date Founded: {{ dateFounded | date : "mediumDate" }}</ion-label
-        >
+        <ion-label>Date Founded: {{ dateFounded | date : "mediumDate" }}</ion-label>
       </ion-item>
 
       <ion-item lines="none">
         <ion-icon name="language" slot="start"></ion-icon>
-        <ion-label
-          >Supported Language: {{ group?.supportedlanguages }}</ion-label
-        >
+        <ion-label>Supported Language: {{ group.supportedlanguages }}</ion-label>
       </ion-item>
     </ion-list>
   </ion-card-content>
-  <ion-button
-    *ngIf="canEdit"
-    expend="block"
-    fill="clear"
-    color="primary"
-    routerLink="/group-profile/{{ group.id }}/edit"
-    >Edit Profile</ion-button
-  >
+  <ion-button *ngIf="canEdit" expend="block" fill="clear" color="primary"
+    routerLink="/group-profile/{{ group.id }}/edit">Edit Profile</ion-button>
 </ion-card>

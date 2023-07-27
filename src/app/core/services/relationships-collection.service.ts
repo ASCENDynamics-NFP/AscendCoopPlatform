@@ -22,7 +22,6 @@ import {FirestoreService} from "./firestore.service";
 import {
   doc,
   updateDoc,
-  getDoc,
   query,
   collection,
   where,
@@ -30,7 +29,8 @@ import {
   addDoc,
   and,
   or,
-  onSnapshot,
+  DocumentSnapshot,
+  QuerySnapshot,
 } from "firebase/firestore";
 import {AppRelationship} from "../../models/relationship.model";
 import {
@@ -115,14 +115,7 @@ export class RelationshipsCollectionService {
       ),
     )
       .then((querySnapshot) => {
-        let requests: AppRelationship[] = [];
-        querySnapshot.forEach((doc) => {
-          // doc.data() is never undefined for query doc snapshots
-          const data = doc.data() as AppRelationship;
-          data.id = doc.id; // add this line
-          requests.push(data);
-        });
-        return requests;
+        return this.processFirebaseData(querySnapshot);
       })
       .catch((error) => {
         this.errorHandler.handleFirebaseAuthError(error);
@@ -134,11 +127,13 @@ export class RelationshipsCollectionService {
   }
 
   async getRelationships(senderOrReceiverId: string | null) {
-    if (!senderOrReceiverId)
+    if (!senderOrReceiverId) {
       this.errorHandler.handleFirebaseAuthError({
         code: "",
-        message: "User id must be provided",
+        message: "Id must be provided",
       });
+      return [];
+    }
     const loading = await this.loadingController.create();
     await loading.present();
     return await getDocs(
@@ -154,14 +149,7 @@ export class RelationshipsCollectionService {
       ),
     )
       .then((querySnapshot) => {
-        let requests: AppRelationship[] = [];
-        querySnapshot.forEach((doc) => {
-          // doc.data() is never undefined for query doc snapshots
-          const data = doc.data() as AppRelationship;
-          data.id = doc.id; // add this line
-          requests.push(data);
-        });
-        return requests;
+        return this.processFirebaseData(querySnapshot);
       })
       .catch((error) => {
         this.errorHandler.handleFirebaseAuthError(error);
@@ -174,6 +162,37 @@ export class RelationshipsCollectionService {
 
   deleteRelationship(id: string | null) {
     if (!id) throw new Error("Id must be provided");
-    return this.firestoreService.deleteDocument(this.collectionName, id);
+    return this.firestoreService
+      .deleteDocument(this.collectionName, id)
+      .then(() => {
+        this.successHandler.handleSuccess("Relationship deleted successfully!");
+        return true;
+      })
+      .catch((error) => {
+        console.error("Error deleting document: ", error);
+        this.errorHandler.handleFirebaseAuthError(error);
+        return null;
+      });
+  }
+
+  processFirebaseData(querySnapshot: QuerySnapshot | DocumentSnapshot): any {
+    if (querySnapshot instanceof QuerySnapshot) {
+      // Processing for array of documents
+      const documents: Partial<AppRelationship>[] = [];
+      querySnapshot.forEach((doc) => {
+        let data = doc.data() as Partial<AppRelationship>;
+        data = {...data, id: doc.id};
+        documents.push(data);
+      });
+      return documents;
+    } else if (querySnapshot instanceof DocumentSnapshot) {
+      // Processing for single document
+      if (querySnapshot.exists()) {
+        let data = querySnapshot.data() as Partial<AppRelationship>;
+        data = {...data, id: querySnapshot.id};
+        return data;
+      }
+    }
+    return null;
   }
 }

@@ -91,7 +91,7 @@ export class UserProfilePage implements OnInit {
 
   async getUser() {
     this.usersService
-      .getUser(this.route.snapshot.paramMap.get("uid"))
+      .getUserById(this.route.snapshot.paramMap.get("uid"))
       .then((data) => {
         this.user = data;
       })

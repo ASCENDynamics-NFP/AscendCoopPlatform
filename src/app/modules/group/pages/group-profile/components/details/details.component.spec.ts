@@ -17,26 +17,26 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
-// import {IonicModule} from "@ionic/angular";
+import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
+import {IonicModule} from "@ionic/angular";
 
-// import {FriendRequestComponent} from "./friend-request.component";
+import {DetailsComponent} from "./details.component";
 
-// describe("FriendRequestComponent", () => {
-//   let component: FriendRequestComponent;
-//   let fixture: ComponentFixture<FriendRequestComponent>;
+describe("DetailsComponent", () => {
+  let component: DetailsComponent;
+  let fixture: ComponentFixture<DetailsComponent>;
 
-//   beforeEach(waitForAsync(async () => {
-//     TestBed.configureTestingModule({
-//       imports: [IonicModule.forRoot(), FriendRequestComponent],
-//     }).compileComponents();
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [IonicModule.forRoot()],
+    }).compileComponents();
 
-//     fixture = await TestBed.createComponent(FriendRequestComponent);
-//     component = fixture.componentInstance;
-//     fixture.detectChanges();
-//   }));
+    fixture = TestBed.createComponent(DetailsComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
 
-//   it("should create", () => {
-//     expect(component).toBeTruthy();
-//   });
-// });
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

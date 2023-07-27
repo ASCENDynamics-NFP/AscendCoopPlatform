@@ -46,7 +46,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: "group-edit",
+    path: "group-profile/:groupId/edit",
     loadComponent: () =>
       import("./modules/group/pages/group-edit/group-edit.page").then(
         (m) => m.GroupEditPage,

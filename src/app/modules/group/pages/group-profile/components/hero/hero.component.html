@@ -1,0 +1,35 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<ion-card *ngIf="group">
+  <img
+    width="100%"
+    alt="Silhouette of mountains"
+    src="https://ionicframework.com/docs/img/demos/card-media.png"
+  />
+  <ion-card-header>
+    <ion-card-title>{{ group.name }}</ion-card-title>
+    <ion-card-subtitle>101 Hours Volunteer</ion-card-subtitle>
+    <ion-card-subtitle>Contact Email: {{ group.email }}</ion-card-subtitle>
+  </ion-card-header>
+
+  <!-- <ion-card-content>
+    Here's a small text description for the card content. Nothing more, nothing less.
+  </ion-card-content> -->
+</ion-card>

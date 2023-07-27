@@ -35,34 +35,40 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <ion-card>
           <ion-card-content>
             <form [formGroup]="editProfileForm" (ngSubmit)="onSubmit()">
-              <ion-item>
-                <ion-label position="floating">Display Name</ion-label>
-                <ion-input
-                  aria-label="Display Name"
-                  formControlName="displayName"
-                  type="text"
-                ></ion-input>
-              </ion-item>
+              <ion-grid>
+                <ion-row>
+                  <ion-col>
+                    <ion-item>
+                      <ion-label position="floating">Display Name</ion-label>
+                      <ion-input
+                        aria-label="Display Name"
+                        formControlName="displayName"
+                        type="text"
+                      ></ion-input>
+                    </ion-item>
 
-              <ion-item>
-                <ion-label position="floating">Email</ion-label>
-                <ion-input
-                  aria-label="Email"
-                  [readonly]="true"
-                  formControlName="email"
-                  type="email"
-                ></ion-input>
-              </ion-item>
+                    <ion-item>
+                      <ion-label position="floating">Email</ion-label>
+                      <ion-input
+                        aria-label="Email"
+                        [readonly]="true"
+                        formControlName="email"
+                        type="email"
+                      ></ion-input>
+                    </ion-item>
 
-              <ion-item>
-                <ion-label position="floating">Phone Type</ion-label>
-                <ion-select aria-label="Phone Type" formControlName="phoneType">
-                  <ion-select-option value="Cell">Cell</ion-select-option>
-                  <ion-select-option value="Home">Home</ion-select-option>
-                  <ion-select-option value="Work">Work</ion-select-option>
-                </ion-select>
-              </ion-item>
-              <!-- 
+                    <ion-item>
+                      <ion-label position="floating">Phone Type</ion-label>
+                      <ion-select
+                        aria-label="Phone Type"
+                        formControlName="phoneType"
+                      >
+                        <ion-select-option value="Cell">Cell</ion-select-option>
+                        <ion-select-option value="Home">Home</ion-select-option>
+                        <ion-select-option value="Work">Work</ion-select-option>
+                      </ion-select>
+                    </ion-item>
+                    <!-- 
         <ion-item>
           <ion-label position="floating">Country Code</ion-label>
           <ion-input formControlName="phoneCountryCode"></ion-input>
@@ -72,146 +78,164 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-label position="floating">Phone Number</ion-label>
           <ion-input formControlName="phoneNumber" type="tel"></ion-input>
         </ion-item> -->
-              <ion-item>
-                <ion-label position="floating">Phone Country Code</ion-label>
-                <ion-input
-                  aria-label="Phone Country Code"
-                  formControlName="phoneCountryCode"
-                  pattern="^[0-9]*$"
-                  inputmode="numeric"
-                ></ion-input>
-                <ion-note
-                  *ngIf="editProfileForm.controls.phoneCountryCode.invalid && editProfileForm.controls.phoneCountryCode.touched"
-                >
-                  Please enter a valid country code
-                </ion-note>
-              </ion-item>
+                    <ion-item>
+                      <ion-label position="floating"
+                        >Phone Country Code</ion-label
+                      >
+                      <ion-input
+                        aria-label="Phone Country Code"
+                        formControlName="phoneCountryCode"
+                        pattern="^[0-9]*$"
+                        inputmode="numeric"
+                      ></ion-input>
+                      <ion-note
+                        *ngIf="editProfileForm.controls.phoneCountryCode.invalid && editProfileForm.controls.phoneCountryCode.touched"
+                      >
+                        Please enter a valid country code
+                      </ion-note>
+                    </ion-item>
 
-              <ion-item>
-                <ion-label position="floating">Phone Number</ion-label>
-                <ion-input
-                  aria-label="Phone Number"
-                  formControlName="phoneNumber"
-                  type="tel"
-                  pattern="^\d{10}$"
-                  inputmode="numeric"
-                ></ion-input>
-                <ion-note
-                  *ngIf="editProfileForm.controls.phoneNumber.invalid && editProfileForm.controls.phoneNumber.touched"
-                >
-                  Please enter a valid phone number
-                </ion-note>
-              </ion-item>
+                    <ion-item>
+                      <ion-label position="floating">Phone Number</ion-label>
+                      <ion-input
+                        aria-label="Phone Number"
+                        formControlName="phoneNumber"
+                        type="tel"
+                        pattern="^\d{10}$"
+                        inputmode="numeric"
+                      ></ion-input>
+                      <ion-note
+                        *ngIf="editProfileForm.controls.phoneNumber.invalid && editProfileForm.controls.phoneNumber.touched"
+                      >
+                        Please enter a valid phone number
+                      </ion-note>
+                    </ion-item>
 
-              <ion-item>
-                <ion-label position="floating">Tagline</ion-label>
-                <ion-textarea
-                  aria-label="Tagline"
-                  formControlName="tagline"
-                ></ion-textarea>
-              </ion-item>
+                    <ion-item>
+                      <ion-label position="floating">Tagline</ion-label>
+                      <ion-textarea
+                        aria-label="Tagline"
+                        formControlName="tagline"
+                      ></ion-textarea>
+                    </ion-item>
 
-              <ion-item>
-                <ion-label position="floating">Bio</ion-label>
-                <ion-textarea
-                  aria-label="Bio"
-                  formControlName="bio"
-                ></ion-textarea>
-              </ion-item>
+                    <ion-item>
+                      <ion-label position="floating">Bio</ion-label>
+                      <ion-textarea
+                        aria-label="Bio"
+                        formControlName="bio"
+                      ></ion-textarea>
+                    </ion-item>
+                  </ion-col>
+                  <ion-col>
+                    <ion-item>
+                      <ion-label position="floating">Street Address</ion-label>
+                      <ion-input
+                        aria-label="Street Address"
+                        formControlName="addressStreet"
+                        type="text"
+                        pattern="^[a-zA-Z0-9\s,]*$"
+                      ></ion-input>
+                      <ion-note
+                        *ngIf="editProfileForm.controls.addressStreet.invalid && editProfileForm.controls.addressStreet.touched"
+                      >
+                        Please enter a valid address
+                      </ion-note>
+                    </ion-item>
 
-              <ion-item>
-                <ion-label position="floating">Street Address</ion-label>
-                <ion-input
-                  aria-label="Street Address"
-                  formControlName="addressStreet"
-                  type="text"
-                  pattern="^[a-zA-Z0-9\s,]*$"
-                ></ion-input>
-                <ion-note
-                  *ngIf="editProfileForm.controls.addressStreet.invalid && editProfileForm.controls.addressStreet.touched"
-                >
-                  Please enter a valid address
-                </ion-note>
-              </ion-item>
+                    <ion-item>
+                      <ion-label position="floating">City</ion-label>
+                      <ion-input
+                        aria-label="City"
+                        formControlName="addressCity"
+                        type="text"
+                        pattern="^[a-zA-Z\s]*$"
+                      ></ion-input>
+                      <ion-note
+                        *ngIf="editProfileForm.controls.addressCity.invalid && editProfileForm.controls.addressCity.touched"
+                      >
+                        Please enter a valid city name
+                      </ion-note>
+                    </ion-item>
 
-              <ion-item>
-                <ion-label position="floating">City</ion-label>
-                <ion-input
-                  aria-label="City"
-                  formControlName="addressCity"
-                  type="text"
-                  pattern="^[a-zA-Z\s]*$"
-                ></ion-input>
-                <ion-note
-                  *ngIf="editProfileForm.controls.addressCity.invalid && editProfileForm.controls.addressCity.touched"
-                >
-                  Please enter a valid city name
-                </ion-note>
-              </ion-item>
+                    <ion-item>
+                      <ion-label position="floating">State</ion-label>
+                      <ion-input
+                        aria-label="State"
+                        formControlName="addressState"
+                        type="text"
+                        pattern="^[a-zA-Z\s]*$"
+                      ></ion-input>
+                      <ion-note
+                        *ngIf="editProfileForm.controls.addressState.invalid && editProfileForm.controls.addressState.touched"
+                      >
+                        Please enter a valid state name
+                      </ion-note>
+                    </ion-item>
 
-              <ion-item>
-                <ion-label position="floating">State</ion-label>
-                <ion-input
-                  aria-label="State"
-                  formControlName="addressState"
-                  type="text"
-                  pattern="^[a-zA-Z\s]*$"
-                ></ion-input>
-                <ion-note
-                  *ngIf="editProfileForm.controls.addressState.invalid && editProfileForm.controls.addressState.touched"
-                >
-                  Please enter a valid state name
-                </ion-note>
-              </ion-item>
+                    <ion-item>
+                      <ion-label position="floating">Zip Code</ion-label>
+                      <ion-input
+                        aria-label="Zip Code"
+                        formControlName="addressZipcode"
+                        type="text"
+                        pattern="^[0-9]*$"
+                      ></ion-input>
+                      <ion-note
+                        *ngIf="editProfileForm.controls.addressZipcode.invalid && editProfileForm.controls.addressZipcode.touched"
+                      >
+                        Please enter a valid zip code
+                      </ion-note>
+                    </ion-item>
 
-              <ion-item>
-                <ion-label position="floating">Zip Code</ion-label>
-                <ion-input
-                  aria-label="Zip Code"
-                  formControlName="addressZipcode"
-                  type="text"
-                  pattern="^[0-9]*$"
-                ></ion-input>
-                <ion-note
-                  *ngIf="editProfileForm.controls.addressZipcode.invalid && editProfileForm.controls.addressZipcode.touched"
-                >
-                  Please enter a valid zip code
-                </ion-note>
-              </ion-item>
+                    <ion-item>
+                      <ion-label position="floating">Country</ion-label>
+                      <ion-input
+                        aria-label="Country"
+                        formControlName="addressCountry"
+                        type="text"
+                        pattern="^[a-zA-Z\s]*$"
+                      ></ion-input>
+                      <ion-note
+                        *ngIf="editProfileForm.controls.addressCountry.invalid && editProfileForm.controls.addressCountry.touched"
+                      >
+                        Please enter a valid country name
+                      </ion-note>
+                    </ion-item>
 
-              <ion-item>
-                <ion-label position="floating">Country</ion-label>
-                <ion-input
-                  aria-label="Country"
-                  formControlName="addressCountry"
-                  type="text"
-                  pattern="^[a-zA-Z\s]*$"
-                ></ion-input>
-                <ion-note
-                  *ngIf="editProfileForm.controls.addressCountry.invalid && editProfileForm.controls.addressCountry.touched"
-                >
-                  Please enter a valid country name
-                </ion-note>
-              </ion-item>
-
-              <ion-item>
-                <ion-label position="floating">Date of Birth</ion-label>
-                <ion-datetime
-                  aria-label="Date of Birth"
-                  formControlName="dateOfBirth"
-                  displayFormat="MM/DD/YYYY"
-                  presentation="date"
-                  color="primary"
-                  size="cover"
-                ></ion-datetime>
-              </ion-item>
-
-              <ion-button
-                expand="full"
-                type="submit"
-                [disabled]="!editProfileForm.valid"
-                >Save Changes</ion-button
-              >
+                    <ion-item>
+                      <ion-label position="floating">Date of Birth</ion-label>
+                      <ion-datetime
+                        aria-label="Date of Birth"
+                        formControlName="dateOfBirth"
+                        displayFormat="MM/DD/YYYY"
+                        presentation="date"
+                        color="primary"
+                        size="cover"
+                      ></ion-datetime>
+                    </ion-item>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col>
+                    <ion-button
+                      expand="block"
+                      type="submit"
+                      [disabled]="!editProfileForm.valid"
+                      >Save Changes</ion-button
+                    >
+                  </ion-col>
+                  <ion-col>
+                    <ion-button
+                      expand="block"
+                      type="submit"
+                      color="secondary"
+                      (click)="backToProfile()"
+                      >Back to Profile</ion-button
+                    >
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
             </form>
           </ion-card-content>
         </ion-card>

@@ -17,26 +17,22 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
-// import {IonicModule} from "@ionic/angular";
+import {CommonModule} from "@angular/common";
+import {Component, Input, OnInit} from "@angular/core";
+import {IonicModule} from "@ionic/angular";
+import {AppGroup} from "../../../../../../models/group.model";
 
-// import {FriendRequestComponent} from "./friend-request.component";
+@Component({
+  selector: "app-hero",
+  templateUrl: "./hero.component.html",
+  styleUrls: ["./hero.component.scss"],
+  standalone: true,
+  imports: [IonicModule, CommonModule],
+})
+export class HeroComponent implements OnInit {
+  @Input() group: Partial<AppGroup> | null = null; // define your user here
 
-// describe("FriendRequestComponent", () => {
-//   let component: FriendRequestComponent;
-//   let fixture: ComponentFixture<FriendRequestComponent>;
+  constructor() {}
 
-//   beforeEach(waitForAsync(async () => {
-//     TestBed.configureTestingModule({
-//       imports: [IonicModule.forRoot(), FriendRequestComponent],
-//     }).compileComponents();
-
-//     fixture = await TestBed.createComponent(FriendRequestComponent);
-//     component = fixture.componentInstance;
-//     fixture.detectChanges();
-//   }));
-
-//   it("should create", () => {
-//     expect(component).toBeTruthy();
-//   });
-// });
+  ngOnInit() {}
+}

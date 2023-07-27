@@ -28,17 +28,21 @@ import {
   getDoc,
   getDocs,
   doc,
-  DocumentData,
   query,
   where,
   or,
   and,
+  DocumentSnapshot,
+  QuerySnapshot,
 } from "firebase/firestore";
 import {
   prepareDataForCreate,
   prepareDataForUpdate,
 } from "../utils/firebase.util";
 import {AuthService} from "./auth.service";
+import {LoadingController} from "@ionic/angular";
+import {ErrorHandlerService} from "./error-handler.service";
+import {SuccessHandlerService} from "./success-handler.service";
 
 @Injectable({
   providedIn: "root",
@@ -49,63 +53,96 @@ export class GroupsService {
   constructor(
     private authService: AuthService,
     private firestoreService: FirestoreService,
+    private loadingController: LoadingController,
+    private errorHandler: ErrorHandlerService,
+    private successHandler: SuccessHandlerService,
   ) {}
 
   async createGroup(group: AppGroup): Promise<string | null> {
-    try {
-      const documentRef = await addDoc(
-        collection(this.firestoreService.firestore, this.collectionName),
-        prepareDataForCreate(group, this.authService.getCurrentUser()?.uid),
-      );
-      return documentRef.id;
-    } catch (error) {
-      console.error("Error adding document: ", error);
-      return null;
-    }
+    const loading = await this.loadingController.create();
+    await loading.present();
+    return await addDoc(
+      collection(this.firestoreService.firestore, this.collectionName),
+      prepareDataForCreate(group, this.authService.getCurrentUser()?.uid),
+    )
+      .then((docRef) => {
+        this.successHandler.handleSuccess("Request sent successfully!");
+        return docRef.id;
+      })
+      .catch((error) => {
+        console.error("Error adding document: ", error);
+        this.errorHandler.handleFirebaseAuthError(error);
+        return null;
+      })
+      .finally(() => {
+        loading.dismiss();
+      });
   }
 
-  async getGroup(groupId: string | null): Promise<DocumentData | null> {
-    if (!groupId) throw new Error("Group must have a groupId");
-    try {
-      const docSnap = await getDoc(
-        doc(this.firestoreService.firestore, this.collectionName, groupId),
-      );
-      if (docSnap.exists()) {
-        return docSnap.data();
-      } else {
-        // doc.data() will be undefined in this case
-        console.log("No such document!");
-        return null;
-      }
-    } catch (error) {
-      console.error("Error getting document:", error);
+  async getGroupById(
+    groupId: string | null,
+  ): Promise<Partial<AppGroup> | null> {
+    if (!groupId) {
+      this.errorHandler.handleFirebaseAuthError({
+        code: "",
+        message: "User id must be provided",
+      });
       return null;
     }
+    const loading = await this.loadingController.create();
+    await loading.present();
+    return await getDoc(
+      doc(this.firestoreService.firestore, this.collectionName, groupId),
+    )
+      .then((querySnapshot) => {
+        return this.processFirebaseData(querySnapshot);
+      })
+      .catch((error) => {
+        this.errorHandler.handleFirebaseAuthError(error);
+        return [];
+      })
+      .finally(() => {
+        loading.dismiss();
+      });
   }
 
   async updateGroup(group: Partial<AppGroup>) {
-    try {
-      if (!group.id) throw new Error("Group must have a groupId");
-      await updateDoc(
-        doc(this.firestoreService.firestore, this.collectionName, group.id),
-        prepareDataForUpdate(group, this.authService.getCurrentUser()?.uid),
-      );
-    } catch (error) {
-      console.error("Error updating document: ", error);
-    }
+    if (!group.id) throw new Error("Group must have a groupId");
+    const loading = await this.loadingController.create();
+    await loading.present();
+    await updateDoc(
+      doc(this.firestoreService.firestore, this.collectionName, group.id),
+      prepareDataForUpdate(group, this.authService.getCurrentUser()?.uid),
+    )
+      .then(() => {
+        this.successHandler.handleSuccess(
+          "Request status updated successfully!",
+        );
+      })
+      .catch((error) => {
+        console.error("Error updating document: ", error);
+        this.errorHandler.handleFirebaseAuthError(error);
+      })
+      .finally(() => {
+        loading.dismiss();
+      });
   }
 
   async deleteGroup(groupId: string) {
-    try {
-      await deleteDoc(
-        doc(this.firestoreService.firestore, this.collectionName, groupId),
-      );
-    } catch (error) {
-      console.error("Error deleting document: ", error);
-    }
+    await deleteDoc(
+      doc(this.firestoreService.firestore, this.collectionName, groupId),
+    )
+      .then(() => {
+        this.successHandler.handleSuccess("Group deleted successfully!");
+      })
+      .catch((error) => {
+        console.error("Error deleting document: ", error);
+        this.errorHandler.handleFirebaseAuthError(error);
+        return null;
+      });
   }
 
-  searchGroups(searchTerm: string): Promise<DocumentData[] | null> {
+  searchGroups(searchTerm: string): Promise<Partial<AppGroup>[]> {
     return getDocs(
       query(
         collection(this.firestoreService.firestore, this.collectionName),
@@ -139,32 +176,51 @@ export class GroupsService {
       ),
     )
       .then((querySnapshot) => {
-        const documents: DocumentData[] = [];
-        querySnapshot.forEach((doc) => {
-          documents.push(doc.data());
-        });
-        return documents;
+        return this.processFirebaseData(querySnapshot);
       })
       .catch((error) => {
         console.error("Error retrieving collection: ", error);
-        return null;
+        this.errorHandler.handleFirebaseAuthError(error);
+        return [];
       });
   }
 
-  async getGroups(): Promise<DocumentData[] | null> {
+  async getGroups(): Promise<AppGroup[] | []> {
+    const loading = await this.loadingController.create();
+    await loading.present();
     return getDocs(
       collection(this.firestoreService.firestore, this.collectionName),
     )
       .then((querySnapshot) => {
-        const documents: DocumentData[] = [];
-        querySnapshot.forEach((doc) => {
-          documents.push(doc.data());
-        });
-        return documents;
+        return this.processFirebaseData(querySnapshot);
       })
       .catch((error) => {
-        console.error(error);
-        return null;
+        this.errorHandler.handleFirebaseAuthError(error);
+        return [];
+      })
+      .finally(() => {
+        loading.dismiss();
       });
+  }
+
+  processFirebaseData(querySnapshot: QuerySnapshot | DocumentSnapshot): any {
+    if (querySnapshot instanceof QuerySnapshot) {
+      // Processing for array of documents
+      const documents: Partial<AppGroup>[] = [];
+      querySnapshot.forEach((doc) => {
+        let data = doc.data() as Partial<AppGroup>;
+        data = {...data, id: doc.id};
+        documents.push(data);
+      });
+      return documents;
+    } else if (querySnapshot instanceof DocumentSnapshot) {
+      // Processing for single document
+      if (querySnapshot.exists()) {
+        let data = querySnapshot.data() as Partial<AppGroup>;
+        data = {...data, id: querySnapshot.id};
+        return data;
+      }
+    }
+    return null;
   }
 }

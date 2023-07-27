@@ -72,8 +72,11 @@ export class GroupEditPage implements OnInit {
   ngOnInit() {
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
     // Load the group data, e.g. from a service
-    this.groupsService.getGroup(this.groupId).then((group) => {
-      this.group = group as Partial<AppGroup>;
+    // if (!this.groupId) {
+    //   this.groupId = this.groupsService.createGroup();
+    // }
+    this.groupsService.getGroupById(this.groupId).then((group) => {
+      this.group = group;
       if (this.group) {
         // Update the form with the group data
         this.editGroupForm.patchValue({

@@ -46,7 +46,7 @@ import {AuthService} from "../../../../core/services/auth.service";
 })
 export class GroupProfilePage implements OnInit {
   groupId: string | null;
-  group: Partial<AppGroup> = {};
+  group: Partial<AppGroup> | null = {};
   user: any;
   memberList: AppRelationship[] = [];
   groupList: AppRelationship[] = [];
@@ -90,12 +90,12 @@ export class GroupProfilePage implements OnInit {
 
   getGroup() {
     this.groupsService
-      .getGroup(this.groupId)
+      .getGroupById(this.groupId)
       .then((group) => {
-        this.group = group as Partial<AppGroup>;
+        this.group = group;
         let userId = this.authService?.getCurrentUser()?.uid;
         this.canEdit = userId
-          ? this.group.admins?.includes(userId) || false
+          ? this.group?.admins?.includes(userId) || false
           : false;
       })
       .catch((error) => {

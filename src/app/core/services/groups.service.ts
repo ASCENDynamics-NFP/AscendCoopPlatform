@@ -142,7 +142,7 @@ export class GroupsService {
       });
   }
 
-  searchGroups(searchTerm: string): Promise<Partial<AppGroup>[]> {
+  searchGroups(searchTerm: string): Promise<AppGroup[] | []> {
     return getDocs(
       query(
         collection(this.firestoreService.firestore, this.collectionName),

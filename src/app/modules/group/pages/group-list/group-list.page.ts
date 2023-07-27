@@ -20,27 +20,34 @@
 import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
-import {IonicModule, LoadingController} from "@ionic/angular";
+import {IonicModule} from "@ionic/angular";
 import {MenuService} from "../../../../core/services/menu.service";
 import {GroupsService} from "../../../../core/services/groups.service";
-import {DocumentData} from "firebase/firestore";
+import {AppGroup} from "../../../../models/group.model";
+import {AuthService} from "../../../../core/services/auth.service";
+import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
+import {User} from "firebase/auth";
+import {RouterModule} from "@angular/router";
 
 @Component({
   selector: "app-group-list",
   templateUrl: "./group-list.page.html",
   styleUrls: ["./group-list.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
 export class GroupListPage implements OnInit {
-  groups: DocumentData[] | null = [];
-  searchTerm: string = "";
+  user: User | null = null; // define your user here
+  groups: Partial<AppGroup>[] | null = [];
 
   constructor(
+    private authService: AuthService,
     private menuService: MenuService,
     private groupService: GroupsService,
-    private loadingController: LoadingController,
-  ) {}
+    private relationshipsCollectionService: RelationshipsCollectionService,
+  ) {
+    this.user = this.authService.getCurrentUser();
+  }
 
   ngOnInit() {
     this.getGroups();
@@ -53,35 +60,54 @@ export class GroupListPage implements OnInit {
   ionViewWillLeave() {}
 
   async getGroups() {
-    const loading = await this.loadingController.create();
-    await loading.present();
-    this.groupService
-      .getGroups()
-      .then((groups) => {
-        this.groups = groups;
-        // Do something with the groups
-      })
-      .catch((error) => {
-        console.error(error);
-      })
-      .finally(() => {
-        loading.dismiss();
-      });
+    this.groupService.getGroups().then((groups) => {
+      this.groups = groups;
+    });
   }
 
-  async search() {
-    const loading = await this.loadingController.create();
-    await loading.present();
-    this.groupService
-      .searchGroups(this.searchTerm)
-      .then((groups) => {
-        this.groups = groups;
+  searchGroups(event: any) {
+    const value = event.target.value;
+    this.groupService.searchGroups(value).then((groups) => {
+      this.groups = groups;
+    });
+  }
+
+  sendRequest(group: Partial<AppGroup>) {
+    this.relationshipsCollectionService
+      .sendRequest({
+        id: null,
+        senderId: this.user?.uid ? this.user.uid : "",
+        receiverId: group.id,
+        type: "member",
+        status: "pending",
+        membershipRole: "",
+        receiverRelationship: "group",
+        senderRelationship: "user",
+        receiverName: group.name,
+        receiverImage: group.groupPicture,
+        receiverTagline: group.description,
+        senderName: this.user?.displayName ? this.user.displayName : "",
+        senderImage: this.user?.photoURL ? this.user.photoURL : "",
+        senderTagline: "",
       })
-      .catch((error) => {
-        console.error(error);
-      })
-      .finally(() => {
-        loading.dismiss();
+      .then(() => {
+        // updated friends list on userList item to include receiverId in friends list so that the button doesn't show
+        this.groups =
+          this.groups?.map((group: Partial<AppGroup>) => {
+            if (group.id === group["id"]) {
+              if (!group.pendingMembers) {
+                group.pendingMembers = [];
+              }
+              return {
+                ...group,
+                pendingFriends: this.user?.uid
+                  ? [...group.pendingMembers, this.user.uid]
+                  : [...group.pendingMembers],
+              };
+            } else {
+              return group;
+            }
+          }) ?? [];
       });
   }
 }

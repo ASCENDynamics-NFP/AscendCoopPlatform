@@ -73,7 +73,7 @@ export class EditUserProfilePage implements OnInit {
   ngOnInit() {
     // Load the user data, e.g. from a service
     this.userService
-      .getUser(this.activatedRoute.snapshot.paramMap.get("uid"))
+      .getUserById(this.activatedRoute.snapshot.paramMap.get("uid"))
       .then((user) => {
         this.user = user as Partial<AppUser>;
         if (this.user) {

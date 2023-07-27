@@ -26,7 +26,6 @@ import {
   deleteDoc,
   getDoc,
   doc,
-  DocumentData,
   where,
   getDocs,
   query,
@@ -35,11 +34,16 @@ import {
   setDoc,
   or,
   and,
+  DocumentSnapshot,
+  QuerySnapshot,
 } from "firebase/firestore";
 import {
   prepareDataForCreate,
   prepareDataForUpdate,
 } from "../utils/firebase.util";
+import {LoadingController} from "@ionic/angular";
+import {ErrorHandlerService} from "./error-handler.service";
+import {SuccessHandlerService} from "./success-handler.service";
 
 @Injectable({
   providedIn: "root",
@@ -47,7 +51,12 @@ import {
 export class UsersService {
   private collectionName = "users";
 
-  constructor(private firestoreService: FirestoreService) {}
+  constructor(
+    private firestoreService: FirestoreService,
+    private loadingController: LoadingController,
+    private errorHandler: ErrorHandlerService,
+    private successHandler: SuccessHandlerService,
+  ) {}
 
   createUser(user: Partial<AppUser>): void {
     if (!user.id) throw new Error("User must have a id");
@@ -64,48 +73,63 @@ export class UsersService {
       });
   }
 
-  async getUser(userId: any): Promise<DocumentData | null> {
-    // if (typeof userId !== "string") {
-    // console.error("Error getting document: userId is not a string");
-    // return null;
-    // }
-    try {
-      const docSnap = await getDoc(
-        doc(this.firestoreService.firestore, this.collectionName, userId),
-      );
-      if (docSnap.exists()) {
-        return docSnap.data();
-      } else {
-        // doc.data() will be undefined in this case
-        console.log("No such document!");
-        return null;
-      }
-    } catch (error) {
-      console.error("Error getting document:", error);
+  async getUserById(userId: string | null): Promise<AppUser | null> {
+    if (!userId) {
+      this.errorHandler.handleFirebaseAuthError({
+        code: "",
+        message: "User id must be provided",
+      });
       return null;
     }
+    const loading = await this.loadingController.create();
+    await loading.present();
+    return await getDoc(
+      doc(this.firestoreService.firestore, this.collectionName, userId),
+    )
+      .then((querySnapshot) => {
+        return this.processFirebaseData(querySnapshot);
+      })
+      .catch((error) => {
+        this.errorHandler.handleFirebaseAuthError(error);
+        return [];
+      })
+      .finally(() => {
+        loading.dismiss();
+      });
   }
 
   async updateUser(user: Partial<AppUser>) {
     if (!user.id) throw new Error("User must have a id");
-    try {
-      await updateDoc(
-        doc(this.firestoreService.firestore, this.collectionName, user.id),
-        prepareDataForUpdate(user, user.id),
-      );
-    } catch (error) {
-      console.error("Error updating document: ", error);
-    }
+    const loading = await this.loadingController.create();
+    await loading.present();
+    await updateDoc(
+      doc(this.firestoreService.firestore, this.collectionName, user.id),
+      prepareDataForUpdate(user, user.id),
+    )
+      .then(() => {
+        this.successHandler.handleSuccess("User updated successfully!");
+      })
+      .catch((error) => {
+        console.error("Error updating document: ", error);
+        this.errorHandler.handleFirebaseAuthError(error);
+      })
+      .finally(() => {
+        loading.dismiss();
+      });
   }
 
   async deleteUser(userId: string) {
-    try {
-      await deleteDoc(
-        doc(this.firestoreService.firestore, this.collectionName, userId),
-      );
-    } catch (error) {
-      console.error("Error deleting document: ", error);
-    }
+    await deleteDoc(
+      doc(this.firestoreService.firestore, this.collectionName, userId),
+    )
+      .then(() => {
+        this.successHandler.handleSuccess("Group deleted successfully!");
+      })
+      .catch((error) => {
+        console.error("Error deleting document: ", error);
+        this.errorHandler.handleFirebaseAuthError(error);
+        return null;
+      });
   }
 
   async getUsersWithCondition(
@@ -114,33 +138,26 @@ export class UsersService {
     value: any,
     orderByField: string = "email",
     recordLimit: number = 1,
-  ): Promise<DocumentData[] | null> {
-    try {
-      const collectionRef = collection(
-        this.firestoreService.firestore,
-        this.collectionName,
-      );
-      const q = query(
-        collectionRef,
+  ): Promise<AppUser[] | null> {
+    return await getDocs(
+      query(
+        collection(this.firestoreService.firestore, this.collectionName),
         where(field, condition, value),
         orderBy(orderByField),
         limit(recordLimit),
-      );
-      const querySnapshot = await getDocs(q);
-      const documents: DocumentData[] = [];
-      querySnapshot.forEach((doc) => {
-        const data = doc.data() as AppUser;
-        data.id = doc.id; // add this line
-        documents.push(data);
+      ),
+    )
+      .then((querySnapshot) => {
+        return this.processFirebaseData(querySnapshot);
+      })
+      .catch((error) => {
+        console.error("Error retrieving collection: ", error);
+        this.errorHandler.handleFirebaseAuthError(error);
+        return [];
       });
-      return documents;
-    } catch (error) {
-      console.error("Error retrieving collection: ", error);
-      return null;
-    }
   }
 
-  searchUsersByName(searchTerm: string): Promise<DocumentData[] | null> {
+  searchUsersByName(searchTerm: string): Promise<AppUser[] | null> {
     return getDocs(
       query(
         collection(this.firestoreService.firestore, this.collectionName),
@@ -174,15 +191,32 @@ export class UsersService {
       ),
     )
       .then((querySnapshot) => {
-        const documents: DocumentData[] = [];
-        querySnapshot.forEach((doc) => {
-          documents.push(doc.data());
-        });
-        return documents;
+        return this.processFirebaseData(querySnapshot);
       })
       .catch((error) => {
         console.error("Error retrieving collection: ", error);
         return null;
       });
+  }
+
+  processFirebaseData(querySnapshot: QuerySnapshot | DocumentSnapshot): any {
+    if (querySnapshot instanceof QuerySnapshot) {
+      // Processing for array of documents
+      const documents: Partial<AppUser>[] = [];
+      querySnapshot.forEach((doc) => {
+        let data = doc.data() as Partial<AppUser>;
+        data = {...data, id: doc.id};
+        documents.push(data);
+      });
+      return documents;
+    } else if (querySnapshot instanceof DocumentSnapshot) {
+      // Processing for single document
+      if (querySnapshot.exists()) {
+        let data = querySnapshot.data() as Partial<AppUser>;
+        data = {...data, id: querySnapshot.id};
+        return data;
+      }
+    }
+    return null;
   }
 }

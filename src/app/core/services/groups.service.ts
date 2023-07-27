@@ -85,7 +85,7 @@ export class GroupsService {
     if (!groupId) {
       this.errorHandler.handleFirebaseAuthError({
         code: "",
-        message: "User id must be provided",
+        message: "Group id must be provided",
       });
       return null;
     }

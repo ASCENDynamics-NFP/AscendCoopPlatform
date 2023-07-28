@@ -17,27 +17,27 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<ion-card *ngIf="group">
-  <img width="100%" [alt]="group.name" [src]="group.heroImage" />
+<ion-card>
   <ion-card-header>
-    <ion-item lines="none">
-      <ion-thumbnail *ngIf="group.logoImage" slot="start">
-        <img [src]="group.logoImage" [alt]="group.name" />
-      </ion-thumbnail>
-      <ion-label>
-        <ion-card-title>{{ group.name }}</ion-card-title>
-        <p>{{ group.tagline }}</p>
-        <ion-card-subtitle>### Hours Volunteer</ion-card-subtitle>
-      </ion-label>
-    </ion-item>
+    <ion-card-title>Collaborating Organizations</ion-card-title>
+    <ion-card-subtitle>{{ groupList.length }} groups</ion-card-subtitle>
   </ion-card-header>
-
   <ion-card-content>
-    <ion-item lines="none">
-      <ion-label>
-        <ion-card-title>Group Description</ion-card-title>
-        <p>{{ group.description }}</p>
-      </ion-label>
-    </ion-item>
+    <ion-list>
+      <ion-item
+        *ngFor="let group of allGroups | slice : 0 : 4; let i = index"
+        button
+        (click)="goToUserProfile(group.id)"
+      >
+        <ion-thumbnail slot="start">
+          <img *ngIf="group.image" [alt]="group.name" [src]="group.image" />
+        </ion-thumbnail>
+        <ion-label>
+          <h3>{{ group["name"] }}</h3>
+          <p>Group</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
   </ion-card-content>
+  <ion-button fill="clear" (click)="goToGroupList()">View All</ion-button>
 </ion-card>

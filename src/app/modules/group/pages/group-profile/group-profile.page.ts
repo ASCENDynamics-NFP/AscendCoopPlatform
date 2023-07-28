@@ -30,6 +30,8 @@ import {HeroComponent} from "./components/hero/hero.component";
 import {AppRelationship} from "../../../../models/relationship.model";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 import {AuthService} from "../../../../core/services/auth.service";
+import {MemberListComponent} from "./components/member-list/member-list.component";
+import {GroupListComponent} from "./components/group-list/group-list.component";
 
 @Component({
   selector: "app-group-profile",
@@ -42,6 +44,8 @@ import {AuthService} from "../../../../core/services/auth.service";
     FormsModule,
     HeroComponent,
     DetailsComponent,
+    MemberListComponent,
+    GroupListComponent,
   ],
 })
 export class GroupProfilePage implements OnInit {
@@ -68,7 +72,7 @@ export class GroupProfilePage implements OnInit {
       .then((relationships) => {
         for (let relationship of relationships) {
           if (
-            relationship.type === "group-group" &&
+            relationship.type === "group" &&
             relationship.status === "accepted"
           ) {
             this.groupList.push(relationship);

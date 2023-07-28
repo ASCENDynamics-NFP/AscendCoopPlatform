@@ -68,7 +68,9 @@ export class MemberListComponent implements OnInit {
 
   goToMemberList() {
     if (this.group?.id) {
-      this.router.navigate([`/group-profile/${this.group.id}/members`]);
+      this.router.navigate([
+        `/group/${this.group.id}/partners/${this.group.id}/members`,
+      ]);
     }
   }
 }

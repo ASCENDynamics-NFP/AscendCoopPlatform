@@ -143,9 +143,13 @@ export const routes: Routes = [
   },
   {
     path: "group/:groupId/partners",
-    loadComponent: () =>
-      import("./modules/group/pages/partners/partners.page").then(
-        (m) => m.PartnersPage,
+    loadChildren: () =>
+      import("./modules/group/pages/partners/partners.routes").then(
+        (m) => m.routes,
       ),
+    // loadComponent: () =>
+    //   import("./modules/group/pages/partners/partners.page").then(
+    //     (m) => m.PartnersPage,
+    //   ),
   },
 ];

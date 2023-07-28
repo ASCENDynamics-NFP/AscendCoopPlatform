@@ -17,27 +17,32 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<ion-card>
-  <ion-card-header>
-    <ion-card-title>Partner Organizations</ion-card-title>
-    <ion-card-subtitle>{{ groupList.length }} groups</ion-card-subtitle>
-  </ion-card-header>
-  <ion-card-content>
-    <ion-list>
-      <ion-item
-        *ngFor="let group of allGroups | slice : 0 : 4; let i = index"
-        button
-        (click)="goToUserProfile(group.id)"
-      >
-        <ion-thumbnail slot="start">
-          <img *ngIf="group.image" [alt]="group.name" [src]="group.image" />
-        </ion-thumbnail>
-        <ion-label>
-          <h3>{{ group["name"] }}</h3>
-          <p>Group</p>
-        </ion-label>
-      </ion-item>
-    </ion-list>
-  </ion-card-content>
-  <ion-button fill="clear" (click)="goToPartnersList()">View All</ion-button>
-</ion-card>
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Partners</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Partners</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-tabs>
+    <ion-tab-bar slot="bottom">
+      <ion-tab-button tab="members">
+        <ion-icon name="people-circle"></ion-icon>
+        Members
+      </ion-tab-button>
+      <ion-tab-button tab="groups">
+        <ion-icon name="business"></ion-icon>
+        Groups
+      </ion-tab-button>
+      <ion-tab-button tab="search">
+        <ion-icon name="search"></ion-icon>
+        Search Groups
+      </ion-tab-button>
+    </ion-tab-bar>
+  </ion-tabs>
+</ion-content>

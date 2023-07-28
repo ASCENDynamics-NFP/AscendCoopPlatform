@@ -141,4 +141,11 @@ export const routes: Routes = [
         "./modules/user/pages/edit-user-profile/edit-user-profile.page"
       ).then((m) => m.EditUserProfilePage),
   },
+  {
+    path: "group/:groupId/partners",
+    loadComponent: () =>
+      import("./modules/group/pages/partners/partners.page").then(
+        (m) => m.PartnersPage,
+      ),
+  },
 ];

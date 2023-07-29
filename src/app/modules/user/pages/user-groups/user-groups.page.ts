@@ -19,16 +19,11 @@
 ***********************************************************************************************/
 import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
-// import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {UsersService} from "../../../../core/services/users.service";
-import {User} from "firebase/auth";
-import {DocumentData} from "firebase/firestore";
 import {AuthService} from "../../../../core/services/auth.service";
 import {MenuService} from "../../../../core/services/menu.service";
 import {ActivatedRoute, RouterModule} from "@angular/router";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
-import {AppUser} from "../../../../models/user.model";
 
 @Component({
   selector: "app-user-groups",

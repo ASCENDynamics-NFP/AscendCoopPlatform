@@ -152,4 +152,11 @@ export const routes: Routes = [
     //     (m) => m.PartnersPage,
     //   ),
   },
+  {
+    path: "user-profile/:uid/groups",
+    loadComponent: () =>
+      import("./modules/user/pages/user-groups/user-groups.page").then(
+        (m) => m.UserGroupsPage,
+      ),
+  },
 ];

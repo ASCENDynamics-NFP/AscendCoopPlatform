@@ -33,11 +33,16 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </ion-card-header>
 
   <ion-card-content>
+    <ion-card-title>Description</ion-card-title>
     <ion-item lines="none">
-      <ion-label>
-        <ion-card-title>Group Description</ion-card-title>
-        <p>{{ group.description }}</p>
-      </ion-label>
+      <p>
+        <ion-textarea
+          [readonly]="true"
+          [autoGrow]="true"
+          [value]="group.description"
+        >
+        </ion-textarea>
+      </p>
     </ion-item>
   </ion-card-content>
 </ion-card>

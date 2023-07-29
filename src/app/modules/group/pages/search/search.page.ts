@@ -21,16 +21,96 @@ import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
+import {User} from "firebase/auth";
+import {AuthService} from "../../../../core/services/auth.service";
+import {GroupsService} from "../../../../core/services/groups.service";
+import {MenuService} from "../../../../core/services/menu.service";
+import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
+import {AppGroup} from "../../../../models/group.model";
+import {ActivatedRoute, RouterModule} from "@angular/router";
 
 @Component({
   selector: "app-search",
   templateUrl: "./search.page.html",
   styleUrls: ["./search.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
 export class SearchPage implements OnInit {
-  constructor() {}
+  user: User | null = null; // define your user here
+  groups: Partial<AppGroup>[] | null = [];
+  groupId: string | null = null;
 
-  ngOnInit() {}
+  constructor(
+    private activatedRoute: ActivatedRoute,
+    private authService: AuthService,
+    private menuService: MenuService,
+    private groupService: GroupsService,
+    private relationshipsCollectionService: RelationshipsCollectionService,
+  ) {
+    this.user = this.authService.getCurrentUser();
+    this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
+  }
+
+  ngOnInit() {
+    this.getGroups();
+  }
+
+  ionViewWillEnter() {
+    this.menuService.onEnter();
+  }
+
+  ionViewWillLeave() {}
+
+  async getGroups() {
+    this.groupService.getGroups().then((groups) => {
+      this.groups = groups;
+    });
+  }
+
+  searchGroups(event: any) {
+    const value = event.target.value;
+    this.groupService.searchGroups(value).then((groups) => {
+      this.groups = groups;
+    });
+  }
+
+  sendRequest(group: Partial<AppGroup>) {
+    this.relationshipsCollectionService
+      .sendRequest({
+        id: null,
+        senderId: this.user?.uid ? this.user.uid : "",
+        receiverId: group.id,
+        type: "member",
+        status: "pending",
+        membershipRole: "",
+        receiverRelationship: "group",
+        senderRelationship: "user",
+        receiverName: group.name,
+        receiverImage: group.groupPicture,
+        receiverTagline: group.tagline,
+        senderName: this.user?.displayName ? this.user.displayName : "",
+        senderImage: this.user?.photoURL ? this.user.photoURL : "",
+        senderTagline: "",
+      })
+      .then(() => {
+        // updated friends list on userList item to include receiverId in friends list so that the button doesn't show
+        this.groups =
+          this.groups?.map((group: Partial<AppGroup>) => {
+            if (group.id === group["id"]) {
+              if (!group.pendingMembers) {
+                group.pendingMembers = [];
+              }
+              return {
+                ...group,
+                pendingFriends: this.user?.uid
+                  ? [...group.pendingMembers, this.user.uid]
+                  : [...group.pendingMembers],
+              };
+            } else {
+              return group;
+            }
+          }) ?? [];
+      });
+  }
 }

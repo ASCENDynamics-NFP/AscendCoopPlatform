@@ -19,61 +19,54 @@
 ***********************************************************************************************/
 import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
+// import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
+import {UsersService} from "../../../../core/services/users.service";
+import {User} from "firebase/auth";
+import {DocumentData} from "firebase/firestore";
+import {AuthService} from "../../../../core/services/auth.service";
 import {MenuService} from "../../../../core/services/menu.service";
 import {ActivatedRoute, RouterModule} from "@angular/router";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
-import {AuthService} from "../../../../core/services/auth.service";
-import {AppGroup} from "../../../../models/group.model";
-import {GroupsService} from "../../../../core/services/groups.service";
-import {User} from "firebase/auth";
-import {AppRelationship} from "../../../../models/relationship.model";
+import {AppUser} from "../../../../models/user.model";
 
 @Component({
-  selector: "app-member-list",
-  templateUrl: "./member-list.page.html",
-  styleUrls: ["./member-list.page.scss"],
+  selector: "app-user-groups",
+  templateUrl: "./user-groups.page.html",
+  styleUrls: ["./user-groups.page.scss"],
   standalone: true,
   imports: [IonicModule, CommonModule, RouterModule],
 })
-export class MemberListPage implements OnInit {
-  currentMembersList: any[] = [];
-  pendingMembersList: any[] = [];
-  groupId: string | null = null;
-  group: Partial<AppGroup> | null = null;
-  currentUser: User | null = this.authService.getCurrentUser();
+export class UserGroupsPage implements OnInit {
+  currentGroupsList: any[] = [];
+  pendingGroupsList: any[] = [];
+  userId: string | null = null;
+  currentUser: any;
   constructor(
     private authService: AuthService,
     private menuService: MenuService,
     private activatedRoute: ActivatedRoute,
     private relationshipsCollectionService: RelationshipsCollectionService,
-    private groupsService: GroupsService,
-  ) {
-    this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
-    this.groupsService.getGroupById(this.groupId).then((group) => {
-      this.group = group;
-    });
-  }
+  ) {}
 
   ngOnInit() {
+    this.userId = this.activatedRoute.snapshot.paramMap.get("uid");
     this.relationshipsCollectionService
-      .getRelationships(this.groupId)
+      .getRelationships(this.userId)
       .then((relationships) => {
+        this.currentUser = this.authService.getCurrentUser();
         for (let relationship of relationships) {
           if (
-            relationship.type === "member" && // Needs to be type member which is a member of a group
-            relationship.status === "accepted" // Needs to be status accepted which is a current member
+            relationship.type === "member" &&
+            relationship.status === "accepted"
           ) {
-            this.currentMembersList.push(
-              this.relationshipToMember(relationship),
-            );
+            this.currentGroupsList.push(this.relationshipToGroup(relationship));
           } else if (
-            relationship.type === "member" && // Needs to be type member which is a member of a group
-            relationship.status === "pending" // Needs to be status pending which is a pending request
+            relationship.type === "member" &&
+            relationship.status === "pending" &&
+            this.currentUser?.uid === this.userId
           ) {
-            this.pendingMembersList.push(
-              this.relationshipToMember(relationship),
-            );
+            this.pendingGroupsList.push(this.relationshipToGroup(relationship));
           }
         }
       });
@@ -85,54 +78,49 @@ export class MemberListPage implements OnInit {
 
   ionViewWillLeave() {}
 
-  get isAdmin() {
-    if (!this.group || !this.currentUser) return false;
-    return this.group.admins?.includes(this.currentUser.uid);
-  }
-
-  acceptMemberRequest(member: any) {
+  acceptGroupRequest(group: any) {
     this.relationshipsCollectionService
-      .updateRelationship(member.id, {
+      .updateRelationship(group.id, {
         status: "accepted",
       })
       .then(() => {
-        member.showRemoveButton = true;
-        this.currentMembersList.push(member);
-        this.pendingMembersList = this.pendingMembersList.filter(
-          (pendingMember) => pendingMember.id !== member.id,
+        group.showRemoveButton = true;
+        this.currentGroupsList.push(group);
+        this.pendingGroupsList = this.pendingGroupsList.filter(
+          (pendingGroup) => pendingGroup.id !== group.id,
         );
       });
   }
 
-  rejectMemberRequest(member: any) {
+  rejectGroupRequest(group: any) {
     this.relationshipsCollectionService
-      .updateRelationship(member.id, {
+      .updateRelationship(group.id, {
         status: "rejected",
       })
       .then(() => {
-        this.pendingMembersList = this.pendingMembersList.filter(
-          (pendingMember) => pendingMember.id !== member.id,
+        this.pendingGroupsList = this.pendingGroupsList.filter(
+          (pendingGroup) => pendingGroup.id !== group.id,
         );
       });
   }
 
-  removeMemberRequest(member: any) {
+  removeGroupRequest(group: any) {
     this.relationshipsCollectionService
-      .deleteRelationship(member.id)
+      .deleteRelationship(group.id)
       .then(() => {
-        this.currentMembersList = this.currentMembersList.filter(
-          (currentMember) => currentMember.id !== member.id,
+        this.currentGroupsList = this.currentGroupsList.filter(
+          (currentGroup) => currentGroup.id !== group.id,
         );
-        this.pendingMembersList = this.pendingMembersList.filter(
-          (pendingMember) => pendingMember.id !== member.id,
+        this.pendingGroupsList = this.pendingGroupsList.filter(
+          (pendingGroup) => pendingGroup.id !== group.id,
         );
       });
   }
 
-  relationshipToMember(relationship: Partial<AppRelationship>) {
-    if (!this.group || !this.currentUser) return;
-    if (!this.group.admins) this.group.admins = [];
-    if (relationship.senderId === this.groupId) {
+  relationshipToGroup(relationship: any) {
+    this.userId = this.userId ? this.userId : "";
+    const isCurrentUser = this.currentUser?.uid === this.userId;
+    if (relationship.senderId === this.userId) {
       // my requests
       return {
         id: relationship.id,
@@ -141,7 +129,7 @@ export class MemberListPage implements OnInit {
         image: relationship.receiverImage,
         tagline: relationship.receiverTagline,
         isPending: relationship.status === "pending",
-        showRemoveButton: this.isAdmin,
+        showRemoveButton: isCurrentUser,
         showAcceptRejectButtons: false,
       };
     } else {
@@ -153,8 +141,8 @@ export class MemberListPage implements OnInit {
         image: relationship.senderImage,
         tagline: relationship.senderTagline,
         isPending: relationship.status === "pending",
-        showRemoveButton: relationship.status === "accepted" && this.isAdmin,
-        showAcceptRejectButtons: this.isAdmin,
+        showRemoveButton: relationship.status === "accepted" && isCurrentUser,
+        showAcceptRejectButtons: isCurrentUser,
       };
     }
   }

@@ -80,32 +80,32 @@ export class GroupListPage implements OnInit {
         receiverId: group.id,
         type: "member",
         status: "pending",
-        membershipRole: "",
+        membershipRole: "member",
         receiverRelationship: "group",
         senderRelationship: "user",
         receiverName: group.name,
         receiverImage: group.groupPicture,
-        receiverTagline: group.description,
+        receiverTagline: group.tagline,
         senderName: this.user?.displayName ? this.user.displayName : "",
         senderImage: this.user?.photoURL ? this.user.photoURL : "",
         senderTagline: "",
       })
       .then(() => {
-        // updated friends list on userList item to include receiverId in friends list so that the button doesn't show
+        // updated group list on userList item to include receiverId in group list so that the button doesn't show
         this.groups =
-          this.groups?.map((group: Partial<AppGroup>) => {
-            if (group.id === group["id"]) {
-              if (!group.pendingMembers) {
-                group.pendingMembers = [];
+          this.groups?.map((item: Partial<AppGroup>) => {
+            if (item.id === group["id"]) {
+              if (!item.pendingMembers) {
+                item.pendingMembers = [];
               }
               return {
-                ...group,
-                pendingFriends: this.user?.uid
-                  ? [...group.pendingMembers, this.user.uid]
-                  : [...group.pendingMembers],
+                ...item,
+                pendingMembers: this.user?.uid
+                  ? [...item.pendingMembers, this.user.uid]
+                  : [...item.pendingMembers],
               };
             } else {
-              return group;
+              return item;
             }
           }) ?? [];
       });

@@ -9,7 +9,6 @@ describe("MemberListComponent", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [MemberListComponent],
       imports: [IonicModule.forRoot()],
     }).compileComponents();
 

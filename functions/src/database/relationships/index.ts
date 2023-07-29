@@ -81,13 +81,13 @@ async function handleRelationshipUpdate(change: any, _context: any) {
           logger.info("sender: ", sender.data(), "receiver: ", receiver.data());
 
           if (after.status === "pending") {
-            // Add each user to the other's pendingFriends array
+            // Add to the other's pending groups and members array
             requestGroupMembership(transaction, senderId, receiverId);
           } else if (after.status === "accepted") {
-            // Add each user to the other's friends array
+            // Add to the other's groups and members array
             acceptGroupMembership(transaction, senderId, receiverId);
           } else if (after.status === "rejected") {
-            // Remove each user from the other's pendingFriends and friends arrays
+            // Remove each user from the other's pendingMembers and groups arrays
             removeGroupMembership(transaction, senderId, receiverId);
           }
         } else {
@@ -411,11 +411,11 @@ function requestGroupCollaboration(
   const receiverRef = db.collection("groups").doc(receiverId);
 
   transaction.update(senderRef, {
-    pendingRelatedGroups: admin.firestore.FieldValue.arrayRemove(receiverId),
+    pendingRelatedGroups: admin.firestore.FieldValue.arrayUnion(receiverId),
   });
 
   transaction.update(receiverRef, {
-    pendingRelatedGroups: admin.firestore.FieldValue.arrayRemove(senderId),
+    pendingRelatedGroups: admin.firestore.FieldValue.arrayUnion(senderId),
   });
 }
 
@@ -488,12 +488,12 @@ function requestGroupMembership(
 
   transaction.update(senderRef, {
     // Add pendingGroups to user model
-    pendingGroups: admin.firestore.FieldValue.arrayRemove(receiverId),
+    pendingGroups: admin.firestore.FieldValue.arrayUnion(receiverId),
   });
 
   transaction.update(receiverRef, {
     // Add pendingMembers to group model
-    pendingMembers: admin.firestore.FieldValue.arrayRemove(senderId),
+    pendingMembers: admin.firestore.FieldValue.arrayUnion(senderId),
   });
 }
 

@@ -9,7 +9,6 @@ describe("GroupListComponent", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [GroupListComponent],
       imports: [IonicModule.forRoot()],
     }).compileComponents();
 

@@ -17,18 +17,34 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {MemberListPage} from "./member-list.page";
+import {ActivatedRoute} from "@angular/router";
 
 describe("MemberListPage", () => {
   let component: MemberListPage;
   let fixture: ComponentFixture<MemberListPage>;
 
-  beforeEach(async () => {
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [],
+      providers: [
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              paramMap: {
+                get: () => "123", // provide your mock value here
+              },
+            },
+          },
+        },
+      ],
+    }).compileComponents();
     fixture = TestBed.createComponent(MemberListPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  });
+  }));
 
   it("should create", () => {
     expect(component).toBeTruthy();

@@ -22,7 +22,7 @@ import {Router} from "@angular/router";
 import {IonicModule} from "@ionic/angular";
 import {CommonModule} from "@angular/common";
 import {AppRelationship} from "../../../../../../models/relationship.model";
-import {User} from "firebase/auth";
+import {AppUser} from "../../../../../../models/user.model";
 
 @Component({
   selector: "app-group-membership-list",
@@ -32,7 +32,7 @@ import {User} from "firebase/auth";
   imports: [IonicModule, CommonModule],
 })
 export class GroupMembershipListComponent implements OnInit {
-  @Input() user: User | null = null; // define your user here
+  @Input() user: AppUser | null = null; // define your user here
   @Input() groupList: AppRelationship[] = []; // define your user here
 
   constructor(private router: Router) {}
@@ -42,8 +42,9 @@ export class GroupMembershipListComponent implements OnInit {
   get allGroups() {
     let allGroups = [];
     for (let group of this.groupList) {
-      if (group.status !== "accepted") continue;
-      if (group.senderId === this.user?.uid) {
+      if (group.status !== "accepted" || group.type !== "member" || !this.user)
+        continue;
+      if (group.senderId === this.user.id) {
         allGroups.push({
           id: group.receiverId,
           name: group.receiverName,
@@ -67,6 +68,6 @@ export class GroupMembershipListComponent implements OnInit {
   }
 
   goToGroupList() {
-    this.router.navigate([`/group-list`]);
+    this.router.navigate([`/user-profile/${this.user?.id}/groups`]);
   }
 }

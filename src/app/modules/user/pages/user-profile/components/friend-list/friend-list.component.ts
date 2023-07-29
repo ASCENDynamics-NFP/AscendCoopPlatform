@@ -21,7 +21,7 @@ import {Component, Input, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
 import {Router} from "@angular/router";
-import {User} from "firebase/auth";
+import {AppUser} from "../../../../../../models/user.model";
 import {AppRelationship} from "../../../../../../models/relationship.model";
 
 @Component({
@@ -32,7 +32,7 @@ import {AppRelationship} from "../../../../../../models/relationship.model";
   imports: [IonicModule, CommonModule],
 })
 export class FriendListComponent implements OnInit {
-  @Input() user: User | null = null; // define your user here
+  @Input() user: AppUser | null = null; // define your user here
   @Input() friendList: Partial<AppRelationship>[] = [];
   constructor(private router: Router) {}
 
@@ -42,7 +42,7 @@ export class FriendListComponent implements OnInit {
     let allFriends = [];
     for (let friend of this.friendList) {
       if (friend.status !== "accepted") continue;
-      if (friend.senderId === this.user?.uid) {
+      if (friend.senderId === this.user?.id) {
         allFriends.push({
           id: friend.receiverId,
           name: friend.receiverName,
@@ -74,8 +74,8 @@ export class FriendListComponent implements OnInit {
   }
 
   goToFriendList() {
-    if (this.user?.uid) {
-      this.router.navigate([`/user-profile/${this.user.uid}/friends`]);
+    if (this.user?.id) {
+      this.router.navigate([`/user-profile/${this.user.id}/friends`]);
     }
   }
 }

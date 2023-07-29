@@ -18,22 +18,22 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Component, Input, OnInit} from "@angular/core";
-import {Router} from "@angular/router";
-import {IonicModule} from "@ionic/angular";
 import {CommonModule} from "@angular/common";
+import {IonicModule} from "@ionic/angular";
+import {Router} from "@angular/router";
+import {AppGroup} from "../../../../../../models/group.model";
 import {AppRelationship} from "../../../../../../models/relationship.model";
-import {AppUser} from "../../../../../../models/user.model";
 
 @Component({
-  selector: "app-group-membership-list",
-  templateUrl: "./group-membership-list.component.html",
-  styleUrls: ["./group-membership-list.component.scss"],
+  selector: "app-group-list",
+  templateUrl: "./group-list.component.html",
+  styleUrls: ["./group-list.component.scss"],
   standalone: true,
   imports: [IonicModule, CommonModule],
 })
-export class GroupMembershipListComponent implements OnInit {
-  @Input() user: AppUser | null = null; // define your user here
-  @Input() groupList: AppRelationship[] = []; // define your user here
+export class GroupListComponent implements OnInit {
+  @Input() group: Partial<AppGroup> | null = null; // define your group here
+  @Input() groupList: Partial<AppRelationship>[] = [];
 
   constructor(private router: Router) {}
 
@@ -42,9 +42,8 @@ export class GroupMembershipListComponent implements OnInit {
   get allGroups() {
     let allGroups = [];
     for (let group of this.groupList) {
-      if (group.status !== "accepted" || group.type !== "member" || !this.user)
-        continue;
-      if (group.senderId === this.user.id) {
+      if (group.status !== "accepted") continue;
+      if (group.senderId === this.group?.id) {
         allGroups.push({
           id: group.receiverId,
           name: group.receiverName,
@@ -63,11 +62,13 @@ export class GroupMembershipListComponent implements OnInit {
     return allGroups;
   }
 
-  goToGroupPage(id: string) {
+  goToUserProfile(id: string | undefined) {
     this.router.navigate([`/group-profile/${id}`]);
   }
 
-  goToGroupList() {
-    this.router.navigate([`/user-profile/${this.user?.id}/groups`]);
+  goToPartnersList() {
+    if (this.group?.id) {
+      this.router.navigate([`/group/${this.group.id}/partners`]);
+    }
   }
 }

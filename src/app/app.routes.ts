@@ -141,4 +141,22 @@ export const routes: Routes = [
         "./modules/user/pages/edit-user-profile/edit-user-profile.page"
       ).then((m) => m.EditUserProfilePage),
   },
+  {
+    path: "group/:groupId/partners",
+    loadChildren: () =>
+      import("./modules/group/pages/partners/partners.routes").then(
+        (m) => m.routes,
+      ),
+    // loadComponent: () =>
+    //   import("./modules/group/pages/partners/partners.page").then(
+    //     (m) => m.PartnersPage,
+    //   ),
+  },
+  {
+    path: "user-profile/:uid/groups",
+    loadComponent: () =>
+      import("./modules/user/pages/user-groups/user-groups.page").then(
+        (m) => m.UserGroupsPage,
+      ),
+  },
 ];

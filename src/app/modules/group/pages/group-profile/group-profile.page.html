@@ -52,12 +52,23 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-col>
       <ion-col>
         <ion-row>
-          <!-- <ion-col><app-member-list *ngIf="group" [group]="group"
-              [memberList]="memberList"></app-member-list></ion-col> -->
+          <ion-col
+            ><app-member-list
+              *ngIf="group"
+              [group]="group"
+              [memberList]="memberList"
+            ></app-member-list
+          ></ion-col>
         </ion-row>
-        <!-- <ion-row>
-          <ion-col><app-friend-list *ngIf="group" [group]="group" [friendList]="friendList"></app-friend-list></ion-col>
-        </ion-row> -->
+        <ion-row>
+          <ion-col
+            ><app-group-list
+              *ngIf="group"
+              [group]="group"
+              [groupList]="groupList"
+            ></app-group-list
+          ></ion-col>
+        </ion-row>
       </ion-col>
     </ion-row>
   </ion-grid>

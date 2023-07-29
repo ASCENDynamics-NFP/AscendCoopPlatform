@@ -1,0 +1,125 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Members</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Members</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Members</ion-card-title>
+            <ion-card-subtitle
+              >{{ currentMembersList.length }} members</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-list>
+            <ion-item
+              *ngFor="let member of currentMembersList; let i = index"
+              routerLink="/user-profile/{{member['userId']}}"
+              button
+            >
+              <ion-thumbnail slot="start">
+                <img
+                  *ngIf="member['image']"
+                  [alt]="member['name']"
+                  [src]="member['image']"
+                />
+              </ion-thumbnail>
+              <ion-label>
+                <h3>{{ member["name"] }}</h3>
+                <p>{{ member["bio"] }}</p>
+              </ion-label>
+              <ion-button
+                *ngIf="member['showRemoveButton']"
+                slot="end"
+                expand="block"
+                color="secondary"
+                (click)="$event.stopPropagation();$event.preventDefault();removeMemberRequest(member);"
+                >Remove</ion-button
+              >
+            </ion-item>
+          </ion-list>
+        </ion-card>
+        <ion-card *ngIf="isAdmin && pendingMembersList.length">
+          <ion-card-header>
+            <ion-card-title>Members</ion-card-title>
+            <ion-card-subtitle
+              >{{ pendingMembersList.length }} pending
+              members</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-list>
+            <ion-item
+              *ngFor="let member of pendingMembersList; let i = index"
+              routerLink="/user-profile/{{member['userId']}}"
+              button
+            >
+              <ion-thumbnail slot="start">
+                <img
+                  *ngIf="member['image']"
+                  [alt]="member['name']"
+                  [src]="member['image']"
+                />
+              </ion-thumbnail>
+              <ion-label>
+                <h3>{{ member["name"] }}</h3>
+                <p>{{ member["bio"] }}</p>
+              </ion-label>
+              <ion-button
+                *ngIf="member['showAcceptRejectButtons']"
+                slot="end"
+                expand="block"
+                (click)="$event.stopPropagation();$event.preventDefault();acceptMemberRequest(member);"
+                >Accept</ion-button
+              >
+              <ion-button
+                *ngIf="member['showAcceptRejectButtons']"
+                slot="end"
+                expand="block"
+                color="secondary"
+                (click)="$event.stopPropagation();$event.preventDefault();rejectMemberRequest(member);"
+                >Reject</ion-button
+              >
+              <ion-button
+                *ngIf="member['showRemoveButton']"
+                slot="end"
+                expand="block"
+                color="secondary"
+                (click)="$event.stopPropagation();$event.preventDefault();removeMemberRequest(member);"
+                >Remove</ion-button
+              >
+            </ion-item>
+          </ion-list>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

@@ -21,32 +21,35 @@ import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {MenuService} from "../../../../core/services/menu.service";
-import {GroupsService} from "../../../../core/services/groups.service";
-import {AppGroup} from "../../../../models/group.model";
-import {AuthService} from "../../../../core/services/auth.service";
-import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 import {User} from "firebase/auth";
-import {RouterModule} from "@angular/router";
+import {AuthService} from "../../../../core/services/auth.service";
+import {GroupsService} from "../../../../core/services/groups.service";
+import {MenuService} from "../../../../core/services/menu.service";
+import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
+import {AppGroup} from "../../../../models/group.model";
+import {ActivatedRoute, RouterModule} from "@angular/router";
 
 @Component({
-  selector: "app-group-list",
-  templateUrl: "./group-list.page.html",
-  styleUrls: ["./group-list.page.scss"],
+  selector: "app-search",
+  templateUrl: "./search.page.html",
+  styleUrls: ["./search.page.scss"],
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
-export class GroupListPage implements OnInit {
+export class SearchPage implements OnInit {
   user: User | null = null; // define your user here
   groups: Partial<AppGroup>[] | null = [];
+  groupId: string | null = null;
 
   constructor(
+    private activatedRoute: ActivatedRoute,
     private authService: AuthService,
     private menuService: MenuService,
     private groupService: GroupsService,
     private relationshipsCollectionService: RelationshipsCollectionService,
   ) {
     this.user = this.authService.getCurrentUser();
+    this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
   }
 
   ngOnInit() {
@@ -80,7 +83,7 @@ export class GroupListPage implements OnInit {
         receiverId: group.id,
         type: "member",
         status: "pending",
-        membershipRole: "member",
+        membershipRole: "",
         receiverRelationship: "group",
         senderRelationship: "user",
         receiverName: group.name,
@@ -91,21 +94,21 @@ export class GroupListPage implements OnInit {
         senderTagline: "",
       })
       .then(() => {
-        // updated group list on userList item to include receiverId in group list so that the button doesn't show
+        // updated friends list on userList item to include receiverId in friends list so that the button doesn't show
         this.groups =
-          this.groups?.map((item: Partial<AppGroup>) => {
-            if (item.id === group["id"]) {
-              if (!item.pendingMembers) {
-                item.pendingMembers = [];
+          this.groups?.map((group: Partial<AppGroup>) => {
+            if (group.id === group["id"]) {
+              if (!group.pendingMembers) {
+                group.pendingMembers = [];
               }
               return {
-                ...item,
-                pendingMembers: this.user?.uid
-                  ? [...item.pendingMembers, this.user.uid]
-                  : [...item.pendingMembers],
+                ...group,
+                pendingFriends: this.user?.uid
+                  ? [...group.pendingMembers, this.user.uid]
+                  : [...group.pendingMembers],
               };
             } else {
-              return item;
+              return group;
             }
           }) ?? [];
       });

@@ -18,56 +18,59 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Component, Input, OnInit} from "@angular/core";
-import {Router} from "@angular/router";
-import {IonicModule} from "@ionic/angular";
 import {CommonModule} from "@angular/common";
+import {IonicModule} from "@ionic/angular";
+import {Router} from "@angular/router";
 import {AppRelationship} from "../../../../../../models/relationship.model";
-import {AppUser} from "../../../../../../models/user.model";
+import {AppGroup} from "../../../../../../models/group.model";
 
 @Component({
-  selector: "app-group-membership-list",
-  templateUrl: "./group-membership-list.component.html",
-  styleUrls: ["./group-membership-list.component.scss"],
+  selector: "app-member-list",
+  templateUrl: "./member-list.component.html",
+  styleUrls: ["./member-list.component.scss"],
   standalone: true,
   imports: [IonicModule, CommonModule],
 })
-export class GroupMembershipListComponent implements OnInit {
-  @Input() user: AppUser | null = null; // define your user here
-  @Input() groupList: AppRelationship[] = []; // define your user here
+export class MemberListComponent implements OnInit {
+  @Input() group: Partial<AppGroup> | null = null; // define your group here
+  @Input() memberList: Partial<AppRelationship>[] = [];
 
   constructor(private router: Router) {}
 
   ngOnInit() {}
 
-  get allGroups() {
-    let allGroups = [];
-    for (let group of this.groupList) {
-      if (group.status !== "accepted" || group.type !== "member" || !this.user)
-        continue;
-      if (group.senderId === this.user.id) {
-        allGroups.push({
-          id: group.receiverId,
-          name: group.receiverName,
-          image: group.receiverImage,
-          tagline: group.receiverTagline,
+  get allMembers() {
+    let allMembers = [];
+    for (let member of this.memberList) {
+      if (member.status !== "accepted") continue;
+      if (member.senderId === this.group?.id) {
+        allMembers.push({
+          id: member.receiverId,
+          name: member.receiverName,
+          image: member.receiverImage,
+          tagline: member.receiverTagline,
         });
       } else {
-        allGroups.push({
-          id: group.senderId,
-          name: group.senderName,
-          image: group.senderImage,
-          tagline: group.senderTagline,
+        allMembers.push({
+          id: member.senderId,
+          name: member.senderName,
+          image: member.senderImage,
+          tagline: member.senderTagline,
         });
       }
     }
-    return allGroups;
+    return allMembers;
   }
 
-  goToGroupPage(id: string) {
-    this.router.navigate([`/group-profile/${id}`]);
+  goToUserProfile(id: string | undefined) {
+    this.router.navigate([`/user-profile/${id}`]);
   }
 
-  goToGroupList() {
-    this.router.navigate([`/user-profile/${this.user?.id}/groups`]);
+  goToMemberList() {
+    if (this.group?.id) {
+      this.router.navigate([
+        `/group/${this.group.id}/partners/${this.group.id}/members`,
+      ]);
+    }
   }
 }

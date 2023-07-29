@@ -36,7 +36,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-item *ngIf="group.phoneNumber" lines="none">
         <ion-icon name="call" slot="start"></ion-icon>
         <ion-label
-          >Phone: {{ group.phoneCountryCode }}
+          >Phone:
+          {{ group.phoneCountryCode ? "+" + group.phoneCountryCode : "" }}
           {{ group.phoneNumber | phoneFormat }}</ion-label
         >
       </ion-item>
@@ -46,7 +47,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <ion-label>{{group.addressFormatted}}</ion-label>
       </ion-item> -->
 
-      <ion-item lines="none">
+      <!-- <ion-item lines="none">
         <ion-icon name="book" slot="start"></ion-icon>
         <ion-label>Tagline: {{ group.tagline }}</ion-label>
       </ion-item>
@@ -54,7 +55,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-item lines="none">
         <ion-icon name="text" slot="start"></ion-icon>
         <ion-label>Description: {{ group.description }}</ion-label>
-      </ion-item>
+      </ion-item> -->
 
       <ion-item lines="none">
         <ion-icon name="calendar" slot="start"></ion-icon>

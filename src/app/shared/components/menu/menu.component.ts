@@ -41,9 +41,9 @@ import {TranslateService, LangChangeEvent} from "@ngx-translate/core";
 })
 export class MenuComponent implements OnInit {
   user: User | null = null;
+  public project: any = [];
   public guestPages: any = {user: [], group: []};
   public userPages: any = {user: [], group: []};
-  // public labels: Array<string> = [];
 
   constructor(
     private authService: AuthService,
@@ -69,7 +69,71 @@ export class MenuComponent implements OnInit {
   }
 
   ngOnInit() {
-    // this.labels = ["Family", "Friends", "Notes", "Work", "Travel", "Reminders"];
+    this.project = [
+      {
+        buttonIcon: "",
+        buttonLink: "",
+        buttonText: "",
+        hasButton: false,
+        title: "ASCENDynamics NFP",
+        url: "https://ascendynamics.org",
+        icon: "globe-outline",
+      },
+      {
+        buttonIcon: "",
+        buttonLink: "",
+        buttonText: "",
+        hasButton: false,
+        title: "LinkedIn",
+        url: "https://www.linkedin.com/company/ascendynamics-nfp",
+        icon: "logo-linkedin",
+      },
+      {
+        buttonIcon: "",
+        buttonLink: "",
+        buttonText: "",
+        hasButton: false,
+        title: "Facebook",
+        url: "https://www.facebook.com/ASCENDynamicsNFP",
+        icon: "logo-facebook",
+      },
+      {
+        buttonIcon: "",
+        buttonLink: "",
+        buttonText: "",
+        hasButton: false,
+        title: "Slack Community",
+        url: "https://join.slack.com/t/ascendynamicsnfp/shared_invite/zt-1yqcw1hqa-slT2gWkBEkLOTRnN8zEqdQ",
+        icon: "logo-slack",
+      },
+      {
+        buttonIcon: "",
+        buttonLink: "",
+        buttonText: "",
+        hasButton: false,
+        title: "YouTube Channel",
+        url: "https://www.youtube.com/channel/UCkR2Cgrjyi0QPeIKIXzxOvg",
+        icon: "logo-youtube",
+      },
+      {
+        buttonIcon: "",
+        buttonLink: "",
+        buttonText: "",
+        hasButton: false,
+        title: "Donate",
+        url: "https://www.paypal.com/donate/?hosted_button_id=NZNUBUCTZA75S",
+        icon: "logo-paypal",
+      },
+      {
+        buttonIcon: "",
+        buttonLink: "",
+        buttonText: "",
+        hasButton: false,
+        title: "Project Repository",
+        url: "https://github.com/ASCENDynamics-NFP/AscendCoopPlatform",
+        icon: "code-slash",
+      },
+    ];
   }
 
   translateGuestItems() {
@@ -100,26 +164,46 @@ export class MenuComponent implements OnInit {
   translateUserItems() {
     const userItems = [
       {
+        buttonIcon: "",
+        buttonLink: "",
+        buttonText: "",
+        hasButton: false,
         title: "Profile",
         url: `user-profile/${this.user?.uid}`,
         icon: "person",
       },
       {
+        buttonIcon: "add",
+        buttonLink: "",
+        buttonText: "Create Group",
+        hasButton: true,
         title: "Groups",
         url: `group-list`,
         icon: "business",
       },
       {
+        buttonIcon: "",
+        buttonLink: "",
+        buttonText: "",
+        hasButton: false,
         title: "Users",
         url: `users`,
         icon: "people",
       },
       {
+        buttonIcon: "",
+        buttonLink: "",
+        buttonText: "",
+        hasButton: false,
         title: "Settings",
         url: `user-settings/${this.user?.uid}`,
         icon: "settings",
       },
       {
+        buttonIcon: "",
+        buttonLink: "",
+        buttonText: "",
+        hasButton: false,
         title: "Feedback",
         url: `user-settings/${this.user?.uid}`,
         icon: "ear",

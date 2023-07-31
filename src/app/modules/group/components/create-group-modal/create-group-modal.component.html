@@ -1,0 +1,37 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Create New Group</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">Close</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="groupForm" (ngSubmit)="onSubmit()">
+    <ion-item>
+      <ion-label position="stacked"
+        >Group Name <ion-text color="danger">*</ion-text></ion-label
+      >
+      <ion-input type="text" formControlName="name"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked"
+        >Group Description <ion-text color="danger">*</ion-text></ion-label
+      >
+      <ion-textarea formControlName="description"></ion-textarea>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked"
+        >Group Tagline <ion-text color="danger">*</ion-text></ion-label
+      >
+      <ion-input type="text" formControlName="tagline"></ion-input>
+    </ion-item>
+
+    <ion-button expand="full" type="submit" [disabled]="groupForm.invalid">
+      Create Group
+    </ion-button>
+  </form>
+</ion-content>

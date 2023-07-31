@@ -37,12 +37,39 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-list-header>
             <ion-label><strong>User</strong></ion-label>
           </ion-list-header>
-          <ion-item routerDirection="root" *ngFor="let p of userPages.user; let i = index" [routerLink]="[p.url]"
-            lines="none" detail="false" routerLinkActive="selected">
-            <ion-icon aria-hidden="true" slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
+          <ion-item
+            routerDirection="root"
+            *ngFor="let p of userPages.user; let i = index"
+            [routerLink]="[p.url]"
+            lines="none"
+            detail="false"
+            routerLinkActive="selected"
+          >
+            <ion-icon
+              aria-hidden="true"
+              slot="start"
+              [ios]="p.icon + '-outline'"
+              [md]="p.icon + '-sharp'"
+            ></ion-icon>
             <ion-label>{{ p.title }}</ion-label>
-            <ion-button *ngIf="p.hasButton" fill="outline" name="p.buttonIcon" slot="end" [routerLink]="[p.buttonLink]"
-              (click)="$event.stopPropagation();$event.preventDefault();">{{p.buttonText}}</ion-button>
+            <ion-button
+              *ngIf="p.hasButton"
+              fill="outline"
+              name="p.buttonIcon"
+              slot="end"
+              (click)="
+                $event.stopPropagation();
+                $event.preventDefault();
+                handleButtonClick(p.buttonLink)
+              "
+              >{{ p.buttonText }}
+              <ion-icon
+                aria-hidden="true"
+                slot="end"
+                [ios]="p.buttonIcon"
+                [md]="p.buttonIcon"
+              ></ion-icon
+            ></ion-button>
           </ion-item>
           <!-- <ion-list-header>
             <ion-label>Group</ion-label>
@@ -56,11 +83,23 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-list>
 
       <ion-list>
-        <ion-list-header><strong>ASCENDynamics NFP Information</strong></ion-list-header>
+        <ion-list-header
+          ><strong>ASCENDynamics NFP Information</strong></ion-list-header
+        >
 
-        <ion-item *ngFor="let p of project; let i = index" lines="none" [href]="p.url" target="_blank">
-          <ion-icon aria-hidden="true" slot="start" [ios]="p.icon" [md]="p.icon"></ion-icon>
-          <ion-label>{{p.title}}</ion-label>
+        <ion-item
+          *ngFor="let p of project; let i = index"
+          lines="none"
+          [href]="p.url"
+          target="_blank"
+        >
+          <ion-icon
+            aria-hidden="true"
+            slot="start"
+            [ios]="p.icon"
+            [md]="p.icon"
+          ></ion-icon>
+          <ion-label>{{ p.title }}</ion-label>
         </ion-item>
       </ion-list>
     </ion-content>
@@ -78,27 +117,61 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-list-header>
             <ion-label><strong>User</strong></ion-label>
           </ion-list-header>
-          <ion-item routerDirection="root" *ngFor="let p of guestPages.user; let i = index" [routerLink]="[p.url]"
-            lines="none" detail="false" routerLinkActive="selected">
-            <ion-icon aria-hidden="true" slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
+          <ion-item
+            routerDirection="root"
+            *ngFor="let p of guestPages.user; let i = index"
+            [routerLink]="[p.url]"
+            lines="none"
+            detail="false"
+            routerLinkActive="selected"
+          >
+            <ion-icon
+              aria-hidden="true"
+              slot="start"
+              [ios]="p.icon + '-outline'"
+              [md]="p.icon + '-sharp'"
+            ></ion-icon>
             <ion-label>{{ p.title }}</ion-label>
           </ion-item>
           <!-- <ion-list-header>
             <ion-label><strong>Organizations</strong></ion-label>
           </ion-list-header> -->
-          <ion-item routerDirection="root" *ngFor="let p of guestPages.group; let i = index" [routerLink]="[p.url]"
-            lines="none" detail="false" routerLinkActive="selected">
-            <ion-icon aria-hidden="true" slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
+          <ion-item
+            routerDirection="root"
+            *ngFor="let p of guestPages.group; let i = index"
+            [routerLink]="[p.url]"
+            lines="none"
+            detail="false"
+            routerLinkActive="selected"
+          >
+            <ion-icon
+              aria-hidden="true"
+              slot="start"
+              [ios]="p.icon + '-outline'"
+              [md]="p.icon + '-sharp'"
+            ></ion-icon>
             <ion-label>{{ p.title }}</ion-label>
           </ion-item>
         </ion-menu-toggle>
       </ion-list>
       <ion-list>
-        <ion-list-header><strong>ASCENDynamics NFP Information</strong></ion-list-header>
+        <ion-list-header
+          ><strong>ASCENDynamics NFP Information</strong></ion-list-header
+        >
 
-        <ion-item *ngFor="let p of project; let i = index" lines="none" [href]="p.url" target="_blank">
-          <ion-icon aria-hidden="true" slot="start" [ios]="p.icon" [md]="p.icon"></ion-icon>
-          <ion-label>{{p.title}}</ion-label>
+        <ion-item
+          *ngFor="let p of project; let i = index"
+          lines="none"
+          [href]="p.url"
+          target="_blank"
+        >
+          <ion-icon
+            aria-hidden="true"
+            slot="start"
+            [ios]="p.icon"
+            [md]="p.icon"
+          ></ion-icon>
+          <ion-label>{{ p.title }}</ion-label>
         </ion-item>
       </ion-list>
 

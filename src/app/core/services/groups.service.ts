@@ -58,7 +58,7 @@ export class GroupsService {
     private successHandler: SuccessHandlerService,
   ) {}
 
-  async createGroup(group: AppGroup): Promise<string | null> {
+  async createGroup(group: Partial<AppGroup>): Promise<string | null> {
     const loading = await this.loadingController.create();
     await loading.present();
     return await addDoc(

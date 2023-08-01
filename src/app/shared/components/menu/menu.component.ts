@@ -153,7 +153,7 @@ export class MenuComponent implements OnInit {
       {
         buttonIcon: "add",
         buttonLink: "create-group",
-        buttonText: "Create Group",
+        buttonText: "Group",
         hasButton: true,
         title: "Groups",
         url: `group-list`,

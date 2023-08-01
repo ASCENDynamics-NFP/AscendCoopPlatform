@@ -17,10 +17,5 @@
 //   logger.info("Hello logs!", {structuredData: true});
 //   response.send("Hello from Firebase!");
 // });
-import {
-  onRelationshipCreation,
-  onRelationshipDeletion,
-  onRelationshipUpdate,
-} from "./database/relationships"; // relationships triggers
-
-export {onRelationshipCreation, onRelationshipDeletion, onRelationshipUpdate}; // relationships triggers
+export * from "./database/relationships"; // triggers
+export * from "./database/groups"; // triggers

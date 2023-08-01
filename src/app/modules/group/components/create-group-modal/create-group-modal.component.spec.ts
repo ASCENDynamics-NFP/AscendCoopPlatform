@@ -28,7 +28,6 @@ describe("CreateGroupModalComponent", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [CreateGroupModalComponent],
       imports: [IonicModule.forRoot()],
     }).compileComponents();
 

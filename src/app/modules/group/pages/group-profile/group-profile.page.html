@@ -35,7 +35,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <ion-grid>
     <ion-row>
       <ion-col>
-        <app-hero *ngIf="group" [group]="group"></app-hero>
+        <app-hero
+          *ngIf="group"
+          [group]="group"
+          [isMember]="isMember"
+        ></app-hero>
       </ion-col>
     </ion-row>
     <ion-row>
@@ -45,7 +49,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             <app-details
               *ngIf="group"
               [group]="group"
-              [canEdit]="canEdit"
+              [canEdit]="isAdmin"
             ></app-details
           ></ion-col>
         </ion-row>

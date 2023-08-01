@@ -1,6 +1,5 @@
 import {Component} from "@angular/core";
 import {IonicModule, ModalController} from "@ionic/angular";
-import {OverlayEventDetail} from "@ionic/core/components";
 import {CommonModule} from "@angular/common";
 import {
   FormBuilder,

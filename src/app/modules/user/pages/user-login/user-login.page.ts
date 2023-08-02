@@ -21,10 +21,11 @@ import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
 import {AlertController, IonicModule} from "@ionic/angular";
-import {AuthService} from "../../../../core/services/auth.service";
 import {Router} from "@angular/router";
 import {MenuService} from "../../../../core/services/menu.service";
 import {TranslateModule} from "@ngx-translate/core";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: "app-user-login",
@@ -34,7 +35,8 @@ import {TranslateModule} from "@ngx-translate/core";
   imports: [IonicModule, CommonModule, ReactiveFormsModule, TranslateModule],
 })
 export class UserLoginPage implements OnInit {
-  loginForm = this.fb.nonNullable.group({
+  private userSubscription: Subscription;
+  public loginForm = this.fb.nonNullable.group({
     // Using Validators.compose() for multiple validation rules
     email: ["", Validators.compose([Validators.required, Validators.email])],
     password: [
@@ -44,13 +46,13 @@ export class UserLoginPage implements OnInit {
   });
 
   constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
     private alertController: AlertController,
-    private router: Router,
+    private authStoreService: AuthStoreService,
+    private fb: FormBuilder,
     private menuService: MenuService,
+    private router: Router,
   ) {
-    this.authService.user$.subscribe((user) => {
+    this.userSubscription = this.authStoreService.user$.subscribe((user) => {
       if (user) {
         console.log("GOT USER ON LOGIN");
         this.router.navigateByUrl("/user-profile/" + user.uid, {
@@ -60,21 +62,19 @@ export class UserLoginPage implements OnInit {
     });
   }
 
-  ionViewWillEnter() {
-    this.menuService.onEnter();
-  }
+  ionViewWillEnter() {}
 
   ionViewWillLeave() {}
 
   ngOnInit() {
-    this.authService.onSignInWithEmailLink();
+    this.authStoreService.onSignInWithEmailLink();
   }
 
   login() {
     const email = this.loginForm.value.email;
     const password = this.loginForm.value.password;
 
-    this.authService.signIn(email, password);
+    this.authStoreService.signIn(email, password);
   }
 
   async forgotPassword() {
@@ -95,7 +95,7 @@ export class UserLoginPage implements OnInit {
         {
           text: "Reset password",
           handler: (result) => {
-            this.authService.onSendPasswordResetEmail(result.email);
+            this.authStoreService.onSendPasswordResetEmail(result.email);
           },
         },
       ],
@@ -122,7 +122,7 @@ export class UserLoginPage implements OnInit {
         {
           text: "Get an Email SignIn Link",
           handler: (result) => {
-            this.authService.onSendSignInLinkToEmail(result.email);
+            this.authStoreService.onSendSignInLinkToEmail(result.email);
           },
         },
       ],
@@ -131,10 +131,16 @@ export class UserLoginPage implements OnInit {
   }
 
   signInWithGoogle() {
-    this.authService.signInWithGoogle();
+    this.authStoreService.signInWithGoogle();
   }
 
   goToSignUp() {
     this.router.navigateByUrl("/user-signup", {replaceUrl: false});
+  }
+
+  ngOnDestroy() {
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
+    }
   }
 }

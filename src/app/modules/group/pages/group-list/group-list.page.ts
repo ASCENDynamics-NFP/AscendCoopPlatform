@@ -53,9 +53,7 @@ export class GroupListPage implements OnInit {
     this.getGroups();
   }
 
-  ionViewWillEnter() {
-    this.menuService.onEnter();
-  }
+  ionViewWillEnter() {}
 
   ionViewWillLeave() {}
 

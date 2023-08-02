@@ -23,24 +23,28 @@ import {
   Router,
   RouterStateSnapshot,
 } from "@angular/router";
-import {Observable} from "rxjs";
-import {AuthService} from "../services/auth.service";
+import {firstValueFrom} from "rxjs";
+import {AuthStoreService} from "../services/auth-store.service";
 
 @Injectable({
   providedIn: "root",
 })
 export class AuthGuard {
-  constructor(public authService: AuthService, public router: Router) {}
+  constructor(
+    public authStoreService: AuthStoreService,
+    public router: Router,
+  ) {}
 
   // Used to restrict pages to users when they are logged out
-  canActivate(
-    next: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot,
-  ): Observable<boolean> | Promise<boolean> | boolean {
-    console.log("AuthGuard#canActivate called", this.authService.isLoggedIn);
-    if (this.authService.isLoggedIn !== true) {
-      // window.alert('Access Denied, Login is Required to Access This Page!');
+  async canActivate(
+    _next: ActivatedRouteSnapshot,
+    _state: RouterStateSnapshot,
+  ): Promise<boolean> {
+    const isLoggedIn = await firstValueFrom(this.authStoreService.isLoggedIn$);
+    if (!isLoggedIn) {
+      // window.alert("Access Denied, Login is Required to Access This Page!");
       this.router.navigate(["user-login"]);
+      return false;
     }
     return true;
   }

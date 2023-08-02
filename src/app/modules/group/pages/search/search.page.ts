@@ -56,9 +56,7 @@ export class SearchPage implements OnInit {
     this.getGroups();
   }
 
-  ionViewWillEnter() {
-    this.menuService.onEnter();
-  }
+  ionViewWillEnter() {}
 
   ionViewWillLeave() {}
 

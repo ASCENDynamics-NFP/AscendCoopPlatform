@@ -86,9 +86,7 @@ export class GroupProfilePage implements OnInit {
       });
   }
 
-  ionViewWillEnter() {
-    this.menuService.onEnter();
-  }
+  ionViewWillEnter() {}
 
   ionViewWillLeave() {}
 

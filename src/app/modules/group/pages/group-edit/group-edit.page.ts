@@ -99,9 +99,7 @@ export class GroupEditPage implements OnInit {
     });
   }
 
-  ionViewWillEnter() {
-    this.menuService.onEnter();
-  }
+  ionViewWillEnter() {}
 
   ionViewWillLeave() {}
 

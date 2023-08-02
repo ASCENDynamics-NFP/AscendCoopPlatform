@@ -35,9 +35,7 @@ export class GroupCreatePage implements OnInit {
 
   ngOnInit() {}
 
-  ionViewWillEnter() {
-    this.menuService.onEnter();
-  }
+  ionViewWillEnter() {}
 
   ionViewWillLeave() {}
 }

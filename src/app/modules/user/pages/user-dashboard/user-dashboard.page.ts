@@ -32,7 +32,7 @@ import {MenuService} from "../../../../core/services/menu.service";
   imports: [IonicModule, CommonModule, FormsModule],
 })
 export class UserDashboardPage implements OnInit {
-  user = this.authService.user$;
+  // user = this.authService.getCurrentUser();
 
   constructor(
     private authService: AuthService,
@@ -42,14 +42,12 @@ export class UserDashboardPage implements OnInit {
 
   ngOnInit() {}
 
-  ionViewWillEnter() {
-    this.menuService.onEnter();
-  }
+  ionViewWillEnter() {}
 
   ionViewWillLeave() {}
 
   signOut() {
-    this.authService.signOut();
+    // this.authService.signOut();
   }
 
   openLogin() {

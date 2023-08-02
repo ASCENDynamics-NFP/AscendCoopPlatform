@@ -19,25 +19,34 @@
 ***********************************************************************************************/
 import {Injectable} from "@angular/core";
 import {MenuController} from "@ionic/angular";
-import {AuthService} from "./auth.service";
+import {AuthStoreService} from "./auth-store.service";
+import {Subscription} from "rxjs";
 
 @Injectable({
   providedIn: "root",
 })
 export class MenuService {
-  constructor(
-    public authService: AuthService,
-    public menuCtrl: MenuController,
-  ) {}
+  private authSubscription: Subscription;
 
-  async onEnter() {
-    const isLoggedIn = this.authService.isLoggedIn;
-    if (isLoggedIn) {
-      await this.menuCtrl.enable(false, "guest");
-      await this.menuCtrl.enable(true, "user");
-    } else {
-      await this.menuCtrl.enable(false, "user");
-      await this.menuCtrl.enable(true, "guest");
-    }
+  constructor(
+    public authStoreService: AuthStoreService,
+    public menuCtrl: MenuController,
+  ) {
+    this.authSubscription = this.authStoreService.isLoggedIn$.subscribe(
+      async (isLoggedIn) => {
+        if (isLoggedIn) {
+          await this.menuCtrl.enable(false, "guest");
+          await this.menuCtrl.enable(true, "user");
+        } else {
+          await this.menuCtrl.enable(false, "user");
+          await this.menuCtrl.enable(true, "guest");
+        }
+      },
+    );
+  }
+
+  // Remember to unsubscribe when the service is destroyed to prevent memory leaks
+  ngOnDestroy(): void {
+    this.authSubscription.unsubscribe();
   }
 }

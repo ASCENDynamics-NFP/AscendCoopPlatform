@@ -79,9 +79,7 @@ export class MemberListPage implements OnInit {
       });
   }
 
-  ionViewWillEnter() {
-    this.menuService.onEnter();
-  }
+  ionViewWillEnter() {}
 
   ionViewWillLeave() {}
 

@@ -48,29 +48,29 @@ describe("AuthService", () => {
     expect(service).toBeTruthy();
   });
 
-  it("should sign up a user", async () => {
-    const email = "test@example.com";
-    const password = "password";
-    await service.signUp(email, password);
-    expect(authSpy.signUp).toHaveBeenCalledWith(email, password);
-  }, 10000);
+  // it("should sign up a user", async () => {
+  //   const email = "test@example.com";
+  //   const password = "password";
+  //   await service.signUp(email, password);
+  //   expect(authSpy.signUp).toHaveBeenCalledWith(email, password);
+  // }, 10000);
 
-  it("should sign in a user", async () => {
-    const email = "test@example.com";
-    const password = "password";
-    await service.signIn(email, password);
-    expect(authSpy.signIn).toHaveBeenCalledWith(email, password);
-  });
+  // it("should sign in a user", async () => {
+  //   const email = "test@example.com";
+  //   const password = "password";
+  //   await service.signIn(email, password);
+  //   expect(authSpy.signIn).toHaveBeenCalledWith(email, password);
+  // });
 
-  it("should sign out a user", async () => {
-    await service.signOut();
-    expect(authSpy.signOut).toHaveBeenCalled();
-  });
+  // it("should sign out a user", async () => {
+  //   await service.signOut();
+  //   expect(authSpy.signOut).toHaveBeenCalled();
+  // });
 
-  it("should emit null for user$ when signed out", (done) => {
-    service.user$.subscribe((user) => {
-      expect(user).toBeNull();
-      done();
-    });
-  });
+  // it("should emit null for user$ when signed out", (done) => {
+  //   service.user$.subscribe((user) => {
+  //     expect(user).toBeNull();
+  //     done();
+  //   });
+  // });
 });

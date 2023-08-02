@@ -18,9 +18,13 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Injectable} from "@angular/core";
-import {ActivatedRouteSnapshot, RouterStateSnapshot} from "@angular/router";
-import {Observable} from "rxjs";
-import {AuthService} from "../services/auth.service";
+import {
+  ActivatedRouteSnapshot,
+  Router,
+  RouterStateSnapshot,
+} from "@angular/router";
+import {firstValueFrom} from "rxjs";
+import {AuthStoreService} from "../services/auth-store.service";
 import {NavController} from "@ionic/angular";
 
 @Injectable({
@@ -28,18 +32,27 @@ import {NavController} from "@ionic/angular";
 })
 export class SecureInnerPagesGuard {
   constructor(
-    public authService: AuthService,
+    public authStoreService: AuthStoreService,
     private navCtrl: NavController,
+    private router: Router,
   ) {}
 
   // Used to restrict pages to users when they are logged in
-  canActivate(
-    next: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot,
-  ): Observable<boolean> | Promise<boolean> | boolean {
-    if (this.authService.isLoggedIn) {
-      // window.alert('Access denied!');
-      this.navCtrl.navigateForward("group-list");
+  async canActivate(
+    _next: ActivatedRouteSnapshot,
+    _state: RouterStateSnapshot,
+  ): Promise<boolean> {
+    const isLoggedIn = await firstValueFrom(this.authStoreService.isLoggedIn$);
+    if (isLoggedIn) {
+      // window.alert("Access denied!");
+      if (this.router.getCurrentNavigation()?.previousNavigation) {
+        this.navCtrl.back();
+      } else {
+        this.navCtrl.navigateForward(
+          `/user-profile/${this.authStoreService.getCurrentUser()?.uid}`,
+        );
+      }
+      return false;
     }
     return true;
   }

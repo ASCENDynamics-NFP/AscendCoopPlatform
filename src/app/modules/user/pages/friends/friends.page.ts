@@ -72,9 +72,7 @@ export class FriendsPage implements OnInit {
       });
   }
 
-  ionViewWillEnter() {
-    this.menuService.onEnter();
-  }
+  ionViewWillEnter() {}
 
   ionViewWillLeave() {}
 

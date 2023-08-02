@@ -58,9 +58,7 @@ export class UsersPage implements OnInit {
       });
   }
 
-  ionViewWillEnter() {
-    this.menuService.onEnter();
-  }
+  ionViewWillEnter() {}
 
   ionViewWillLeave() {}
 

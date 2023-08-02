@@ -100,9 +100,7 @@ export class EditUserProfilePage implements OnInit {
       });
   }
 
-  ionViewWillEnter() {
-    this.menuService.onEnter();
-  }
+  ionViewWillEnter() {}
 
   ionViewWillLeave() {}
 

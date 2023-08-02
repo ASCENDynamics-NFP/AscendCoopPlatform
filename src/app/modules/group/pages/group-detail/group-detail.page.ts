@@ -35,9 +35,7 @@ export class GroupDetailPage implements OnInit {
 
   ngOnInit() {}
 
-  ionViewWillEnter() {
-    this.menuService.onEnter();
-  }
+  ionViewWillEnter() {}
 
   ionViewWillLeave() {}
 }

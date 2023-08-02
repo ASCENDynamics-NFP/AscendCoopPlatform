@@ -66,6 +66,7 @@ export const routes: Routes = [
       import("./modules/group/pages/group-members/group-members.page").then(
         (m) => m.GroupMembersPage,
       ),
+    canActivate: [AuthGuard],
   },
   {
     path: "group-profile/:groupId",
@@ -88,6 +89,7 @@ export const routes: Routes = [
       import("./modules/user/pages/user-profile/user-profile.page").then(
         (m) => m.UserProfilePage,
       ),
+    canActivate: [AuthGuard],
   },
   {
     path: "user-profile/:uid/friends",
@@ -95,6 +97,7 @@ export const routes: Routes = [
       import("./modules/user/pages/friends/friends.page").then(
         (m) => m.FriendsPage,
       ),
+    canActivate: [AuthGuard],
   },
   {
     path: "user-signup",
@@ -140,6 +143,7 @@ export const routes: Routes = [
       import(
         "./modules/user/pages/edit-user-profile/edit-user-profile.page"
       ).then((m) => m.EditUserProfilePage),
+    canActivate: [AuthGuard],
   },
   {
     path: "group/:groupId/partners",
@@ -147,6 +151,7 @@ export const routes: Routes = [
       import("./modules/group/pages/partners/partners.routes").then(
         (m) => m.routes,
       ),
+    canActivate: [AuthGuard],
     // loadComponent: () =>
     //   import("./modules/group/pages/partners/partners.page").then(
     //     (m) => m.PartnersPage,

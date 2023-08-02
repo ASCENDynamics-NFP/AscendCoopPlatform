@@ -50,9 +50,7 @@ export class UserSettingsPage implements OnInit {
 
   ngOnInit() {}
 
-  ionViewWillEnter() {
-    this.menuService.onEnter();
-  }
+  ionViewWillEnter() {}
 
   ionViewWillLeave() {}
 }

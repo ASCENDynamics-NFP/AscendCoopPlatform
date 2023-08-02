@@ -24,13 +24,13 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     </ion-buttons>
     <ion-title>User Dashboard</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="signOut()" *ngIf="user | async">
+      <!-- <ion-button (click)="signOut()" *ngIf="user | async">
         <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
-      </ion-button>
+      </ion-button> -->
 
-      <ion-button (click)="openLogin()" *ngIf="(user | async) === null">
+      <!-- <ion-button (click)="openLogin()" *ngIf="(user | async) === null">
         Sign In
-      </ion-button>
+      </ion-button> -->
     </ion-buttons>
   </ion-toolbar>
 </ion-header>

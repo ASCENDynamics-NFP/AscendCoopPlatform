@@ -17,25 +17,26 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
+import {IonicModule} from "@ionic/angular";
 
-/**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+import {CreateGroupModalComponent} from "./create-group-modal.component";
 
-// import {onRequest} from "firebase-functions/v2/https";
-// import * as logger from "firebase-functions/logger";
+describe("CreateGroupModalComponent", () => {
+  let component: CreateGroupModalComponent;
+  let fixture: ComponentFixture<CreateGroupModalComponent>;
 
-// // Start writing functions
-// // https://firebase.google.com/docs/functions/typescript
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [IonicModule.forRoot()],
+    }).compileComponents();
 
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
-export * from "./database/relationships"; // triggers
-export * from "./database/groups"; // triggers
+    fixture = TestBed.createComponent(CreateGroupModalComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
+
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

@@ -40,6 +40,7 @@ export interface AppUser {
   email: string; // Email address
   emailVerified: boolean; // Whether the user's email is verified
   name: string; // First and last name
+  heroImage: string; // base64 string
   profilePicture: string; // base64 string
   dateOfBirth: Timestamp; // Birthday
   language: string; // User's language

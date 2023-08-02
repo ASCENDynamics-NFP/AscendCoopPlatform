@@ -49,23 +49,23 @@ import {GroupListComponent} from "./components/group-list/group-list.component";
   ],
 })
 export class GroupProfilePage implements OnInit {
-  groupId: string | null;
+  groupId: string | null = "";
   group: Partial<AppGroup> | null = {};
-  user: any;
   memberList: AppRelationship[] = [];
   groupList: AppRelationship[] = [];
-  canEdit: boolean = false;
+  isAdmin: boolean = false;
+  isMember: boolean = false;
+  isPendingMember: boolean = false;
   constructor(
     private authService: AuthService,
     private route: ActivatedRoute,
     private menuService: MenuService,
     private groupsService: GroupsService,
     private relationshipsCollectionService: RelationshipsCollectionService,
-  ) {
-    this.groupId = this.route.snapshot.paramMap.get("groupId");
-  }
+  ) {}
 
   ngOnInit() {
+    this.groupId = this.route.snapshot.paramMap.get("groupId");
     this.getGroup();
     this.relationshipsCollectionService
       .getRelationships(this.groupId)
@@ -97,9 +97,16 @@ export class GroupProfilePage implements OnInit {
       .getGroupById(this.groupId)
       .then((group) => {
         this.group = group;
-        let userId = this.authService?.getCurrentUser()?.uid;
-        this.canEdit = userId
+        let user = this.authService.getCurrentUser();
+        let userId = user?.uid ? user.uid : "";
+        this.isAdmin = userId
           ? this.group?.admins?.includes(userId) || false
+          : false;
+        this.isMember = userId
+          ? this.group?.members?.includes(userId) || false
+          : false;
+        this.isPendingMember = userId
+          ? this.group?.pendingMembers?.includes(userId) || false
           : false;
       })
       .catch((error) => {

@@ -19,12 +19,13 @@
 ***********************************************************************************************/
 import {CommonModule} from "@angular/common";
 import {Component, OnInit} from "@angular/core";
-import {RouterLink, RouterLinkActive} from "@angular/router";
-import {IonicModule} from "@ionic/angular";
+import {Router, RouterLink, RouterLinkActive} from "@angular/router";
+import {IonicModule, ModalController} from "@ionic/angular";
 import {AuthService} from "../../../core/services/auth.service";
 import {User} from "firebase/auth";
 import {TranslateModule} from "@ngx-translate/core";
 import {TranslateService, LangChangeEvent} from "@ngx-translate/core";
+import {CreateGroupModalComponent} from "../../../modules/group/components/create-group-modal/create-group-modal.component";
 
 @Component({
   selector: "app-menu",
@@ -37,17 +38,22 @@ import {TranslateService, LangChangeEvent} from "@ngx-translate/core";
     RouterLinkActive,
     CommonModule,
     TranslateModule,
+    CreateGroupModalComponent,
   ],
 })
 export class MenuComponent implements OnInit {
   user: User | null = null;
+  public project: any = [];
   public guestPages: any = {user: [], group: []};
   public userPages: any = {user: [], group: []};
-  // public labels: Array<string> = [];
+  message =
+    "This modal example uses the modalController to present and dismiss modals.";
 
   constructor(
     private authService: AuthService,
     private translate: TranslateService,
+    private modalCtrl: ModalController,
+    private router: Router,
   ) {
     this.authService.user$.subscribe((user) => {
       if (user) {
@@ -69,7 +75,43 @@ export class MenuComponent implements OnInit {
   }
 
   ngOnInit() {
-    // this.labels = ["Family", "Friends", "Notes", "Work", "Travel", "Reminders"];
+    this.project = [
+      {
+        title: "ASCENDynamics NFP",
+        url: "https://ascendynamics.org",
+        icon: "globe-outline",
+      },
+      {
+        title: "LinkedIn",
+        url: "https://www.linkedin.com/company/ascendynamics-nfp",
+        icon: "logo-linkedin",
+      },
+      {
+        title: "Facebook",
+        url: "https://www.facebook.com/ASCENDynamicsNFP",
+        icon: "logo-facebook",
+      },
+      {
+        title: "Slack Community",
+        url: "https://join.slack.com/t/ascendynamicsnfp/shared_invite/zt-1yqcw1hqa-slT2gWkBEkLOTRnN8zEqdQ",
+        icon: "logo-slack",
+      },
+      {
+        title: "YouTube Channel",
+        url: "https://www.youtube.com/channel/UCkR2Cgrjyi0QPeIKIXzxOvg",
+        icon: "logo-youtube",
+      },
+      {
+        title: "Donate",
+        url: "https://www.paypal.com/donate/?hosted_button_id=NZNUBUCTZA75S",
+        icon: "logo-paypal",
+      },
+      {
+        title: "Project Repository",
+        url: "https://github.com/ASCENDynamics-NFP/AscendCoopPlatform",
+        icon: "code-slash",
+      },
+    ];
   }
 
   translateGuestItems() {
@@ -100,26 +142,46 @@ export class MenuComponent implements OnInit {
   translateUserItems() {
     const userItems = [
       {
+        buttonIcon: "",
+        buttonLink: "",
+        buttonText: "",
+        hasButton: false,
         title: "Profile",
         url: `user-profile/${this.user?.uid}`,
         icon: "person",
       },
       {
+        buttonIcon: "add",
+        buttonLink: "create-group",
+        buttonText: "Group",
+        hasButton: true,
         title: "Groups",
         url: `group-list`,
         icon: "business",
       },
       {
+        buttonIcon: "",
+        buttonLink: "",
+        buttonText: "",
+        hasButton: false,
         title: "Users",
         url: `users`,
         icon: "people",
       },
       {
+        buttonIcon: "",
+        buttonLink: "",
+        buttonText: "",
+        hasButton: false,
         title: "Settings",
         url: `user-settings/${this.user?.uid}`,
         icon: "settings",
       },
       {
+        buttonIcon: "",
+        buttonLink: "",
+        buttonText: "",
+        hasButton: false,
         title: "Feedback",
         url: `user-settings/${this.user?.uid}`,
         icon: "ear",
@@ -152,5 +214,24 @@ export class MenuComponent implements OnInit {
 
   signOut() {
     this.authService.signOut();
+  }
+
+  async handleButtonClick(buttonLink: string) {
+    console.log("Button Clicked");
+    console.log(buttonLink);
+    if (buttonLink === "") {
+      return;
+    } else if (buttonLink === "create-group") {
+      console.log("Create Group Clicked");
+      const modal = await this.modalCtrl.create({
+        component: CreateGroupModalComponent,
+      });
+      modal.present();
+
+      const {data, role} = await modal.onWillDismiss();
+      if (role === "confirm" && data) {
+        this.router.navigate(["group-profile/" + data.groupId]);
+      }
+    }
   }
 }

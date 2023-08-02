@@ -20,7 +20,7 @@
 import {CommonModule} from "@angular/common";
 import {Component, Input, OnInit} from "@angular/core";
 import {IonicModule} from "@ionic/angular";
-import {User} from "firebase/auth";
+import {AppUser} from "../../../../../../models/user.model"; // import your user model
 
 @Component({
   selector: "app-hero",
@@ -30,7 +30,7 @@ import {User} from "firebase/auth";
   imports: [IonicModule, CommonModule],
 })
 export class HeroComponent implements OnInit {
-  @Input() user: User | null = null; // define your user here
+  @Input() user: AppUser | null = null; // define your user here
 
   constructor() {}
 

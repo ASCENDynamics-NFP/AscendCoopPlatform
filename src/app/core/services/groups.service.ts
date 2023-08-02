@@ -58,12 +58,19 @@ export class GroupsService {
     private successHandler: SuccessHandlerService,
   ) {}
 
-  async createGroup(group: AppGroup): Promise<string | null> {
+  async createGroup(group: Partial<AppGroup>): Promise<string | null> {
     const loading = await this.loadingController.create();
     await loading.present();
+    const userId = this.authService.getCurrentUser()?.uid;
+    if (userId) {
+      group.admins = [userId];
+      group.members = [userId];
+    }
+    group.logoImage = "assets/icon/favicon.png";
+    group.heroImage = "assets/image/orghero.png";
     return await addDoc(
       collection(this.firestoreService.firestore, this.collectionName),
-      prepareDataForCreate(group, this.authService.getCurrentUser()?.uid),
+      prepareDataForCreate(group, userId),
     )
       .then((docRef) => {
         this.successHandler.handleSuccess("Request sent successfully!");

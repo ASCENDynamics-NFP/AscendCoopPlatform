@@ -32,6 +32,7 @@ import {AppGroup} from "../../../../../../models/group.model";
 export class HeroComponent implements OnInit {
   @Input() group: Partial<AppGroup> | null = null; // define your user here
   @Input() isMember: boolean = false;
+  @Input() isPendingMember: boolean = false;
   constructor() {}
 
   ngOnInit() {}

@@ -55,6 +55,7 @@ export class GroupProfilePage implements OnInit {
   groupList: AppRelationship[] = [];
   isAdmin: boolean = false;
   isMember: boolean = false;
+  isPendingMember: boolean = false;
   constructor(
     private authService: AuthService,
     private route: ActivatedRoute,
@@ -103,6 +104,9 @@ export class GroupProfilePage implements OnInit {
           : false;
         this.isMember = userId
           ? this.group?.members?.includes(userId) || false
+          : false;
+        this.isPendingMember = userId
+          ? this.group?.pendingMembers?.includes(userId) || false
           : false;
       })
       .catch((error) => {

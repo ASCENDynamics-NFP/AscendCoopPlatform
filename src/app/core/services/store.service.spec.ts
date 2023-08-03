@@ -17,30 +17,19 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {CommonModule} from "@angular/common";
-import {Component, Input, OnInit} from "@angular/core";
-import {IonicModule} from "@ionic/angular";
-import {AppUser} from "../../../../../../models/user.model";
-import {RouterModule} from "@angular/router";
-import {PhoneFormatPipe} from "../../../../../../shared/pipes/phone-format.pipe";
+import {TestBed} from "@angular/core/testing";
 
-@Component({
-  selector: "app-details",
-  templateUrl: "./details.component.html",
-  styleUrls: ["./details.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, RouterModule, PhoneFormatPipe],
-})
-export class DetailsComponent implements OnInit {
-  @Input() user: Partial<AppUser> | null = null; // define your user here
-  @Input() isProfileOwner: boolean = false; // define your user here
-  dateOfBirth = new Date().toISOString(); // default initialization
+import {StoreService} from "./store.service";
 
-  constructor() {}
+describe("StoreService", () => {
+  let service: StoreService;
 
-  ngOnInit() {
-    // If user and dateOfBirth exist, convert to Date, otherwise leave as default Date
-    this.dateOfBirth =
-      this.user?.dateOfBirth?.toDate().toISOString() || this.dateOfBirth;
-  }
-}
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(StoreService);
+  });
+
+  it("should be created", () => {
+    expect(service).toBeTruthy();
+  });
+});

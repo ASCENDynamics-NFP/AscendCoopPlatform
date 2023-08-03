@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
+import {Component, OnDestroy} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
@@ -34,7 +34,7 @@ import {AuthStoreService} from "../../../../core/services/auth-store.service";
   standalone: true,
   imports: [IonicModule, CommonModule, ReactiveFormsModule, TranslateModule],
 })
-export class UserSignupPage {
+export class UserSignupPage implements OnDestroy {
   private authSubscription: Subscription;
   signupForm = this.fb.nonNullable.group({
     email: ["", Validators.compose([Validators.required, Validators.email])],

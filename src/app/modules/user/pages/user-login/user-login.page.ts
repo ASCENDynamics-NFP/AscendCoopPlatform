@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
+import {Component, OnDestroy, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
 import {AlertController, IonicModule} from "@ionic/angular";
@@ -34,7 +34,7 @@ import {Subscription} from "rxjs";
   standalone: true,
   imports: [IonicModule, CommonModule, ReactiveFormsModule, TranslateModule],
 })
-export class UserLoginPage implements OnInit {
+export class UserLoginPage implements OnInit, OnDestroy {
   private userSubscription: Subscription;
   public loginForm = this.fb.nonNullable.group({
     // Using Validators.compose() for multiple validation rules

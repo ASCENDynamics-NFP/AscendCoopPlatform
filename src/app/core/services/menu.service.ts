@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Injectable} from "@angular/core";
+import {Injectable, OnDestroy} from "@angular/core";
 import {MenuController} from "@ionic/angular";
 import {AuthStoreService} from "./auth-store.service";
 import {Subscription} from "rxjs";
@@ -25,7 +25,7 @@ import {Subscription} from "rxjs";
 @Injectable({
   providedIn: "root",
 })
-export class MenuService {
+export class MenuService implements OnDestroy {
   private authSubscription: Subscription;
 
   constructor(

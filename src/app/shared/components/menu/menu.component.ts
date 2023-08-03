@@ -18,7 +18,7 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {CommonModule} from "@angular/common";
-import {Component, OnInit} from "@angular/core";
+import {Component, OnDestroy, OnInit} from "@angular/core";
 import {Router, RouterLink, RouterLinkActive} from "@angular/router";
 import {IonicModule, ModalController} from "@ionic/angular";
 import {User} from "firebase/auth";
@@ -42,7 +42,7 @@ import {AuthStoreService} from "../../../core/services/auth-store.service";
     CreateGroupModalComponent,
   ],
 })
-export class MenuComponent implements OnInit {
+export class MenuComponent implements OnInit, OnDestroy {
   private authSubscription: Subscription;
   user: User | null = null;
   public project: any = [];

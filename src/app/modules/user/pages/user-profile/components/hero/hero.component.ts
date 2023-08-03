@@ -30,7 +30,7 @@ import {AppUser} from "../../../../../../models/user.model"; // import your user
   imports: [IonicModule, CommonModule],
 })
 export class HeroComponent implements OnInit {
-  @Input() user: AppUser | null = null; // define your user here
+  @Input() user: Partial<AppUser> | null = null; // define your user here
 
   constructor() {}
 

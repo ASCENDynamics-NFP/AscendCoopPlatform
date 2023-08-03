@@ -17,11 +17,10 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
+import {Component, OnDestroy, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {UsersService} from "../../../../core/services/users.service";
 import {ActivatedRoute} from "@angular/router";
 
 import {FriendListComponent} from "./components/friend-list/friend-list.component";
@@ -30,7 +29,10 @@ import {HeroComponent} from "./components/hero/hero.component";
 import {DetailsComponent} from "./components/details/details.component";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 import {AppRelationship} from "../../../../models/relationship.model";
-import {AuthService} from "../../../../core/services/auth.service";
+import {AppUser} from "../../../../models/user.model";
+import {Subscription} from "rxjs";
+import {StoreService} from "../../../../core/services/store.service";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 @Component({
   selector: "app-user-profile",
@@ -47,24 +49,34 @@ import {AuthService} from "../../../../core/services/auth.service";
     DetailsComponent,
   ],
 })
-export class UserProfilePage implements OnInit {
-  user: any;
+export class UserProfilePage implements OnInit, OnDestroy {
+  private uid: string | null = null;
+  private usersSubscription: Subscription;
+  user: Partial<AppUser> | null = null;
   friendList: AppRelationship[] = [];
   groupList: AppRelationship[] = [];
   isProfileOwner: boolean = false;
   constructor(
-    private authService: AuthService,
+    private authStoreService: AuthStoreService,
     private route: ActivatedRoute,
-    private usersService: UsersService,
-
+    private storeService: StoreService,
     private relationshipsCollectionService: RelationshipsCollectionService,
-  ) {}
+  ) {
+    this.uid = this.route.snapshot.paramMap.get("uid");
+    this.usersSubscription = this.storeService.users$.subscribe((users) => {
+      // console.log(uid, users);
+      this.user = users.find((user) => user.id === this.uid) ?? null;
+    });
+  }
 
   ngOnInit() {
-    this.getUser();
-    const uid = this.route.snapshot.paramMap.get("uid");
+    if (!this.user) {
+      // console.log("User not found in store, fetching from server");
+      this.storeService.getUserById(this.uid);
+    }
+
     this.relationshipsCollectionService
-      .getRelationships(uid)
+      .getRelationships(this.uid)
       .then((relationships) => {
         for (let relationship of relationships) {
           if (
@@ -79,7 +91,8 @@ export class UserProfilePage implements OnInit {
             this.groupList.push(relationship);
           }
         }
-        this.isProfileOwner = uid === this.authService.getCurrentUser()?.uid;
+        this.isProfileOwner =
+          this.uid === this.authStoreService.getCurrentUser()?.uid;
       });
   }
 
@@ -87,14 +100,7 @@ export class UserProfilePage implements OnInit {
 
   ionViewWillLeave() {}
 
-  async getUser() {
-    this.usersService
-      .getUserById(this.route.snapshot.paramMap.get("uid"))
-      .then((data) => {
-        this.user = data;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  ngOnDestroy() {
+    this.usersSubscription.unsubscribe();
   }
 }

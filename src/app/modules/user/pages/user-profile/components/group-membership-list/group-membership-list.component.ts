@@ -32,7 +32,7 @@ import {AppUser} from "../../../../../../models/user.model";
   imports: [IonicModule, CommonModule],
 })
 export class GroupMembershipListComponent implements OnInit {
-  @Input() user: AppUser | null = null; // define your user here
+  @Input() user: Partial<AppUser> | null = null; // define your user here
   @Input() groupList: AppRelationship[] = []; // define your user here
 
   constructor(private router: Router) {}

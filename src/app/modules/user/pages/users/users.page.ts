@@ -25,7 +25,7 @@ import {UsersService} from "../../../../core/services/users.service";
 import {User} from "firebase/auth";
 import {DocumentData} from "firebase/firestore";
 import {AuthService} from "../../../../core/services/auth.service";
-import {MenuService} from "../../../../core/services/menu.service";
+
 import {RouterModule} from "@angular/router";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 import {AppUser} from "../../../../models/user.model";
@@ -44,7 +44,7 @@ export class UsersPage implements OnInit {
   constructor(
     private relationshipsCollectionService: RelationshipsCollectionService,
     private usersService: UsersService,
-    private menuService: MenuService,
+
     private authService: AuthService,
   ) {
     this.user = this.authService.getCurrentUser();

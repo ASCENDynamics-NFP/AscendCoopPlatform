@@ -24,7 +24,7 @@ import {IonicModule} from "@ionic/angular";
 import {User} from "firebase/auth";
 import {AuthService} from "../../../../core/services/auth.service";
 import {GroupsService} from "../../../../core/services/groups.service";
-import {MenuService} from "../../../../core/services/menu.service";
+
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 import {AppGroup} from "../../../../models/group.model";
 import {ActivatedRoute, RouterModule} from "@angular/router";
@@ -44,7 +44,7 @@ export class SearchPage implements OnInit {
   constructor(
     private activatedRoute: ActivatedRoute,
     private authService: AuthService,
-    private menuService: MenuService,
+
     private groupService: GroupsService,
     private relationshipsCollectionService: RelationshipsCollectionService,
   ) {

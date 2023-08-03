@@ -23,7 +23,7 @@ import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {UsersService} from "../../../../core/services/users.service";
 import {ActivatedRoute} from "@angular/router";
-import {MenuService} from "../../../../core/services/menu.service";
+
 import {FriendListComponent} from "./components/friend-list/friend-list.component";
 import {GroupMembershipListComponent} from "./components/group-membership-list/group-membership-list.component";
 import {HeroComponent} from "./components/hero/hero.component";
@@ -56,7 +56,7 @@ export class UserProfilePage implements OnInit {
     private authService: AuthService,
     private route: ActivatedRoute,
     private usersService: UsersService,
-    private menuService: MenuService,
+
     private relationshipsCollectionService: RelationshipsCollectionService,
   ) {}
 

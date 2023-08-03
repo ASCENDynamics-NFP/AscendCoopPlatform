@@ -22,7 +22,7 @@ import {CommonModule} from "@angular/common";
 import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
 import {AlertController, IonicModule} from "@ionic/angular";
 import {Router} from "@angular/router";
-import {MenuService} from "../../../../core/services/menu.service";
+
 import {TranslateModule} from "@ngx-translate/core";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {Subscription} from "rxjs";
@@ -49,7 +49,7 @@ export class UserLoginPage implements OnInit {
     private alertController: AlertController,
     private authStoreService: AuthStoreService,
     private fb: FormBuilder,
-    private menuService: MenuService,
+
     private router: Router,
   ) {
     this.userSubscription = this.authStoreService.user$.subscribe((user) => {

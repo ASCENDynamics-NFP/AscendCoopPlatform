@@ -27,7 +27,7 @@ import {
   Validators,
 } from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {MenuService} from "../../../../core/services/menu.service";
+
 import {AppGroup} from "../../../../models/group.model";
 import {GroupsService} from "../../../../core/services/groups.service";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -63,7 +63,6 @@ export class GroupEditPage implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private menuService: MenuService,
     private groupsService: GroupsService,
     private activatedRoute: ActivatedRoute,
     private router: Router,

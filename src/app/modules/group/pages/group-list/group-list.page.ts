@@ -21,7 +21,7 @@ import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {MenuService} from "../../../../core/services/menu.service";
+
 import {GroupsService} from "../../../../core/services/groups.service";
 import {AppGroup} from "../../../../models/group.model";
 import {AuthService} from "../../../../core/services/auth.service";
@@ -42,7 +42,7 @@ export class GroupListPage implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private menuService: MenuService,
+
     private groupService: GroupsService,
     private relationshipsCollectionService: RelationshipsCollectionService,
   ) {

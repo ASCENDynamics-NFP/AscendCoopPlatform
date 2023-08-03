@@ -20,7 +20,7 @@
 import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
-import {MenuService} from "../../../../core/services/menu.service";
+
 import {ActivatedRoute, RouterModule} from "@angular/router";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 import {AuthService} from "../../../../core/services/auth.service";
@@ -44,7 +44,7 @@ export class MemberListPage implements OnInit {
   currentUser: User | null = this.authService.getCurrentUser();
   constructor(
     private authService: AuthService,
-    private menuService: MenuService,
+
     private activatedRoute: ActivatedRoute,
     private relationshipsCollectionService: RelationshipsCollectionService,
     private groupsService: GroupsService,

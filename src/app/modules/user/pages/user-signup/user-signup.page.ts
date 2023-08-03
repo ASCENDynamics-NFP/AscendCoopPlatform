@@ -22,7 +22,7 @@ import {CommonModule} from "@angular/common";
 import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {Router} from "@angular/router";
-import {MenuService} from "../../../../core/services/menu.service";
+
 import {TranslateModule} from "@ngx-translate/core";
 import {Subscription} from "rxjs";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";

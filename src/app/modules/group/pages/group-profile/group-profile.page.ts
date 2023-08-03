@@ -21,7 +21,7 @@ import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {MenuService} from "../../../../core/services/menu.service";
+
 import {GroupsService} from "../../../../core/services/groups.service";
 import {ActivatedRoute} from "@angular/router";
 import {AppGroup} from "../../../../models/group.model";
@@ -59,7 +59,7 @@ export class GroupProfilePage implements OnInit {
   constructor(
     private authService: AuthService,
     private route: ActivatedRoute,
-    private menuService: MenuService,
+
     private groupsService: GroupsService,
     private relationshipsCollectionService: RelationshipsCollectionService,
   ) {}

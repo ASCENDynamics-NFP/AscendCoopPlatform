@@ -21,7 +21,6 @@ import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {MenuService} from "../../../../core/services/menu.service";
 
 @Component({
   selector: "app-group-create",
@@ -31,7 +30,7 @@ import {MenuService} from "../../../../core/services/menu.service";
   imports: [IonicModule, CommonModule, FormsModule],
 })
 export class GroupCreatePage implements OnInit {
-  constructor(private menuService: MenuService) {}
+  constructor() {}
 
   ngOnInit() {}
 

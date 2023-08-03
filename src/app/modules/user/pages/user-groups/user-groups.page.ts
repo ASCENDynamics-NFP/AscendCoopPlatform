@@ -21,7 +21,7 @@ import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
 import {AuthService} from "../../../../core/services/auth.service";
-import {MenuService} from "../../../../core/services/menu.service";
+
 import {ActivatedRoute, RouterModule} from "@angular/router";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 
@@ -39,7 +39,7 @@ export class UserGroupsPage implements OnInit {
   currentUser: any;
   constructor(
     private authService: AuthService,
-    private menuService: MenuService,
+
     private activatedRoute: ActivatedRoute,
     private relationshipsCollectionService: RelationshipsCollectionService,
   ) {}

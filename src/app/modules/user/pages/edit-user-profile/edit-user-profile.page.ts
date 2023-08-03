@@ -27,7 +27,7 @@ import {
   Validators,
 } from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {MenuService} from "../../../../core/services/menu.service";
+
 import {AppUser} from "../../../../models/user.model";
 import {UsersService} from "../../../../core/services/users.service";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -64,7 +64,7 @@ export class EditUserProfilePage implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private menuService: MenuService,
+
     private userService: UsersService,
     private activatedRoute: ActivatedRoute,
     private router: Router,

@@ -8,7 +8,6 @@ import {RelationshipsCollectionService} from "../../../../core/services/relation
 import {AuthService} from "../../../../core/services/auth.service";
 import {GroupsService} from "../../../../core/services/groups.service";
 import {User} from "firebase/auth";
-import {MenuService} from "../../../../core/services/menu.service";
 
 @Component({
   selector: "app-partners",
@@ -25,7 +24,7 @@ export class PartnersPage implements OnInit {
   currentUser: User | null = this.authService.getCurrentUser();
   constructor(
     private authService: AuthService,
-    private menuService: MenuService,
+
     private activatedRoute: ActivatedRoute,
     private relationshipsCollectionService: RelationshipsCollectionService,
     private groupsService: GroupsService,

@@ -64,6 +64,14 @@ export class StoreService {
       });
   }
 
+  searchUsersByName(name: string): void {
+    this.usersService
+      .searchUsersByName(name) // replace 'field', 'condition', 'value' with your actual values
+      .then((users) => {
+        this.usersSubject.next(users as Partial<AppUser>[]);
+      });
+  }
+
   createUser(user: Partial<AppUser>) {
     if (!user.id) throw new Error("User must have a id");
     this.usersService.createUser(user);

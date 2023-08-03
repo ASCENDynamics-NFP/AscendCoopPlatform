@@ -17,18 +17,19 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
+import {Component, OnDestroy, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {UsersService} from "../../../../core/services/users.service";
 import {User} from "firebase/auth";
 import {DocumentData} from "firebase/firestore";
-import {AuthService} from "../../../../core/services/auth.service";
 
 import {RouterModule} from "@angular/router";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 import {AppUser} from "../../../../models/user.model";
+import {StoreService} from "../../../../core/services/store.service";
+import {Subscription} from "rxjs";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 @Component({
   selector: "app-users",
@@ -37,26 +38,26 @@ import {AppUser} from "../../../../models/user.model";
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
-export class UsersPage implements OnInit {
+export class UsersPage implements OnInit, OnDestroy {
+  private usersSubscription: Subscription;
   user: User | null = null; // define your user here
   userList: Partial<AppUser>[] | null = []; // define your user list here
 
   constructor(
+    private authStoreService: AuthStoreService,
     private relationshipsCollectionService: RelationshipsCollectionService,
-    private usersService: UsersService,
-
-    private authService: AuthService,
+    private storeService: StoreService,
   ) {
-    this.user = this.authService.getCurrentUser();
+    this.user = this.authStoreService.getCurrentUser();
+
+    this.usersSubscription = this.storeService.users$.subscribe((users) => {
+      if (users) {
+        this.userList = users;
+      }
+    });
   } // inject your Firebase service
 
-  ngOnInit(): void {
-    this.usersService
-      .getUsersWithCondition("displayName", "!=", null, "displayName", 100)
-      .then((users) => {
-        this.userList = users as Partial<AppUser>[];
-      });
-  }
+  ngOnInit(): void {}
 
   ionViewWillEnter() {}
 
@@ -103,8 +104,12 @@ export class UsersPage implements OnInit {
 
   searchUsers(event: any) {
     const value = event.target.value;
-    this.usersService.searchUsersByName(value).then((users) => {
-      this.userList = users;
-    });
+    if (value) {
+      this.storeService.searchUsersByName(value);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.usersSubscription.unsubscribe();
   }
 }

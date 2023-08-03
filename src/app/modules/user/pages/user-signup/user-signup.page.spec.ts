@@ -19,18 +19,18 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {UserSignupPage} from "./user-signup.page";
-import {AuthService} from "../../../../core/services/auth.service";
 import {of} from "rxjs";
 import {TranslateModule, TranslateService} from "@ngx-translate/core";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 describe("UserSignupPage", () => {
   let component: UserSignupPage;
   let fixture: ComponentFixture<UserSignupPage>;
   let translate: TranslateService;
 
-  const mockAuthService = {
+  const mockAuthStoreService = {
     // Add the methods used in your component here.
-    // For example, if your component calls `authService.signUp()`, add a `signUp` method:
+    // For example, if your component calls `authStoreService.signUp()`, add a `signUp` method:
     signUp: jasmine.createSpy("signUp").and.returnValue(Promise.resolve(true)),
     user$: of(false), // This is an Observable
   };
@@ -39,7 +39,7 @@ describe("UserSignupPage", () => {
     TestBed.configureTestingModule({
       imports: [UserSignupPage, TranslateModule.forRoot()],
       providers: [
-        {provide: AuthService, useValue: mockAuthService},
+        {provide: AuthStoreService, useValue: mockAuthStoreService},
         TranslateService,
       ],
     }).compileComponents();
@@ -55,7 +55,7 @@ describe("UserSignupPage", () => {
   });
 
   // Test for signUp method
-  // it("should call signUp on AuthService when signUp is called", async () => {
+  // it("should call signUp on AuthStoreService when signUp is called", async () => {
   //   // Arrange
   //   component.signupForm.setValue({
   //     email: "test@test.com",
@@ -66,8 +66,8 @@ describe("UserSignupPage", () => {
   //   await component.signup();
 
   //   // Assert
-  //   expect(mockAuthService.signUp).toHaveBeenCalled();
-  //   expect(mockAuthService.signUp).toHaveBeenCalledWith(
+  //   expect(mockAuthStoreService.signUp).toHaveBeenCalled();
+  //   expect(mockAuthStoreService.signUp).toHaveBeenCalledWith(
   //     "test@test.com",
   //     "test1234",
   //   );

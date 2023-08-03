@@ -25,7 +25,7 @@ import {IonicModule} from "@ionic/angular";
 import {TranslateModule} from "@ngx-translate/core";
 import {LanguageSelectorComponent} from "../../components/language-selector/language-selector.component";
 import {FriendRequestComponent} from "../../components/friend-request/friend-request.component";
-import {AuthService} from "../../../../core/services/auth.service";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 @Component({
   selector: "app-user-settings",
@@ -42,8 +42,8 @@ import {AuthService} from "../../../../core/services/auth.service";
   ],
 })
 export class UserSettingsPage implements OnInit {
-  user = this.authService.getCurrentUser();
-  constructor(private authService: AuthService) {}
+  user = this.authStoreService.getCurrentUser();
+  constructor(private authStoreService: AuthStoreService) {}
 
   ngOnInit() {}
 

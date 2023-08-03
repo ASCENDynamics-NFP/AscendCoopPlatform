@@ -29,9 +29,9 @@ import {DetailsComponent} from "./components/details/details.component";
 import {HeroComponent} from "./components/hero/hero.component";
 import {AppRelationship} from "../../../../models/relationship.model";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
-import {AuthService} from "../../../../core/services/auth.service";
 import {MemberListComponent} from "./components/member-list/member-list.component";
 import {GroupListComponent} from "./components/group-list/group-list.component";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 @Component({
   selector: "app-group-profile",
@@ -57,7 +57,7 @@ export class GroupProfilePage implements OnInit {
   isMember: boolean = false;
   isPendingMember: boolean = false;
   constructor(
-    private authService: AuthService,
+    private authStoreService: AuthStoreService,
     private route: ActivatedRoute,
 
     private groupsService: GroupsService,
@@ -95,7 +95,7 @@ export class GroupProfilePage implements OnInit {
       .getGroupById(this.groupId)
       .then((group) => {
         this.group = group;
-        let user = this.authService.getCurrentUser();
+        let user = this.authStoreService.getCurrentUser();
         let userId = user?.uid ? user.uid : "";
         this.isAdmin = userId
           ? this.group?.admins?.includes(userId) || false

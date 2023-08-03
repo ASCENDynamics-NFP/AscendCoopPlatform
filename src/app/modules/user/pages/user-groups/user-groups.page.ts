@@ -20,10 +20,10 @@
 import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
-import {AuthService} from "../../../../core/services/auth.service";
 
 import {ActivatedRoute, RouterModule} from "@angular/router";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 @Component({
   selector: "app-user-groups",
@@ -38,7 +38,7 @@ export class UserGroupsPage implements OnInit {
   userId: string | null = null;
   currentUser: any;
   constructor(
-    private authService: AuthService,
+    private authStoreService: AuthStoreService,
 
     private activatedRoute: ActivatedRoute,
     private relationshipsCollectionService: RelationshipsCollectionService,
@@ -49,7 +49,7 @@ export class UserGroupsPage implements OnInit {
     this.relationshipsCollectionService
       .getRelationships(this.userId)
       .then((relationships) => {
-        this.currentUser = this.authService.getCurrentUser();
+        this.currentUser = this.authStoreService.getCurrentUser();
         for (let relationship of relationships) {
           if (
             relationship.type === "member" &&

@@ -19,14 +19,14 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {UserLoginPage} from "./user-login.page";
-import {AuthService} from "../../../../core/services/auth.service";
 import {of} from "rxjs";
 import {TranslateModule, TranslateService} from "@ngx-translate/core";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 describe("UserLoginPage", () => {
   let component: UserLoginPage;
   let fixture: ComponentFixture<UserLoginPage>;
-  let service: AuthService;
+  let service: AuthStoreService;
   let authSpy: any;
   let translate: TranslateService;
 
@@ -37,9 +37,12 @@ describe("UserLoginPage", () => {
     authSpy.onSignInWithEmailLink.and.returnValue(Promise.resolve());
     TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot()],
-      providers: [{provide: AuthService, useValue: authSpy}, TranslateService],
+      providers: [
+        {provide: AuthStoreService, useValue: authSpy},
+        TranslateService,
+      ],
     });
-    service = TestBed.inject(AuthService);
+    service = TestBed.inject(AuthStoreService);
     fixture = TestBed.createComponent(UserLoginPage);
     component = fixture.componentInstance;
     translate = TestBed.inject(TranslateService); // inject TranslateService

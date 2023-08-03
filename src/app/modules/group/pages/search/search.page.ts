@@ -22,12 +22,12 @@ import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {User} from "firebase/auth";
-import {AuthService} from "../../../../core/services/auth.service";
 import {GroupsService} from "../../../../core/services/groups.service";
 
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 import {AppGroup} from "../../../../models/group.model";
 import {ActivatedRoute, RouterModule} from "@angular/router";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 @Component({
   selector: "app-search",
@@ -43,12 +43,12 @@ export class SearchPage implements OnInit {
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private authService: AuthService,
+    private authStoreService: AuthStoreService,
 
     private groupService: GroupsService,
     private relationshipsCollectionService: RelationshipsCollectionService,
   ) {
-    this.user = this.authService.getCurrentUser();
+    this.user = this.authStoreService.getCurrentUser();
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
   }
 

@@ -23,11 +23,11 @@ import {IonicModule} from "@ionic/angular";
 
 import {ActivatedRoute, RouterModule} from "@angular/router";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
-import {AuthService} from "../../../../core/services/auth.service";
 import {AppGroup} from "../../../../models/group.model";
 import {GroupsService} from "../../../../core/services/groups.service";
 import {User} from "firebase/auth";
 import {AppRelationship} from "../../../../models/relationship.model";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 @Component({
   selector: "app-member-list",
@@ -41,11 +41,10 @@ export class MemberListPage implements OnInit {
   pendingMembersList: any[] = [];
   groupId: string | null = null;
   group: Partial<AppGroup> | null = null;
-  currentUser: User | null = this.authService.getCurrentUser();
+  currentUser: User | null = this.authStoreService.getCurrentUser();
   constructor(
-    private authService: AuthService,
-
     private activatedRoute: ActivatedRoute,
+    private authStoreService: AuthStoreService,
     private relationshipsCollectionService: RelationshipsCollectionService,
     private groupsService: GroupsService,
   ) {

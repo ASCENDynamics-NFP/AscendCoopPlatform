@@ -38,6 +38,6 @@ export class AppComponent {
   ) {
     this.translate.setDefaultLang("en");
     this.translate.addLangs(["en", "fr"]);
-    // You can use your AuthService here
+    // You can use your AuthStoreService here
   }
 }

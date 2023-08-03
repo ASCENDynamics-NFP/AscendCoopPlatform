@@ -24,10 +24,10 @@ import {IonicModule} from "@ionic/angular";
 
 import {GroupsService} from "../../../../core/services/groups.service";
 import {AppGroup} from "../../../../models/group.model";
-import {AuthService} from "../../../../core/services/auth.service";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 import {User} from "firebase/auth";
 import {RouterModule} from "@angular/router";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 @Component({
   selector: "app-group-list",
@@ -41,12 +41,12 @@ export class GroupListPage implements OnInit {
   groups: Partial<AppGroup>[] | null = [];
 
   constructor(
-    private authService: AuthService,
+    private authStoreService: AuthStoreService,
 
     private groupService: GroupsService,
     private relationshipsCollectionService: RelationshipsCollectionService,
   ) {
-    this.user = this.authService.getCurrentUser();
+    this.user = this.authStoreService.getCurrentUser();
   }
 
   ngOnInit() {

@@ -21,7 +21,6 @@ import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule, NavController} from "@ionic/angular";
-import {AuthService} from "../../../../core/services/auth.service";
 
 @Component({
   selector: "app-user-dashboard",
@@ -31,12 +30,7 @@ import {AuthService} from "../../../../core/services/auth.service";
   imports: [IonicModule, CommonModule, FormsModule],
 })
 export class UserDashboardPage implements OnInit {
-  // user = this.authService.getCurrentUser();
-
-  constructor(
-    private authService: AuthService,
-    private navContoller: NavController,
-  ) {}
+  constructor(private navContoller: NavController) {}
 
   ngOnInit() {}
 
@@ -45,7 +39,7 @@ export class UserDashboardPage implements OnInit {
   ionViewWillLeave() {}
 
   signOut() {
-    // this.authService.signOut();
+    // this.AuthStoreService.signOut();
   }
 
   openLogin() {

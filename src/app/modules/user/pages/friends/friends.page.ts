@@ -24,7 +24,7 @@ import {IonicModule} from "@ionic/angular";
 
 import {ActivatedRoute, RouterModule} from "@angular/router";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
-import {AuthService} from "../../../../core/services/auth.service";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 @Component({
   selector: "app-friends",
@@ -39,7 +39,7 @@ export class FriendsPage implements OnInit {
   userId: string | null = null;
   currentUser: any;
   constructor(
-    private authService: AuthService,
+    private authStoreService: AuthStoreService,
 
     private activatedRoute: ActivatedRoute,
     private relationshipsCollectionService: RelationshipsCollectionService,
@@ -50,7 +50,7 @@ export class FriendsPage implements OnInit {
     this.relationshipsCollectionService
       .getRelationships(this.userId)
       .then((relationships) => {
-        this.currentUser = this.authService.getCurrentUser();
+        this.currentUser = this.authStoreService.getCurrentUser();
         for (let relationship of relationships) {
           if (
             relationship.type === "friend" &&

@@ -5,9 +5,9 @@ import {ActivatedRoute, RouterModule} from "@angular/router";
 import {AppGroup} from "../../../../models/group.model";
 import {AppRelationship} from "../../../../models/relationship.model";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
-import {AuthService} from "../../../../core/services/auth.service";
 import {GroupsService} from "../../../../core/services/groups.service";
 import {User} from "firebase/auth";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 @Component({
   selector: "app-partners",
@@ -21,9 +21,9 @@ export class PartnersPage implements OnInit {
   pendingGroupsList: any[] = [];
   groupId: string | null = null;
   group: Partial<AppGroup> | null = null;
-  currentUser: User | null = this.authService.getCurrentUser();
+  currentUser: User | null = this.authStoreService.getCurrentUser();
   constructor(
-    private authService: AuthService,
+    private authStoreService: AuthStoreService,
 
     private activatedRoute: ActivatedRoute,
     private relationshipsCollectionService: RelationshipsCollectionService,

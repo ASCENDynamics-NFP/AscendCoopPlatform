@@ -34,10 +34,10 @@ import {
   prepareDataForCreate,
   prepareDataForUpdate,
 } from "../utils/firebase.util";
-import {AuthService} from "./auth.service";
 import {LoadingController} from "@ionic/angular";
 import {ErrorHandlerService} from "./error-handler.service";
 import {SuccessHandlerService} from "./success-handler.service";
+import {AuthStoreService} from "./auth-store.service";
 
 @Injectable({
   providedIn: "root",
@@ -47,7 +47,7 @@ export class RequestService {
 
   constructor(
     private firestoreService: FirestoreService,
-    private authService: AuthService,
+    private authStoreService: AuthStoreService,
     private loadingController: LoadingController,
     private errorHandler: ErrorHandlerService,
     private successHandler: SuccessHandlerService,
@@ -58,7 +58,10 @@ export class RequestService {
     await loading.present();
     return await addDoc(
       collection(this.firestoreService.firestore, this.collectionName),
-      prepareDataForCreate(requestData, this.authService.getCurrentUser()?.uid),
+      prepareDataForCreate(
+        requestData,
+        this.authStoreService.getCurrentUser()?.uid,
+      ),
     )
       .then((docRef) => {
         this.successHandler.handleSuccess("Request sent successfully!");
@@ -80,7 +83,10 @@ export class RequestService {
     await loading.present();
     await updateDoc(
       doc(this.firestoreService.firestore, this.collectionName, id),
-      prepareDataForUpdate({status}, this.authService.getCurrentUser()?.uid),
+      prepareDataForUpdate(
+        {status},
+        this.authStoreService.getCurrentUser()?.uid,
+      ),
     )
       .then(() => {
         this.successHandler.handleSuccess(

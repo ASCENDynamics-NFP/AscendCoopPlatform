@@ -24,7 +24,6 @@ import {IonicModule} from "@ionic/angular";
 
 import {TranslateModule} from "@ngx-translate/core";
 import {LanguageSelectorComponent} from "../../components/language-selector/language-selector.component";
-import {FriendRequestComponent} from "../../components/friend-request/friend-request.component";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 @Component({
@@ -38,7 +37,6 @@ import {AuthStoreService} from "../../../../core/services/auth-store.service";
     FormsModule,
     TranslateModule,
     LanguageSelectorComponent,
-    FriendRequestComponent,
   ],
 })
 export class UserSettingsPage implements OnInit {

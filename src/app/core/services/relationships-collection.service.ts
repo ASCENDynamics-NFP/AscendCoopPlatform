@@ -67,7 +67,8 @@ export class RelationshipsCollectionService {
       ),
     )
       .then((docRef) => {
-        this.successHandler.handleSuccess("Request sent successfully!");
+        // this.successHandler.handleSuccess("Request sent successfully!");
+        console.log("Relationship created successfully!");
         return docRef.id;
       })
       .catch((error) => {

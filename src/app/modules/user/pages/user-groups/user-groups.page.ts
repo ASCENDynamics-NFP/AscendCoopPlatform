@@ -24,6 +24,7 @@ import {IonicModule} from "@ionic/angular";
 import {ActivatedRoute, RouterModule} from "@angular/router";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
+import {User} from "firebase/auth";
 
 @Component({
   selector: "app-user-groups",
@@ -35,21 +36,20 @@ import {AuthStoreService} from "../../../../core/services/auth-store.service";
 export class UserGroupsPage implements OnInit {
   currentGroupsList: any[] = [];
   pendingGroupsList: any[] = [];
-  userId: string | null = null;
-  currentUser: any;
+  userId: string;
+  currentUser: User | null = this.authStoreService.getCurrentUser();
   constructor(
     private authStoreService: AuthStoreService,
-
     private activatedRoute: ActivatedRoute,
     private relationshipsCollectionService: RelationshipsCollectionService,
-  ) {}
+  ) {
+    this.userId = this.activatedRoute.snapshot.paramMap.get("uid") ?? "";
+  }
 
   ngOnInit() {
-    this.userId = this.activatedRoute.snapshot.paramMap.get("uid");
     this.relationshipsCollectionService
       .getRelationships(this.userId)
       .then((relationships) => {
-        this.currentUser = this.authStoreService.getCurrentUser();
         for (let relationship of relationships) {
           if (
             relationship.type === "member" &&
@@ -111,13 +111,12 @@ export class UserGroupsPage implements OnInit {
   }
 
   relationshipToGroup(relationship: any) {
-    this.userId = this.userId ? this.userId : "";
     const isCurrentUser = this.currentUser?.uid === this.userId;
     if (relationship.senderId === this.userId) {
       // my requests
       return {
-        id: relationship.id,
-        userId: relationship.receiverId,
+        id: relationship.receiverId,
+        userId: this.userId,
         name: relationship.receiverName,
         image: relationship.receiverImage,
         tagline: relationship.receiverTagline,
@@ -128,8 +127,8 @@ export class UserGroupsPage implements OnInit {
     } else {
       // other's requests
       return {
-        id: relationship.id,
-        userId: relationship.senderId,
+        id: relationship.senderId,
+        userId: this.userId,
         name: relationship.senderName,
         image: relationship.senderImage,
         tagline: relationship.senderTagline,

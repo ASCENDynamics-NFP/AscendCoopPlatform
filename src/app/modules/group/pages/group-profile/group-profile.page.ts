@@ -21,8 +21,6 @@ import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-
-import {GroupsService} from "../../../../core/services/groups.service";
 import {ActivatedRoute} from "@angular/router";
 import {AppGroup} from "../../../../models/group.model";
 import {DetailsComponent} from "./components/details/details.component";
@@ -32,6 +30,8 @@ import {RelationshipsCollectionService} from "../../../../core/services/relation
 import {MemberListComponent} from "./components/member-list/member-list.component";
 import {GroupListComponent} from "./components/group-list/group-list.component";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
+import {Subscription} from "rxjs";
+import {StoreService} from "../../../../core/services/store.service";
 
 @Component({
   selector: "app-group-profile",
@@ -49,6 +49,7 @@ import {AuthStoreService} from "../../../../core/services/auth-store.service";
   ],
 })
 export class GroupProfilePage implements OnInit {
+  private groupsSubscription: Subscription | undefined;
   groupId: string | null = "";
   group: Partial<AppGroup> | null = {};
   memberList: AppRelationship[] = [];
@@ -59,8 +60,7 @@ export class GroupProfilePage implements OnInit {
   constructor(
     private authStoreService: AuthStoreService,
     private route: ActivatedRoute,
-
-    private groupsService: GroupsService,
+    private storeService: StoreService,
     private relationshipsCollectionService: RelationshipsCollectionService,
   ) {}
 
@@ -88,27 +88,25 @@ export class GroupProfilePage implements OnInit {
 
   ionViewWillEnter() {}
 
-  ionViewWillLeave() {}
+  ionViewWillLeave() {
+    // Unsubscribe from the groups$ observable when the component is destroyed
+    this.groupsSubscription?.unsubscribe();
+  }
 
   getGroup() {
-    this.groupsService
-      .getGroupById(this.groupId)
-      .then((group) => {
-        this.group = group;
-        let user = this.authStoreService.getCurrentUser();
-        let userId = user?.uid ? user.uid : "";
-        this.isAdmin = userId
-          ? this.group?.admins?.includes(userId) || false
-          : false;
-        this.isMember = userId
-          ? this.group?.members?.includes(userId) || false
-          : false;
-        this.isPendingMember = userId
-          ? this.group?.pendingMembers?.includes(userId) || false
-          : false;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
+      this.group = groups.find((group) => group.id === this.groupId) || null;
+      let user = this.authStoreService.getCurrentUser();
+      let userId = user?.uid ? user.uid : "";
+      this.isAdmin = userId
+        ? this.group?.admins?.includes(userId) || false
+        : false;
+      this.isMember = userId
+        ? this.group?.members?.includes(userId) || false
+        : false;
+      this.isPendingMember = userId
+        ? this.group?.pendingMembers?.includes(userId) || false
+        : false;
+    });
   }
 }

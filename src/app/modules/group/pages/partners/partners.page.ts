@@ -5,9 +5,10 @@ import {ActivatedRoute, RouterModule} from "@angular/router";
 import {AppGroup} from "../../../../models/group.model";
 import {AppRelationship} from "../../../../models/relationship.model";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
-import {GroupsService} from "../../../../core/services/groups.service";
 import {User} from "firebase/auth";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
+import {StoreService} from "../../../../core/services/store.service";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: "app-partners",
@@ -17,22 +18,20 @@ import {AuthStoreService} from "../../../../core/services/auth-store.service";
   imports: [IonicModule, CommonModule, RouterModule],
 })
 export class PartnersPage implements OnInit {
+  private groupsSubscription: Subscription | undefined;
   currentGroupsList: any[] = [];
   pendingGroupsList: any[] = [];
   groupId: string | null = null;
   group: Partial<AppGroup> | null = null;
   currentUser: User | null = this.authStoreService.getCurrentUser();
   constructor(
-    private authStoreService: AuthStoreService,
-
     private activatedRoute: ActivatedRoute,
+    private authStoreService: AuthStoreService,
     private relationshipsCollectionService: RelationshipsCollectionService,
-    private groupsService: GroupsService,
+    private storeService: StoreService,
   ) {
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
-    this.groupsService.getGroupById(this.groupId).then((group) => {
-      this.group = group;
-    });
+    this.getGroup();
   }
 
   ngOnInit() {
@@ -58,7 +57,16 @@ export class PartnersPage implements OnInit {
 
   ionViewWillEnter() {}
 
-  ionViewWillLeave() {}
+  ionViewWillLeave() {
+    // Unsubscribe from the groups$ observable when the component is destroyed
+    this.groupsSubscription?.unsubscribe();
+  }
+
+  getGroup() {
+    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
+      this.group = groups.find((group) => group.id === this.groupId) || null;
+    });
+  }
 
   acceptGroupRequest(group: any) {
     this.relationshipsCollectionService

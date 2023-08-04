@@ -22,12 +22,13 @@ import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {User} from "firebase/auth";
-import {GroupsService} from "../../../../core/services/groups.service";
 
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 import {AppGroup} from "../../../../models/group.model";
 import {ActivatedRoute, RouterModule} from "@angular/router";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
+import {Subscription} from "rxjs";
+import {StoreService} from "../../../../core/services/store.service";
 
 @Component({
   selector: "app-search",
@@ -37,6 +38,7 @@ import {AuthStoreService} from "../../../../core/services/auth-store.service";
   imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
 export class SearchPage implements OnInit {
+  private groupsSubscription: Subscription | undefined;
   user: User | null = null; // define your user here
   groups: Partial<AppGroup>[] | null = [];
   groupId: string | null = null;
@@ -44,33 +46,29 @@ export class SearchPage implements OnInit {
   constructor(
     private activatedRoute: ActivatedRoute,
     private authStoreService: AuthStoreService,
-
-    private groupService: GroupsService,
     private relationshipsCollectionService: RelationshipsCollectionService,
+    private storeService: StoreService,
   ) {
     this.user = this.authStoreService.getCurrentUser();
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
   }
 
   ngOnInit() {
-    this.getGroups();
+    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
+      this.groups = groups;
+    });
   }
 
   ionViewWillEnter() {}
 
-  ionViewWillLeave() {}
-
-  async getGroups() {
-    this.groupService.getGroups().then((groups) => {
-      this.groups = groups;
-    });
+  ionViewWillLeave() {
+    // Unsubscribe from the groups$ observable when the component is destroyed
+    this.groupsSubscription?.unsubscribe();
   }
 
   searchGroups(event: any) {
     const value = event.target.value;
-    this.groupService.searchGroups(value).then((groups) => {
-      this.groups = groups;
-    });
+    this.storeService.searchGroups(value);
   }
 
   sendRequest(group: Partial<AppGroup>) {

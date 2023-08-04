@@ -21,13 +21,13 @@ import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-
-import {GroupsService} from "../../../../core/services/groups.service";
 import {AppGroup} from "../../../../models/group.model";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 import {User} from "firebase/auth";
 import {RouterModule} from "@angular/router";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
+import {Subscription} from "rxjs";
+import {StoreService} from "../../../../core/services/store.service";
 
 @Component({
   selector: "app-group-list",
@@ -36,38 +36,31 @@ import {AuthStoreService} from "../../../../core/services/auth-store.service";
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
-export class GroupListPage implements OnInit {
+export class GroupListPage {
+  private groupsSubscription: Subscription;
   user: User | null = null; // define your user here
   groups: Partial<AppGroup>[] | null = [];
 
   constructor(
     private authStoreService: AuthStoreService,
-
-    private groupService: GroupsService,
+    private storeService: StoreService,
     private relationshipsCollectionService: RelationshipsCollectionService,
   ) {
     this.user = this.authStoreService.getCurrentUser();
-  }
-
-  ngOnInit() {
-    this.getGroups();
+    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
+      this.groups = groups;
+    });
   }
 
   ionViewWillEnter() {}
 
-  ionViewWillLeave() {}
-
-  async getGroups() {
-    this.groupService.getGroups().then((groups) => {
-      this.groups = groups;
-    });
+  ionViewWillLeave() {
+    this.groupsSubscription.unsubscribe();
   }
 
   searchGroups(event: any) {
     const value = event.target.value;
-    this.groupService.searchGroups(value).then((groups) => {
-      this.groups = groups;
-    });
+    this.storeService.searchGroups(value);
   }
 
   sendRequest(group: Partial<AppGroup>) {

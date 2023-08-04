@@ -26,8 +26,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from "@angular/forms";
-import {GroupsService} from "../../../../core/services/groups.service";
 import {AppGroup} from "../../../../models/group.model";
+import {StoreService} from "../../../../core/services/store.service";
 
 @Component({
   selector: "app-create-group-modal",
@@ -46,7 +46,7 @@ export class CreateGroupModalComponent {
   constructor(
     private modalCtrl: ModalController,
     private fb: FormBuilder,
-    private groupsService: GroupsService,
+    private storeService: StoreService,
   ) {}
 
   cancel() {
@@ -58,10 +58,10 @@ export class CreateGroupModalComponent {
   }
 
   onSubmit() {
-    this.groupsService
+    this.storeService
       .createGroup(this.groupForm.value as Partial<AppGroup>)
       .then((groupId) => {
-        return this.modalCtrl.dismiss({groupId: groupId}, "confirm");
+        this.modalCtrl.dismiss({groupId: groupId}, "confirm");
       });
   }
 }

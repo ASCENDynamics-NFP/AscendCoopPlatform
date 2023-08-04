@@ -29,9 +29,10 @@ import {
 import {IonicModule} from "@ionic/angular";
 
 import {AppGroup} from "../../../../models/group.model";
-import {GroupsService} from "../../../../core/services/groups.service";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Timestamp} from "firebase/firestore";
+import {StoreService} from "../../../../core/services/store.service";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: "app-group-edit",
@@ -41,6 +42,7 @@ import {Timestamp} from "firebase/firestore";
   imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
 export class GroupEditPage implements OnInit {
+  private groupsSubscription: Subscription | undefined;
   group: Partial<AppGroup> | null = null; // define your user here
   groupId: string | null = null;
 
@@ -63,19 +65,15 @@ export class GroupEditPage implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private groupsService: GroupsService,
+    private storeService: StoreService,
     private activatedRoute: ActivatedRoute,
     private router: Router,
   ) {}
 
   ngOnInit() {
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
-    // Load the group data, e.g. from a service
-    // if (!this.groupId) {
-    //   this.groupId = this.groupsService.createGroup();
-    // }
-    this.groupsService.getGroupById(this.groupId).then((group) => {
-      this.group = group;
+    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
+      this.group = groups.find((group) => group.id === this.groupId) || null;
       if (this.group) {
         // Update the form with the group data
         this.editGroupForm.patchValue({
@@ -100,7 +98,10 @@ export class GroupEditPage implements OnInit {
 
   ionViewWillEnter() {}
 
-  ionViewWillLeave() {}
+  ionViewWillLeave() {
+    // Unsubscribe from the groups$ observable when the component is destroyed
+    this.groupsSubscription?.unsubscribe();
+  }
 
   onSubmit() {
     // Call the API to save changes
@@ -124,11 +125,12 @@ export class GroupEditPage implements OnInit {
       ),
     };
 
-    this.groupsService.updateGroup(group);
+    this.storeService.updateGroup(group);
   }
 
   deleteGroup() {
-    if (this.groupId) this.groupsService.deleteGroup(this.groupId);
+    if (this.groupId) this.storeService.deleteGroup(this.groupId);
+    this.router.navigate(["/group-list"]);
   }
 
   toGroupPage() {

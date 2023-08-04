@@ -24,6 +24,7 @@ import {UsersService} from "./users.service";
 import {AuthStoreService} from "./auth-store.service";
 import {AppGroup} from "../../models/group.model";
 import {GroupsService} from "./groups.service";
+import {environment} from "../../../environments/environment";
 
 @Injectable({
   providedIn: "root",
@@ -91,25 +92,42 @@ export class StoreService {
   addUserToState(user: Partial<AppUser>) {
     const currentState = this.usersSubject.getValue();
     this.usersSubject.next([...currentState, user]);
+    this.logChange("Users", user, currentState, this.usersSubject.getValue());
   }
 
   updateUserInState(user: Partial<AppUser>) {
     const currentState = this.usersSubject.getValue();
     const updatedState = currentState.map((u) => (u.id === user.id ? user : u));
     this.usersSubject.next(updatedState);
+    this.logChange("Users", user, currentState, updatedState);
   }
 
   removeUserFromState(userId: string) {
     const currentState = this.usersSubject.getValue();
     const updatedState = currentState.filter((u) => u.id !== userId);
     this.usersSubject.next(updatedState);
+    this.logChange("Users", userId, currentState, updatedState);
   }
 
-  createGroup(group: Partial<AppGroup>) {
-    this.groupsService.createGroup(group).then((groupId) => {
+  searchGroups(name: string): void {
+    let currentState = this.groupsSubject.getValue();
+    this.groupsService.searchGroups(name).then((groups) => {
+      this.groupsSubject.next(groups as Partial<AppGroup>[]);
+      this.logChange(
+        "Groups",
+        name,
+        currentState,
+        this.groupsSubject.getValue(),
+      );
+    });
+  }
+
+  async createGroup(group: Partial<AppGroup>) {
+    return this.groupsService.createGroup(group).then((groupId) => {
       if (groupId) {
         this.addGroupToState({...group, id: groupId});
       }
+      return groupId;
     });
   }
 
@@ -126,6 +144,12 @@ export class StoreService {
   addGroupToState(group: Partial<AppGroup>) {
     const currentState = this.groupsSubject.getValue();
     this.groupsSubject.next([...currentState, group]);
+    this.logChange(
+      "Groups",
+      group,
+      currentState,
+      this.groupsSubject.getValue(),
+    );
   }
 
   updateGroupInState(group: Partial<AppGroup>) {
@@ -134,11 +158,31 @@ export class StoreService {
       g.id === group.id ? group : g,
     );
     this.groupsSubject.next(updatedState);
+    this.logChange("Groups", group, currentState, updatedState);
   }
 
   removeGroupFromState(groupId: string) {
     const currentState = this.groupsSubject.getValue();
     const updatedState = currentState.filter((g) => g.id !== groupId);
     this.groupsSubject.next(updatedState);
+    this.logChange("Groups", groupId, currentState, updatedState);
+  }
+
+  logChange(
+    collection: string,
+    newValue: any,
+    currentState: any,
+    updatedState: any,
+  ) {
+    if (!environment.production) {
+      console.log(
+        collection,
+        newValue,
+        "Previous state",
+        currentState,
+        "Updated state",
+        updatedState,
+      );
+    }
   }
 }

@@ -24,10 +24,11 @@ import {IonicModule} from "@ionic/angular";
 import {ActivatedRoute, RouterModule} from "@angular/router";
 import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 import {AppGroup} from "../../../../models/group.model";
-import {GroupsService} from "../../../../core/services/groups.service";
 import {User} from "firebase/auth";
 import {AppRelationship} from "../../../../models/relationship.model";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
+import {StoreService} from "../../../../core/services/store.service";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: "app-member-list",
@@ -37,6 +38,7 @@ import {AuthStoreService} from "../../../../core/services/auth-store.service";
   imports: [IonicModule, CommonModule, RouterModule],
 })
 export class MemberListPage implements OnInit {
+  private groupsSubscription: Subscription;
   currentMembersList: any[] = [];
   pendingMembersList: any[] = [];
   groupId: string | null = null;
@@ -46,11 +48,12 @@ export class MemberListPage implements OnInit {
     private activatedRoute: ActivatedRoute,
     private authStoreService: AuthStoreService,
     private relationshipsCollectionService: RelationshipsCollectionService,
-    private groupsService: GroupsService,
+    private storeService: StoreService,
   ) {
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
-    this.groupsService.getGroupById(this.groupId).then((group) => {
-      this.group = group;
+
+    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
+      this.group = groups.find((group) => group.id === this.groupId) ?? null;
     });
   }
 
@@ -80,7 +83,9 @@ export class MemberListPage implements OnInit {
 
   ionViewWillEnter() {}
 
-  ionViewWillLeave() {}
+  ionViewWillLeave() {
+    this.groupsSubscription?.unsubscribe();
+  }
 
   get isAdmin() {
     if (!this.group || !this.currentUser) return false;

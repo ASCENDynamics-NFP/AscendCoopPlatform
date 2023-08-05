@@ -17,6 +17,8 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+
+// DEPRECIATED FILE
 import {Injectable} from "@angular/core";
 import {FirestoreService} from "./firestore.service";
 import {AppUser} from "../../models/user.model";

@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
+import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
@@ -39,11 +39,9 @@ import {AuthStoreService} from "../../../../core/services/auth-store.service";
     LanguageSelectorComponent,
   ],
 })
-export class UserSettingsPage implements OnInit {
+export class UserSettingsPage {
   user = this.authStoreService.getCurrentUser();
   constructor(private authStoreService: AuthStoreService) {}
-
-  ngOnInit() {}
 
   ionViewWillEnter() {}
 

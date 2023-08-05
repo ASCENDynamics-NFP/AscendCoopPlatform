@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
+import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {
   // AbstractControl,
@@ -41,9 +41,9 @@ import {Subscription} from "rxjs";
   standalone: true,
   imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
-export class GroupEditPage implements OnInit {
+export class GroupEditPage {
   private groupsSubscription: Subscription | undefined;
-  group: Partial<AppGroup> | null = null; // define your user here
+  group: Partial<AppGroup> | null = {}; // define your user here
   groupId: string | null = null;
 
   editGroupForm = this.fb.group({
@@ -68,10 +68,11 @@ export class GroupEditPage implements OnInit {
     private storeService: StoreService,
     private activatedRoute: ActivatedRoute,
     private router: Router,
-  ) {}
-
-  ngOnInit() {
+  ) {
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
+  }
+
+  ionViewWillEnter() {
     this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
       this.group = groups.find((group) => group.id === this.groupId) || null;
       if (this.group) {
@@ -96,8 +97,6 @@ export class GroupEditPage implements OnInit {
     });
   }
 
-  ionViewWillEnter() {}
-
   ionViewWillLeave() {
     // Unsubscribe from the groups$ observable when the component is destroyed
     this.groupsSubscription?.unsubscribe();
@@ -105,27 +104,33 @@ export class GroupEditPage implements OnInit {
 
   onSubmit() {
     // Call the API to save changes
-    const group: Partial<AppGroup> = {
-      id: this.group?.id ? this.group.id : this.groupId ? this.groupId : "",
-      email: this.editGroupForm.value.email || "",
-      phoneNumber: this.editGroupForm.value.phoneNumber || "",
-      description: this.editGroupForm.value.description || "",
-      tagline: this.editGroupForm.value.tagline || "",
-      name: this.editGroupForm.value.name || "",
-      supportedlanguages: this.editGroupForm.value.supportedlanguages || [],
-      phoneCountryCode: this.editGroupForm.value.phoneCountryCode || "",
-      addressName: this.editGroupForm.value.addressName || "",
-      addressStreet: this.editGroupForm.value.addressStreet || "",
-      addressCity: this.editGroupForm.value.addressCity || "",
-      addressState: this.editGroupForm.value.addressState || "",
-      addressZipcode: this.editGroupForm.value.addressZipcode || "",
-      addressCountry: this.editGroupForm.value.addressCountry || "",
-      dateFounded: Timestamp.fromDate(
+    if (this.group) {
+      this.group.id = this.group.id
+        ? this.group.id
+        : this.groupId
+        ? this.groupId
+        : "";
+      this.group.email = this.editGroupForm.value.email || "";
+      this.group.phoneNumber = this.editGroupForm.value.phoneNumber || "";
+      this.group.description = this.editGroupForm.value.description || "";
+      this.group.tagline = this.editGroupForm.value.tagline || "";
+      this.group.name = this.editGroupForm.value.name || "";
+      this.group.supportedlanguages =
+        this.editGroupForm.value.supportedlanguages || [];
+      this.group.phoneCountryCode =
+        this.editGroupForm.value.phoneCountryCode || "";
+      this.group.addressName = this.editGroupForm.value.addressName || "";
+      this.group.addressStreet = this.editGroupForm.value.addressStreet || "";
+      this.group.addressCity = this.editGroupForm.value.addressCity || "";
+      this.group.addressState = this.editGroupForm.value.addressState || "";
+      this.group.addressZipcode = this.editGroupForm.value.addressZipcode || "";
+      this.group.addressCountry = this.editGroupForm.value.addressCountry || "";
+      this.group.dateFounded = Timestamp.fromDate(
         new Date(this.editGroupForm.value.dateFounded || ""),
-      ),
-    };
+      );
 
-    this.storeService.updateDoc("groups", group);
+      this.storeService.updateDoc("groups", this.group);
+    }
   }
 
   deleteGroup() {
@@ -134,6 +139,6 @@ export class GroupEditPage implements OnInit {
   }
 
   toGroupPage() {
-    this.router.navigate(["/group-profile/", this.groupId]);
+    this.router.navigateByUrl("/group-profile/" + this.groupId);
   }
 }

@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
+import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
@@ -48,7 +48,7 @@ import {StoreService} from "../../../../core/services/store.service";
     GroupListComponent,
   ],
 })
-export class GroupProfilePage implements OnInit {
+export class GroupProfilePage {
   private groupsSubscription: Subscription | undefined;
   groupId: string | null = "";
   group: Partial<AppGroup> | null = {};
@@ -62,11 +62,8 @@ export class GroupProfilePage implements OnInit {
     private route: ActivatedRoute,
     private storeService: StoreService,
     private relationshipsCollectionService: RelationshipsCollectionService,
-  ) {}
-
-  ngOnInit() {
+  ) {
     this.groupId = this.route.snapshot.paramMap.get("groupId");
-    this.getGroup();
     this.relationshipsCollectionService
       .getRelationships(this.groupId)
       .then((relationships) => {
@@ -86,7 +83,9 @@ export class GroupProfilePage implements OnInit {
       });
   }
 
-  ionViewWillEnter() {}
+  ionViewWillEnter() {
+    this.getGroup();
+  }
 
   ionViewWillLeave() {
     // Unsubscribe from the groups$ observable when the component is destroyed

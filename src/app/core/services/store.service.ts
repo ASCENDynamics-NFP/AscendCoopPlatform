@@ -39,7 +39,6 @@ export class StoreService {
   /**
    * Subscription to the Firestore collections.
    */
-
   private collectionsSubscription: Subscription;
   /**
    * Subjects for each collection in the Firestore database.

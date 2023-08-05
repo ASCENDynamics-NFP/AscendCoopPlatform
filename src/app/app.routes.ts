@@ -22,28 +22,10 @@ import {AuthGuard} from "./core/guards/auth.guard";
 import {SecureInnerPagesGuard} from "./core/guards/secure-inner-pages.guard";
 
 export const routes: Routes = [
-  // {
-  //   path: "user",
-  //   loadChildren: () => import("./modules/user/user.routes").then((m) => m.routes),
-  // },
   {
     path: "",
     redirectTo: "user-signup",
     pathMatch: "full",
-  },
-  {
-    path: "group-create",
-    loadComponent: () =>
-      import("./modules/group/pages/group-create/group-create.page").then(
-        (m) => m.GroupCreatePage,
-      ),
-  },
-  {
-    path: "group-detail",
-    loadComponent: () =>
-      import("./modules/group/pages/group-detail/group-detail.page").then(
-        (m) => m.GroupDetailPage,
-      ),
   },
   {
     path: "group-profile/:groupId/edit",
@@ -59,14 +41,6 @@ export const routes: Routes = [
       import("./modules/group/pages/group-list/group-list.page").then(
         (m) => m.GroupListPage,
       ),
-  },
-  {
-    path: "group-members",
-    loadComponent: () =>
-      import("./modules/group/pages/group-members/group-members.page").then(
-        (m) => m.GroupMembersPage,
-      ),
-    canActivate: [AuthGuard],
   },
   {
     path: "group-profile/:groupId",

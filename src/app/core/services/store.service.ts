@@ -172,15 +172,13 @@ export class StoreService {
    * @param {string} name - The name to search for.
    */
   searchDocsByName(collectionName: string, name: string): void {
-    this.firestoreService
-      .getCollectionWithCondition(collectionName, "name", "==", name)
-      .then((docs) => {
-        if (docs) {
-          docs.forEach((doc) => {
-            this.addDocToState(collectionName, doc as Partial<any>);
-          });
-        }
-      });
+    this.firestoreService.searchByName(collectionName, name).then((docs) => {
+      if (docs) {
+        docs.forEach((doc) => {
+          this.addDocToState(collectionName, doc as Partial<any>);
+        });
+      }
+    });
   }
 
   /**

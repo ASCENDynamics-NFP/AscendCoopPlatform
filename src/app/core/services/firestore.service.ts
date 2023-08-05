@@ -32,8 +32,13 @@ import {
   DocumentData,
   Firestore,
   onSnapshot,
+  QuerySnapshot,
+  or,
+  and,
+  DocumentSnapshot,
 } from "firebase/firestore";
 import {BehaviorSubject, Observable, combineLatest, map, switchMap} from "rxjs";
+import {AppGroup} from "../../models/group.model";
 
 @Injectable({
   providedIn: "root",
@@ -64,6 +69,7 @@ export class FirestoreService {
     {collectionName: string; ids: string[]}[]
   >([]);
   firestore: Firestore;
+  errorHandler: any;
 
   constructor() {
     this.firestore = getFirestore();
@@ -150,6 +156,73 @@ export class FirestoreService {
         console.error("Error retrieving collection: ", error);
         return null;
       });
+  }
+
+  searchByName(
+    collectionName: string,
+    searchTerm: string,
+  ): Promise<DocumentData[] | null> {
+    return getDocs(
+      query(
+        collection(this.firestore, collectionName),
+        or(
+          // query as-is:
+          and(
+            where("name", ">=", searchTerm),
+            where("name", "<=", searchTerm + "\uf8ff"),
+          ),
+          // capitalize first letter:
+          and(
+            where(
+              "name",
+              ">=",
+              searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1),
+            ),
+            where(
+              "name",
+              "<=",
+              searchTerm.charAt(0).toUpperCase() +
+                searchTerm.slice(1) +
+                "\uf8ff",
+            ),
+          ),
+          // lowercase:
+          and(
+            where("name", ">=", searchTerm.toLowerCase()),
+            where("name", "<=", searchTerm.toLowerCase() + "\uf8ff"),
+          ),
+        ),
+      ),
+    )
+      .then((querySnapshot) => {
+        return this.processFirebaseData(querySnapshot);
+      })
+      .catch((error) => {
+        console.error("Error retrieving collection: ", error);
+        this.errorHandler.handleFirebaseAuthError(error);
+        return [];
+      });
+  }
+
+  processFirebaseData(querySnapshot: QuerySnapshot | DocumentSnapshot): any {
+    if (querySnapshot instanceof QuerySnapshot) {
+      // Processing for array of documents
+      const documents: Partial<any>[] = [];
+      querySnapshot.forEach((doc) => {
+        let data = doc.data() as Partial<any>;
+        data = {...data, id: doc.id};
+        documents.push(data);
+      });
+      return documents;
+    } else if (querySnapshot instanceof DocumentSnapshot) {
+      // Processing for single document
+      if (querySnapshot.exists()) {
+        let data = querySnapshot.data() as Partial<any>;
+        data = {...data, id: querySnapshot.id};
+        return data;
+      }
+    }
+    return null;
   }
 
   getCollectionsSubject() {

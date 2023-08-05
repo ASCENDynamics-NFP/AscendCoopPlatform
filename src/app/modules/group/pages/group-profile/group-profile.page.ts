@@ -96,17 +96,21 @@ export class GroupProfilePage implements OnInit {
   getGroup() {
     this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
       this.group = groups.find((group) => group.id === this.groupId) || null;
-      let user = this.authStoreService.getCurrentUser();
-      let userId = user?.uid ? user.uid : "";
-      this.isAdmin = userId
-        ? this.group?.admins?.includes(userId) || false
-        : false;
-      this.isMember = userId
-        ? this.group?.members?.includes(userId) || false
-        : false;
-      this.isPendingMember = userId
-        ? this.group?.pendingMembers?.includes(userId) || false
-        : false;
+      if (!this.group) {
+        this.storeService.getDocById("groups", this.groupId);
+      } else {
+        let user = this.authStoreService.getCurrentUser();
+        let userId = user?.uid ? user.uid : "";
+        this.isAdmin = userId
+          ? this.group?.admins?.includes(userId) || false
+          : false;
+        this.isMember = userId
+          ? this.group?.members?.includes(userId) || false
+          : false;
+        this.isPendingMember = userId
+          ? this.group?.pendingMembers?.includes(userId) || false
+          : false;
+      }
     });
   }
 }

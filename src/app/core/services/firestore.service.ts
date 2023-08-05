@@ -75,7 +75,9 @@ export class FirestoreService {
       const documentSnap = await getDoc(documentRef);
 
       if (documentSnap.exists()) {
-        return documentSnap.data();
+        const data = documentSnap.data();
+        data["id"] = documentSnap.id;
+        return data;
       } else {
         console.log("No such document!");
         return null;
@@ -138,7 +140,9 @@ export class FirestoreService {
       .then((querySnapshot) => {
         const documents: DocumentData[] = [];
         querySnapshot.forEach((doc) => {
-          documents.push(doc.data());
+          const data = doc.data();
+          data["id"] = doc.id;
+          documents.push(data);
         });
         return documents;
       })

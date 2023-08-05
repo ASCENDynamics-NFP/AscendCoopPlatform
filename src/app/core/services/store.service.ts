@@ -24,6 +24,10 @@ import {AuthStoreService} from "./auth-store.service";
 import {AppGroup} from "../../models/group.model";
 import {environment} from "../../../environments/environment";
 import {FirestoreService} from "./firestore.service";
+import {
+  prepareDataForCreate,
+  prepareDataForUpdate,
+} from "../utils/firebase.util";
 
 @Injectable({
   providedIn: "root",
@@ -185,7 +189,10 @@ export class StoreService {
    * @param {Partial<any>} doc - The document to create.
    */
   async createDoc(collectionName: string, doc: Partial<any>) {
-    let docId = await this.firestoreService.addDocument(collectionName, doc);
+    let docId = await this.firestoreService.addDocument(
+      collectionName,
+      prepareDataForCreate(doc, this.authStoreService.getCurrentUser()?.uid),
+    );
     if (!docId) throw new Error("Document must have an id");
     this.firestoreService.addIdToCollection(collectionName, docId);
     return docId;
@@ -197,7 +204,11 @@ export class StoreService {
    * @param {Partial<any>} doc - The document to update.
    */
   updateDoc(collectionName: string, doc: Partial<any>) {
-    this.firestoreService.updateDocument(collectionName, doc["id"], doc);
+    this.firestoreService.updateDocument(
+      collectionName,
+      doc["id"],
+      prepareDataForUpdate(doc, this.authStoreService.getCurrentUser()?.uid),
+    );
     this.updateDocInState(collectionName, doc);
   }
 

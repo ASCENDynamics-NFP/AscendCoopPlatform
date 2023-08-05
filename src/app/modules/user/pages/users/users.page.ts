@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnDestroy, OnInit} from "@angular/core";
+import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
@@ -38,7 +38,7 @@ import {AuthStoreService} from "../../../../core/services/auth-store.service";
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
-export class UsersPage implements OnInit, OnDestroy {
+export class UsersPage {
   private usersSubscription: Subscription;
   user: User | null = null; // define your user here
   userList: Partial<AppUser>[] | null = []; // define your user list here
@@ -57,11 +57,11 @@ export class UsersPage implements OnInit, OnDestroy {
     });
   } // inject your Firebase service
 
-  ngOnInit(): void {}
-
   ionViewWillEnter() {}
 
-  ionViewWillLeave() {}
+  ionViewWillLeave() {
+    this.usersSubscription.unsubscribe();
+  }
 
   sendFriendRequest(user: DocumentData) {
     this.relationshipsCollectionService
@@ -105,11 +105,7 @@ export class UsersPage implements OnInit, OnDestroy {
   searchUsers(event: any) {
     const value = event.target.value;
     if (value) {
-      this.storeService.searchUsersByName(value);
+      this.storeService.searchDocsByName("users", value);
     }
-  }
-
-  ngOnDestroy(): void {
-    this.usersSubscription.unsubscribe();
   }
 }

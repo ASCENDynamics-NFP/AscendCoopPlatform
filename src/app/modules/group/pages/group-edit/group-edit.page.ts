@@ -125,11 +125,11 @@ export class GroupEditPage implements OnInit {
       ),
     };
 
-    this.storeService.updateGroup(group);
+    this.storeService.updateDoc("groups", group);
   }
 
   deleteGroup() {
-    if (this.groupId) this.storeService.deleteGroup(this.groupId);
+    if (this.groupId) this.storeService.deleteDoc("groups", this.groupId);
     this.router.navigate(["/group-list"]);
   }
 

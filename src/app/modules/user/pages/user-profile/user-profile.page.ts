@@ -72,7 +72,7 @@ export class UserProfilePage implements OnInit, OnDestroy {
   ngOnInit() {
     if (!this.user) {
       // console.log("User not found in store, fetching from server");
-      this.storeService.getUserById(this.uid);
+      this.storeService.getDocById("users", this.uid);
     }
 
     this.relationshipsCollectionService

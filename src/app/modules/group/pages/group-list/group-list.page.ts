@@ -60,7 +60,7 @@ export class GroupListPage {
 
   searchGroups(event: any) {
     const value = event.target.value;
-    this.storeService.searchGroups(value);
+    this.storeService.searchDocsByName("groups", value);
   }
 
   sendRequest(group: Partial<AppGroup>) {

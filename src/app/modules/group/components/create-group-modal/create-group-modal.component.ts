@@ -59,7 +59,7 @@ export class CreateGroupModalComponent {
 
   onSubmit() {
     this.storeService
-      .createGroup(this.groupForm.value as Partial<AppGroup>)
+      .createDoc("groups", this.groupForm.value as Partial<AppGroup>)
       .then((groupId) => {
         this.modalCtrl.dismiss({groupId: groupId}, "confirm");
       });

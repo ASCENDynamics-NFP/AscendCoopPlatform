@@ -40,7 +40,7 @@ import {Subscription} from "rxjs";
   standalone: true,
   imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
-export class EditUserProfilePage implements OnInit, OnDestroy {
+export class EditUserProfilePage implements OnDestroy {
   private uid: string | null = null;
   private usersSubscription: Subscription;
   user: Partial<AppUser> | null = null; // define your user here
@@ -83,11 +83,9 @@ export class EditUserProfilePage implements OnInit, OnDestroy {
     });
     if (!this.user) {
       // console.log("User not found in store, fetching from server");
-      this.storeService.getUserById(this.uid);
+      this.storeService.getDocById("users", this.uid);
     }
   }
-
-  ngOnInit() {}
 
   ionViewWillEnter() {}
 
@@ -119,7 +117,7 @@ export class EditUserProfilePage implements OnInit, OnDestroy {
       profilePicture: this.user?.profilePicture ?? "assets/avatar/male1.png",
     };
 
-    this.storeService.updateUser(user);
+    this.storeService.updateDoc("users", user);
   }
 
   backToProfile() {

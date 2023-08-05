@@ -20,10 +20,8 @@
 import {Injectable} from "@angular/core";
 import {BehaviorSubject, Observable, Subscription} from "rxjs";
 import {AppUser} from "../../models/user.model";
-import {UsersService} from "./users.service";
 import {AuthStoreService} from "./auth-store.service";
 import {AppGroup} from "../../models/group.model";
-import {GroupsService} from "./groups.service";
 import {environment} from "../../../environments/environment";
 import {FirestoreService} from "./firestore.service";
 
@@ -32,19 +30,20 @@ import {FirestoreService} from "./firestore.service";
 })
 export class StoreService {
   private collectionsSubscription: Subscription;
-  private usersSubject = new BehaviorSubject<Partial<AppUser>[]>([]);
-  users$: Observable<Partial<AppUser>[]> = this.usersSubject.asObservable();
-
-  private groupsSubject = new BehaviorSubject<Partial<AppGroup>[]>([]);
-  groups$: Observable<Partial<AppGroup>[]> = this.groupsSubject.asObservable();
+  private collectionsSubject: {[key: string]: BehaviorSubject<Partial<any>[]>} =
+    {
+      users: new BehaviorSubject<Partial<AppUser>[]>([]),
+      groups: new BehaviorSubject<Partial<AppGroup>[]>([]),
+    };
+  users$: Observable<Partial<AppUser>[]> =
+    this.collectionsSubject["users"].asObservable();
+  groups$: Observable<Partial<AppGroup>[]> =
+    this.collectionsSubject["groups"].asObservable();
 
   constructor(
     private authStoreService: AuthStoreService,
-    private groupsService: GroupsService,
-    private usersService: UsersService,
     private firestoreService: FirestoreService,
   ) {
-    this.loadInitialData();
     this.collectionsSubscription = this.firestoreService
       .listenToMultipleDocumentsInMultipleCollections(
         this.firestoreService.getCollectionsSubject(),
@@ -62,11 +61,7 @@ export class StoreService {
           currentCollections.forEach((collection) => {
             // If the collection's ids include the document's id, add the document to the corresponding array
             if (collection.ids.includes(doc["id"])) {
-              if (collection.collectionName === "users") {
-                this.addUserToState(doc as Partial<AppUser>);
-              } else if (collection.collectionName === "groups") {
-                this.addGroupToState(doc as Partial<AppGroup>);
-              }
+              this.addDocToState(collection.collectionName, doc);
             }
           });
         });
@@ -76,12 +71,13 @@ export class StoreService {
             this.firestoreService.getCollectionsSubject().getValue(),
             data,
             "Groups",
-            this.groupsSubject.getValue(),
+            this.collectionsSubject["groups"].getValue(),
             "Users",
-            this.usersSubject.getValue(),
+            this.collectionsSubject["users"].getValue(),
           );
         }
       });
+    this.loadInitialData();
   }
 
   loadInitialData() {
@@ -89,188 +85,116 @@ export class StoreService {
       if (user) {
         this.firestoreService.addIdToCollection("users", user.uid);
       } else {
-        this.collectionsSubscription.unsubscribe();
+        this.collectionsSubscription?.unsubscribe();
       }
     });
-
-    this.groupsService
-      .getGroups() // load initial groups data
-      .then((groups) => {
-        // this.groupsSubject.next(groups);
-        for (let group of groups) {
-          this.addGroupToState(group as Partial<AppGroup>);
-          if (group.admins) {
-            group.admins.forEach((adminId) => {
-              if (adminId === this.authStoreService.getCurrentUser()?.uid) {
-                console.log("Admin of group", group);
-                this.firestoreService.addIdToCollection("groups", group.id);
-              }
+    if (this.authStoreService.getCurrentUser()?.uid) {
+      this.firestoreService
+        .getCollectionWithCondition(
+          "groups",
+          "admins",
+          "array-contains",
+          this.authStoreService.getCurrentUser()?.uid,
+        )
+        .then((groups) => {
+          if (groups) {
+            groups.forEach((group) => {
+              this.addDocToState("groups", group as Partial<any>);
+              this.firestoreService.addIdToCollection("groups", group["id"]);
             });
           }
-        }
-      });
+        });
+    }
   }
 
-  /**
-   * Fetches a user by their id and adds them to the usersSubject state if they don't already exist in it.
-   * @param {string | null} userId - The id of the user to fetch and add to the state.
-   */
-  getUserById(userId: string | null): void {
-    if (!userId) return;
+  getDocById(collectionName: string, docId: string | null): void {
+    if (!docId) return;
 
-    const currentState = this.usersSubject.getValue();
-    const userExists = currentState.some((user) => user.id === userId);
+    const currentState = this.collectionsSubject[collectionName].getValue();
+    const docExists = currentState.some((doc) => doc["id"] === docId);
 
-    if (!userExists) {
-      this.usersService.getUserById(userId).then((user) => {
-        if (user) {
-          this.addUserToState(user as Partial<AppUser>);
+    if (!docExists) {
+      this.firestoreService.getDocument(collectionName, docId).then((doc) => {
+        if (doc) {
+          this.addDocToState(collectionName, doc as Partial<any>);
           if (!environment.production) {
-            console.log(`User with id ${userId} added to state.`);
+            console.log(`Document with id ${docId} added to state.`);
           }
         } else {
           if (!environment.production) {
-            console.log(`User with id ${userId} not found.`);
+            console.log(`Document with id ${docId} not found.`);
           }
         }
       });
     } else {
       if (!environment.production) {
-        console.log(`User with id ${userId} already exists in state.`);
+        console.log(`Document with id ${docId} already exists in state.`);
       }
     }
   }
 
-  searchUsersByName(name: string): void {
-    this.usersService
-      .searchUsersByName(name) // replace 'field', 'condition', 'value' with your actual values
-      .then((users) => {
-        if (users) {
-          users.forEach((user) => {
-            this.addUserToState(user as Partial<AppUser>);
+  searchDocsByName(collectionName: string, name: string): void {
+    this.firestoreService
+      .getCollectionWithCondition(collectionName, "name", "==", name)
+      .then((docs) => {
+        if (docs) {
+          docs.forEach((doc) => {
+            this.addDocToState(collectionName, doc as Partial<any>);
           });
         }
       });
   }
 
-  createUser(user: Partial<AppUser>) {
-    if (!user.id) throw new Error("User must have a id");
-    this.usersService.createUser(user);
-    this.firestoreService.addIdToCollection("users", user.id);
+  async createDoc(collectionName: string, doc: Partial<any>) {
+    let docId = await this.firestoreService.addDocument(collectionName, doc);
+    if (!docId) throw new Error("Document must have an id");
+    this.firestoreService.addIdToCollection(collectionName, docId);
+    return docId;
   }
 
-  updateUser(user: Partial<AppUser>) {
-    this.usersService.updateUser(user);
-    this.updateUserInState(user);
+  updateDoc(collectionName: string, doc: Partial<any>) {
+    this.firestoreService.updateDocument(collectionName, doc["id"], doc);
+    this.updateDocInState(collectionName, doc);
   }
 
-  deleteUser(userId: string) {
-    this.usersService.deleteUser(userId);
-    this.firestoreService.removeIdFromCollection("users", userId);
+  deleteDoc(collectionName: string, docId: string) {
+    this.firestoreService.deleteDocument(collectionName, docId);
+    this.firestoreService.removeIdFromCollection(collectionName, docId);
+    this.removeDocFromState(collectionName, docId);
   }
 
-  addUserToState(user: Partial<AppUser>) {
-    const currentState = this.usersSubject.getValue();
-    const userIndex = currentState.findIndex((u) => u.id === user.id);
+  addDocToState(collectionName: string, doc: Partial<any>) {
+    const currentState = this.collectionsSubject[collectionName].getValue();
+    const docIndex = currentState.findIndex((d) => d["id"] === doc["id"]);
     if (!environment.production) {
-      console.log("StoreService: addUserToState");
-      if (userIndex !== -1) {
-        console.log("User already exists in the state, update it");
+      console.log("StoreService: addDocToState");
+      if (docIndex !== -1) {
+        console.log("Document already exists in the state, update it");
       }
     }
-    if (userIndex !== -1) {
-      // User already exists in the state, update it
-      currentState[userIndex] = user;
+    if (docIndex !== -1) {
+      // Document already exists in the state, update it
+      currentState[docIndex] = doc;
     } else {
-      // User doesn't exist in the state, add it
-      currentState.push(user);
+      // Document doesn't exist in the state, add it
+      currentState.push(doc);
     }
 
-    this.usersSubject.next(currentState);
-    // this.logChange("Users", user, currentState, this.usersSubject.getValue());
+    this.collectionsSubject[collectionName].next(currentState);
   }
 
-  updateUserInState(user: Partial<AppUser>) {
-    const currentState = this.usersSubject.getValue();
-    const updatedState = currentState.map((u) => (u.id === user.id ? user : u));
-    this.usersSubject.next(updatedState);
-  }
-
-  removeUserFromState(userId: string) {
-    const currentState = this.usersSubject.getValue();
-    const updatedState = currentState.filter((u) => u.id !== userId);
-    this.usersSubject.next(updatedState);
-  }
-
-  searchGroups(name: string): void {
-    let currentState = this.groupsSubject.getValue();
-    this.groupsService.searchGroups(name).then((groups) => {
-      groups.forEach((group) => {
-        this.addGroupToState(group);
-      });
-      this.logChange(
-        "Groups",
-        name,
-        currentState,
-        this.groupsSubject.getValue(),
-      );
-    });
-  }
-
-  async createGroup(group: Partial<AppGroup>) {
-    return this.groupsService.createGroup(group).then((groupId) => {
-      if (groupId) {
-        // this.addGroupToState({...group, id: groupId});
-        this.firestoreService.addIdToCollection("groups", groupId);
-      }
-      return groupId;
-    });
-  }
-
-  updateGroup(group: Partial<AppGroup>) {
-    this.groupsService.updateGroup(group);
-    this.updateGroupInState(group);
-  }
-
-  deleteGroup(groupId: string) {
-    this.groupsService.deleteGroup(groupId);
-    this.removeGroupFromState(groupId);
-    this.firestoreService.removeIdFromCollection("groups", groupId);
-  }
-
-  updateGroupInState(group: Partial<AppGroup>) {
-    const currentState = this.groupsSubject.getValue();
-    const updatedState = currentState.map((g) =>
-      g.id === group.id ? group : g,
+  updateDocInState(collectionName: string, doc: Partial<any>) {
+    const currentState = this.collectionsSubject[collectionName].getValue();
+    const updatedState = currentState.map((d) =>
+      d["id"] === doc["id"] ? doc : d,
     );
-    this.groupsSubject.next(updatedState);
+    this.collectionsSubject[collectionName].next(updatedState);
   }
 
-  removeGroupFromState(groupId: string) {
-    const currentState = this.groupsSubject.getValue();
-    const updatedState = currentState.filter((g) => g.id !== groupId);
-    this.groupsSubject.next(updatedState);
-  }
-
-  addGroupToState(group: Partial<AppGroup>) {
-    const currentState = this.groupsSubject.getValue();
-    const groupIndex = currentState.findIndex((g) => g.id === group.id);
-
-    if (!environment.production) {
-      console.log("StoreService: addGroupToState");
-      if (groupIndex !== -1) {
-        console.log("Group already exists in the state, update it");
-      }
-    }
-    if (groupIndex !== -1) {
-      // Group already exists in the state, update it
-      currentState[groupIndex] = group;
-    } else {
-      // Group doesn't exist in the state, add it
-      currentState.push(group);
-    }
-
-    this.groupsSubject.next(currentState);
+  removeDocFromState(collectionName: string, docId: string) {
+    const currentState = this.collectionsSubject[collectionName].getValue();
+    const updatedState = currentState.filter((d) => d["id"] !== docId);
+    this.collectionsSubject[collectionName].next(updatedState);
   }
 
   logChange(

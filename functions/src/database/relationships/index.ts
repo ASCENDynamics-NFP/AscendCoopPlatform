@@ -104,7 +104,12 @@ async function handleRelationshipUpdate(change: any, _context: any) {
             requestGroupMembership(transaction, senderId, receiverId);
           } else if (after.status === "accepted") {
             // Add to the other's groups and members array
-            acceptGroupMembership(transaction, senderId, receiverId);
+            acceptGroupMembership(
+              transaction,
+              senderId,
+              receiverId,
+              after.membershipRole,
+            );
           } else if (after.status === "rejected") {
             // Remove each user from the other's pendingMembers and groups arrays
             removeGroupMembership(transaction, senderId, receiverId);
@@ -260,7 +265,12 @@ async function handleRelationshipCreation(snapshot: any) {
               requestGroupMembership(transaction, senderId, receiverId);
             } else if (newRelationship.status === "accepted") {
               // Add each user to the other's friends array
-              acceptGroupMembership(transaction, senderId, receiverId);
+              acceptGroupMembership(
+                transaction,
+                senderId,
+                receiverId,
+                newRelationship.membershipRole,
+              );
             } else if (newRelationship.status === "rejected") {
               // Remove each user from the other's pendingFriends and friends arrays
               removeGroupMembership(transaction, senderId, receiverId);
@@ -469,11 +479,13 @@ export function removeGroupCollaboration(
  * @param {admin.firestore.Transaction} transaction - The Firestore transaction
  * @param {string} senderId - The ID of the sender
  * @param {string} receiverId - The ID of the receiver
+ * @param {string} membershipRole - The role the member will take in the group
  */
 function acceptGroupMembership(
   transaction: admin.firestore.Transaction,
   senderId: string,
   receiverId: string,
+  membershipRole: string,
 ) {
   const senderRef = db.collection("users").doc(senderId);
   const receiverRef = db.collection("groups").doc(receiverId);
@@ -488,6 +500,10 @@ function acceptGroupMembership(
     // Update group model
     pendingMembers: admin.firestore.FieldValue.arrayRemove(senderId),
     members: admin.firestore.FieldValue.arrayUnion(senderId),
+    admins:
+      membershipRole === "admin"
+        ? admin.firestore.FieldValue.arrayUnion(senderId)
+        : admin.firestore.FieldValue.arrayRemove(senderId),
   });
 }
 

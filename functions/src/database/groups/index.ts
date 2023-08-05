@@ -55,7 +55,6 @@ async function handleGroupCreation(snapshot: any, context: any) {
           const relationshipData = {
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
             createdBy: newGroup.createdBy,
-            id: null,
             senderId: newGroup.createdBy,
             receiverId: context.params.groupId,
             type: "member",

@@ -58,10 +58,14 @@ export class CreateGroupModalComponent {
   }
 
   onSubmit() {
-    this.storeService
-      .createDoc("groups", this.groupForm.value as Partial<AppGroup>)
-      .then((groupId) => {
-        this.modalCtrl.dismiss({groupId: groupId}, "confirm");
-      });
+    const group = this.groupForm.value as Partial<AppGroup>;
+    group.members = [];
+    group.admins = [];
+    group.logoImage = "assets/icon/favicon.png";
+    group.heroImage = "assets/image/orghero.png";
+
+    this.storeService.createDoc("groups", group).then((groupId) => {
+      this.modalCtrl.dismiss({groupId: groupId}, "confirm");
+    });
   }
 }

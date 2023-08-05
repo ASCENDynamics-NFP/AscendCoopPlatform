@@ -28,18 +28,39 @@ import {FirestoreService} from "./firestore.service";
 @Injectable({
   providedIn: "root",
 })
+/**
+ * Service to manage the state of the application.
+ */
 export class StoreService {
+  /**
+   * Subscription to the Firestore collections.
+   */
+
   private collectionsSubscription: Subscription;
+  /**
+   * Subjects for each collection in the Firestore database.
+   */
   private collectionsSubject: {[key: string]: BehaviorSubject<Partial<any>[]>} =
     {
       users: new BehaviorSubject<Partial<AppUser>[]>([]),
       groups: new BehaviorSubject<Partial<AppGroup>[]>([]),
     };
+  /**
+   * Observable of the users collection.
+   */
   users$: Observable<Partial<AppUser>[]> =
     this.collectionsSubject["users"].asObservable();
+  /**
+   * Observable of the groups collection.
+   */
   groups$: Observable<Partial<AppGroup>[]> =
     this.collectionsSubject["groups"].asObservable();
 
+  /**
+   * Constructor for the StoreService.
+   * @param {AuthStoreService} authStoreService - Service for managing authentication state.
+   * @param {FirestoreService} firestoreService - Service for interacting with Firestore.
+   */
   constructor(
     private authStoreService: AuthStoreService,
     private firestoreService: FirestoreService,
@@ -80,6 +101,9 @@ export class StoreService {
     this.loadInitialData();
   }
 
+  /**
+   * Loads the initial data for the application.
+   */
   loadInitialData() {
     this.authStoreService.user$.subscribe((user) => {
       if (user) {
@@ -107,6 +131,11 @@ export class StoreService {
     }
   }
 
+  /**
+   * Fetches a document by its id and adds it to the state if it doesn't already exist.
+   * @param {string} collectionName - The name of the collection to fetch the document from.
+   * @param {string | null} docId - The id of the document to fetch and add to the state.
+   */
   getDocById(collectionName: string, docId: string | null): void {
     if (!docId) return;
 
@@ -133,6 +162,11 @@ export class StoreService {
     }
   }
 
+  /**
+   * Searches for documents by name and adds them to the state.
+   * @param {string} collectionName - The name of the collection to search in.
+   * @param {string} name - The name to search for.
+   */
   searchDocsByName(collectionName: string, name: string): void {
     this.firestoreService
       .getCollectionWithCondition(collectionName, "name", "==", name)
@@ -145,6 +179,11 @@ export class StoreService {
       });
   }
 
+  /**
+   * Creates a new document and adds it to the state.
+   * @param {string} collectionName - The name of the collection to add the document to.
+   * @param {Partial<any>} doc - The document to create.
+   */
   async createDoc(collectionName: string, doc: Partial<any>) {
     let docId = await this.firestoreService.addDocument(collectionName, doc);
     if (!docId) throw new Error("Document must have an id");
@@ -152,17 +191,32 @@ export class StoreService {
     return docId;
   }
 
+  /**
+   * Updates a document and updates it in the state.
+   * @param {string} collectionName - The name of the collection that the document is in.
+   * @param {Partial<any>} doc - The document to update.
+   */
   updateDoc(collectionName: string, doc: Partial<any>) {
     this.firestoreService.updateDocument(collectionName, doc["id"], doc);
     this.updateDocInState(collectionName, doc);
   }
 
+  /**
+   * Deletes a document and removes it from the state.
+   * @param {string} collectionName - The name of the collection that the document is in.
+   * @param {string} docId - The id of the document to delete.
+   */
   deleteDoc(collectionName: string, docId: string) {
     this.firestoreService.deleteDocument(collectionName, docId);
     this.firestoreService.removeIdFromCollection(collectionName, docId);
     this.removeDocFromState(collectionName, docId);
   }
 
+  /**
+   * Adds a document to the state.
+   * @param {string} collectionName - The name of the collection that the document is in.
+   * @param {Partial<any>} doc - The document to add to the state.
+   */
   addDocToState(collectionName: string, doc: Partial<any>) {
     const currentState = this.collectionsSubject[collectionName].getValue();
     const docIndex = currentState.findIndex((d) => d["id"] === doc["id"]);
@@ -183,6 +237,11 @@ export class StoreService {
     this.collectionsSubject[collectionName].next(currentState);
   }
 
+  /**
+   * Updates a document in the state.
+   * @param {string} collectionName - The name of the collection that the document is in.
+   * @param {Partial<any>} doc - The document to update in the state.
+   */
   updateDocInState(collectionName: string, doc: Partial<any>) {
     const currentState = this.collectionsSubject[collectionName].getValue();
     const updatedState = currentState.map((d) =>
@@ -191,12 +250,24 @@ export class StoreService {
     this.collectionsSubject[collectionName].next(updatedState);
   }
 
+  /**
+   * Removes a document from the state.
+   * @param {string} collectionName - The name of the collection that the document is in.
+   * @param {string} docId - The id of the document to remove from the state.
+   */
   removeDocFromState(collectionName: string, docId: string) {
     const currentState = this.collectionsSubject[collectionName].getValue();
     const updatedState = currentState.filter((d) => d["id"] !== docId);
     this.collectionsSubject[collectionName].next(updatedState);
   }
 
+  /**
+   * Logs changes to the state.
+   * @param {string} collection - The name of the collection that changed.
+   * @param {any} newValue - The new value of the collection.
+   * @param {any} currentState - The current state of the collection.
+   * @param {any} updatedState - The updated state of the collection.
+   */
   logChange(
     collection: string,
     newValue: any,

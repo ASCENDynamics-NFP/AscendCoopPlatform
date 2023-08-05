@@ -31,13 +31,40 @@ import {
   deleteDoc,
   DocumentData,
   Firestore,
+  onSnapshot,
 } from "firebase/firestore";
+import {BehaviorSubject, Observable, combineLatest, map, switchMap} from "rxjs";
 
 @Injectable({
   providedIn: "root",
 })
 export class FirestoreService {
+  /**
+   * A BehaviorSubject that holds an array of objects, each representing a Firestore collection to listen to.
+   * Each object contains the name of the collection and an array of document ids to listen to in that collection.
+   *
+   * The BehaviorSubject is initialized with an empty array, but can be updated with new collections and ids to listen to.
+   *
+   * Example:
+   * [
+   *   {
+   *     collectionName: "users",
+   *     ids: ["user1", "user2"],
+   *   },
+   *   {
+   *     collectionName: "groups",
+   *     ids: ["group"],
+   *   },
+   * ]
+   *
+   * @private
+   * @type {BehaviorSubject<{collectionName: string; ids: string[]}[]>}
+   */
+  private collectionsSubject = new BehaviorSubject<
+    {collectionName: string; ids: string[]}[]
+  >([]);
   firestore: Firestore;
+
   constructor() {
     this.firestore = getFirestore();
   }
@@ -119,5 +146,96 @@ export class FirestoreService {
         console.error("Error retrieving collection: ", error);
         return null;
       });
+  }
+
+  getCollectionsSubject() {
+    return this.collectionsSubject;
+  }
+
+  /**
+   * Listen to multiple documents in multiple Firestore collections.
+   * The documents and collections to listen to are determined by the value of collectionsSubject.
+   * @param {BehaviorSubject<Object[]>} collectionsSubject - A BehaviorSubject of an array of objects, each containing the name of the collection and the ids of the documents to listen to.
+   * @returns {Observable<DocumentData[]>} - An Observable that emits the data of the documents whenever any of them change.
+   */
+  listenToMultipleDocumentsInMultipleCollections(
+    collectionsSubject: BehaviorSubject<
+      {collectionName: string; ids: string[]}[]
+    >,
+  ): Observable<DocumentData[]> {
+    return collectionsSubject.pipe(
+      switchMap((collections) => {
+        return combineLatest(
+          collections.map((collection) => {
+            const docObservables = collection.ids.map((id) => {
+              return new Observable<DocumentData>((subscriber) => {
+                const unsubscribe = onSnapshot(
+                  doc(this.firestore, collection.collectionName, id),
+                  (docSnapshot) => {
+                    // Include the id in the emitted data
+                    const data = docSnapshot.data();
+                    if (data) {
+                      data["id"] = docSnapshot.id;
+                    }
+                    subscriber.next(data);
+                  },
+                  (error) => {
+                    subscriber.error(error);
+                  },
+                );
+
+                return unsubscribe; // This function will be called when the Observable is unsubscribed from
+              });
+            });
+
+            return combineLatest(docObservables);
+          }),
+        ).pipe(
+          map((arrays) => arrays.flat()), // Flatten the array of arrays into a single array
+        );
+      }),
+    );
+  }
+
+  /**
+   * Adds an id to the collection with the given name in the collectionsSubject.
+   * @param collectionName - The name of the collection to add the id to.
+   * @param id - The id to add to the collection.
+   */
+  addIdToCollection(collectionName: string, id: string): void {
+    const currentCollections = this.collectionsSubject.getValue();
+    const collectionIndex = currentCollections.findIndex(
+      (collection) => collection.collectionName === collectionName,
+    );
+    if (collectionIndex === -1) {
+      currentCollections.push({collectionName, ids: [id]});
+    } else {
+      // Check if id already exists in the array
+      if (!currentCollections[collectionIndex].ids.includes(id)) {
+        currentCollections[collectionIndex].ids.push(id);
+      }
+    }
+    this.collectionsSubject.next(currentCollections);
+  }
+
+  /**
+   * Removes an id from the collection with the given name in the collectionsSubject.
+   * @param collectionName - The name of the collection to remove the id from.
+   * @param id - The id to remove from the collection.
+   */
+  removeIdFromCollection(collectionName: string, id: string): void {
+    const currentCollections = this.collectionsSubject.getValue();
+    const collectionIndex = currentCollections.findIndex(
+      (collection) => collection.collectionName === collectionName,
+    );
+    if (collectionIndex !== -1) {
+      // Check if id exists in the array
+      if (currentCollections[collectionIndex].ids.includes(id)) {
+        currentCollections[collectionIndex].ids = currentCollections[
+          collectionIndex
+        ].ids.filter((currentId) => currentId !== id);
+        this.collectionsSubject.next(currentCollections);
+      }
+    }
   }
 }

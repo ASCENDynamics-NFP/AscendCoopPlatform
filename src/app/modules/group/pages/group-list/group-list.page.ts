@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
+import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
@@ -75,7 +75,9 @@ export class GroupListPage {
         receiverRelationship: "group",
         senderRelationship: "user",
         receiverName: group.name,
-        receiverImage: group.groupPicture,
+        receiverImage: group.logoImage
+          ? group.logoImage
+          : "assets/icon/favicon.png",
         receiverTagline: group.tagline,
         senderName: this.user?.displayName ? this.user.displayName : "",
         senderImage: this.user?.photoURL ? this.user.photoURL : "",

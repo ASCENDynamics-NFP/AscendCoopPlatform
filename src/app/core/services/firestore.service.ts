@@ -204,25 +204,36 @@ export class FirestoreService {
       });
   }
 
-  processFirebaseData(querySnapshot: QuerySnapshot | DocumentSnapshot): any {
-    if (querySnapshot instanceof QuerySnapshot) {
-      // Processing for array of documents
-      const documents: Partial<any>[] = [];
-      querySnapshot.forEach((doc) => {
-        let data = doc.data() as Partial<any>;
-        data = {...data, id: doc.id};
-        documents.push(data);
+  async getDocsWithSenderOrRecieverId(
+    collectionName: string,
+    senderOrReceiverId: string | null,
+  ): Promise<Partial<any>[]> {
+    if (!senderOrReceiverId) {
+      this.errorHandler.handleFirebaseAuthError({
+        code: "",
+        message: "Id must be provided",
       });
-      return documents;
-    } else if (querySnapshot instanceof DocumentSnapshot) {
-      // Processing for single document
-      if (querySnapshot.exists()) {
-        let data = querySnapshot.data() as Partial<any>;
-        data = {...data, id: querySnapshot.id};
-        return data;
-      }
+      return [];
     }
-    return null;
+    return await getDocs(
+      query(
+        collection(this.firestore, collectionName),
+        and(
+          where("status", "in", ["pending", "accepted"]),
+          or(
+            where("senderId", "==", senderOrReceiverId),
+            where("receiverId", "==", senderOrReceiverId),
+          ),
+        ),
+      ),
+    )
+      .then((querySnapshot) => {
+        return this.processFirebaseData(querySnapshot);
+      })
+      .catch((error) => {
+        this.errorHandler.handleFirebaseAuthError(error);
+        return [];
+      });
   }
 
   getCollectionsSubject() {
@@ -314,5 +325,26 @@ export class FirestoreService {
         this.collectionsSubject.next(currentCollections);
       }
     }
+  }
+
+  processFirebaseData(querySnapshot: QuerySnapshot | DocumentSnapshot): any {
+    if (querySnapshot instanceof QuerySnapshot) {
+      // Processing for array of documents
+      const documents: Partial<any>[] = [];
+      querySnapshot.forEach((doc) => {
+        let data = doc.data() as Partial<any>;
+        data = {...data, id: doc.id};
+        documents.push(data);
+      });
+      return documents;
+    } else if (querySnapshot instanceof DocumentSnapshot) {
+      // Processing for single document
+      if (querySnapshot.exists()) {
+        let data = querySnapshot.data() as Partial<any>;
+        data = {...data, id: querySnapshot.id};
+        return data;
+      }
+    }
+    return null;
   }
 }

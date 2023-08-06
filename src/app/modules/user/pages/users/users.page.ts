@@ -22,10 +22,7 @@ import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {User} from "firebase/auth";
-import {DocumentData} from "firebase/firestore";
-
 import {RouterModule} from "@angular/router";
-import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 import {AppUser} from "../../../../models/user.model";
 import {StoreService} from "../../../../core/services/store.service";
 import {Subscription} from "rxjs";
@@ -39,33 +36,37 @@ import {AuthStoreService} from "../../../../core/services/auth-store.service";
   imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
 export class UsersPage {
-  private usersSubscription: Subscription;
+  private usersSubscription: Subscription | undefined;
   user: User | null = null; // define your user here
   userList: Partial<AppUser>[] | null = []; // define your user list here
+  searchedValue: string = "";
 
   constructor(
     private authStoreService: AuthStoreService,
-    private relationshipsCollectionService: RelationshipsCollectionService,
     private storeService: StoreService,
   ) {
     this.user = this.authStoreService.getCurrentUser();
-
-    this.usersSubscription = this.storeService.users$.subscribe((users) => {
-      if (users) {
-        this.userList = users;
-      }
-    });
   } // inject your Firebase service
 
-  ionViewWillEnter() {}
-
-  ionViewWillLeave() {
-    this.usersSubscription.unsubscribe();
+  ionViewWillEnter() {
+    this.usersSubscription = this.storeService.users$.subscribe((users) => {
+      if (users) {
+        this.userList = users.filter((user) =>
+          user.displayName
+            ?.toLowerCase()
+            .includes(this.searchedValue.toLowerCase()),
+        );
+      }
+    });
   }
 
-  sendFriendRequest(user: DocumentData) {
-    this.relationshipsCollectionService
-      .sendRequest({
+  ionViewWillLeave() {
+    this.usersSubscription?.unsubscribe();
+  }
+
+  sendFriendRequest(user: Partial<AppUser>) {
+    this.storeService
+      .createDoc("relationships", {
         id: null,
         senderId: this.user?.uid ? this.user.uid : "",
         receiverId: user["id"],
@@ -82,30 +83,38 @@ export class UsersPage {
         senderTagline: "",
       })
       .then(() => {
-        // updated friends list on userList item to include receiverId in friends list so that the button doesn't show
-        this.userList =
-          this.userList?.map((userListItem: Partial<AppUser>) => {
-            if (userListItem.id === user["id"]) {
-              if (!userListItem.pendingFriends) {
-                userListItem.pendingFriends = [];
-              }
-              return {
-                ...userListItem,
-                pendingFriends: this.user?.uid
-                  ? [...userListItem.pendingFriends, this.user.uid]
-                  : [...userListItem.pendingFriends],
-              };
-            } else {
-              return userListItem;
+        if (this.user) {
+          // updated friends list on userList item to include receiverId in friends list so that the button doesn't show
+          const updatedUserListItem = this.userList?.find(
+            (userListItem: Partial<AppUser>) => userListItem.id === user["id"],
+          );
+
+          if (updatedUserListItem) {
+            if (!updatedUserListItem.pendingFriends) {
+              updatedUserListItem.pendingFriends = [];
             }
-          }) ?? [];
+            updatedUserListItem.pendingFriends.push(this.user?.uid);
+
+            // Use addDocToState to update the state
+            this.storeService.addDocToState("users", updatedUserListItem);
+          }
+        }
       });
   }
 
   searchUsers(event: any) {
     const value = event.target.value;
+    this.searchedValue = value;
     if (value) {
       this.storeService.searchDocsByName("users", value);
+    } else {
+      this.userList = this.storeService.getCollection("users").sort((a, b) => {
+        if (a["displayName"] && b["displayName"]) {
+          return a["displayName"].localeCompare(b["displayName"]);
+        } else {
+          return 0;
+        }
+      });
     }
   }
 }

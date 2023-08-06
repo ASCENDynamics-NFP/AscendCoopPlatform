@@ -27,7 +27,6 @@ import {FriendListComponent} from "./components/friend-list/friend-list.componen
 import {GroupMembershipListComponent} from "./components/group-membership-list/group-membership-list.component";
 import {HeroComponent} from "./components/hero/hero.component";
 import {DetailsComponent} from "./components/details/details.component";
-import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 import {AppRelationship} from "../../../../models/relationship.model";
 import {AppUser} from "../../../../models/user.model";
 import {Subscription} from "rxjs";
@@ -49,58 +48,74 @@ import {AuthStoreService} from "../../../../core/services/auth-store.service";
     DetailsComponent,
   ],
 })
-export class UserProfilePage implements OnInit, OnDestroy {
+export class UserProfilePage implements OnInit {
   private uid: string | null = null;
-  private usersSubscription: Subscription;
+  private relationshipsSubscription: Subscription | undefined;
+  private usersSubscription: Subscription | undefined;
   user: Partial<AppUser> | null = null;
-  friendList: AppRelationship[] = [];
-  groupList: AppRelationship[] = [];
+  friendList: Partial<AppRelationship>[] = [];
+  groupList: Partial<AppRelationship>[] = [];
   isProfileOwner: boolean = false;
   constructor(
     private authStoreService: AuthStoreService,
     private route: ActivatedRoute,
     private storeService: StoreService,
-    private relationshipsCollectionService: RelationshipsCollectionService,
   ) {
     this.uid = this.route.snapshot.paramMap.get("uid");
-    this.usersSubscription = this.storeService.users$.subscribe((users) => {
-      // console.log(uid, users);
-      this.user = users.find((user) => user.id === this.uid) ?? null;
-    });
   }
 
   ngOnInit() {
-    if (!this.user) {
-      // console.log("User not found in store, fetching from server");
-      this.storeService.getDocById("users", this.uid);
+    if (this.uid) {
+      this.storeService.getDocsWithSenderOrRecieverId(
+        "relationships",
+        this.uid,
+      );
+      this.isProfileOwner =
+        this.uid === this.authStoreService.getCurrentUser()?.uid;
     }
-
-    this.relationshipsCollectionService
-      .getRelationships(this.uid)
-      .then((relationships) => {
-        for (let relationship of relationships) {
-          if (
-            relationship.type === "friend" &&
-            relationship.status === "accepted"
-          ) {
-            this.friendList.push(relationship);
-          } else if (
-            relationship.type === "member" &&
-            relationship.status === "accepted"
-          ) {
-            this.groupList.push(relationship);
-          }
-        }
-        this.isProfileOwner =
-          this.uid === this.authStoreService.getCurrentUser()?.uid;
-      });
   }
 
-  ionViewWillEnter() {}
+  ionViewWillEnter() {
+    this.usersSubscription = this.storeService.users$.subscribe((users) => {
+      // console.log(uid, users);
+      this.user = users.find((user) => user.id === this.uid) ?? null;
+      if (!this.user) {
+        console.log("User not found in store, fetching from server");
+        this.storeService.getDocById("users", this.uid);
+      }
+    });
+    this.relationshipsSubscription = this.storeService.relationships$.subscribe(
+      (relationships) => {
+        this.sortRelationships(relationships);
+      },
+    );
+  }
 
-  ionViewWillLeave() {}
+  ionViewWillLeave() {
+    this.relationshipsSubscription?.unsubscribe();
+    this.usersSubscription?.unsubscribe();
+  }
 
-  ngOnDestroy() {
-    this.usersSubscription.unsubscribe();
+  sortRelationships(relationships: Partial<AppRelationship>[]) {
+    this.friendList = [];
+    this.groupList = [];
+    for (let relationship of relationships) {
+      if (
+        relationship.senderId === this.uid ||
+        relationship.receiverId === this.uid
+      ) {
+        if (
+          relationship.type === "friend" &&
+          relationship.status === "accepted"
+        ) {
+          this.friendList.push(relationship);
+        } else if (
+          relationship.type === "member" &&
+          relationship.status === "accepted"
+        ) {
+          this.groupList.push(relationship);
+        }
+      }
+    }
   }
 }

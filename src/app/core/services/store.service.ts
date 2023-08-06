@@ -45,19 +45,24 @@ export class StoreService {
    */
   private collectionsSubject: {[key: string]: BehaviorSubject<Partial<any>[]>} =
     {
-      users: new BehaviorSubject<Partial<AppUser>[]>([]),
       groups: new BehaviorSubject<Partial<AppGroup>[]>([]),
+      users: new BehaviorSubject<Partial<AppUser>[]>([]),
+      relationships: new BehaviorSubject<Partial<AppUser>[]>([]),
     };
-  /**
-   * Observable of the users collection.
-   */
-  users$: Observable<Partial<AppUser>[]> =
-    this.collectionsSubject["users"].asObservable();
   /**
    * Observable of the groups collection.
    */
   groups$: Observable<Partial<AppGroup>[]> =
     this.collectionsSubject["groups"].asObservable();
+  /**
+   * Observable of the relationships collection.
+   */
+  relationships$ = this.collectionsSubject["relationships"].asObservable();
+  /**
+   * Observable of the users collection.
+   */
+  users$: Observable<Partial<AppUser>[]> =
+    this.collectionsSubject["users"].asObservable();
 
   /**
    * Constructor for the StoreService.
@@ -108,6 +113,7 @@ export class StoreService {
    * Loads the initial data for the application.
    */
   loadInitialData() {
+    const currentUser = this.authStoreService.getCurrentUser();
     this.authStoreService.user$.subscribe((user) => {
       if (user) {
         this.firestoreService.addIdToCollection("users", user.uid);
@@ -115,13 +121,13 @@ export class StoreService {
         this.collectionsSubscription?.unsubscribe();
       }
     });
-    if (this.authStoreService.getCurrentUser()?.uid) {
+    if (currentUser) {
       this.firestoreService
         .getCollectionWithCondition(
           "groups",
           "admins",
           "array-contains",
-          this.authStoreService.getCurrentUser()?.uid,
+          currentUser.uid,
         )
         .then((groups) => {
           if (groups) {
@@ -131,7 +137,25 @@ export class StoreService {
             });
           }
         });
+      this.getDocsWithSenderOrRecieverId("relationships", currentUser.uid);
     }
+  }
+
+  getDocsWithSenderOrRecieverId(
+    collectionName: string,
+    senderOrRecieverId: string,
+  ) {
+    this.firestoreService
+      .getDocsWithSenderOrRecieverId(collectionName, senderOrRecieverId)
+      .then((relationships) => {
+        relationships.forEach((relationship) => {
+          this.addDocToState(collectionName, relationship);
+        });
+      });
+  }
+
+  getCollection(collectionName: string) {
+    return this.collectionsSubject[collectionName].getValue();
   }
 
   /**

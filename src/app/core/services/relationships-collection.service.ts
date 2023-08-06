@@ -37,10 +37,10 @@ import {
   prepareDataForCreate,
   prepareDataForUpdate,
 } from "../utils/firebase.util";
-import {AuthService} from "./auth.service";
 import {LoadingController} from "@ionic/angular";
 import {ErrorHandlerService} from "./error-handler.service";
 import {SuccessHandlerService} from "./success-handler.service";
+import {AuthStoreService} from "./auth-store.service";
 
 @Injectable({
   providedIn: "root",
@@ -49,10 +49,10 @@ export class RelationshipsCollectionService {
   private collectionName = "relationships";
 
   constructor(
-    private firestoreService: FirestoreService,
-    private authService: AuthService,
-    private loadingController: LoadingController,
+    private authStoreService: AuthStoreService,
     private errorHandler: ErrorHandlerService,
+    private firestoreService: FirestoreService,
+    private loadingController: LoadingController,
     private successHandler: SuccessHandlerService,
   ) {}
 
@@ -61,10 +61,14 @@ export class RelationshipsCollectionService {
     await loading.present();
     return await addDoc(
       collection(this.firestoreService.firestore, this.collectionName),
-      prepareDataForCreate(requestData, this.authService.getCurrentUser()?.uid),
+      prepareDataForCreate(
+        requestData,
+        this.authStoreService.getCurrentUser()?.uid,
+      ),
     )
       .then((docRef) => {
-        this.successHandler.handleSuccess("Request sent successfully!");
+        // this.successHandler.handleSuccess("Request sent successfully!");
+        console.log("Relationship created successfully!");
         return docRef.id;
       })
       .catch((error) => {
@@ -88,7 +92,7 @@ export class RelationshipsCollectionService {
       doc(this.firestoreService.firestore, this.collectionName, id),
       prepareDataForUpdate(
         relationship,
-        this.authService.getCurrentUser()?.uid,
+        this.authStoreService.getCurrentUser()?.uid,
       ),
     )
       .then(() => {

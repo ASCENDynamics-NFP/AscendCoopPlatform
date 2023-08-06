@@ -45,7 +45,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           </ion-card-header>
           <ion-list>
             <ion-item
-              *ngFor="let item of groups; let i = index"
+              *ngFor="let item of searchResults; let i = index"
               routerLink="/group-profile/{{item.id}}"
               button
             >

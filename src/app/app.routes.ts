@@ -22,28 +22,10 @@ import {AuthGuard} from "./core/guards/auth.guard";
 import {SecureInnerPagesGuard} from "./core/guards/secure-inner-pages.guard";
 
 export const routes: Routes = [
-  // {
-  //   path: "user",
-  //   loadChildren: () => import("./modules/user/user.routes").then((m) => m.routes),
-  // },
   {
     path: "",
     redirectTo: "user-signup",
     pathMatch: "full",
-  },
-  {
-    path: "group-create",
-    loadComponent: () =>
-      import("./modules/group/pages/group-create/group-create.page").then(
-        (m) => m.GroupCreatePage,
-      ),
-  },
-  {
-    path: "group-detail",
-    loadComponent: () =>
-      import("./modules/group/pages/group-detail/group-detail.page").then(
-        (m) => m.GroupDetailPage,
-      ),
   },
   {
     path: "group-profile/:groupId/edit",
@@ -58,13 +40,6 @@ export const routes: Routes = [
     loadComponent: () =>
       import("./modules/group/pages/group-list/group-list.page").then(
         (m) => m.GroupListPage,
-      ),
-  },
-  {
-    path: "group-members",
-    loadComponent: () =>
-      import("./modules/group/pages/group-members/group-members.page").then(
-        (m) => m.GroupMembersPage,
       ),
   },
   {
@@ -88,6 +63,7 @@ export const routes: Routes = [
       import("./modules/user/pages/user-profile/user-profile.page").then(
         (m) => m.UserProfilePage,
       ),
+    canActivate: [AuthGuard],
   },
   {
     path: "user-profile/:uid/friends",
@@ -95,6 +71,7 @@ export const routes: Routes = [
       import("./modules/user/pages/friends/friends.page").then(
         (m) => m.FriendsPage,
       ),
+    canActivate: [AuthGuard],
   },
   {
     path: "user-signup",
@@ -140,6 +117,7 @@ export const routes: Routes = [
       import(
         "./modules/user/pages/edit-user-profile/edit-user-profile.page"
       ).then((m) => m.EditUserProfilePage),
+    canActivate: [AuthGuard],
   },
   {
     path: "group/:groupId/partners",
@@ -147,6 +125,7 @@ export const routes: Routes = [
       import("./modules/group/pages/partners/partners.routes").then(
         (m) => m.routes,
       ),
+    canActivate: [AuthGuard],
     // loadComponent: () =>
     //   import("./modules/group/pages/partners/partners.page").then(
     //     (m) => m.PartnersPage,

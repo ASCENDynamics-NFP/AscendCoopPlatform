@@ -17,15 +17,14 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
+import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {MenuService} from "../../../../core/services/menu.service";
+
 import {TranslateModule} from "@ngx-translate/core";
 import {LanguageSelectorComponent} from "../../components/language-selector/language-selector.component";
-import {FriendRequestComponent} from "../../components/friend-request/friend-request.component";
-import {AuthService} from "../../../../core/services/auth.service";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 @Component({
   selector: "app-user-settings",
@@ -38,21 +37,13 @@ import {AuthService} from "../../../../core/services/auth.service";
     FormsModule,
     TranslateModule,
     LanguageSelectorComponent,
-    FriendRequestComponent,
   ],
 })
-export class UserSettingsPage implements OnInit {
-  user = this.authService.getCurrentUser();
-  constructor(
-    private menuService: MenuService,
-    private authService: AuthService,
-  ) {}
+export class UserSettingsPage {
+  user = this.authStoreService.getCurrentUser();
+  constructor(private authStoreService: AuthStoreService) {}
 
-  ngOnInit() {}
-
-  ionViewWillEnter() {
-    this.menuService.onEnter();
-  }
+  ionViewWillEnter() {}
 
   ionViewWillLeave() {}
 }

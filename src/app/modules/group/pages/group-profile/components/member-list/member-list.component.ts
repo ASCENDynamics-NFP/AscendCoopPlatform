@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, Input, OnInit} from "@angular/core";
+import {Component, Input} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
 import {Router} from "@angular/router";
@@ -31,13 +31,11 @@ import {AppGroup} from "../../../../../../models/group.model";
   standalone: true,
   imports: [IonicModule, CommonModule],
 })
-export class MemberListComponent implements OnInit {
+export class MemberListComponent {
   @Input() group: Partial<AppGroup> | null = null; // define your group here
   @Input() memberList: Partial<AppRelationship>[] = [];
 
   constructor(private router: Router) {}
-
-  ngOnInit() {}
 
   get allMembers() {
     let allMembers = [];

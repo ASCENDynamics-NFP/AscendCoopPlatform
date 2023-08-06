@@ -17,14 +17,15 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
+import {Component, OnDestroy} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {Router} from "@angular/router";
-import {AuthService} from "../../../../core/services/auth.service";
-import {MenuService} from "../../../../core/services/menu.service";
+
 import {TranslateModule} from "@ngx-translate/core";
+import {Subscription} from "rxjs";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 @Component({
   selector: "app-user-signup",
@@ -33,7 +34,8 @@ import {TranslateModule} from "@ngx-translate/core";
   standalone: true,
   imports: [IonicModule, CommonModule, ReactiveFormsModule, TranslateModule],
 })
-export class UserSignupPage {
+export class UserSignupPage implements OnDestroy {
+  private authSubscription: Subscription;
   signupForm = this.fb.nonNullable.group({
     email: ["", Validators.compose([Validators.required, Validators.email])],
     password: [
@@ -44,11 +46,10 @@ export class UserSignupPage {
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService,
+    private authStoreService: AuthStoreService,
     private router: Router,
-    private menuService: MenuService,
   ) {
-    this.authService.user$.subscribe((user) => {
+    this.authSubscription = this.authStoreService.user$.subscribe((user) => {
       if (user) {
         console.log("GOT USER ON SIGN UP");
         this.router.navigateByUrl("/user-profile/" + user.uid, {
@@ -58,9 +59,7 @@ export class UserSignupPage {
     });
   }
 
-  ionViewWillEnter() {
-    this.menuService.onEnter();
-  }
+  ionViewWillEnter() {}
 
   ionViewWillLeave() {}
 
@@ -68,6 +67,10 @@ export class UserSignupPage {
     const email = this.signupForm.value.email;
     const password = this.signupForm.value.password;
 
-    this.authService.signUp(email, password);
+    this.authStoreService.signUp(email, password);
+  }
+
+  ngOnDestroy(): void {
+    this.authSubscription.unsubscribe();
   }
 }

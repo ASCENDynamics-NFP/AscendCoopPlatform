@@ -17,6 +17,8 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+
+// DEPRECIATED FILE
 import {Injectable} from "@angular/core";
 import {FirestoreService} from "./firestore.service";
 import {AppUser} from "../../models/user.model";
@@ -36,6 +38,7 @@ import {
   and,
   DocumentSnapshot,
   QuerySnapshot,
+  // onSnapshot,
 } from "firebase/firestore";
 import {
   prepareDataForCreate,
@@ -97,6 +100,30 @@ export class UsersService {
         loading.dismiss();
       });
   }
+
+  // This method will now return an unsubscribe function
+  // observeUserById(
+  //   userId: string | null,
+  //   callback: (user: Partial<AppUser> | null) => void,
+  // ): () => void {
+  //   if (!userId) {
+  //     this.errorHandler.handleFirebaseAuthError({
+  //       code: "",
+  //       message: "User id must be provided",
+  //     });
+  //     return () => {};
+  //   }
+
+  //   return onSnapshot(
+  //     doc(this.firestoreService.firestore, this.collectionName, userId),
+  //     (docSnapshot) => {
+  //       callback(this.processFirebaseData(docSnapshot));
+  //     },
+  //     (error) => {
+  //       this.errorHandler.handleFirebaseAuthError(error);
+  //     },
+  //   );
+  // }
 
   async updateUser(user: Partial<AppUser>) {
     if (!user.id) throw new Error("User must have a id");

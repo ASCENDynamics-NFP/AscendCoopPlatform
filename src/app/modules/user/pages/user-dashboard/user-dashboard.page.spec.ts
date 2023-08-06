@@ -19,23 +19,23 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {UserDashboardPage} from "./user-dashboard.page";
-import {AuthService} from "../../../../core/services/auth.service";
 import {of} from "rxjs";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 describe("UserDashboardPage", () => {
   let component: UserDashboardPage;
   let fixture: ComponentFixture<UserDashboardPage>;
-  let service: AuthService;
+  let service: AuthStoreService;
   let authSpy: any = {};
 
   beforeEach(async () => {
     // Mock user$ as an Observable that emits null
     authSpy.user$ = of(null);
     TestBed.configureTestingModule({
-      providers: [{provide: AuthService, useValue: authSpy}],
+      providers: [{provide: AuthStoreService, useValue: authSpy}],
     });
 
-    service = TestBed.inject(AuthService);
+    service = TestBed.inject(AuthStoreService);
     fixture = TestBed.createComponent(UserDashboardPage);
     component = fixture.componentInstance;
     fixture.detectChanges();

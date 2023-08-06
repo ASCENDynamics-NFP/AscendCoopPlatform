@@ -17,11 +17,13 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+import {Injectable} from "@angular/core";
+import {LoadingController} from "@ionic/angular";
 import {
-  Auth,
+  createUserWithEmailAndPassword,
+  getAdditionalUserInfo,
   getAuth,
   GoogleAuthProvider,
-  createUserWithEmailAndPassword,
   isSignInWithEmailLink,
   onAuthStateChanged,
   sendPasswordResetEmail,
@@ -31,27 +33,23 @@ import {
   signInWithPopup,
   signOut,
   User,
-  getAdditionalUserInfo,
   UserCredential,
 } from "firebase/auth";
 import {BehaviorSubject} from "rxjs";
-import {Injectable} from "@angular/core";
-import {Router} from "@angular/router";
+import {map} from "rxjs/operators";
 import {ErrorHandlerService} from "./error-handler.service";
 import {SuccessHandlerService} from "./success-handler.service";
-import {LoadingController} from "@ionic/angular";
+import {Router} from "@angular/router";
 import {Timestamp} from "firebase/firestore";
 import {UsersService} from "./users.service";
 
 @Injectable({
   providedIn: "root",
 })
-export class AuthService {
-  auth: Auth;
-  private userSubject = new BehaviorSubject<User | null>(null); // User | null type
-  // any time the user logs in or out (i.e., when currentUserSubject is updated), all subscribers to currentUser$ will receive the updated user state.
-  user$ = this.userSubject.asObservable();
-  actionCodeSettings = {
+export class AuthStoreService {
+  private auth = getAuth();
+  private userSubject = new BehaviorSubject<User | null>(null);
+  private actionCodeSettings = {
     // URL you want to redirect back to. The domain (www.example.com) for this
     // URL must be in the authorized domains list in the Firebase Console.
     url: `${window.location.origin}/user-login`,
@@ -67,34 +65,32 @@ export class AuthService {
     // },
     // dynamicLinkDomain: 'example.page.link'
   };
+  user$ = this.userSubject.asObservable();
+  isLoggedIn$ = this.user$.pipe(map((user) => user !== null));
+  isLoggedOut$ = this.isLoggedIn$.pipe(map((loggedIn) => !loggedIn));
 
   constructor(
-    private router: Router,
     private errorHandler: ErrorHandlerService,
     private loadingController: LoadingController,
     private successHandler: SuccessHandlerService,
+    private router: Router,
     private usersService: UsersService,
   ) {
-    this.auth = getAuth();
     onAuthStateChanged(this.auth, (user) => {
-      if (user) {
-        // User is signed in.
-        this.userSubject.next(user);
-      } else {
-        // User is signed out.
-        this.userSubject.next(null);
-      }
+      this.userSubject.next(user);
     });
   }
-  /* CURRENT USER METHODS */
-  // Returns true when user is looged in and email is verified
-  get isLoggedIn(): boolean {
-    return this.getCurrentUser() !== null ? true : false;
-  }
 
-  // Call method when wanting to pull in user status async
   getCurrentUser(): User | null {
     return this.userSubject.value;
+  }
+
+  setUser(user: User | null): void {
+    this.userSubject.next(user);
+  }
+
+  getAuth() {
+    return this.auth;
   }
 
   /* SIGN UP METHODS */

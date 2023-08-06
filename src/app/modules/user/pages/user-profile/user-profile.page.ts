@@ -21,16 +21,17 @@ import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {UsersService} from "../../../../core/services/users.service";
 import {ActivatedRoute} from "@angular/router";
-import {MenuService} from "../../../../core/services/menu.service";
+
 import {FriendListComponent} from "./components/friend-list/friend-list.component";
 import {GroupMembershipListComponent} from "./components/group-membership-list/group-membership-list.component";
 import {HeroComponent} from "./components/hero/hero.component";
 import {DetailsComponent} from "./components/details/details.component";
-import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 import {AppRelationship} from "../../../../models/relationship.model";
-import {AuthService} from "../../../../core/services/auth.service";
+import {AppUser} from "../../../../models/user.model";
+import {Subscription} from "rxjs";
+import {StoreService} from "../../../../core/services/store.service";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 @Component({
   selector: "app-user-profile",
@@ -48,55 +49,78 @@ import {AuthService} from "../../../../core/services/auth.service";
   ],
 })
 export class UserProfilePage implements OnInit {
-  user: any;
-  friendList: AppRelationship[] = [];
-  groupList: AppRelationship[] = [];
+  private uid: string | null = null;
+  private relationshipsSubscription: Subscription | undefined;
+  private usersSubscription: Subscription | undefined;
+  user: Partial<AppUser> | null = null;
+  friendList: Partial<AppRelationship>[] = [];
+  groupList: Partial<AppRelationship>[] = [];
   isProfileOwner: boolean = false;
   constructor(
-    private authService: AuthService,
+    private authStoreService: AuthStoreService,
     private route: ActivatedRoute,
-    private usersService: UsersService,
-    private menuService: MenuService,
-    private relationshipsCollectionService: RelationshipsCollectionService,
-  ) {}
+    private storeService: StoreService,
+  ) {
+    this.uid = this.route.snapshot.paramMap.get("uid");
+  }
 
   ngOnInit() {
-    this.getUser();
-    const uid = this.route.snapshot.paramMap.get("uid");
-    this.relationshipsCollectionService
-      .getRelationships(uid)
-      .then((relationships) => {
-        for (let relationship of relationships) {
-          if (
-            relationship.type === "friend" &&
-            relationship.status === "accepted"
-          ) {
-            this.friendList.push(relationship);
-          } else if (
-            relationship.type === "member" &&
-            relationship.status === "accepted"
-          ) {
-            this.groupList.push(relationship);
-          }
-        }
-        this.isProfileOwner = uid === this.authService.getCurrentUser()?.uid;
-      });
+    if (this.uid) {
+      this.storeService.getDocsWithSenderOrRecieverId(
+        "relationships",
+        this.uid,
+      );
+      this.isProfileOwner =
+        this.uid === this.authStoreService.getCurrentUser()?.uid;
+    }
   }
 
   ionViewWillEnter() {
-    this.menuService.onEnter();
+    this.initiateSubscribers();
   }
 
-  ionViewWillLeave() {}
+  ionViewWillLeave() {
+    this.relationshipsSubscription?.unsubscribe();
+    this.usersSubscription?.unsubscribe();
+  }
 
-  async getUser() {
-    this.usersService
-      .getUserById(this.route.snapshot.paramMap.get("uid"))
-      .then((data) => {
-        this.user = data;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  initiateSubscribers() {
+    // Subscribe to users$ observable
+    this.usersSubscription = this.storeService.users$.subscribe((users) => {
+      this.user = users.find((user) => user.id === this.uid) ?? null;
+      if (!this.user) {
+        console.log("User not found in store, fetching from server");
+        this.storeService.getDocById("users", this.uid);
+      }
+    });
+    // Subscribe to relationships$ observable
+    this.relationshipsSubscription = this.storeService.relationships$.subscribe(
+      (relationships) => {
+        this.sortRelationships(relationships);
+      },
+    );
+  }
+
+  sortRelationships(relationships: Partial<AppRelationship>[]) {
+    this.friendList = [];
+    this.groupList = [];
+    for (let relationship of relationships) {
+      if (
+        relationship.senderId === this.uid ||
+        relationship.receiverId === this.uid
+      ) {
+        if (
+          relationship.type === "friend" &&
+          relationship.status === "accepted"
+        ) {
+          this.friendList.push(relationship);
+        } else if (
+          relationship.type === "member" &&
+          relationship.status === "accepted"
+        ) {
+          this.groupList.push(relationship);
+        }
+      }
+    }
   }
 }

@@ -19,20 +19,20 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {GroupListPage} from "./group-list.page";
-// import {AuthService} from "../../../../core/services/auth.service";
+// import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 describe("GroupListPage", () => {
   let component: GroupListPage;
   let fixture: ComponentFixture<GroupListPage>;
-  // let service: AuthService;
+  // let service: AuthStoreService;
   // let authSpy: any;
 
   // beforeAll(() => {
   //   TestBed.configureTestingModule({
-  //     providers: [{provide: AuthService, useValue: authSpy}],
+  //     providers: [{provide: AuthStoreService, useValue: authSpy}],
   //   });
 
-  //   service = TestBed.inject(AuthService);
+  //   service = TestBed.inject(AuthStoreService);
   // });
 
   beforeEach(async () => {

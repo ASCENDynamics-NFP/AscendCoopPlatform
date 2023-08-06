@@ -17,21 +17,21 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
+import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {
-  // AbstractControl,
+  AbstractControl,
   FormBuilder,
   ReactiveFormsModule,
-  // ValidatorFn,
+  ValidatorFn,
   Validators,
 } from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {MenuService} from "../../../../core/services/menu.service";
 import {AppUser} from "../../../../models/user.model";
-import {UsersService} from "../../../../core/services/users.service";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Timestamp} from "firebase/firestore";
+import {StoreService} from "../../../../core/services/store.service";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: "app-edit-user-profile",
@@ -40,7 +40,9 @@ import {Timestamp} from "firebase/firestore";
   standalone: true,
   imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
-export class EditUserProfilePage implements OnInit {
+export class EditUserProfilePage {
+  private uid: string | null = null;
+  private usersSubscription: Subscription | undefined;
   user: Partial<AppUser> | null = null; // define your user here
 
   editProfileForm = this.fb.group({
@@ -59,78 +61,69 @@ export class EditUserProfilePage implements OnInit {
     addressState: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
     addressZipcode: ["", Validators.pattern("^[0-9]*$")],
     addressCountry: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-    dateOfBirth: [new Date().toISOString()], //, [Validators.required, this.ageValidator(18)]],
+    dateOfBirth: [
+      new Date().toISOString(),
+      [Validators.required], //, this.ageValidator(18)],
+    ],
   });
 
   constructor(
-    private fb: FormBuilder,
-    private menuService: MenuService,
-    private userService: UsersService,
     private activatedRoute: ActivatedRoute,
+    private fb: FormBuilder,
     private router: Router,
-  ) {}
-
-  ngOnInit() {
-    // Load the user data, e.g. from a service
-    this.userService
-      .getUserById(this.activatedRoute.snapshot.paramMap.get("uid"))
-      .then((user) => {
-        this.user = user as Partial<AppUser>;
-        if (this.user) {
-          // Update the form with the user data
-          this.editProfileForm.patchValue({
-            displayName: this.user.displayName,
-            email: this.user.email,
-            phoneNumber: this.user.phoneNumber,
-            bio: this.user.bio,
-            tagline: this.user.tagline,
-            name: this.user.name,
-            language: this.user.language,
-            phoneCountryCode: this.user.phoneCountryCode,
-            phoneType: this.user.phoneType,
-            addressName: this.user.addressName,
-            addressStreet: this.user.addressStreet,
-            addressCity: this.user.addressCity,
-            addressState: this.user.addressState,
-            addressZipcode: this.user.addressZipcode,
-            addressCountry: this.user.addressCountry,
-            dateOfBirth: this.user.dateOfBirth?.toDate().toISOString(), // Make sure dateOfBirth is a Date object
-          });
-        }
-      });
+    private storeService: StoreService,
+  ) {
+    this.uid = this.activatedRoute.snapshot.paramMap.get("uid");
   }
 
   ionViewWillEnter() {
-    this.menuService.onEnter();
+    this.usersSubscription = this.storeService.users$.subscribe((users) => {
+      // console.log(uid, users);
+      this.user = users.find((user) => user.id === this.uid) ?? null;
+      if (this.user) {
+        this.loadFormData();
+      }
+    });
+    if (!this.user) {
+      // console.log("User not found in store, fetching from server");
+      this.storeService.getDocById("users", this.uid);
+    }
   }
 
-  ionViewWillLeave() {}
+  ionViewWillLeave() {
+    this.usersSubscription?.unsubscribe();
+  }
 
   onSubmit() {
     // Call the API to save changes
-    const user: Partial<AppUser> = {
-      id: this.user?.id,
-      displayName: this.editProfileForm.value.displayName || "",
-      email: this.editProfileForm.value.email || "",
-      phoneNumber: this.editProfileForm.value.phoneNumber || "",
-      bio: this.editProfileForm.value.bio || "",
-      tagline: this.editProfileForm.value.tagline || "",
-      name: this.editProfileForm.value.name || "",
-      language: this.editProfileForm.value.language || "",
-      phoneCountryCode: this.editProfileForm.value.phoneCountryCode || "",
-      phoneType: this.editProfileForm.value.phoneType || "",
-      addressName: this.editProfileForm.value.addressName || "",
-      addressStreet: this.editProfileForm.value.addressStreet || "",
-      addressCity: this.editProfileForm.value.addressCity || "",
-      addressState: this.editProfileForm.value.addressState || "",
-      addressZipcode: this.editProfileForm.value.addressZipcode || "",
-      addressCountry: this.editProfileForm.value.addressCountry || "",
-      dateOfBirth: Timestamp.fromDate(
+    if (this.user) {
+      this.user.displayName = this.editProfileForm.value.displayName || "";
+      this.user.email = this.editProfileForm.value.email || "";
+      this.user.phoneNumber = this.editProfileForm.value.phoneNumber || "";
+      this.user.bio = this.editProfileForm.value.bio || "";
+      this.user.tagline = this.editProfileForm.value.tagline || "";
+      this.user.name = this.editProfileForm.value.name || "";
+      this.user.language = this.editProfileForm.value.language || "";
+      this.user.phoneCountryCode =
+        this.editProfileForm.value.phoneCountryCode || "";
+      this.user.phoneType = this.editProfileForm.value.phoneType || "";
+      this.user.addressName = this.editProfileForm.value.addressName || "";
+      this.user.addressStreet = this.editProfileForm.value.addressStreet || "";
+      this.user.addressCity = this.editProfileForm.value.addressCity || "";
+      this.user.addressState = this.editProfileForm.value.addressState || "";
+      this.user.addressZipcode =
+        this.editProfileForm.value.addressZipcode || "";
+      this.user.addressCountry =
+        this.editProfileForm.value.addressCountry || "";
+      this.user.dateOfBirth = Timestamp.fromDate(
         new Date(this.editProfileForm.value.dateOfBirth || ""),
-      ),
-    };
+      );
+      this.user.heroImage = this.user?.heroImage ?? "assets/image/userhero.png";
+      this.user.profilePicture =
+        this.user?.profilePicture ?? "assets/avatar/male1.png";
 
-    this.userService.updateUser(user);
+      this.storeService.updateDoc("users", this.user);
+    }
   }
 
   backToProfile() {
@@ -155,4 +148,27 @@ export class EditUserProfilePage implements OnInit {
   //     return age >= minAge ? null : {ageInvalid: {value: control.value}};
   //   };
   // }
+
+  loadFormData() {
+    if (!this.user) return;
+    // Update the form with the user data
+    this.editProfileForm.patchValue({
+      displayName: this.user.displayName,
+      email: this.user.email,
+      phoneNumber: this.user.phoneNumber,
+      bio: this.user.bio,
+      tagline: this.user.tagline,
+      name: this.user.name,
+      language: this.user.language,
+      phoneCountryCode: this.user.phoneCountryCode,
+      phoneType: this.user.phoneType,
+      addressName: this.user.addressName,
+      addressStreet: this.user.addressStreet,
+      addressCity: this.user.addressCity,
+      addressState: this.user.addressState,
+      addressZipcode: this.user.addressZipcode,
+      addressCountry: this.user.addressCountry,
+      dateOfBirth: this.user.dateOfBirth?.toDate().toISOString(), // Make sure dateOfBirth is a Date object
+    });
+  }
 }

@@ -26,8 +26,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from "@angular/forms";
-import {GroupsService} from "../../../../core/services/groups.service";
 import {AppGroup} from "../../../../models/group.model";
+import {StoreService} from "../../../../core/services/store.service";
 
 @Component({
   selector: "app-create-group-modal",
@@ -46,7 +46,7 @@ export class CreateGroupModalComponent {
   constructor(
     private modalCtrl: ModalController,
     private fb: FormBuilder,
-    private groupsService: GroupsService,
+    private storeService: StoreService,
   ) {}
 
   cancel() {
@@ -58,10 +58,14 @@ export class CreateGroupModalComponent {
   }
 
   onSubmit() {
-    this.groupsService
-      .createGroup(this.groupForm.value as Partial<AppGroup>)
-      .then((groupId) => {
-        return this.modalCtrl.dismiss({groupId: groupId}, "confirm");
-      });
+    const group = this.groupForm.value as Partial<AppGroup>;
+    group.members = [];
+    group.admins = [];
+    group.logoImage = "assets/icon/favicon.png";
+    group.heroImage = "assets/image/orghero.png";
+
+    this.storeService.createDoc("groups", group).then((groupId) => {
+      this.modalCtrl.dismiss({groupId: groupId}, "confirm");
+    });
   }
 }

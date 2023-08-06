@@ -21,26 +21,39 @@ import {TestBed} from "@angular/core/testing";
 import {RouterTestingModule} from "@angular/router/testing";
 import {AppComponent} from "./app.component";
 import {of} from "rxjs";
-import {AuthService} from "./core/services/auth.service";
 import {TranslateService} from "@ngx-translate/core";
 import {TranslateModule, TranslateLoader} from "@ngx-translate/core";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {HttpClient} from "@angular/common/http";
 import {TranslateHttpLoader} from "@ngx-translate/http-loader";
+import {AuthStoreService} from "./core/services/auth-store.service";
+import {StoreService} from "./core/services/store.service";
+import {MenuService} from "./core/services/menu.service";
 
 export function createTranslateLoader(http: HttpClient) {
   return new TranslateHttpLoader(http, "./assets/i18n/", ".json");
 }
 
 describe("AppComponent", () => {
-  let service: AuthService;
+  let service: AuthStoreService;
   let authSpy: any;
+  let storeSpy: any;
+  let menuSpy: any;
 
   beforeEach(() => {
     authSpy = jasmine.createSpyObj("auth", ["onSignOut"]);
     // Mock user$ as an Observable that emits null
     authSpy.user$ = of(null);
     authSpy.onSignOut.and.returnValue(Promise.resolve());
+
+    // Create a spy for StoreService
+    storeSpy = jasmine.createSpyObj("store", ["users$", "currentUser$"]);
+    // Mock users$ and currentUser$ as Observables
+    storeSpy.users$ = of([]);
+    storeSpy.currentUser$ = of(null);
+
+    // Create a spy for MenuService
+    menuSpy = jasmine.createSpyObj("menu", ["method1", "method2"]); // replace "method1", "method2" with actual methods if any
 
     TestBed.configureTestingModule({
       imports: [
@@ -54,10 +67,15 @@ describe("AppComponent", () => {
           },
         }),
       ],
-      providers: [{provide: AuthService, useValue: authSpy}, TranslateService],
+      providers: [
+        {provide: AuthStoreService, useValue: authSpy},
+        {provide: StoreService, useValue: storeSpy}, // Provide the mock StoreService
+        {provide: MenuService, useValue: menuSpy}, // Provide the mock MenuService
+        TranslateService,
+      ],
     }).compileComponents();
 
-    service = TestBed.inject(AuthService);
+    service = TestBed.inject(AuthStoreService);
   });
 
   it("should create the app", () => {

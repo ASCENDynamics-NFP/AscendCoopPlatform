@@ -18,12 +18,12 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {TestBed} from "@angular/core/testing";
-import {AuthService} from "./auth.service";
+import {AuthStoreService} from "./auth-store.service";
 import {User} from "firebase/auth";
 import {of} from "rxjs";
 
-describe("AuthService", () => {
-  let service: AuthService;
+describe("AuthStoreService", () => {
+  let service: AuthStoreService;
   let authSpy: any;
 
   beforeEach(() => {
@@ -38,10 +38,10 @@ describe("AuthService", () => {
     authSpy.user$ = of(null);
 
     TestBed.configureTestingModule({
-      providers: [{provide: AuthService, useValue: authSpy}],
+      providers: [{provide: AuthStoreService, useValue: authSpy}],
     });
 
-    service = TestBed.inject(AuthService);
+    service = TestBed.inject(AuthStoreService);
   });
 
   it("should be created", () => {

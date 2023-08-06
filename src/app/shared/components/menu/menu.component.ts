@@ -18,14 +18,15 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {CommonModule} from "@angular/common";
-import {Component, OnInit} from "@angular/core";
+import {Component, OnDestroy, OnInit} from "@angular/core";
 import {Router, RouterLink, RouterLinkActive} from "@angular/router";
 import {IonicModule, ModalController} from "@ionic/angular";
-import {AuthService} from "../../../core/services/auth.service";
 import {User} from "firebase/auth";
 import {TranslateModule} from "@ngx-translate/core";
 import {TranslateService, LangChangeEvent} from "@ngx-translate/core";
 import {CreateGroupModalComponent} from "../../../modules/group/components/create-group-modal/create-group-modal.component";
+import {Subscription} from "rxjs";
+import {AuthStoreService} from "../../../core/services/auth-store.service";
 
 @Component({
   selector: "app-menu",
@@ -41,7 +42,8 @@ import {CreateGroupModalComponent} from "../../../modules/group/components/creat
     CreateGroupModalComponent,
   ],
 })
-export class MenuComponent implements OnInit {
+export class MenuComponent implements OnInit, OnDestroy {
+  private authSubscription: Subscription;
   user: User | null = null;
   public project: any = [];
   public guestPages: any = {user: [], group: []};
@@ -50,12 +52,12 @@ export class MenuComponent implements OnInit {
     "This modal example uses the modalController to present and dismiss modals.";
 
   constructor(
-    private authService: AuthService,
+    private authStoreService: AuthStoreService,
     private translate: TranslateService,
     private modalCtrl: ModalController,
     private router: Router,
   ) {
-    this.authService.user$.subscribe((user) => {
+    this.authSubscription = this.authStoreService.user$.subscribe((user) => {
       if (user) {
         console.log("GOT USER ON MENU");
         this.user = user;
@@ -213,7 +215,7 @@ export class MenuComponent implements OnInit {
   }
 
   signOut() {
-    this.authService.signOut();
+    this.authStoreService.signOut();
   }
 
   async handleButtonClick(buttonLink: string) {
@@ -233,5 +235,9 @@ export class MenuComponent implements OnInit {
         this.router.navigate(["group-profile/" + data.groupId]);
       }
     }
+  }
+
+  ngOnDestroy(): void {
+    this.authSubscription.unsubscribe();
   }
 }

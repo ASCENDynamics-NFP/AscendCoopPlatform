@@ -21,8 +21,6 @@ import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule, NavController} from "@ionic/angular";
-import {AuthService} from "../../../../core/services/auth.service";
-import {MenuService} from "../../../../core/services/menu.service";
 
 @Component({
   selector: "app-user-dashboard",
@@ -32,24 +30,16 @@ import {MenuService} from "../../../../core/services/menu.service";
   imports: [IonicModule, CommonModule, FormsModule],
 })
 export class UserDashboardPage implements OnInit {
-  user = this.authService.user$;
-
-  constructor(
-    private authService: AuthService,
-    private navContoller: NavController,
-    public menuService: MenuService,
-  ) {}
+  constructor(private navContoller: NavController) {}
 
   ngOnInit() {}
 
-  ionViewWillEnter() {
-    this.menuService.onEnter();
-  }
+  ionViewWillEnter() {}
 
   ionViewWillLeave() {}
 
   signOut() {
-    this.authService.signOut();
+    // this.AuthStoreService.signOut();
   }
 
   openLogin() {

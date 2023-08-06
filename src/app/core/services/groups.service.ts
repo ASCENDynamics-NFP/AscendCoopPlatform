@@ -17,6 +17,8 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+
+// DEPRECIATED FILE
 import {Injectable} from "@angular/core";
 import {FirestoreService} from "./firestore.service";
 import {AppGroup} from "../../models/group.model";
@@ -39,10 +41,10 @@ import {
   prepareDataForCreate,
   prepareDataForUpdate,
 } from "../utils/firebase.util";
-import {AuthService} from "./auth.service";
 import {LoadingController} from "@ionic/angular";
 import {ErrorHandlerService} from "./error-handler.service";
 import {SuccessHandlerService} from "./success-handler.service";
+import {AuthStoreService} from "./auth-store.service";
 
 @Injectable({
   providedIn: "root",
@@ -51,17 +53,17 @@ export class GroupsService {
   private collectionName = "groups";
 
   constructor(
-    private authService: AuthService,
+    private authStoreService: AuthStoreService,
+    private errorHandler: ErrorHandlerService,
     private firestoreService: FirestoreService,
     private loadingController: LoadingController,
-    private errorHandler: ErrorHandlerService,
     private successHandler: SuccessHandlerService,
   ) {}
 
   async createGroup(group: Partial<AppGroup>): Promise<string | null> {
     const loading = await this.loadingController.create();
     await loading.present();
-    const userId = this.authService.getCurrentUser()?.uid;
+    const userId = this.authStoreService.getCurrentUser()?.uid;
     if (userId) {
       group.admins = [userId];
       group.members = [userId];
@@ -119,7 +121,7 @@ export class GroupsService {
     await loading.present();
     await updateDoc(
       doc(this.firestoreService.firestore, this.collectionName, group.id),
-      prepareDataForUpdate(group, this.authService.getCurrentUser()?.uid),
+      prepareDataForUpdate(group, this.authStoreService.getCurrentUser()?.uid),
     )
       .then(() => {
         this.successHandler.handleSuccess(

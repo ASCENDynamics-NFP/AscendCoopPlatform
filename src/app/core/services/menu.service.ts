@@ -17,27 +17,36 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Injectable} from "@angular/core";
+import {Injectable, OnDestroy} from "@angular/core";
 import {MenuController} from "@ionic/angular";
-import {AuthService} from "./auth.service";
+import {AuthStoreService} from "./auth-store.service";
+import {Subscription} from "rxjs";
 
 @Injectable({
   providedIn: "root",
 })
-export class MenuService {
-  constructor(
-    public authService: AuthService,
-    public menuCtrl: MenuController,
-  ) {}
+export class MenuService implements OnDestroy {
+  private authSubscription: Subscription;
 
-  async onEnter() {
-    const isLoggedIn = this.authService.isLoggedIn;
-    if (isLoggedIn) {
-      await this.menuCtrl.enable(false, "guest");
-      await this.menuCtrl.enable(true, "user");
-    } else {
-      await this.menuCtrl.enable(false, "user");
-      await this.menuCtrl.enable(true, "guest");
-    }
+  constructor(
+    public authStoreService: AuthStoreService,
+    public menuCtrl: MenuController,
+  ) {
+    this.authSubscription = this.authStoreService.isLoggedIn$.subscribe(
+      async (isLoggedIn) => {
+        if (isLoggedIn) {
+          await this.menuCtrl.enable(false, "guest");
+          await this.menuCtrl.enable(true, "user");
+        } else {
+          await this.menuCtrl.enable(false, "user");
+          await this.menuCtrl.enable(true, "guest");
+        }
+      },
+    );
+  }
+
+  // Remember to unsubscribe when the service is destroyed to prevent memory leaks
+  ngOnDestroy(): void {
+    this.authSubscription.unsubscribe();
   }
 }

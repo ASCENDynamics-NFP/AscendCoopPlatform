@@ -71,6 +71,7 @@ export class FriendsPage implements OnInit {
   ionViewWillLeave() {
     this.relationshipsSubscription?.unsubscribe();
   }
+
   acceptFriendRequest(friend: any) {
     const relationship = this.relationships.find(
       (relationship) => relationship.id === friend.id,
@@ -79,6 +80,7 @@ export class FriendsPage implements OnInit {
       return;
     }
     relationship.status = "accepted";
+    this.storeService.updateDoc("relationships", relationship as Partial<any>);
     // After updating the relationship status, execute the following logic
     friend.showRemoveButton = true;
     this.currentFriendsList.push(relationship);

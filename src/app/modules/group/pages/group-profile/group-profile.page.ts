@@ -107,13 +107,21 @@ export class GroupProfilePage {
     this.groupList = [];
     this.memberList = [];
     for (let relationship of relationships) {
-      if (relationship.type === "group" && relationship.status === "accepted") {
-        this.groupList.push(relationship);
-      } else if (
-        relationship.type === "member" &&
-        relationship.status === "accepted"
+      if (
+        relationship.senderId === this.groupId ||
+        relationship.receiverId === this.groupId
       ) {
-        this.memberList.push(relationship);
+        if (
+          relationship.type === "group" &&
+          relationship.status === "accepted"
+        ) {
+          this.groupList.push(relationship);
+        } else if (
+          relationship.type === "member" &&
+          relationship.status === "accepted"
+        ) {
+          this.memberList.push(relationship);
+        }
       }
     }
   }

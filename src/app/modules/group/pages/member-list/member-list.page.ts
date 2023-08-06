@@ -17,12 +17,11 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
+import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
 
 import {ActivatedRoute, RouterModule} from "@angular/router";
-import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 import {AppGroup} from "../../../../models/group.model";
 import {User} from "firebase/auth";
 import {AppRelationship} from "../../../../models/relationship.model";
@@ -37,8 +36,10 @@ import {Subscription} from "rxjs";
   standalone: true,
   imports: [IonicModule, CommonModule, RouterModule],
 })
-export class MemberListPage implements OnInit {
+export class MemberListPage {
   private groupsSubscription: Subscription;
+  private relationshipsSubscription: Subscription | undefined;
+  relationships: Partial<AppRelationship>[] = [];
   currentMembersList: any[] = [];
   pendingMembersList: any[] = [];
   groupId: string | null = null;
@@ -47,7 +48,6 @@ export class MemberListPage implements OnInit {
   constructor(
     private activatedRoute: ActivatedRoute,
     private authStoreService: AuthStoreService,
-    private relationshipsCollectionService: RelationshipsCollectionService,
     private storeService: StoreService,
   ) {
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
@@ -57,34 +57,18 @@ export class MemberListPage implements OnInit {
     });
   }
 
-  ngOnInit() {
-    this.relationshipsCollectionService
-      .getRelationships(this.groupId)
-      .then((relationships) => {
-        for (let relationship of relationships) {
-          if (
-            relationship.type === "member" && // Needs to be type member which is a member of a group
-            relationship.status === "accepted" // Needs to be status accepted which is a current member
-          ) {
-            this.currentMembersList.push(
-              this.relationshipToMember(relationship),
-            );
-          } else if (
-            relationship.type === "member" && // Needs to be type member which is a member of a group
-            relationship.status === "pending" // Needs to be status pending which is a pending request
-          ) {
-            this.pendingMembersList.push(
-              this.relationshipToMember(relationship),
-            );
-          }
-        }
-      });
+  ionViewWillEnter() {
+    this.relationshipsSubscription = this.storeService.relationships$.subscribe(
+      (relationships) => {
+        this.relationships = relationships;
+        this.sortRelationships(relationships);
+      },
+    );
   }
-
-  ionViewWillEnter() {}
 
   ionViewWillLeave() {
     this.groupsSubscription?.unsubscribe();
+    this.relationshipsSubscription?.unsubscribe();
   }
 
   get isAdmin() {
@@ -93,42 +77,48 @@ export class MemberListPage implements OnInit {
   }
 
   acceptMemberRequest(member: any) {
-    this.relationshipsCollectionService
-      .updateRelationship(member.id, {
-        status: "accepted",
-      })
-      .then(() => {
-        member.showRemoveButton = true;
-        this.currentMembersList.push(member);
-        this.pendingMembersList = this.pendingMembersList.filter(
-          (pendingMember) => pendingMember.id !== member.id,
-        );
-      });
+    const relationship = this.relationships.find(
+      (relationship) => relationship.id === member.id,
+    );
+    if (!relationship) {
+      return;
+    }
+    relationship.status = "accepted";
+    this.storeService.updateDoc("relationships", relationship as Partial<any>);
+    // After updating the relationship status, execute the following logic
+    member.showRemoveButton = true;
+    this.currentMembersList.push(relationship);
+    this.pendingMembersList = this.pendingMembersList.filter(
+      (pendingFriend) => pendingFriend.id !== member.id,
+    );
   }
 
   rejectMemberRequest(member: any) {
-    this.relationshipsCollectionService
-      .updateRelationship(member.id, {
-        status: "rejected",
-      })
-      .then(() => {
-        this.pendingMembersList = this.pendingMembersList.filter(
-          (pendingMember) => pendingMember.id !== member.id,
-        );
-      });
+    const relationship = this.relationships.find(
+      (relationship) => relationship.id === member.id,
+    );
+    if (!relationship) {
+      return;
+    }
+    relationship.status = "rejected";
+    this.storeService.updateDoc("relationships", relationship as Partial<any>);
+    // After updating the relationship status, execute the following logic
+    this.pendingMembersList = this.pendingMembersList.filter(
+      (pendingFriend) => pendingFriend.id !== member.id,
+    );
   }
 
   removeMemberRequest(member: any) {
-    this.relationshipsCollectionService
-      .deleteRelationship(member.id)
-      .then(() => {
-        this.currentMembersList = this.currentMembersList.filter(
-          (currentMember) => currentMember.id !== member.id,
-        );
-        this.pendingMembersList = this.pendingMembersList.filter(
-          (pendingMember) => pendingMember.id !== member.id,
-        );
-      });
+    if (member.id) {
+      this.storeService.deleteDoc("relationships", member.id);
+      // After deleting the relationship, execute the following logic
+      this.currentMembersList = this.currentMembersList.filter(
+        (currentFriend) => currentFriend.id !== member.id,
+      );
+      this.pendingMembersList = this.pendingMembersList.filter(
+        (pendingFriend) => pendingFriend.id !== member.id,
+      );
+    }
   }
 
   relationshipToMember(relationship: Partial<AppRelationship>) {
@@ -158,6 +148,31 @@ export class MemberListPage implements OnInit {
         showRemoveButton: relationship.status === "accepted" && this.isAdmin,
         showAcceptRejectButtons: this.isAdmin,
       };
+    }
+  }
+
+  sortRelationships(relationships: Partial<AppRelationship>[]) {
+    this.currentMembersList = [];
+    this.pendingMembersList = [];
+
+    this.currentUser = this.authStoreService.getCurrentUser();
+    for (let relationship of relationships) {
+      if (
+        relationship.senderId === this.groupId ||
+        relationship.receiverId === this.groupId
+      ) {
+        if (
+          relationship.type === "member" && // Needs to be type member which is a member of a group
+          relationship.status === "accepted" // Needs to be status accepted which is a current member
+        ) {
+          this.currentMembersList.push(this.relationshipToMember(relationship));
+        } else if (
+          relationship.type === "member" && // Needs to be type member which is a member of a group
+          relationship.status === "pending" // Needs to be status pending which is a pending request
+        ) {
+          this.pendingMembersList.push(this.relationshipToMember(relationship));
+        }
+      }
     }
   }
 }

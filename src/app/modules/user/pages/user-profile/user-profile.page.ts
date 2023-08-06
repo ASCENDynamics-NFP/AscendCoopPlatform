@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnDestroy, OnInit} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
@@ -76,24 +76,29 @@ export class UserProfilePage implements OnInit {
   }
 
   ionViewWillEnter() {
+    this.initiateSubscribers();
+  }
+
+  ionViewWillLeave() {
+    this.relationshipsSubscription?.unsubscribe();
+    this.usersSubscription?.unsubscribe();
+  }
+
+  initiateSubscribers() {
+    // Subscribe to users$ observable
     this.usersSubscription = this.storeService.users$.subscribe((users) => {
-      // console.log(uid, users);
       this.user = users.find((user) => user.id === this.uid) ?? null;
       if (!this.user) {
         console.log("User not found in store, fetching from server");
         this.storeService.getDocById("users", this.uid);
       }
     });
+    // Subscribe to relationships$ observable
     this.relationshipsSubscription = this.storeService.relationships$.subscribe(
       (relationships) => {
         this.sortRelationships(relationships);
       },
     );
-  }
-
-  ionViewWillLeave() {
-    this.relationshipsSubscription?.unsubscribe();
-    this.usersSubscription?.unsubscribe();
   }
 
   sortRelationships(relationships: Partial<AppRelationship>[]) {

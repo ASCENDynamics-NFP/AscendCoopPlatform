@@ -26,7 +26,6 @@ import {AppGroup} from "../../../../models/group.model";
 import {DetailsComponent} from "./components/details/details.component";
 import {HeroComponent} from "./components/hero/hero.component";
 import {AppRelationship} from "../../../../models/relationship.model";
-import {RelationshipsCollectionService} from "../../../../core/services/relationships-collection.service";
 import {MemberListComponent} from "./components/member-list/member-list.component";
 import {GroupListComponent} from "./components/group-list/group-list.component";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
@@ -50,10 +49,11 @@ import {StoreService} from "../../../../core/services/store.service";
 })
 export class GroupProfilePage {
   private groupsSubscription: Subscription | undefined;
+  private relationshipsSubscription: Subscription | undefined;
   groupId: string | null = "";
   group: Partial<AppGroup> | null = {};
-  memberList: AppRelationship[] = [];
-  groupList: AppRelationship[] = [];
+  memberList: Partial<AppRelationship>[] = [];
+  groupList: Partial<AppRelationship>[] = [];
   isAdmin: boolean = false;
   isMember: boolean = false;
   isPendingMember: boolean = false;
@@ -61,38 +61,22 @@ export class GroupProfilePage {
     private authStoreService: AuthStoreService,
     private route: ActivatedRoute,
     private storeService: StoreService,
-    private relationshipsCollectionService: RelationshipsCollectionService,
   ) {
     this.groupId = this.route.snapshot.paramMap.get("groupId");
-    this.relationshipsCollectionService
-      .getRelationships(this.groupId)
-      .then((relationships) => {
-        for (let relationship of relationships) {
-          if (
-            relationship.type === "group" &&
-            relationship.status === "accepted"
-          ) {
-            this.groupList.push(relationship);
-          } else if (
-            relationship.type === "member" &&
-            relationship.status === "accepted"
-          ) {
-            this.memberList.push(relationship);
-          }
-        }
-      });
   }
 
   ionViewWillEnter() {
-    this.getGroup();
+    this.initiateSubscribers();
   }
 
   ionViewWillLeave() {
     // Unsubscribe from the groups$ observable when the component is destroyed
     this.groupsSubscription?.unsubscribe();
+    this.relationshipsSubscription?.unsubscribe();
   }
 
-  getGroup() {
+  initiateSubscribers() {
+    // Subscribe to the groups$ observable
     this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
       this.group = groups.find((group) => group.id === this.groupId) || null;
       if (!this.group) {
@@ -111,5 +95,26 @@ export class GroupProfilePage {
           : false;
       }
     });
+    // Subscribe to the groups$ observable
+    this.relationshipsSubscription = this.storeService.relationships$.subscribe(
+      (relationships) => {
+        this.sortRelationships(relationships);
+      },
+    );
+  }
+
+  sortRelationships(relationships: Partial<AppRelationship>[]) {
+    this.groupList = [];
+    this.memberList = [];
+    for (let relationship of relationships) {
+      if (relationship.type === "group" && relationship.status === "accepted") {
+        this.groupList.push(relationship);
+      } else if (
+        relationship.type === "member" &&
+        relationship.status === "accepted"
+      ) {
+        this.memberList.push(relationship);
+      }
+    }
   }
 }

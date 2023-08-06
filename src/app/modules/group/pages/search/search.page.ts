@@ -56,9 +56,13 @@ export class SearchPage {
   ionViewWillEnter() {
     this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
       if (groups) {
-        this.groups = groups.filter((group) =>
-          group.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
-        );
+        this.groups = groups;
+        this.searchResults = this.groups;
+        if (this.searchTerm) {
+          this.searchResults = groups.filter((group) =>
+            group.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
+          );
+        }
       }
     });
   }
@@ -101,9 +105,6 @@ export class SearchPage {
     };
 
     this.storeService.createDoc("relationships", relationship).then(() => {
-      // Add the new relationship to the state
-      this.storeService.addDocToState("relationships", relationship);
-
       // Update the group's pendingMembers in the state
       if (!group.pendingMembers) {
         group.pendingMembers = [];

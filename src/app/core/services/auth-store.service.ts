@@ -118,13 +118,14 @@ export class AuthStoreService {
         const timestamp = Timestamp.now();
         await this.usersService.createUser({
           email: email,
-          displayName: "",
-          profilePicture: "",
+          displayName: "Volunteer",
+          profilePicture: "assets/avatar/male1.png",
           emailVerified: false,
-          bio: "",
+          bio: "I enjoy helping others.",
           lastLoginAt: timestamp,
-          name: "",
+          name: "Volunteer",
           id: result.user.uid,
+          heroImage: "assets/image/user2hero.png",
         });
 
         this.successHandler.handleSuccess(
@@ -317,14 +318,19 @@ export class AuthStoreService {
     }
     this.usersService.createUser({
       email: record.user.email,
-      displayName: record.user.displayName ? record.user.displayName : "",
-      profilePicture: record.user.photoURL ? record.user.photoURL : "",
+      displayName: record.user.displayName
+        ? record.user.displayName
+        : "Volunteer",
+      profilePicture: record.user.photoURL
+        ? record.user.photoURL
+        : "assets/avatar/male1.png",
       emailVerified: record.user.emailVerified,
       bio: "I enjoy volunteering and helping others.",
       lastLoginAt: Timestamp.now(),
-      name: record?.user?.displayName ? record.user.displayName : "",
+      name: record?.user?.displayName ? record.user.displayName : "Volunteer",
       id: record.user.uid,
       language: "en",
+      heroImage: "assets/image/user2hero.png",
     });
   }
 }

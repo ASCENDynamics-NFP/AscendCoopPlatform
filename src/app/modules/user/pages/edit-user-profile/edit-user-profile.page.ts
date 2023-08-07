@@ -46,11 +46,11 @@ export class EditUserProfilePage {
   user: Partial<AppUser> | null = null; // define your user here
 
   editProfileForm = this.fb.group({
-    displayName: ["", Validators.required],
+    displayName: [""],
     email: ["", [Validators.required, Validators.email]],
     bio: [""],
     tagline: [""],
-    name: [""],
+    name: ["", Validators.required],
     language: [""],
     phoneCountryCode: ["", [Validators.pattern("^[0-9]*$")]],
     phoneNumber: ["", [Validators.pattern("^\\d{10}$")]],
@@ -78,7 +78,6 @@ export class EditUserProfilePage {
 
   ionViewWillEnter() {
     this.usersSubscription = this.storeService.users$.subscribe((users) => {
-      // console.log(uid, users);
       this.user = users.find((user) => user.id === this.uid) ?? null;
       if (this.user) {
         this.loadFormData();
@@ -97,12 +96,12 @@ export class EditUserProfilePage {
   onSubmit() {
     // Call the API to save changes
     if (this.user) {
-      this.user.displayName = this.editProfileForm.value.displayName || "";
       this.user.email = this.editProfileForm.value.email || "";
       this.user.phoneNumber = this.editProfileForm.value.phoneNumber || "";
       this.user.bio = this.editProfileForm.value.bio || "";
       this.user.tagline = this.editProfileForm.value.tagline || "";
       this.user.name = this.editProfileForm.value.name || "";
+      this.user.displayName = this.editProfileForm.value.name || "";
       this.user.language = this.editProfileForm.value.language || "";
       this.user.phoneCountryCode =
         this.editProfileForm.value.phoneCountryCode || "";
@@ -153,7 +152,7 @@ export class EditUserProfilePage {
     if (!this.user) return;
     // Update the form with the user data
     this.editProfileForm.patchValue({
-      displayName: this.user.displayName,
+      displayName: this.user.name,
       email: this.user.email,
       phoneNumber: this.user.phoneNumber,
       bio: this.user.bio,

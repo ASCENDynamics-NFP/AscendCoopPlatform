@@ -34,6 +34,9 @@ import {AppRelationship} from "../../../../models/relationship.model";
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
+/**
+ * Represents a page where users can manage their friends.
+ */
 export class FriendsPage implements OnInit {
   private relationshipsSubscription: Subscription | undefined;
   relationships: Partial<AppRelationship>[] = [];
@@ -42,6 +45,12 @@ export class FriendsPage implements OnInit {
   userId: string | null = null;
   currentUser: any;
 
+  /**
+   * Constructs the FriendsPage.
+   * @param {ActivatedRoute} activatedRoute - The activated route.
+   * @param {AuthStoreService} authStoreService - The authentication store service.
+   * @param {StoreService} storeService - The store service.
+   */
   constructor(
     private activatedRoute: ActivatedRoute,
     private authStoreService: AuthStoreService,
@@ -50,6 +59,9 @@ export class FriendsPage implements OnInit {
     this.userId = this.activatedRoute.snapshot.paramMap.get("uid");
   }
 
+  /**
+   * Lifecycle hook that is called after data-bound properties are initialized. Ran once per per page load.
+   */
   ngOnInit() {
     if (this.userId) {
       this.storeService.getDocsWithSenderOrRecieverId(
@@ -59,6 +71,9 @@ export class FriendsPage implements OnInit {
     }
   }
 
+  /**
+   * Lifecycle hook that is called when the page is about to enter.
+   */
   ionViewWillEnter() {
     this.relationshipsSubscription = this.storeService.relationships$.subscribe(
       (relationships) => {
@@ -68,13 +83,20 @@ export class FriendsPage implements OnInit {
     );
   }
 
+  /**
+   * Lifecycle hook that is called when the page is about to leave.
+   */
   ionViewWillLeave() {
     this.relationshipsSubscription?.unsubscribe();
   }
 
-  acceptFriendRequest(friend: any) {
+  /**
+   * Accepts a friend request.
+   * @param {any} request - The friend request to accept.
+   */
+  acceptFriendRequest(request: any) {
     const relationship = this.relationships.find(
-      (relationship) => relationship.id === friend.id,
+      (relationship) => relationship.id === request.id,
     );
     if (!relationship) {
       return;
@@ -82,49 +104,91 @@ export class FriendsPage implements OnInit {
     relationship.status = "accepted";
     this.storeService.updateDoc("relationships", relationship as Partial<any>);
     // After updating the relationship status, execute the following logic
-    friend.showRemoveButton = true;
-    this.currentFriendsList.push(relationship);
-    this.pendingFriendsList = this.pendingFriendsList.filter(
-      (pendingFriend) => pendingFriend.id !== friend.id,
-    );
+    request.showRemoveButton = true;
+    this.addFriend(request);
   }
 
-  rejectFriendRequest(friend: any) {
+  /**
+   * Rejects a friend request.
+   * @param {any} request - The friend request to reject.
+   */
+  rejectFriendRequest(request: any) {
     const relationship = this.relationships.find(
-      (relationship) => relationship.id === friend.id,
+      (relationship) => relationship.id === request.friendId,
     );
     if (!relationship) {
       return;
     }
     relationship.status = "rejected";
     this.storeService.updateDoc("relationships", relationship as Partial<any>);
-    // After updating the relationship status, execute the following logic
-    this.pendingFriendsList = this.pendingFriendsList.filter(
-      (pendingFriend) => pendingFriend.id !== friend.id,
-    );
+    // After updating the relationship status, remove the friend from the pendingFriends list
+    this.removeFriend(request);
   }
 
-  removeFriendRequest(friend: any) {
-    if (friend.id) {
-      this.storeService.deleteDoc("relationships", friend.id);
-      // After deleting the relationship, execute the following logic
-      this.currentFriendsList = this.currentFriendsList.filter(
-        (currentFriend) => currentFriend.id !== friend.id,
-      );
-      this.pendingFriendsList = this.pendingFriendsList.filter(
-        (pendingFriend) => pendingFriend.id !== friend.id,
-      );
+  /**
+   * Removes a friend request.
+   * @param {any} request - The friend request to remove.
+   */
+  removeFriendRequest(request: any) {
+    if (request.friendId) {
+      this.storeService.deleteDoc("relationships", request.relationshipId);
+      // After deleting the relationship, update the user to remove the user from the friends and pendingFriends list
+      this.removeFriend(request);
     }
   }
 
+  /**
+   * Adds a friend to the user's friend list and removes the friend from the pendingFriends list.
+   * @param {any} request - The friend request to process.
+   */
+  addFriend(request: any) {
+    const updatedDoc = this.storeService
+      .getCollection("users")
+      .find((u) => u["id"] === request.friendId);
+    if (updatedDoc) {
+      updatedDoc["friends"] = updatedDoc["friends"].push(this.userId);
+      updatedDoc["pendingFriends"] = updatedDoc["pendingFriends"].filter(
+        (pendingFriends: string) => pendingFriends !== this.userId,
+      );
+      // Use addDocToState to update the state
+      this.storeService.addDocToState("users", updatedDoc);
+    }
+  }
+
+  /**
+   * Removes a friend from the user's friend list and removes the friend from the pendingFriends list.
+   * @param {any} request - The friend request to process.
+   */
+  removeFriend(request: any) {
+    const updatedDoc = this.storeService
+      .getCollection("users")
+      .find((u) => u["id"] === request.friendId);
+    if (updatedDoc) {
+      updatedDoc["friends"] = updatedDoc["friends"].filter(
+        (friend: string) => friend !== this.userId,
+      );
+      updatedDoc["pendingFriends"] = updatedDoc["pendingFriends"].filter(
+        (pendingFriends: string) => pendingFriends !== this.userId,
+      );
+      // Use addDocToState to update the state
+      this.storeService.addDocToState("users", updatedDoc);
+    }
+  }
+
+  /**
+   * Converts a relationship object to a friend object.
+   * @param {any} relationship - The relationship to convert.
+   * @returns {any} - The converted friend object.
+   */
   relationshipToFriend(relationship: any) {
     this.userId = this.userId ? this.userId : "";
     const isCurrentUser = this.currentUser?.uid === this.userId;
     if (relationship.senderId === this.userId) {
       // my requests
       return {
-        id: relationship.id,
-        userId: relationship.receiverId,
+        relationshipId: relationship.id,
+        friendId: relationship.receiverId,
+        userId: relationship.senderId,
         name: relationship.receiverName,
         image: relationship.receiverImage,
         tagline: relationship.receiverTagline,
@@ -135,8 +199,9 @@ export class FriendsPage implements OnInit {
     } else {
       // other's requests
       return {
-        id: relationship.id,
-        userId: relationship.senderId,
+        relationshipId: relationship.id,
+        friendId: relationship.senderId,
+        userId: relationship.receiverId,
         name: relationship.senderName,
         image: relationship.senderImage,
         tagline: relationship.senderTagline,
@@ -147,6 +212,10 @@ export class FriendsPage implements OnInit {
     }
   }
 
+  /**
+   * Sorts relationships into current friends and pending friends lists.
+   * @param {Partial<AppRelationship>[]} relationships - The relationships to sort.
+   */
   sortRelationships(relationships: Partial<AppRelationship>[]) {
     this.currentFriendsList = [];
     this.pendingFriendsList = [];

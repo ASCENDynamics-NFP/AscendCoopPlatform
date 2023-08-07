@@ -38,6 +38,7 @@ import {
   DocumentSnapshot,
 } from "firebase/firestore";
 import {BehaviorSubject, Observable, combineLatest, map, switchMap} from "rxjs";
+import {ErrorHandlerService} from "./error-handler.service";
 
 @Injectable({
   providedIn: "root",
@@ -68,9 +69,8 @@ export class FirestoreService {
     {collectionName: string; ids: string[]}[]
   >([]);
   firestore: Firestore;
-  errorHandler: any;
 
-  constructor() {
+  constructor(private errorHandler: ErrorHandlerService) {
     this.firestore = getFirestore();
   }
 

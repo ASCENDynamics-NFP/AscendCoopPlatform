@@ -42,7 +42,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-list>
             <ion-item
               *ngFor="let friend of currentFriendsList; let i = index"
-              routerLink="/user-profile/{{friend['userId']}}"
+              routerLink="/user-profile/{{friend['friendId']}}"
               button
             >
               <ion-thumbnail slot="start">
@@ -78,7 +78,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-list>
             <ion-item
               *ngFor="let friend of pendingFriendsList; let i = index"
-              routerLink="/user-profile/{{friend['userId']}}"
+              routerLink="/user-profile/{{friend['friendId']}}"
               button
             >
               <ion-thumbnail slot="start">

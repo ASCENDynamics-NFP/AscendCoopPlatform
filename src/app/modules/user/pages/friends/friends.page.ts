@@ -96,7 +96,7 @@ export class FriendsPage implements OnInit {
    */
   acceptFriendRequest(request: any) {
     const relationship = this.relationships.find(
-      (relationship) => relationship.id === request.id,
+      (relationship) => relationship.id === request.relationshipId,
     );
     if (!relationship) {
       return;
@@ -104,7 +104,6 @@ export class FriendsPage implements OnInit {
     relationship.status = "accepted";
     this.storeService.updateDoc("relationships", relationship as Partial<any>);
     // After updating the relationship status, execute the following logic
-    request.showRemoveButton = true;
     this.addFriend(request);
   }
 
@@ -114,7 +113,7 @@ export class FriendsPage implements OnInit {
    */
   rejectFriendRequest(request: any) {
     const relationship = this.relationships.find(
-      (relationship) => relationship.id === request.friendId,
+      (relationship) => relationship.id === request.relationshipId,
     );
     if (!relationship) {
       return;

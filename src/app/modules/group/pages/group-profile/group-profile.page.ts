@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
@@ -47,7 +47,7 @@ import {StoreService} from "../../../../core/services/store.service";
     GroupListComponent,
   ],
 })
-export class GroupProfilePage {
+export class GroupProfilePage implements OnInit {
   private groupsSubscription: Subscription | undefined;
   private relationshipsSubscription: Subscription | undefined;
   groupId: string | null = "";
@@ -63,6 +63,15 @@ export class GroupProfilePage {
     private storeService: StoreService,
   ) {
     this.groupId = this.route.snapshot.paramMap.get("groupId");
+  }
+
+  ngOnInit() {
+    if (this.groupId)
+      // Pulls relationships from the database
+      this.storeService.getDocsWithSenderOrRecieverId(
+        "relationships",
+        this.groupId,
+      );
   }
 
   ionViewWillEnter() {

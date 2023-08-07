@@ -38,7 +38,6 @@ import {
   DocumentSnapshot,
 } from "firebase/firestore";
 import {BehaviorSubject, Observable, combineLatest, map, switchMap} from "rxjs";
-import {AppGroup} from "../../models/group.model";
 
 @Injectable({
   providedIn: "root",
@@ -65,7 +64,7 @@ export class FirestoreService {
    * @private
    * @type {BehaviorSubject<{collectionName: string; ids: string[]}[]>}
    */
-  private collectionsSubject = new BehaviorSubject<
+  private collectionIdsSubject = new BehaviorSubject<
     {collectionName: string; ids: string[]}[]
   >([]);
   firestore: Firestore;
@@ -75,6 +74,131 @@ export class FirestoreService {
     this.firestore = getFirestore();
   }
 
+  // Obserable Logic (Start) //
+  /**
+   * Returns the BehaviorSubject that holds the collections and ids to listen to.
+   * @returns {BehaviorSubject<{collectionName: string; ids: string[]}[]>} - The BehaviorSubject that holds the collections and ids to listen to.
+   * @memberof FirestoreService
+   * @example
+   * const collectionIdsSubject = firestoreService.getCollectionsSubject();
+   * collectionIdsSubject.next([
+   *  {
+   *   collectionName: "users",
+   *  ids: ["user1", "user2"],
+   * },
+   * {
+   *  collectionName: "groups",
+   * ids: ["group"],
+   * },
+   * ]);
+   * // This will cause the FirestoreService to listen to the documents with ids "user1" and "user2" in the "users" collection, and the document with id "group" in the "groups" collection.
+   * // Whenever any of these documents change, the FirestoreService will emit the new data of all the documents.
+   * // If the documents don't exist, the FirestoreService will emit null.
+   * // If the documents are deleted, the FirestoreService will emit null.
+   * // If the documents are created, the FirestoreService will emit the new data of all the documents.
+   * // If the documents are updated, the FirestoreService will emit the new data of all the documents.
+   * // If the documents are updated, but the new data is the same as the old data, the FirestoreService will not emit anything.
+   */
+  getCollectionsSubject() {
+    return this.collectionIdsSubject;
+  }
+
+  /**
+   * Listen to multiple documents in multiple Firestore collections.
+   * The documents and collections to listen to are determined by the value of collectionIdsSubject.
+   * @param {BehaviorSubject<Object[]>} collectionIdsSubject - A BehaviorSubject of an array of objects, each containing the name of the collection and the ids of the documents to listen to.
+   * @returns {Observable<DocumentData[]>} - An Observable that emits the data of the documents whenever any of them change.
+   */
+  listenToMultipleDocumentsInMultipleCollections(
+    collectionIdsSubject: BehaviorSubject<
+      {collectionName: string; ids: string[]}[]
+    >,
+  ): Observable<DocumentData[]> {
+    return collectionIdsSubject.pipe(
+      switchMap((collections) => {
+        return combineLatest(
+          collections.map((collection) => {
+            const docObservables = collection.ids.map((id) => {
+              return new Observable<DocumentData>((subscriber) => {
+                const unsubscribe = onSnapshot(
+                  doc(this.firestore, collection.collectionName, id),
+                  (docSnapshot) => {
+                    // Include the id in the emitted data
+                    const data = docSnapshot.data();
+                    if (data) {
+                      data["id"] = docSnapshot.id;
+                    }
+                    subscriber.next(data);
+                  },
+                  (error) => {
+                    subscriber.error(error);
+                  },
+                );
+
+                return unsubscribe; // This function will be called when the Observable is unsubscribed from
+              });
+            });
+
+            return combineLatest(docObservables);
+          }),
+        ).pipe(
+          map((arrays) => arrays.flat()), // Flatten the array of arrays into a single array
+        );
+      }),
+    );
+  }
+
+  /**
+   * Adds an id to the collection with the given name in the collectionIdsSubject.
+   * @param collectionName - The name of the collection to add the id to.
+   * @param id - The id to add to the collection.
+   */
+  addIdToCollection(collectionName: string, id: string): void {
+    const currentCollections = this.collectionIdsSubject.getValue();
+    const collectionIndex = currentCollections.findIndex(
+      (collection) => collection.collectionName === collectionName,
+    );
+    if (collectionIndex === -1) {
+      currentCollections.push({collectionName, ids: [id]});
+    } else {
+      // Check if id already exists in the array
+      if (!currentCollections[collectionIndex].ids.includes(id)) {
+        currentCollections[collectionIndex].ids.push(id);
+      }
+    }
+    this.collectionIdsSubject.next(currentCollections);
+  }
+
+  /**
+   * Removes an id from the collection with the given name in the collectionIdsSubject.
+   * @param collectionName - The name of the collection to remove the id from.
+   * @param id - The id to remove from the collection.
+   */
+  removeIdFromCollection(collectionName: string, id: string): void {
+    const currentCollections = this.collectionIdsSubject.getValue();
+    const collectionIndex = currentCollections.findIndex(
+      (collection) => collection.collectionName === collectionName,
+    );
+    if (collectionIndex !== -1) {
+      // Check if id exists in the array
+      if (currentCollections[collectionIndex].ids.includes(id)) {
+        currentCollections[collectionIndex].ids = currentCollections[
+          collectionIndex
+        ].ids.filter((currentId) => currentId !== id);
+        this.collectionIdsSubject.next(currentCollections);
+      }
+    }
+  }
+  // Obserable Logic (End) //
+
+  // Firebase Query Logic (Start) //
+  /**
+   * Retrieves a specific document from a given collection.
+   *
+   * @param {string} collectionName - Name of the collection.
+   * @param {string} documentId - ID of the document to retrieve.
+   * @returns {Promise<any | null>} - Returns the document data if found, otherwise null.
+   */
   async getDocument(collectionName: string, documentId: string) {
     try {
       const documentRef = doc(this.firestore, collectionName, documentId);
@@ -94,6 +218,13 @@ export class FirestoreService {
     }
   }
 
+  /**
+   * Adds a new document to a specified collection.
+   *
+   * @param {string} collectionName - Name of the collection.
+   * @param {any} documentData - Data of the document to add.
+   * @returns {Promise<string | null>} - Returns the ID of the added document, otherwise null.
+   */
   async addDocument(
     collectionName: string,
     documentData: any,
@@ -109,6 +240,13 @@ export class FirestoreService {
     }
   }
 
+  /**
+   * Updates a specific document in a given collection.
+   *
+   * @param {string} collectionName - Name of the collection.
+   * @param {string} documentId - ID of the document to update.
+   * @param {any} updatedData - New data to update the document with.
+   */
   async updateDocument(
     collectionName: string,
     documentId: string,
@@ -122,6 +260,12 @@ export class FirestoreService {
     }
   }
 
+  /**
+   * Deletes a specific document from a given collection.
+   *
+   * @param {string} collectionName - Name of the collection.
+   * @param {string} documentId - ID of the document to delete.
+   */
   async deleteDocument(collectionName: string, documentId: string) {
     try {
       const documentRef = doc(this.firestore, collectionName, documentId);
@@ -131,6 +275,15 @@ export class FirestoreService {
     }
   }
 
+  /**
+   * Retrieves documents from a collection based on a specified condition.
+   *
+   * @param {string} collectionName - Name of the collection.
+   * @param {string} field - Field name to apply the condition on.
+   * @param {any} condition - Condition to apply.
+   * @param {any} value - Value to match against.
+   * @returns {Promise<DocumentData[] | null>} - Returns an array of documents that match the condition, otherwise null.
+   */
   getCollectionWithCondition(
     collectionName: string,
     field: string,
@@ -158,6 +311,13 @@ export class FirestoreService {
       });
   }
 
+  /**
+   * Searches for documents in a collection based on a name field.
+   *
+   * @param {string} collectionName - Name of the collection.
+   * @param {string} searchTerm - Term to search for.
+   * @returns {Promise<DocumentData[] | null>} - Returns an array of documents that match the search term, otherwise null.
+   */
   searchByName(
     collectionName: string,
     searchTerm: string,
@@ -204,6 +364,13 @@ export class FirestoreService {
       });
   }
 
+  /**
+   * Retrieves documents from a collection where the sender or receiver ID matches the provided ID.
+   *
+   * @param {string} collectionName - Name of the collection.
+   * @param {string | null} senderOrReceiverId - ID to match against sender or receiver fields.
+   * @returns {Promise<Partial<any>[]>} - Returns an array of documents that match the provided ID.
+   */
   async getDocsWithSenderOrRecieverId(
     collectionName: string,
     senderOrReceiverId: string | null,
@@ -235,98 +402,15 @@ export class FirestoreService {
         return [];
       });
   }
+  // Firebase Query Logic (Ends) //
 
-  getCollectionsSubject() {
-    return this.collectionsSubject;
-  }
-
+  // Helper Functions (Start) //
   /**
-   * Listen to multiple documents in multiple Firestore collections.
-   * The documents and collections to listen to are determined by the value of collectionsSubject.
-   * @param {BehaviorSubject<Object[]>} collectionsSubject - A BehaviorSubject of an array of objects, each containing the name of the collection and the ids of the documents to listen to.
-   * @returns {Observable<DocumentData[]>} - An Observable that emits the data of the documents whenever any of them change.
+   * Processes Firebase data and returns it in a structured format.
+   *
+   * @param {QuerySnapshot | DocumentSnapshot} querySnapshot - Snapshot of the data from Firebase.
+   * @returns {any} - Returns an array of documents if multiple documents are found, a single document if one is found, or null if none are found.
    */
-  listenToMultipleDocumentsInMultipleCollections(
-    collectionsSubject: BehaviorSubject<
-      {collectionName: string; ids: string[]}[]
-    >,
-  ): Observable<DocumentData[]> {
-    return collectionsSubject.pipe(
-      switchMap((collections) => {
-        return combineLatest(
-          collections.map((collection) => {
-            const docObservables = collection.ids.map((id) => {
-              return new Observable<DocumentData>((subscriber) => {
-                const unsubscribe = onSnapshot(
-                  doc(this.firestore, collection.collectionName, id),
-                  (docSnapshot) => {
-                    // Include the id in the emitted data
-                    const data = docSnapshot.data();
-                    if (data) {
-                      data["id"] = docSnapshot.id;
-                    }
-                    subscriber.next(data);
-                  },
-                  (error) => {
-                    subscriber.error(error);
-                  },
-                );
-
-                return unsubscribe; // This function will be called when the Observable is unsubscribed from
-              });
-            });
-
-            return combineLatest(docObservables);
-          }),
-        ).pipe(
-          map((arrays) => arrays.flat()), // Flatten the array of arrays into a single array
-        );
-      }),
-    );
-  }
-
-  /**
-   * Adds an id to the collection with the given name in the collectionsSubject.
-   * @param collectionName - The name of the collection to add the id to.
-   * @param id - The id to add to the collection.
-   */
-  addIdToCollection(collectionName: string, id: string): void {
-    const currentCollections = this.collectionsSubject.getValue();
-    const collectionIndex = currentCollections.findIndex(
-      (collection) => collection.collectionName === collectionName,
-    );
-    if (collectionIndex === -1) {
-      currentCollections.push({collectionName, ids: [id]});
-    } else {
-      // Check if id already exists in the array
-      if (!currentCollections[collectionIndex].ids.includes(id)) {
-        currentCollections[collectionIndex].ids.push(id);
-      }
-    }
-    this.collectionsSubject.next(currentCollections);
-  }
-
-  /**
-   * Removes an id from the collection with the given name in the collectionsSubject.
-   * @param collectionName - The name of the collection to remove the id from.
-   * @param id - The id to remove from the collection.
-   */
-  removeIdFromCollection(collectionName: string, id: string): void {
-    const currentCollections = this.collectionsSubject.getValue();
-    const collectionIndex = currentCollections.findIndex(
-      (collection) => collection.collectionName === collectionName,
-    );
-    if (collectionIndex !== -1) {
-      // Check if id exists in the array
-      if (currentCollections[collectionIndex].ids.includes(id)) {
-        currentCollections[collectionIndex].ids = currentCollections[
-          collectionIndex
-        ].ids.filter((currentId) => currentId !== id);
-        this.collectionsSubject.next(currentCollections);
-      }
-    }
-  }
-
   processFirebaseData(querySnapshot: QuerySnapshot | DocumentSnapshot): any {
     if (querySnapshot instanceof QuerySnapshot) {
       // Processing for array of documents
@@ -347,4 +431,5 @@ export class FirestoreService {
     }
     return null;
   }
+  // Helper Functions (End) //
 }

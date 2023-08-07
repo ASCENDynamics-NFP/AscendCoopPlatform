@@ -55,9 +55,9 @@ export class PartnersPage {
     );
   }
 
-  acceptGroupRequest(group: any) {
+  acceptPartnerRequest(request: any) {
     const relationship = this.relationships.find(
-      (relationship) => relationship.id === group.id,
+      (relationship) => relationship.id === request.relationshipId,
     );
     if (!relationship) {
       return;
@@ -65,16 +65,13 @@ export class PartnersPage {
     relationship.status = "accepted";
     this.storeService.updateDoc("relationships", relationship as Partial<any>);
     // After updating the relationship status, execute the following logic
-    group.showRemoveButton = true;
-    this.currentGroupsList.push(relationship);
-    this.pendingGroupsList = this.pendingGroupsList.filter(
-      (pendingFriend) => pendingFriend.id !== group.id,
-    );
+
+    this.addPartner(request);
   }
 
-  rejectGroupRequest(group: any) {
+  rejectPartnerRequest(request: any) {
     const relationship = this.relationships.find(
-      (relationship) => relationship.id === group.id,
+      (relationship) => relationship.id === request.relationshipId,
     );
     if (!relationship) {
       return;
@@ -82,21 +79,84 @@ export class PartnersPage {
     relationship.status = "rejected";
     this.storeService.updateDoc("relationships", relationship as Partial<any>);
     // After updating the relationship status, execute the following logic
-    this.pendingGroupsList = this.pendingGroupsList.filter(
-      (pendingFriend) => pendingFriend.id !== group.id,
-    );
+    this.removePartner(request);
   }
 
-  removeGroupRequest(group: any) {
-    if (group.id) {
-      this.storeService.deleteDoc("relationships", group.id);
+  /**
+   * Removes a partner request.
+   * @param {any} request - The partner request to remove.
+   */
+  removePartnerRequest(request: any) {
+    if (request.relationshipId) {
+      this.storeService.deleteDoc("relationships", request.relationshipId);
       // After deleting the relationship, execute the following logic
-      this.currentGroupsList = this.currentGroupsList.filter(
-        (currentFriend) => currentFriend.id !== group.id,
+      this.removePartner(request);
+    }
+  }
+
+  addPartner(request: any) {
+    // Add the partner to the group's groups lists
+    const updatedGroupDoc = this.storeService
+      .getCollection("groups")
+      .find((g) => g["id"] === request.groupId);
+    if (updatedGroupDoc) {
+      updatedGroupDoc["groups"] = updatedGroupDoc["groups"].push(
+        request.partnerGroupId,
       );
-      this.pendingGroupsList = this.pendingGroupsList.filter(
-        (pendingFriend) => pendingFriend.id !== group.id,
+      updatedGroupDoc["pendingGroups"] = updatedGroupDoc[
+        "pendingGroups"
+      ].filter((pendingMember: string) => pendingMember !== request.memberId);
+      // Use addDocToState to update the state
+      this.storeService.addDocToState("groups", updatedGroupDoc);
+    }
+    // Add the group to the partner's groups lists
+    const updatedPartnerDoc = this.storeService
+      .getCollection("groups")
+      .find((g) => g["id"] === request.partnerGroupId);
+    if (updatedPartnerDoc) {
+      updatedPartnerDoc["groups"] = updatedPartnerDoc["groups"].push(
+        request.groupId,
       );
+      updatedPartnerDoc["pendingGroups"] = updatedPartnerDoc[
+        "pendingGroups"
+      ].filter((pendingGroup: string) => pendingGroup !== request.groupId);
+      // Use addDocToState to update the state
+      this.storeService.addDocToState("groups", updatedPartnerDoc);
+    }
+  }
+
+  /**
+   * Removes a partner from the group.
+   * @param {any} request - The partner request to process.
+   */
+  removePartner(request: any) {
+    // Remove the group from the partner's groups lists
+    const updatedPartnerDoc = this.storeService
+      .getCollection("users")
+      .find((pg) => pg["id"] === request.partnerGroupId);
+    if (updatedPartnerDoc) {
+      updatedPartnerDoc["groups"] = updatedPartnerDoc["groups"].filter(
+        (group: string) => group !== this.groupId,
+      );
+      updatedPartnerDoc["pendingGroups"] = updatedPartnerDoc[
+        "pendingGroups"
+      ].filter((pendingGroup: string) => pendingGroup !== this.groupId);
+      // Use addDocToState to update the state
+      this.storeService.addDocToState("groups", updatedPartnerDoc);
+    }
+    // Remove the partner from the group's groups lists
+    const updatedGroupDoc = this.storeService
+      .getCollection("groups")
+      .find((g) => g["id"] === request.groupId);
+    if (updatedGroupDoc) {
+      updatedGroupDoc["groups"] = updatedGroupDoc["groups"].filter(
+        (member: string) => member !== request.friendId,
+      );
+      updatedGroupDoc["pendingGroups"] = updatedGroupDoc[
+        "pendingGroups"
+      ].filter((pendingMember: string) => pendingMember !== request.friendId);
+      // Use addDocToState to update the state
+      this.storeService.addDocToState("groups", updatedGroupDoc);
     }
   }
 
@@ -107,8 +167,9 @@ export class PartnersPage {
     if (relationship.senderId === this.groupId) {
       // my requests
       return {
-        id: relationship.id,
-        userId: relationship.receiverId,
+        relationshipId: relationship.id,
+        groupId: relationship.senderId,
+        partnerGroupId: relationship.receiverId,
         name: relationship.receiverName,
         image: relationship.receiverImage,
         tagline: relationship.receiverTagline,
@@ -119,8 +180,9 @@ export class PartnersPage {
     } else {
       // other's requests
       return {
-        id: relationship.id,
-        userId: relationship.senderId,
+        relationshipId: relationship.id,
+        groupId: relationship.receiverId,
+        partnerGroupId: relationship.senderId,
         name: relationship.senderName,
         image: relationship.senderImage,
         tagline: relationship.senderTagline,

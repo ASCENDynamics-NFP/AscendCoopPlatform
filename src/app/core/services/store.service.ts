@@ -141,6 +141,13 @@ export class StoreService {
     }
   }
 
+  /**
+   * Retrieves documents from a specified collection where either the sender or receiver ID matches the provided ID.
+   * After retrieval, each document is added to the state.
+   *
+   * @param {string} collectionName - Name of the collection to query.
+   * @param {string} senderOrRecieverId - ID to match against sender or receiver fields in the collection.
+   */
   getDocsWithSenderOrRecieverId(
     collectionName: string,
     senderOrRecieverId: string,
@@ -154,6 +161,12 @@ export class StoreService {
       });
   }
 
+  /**
+   * Retrieves the current value of a specified collection from the subject.
+   *
+   * @param {string} collectionName - Name of the collection to retrieve.
+   * @returns {any[]} - Returns the current value of the specified collection.
+   */
   getCollection(collectionName: string) {
     return this.collectionsSubject[collectionName].getValue();
   }

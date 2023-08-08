@@ -62,6 +62,7 @@ async function handleGroupCreation(snapshot: any, context: any) {
             createdBy: newGroup.createdBy,
             senderId: newGroup.createdBy,
             receiverId: context.params.groupId,
+            relatedIds: [newGroup.createdBy, context.params.groupId],
             type: "member",
             status: "accepted",
             membershipRole: "admin",

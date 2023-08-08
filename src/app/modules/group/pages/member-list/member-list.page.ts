@@ -36,6 +36,9 @@ import {Subscription} from "rxjs";
   standalone: true,
   imports: [IonicModule, CommonModule, RouterModule],
 })
+/**
+ * Represents a page where group admins can manage their group members.
+ */
 export class MemberListPage {
   private groupsSubscription: Subscription;
   private relationshipsSubscription: Subscription | undefined;
@@ -45,6 +48,13 @@ export class MemberListPage {
   groupId: string | null = null;
   group: Partial<AppGroup> | null = null;
   currentUser: User | null = this.authStoreService.getCurrentUser();
+
+  /**
+   * Constructs the MemberListPage.
+   * @param {ActivatedRoute} activatedRoute - The activated route.
+   * @param {AuthStoreService} authStoreService - The authentication store service.
+   * @param {StoreService} storeService - The store service.
+   */
   constructor(
     private activatedRoute: ActivatedRoute,
     private authStoreService: AuthStoreService,
@@ -57,6 +67,9 @@ export class MemberListPage {
     });
   }
 
+  /**
+   * Lifecycle hook that is called when the page is about to enter.
+   */
   ionViewWillEnter() {
     this.relationshipsSubscription = this.storeService.relationships$.subscribe(
       (relationships) => {
@@ -66,19 +79,30 @@ export class MemberListPage {
     );
   }
 
+  /**
+   * Lifecycle hook that is called when the page is about to leave.
+   */
   ionViewWillLeave() {
     this.groupsSubscription?.unsubscribe();
     this.relationshipsSubscription?.unsubscribe();
   }
 
+  /**
+   * Checks if the current user is an admin of the group.
+   * @returns {boolean} - True if the user is an admin, otherwise false.
+   */
   get isAdmin() {
     if (!this.group || !this.currentUser) return false;
     return this.group.admins?.includes(this.currentUser.uid);
   }
 
-  acceptMemberRequest(member: any) {
+  /**
+   * Accepts a member request to join the group.
+   * @param {any} request - The member request to accept.
+   */
+  acceptMemberRequest(request: any) {
     const relationship = this.relationships.find(
-      (relationship) => relationship.id === member.id,
+      (relationship) => relationship.id === request.relationshipId,
     );
     if (!relationship) {
       return;
@@ -86,16 +110,16 @@ export class MemberListPage {
     relationship.status = "accepted";
     this.storeService.updateDoc("relationships", relationship as Partial<any>);
     // After updating the relationship status, execute the following logic
-    member.showRemoveButton = true;
-    this.currentMembersList.push(relationship);
-    this.pendingMembersList = this.pendingMembersList.filter(
-      (pendingFriend) => pendingFriend.id !== member.id,
-    );
+    this.addMember(request);
   }
 
-  rejectMemberRequest(member: any) {
+  /**
+   * Rejects a member request to join the group.
+   * @param {any} request - The member request to reject.
+   */
+  rejectMemberRequest(request: any) {
     const relationship = this.relationships.find(
-      (relationship) => relationship.id === member.id,
+      (relationship) => relationship.id === request.relationshipId,
     );
     if (!relationship) {
       return;
@@ -103,32 +127,105 @@ export class MemberListPage {
     relationship.status = "rejected";
     this.storeService.updateDoc("relationships", relationship as Partial<any>);
     // After updating the relationship status, execute the following logic
-    this.pendingMembersList = this.pendingMembersList.filter(
-      (pendingFriend) => pendingFriend.id !== member.id,
-    );
+    this.removeMember(request);
   }
 
-  removeMemberRequest(member: any) {
-    if (member.id) {
-      this.storeService.deleteDoc("relationships", member.id);
-      // After deleting the relationship, execute the following logic
-      this.currentMembersList = this.currentMembersList.filter(
-        (currentFriend) => currentFriend.id !== member.id,
+  /**
+   * Adds a member to the group.
+   * @param {any} request - The member request to process.
+   */
+  addMember(request: any) {
+    // Add the member to the group's members lists
+    const updatedGroupDoc = this.storeService
+      .getCollection("groups")
+      .find((g) => g["id"] === request.groupId);
+    if (updatedGroupDoc) {
+      updatedGroupDoc["members"] = updatedGroupDoc["members"].push(
+        request.memberId,
       );
-      this.pendingMembersList = this.pendingMembersList.filter(
-        (pendingFriend) => pendingFriend.id !== member.id,
+      updatedGroupDoc["pendingMembers"] = updatedGroupDoc[
+        "pendingMembers"
+      ].filter((pendingMember: string) => pendingMember !== request.memberId);
+      // Use addDocToState to update the state
+      this.storeService.addDocToState("groups", updatedGroupDoc);
+    }
+    // Add the group to the member's groups lists
+    const updatedMemberDoc = this.storeService
+      .getCollection("users")
+      .find((u) => u["id"] === request.memberId);
+    if (updatedMemberDoc) {
+      updatedMemberDoc["groups"] = updatedMemberDoc["groups"].push(
+        request.groupId,
       );
+      updatedMemberDoc["pendingGroups"] = updatedMemberDoc[
+        "pendingGroups"
+      ].filter((pendingGroup: string) => pendingGroup !== request.groupId);
+      // Use addDocToState to update the state
+      this.storeService.addDocToState("users", updatedMemberDoc);
     }
   }
 
+  /**
+   * Removes a member request.
+   * @param {any} request - The member request to remove.
+   */
+  removeMemberRequest(request: any) {
+    if (request.relationshipId) {
+      this.storeService.deleteDoc("relationships", request.relationshipId);
+      // After deleting the relationship, execute the following logic
+      this.removeMember(request);
+    }
+  }
+
+  /**
+   * Removes a member from the group.
+   * @param {any} request - The member request to process.
+   */
+  removeMember(request: any) {
+    // Remove the group from the member's groups lists
+    const updatedMemberDoc = this.storeService
+      .getCollection("users")
+      .find((u) => u["id"] === request.friendId);
+    if (updatedMemberDoc) {
+      updatedMemberDoc["groups"] = updatedMemberDoc["groups"].filter(
+        (group: string) => group !== this.groupId,
+      );
+      updatedMemberDoc["pendingGroups"] = updatedMemberDoc[
+        "pendingGroups"
+      ].filter((pendingGroup: string) => pendingGroup !== this.groupId);
+      // Use addDocToState to update the state
+      this.storeService.addDocToState("groups", updatedMemberDoc);
+    }
+    // Remove the member from the group's members lists
+    const updatedGroupDoc = this.storeService
+      .getCollection("groups")
+      .find((g) => g["id"] === request.groupId);
+    if (updatedGroupDoc) {
+      updatedGroupDoc["members"] = updatedGroupDoc["members"].filter(
+        (member: string) => member !== request.friendId,
+      );
+      updatedGroupDoc["pendingMembers"] = updatedGroupDoc[
+        "pendingMembers"
+      ].filter((pendingMember: string) => pendingMember !== request.friendId);
+      // Use addDocToState to update the state
+      this.storeService.addDocToState("groups", updatedGroupDoc);
+    }
+  }
+
+  /**
+   * Converts a relationship object to a member object.
+   * @param {Partial<AppRelationship>} relationship - The relationship to convert.
+   * @returns {any} - The converted member object.
+   */
   relationshipToMember(relationship: Partial<AppRelationship>) {
     if (!this.group || !this.currentUser) return;
     if (!this.group.admins) this.group.admins = [];
     if (relationship.senderId === this.groupId) {
       // my requests
       return {
-        id: relationship.id,
-        userId: relationship.receiverId,
+        relationshipId: relationship.id,
+        groupId: relationship.senderId,
+        memberId: relationship.receiverId,
         name: relationship.receiverName,
         image: relationship.receiverImage,
         tagline: relationship.receiverTagline,
@@ -139,8 +236,9 @@ export class MemberListPage {
     } else {
       // other's requests
       return {
-        id: relationship.id,
-        userId: relationship.senderId,
+        relationshipId: relationship.id,
+        groupId: relationship.receiverId,
+        memberId: relationship.senderId,
         name: relationship.senderName,
         image: relationship.senderImage,
         tagline: relationship.senderTagline,
@@ -151,6 +249,10 @@ export class MemberListPage {
     }
   }
 
+  /**
+   * Sorts relationships into current members and pending members lists.
+   * @param {Partial<AppRelationship>[]} relationships - The relationships to sort.
+   */
   sortRelationships(relationships: Partial<AppRelationship>[]) {
     this.currentMembersList = [];
     this.pendingMembersList = [];

@@ -43,7 +43,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-list>
             <ion-item
               *ngFor="let group of currentGroupsList; let i = index"
-              routerLink="/user-profile/{{group['userId']}}"
+              routerLink="/group-profile/{{group['partnerGroupId']}}"
               button
             >
               <ion-thumbnail slot="start">
@@ -55,14 +55,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               </ion-thumbnail>
               <ion-label>
                 <h3>{{ group["name"] }}</h3>
-                <p>{{ group["bio"] }}</p>
+                <p>{{ group["tagline"] }}</p>
               </ion-label>
               <ion-button
                 *ngIf="group['showRemoveButton']"
                 slot="end"
                 expand="block"
                 color="secondary"
-                (click)="$event.stopPropagation();$event.preventDefault();removeGroupRequest(group);"
+                (click)="$event.stopPropagation();$event.preventDefault();removePartnerRequest(group);"
                 >Remove</ion-button
               >
             </ion-item>
@@ -78,7 +78,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-list>
             <ion-item
               *ngFor="let group of pendingGroupsList; let i = index"
-              routerLink="/user-profile/{{group['userId']}}"
+              routerLink="/group-profile/{{group['partnerGroupId']}}"
               button
             >
               <ion-thumbnail slot="start">
@@ -90,13 +90,13 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               </ion-thumbnail>
               <ion-label>
                 <h3>{{ group["name"] }}</h3>
-                <p>{{ group["bio"] }}</p>
+                <p>{{ group["tagline"] }}</p>
               </ion-label>
               <ion-button
                 *ngIf="group['showAcceptRejectButtons']"
                 slot="end"
                 expand="block"
-                (click)="$event.stopPropagation();$event.preventDefault();acceptGroupRequest(group);"
+                (click)="$event.stopPropagation();$event.preventDefault();acceptPartnerRequest(group);"
                 >Accept</ion-button
               >
               <ion-button
@@ -104,7 +104,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 slot="end"
                 expand="block"
                 color="secondary"
-                (click)="$event.stopPropagation();$event.preventDefault();rejectGroupRequest(group);"
+                (click)="$event.stopPropagation();$event.preventDefault();rejectPartnerRequest(group);"
                 >Reject</ion-button
               >
               <ion-button
@@ -112,7 +112,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 slot="end"
                 expand="block"
                 color="secondary"
-                (click)="$event.stopPropagation();$event.preventDefault();removeGroupRequest(group);"
+                (click)="$event.stopPropagation();$event.preventDefault();removePartnerRequest(group);"
                 >Remove</ion-button
               >
             </ion-item>

@@ -55,7 +55,6 @@ export class UserProfilePage implements OnInit {
   user: Partial<AppUser> | null = null;
   friendList: Partial<AppRelationship>[] = [];
   groupList: Partial<AppRelationship>[] = [];
-  isProfileOwner: boolean = false;
   constructor(
     private authStoreService: AuthStoreService,
     private route: ActivatedRoute,
@@ -70,9 +69,11 @@ export class UserProfilePage implements OnInit {
         "relationships",
         this.uid,
       );
-      this.isProfileOwner =
-        this.uid === this.authStoreService.getCurrentUser()?.uid;
     }
+  }
+
+  get isProfileOwner(): boolean {
+    return this.uid === this.authStoreService.getCurrentUser()?.uid;
   }
 
   ionViewWillEnter() {

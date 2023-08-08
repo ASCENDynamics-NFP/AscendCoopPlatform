@@ -27,6 +27,7 @@ import {AppUser} from "../../../../models/user.model";
 import {StoreService} from "../../../../core/services/store.service";
 import {Subscription} from "rxjs";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
+import {AppRelationship} from "../../../../models/relationship.model";
 
 @Component({
   selector: "app-users",
@@ -65,10 +66,13 @@ export class UsersPage {
   }
 
   sendFriendRequest(user: Partial<AppUser>) {
+    if (!this.user?.uid || !user["id"]) {
+      return;
+    }
     this.storeService
       .createDoc("relationships", {
-        id: null,
-        senderId: this.user?.uid ? this.user.uid : "",
+        senderId: this.user?.uid,
+        relatedIds: [this.user?.uid, user["id"]],
         receiverId: user["id"],
         type: "friend",
         status: "pending",
@@ -81,7 +85,7 @@ export class UsersPage {
         senderName: this.user?.displayName ? this.user.displayName : "",
         senderImage: this.user?.photoURL ? this.user.photoURL : "",
         senderTagline: "",
-      })
+      } as Partial<AppRelationship>)
       .then(() => {
         if (this.user) {
           // updated friends list on userList item to include receiverId in friends list so that the button doesn't show

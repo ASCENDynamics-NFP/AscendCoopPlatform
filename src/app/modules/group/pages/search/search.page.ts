@@ -88,8 +88,12 @@ export class SearchPage {
   }
 
   sendRequest(group: Partial<AppGroup>) {
+    if (!this.user?.uid || !group.id) {
+      return;
+    }
     const relationship: Partial<AppRelationship> = {
-      senderId: this.user?.uid ? this.user.uid : "",
+      relatedIds: [this.user?.uid, group.id],
+      senderId: this.user?.uid,
       receiverId: group.id,
       type: "member",
       status: "pending",

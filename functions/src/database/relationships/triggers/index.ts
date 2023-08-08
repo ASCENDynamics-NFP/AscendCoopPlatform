@@ -21,17 +21,21 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 
-admin.initializeApp();
+// Initialize the Firebase admin SDK
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
+// Reference to the Firestore database
 const db = admin.firestore();
-
+// Triggered when a new relationship is created in Firestore and updates the database accordingly.
 export const onRelationshipCreation = functions.firestore
   .document("relationships/{relationshipId}")
   .onCreate(handleRelationshipCreation);
-
+// Triggered when a relationship is updated in Firestore and updates the database accordingly.
 export const onRelationshipUpdate = functions.firestore
   .document("relationships/{relationshipId}")
   .onUpdate(handleRelationshipUpdate);
-
+// Triggered when a relationship is deleted in Firestore and updates the database accordingly.
 export const onRelationshipDeletion = functions.firestore
   .document("relationships/{relationshipId}")
   .onDelete(handleRelationshipDeletion);

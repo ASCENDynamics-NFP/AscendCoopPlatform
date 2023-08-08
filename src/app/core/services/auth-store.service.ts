@@ -114,19 +114,6 @@ export class AuthStoreService {
       .then(async (result) => {
         // Send verification email
         await this.sendVerificationMail(email);
-        // Set user data
-        const timestamp = Timestamp.now();
-        await this.usersService.createUser({
-          email: email,
-          displayName: "Volunteer",
-          profilePicture: "assets/avatar/male1.png",
-          emailVerified: false,
-          bio: "I enjoy helping others.",
-          lastLoginAt: timestamp,
-          name: "Volunteer",
-          id: result.user.uid,
-          heroImage: "assets/image/user2hero.png",
-        });
 
         this.successHandler.handleSuccess(
           "Successfully signed up! Please verify your email.",
@@ -160,11 +147,13 @@ export class AuthStoreService {
     await loading.present();
     signInWithPopup(this.auth, new GoogleAuthProvider())
       .then((result) => {
+        debugger;
         // handle successful sign in
         // Check if the user is new or existing.
         if (getAdditionalUserInfo(result)?.isNewUser) {
           // This is a new user
-          this.onLoginCreateUserRecord(result);
+          debugger;
+          // this.onLoginCreateUserRecord(result);
         } else {
           console.log("This is an existing user");
           this.onLoginUpdateUserRecord(result?.user?.uid);

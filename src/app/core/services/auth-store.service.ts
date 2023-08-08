@@ -33,15 +33,12 @@ import {
   signInWithPopup,
   signOut,
   User,
-  UserCredential,
 } from "firebase/auth";
 import {BehaviorSubject} from "rxjs";
 import {map} from "rxjs/operators";
 import {ErrorHandlerService} from "./error-handler.service";
 import {SuccessHandlerService} from "./success-handler.service";
 import {Router} from "@angular/router";
-import {Timestamp} from "firebase/firestore";
-import {UsersService} from "./users.service";
 
 @Injectable({
   providedIn: "root",
@@ -74,7 +71,6 @@ export class AuthStoreService {
     private loadingController: LoadingController,
     private successHandler: SuccessHandlerService,
     private router: Router,
-    private usersService: UsersService,
   ) {
     onAuthStateChanged(this.auth, (user) => {
       this.userSubject.next(user);
@@ -142,58 +138,61 @@ export class AuthStoreService {
 
   /* SIGN IN METHODS */
   // Sign In With Google
-  async signInWithGoogle() {
+  async signInWithGoogle(): Promise<string | void> {
     const loading = await this.loadingController.create();
     await loading.present();
-    signInWithPopup(this.auth, new GoogleAuthProvider())
-      .then((result) => {
-        debugger;
-        // handle successful sign in
-        // Check if the user is new or existing.
-        if (getAdditionalUserInfo(result)?.isNewUser) {
-          // This is a new user
-          debugger;
-          // this.onLoginCreateUserRecord(result);
-        } else {
-          console.log("This is an existing user");
-          this.onLoginUpdateUserRecord(result?.user?.uid);
-        }
+
+    try {
+      const result = await signInWithPopup(this.auth, new GoogleAuthProvider());
+
+      // handle successful sign in
+      // Check if the user is new or existing.
+      if (getAdditionalUserInfo(result)?.isNewUser) {
+        // This is a new user
+        this.successHandler.handleSuccess("Successfully created account!");
+      } else {
         this.successHandler.handleSuccess("Successfully signed in!");
-      })
-      .catch((error) => {
-        this.errorHandler.handleFirebaseAuthError(error);
-      })
-      .finally(() => {
-        loading.dismiss();
-      });
+        return result?.user?.uid;
+      }
+    } catch (error) {
+      this.errorHandler.handleFirebaseAuthError(
+        error as {code: string; message: string},
+      );
+    } finally {
+      loading.dismiss();
+    }
   }
 
   // Sign In With Email/Password
   async signIn(
     email: string | null | undefined,
     password: string | null | undefined,
-  ) {
+  ): Promise<string | void> {
     if (!email || !password) {
-      // Handle the case where email or password is not provided.
       this.errorHandler.handleFirebaseAuthError({
         code: "",
         message: "Email and password are required!",
       });
       return;
     }
+
     const loading = await this.loadingController.create();
     await loading.present();
-    signInWithEmailAndPassword(this.auth, email, password)
-      .then((result) => {
-        this.onLoginUpdateUserRecord(result?.user?.uid);
-        this.successHandler.handleSuccess("Successfully signed in!");
-      })
-      .catch((error) => {
-        this.errorHandler.handleFirebaseAuthError(error);
-      })
-      .finally(() => {
-        loading.dismiss();
-      });
+    try {
+      const result = await signInWithEmailAndPassword(
+        this.auth,
+        email,
+        password,
+      );
+      this.successHandler.handleSuccess("Successfully signed in!");
+      return result.user?.uid;
+    } catch (error) {
+      this.errorHandler.handleFirebaseAuthError(
+        error as {code: string; message: string},
+      );
+    } finally {
+      loading.dismiss();
+    }
   }
 
   // Email Link Sign In
@@ -218,7 +217,7 @@ export class AuthStoreService {
   }
 
   // Confirm Email Link Sign In
-  async onSignInWithEmailLink() {
+  async onSignInWithEmailLink(): Promise<string | void> {
     // Confirm the link is a sign-in with email link.
     if (isSignInWithEmailLink(this.auth, window.location.href)) {
       // Additional state parameters can also be passed via URL.
@@ -236,25 +235,22 @@ export class AuthStoreService {
       if (email != null) {
         const loading = await this.loadingController.create();
         await loading.present();
-        // The client SDK will parse the code from the link for you.
-        signInWithEmailLink(this.auth, email, window.location.href)
-          .then((result) => {
-            // Clear email from storage.
-            window.localStorage.removeItem("emailForSignIn");
-            // You can access the new user via result.user
-            // Additional user info profile not available via:
-            // result.additionalUserInfo.profile == null
-            // You can check if the user is new or existing:
-            // result.additionalUserInfo.isNewUser
-            this.successHandler.handleSuccess("You have been signed in!");
-            this.onLoginUpdateUserRecord(result?.user?.uid);
-          })
-          .catch((error) => {
-            this.errorHandler.handleFirebaseAuthError(error);
-          })
-          .finally(() => {
-            loading.dismiss();
-          });
+        try {
+          const result = await signInWithEmailLink(
+            this.auth,
+            email,
+            window.location.href,
+          );
+          window.localStorage.removeItem("emailForSignIn");
+          this.successHandler.handleSuccess("You have been signed in!");
+          return result.user?.uid;
+        } catch (error) {
+          this.errorHandler.handleFirebaseAuthError(
+            error as {code: string; message: string},
+          );
+        } finally {
+          loading.dismiss();
+        }
       }
     }
   }
@@ -292,34 +288,5 @@ export class AuthStoreService {
       .finally(() => {
         loading.dismiss();
       });
-  }
-
-  onLoginUpdateUserRecord(userId: string) {
-    this.usersService.updateUser({
-      lastLoginAt: Timestamp.now(),
-      id: userId,
-    });
-  }
-
-  onLoginCreateUserRecord(record: UserCredential) {
-    if (!record.user || !record.user.uid || !record.user.email) {
-      throw new Error("Could not create user record");
-    }
-    this.usersService.createUser({
-      email: record.user.email,
-      displayName: record.user.displayName
-        ? record.user.displayName
-        : "Volunteer",
-      profilePicture: record.user.photoURL
-        ? record.user.photoURL
-        : "assets/avatar/male1.png",
-      emailVerified: record.user.emailVerified,
-      bio: "I enjoy volunteering and helping others.",
-      lastLoginAt: Timestamp.now(),
-      name: record?.user?.displayName ? record.user.displayName : "Volunteer",
-      id: record.user.uid,
-      language: "en",
-      heroImage: "assets/image/user2hero.png",
-    });
   }
 }

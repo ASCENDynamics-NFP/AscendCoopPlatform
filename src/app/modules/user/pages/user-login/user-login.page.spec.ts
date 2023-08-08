@@ -19,37 +19,88 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {UserLoginPage} from "./user-login.page";
+import {FormBuilder} from "@angular/forms";
 import {of} from "rxjs";
-import {TranslateModule, TranslateService} from "@ngx-translate/core";
+import {Router} from "@angular/router";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
+import {StoreService} from "../../../../core/services/store.service";
+import {
+  TranslateModule,
+  TranslateLoader,
+  TranslateService,
+} from "@ngx-translate/core";
+
+class FakeLoader implements TranslateLoader {
+  getTranslation(lang: string) {
+    return of({KEY: "Value"});
+  }
+}
 
 describe("UserLoginPage", () => {
   let component: UserLoginPage;
   let fixture: ComponentFixture<UserLoginPage>;
-  let service: AuthStoreService;
-  let authSpy: any;
-  let translate: TranslateService;
+  let authStoreServiceMock: any;
+  let storeServiceMock: any;
+  let routerMock: any;
 
   beforeEach(async () => {
-    authSpy = jasmine.createSpyObj("auth", ["onSignInWithEmailLink"]);
-    // Mock user$ as an Observable that emits null
-    authSpy.user$ = of(null);
-    authSpy.onSignInWithEmailLink.and.returnValue(Promise.resolve());
-    TestBed.configureTestingModule({
-      imports: [TranslateModule.forRoot()],
-      providers: [
-        {provide: AuthStoreService, useValue: authSpy},
-        TranslateService,
+    authStoreServiceMock = {
+      user$: of(null),
+      onSignInWithEmailLink: jasmine
+        .createSpy()
+        .and.returnValue(Promise.resolve(null)),
+      signIn: jasmine.createSpy().and.returnValue(Promise.resolve(null)),
+      onSendPasswordResetEmail: jasmine.createSpy(),
+      onSendSignInLinkToEmail: jasmine.createSpy(),
+      signInWithGoogle: jasmine
+        .createSpy()
+        .and.returnValue(Promise.resolve(null)),
+    };
+
+    storeServiceMock = {
+      updateDoc: jasmine.createSpy(),
+    };
+
+    routerMock = {
+      navigateByUrl: jasmine.createSpy(),
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [
+        TranslateModule.forRoot({
+          loader: {provide: TranslateLoader, useClass: FakeLoader},
+        }),
+        // ... (rest of your imports)
       ],
-    });
-    service = TestBed.inject(AuthStoreService);
+      providers: [
+        TranslateService,
+        FormBuilder,
+        {provide: AuthStoreService, useValue: authStoreServiceMock},
+        {provide: StoreService, useValue: storeServiceMock},
+        {provide: Router, useValue: routerMock},
+      ],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(UserLoginPage);
     component = fixture.componentInstance;
-    translate = TestBed.inject(TranslateService); // inject TranslateService
     fixture.detectChanges();
   });
 
   it("should create", () => {
     expect(component).toBeTruthy();
   });
+
+  it("should call signIn method of authStoreService on login", () => {
+    component.loginForm.setValue({
+      email: "test@example.com",
+      password: "password123",
+    });
+    component.login();
+    expect(authStoreServiceMock.signIn).toHaveBeenCalledWith(
+      "test@example.com",
+      "password123",
+    );
+  });
+
+  // ... Add more tests for other methods and interactions
 });

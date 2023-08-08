@@ -17,12 +17,12 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
-import {IonicModule} from "@ionic/angular";
+import {Component, OnInit} from "@angular/core";
+import {IonicModule, MenuController} from "@ionic/angular";
 import {CommonModule} from "@angular/common";
 import {MenuComponent} from "./shared/components/menu/menu.component";
 import {TranslateService} from "@ngx-translate/core";
-import {MenuService} from "./core/services/menu.service";
+import {AuthStoreService} from "./core/services/auth-store.service";
 
 @Component({
   selector: "app-root",
@@ -31,13 +31,26 @@ import {MenuService} from "./core/services/menu.service";
   standalone: true,
   imports: [IonicModule, CommonModule, MenuComponent],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   constructor(
-    private menuService: MenuService,
+    private authStoreService: AuthStoreService,
+    private menuCtrl: MenuController,
     private translate: TranslateService,
   ) {
     this.translate.setDefaultLang("en");
     this.translate.addLangs(["en", "fr"]);
     // You can use your AuthStoreService here
+  }
+
+  ngOnInit() {
+    this.authStoreService.isLoggedIn$.subscribe(async (isLoggedIn) => {
+      if (isLoggedIn) {
+        await this.menuCtrl.enable(false, "guest");
+        await this.menuCtrl.enable(true, "user");
+      } else {
+        await this.menuCtrl.enable(false, "user");
+        await this.menuCtrl.enable(true, "guest");
+      }
+    });
   }
 }

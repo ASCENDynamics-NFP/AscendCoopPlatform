@@ -116,7 +116,7 @@ export class UserProfilePage implements OnInit {
         ) {
           this.friendList.push(relationship);
         } else if (
-          relationship.type === "member" &&
+          relationship.type?.includes("member") &&
           relationship.status === "accepted"
         ) {
           this.groupList.push(relationship);

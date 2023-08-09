@@ -118,6 +118,27 @@ async function handleRelationshipUpdate(change: any, _context: any) {
             // Remove each user from the other's pendingMembers and groups arrays
             removeGroupMembership(transaction, senderId, receiverId);
           }
+        } else if (after.type === "member-invite") {
+          const sender = await fetchGroup(transaction, senderId);
+          const receiver = await fetchUser(transaction, receiverId);
+
+          logger.info("sender: ", sender.data(), "receiver: ", receiver.data());
+
+          if (after.status === "pending") {
+            // Add to the other's pending groups and members array
+            inviteUserToGroup(transaction, senderId, receiverId);
+          } else if (after.status === "accepted") {
+            // Add to the other's groups and members array
+            acceptGroupInvite(
+              transaction,
+              senderId,
+              receiverId,
+              after.membershipRole,
+            );
+          } else if (after.status === "rejected") {
+            // Remove each user from the other's pendingMembers and groups arrays
+            removeUserFromGroup(transaction, senderId, receiverId);
+          }
         } else {
           logger.error("Relationship type not found");
           throw new Error("Relationship type not found");
@@ -174,6 +195,13 @@ async function handleRelationshipDeletion(snapshot: any, _context: any) {
 
           // Remove each user from the other's friends array
           removeGroupMembership(transaction, senderId, receiverId);
+        } else if (deletedRelationship.type === "member-invite") {
+          const sender = await fetchGroup(transaction, senderId);
+          const receiver = await fetchUser(transaction, receiverId);
+
+          logger.info("sender: ", sender.data(), "receiver: ", receiver.data());
+          // remove each user from the members array
+          removeUserFromGroup(transaction, senderId, receiverId);
         } else {
           logger.error("Relationship type not found");
           throw new Error("Relationship type not found");
@@ -278,6 +306,32 @@ async function handleRelationshipCreation(snapshot: any) {
             } else if (newRelationship.status === "rejected") {
               // Remove each user from the other's pendingFriends and friends arrays
               removeGroupMembership(transaction, senderId, receiverId);
+            }
+          } else if (newRelationship.type === "member-invite") {
+            // Handle group invites membership
+            const sender = await fetchGroup(transaction, senderId);
+            const receiver = await fetchUser(transaction, receiverId);
+            logger.info(
+              "sender: ",
+              sender.data(),
+              "receiver: ",
+              receiver.data(),
+            );
+
+            if (newRelationship.status === "pending") {
+              // Add each group to the other's pendingFriends array
+              inviteUserToGroup(transaction, senderId, receiverId);
+            } else if (newRelationship.status === "accepted") {
+              // Add each user to the other's friends array
+              acceptGroupInvite(
+                transaction,
+                senderId,
+                receiverId,
+                newRelationship.membershipRole,
+              );
+            } else if (newRelationship.status === "rejected") {
+              // Remove each user from the other's pendingFriends and friends arrays
+              removeUserFromGroup(transaction, senderId, receiverId);
             }
           } else {
             logger.error("Relationship type not found");
@@ -385,7 +439,7 @@ function acceptedFriends(
  * @param {string} senderId - The ID of the sender
  * @param {string} receiverId - The ID of the receiver
  */
-export function removeFriend(
+function removeFriend(
   transaction: admin.firestore.Transaction,
   senderId: string,
   receiverId: string,
@@ -458,7 +512,7 @@ function requestGroupCollaboration(
  * @param {string} senderId - The ID of the sender
  * @param {string} receiverId - The ID of the receiver
  */
-export function removeGroupCollaboration(
+function removeGroupCollaboration(
   transaction: admin.firestore.Transaction,
   senderId: string,
   receiverId: string,
@@ -542,7 +596,7 @@ function requestGroupMembership(
  * @param {string} senderId - The ID of the sender
  * @param {string} receiverId - The ID of the receiver
  */
-export function removeGroupMembership(
+function removeGroupMembership(
   transaction: admin.firestore.Transaction,
   senderId: string,
   receiverId: string,
@@ -560,5 +614,90 @@ export function removeGroupMembership(
     // Update group model
     members: admin.firestore.FieldValue.arrayRemove(senderId),
     pendingMembers: admin.firestore.FieldValue.arrayRemove(senderId),
+  });
+}
+
+/**
+ * Invites a user to a group. Adds the group to the user's pendingGroups array and the user to the group's pendingMembers array.
+ * @param {admin.firestore.Transaction} transaction - The Firestore transaction
+ * @param {string} groupId - The ID of the group (sender)
+ * @param {string} userId - The ID of the user (receiver)
+ */
+function inviteUserToGroup(
+  transaction: admin.firestore.Transaction,
+  groupId: string,
+  userId: string,
+) {
+  const groupRef = db.collection("groups").doc(groupId);
+  const userRef = db.collection("users").doc(userId);
+
+  transaction.update(userRef, {
+    // Add pendingGroups to user model
+    pendingGroups: admin.firestore.FieldValue.arrayUnion(groupId),
+  });
+
+  transaction.update(groupRef, {
+    // Add pendingMembers to group model
+    pendingMembers: admin.firestore.FieldValue.arrayUnion(userId),
+  });
+}
+
+/**
+ * Accepts a group invite. Adds membership from both the user's groups array and the group's members array and removes from pending arrays.
+ * @param {admin.firestore.Transaction} transaction - The Firestore transaction
+ * @param {string} groupId - The ID of the group (sender)
+ * @param {string} userId - The ID of the user (receiver)
+ * @param {string} membershipRole - The role the member will take in the group
+ */
+function acceptGroupInvite(
+  transaction: admin.firestore.Transaction,
+  groupId: string,
+  userId: string,
+  membershipRole: string,
+) {
+  const groupRef = db.collection("groups").doc(groupId);
+  const userRef = db.collection("users").doc(userId);
+
+  transaction.update(userRef, {
+    // Update user model
+    pendingGroups: admin.firestore.FieldValue.arrayRemove(groupId),
+    groups: admin.firestore.FieldValue.arrayUnion(groupId),
+  });
+
+  transaction.update(groupRef, {
+    // Update group model
+    pendingMembers: admin.firestore.FieldValue.arrayRemove(userId),
+    members: admin.firestore.FieldValue.arrayUnion(userId),
+    admins:
+      membershipRole === "admin"
+        ? admin.firestore.FieldValue.arrayUnion(userId)
+        : admin.firestore.FieldValue.arrayRemove(userId),
+  });
+}
+
+/**
+ * Removes a user from a group. Removes membership from both the user's groups array and the group's members array and pending arrays.
+ * @param {admin.firestore.Transaction} transaction - The Firestore transaction
+ * @param {string} groupId - The ID of the group (sender)
+ * @param {string} userId - The ID of the user (receiver)
+ */
+function removeUserFromGroup(
+  transaction: admin.firestore.Transaction,
+  groupId: string,
+  userId: string,
+) {
+  const groupRef = db.collection("groups").doc(groupId);
+  const userRef = db.collection("users").doc(userId);
+
+  transaction.update(userRef, {
+    // Update user model
+    groups: admin.firestore.FieldValue.arrayRemove(groupId),
+    pendingGroups: admin.firestore.FieldValue.arrayRemove(groupId),
+  });
+
+  transaction.update(groupRef, {
+    // Update group model
+    members: admin.firestore.FieldValue.arrayRemove(userId),
+    pendingMembers: admin.firestore.FieldValue.arrayRemove(userId),
   });
 }

@@ -27,6 +27,8 @@ import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {StoreService} from "../../../../core/services/store.service";
 import {PartnerSearchComponent} from "./component/partner-search/partner-search.component";
 import {MemberSearchComponent} from "./component/member-search/member-search.component";
+import {Subscription} from "rxjs";
+import {AppUser} from "../../../../models/user.model";
 
 @Component({
   selector: "app-search",
@@ -41,8 +43,12 @@ import {MemberSearchComponent} from "./component/member-search/member-search.com
   ],
 })
 export class SearchPage {
+  private groupsSubscription: Subscription | undefined;
+  private usersSubscription: Subscription | undefined;
   groupId: string | null = null;
+  groups: Partial<AppGroup>[] | null = [];
   user: User | null = null; // define your user here
+  users: Partial<AppUser>[] | null = [];
   currentGroup: Partial<AppGroup> | undefined;
 
   constructor(
@@ -62,10 +68,17 @@ export class SearchPage {
   }
 
   ionViewWillEnter() {
-    this.currentGroup = this.storeService
-      .getCollection("groups")
-      .find((group) => group["id"] === this.groupId);
+    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
+      this.currentGroup = groups.find((group) => group["id"] === this.groupId);
+      this.groups = groups;
+    });
+    this.usersSubscription = this.storeService.users$.subscribe((users) => {
+      this.users = users;
+    });
   }
 
-  ionViewWillLeave() {}
+  ionViewWillLeave() {
+    this.groupsSubscription?.unsubscribe();
+    this.usersSubscription?.unsubscribe();
+  }
 }

@@ -37,48 +37,60 @@ import {AppUser} from "../../../../../../models/user.model";
   imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
 export class MemberSearchComponent {
-  private usersSubscription: Subscription | undefined;
+  // private usersSubscription: Subscription | undefined;
   @Input() isAdmin: boolean = false;
   @Input() user: User | null = null; // define your user here
   @Input() currentGroup: Partial<AppGroup> | null = null;
-  private users: Partial<AppUser>[] | null = [];
-  searchResults: Partial<AppUser>[] | null = [];
+  @Input() users: Partial<AppUser>[] | null = [];
+  // searchResults: Partial<AppUser>[] | null = [];
   searchTerm: string = "";
 
   constructor(private storeService: StoreService) {}
 
   ionViewWillEnter() {
-    this.usersSubscription = this.storeService.users$.subscribe((users) => {
-      if (users) {
-        this.users = users;
-        this.searchResults = this.users;
-        if (this.searchTerm) {
-          this.searchResults = users.filter((user) =>
-            user.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
-          );
-        }
-      }
-    });
+    // this.usersSubscription = this.storeService.users$.subscribe((users) => {
+    //   if (users) {
+    //     this.users = users;
+    //     this.searchResults = this.users;
+    //     if (this.searchTerm) {
+    //       this.searchResults = users.filter((user) =>
+    //         user.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
+    //       );
+    //     }
+    //   }
+    // });
   }
 
   ionViewWillLeave() {
     // Unsubscribe from the users$ observable when the component is destroyed
-    this.usersSubscription?.unsubscribe();
+    // this.usersSubscription?.unsubscribe();
+  }
+
+  get searchResults() {
+    if (!this.users) {
+      return [];
+    }
+    if (!this.searchTerm) {
+      return this.users;
+    }
+    return this.users.filter((user) =>
+      user.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
+    );
   }
 
   searchGroups(event: any) {
     this.searchTerm = event.target.value;
     if (this.searchTerm) {
       this.storeService.searchDocsByName("users", this.searchTerm);
-    } else {
-      this.searchResults = this.storeService.getCollection("users");
-      this.searchResults = this.searchResults.sort((a, b) => {
-        if (a.name && b.name) {
-          return a.name.localeCompare(b.name);
-        }
-        return 0;
-      });
     }
+    //   this.searchResults = this.storeService.getCollection("users");
+    //   this.searchResults = this.searchResults.sort((a, b) => {
+    //     if (a.name && b.name) {
+    //       return a.name.localeCompare(b.name);
+    //     }
+    //     return 0;
+    //   });
+    // }
   }
 
   inviteUser(user: Partial<AppUser>) {
@@ -89,7 +101,7 @@ export class MemberSearchComponent {
       relatedIds: [this.currentGroup.id, user.id],
       senderId: this.currentGroup?.id,
       receiverId: user.id,
-      type: "member",
+      type: "member-invite",
       status: "pending",
       membershipRole: "member",
       receiverRelationship: "user",

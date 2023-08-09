@@ -19,30 +19,31 @@
 ***********************************************************************************************/
 import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
-import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {User} from "firebase/auth";
 import {AppGroup} from "../../../../models/group.model";
-import {ActivatedRoute, RouterModule} from "@angular/router";
+import {ActivatedRoute} from "@angular/router";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
-import {Subscription} from "rxjs";
 import {StoreService} from "../../../../core/services/store.service";
-import {AppRelationship} from "../../../../models/relationship.model";
+import {PartnerSearchComponent} from "./component/partner-search/partner-search.component";
+import {MemberSearchComponent} from "./component/member-search/member-search.component";
 
 @Component({
   selector: "app-search",
   templateUrl: "./search.page.html",
   styleUrls: ["./search.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
+  imports: [
+    IonicModule,
+    CommonModule,
+    PartnerSearchComponent,
+    MemberSearchComponent,
+  ],
 })
 export class SearchPage {
-  private groupsSubscription: Subscription | undefined;
-  user: User | null = null; // define your user here
-  groups: Partial<AppGroup>[] | null = [];
-  searchResults: Partial<AppGroup>[] | null = [];
-  searchTerm: string = "";
   groupId: string | null = null;
+  user: User | null = null; // define your user here
+  currentGroup: Partial<AppGroup> | undefined;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -53,70 +54,18 @@ export class SearchPage {
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
   }
 
+  get isAdmin(): boolean {
+    if (!this.user?.uid) {
+      return false;
+    }
+    return this.currentGroup?.admins?.includes(this.user?.uid) ?? false;
+  }
+
   ionViewWillEnter() {
-    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
-      if (groups) {
-        this.groups = groups;
-        this.searchResults = this.groups;
-        if (this.searchTerm) {
-          this.searchResults = groups.filter((group) =>
-            group.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
-          );
-        }
-      }
-    });
+    this.currentGroup = this.storeService
+      .getCollection("groups")
+      .find((group) => group["id"] === this.groupId);
   }
 
-  ionViewWillLeave() {
-    // Unsubscribe from the groups$ observable when the component is destroyed
-    this.groupsSubscription?.unsubscribe();
-  }
-
-  searchGroups(event: any) {
-    this.searchTerm = event.target.value;
-    if (this.searchTerm) {
-      this.storeService.searchDocsByName("groups", this.searchTerm);
-    } else {
-      this.searchResults = this.storeService.getCollection("groups");
-      this.searchResults = this.searchResults.sort((a, b) => {
-        if (a.name && b.name) {
-          return a.name.localeCompare(b.name);
-        }
-        return 0;
-      });
-    }
-  }
-
-  sendRequest(group: Partial<AppGroup>) {
-    if (!this.user?.uid || !group.id) {
-      return;
-    }
-    const relationship: Partial<AppRelationship> = {
-      relatedIds: [this.user?.uid, group.id],
-      senderId: this.user?.uid,
-      receiverId: group.id,
-      type: "member",
-      status: "pending",
-      membershipRole: "",
-      receiverRelationship: "group",
-      senderRelationship: "user",
-      receiverName: group.name,
-      receiverImage: group.groupPicture,
-      receiverTagline: group.tagline,
-      senderName: this.user?.displayName ? this.user.displayName : "",
-      senderImage: this.user?.photoURL ? this.user.photoURL : "",
-      senderTagline: "",
-    };
-
-    this.storeService.createDoc("relationships", relationship).then(() => {
-      // Update the group's pendingMembers in the state
-      if (!group.pendingMembers) {
-        group.pendingMembers = [];
-      }
-      group.pendingMembers = this.user?.uid
-        ? [...group.pendingMembers, this.user.uid]
-        : [...group.pendingMembers];
-      this.storeService.updateDocInState("groups", group);
-    });
-  }
+  ionViewWillLeave() {}
 }

@@ -33,41 +33,18 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <ion-grid>
     <ion-row>
       <ion-col>
-        <ion-card>
-          <ion-card-header>
-            <ion-searchbar
-              [debounce]="1000"
-              (ionInput)="searchGroups($event)"
-            ></ion-searchbar>
-          </ion-card-header>
-          <ion-list>
-            <ion-item
-              *ngFor="let item of groups; let i = index"
-              routerLink="/group-profile/{{item.id}}"
-              button
-            >
-              <ion-thumbnail slot="start">
-                <img
-                  *ngIf="item.groupPicture"
-                  [alt]="item.name"
-                  [src]="item.groupPicture"
-                />
-              </ion-thumbnail>
-              <ion-label>
-                <h3>{{ item?.name }}</h3>
-                <p>{{ item?.tagline }}</p>
-              </ion-label>
-              <ion-button
-                *ngIf="(user && !item.members?.includes(user.uid) && !item.pendingMembers?.includes(user.uid))"
-                slot="end"
-                mode="md"
-                expand="block"
-                (click)="$event.stopPropagation();$event.preventDefault();sendRequest(item);"
-                >Send Request</ion-button
-              >
-            </ion-item>
-          </ion-list>
-        </ion-card>
+        <app-partner-search
+          *ngIf="user && currentGroup"
+          [currentGroup]="currentGroup"
+          [isAdmin]="isAdmin"
+        ></app-partner-search>
+      </ion-col>
+      <ion-col>
+        <app-member-search
+          *ngIf="user && currentGroup"
+          [currentGroup]="currentGroup"
+          [isAdmin]="isAdmin"
+        ></app-member-search>
       </ion-col>
     </ion-row>
   </ion-grid>

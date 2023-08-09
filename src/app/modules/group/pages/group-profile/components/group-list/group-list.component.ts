@@ -68,7 +68,9 @@ export class GroupListComponent implements OnInit {
 
   goToPartnersList() {
     if (this.group?.id) {
-      this.router.navigate([`/group/${this.group.id}/partners`]);
+      this.router.navigate([
+        `/group/${this.group.id}/partners/${this.group.id}/groups`,
+      ]);
     }
   }
 }

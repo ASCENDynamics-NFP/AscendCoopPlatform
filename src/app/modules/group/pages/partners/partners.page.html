@@ -124,15 +124,18 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
   <ion-tabs>
     <ion-tab-bar slot="bottom">
-      <ion-tab-button tab="group/members">
+      <ion-tab-button [tab]="groupId + '/members'">
         <ion-icon name="people-circle"></ion-icon>
         Members
       </ion-tab-button>
-      <ion-tab-button tab="group/groups">
+      <ion-tab-button [tab]="groupId + '/groups'">
         <ion-icon name="business"></ion-icon>
         Groups
       </ion-tab-button>
-      <ion-tab-button tab="group/search">
+      <ion-tab-button
+        *ngIf="currentUser && group?.admins?.includes(currentUser.uid)"
+        [tab]="groupId + '/search'"
+      >
         <ion-icon name="search"></ion-icon>
         Search Groups
       </ion-tab-button>

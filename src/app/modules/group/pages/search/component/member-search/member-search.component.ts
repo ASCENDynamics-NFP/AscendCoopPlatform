@@ -20,7 +20,6 @@
 import {Component, Input} from "@angular/core";
 import {RouterModule} from "@angular/router";
 import {User} from "firebase/auth";
-import {Subscription} from "rxjs";
 import {StoreService} from "../../../../../../core/services/store.service";
 import {AppRelationship} from "../../../../../../models/relationship.model";
 import {CommonModule} from "@angular/common";
@@ -37,34 +36,17 @@ import {AppUser} from "../../../../../../models/user.model";
   imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
 export class MemberSearchComponent {
-  // private usersSubscription: Subscription | undefined;
   @Input() isAdmin: boolean = false;
   @Input() user: User | null = null; // define your user here
   @Input() currentGroup: Partial<AppGroup> | null = null;
   @Input() users: Partial<AppUser>[] | null = [];
-  // searchResults: Partial<AppUser>[] | null = [];
   searchTerm: string = "";
 
   constructor(private storeService: StoreService) {}
 
-  ionViewWillEnter() {
-    // this.usersSubscription = this.storeService.users$.subscribe((users) => {
-    //   if (users) {
-    //     this.users = users;
-    //     this.searchResults = this.users;
-    //     if (this.searchTerm) {
-    //       this.searchResults = users.filter((user) =>
-    //         user.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
-    //       );
-    //     }
-    //   }
-    // });
-  }
+  ionViewWillEnter() {}
 
-  ionViewWillLeave() {
-    // Unsubscribe from the users$ observable when the component is destroyed
-    // this.usersSubscription?.unsubscribe();
-  }
+  ionViewWillLeave() {}
 
   get searchResults() {
     if (!this.users) {
@@ -83,14 +65,6 @@ export class MemberSearchComponent {
     if (this.searchTerm) {
       this.storeService.searchDocsByName("users", this.searchTerm);
     }
-    //   this.searchResults = this.storeService.getCollection("users");
-    //   this.searchResults = this.searchResults.sort((a, b) => {
-    //     if (a.name && b.name) {
-    //       return a.name.localeCompare(b.name);
-    //     }
-    //     return 0;
-    //   });
-    // }
   }
 
   inviteUser(user: Partial<AppUser>) {

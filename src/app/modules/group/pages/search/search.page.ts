@@ -70,15 +70,24 @@ export class SearchPage {
   ionViewWillEnter() {
     this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
       this.currentGroup = groups.find((group) => group["id"] === this.groupId);
-      this.groups = groups;
+      this.groups = this.sortbyName(groups);
     });
     this.usersSubscription = this.storeService.users$.subscribe((users) => {
-      this.users = users;
+      this.users = this.sortbyName(users);
     });
   }
 
   ionViewWillLeave() {
     this.groupsSubscription?.unsubscribe();
     this.usersSubscription?.unsubscribe();
+  }
+
+  sortbyName(records: any[]) {
+    return records.sort((a, b) => {
+      if (a.name && b.name) {
+        return a.name.localeCompare(b.name);
+      }
+      return 0;
+    });
   }
 }

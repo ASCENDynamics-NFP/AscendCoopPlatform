@@ -18,7 +18,6 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Component, Input} from "@angular/core";
-import {Subscription} from "rxjs";
 import {StoreService} from "../../../../../../core/services/store.service";
 import {AppGroup} from "../../../../../../models/group.model";
 import {AppRelationship} from "../../../../../../models/relationship.model";
@@ -37,44 +36,31 @@ import {IonicModule} from "@ionic/angular";
 export class PartnerSearchComponent {
   @Input() isAdmin: boolean = false;
   @Input() currentGroup: Partial<AppGroup> | undefined;
-  private groupsSubscription: Subscription | undefined;
-  private groups: Partial<AppGroup>[] | null = [];
+  @Input() groups: Partial<AppGroup>[] | null = [];
   private searchTerm: string = "";
-  searchResults: Partial<AppGroup>[] | null = [];
 
   constructor(private storeService: StoreService) {}
 
-  ionViewWillEnter() {
-    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
-      if (groups) {
-        this.groups = groups;
-        this.searchResults = this.groups;
-        if (this.searchTerm) {
-          this.searchResults = groups.filter((group) =>
-            group.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
-          );
-        }
-      }
-    });
-  }
+  ionViewWillEnter() {}
 
-  ionViewWillLeave() {
-    // Unsubscribe from the groups$ observable when the component is destroyed
-    this.groupsSubscription?.unsubscribe();
+  ionViewWillLeave() {}
+
+  get searchResults() {
+    if (!this.groups) {
+      return [];
+    }
+    if (!this.searchTerm) {
+      return this.groups;
+    }
+    return this.groups.filter((group) =>
+      group.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
+    );
   }
 
   searchGroups(event: any) {
     this.searchTerm = event.target.value;
     if (this.searchTerm) {
       this.storeService.searchDocsByName("groups", this.searchTerm);
-    } else {
-      this.searchResults = this.storeService.getCollection("groups");
-      this.searchResults = this.searchResults.sort((a, b) => {
-        if (a.name && b.name) {
-          return a.name.localeCompare(b.name);
-        }
-        return 0;
-      });
     }
   }
 

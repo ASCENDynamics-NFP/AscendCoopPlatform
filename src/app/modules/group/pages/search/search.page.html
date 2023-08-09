@@ -36,6 +36,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <app-partner-search
           *ngIf="user && currentGroup"
           [currentGroup]="currentGroup"
+          [groups]="groups"
           [isAdmin]="isAdmin"
         ></app-partner-search>
       </ion-col>

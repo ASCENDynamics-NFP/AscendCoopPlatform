@@ -23,7 +23,6 @@ import {IonicModule} from "@ionic/angular";
 import {ActivatedRoute, RouterModule} from "@angular/router";
 import {StoreService} from "../../../../core/services/store.service";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
-import {User} from "firebase/auth";
 import {Subscription} from "rxjs";
 import {AppGroup} from "../../../../models/group.model";
 

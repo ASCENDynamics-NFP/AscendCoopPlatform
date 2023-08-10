@@ -290,7 +290,7 @@ export class StoreService {
   updateDocInState(collectionName: string, doc: Partial<any>) {
     const currentState = this.collectionsSubject[collectionName].getValue();
     const updatedState = currentState.map((d) =>
-      d["id"] === doc["id"] ? doc : d,
+      d["id"] === doc["id"] ? {...d, ...doc} : d,
     );
     this.collectionsSubject[collectionName].next(updatedState);
   }

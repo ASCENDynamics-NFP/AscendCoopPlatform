@@ -56,7 +56,12 @@ async function handleRelationshipUpdate(change: any, _context: any) {
   const before = change.before.data();
   const after = change.after.data();
 
-  if (before && after && before.status !== after.status) {
+  if (
+    before &&
+    after &&
+    (before.status !== after.status ||
+      before.membershipRole !== after.membershipRole)
+  ) {
     const senderId = after.senderId;
     const receiverId = after.receiverId;
 

@@ -57,7 +57,17 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 <h3>{{ member["name"] }}</h3>
                 <p>{{ member["bio"] }}</p>
               </ion-label>
+              <ion-toggle
+                [disabled]="isCurrentUserLastAdmin(member)"
+                *ngIf="isAdmin"
+                slot="end"
+                [(ngModel)]="member.isAdmin"
+                (click)="$event.stopPropagation(); $event.preventDefault()"
+                (ionChange)="updateAdminStatus(member)"
+              ></ion-toggle>
+
               <ion-button
+                [disabled]="isCurrentUserLastAdmin(member)"
                 *ngIf="member['showRemoveButton']"
                 slot="end"
                 expand="block"

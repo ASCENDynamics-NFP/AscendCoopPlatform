@@ -20,20 +20,22 @@
 import {CommonModule} from "@angular/common";
 import {Component} from "@angular/core";
 import {ActivatedRoute, RouterModule} from "@angular/router";
-import {IonicModule} from "@ionic/angular";
+import {AlertController, IonicModule} from "@ionic/angular";
 import {User} from "firebase/auth";
 import {Subscription} from "rxjs";
 import {AuthStoreService} from "../../../../../../core/services/auth-store.service";
 import {StoreService} from "../../../../../../core/services/store.service";
 import {AppGroup} from "../../../../../../models/group.model";
 import {AppRelationship} from "../../../../../../models/relationship.model";
+import {GroupService} from "../../../../../../core/services/group.service";
+import {FormsModule} from "@angular/forms";
 
 @Component({
   selector: "app-members",
   templateUrl: "./members.component.html",
   styleUrls: ["./members.component.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, RouterModule],
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
 export class MembersComponent {
   private groupsSubscription: Subscription;
@@ -53,7 +55,9 @@ export class MembersComponent {
    */
   constructor(
     private activatedRoute: ActivatedRoute,
+    private alertController: AlertController,
     private authStoreService: AuthStoreService,
+    private groupService: GroupService,
     private storeService: StoreService,
   ) {
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
@@ -90,6 +94,16 @@ export class MembersComponent {
   get isAdmin() {
     if (!this.group || !this.currentUser) return false;
     return this.group.admins?.includes(this.currentUser.uid);
+  }
+
+  isCurrentUserLastAdmin(member: any): boolean {
+    // Count the number of admins
+    return (
+      (this.group?.admins &&
+        this.group.admins.includes(member.memberId) &&
+        this.group.admins.length <= 1) ??
+      false
+    );
   }
 
   /**
@@ -208,6 +222,72 @@ export class MembersComponent {
     }
   }
 
+  updateAdminStatus(member: any) {
+    if (member.isAdmin) {
+      this.changeAdminStatus(member, true, this.group?.admins?.length || 0);
+    } else {
+      this.changeAdminStatus(member, false, this.group?.admins?.length || 0);
+    }
+  }
+
+  async changeAdminStatus(
+    member: any,
+    makeAdmin: boolean,
+    currentAdminCount: number,
+  ) {
+    // If trying to remove the last admin
+    if (!makeAdmin && currentAdminCount <= 1) {
+      this.currentMembersList.forEach((record) => {
+        if (member.memberId === record.memberId) {
+          record.isAdmin = true;
+        }
+      }) as any;
+
+      const alert = await this.alertController.create({
+        header: "Action Denied",
+        message: "There must be at least one admin for the group.",
+        buttons: ["OK"],
+      });
+      await alert.present();
+      return;
+    }
+
+    // If trying to make a user an admin
+    if (makeAdmin) {
+      const alert = await this.alertController.create({
+        header: "Confirm Action",
+        message: "Are you sure you want to make this user an admin?",
+        buttons: [
+          {
+            text: "Cancel",
+            role: "cancel",
+          },
+          {
+            text: "Yes",
+            handler: () => {
+              // Your logic to make the user an admin
+              this.groupService.setMemberRole(member.relationshipId, "admin");
+              this.storeService.updateDocInState("groups", {
+                id: member.groupId,
+                admins: this.group?.admins?.push(member.memberId),
+              });
+            },
+          },
+        ],
+      });
+      await alert.present();
+    } else {
+      // Your logic to remove the user from admin
+      this.groupService.setMemberRole(member.relationshipId, "member");
+      this.storeService.updateDocInState("groups", {
+        id: member.groupId,
+        admins: this.group?.admins?.filter(
+          (admin: string) => admin !== member.memberId,
+        ),
+      });
+    }
+  }
+
   /**
    * Converts a relationship object to a member object.
    * @param {Partial<AppRelationship>} relationship - The relationship to convert.
@@ -228,6 +308,10 @@ export class MembersComponent {
         isPending: relationship.status === "pending",
         showRemoveButton: this.isAdmin,
         showAcceptRejectButtons: false,
+        isAdmin:
+          relationship.receiverId && relationship.status === "accepted"
+            ? this.group.admins.includes(relationship.receiverId)
+            : false,
       };
     } else {
       // other's requests
@@ -241,6 +325,10 @@ export class MembersComponent {
         isPending: relationship.status === "pending",
         showRemoveButton: relationship.status === "accepted" && this.isAdmin,
         showAcceptRejectButtons: this.isAdmin,
+        isAdmin:
+          relationship.senderId && relationship.status === "accepted"
+            ? this.group.admins.includes(relationship.senderId)
+            : false,
       };
     }
   }

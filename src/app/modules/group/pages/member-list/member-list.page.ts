@@ -20,7 +20,6 @@
 import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
-
 import {ActivatedRoute, RouterModule} from "@angular/router";
 import {AppGroup} from "../../../../models/group.model";
 import {User} from "firebase/auth";
@@ -264,12 +263,12 @@ export class MemberListPage {
         relationship.receiverId === this.groupId
       ) {
         if (
-          relationship.type === "member" && // Needs to be type member which is a member of a group
+          relationship.type?.includes("member") && // Needs to be type member which is a member of a group
           relationship.status === "accepted" // Needs to be status accepted which is a current member
         ) {
           this.currentMembersList.push(this.relationshipToMember(relationship));
         } else if (
-          relationship.type === "member" && // Needs to be type member which is a member of a group
+          relationship.type?.includes("member") && // Needs to be type member which is a member of a group
           relationship.status === "pending" // Needs to be status pending which is a pending request
         ) {
           this.pendingMembersList.push(this.relationshipToMember(relationship));

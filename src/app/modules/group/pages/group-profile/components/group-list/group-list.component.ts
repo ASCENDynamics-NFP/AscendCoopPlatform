@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, Input, OnInit} from "@angular/core";
+import {Component, Input} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
 import {Router} from "@angular/router";
@@ -31,44 +31,44 @@ import {AppRelationship} from "../../../../../../models/relationship.model";
   standalone: true,
   imports: [IonicModule, CommonModule],
 })
-export class GroupListComponent implements OnInit {
+export class GroupListComponent {
   @Input() group: Partial<AppGroup> | null = null; // define your group here
   @Input() groupList: Partial<AppRelationship>[] = [];
 
   constructor(private router: Router) {}
 
-  ngOnInit() {}
-
   get allGroups() {
     let allGroups = [];
-    for (let group of this.groupList) {
-      if (group.status !== "accepted") continue;
-      if (group.senderId === this.group?.id) {
+    for (let relationship of this.groupList) {
+      if (relationship.status !== "accepted") continue;
+      if (relationship.senderId === this.group?.id) {
         allGroups.push({
-          id: group.receiverId,
-          name: group.receiverName,
-          image: group.receiverImage,
-          tagline: group.receiverTagline,
+          id: relationship.receiverId,
+          name: relationship.receiverName,
+          image: relationship.receiverImage,
+          tagline: relationship.receiverTagline,
         });
       } else {
         allGroups.push({
-          id: group.senderId,
-          name: group.senderName,
-          image: group.senderImage,
-          tagline: group.senderTagline,
+          id: relationship.senderId,
+          name: relationship.senderName,
+          image: relationship.senderImage,
+          tagline: relationship.senderTagline,
         });
       }
     }
     return allGroups;
   }
 
-  goToUserProfile(id: string | undefined) {
-    this.router.navigate([`/group-profile/${id}`]);
+  goToPartnerDetails(id: string | undefined) {
+    this.router.navigate([`/group/${id}/${id}/details`]);
   }
 
   goToPartnersList() {
     if (this.group?.id) {
-      this.router.navigate([`/group/${this.group.id}/partners`]);
+      this.router.navigate([
+        `/group/${this.group.id}/${this.group.id}/partners`,
+      ]);
     }
   }
 }

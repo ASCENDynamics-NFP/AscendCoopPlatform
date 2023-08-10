@@ -17,15 +17,16 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnDestroy, OnInit} from "@angular/core";
+import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
 import {AlertController, IonicModule} from "@ionic/angular";
 import {Router} from "@angular/router";
-
 import {TranslateModule} from "@ngx-translate/core";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {Subscription} from "rxjs";
+// import {StoreService} from "../../../../core/services/store.service";
+// import {Timestamp} from "firebase/firestore";
 
 @Component({
   selector: "app-user-login",
@@ -34,8 +35,8 @@ import {Subscription} from "rxjs";
   standalone: true,
   imports: [IonicModule, CommonModule, ReactiveFormsModule, TranslateModule],
 })
-export class UserLoginPage implements OnInit, OnDestroy {
-  private userSubscription: Subscription;
+export class UserLoginPage {
+  private userSubscription: Subscription | undefined;
   public loginForm = this.fb.nonNullable.group({
     // Using Validators.compose() for multiple validation rules
     email: ["", Validators.compose([Validators.required, Validators.email])],
@@ -49,8 +50,7 @@ export class UserLoginPage implements OnInit, OnDestroy {
     private alertController: AlertController,
     private authStoreService: AuthStoreService,
     private fb: FormBuilder,
-
-    private router: Router,
+    private router: Router, // private storeService: StoreService,
   ) {
     this.userSubscription = this.authStoreService.user$.subscribe((user) => {
       if (user) {
@@ -62,12 +62,14 @@ export class UserLoginPage implements OnInit, OnDestroy {
     });
   }
 
-  ionViewWillEnter() {}
-
-  ionViewWillLeave() {}
-
-  ngOnInit() {
+  ionViewWillEnter() {
+    this.loadFormData();
     this.authStoreService.onSignInWithEmailLink();
+    // .then(async (uid) => this.updateUserLoginTime(uid));
+  }
+
+  ionViewWillLeave() {
+    this.userSubscription?.unsubscribe();
   }
 
   login() {
@@ -75,6 +77,7 @@ export class UserLoginPage implements OnInit, OnDestroy {
     const password = this.loginForm.value.password;
 
     this.authStoreService.signIn(email, password);
+    //.then(async (uid) => this.updateUserLoginTime(uid));
   }
 
   async forgotPassword() {
@@ -132,15 +135,28 @@ export class UserLoginPage implements OnInit, OnDestroy {
 
   signInWithGoogle() {
     this.authStoreService.signInWithGoogle();
+    // .then(async (uid) => await this.updateUserLoginTime(uid));
   }
 
   goToSignUp() {
     this.router.navigateByUrl("/user-signup", {replaceUrl: false});
   }
 
-  ngOnDestroy() {
-    if (this.userSubscription) {
-      this.userSubscription.unsubscribe();
-    }
+  loadFormData() {
+    // Update the form with the user data
+    this.loginForm.patchValue({
+      password: "",
+      email: "",
+    });
   }
+
+  // async updateUserLoginTime(uid: string | void) {
+  //   if (!uid) {
+  //     return;
+  //   }
+  //   await this.storeService.updateDoc("users", {
+  //     lastLoginAt: Timestamp.now(),
+  //     id: uid,
+  //   });
+  // }
 }

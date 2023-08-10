@@ -139,6 +139,6 @@ export class GroupEditPage {
   }
 
   toGroupPage() {
-    this.router.navigateByUrl("/group-profile/" + this.groupId);
+    this.router.navigateByUrl(`/group/${this.groupId}/${this.groupId}/details`);
   }
 }

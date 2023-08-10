@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, Input, OnInit} from "@angular/core";
+import {Component, Input} from "@angular/core";
 import {Router} from "@angular/router";
 import {IonicModule} from "@ionic/angular";
 import {CommonModule} from "@angular/common";
@@ -31,32 +31,34 @@ import {AppUser} from "../../../../../../models/user.model";
   standalone: true,
   imports: [IonicModule, CommonModule],
 })
-export class GroupMembershipListComponent implements OnInit {
+export class GroupMembershipListComponent {
   @Input() user: Partial<AppUser> | null = null; // define your user here
   @Input() groupList: Partial<AppRelationship>[] = []; // define your user here
 
   constructor(private router: Router) {}
 
-  ngOnInit() {}
-
   get allGroups() {
     let allGroups = [];
-    for (let group of this.groupList) {
-      if (group.status !== "accepted" || group.type !== "member" || !this.user)
+    for (let relationship of this.groupList) {
+      if (
+        relationship.status !== "accepted" ||
+        !relationship.type?.includes("member") ||
+        !this.user
+      )
         continue;
-      if (group.senderId === this.user.id) {
+      if (relationship.senderId === this.user.id) {
         allGroups.push({
-          id: group.receiverId,
-          name: group.receiverName,
-          image: group.receiverImage,
-          tagline: group.receiverTagline,
+          id: relationship.receiverId,
+          name: relationship.receiverName,
+          image: relationship.receiverImage,
+          tagline: relationship.receiverTagline,
         });
       } else {
         allGroups.push({
-          id: group.senderId,
-          name: group.senderName,
-          image: group.senderImage,
-          tagline: group.senderTagline,
+          id: relationship.senderId,
+          name: relationship.senderName,
+          image: relationship.senderImage,
+          tagline: relationship.senderTagline,
         });
       }
     }
@@ -64,7 +66,7 @@ export class GroupMembershipListComponent implements OnInit {
   }
 
   goToGroupPage(id: string | undefined) {
-    this.router.navigate([`/group-profile/${id}`]);
+    this.router.navigate([`/group/${id}/${id}/details`]);
   }
 
   goToGroupList() {

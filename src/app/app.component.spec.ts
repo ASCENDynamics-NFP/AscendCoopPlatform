@@ -28,7 +28,6 @@ import {HttpClient} from "@angular/common/http";
 import {TranslateHttpLoader} from "@ngx-translate/http-loader";
 import {AuthStoreService} from "./core/services/auth-store.service";
 import {StoreService} from "./core/services/store.service";
-import {MenuService} from "./core/services/menu.service";
 
 export function createTranslateLoader(http: HttpClient) {
   return new TranslateHttpLoader(http, "./assets/i18n/", ".json");
@@ -38,7 +37,6 @@ describe("AppComponent", () => {
   let service: AuthStoreService;
   let authSpy: any;
   let storeSpy: any;
-  let menuSpy: any;
 
   beforeEach(() => {
     authSpy = jasmine.createSpyObj("auth", ["onSignOut"]);
@@ -51,9 +49,6 @@ describe("AppComponent", () => {
     // Mock users$ and currentUser$ as Observables
     storeSpy.users$ = of([]);
     storeSpy.currentUser$ = of(null);
-
-    // Create a spy for MenuService
-    menuSpy = jasmine.createSpyObj("menu", ["method1", "method2"]); // replace "method1", "method2" with actual methods if any
 
     TestBed.configureTestingModule({
       imports: [
@@ -70,7 +65,6 @@ describe("AppComponent", () => {
       providers: [
         {provide: AuthStoreService, useValue: authSpy},
         {provide: StoreService, useValue: storeSpy}, // Provide the mock StoreService
-        {provide: MenuService, useValue: menuSpy}, // Provide the mock MenuService
         TranslateService,
       ],
     }).compileComponents();

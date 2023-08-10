@@ -21,8 +21,13 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 
+// Initialize the Firebase admin SDK
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
+// Reference to the Firestore database
 const db = admin.firestore();
-
+// Triggered when a new group is created in Firestore and creates a corresponding relationship in the database.
 export const onGroupCreation = functions.firestore
   .document("groups/{groupId}")
   .onCreate(handleGroupCreation);
@@ -57,6 +62,7 @@ async function handleGroupCreation(snapshot: any, context: any) {
             createdBy: newGroup.createdBy,
             senderId: newGroup.createdBy,
             receiverId: context.params.groupId,
+            relatedIds: [newGroup.createdBy, context.params.groupId],
             type: "member",
             status: "accepted",
             membershipRole: "admin",

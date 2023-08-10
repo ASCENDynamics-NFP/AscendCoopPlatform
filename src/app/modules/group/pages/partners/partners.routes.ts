@@ -21,42 +21,42 @@ import {Routes} from "@angular/router";
 import {PartnersPage} from "./partners.page";
 
 export const routes: Routes = [
-  {
-    path: "",
-    component: PartnersPage,
-    children: [
-      //   {
-      //     path: "tab1",
-      //     loadComponent: () =>
-      //       import("../tab1/tab1.page").then((m) => m.Tab1Page),
-      //   },
-      {
-        path: ":groupId/groups",
-        loadComponent: () =>
-          import("./partners.page").then((m) => m.PartnersPage),
-      },
-      {
-        path: ":groupId/members",
-        loadComponent: () =>
-          import("../member-list/member-list.page").then(
-            (m) => m.MemberListPage,
-          ),
-      },
-      {
-        path: ":groupId/search",
-        loadComponent: () =>
-          import("../search/search.page").then((m) => m.SearchPage),
-      },
-      {
-        path: "",
-        redirectTo: "search",
-        pathMatch: "full",
-      },
-    ],
-  },
-  {
-    path: "",
-    redirectTo: "search",
-    pathMatch: "full",
-  },
+  // {
+  //   path: "",
+  //   component: PartnersPage,
+  //   children: [
+  //     //   {
+  //     //     path: "tab1",
+  //     //     loadComponent: () =>
+  //     //       import("../tab1/tab1.page").then((m) => m.Tab1Page),
+  //     //   },
+  //     {
+  //       path: ":groupId/groups",
+  //       loadComponent: () =>
+  //         import("./partners.page").then((m) => m.PartnersPage),
+  //     },
+  //     {
+  //       path: ":groupId/members",
+  //       loadComponent: () =>
+  //         import("../member-list/member-list.page").then(
+  //           (m) => m.MemberListPage,
+  //         ),
+  //     },
+  //     {
+  //       path: ":groupId/search",
+  //       loadComponent: () =>
+  //         import("../search/search.page").then((m) => m.SearchPage),
+  //     },
+  //     {
+  //       path: "",
+  //       redirectTo: "search",
+  //       pathMatch: "full",
+  //     },
+  //   ],
+  // },
+  // {
+  //   path: "",
+  //   redirectTo: "search",
+  //   pathMatch: "full",
+  // },
 ];

@@ -23,6 +23,7 @@ export interface AppRelationship {
   createdAt: Timestamp; // When the user was added
   createdBy: string; // User ID of the user who created the user document
   id: string | null; // The ID of the request
+  relatedIds: string[]; // The IDs of the users or groups related by the request
   senderId: string; // The user or group who initiated the request (user-id or group-id)
   receiverId: string; // The user or group the request is directed to (user-id or group-id)
   type: string; // The type of request (friend, group, etc.)

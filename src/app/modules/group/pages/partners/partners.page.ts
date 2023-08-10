@@ -31,6 +31,13 @@ export class PartnersPage {
     private storeService: StoreService,
   ) {
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
+
+    if (this.groupId) {
+      this.storeService.getDocsWithSenderOrRecieverId(
+        "relationships",
+        this.groupId,
+      );
+    }
   }
 
   ionViewWillEnter() {
@@ -197,7 +204,6 @@ export class PartnersPage {
     this.currentGroupsList = [];
     this.pendingGroupsList = [];
 
-    this.currentUser = this.authStoreService.getCurrentUser();
     for (let relationship of relationships) {
       if (
         relationship.senderId === this.groupId ||
@@ -210,8 +216,7 @@ export class PartnersPage {
           this.currentGroupsList.push(this.relationshipToGroup(relationship));
         } else if (
           relationship.type === "group" &&
-          relationship.status === "pending" &&
-          this.currentUser?.uid === this.groupId
+          relationship.status === "pending"
         ) {
           this.pendingGroupsList.push(this.relationshipToGroup(relationship));
         }

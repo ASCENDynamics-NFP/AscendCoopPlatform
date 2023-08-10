@@ -126,7 +126,7 @@ export class GroupProfilePage implements OnInit {
         ) {
           this.groupList.push(relationship);
         } else if (
-          relationship.type === "member" &&
+          relationship.type?.includes("member") &&
           relationship.status === "accepted"
         ) {
           this.memberList.push(relationship);

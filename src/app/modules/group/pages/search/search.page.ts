@@ -19,30 +19,37 @@
 ***********************************************************************************************/
 import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
-import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {User} from "firebase/auth";
 import {AppGroup} from "../../../../models/group.model";
-import {ActivatedRoute, RouterModule} from "@angular/router";
+import {ActivatedRoute} from "@angular/router";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
-import {Subscription} from "rxjs";
 import {StoreService} from "../../../../core/services/store.service";
-import {AppRelationship} from "../../../../models/relationship.model";
+import {PartnerSearchComponent} from "./component/partner-search/partner-search.component";
+import {MemberSearchComponent} from "./component/member-search/member-search.component";
+import {Subscription} from "rxjs";
+import {AppUser} from "../../../../models/user.model";
 
 @Component({
   selector: "app-search",
   templateUrl: "./search.page.html",
   styleUrls: ["./search.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
+  imports: [
+    IonicModule,
+    CommonModule,
+    PartnerSearchComponent,
+    MemberSearchComponent,
+  ],
 })
 export class SearchPage {
   private groupsSubscription: Subscription | undefined;
-  user: User | null = null; // define your user here
-  groups: Partial<AppGroup>[] | null = [];
-  searchResults: Partial<AppGroup>[] | null = [];
-  searchTerm: string = "";
+  private usersSubscription: Subscription | undefined;
   groupId: string | null = null;
+  groups: Partial<AppGroup>[] | null = [];
+  user: User | null = null; // define your user here
+  users: Partial<AppUser>[] | null = [];
+  currentGroup: Partial<AppGroup> | undefined;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -53,66 +60,34 @@ export class SearchPage {
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
   }
 
+  get isAdmin(): boolean {
+    if (!this.user?.uid) {
+      return false;
+    }
+    return this.currentGroup?.admins?.includes(this.user?.uid) ?? false;
+  }
+
   ionViewWillEnter() {
     this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
-      if (groups) {
-        this.groups = groups;
-        this.searchResults = this.groups;
-        if (this.searchTerm) {
-          this.searchResults = groups.filter((group) =>
-            group.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
-          );
-        }
-      }
+      this.currentGroup = groups.find((group) => group["id"] === this.groupId);
+      this.groups = this.sortbyName(groups);
+    });
+    this.usersSubscription = this.storeService.users$.subscribe((users) => {
+      this.users = this.sortbyName(users);
     });
   }
 
   ionViewWillLeave() {
-    // Unsubscribe from the groups$ observable when the component is destroyed
     this.groupsSubscription?.unsubscribe();
+    this.usersSubscription?.unsubscribe();
   }
 
-  searchGroups(event: any) {
-    this.searchTerm = event.target.value;
-    if (this.searchTerm) {
-      this.storeService.searchDocsByName("groups", this.searchTerm);
-    } else {
-      this.searchResults = this.storeService.getCollection("groups");
-      this.searchResults = this.searchResults.sort((a, b) => {
-        if (a.name && b.name) {
-          return a.name.localeCompare(b.name);
-        }
-        return 0;
-      });
-    }
-  }
-
-  sendRequest(group: Partial<AppGroup>) {
-    const relationship: Partial<AppRelationship> = {
-      senderId: this.user?.uid ? this.user.uid : "",
-      receiverId: group.id,
-      type: "member",
-      status: "pending",
-      membershipRole: "",
-      receiverRelationship: "group",
-      senderRelationship: "user",
-      receiverName: group.name,
-      receiverImage: group.groupPicture,
-      receiverTagline: group.tagline,
-      senderName: this.user?.displayName ? this.user.displayName : "",
-      senderImage: this.user?.photoURL ? this.user.photoURL : "",
-      senderTagline: "",
-    };
-
-    this.storeService.createDoc("relationships", relationship).then(() => {
-      // Update the group's pendingMembers in the state
-      if (!group.pendingMembers) {
-        group.pendingMembers = [];
+  sortbyName(records: any[]) {
+    return records.sort((a, b) => {
+      if (a.name && b.name) {
+        return a.name.localeCompare(b.name);
       }
-      group.pendingMembers = this.user?.uid
-        ? [...group.pendingMembers, this.user.uid]
-        : [...group.pendingMembers];
-      this.storeService.updateDocInState("groups", group);
+      return 0;
     });
   }
 }

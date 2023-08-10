@@ -18,45 +18,54 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Routes} from "@angular/router";
-import {PartnersPage} from "./partners.page";
+import {GroupPage} from "./group.page";
 
 export const routes: Routes = [
+  {
+    path: "",
+    component: GroupPage,
+    children: [
+      {
+        path: ":groupId/details",
+        loadComponent: () =>
+          import("../group-profile/group-profile.page").then(
+            (m) => m.GroupProfilePage,
+          ),
+      },
+      {
+        path: ":groupId/details/edit",
+        loadComponent: () =>
+          import("../group-edit/group-edit.page").then((m) => m.GroupEditPage),
+      },
+      {
+        path: ":groupId/partners",
+        loadComponent: () =>
+          import("./component/partners/partners.component").then(
+            (m) => m.PartnersComponent,
+          ),
+      },
+      {
+        path: ":groupId/members",
+        loadComponent: () =>
+          import("./component/members/members.component").then(
+            (m) => m.MembersComponent,
+          ),
+      },
+      {
+        path: ":groupId/search",
+        loadComponent: () =>
+          import("../search/search.page").then((m) => m.SearchPage),
+      },
+      // {
+      //   path: "",
+      //   redirectTo: "group",
+      //   pathMatch: "full",
+      // },
+    ],
+  },
   // {
   //   path: "",
-  //   component: PartnersPage,
-  //   children: [
-  //     //   {
-  //     //     path: "tab1",
-  //     //     loadComponent: () =>
-  //     //       import("../tab1/tab1.page").then((m) => m.Tab1Page),
-  //     //   },
-  //     {
-  //       path: ":groupId/groups",
-  //       loadComponent: () =>
-  //         import("./partners.page").then((m) => m.PartnersPage),
-  //     },
-  //     {
-  //       path: ":groupId/members",
-  //       loadComponent: () =>
-  //         import("../member-list/member-list.page").then(
-  //           (m) => m.MemberListPage,
-  //         ),
-  //     },
-  //     {
-  //       path: ":groupId/search",
-  //       loadComponent: () =>
-  //         import("../search/search.page").then((m) => m.SearchPage),
-  //     },
-  //     {
-  //       path: "",
-  //       redirectTo: "search",
-  //       pathMatch: "full",
-  //     },
-  //   ],
-  // },
-  // {
-  //   path: "",
-  //   redirectTo: "search",
+  //   redirectTo: "",
   //   pathMatch: "full",
   // },
 ];

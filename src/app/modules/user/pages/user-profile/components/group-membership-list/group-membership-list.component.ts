@@ -66,7 +66,7 @@ export class GroupMembershipListComponent {
   }
 
   goToGroupPage(id: string | undefined) {
-    this.router.navigate([`/group-profile/${id}`]);
+    this.router.navigate([`/group/${id}/${id}/details`]);
   }
 
   goToGroupList() {

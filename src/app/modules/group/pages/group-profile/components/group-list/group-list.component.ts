@@ -60,14 +60,14 @@ export class GroupListComponent {
     return allGroups;
   }
 
-  goToUserProfile(id: string | undefined) {
-    this.router.navigate([`/group-profile/${id}`]);
+  goToPartnerDetails(id: string | undefined) {
+    this.router.navigate([`/group/${id}/${id}/details`]);
   }
 
   goToPartnersList() {
     if (this.group?.id) {
       this.router.navigate([
-        `/group/${this.group.id}/partners/${this.group.id}/groups`,
+        `/group/${this.group.id}/${this.group.id}/partners`,
       ]);
     }
   }

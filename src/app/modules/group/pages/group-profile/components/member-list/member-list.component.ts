@@ -67,7 +67,7 @@ export class MemberListComponent {
   goToMemberList() {
     if (this.group?.id) {
       this.router.navigate([
-        `/group/${this.group.id}/partners/${this.group.id}/members`,
+        `/group/${this.group.id}/${this.group.id}/members`,
       ]);
     }
   }

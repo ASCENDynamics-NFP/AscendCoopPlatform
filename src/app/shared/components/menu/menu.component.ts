@@ -232,7 +232,9 @@ export class MenuComponent implements OnInit, OnDestroy {
 
       const {data, role} = await modal.onWillDismiss();
       if (role === "confirm" && data) {
-        this.router.navigate(["group-profile/" + data.groupId]);
+        this.router.navigate([
+          `/group/${data.groupId}/${data.groupId}/details`,
+        ]);
       }
     }
   }

@@ -1,0 +1,129 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <!-- <ion-title>Partners</ion-title> -->
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Partners</ion-card-title>
+      <ion-card-subtitle
+        >{{ currentGroupsList.length }} partners</ion-card-subtitle
+      >
+    </ion-card-header>
+    <ion-list>
+      <ion-item
+        *ngFor="let group of currentGroupsList; let i = index"
+        routerLink="/group-profile/{{ group['partnerGroupId'] }}"
+        button
+      >
+        <ion-thumbnail slot="start">
+          <img
+            *ngIf="group['image']"
+            [alt]="group['name']"
+            [src]="group['image']"
+          />
+        </ion-thumbnail>
+        <ion-label>
+          <h3>{{ group["name"] }}</h3>
+          <p>{{ group["tagline"] }}</p>
+        </ion-label>
+        <ion-button
+          *ngIf="group['showRemoveButton']"
+          slot="end"
+          expand="block"
+          color="secondary"
+          (click)="
+            $event.stopPropagation();
+            $event.preventDefault();
+            removePartnerRequest(group)
+          "
+          >Remove</ion-button
+        >
+      </ion-item>
+    </ion-list>
+  </ion-card>
+  <ion-card *ngIf="pendingGroupsList.length">
+    <ion-card-header>
+      <ion-card-title>Partners</ion-card-title>
+      <ion-card-subtitle
+        >{{ pendingGroupsList.length }} pending groups</ion-card-subtitle
+      >
+    </ion-card-header>
+    <ion-list>
+      <ion-item
+        *ngFor="let group of pendingGroupsList; let i = index"
+        routerLink="/group-profile/{{ group['partnerGroupId'] }}"
+        button
+      >
+        <ion-thumbnail slot="start">
+          <img
+            *ngIf="group['image']"
+            [alt]="group['name']"
+            [src]="group['image']"
+          />
+        </ion-thumbnail>
+        <ion-label>
+          <h3>{{ group["name"] }}</h3>
+          <p>{{ group["tagline"] }}</p>
+        </ion-label>
+        <ion-button
+          *ngIf="group['showAcceptRejectButtons']"
+          slot="end"
+          expand="block"
+          (click)="
+            $event.stopPropagation();
+            $event.preventDefault();
+            acceptPartnerRequest(group)
+          "
+          >Accept</ion-button
+        >
+        <ion-button
+          *ngIf="group['showAcceptRejectButtons']"
+          slot="end"
+          expand="block"
+          color="secondary"
+          (click)="
+            $event.stopPropagation();
+            $event.preventDefault();
+            rejectPartnerRequest(group)
+          "
+          >Reject</ion-button
+        >
+        <ion-button
+          *ngIf="group['showRemoveButton']"
+          slot="end"
+          expand="block"
+          color="secondary"
+          (click)="
+            $event.stopPropagation();
+            $event.preventDefault();
+            removePartnerRequest(group)
+          "
+          >Remove</ion-button
+        >
+      </ion-item>
+    </ion-list>
+  </ion-card>
+</ion-content>

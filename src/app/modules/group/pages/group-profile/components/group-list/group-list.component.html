@@ -27,7 +27,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-item
         *ngFor="let group of allGroups | slice : 0 : 4; let i = index"
         button
-        (click)="goToUserProfile(group.id)"
+        (click)="goToPartnerDetails(group.id)"
       >
         <ion-thumbnail slot="start">
           <img *ngIf="group.image" [alt]="group.name" [src]="group.image" />

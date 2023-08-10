@@ -27,7 +27,6 @@ import {AuthStoreService} from "../../../../../../core/services/auth-store.servi
 import {StoreService} from "../../../../../../core/services/store.service";
 import {AppGroup} from "../../../../../../models/group.model";
 import {AppRelationship} from "../../../../../../models/relationship.model";
-import {GroupService} from "../../../../../../core/services/group.service";
 import {FormsModule} from "@angular/forms";
 
 @Component({
@@ -57,7 +56,6 @@ export class MembersComponent {
     private activatedRoute: ActivatedRoute,
     private alertController: AlertController,
     private authStoreService: AuthStoreService,
-    private groupService: GroupService,
     private storeService: StoreService,
   ) {
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
@@ -266,7 +264,7 @@ export class MembersComponent {
             text: "Yes",
             handler: () => {
               // Your logic to make the user an admin
-              this.groupService.setMemberRole(member.relationshipId, "admin");
+              this.setMemberRole(member.relationshipId, "admin");
               this.storeService.updateDocInState("groups", {
                 id: member.groupId,
                 admins: this.group?.admins?.push(member.memberId),
@@ -278,13 +276,7 @@ export class MembersComponent {
       await alert.present();
     } else {
       // Your logic to remove the user from admin
-      this.groupService.setMemberRole(member.relationshipId, "member");
-      this.storeService.updateDocInState("groups", {
-        id: member.groupId,
-        admins: this.group?.admins?.filter(
-          (admin: string) => admin !== member.memberId,
-        ),
-      });
+      this.setMemberRole(member.relationshipId, "member");
     }
   }
 
@@ -360,5 +352,12 @@ export class MembersComponent {
         }
       }
     }
+  }
+
+  setMemberRole(relationshipId: string, role: string): void {
+    this.storeService.updateDoc("relationships", {
+      id: relationshipId,
+      membershipRole: role,
+    });
   }
 }

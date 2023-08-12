@@ -27,6 +27,7 @@ import {TranslateService, LangChangeEvent} from "@ngx-translate/core";
 import {CreateGroupModalComponent} from "../../../modules/group/components/create-group-modal/create-group-modal.component";
 import {Subscription} from "rxjs";
 import {AuthStoreService} from "../../../core/services/auth-store.service";
+import {FeedbackModalComponent} from "../feedback-modal/feedback-modal.component";
 
 @Component({
   selector: "app-menu",
@@ -151,6 +152,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         title: "Profile",
         url: `user-profile/${this.user?.uid}`,
         icon: "person",
+        onclick: null,
       },
       {
         buttonIcon: "add",
@@ -160,6 +162,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         title: "Groups",
         url: `group-list`,
         icon: "business",
+        onclick: null,
       },
       {
         buttonIcon: "",
@@ -169,6 +172,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         title: "Users",
         url: `users`,
         icon: "people",
+        onclick: null,
       },
       {
         buttonIcon: "",
@@ -178,15 +182,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         title: "Settings",
         url: `user-settings/${this.user?.uid}`,
         icon: "settings",
-      },
-      {
-        buttonIcon: "",
-        buttonLink: "",
-        buttonText: "",
-        hasButton: false,
-        title: "Feedback",
-        url: `user-settings/${this.user?.uid}`,
-        icon: "ear",
+        onclick: null,
       },
       // {
       //   title: "Dashboard",
@@ -237,6 +233,16 @@ export class MenuComponent implements OnInit, OnDestroy {
         ]);
       }
     }
+  }
+
+  async showFeedbackModal() {
+    const modal = await this.modalCtrl.create({
+      component: FeedbackModalComponent,
+      componentProps: {
+        user: this.user,
+      },
+    });
+    return await modal.present();
   }
 
   ngOnDestroy(): void {

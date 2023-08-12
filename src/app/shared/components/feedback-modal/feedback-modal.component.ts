@@ -30,7 +30,7 @@ import {
   uploadBytesResumable,
   getDownloadURL,
 } from "firebase/storage";
-import {ErrorHandlerService} from "./error-handler.service";
+import {ErrorHandlerService} from "../../../core/services/error-handler.service";
 
 @Component({
   selector: "app-feedback-modal",
@@ -104,7 +104,7 @@ export class FeedbackModalComponent {
       },
       async (error) => {
         // Handle errors, maybe show a message to the user
-        this.errorHandler.handleError(error);
+        this.errorHandler.handleFirebaseAuthError(error);
         switch (error.code) {
           case "storage/unauthorized":
             console.error("User doesn't have permission to access the object");

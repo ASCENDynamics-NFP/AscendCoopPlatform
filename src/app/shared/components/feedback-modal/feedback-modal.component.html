@@ -38,19 +38,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </ion-item>
 
   <ion-item>
-    <ion-label position="floating">Feedback</ion-label>
-    <ion-textarea [(ngModel)]="feedback"></ion-textarea>
-  </ion-item>
-
-  <ion-item>
-    <ion-label>Rating</ion-label>
-    <ion-range min="1" max="5" step="1" snaps="true" [(ngModel)]="rating">
-      <ion-icon size="small" slot="start" name="star-outline"></ion-icon>
-      <ion-icon slot="end" name="star"></ion-icon>
-    </ion-range>
-  </ion-item>
-
-  <ion-item>
     <ion-label>Category</ion-label>
     <ion-select [(ngModel)]="category">
       <ion-select-option value="Bug Report">Bug Report</ion-select-option>
@@ -64,11 +51,24 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </ion-item>
 
   <ion-item>
+    <ion-label position="floating">Feedback</ion-label>
+    <ion-textarea [(ngModel)]="feedback"></ion-textarea>
+  </ion-item>
+
+  <ion-item>
     <ion-label>Attachments</ion-label>
     <input type="file" (change)="onFileChange($event)" />
   </ion-item>
 
-  <ion-button expand="full" (click)="submitFeedback()"
+  <ion-item>
+    <ion-label>Rating</ion-label>
+    <ion-range min="1" max="5" step="1" snaps="true" [(ngModel)]="rating">
+      <ion-icon size="small" slot="start" name="star-outline"></ion-icon>
+      <ion-icon slot="end" name="star"></ion-icon>
+    </ion-range>
+  </ion-item>
+
+  <ion-button [disabled]="isUploading" expand="full" (click)="submitFeedback()"
     >Submit Feedback</ion-button
   >
 </ion-content>

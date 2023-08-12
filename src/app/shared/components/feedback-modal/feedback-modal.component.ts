@@ -20,7 +20,7 @@
 import {Component, Input} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
-import {IonicModule, ModalController} from "@ionic/angular";
+import {IonicModule, LoadingController, ModalController} from "@ionic/angular";
 import {User} from "firebase/auth";
 import {StoreService} from "../../../core/services/store.service";
 import {AppFeedback} from "../../../models/feedback.model";
@@ -30,6 +30,7 @@ import {
   uploadBytesResumable,
   getDownloadURL,
 } from "firebase/storage";
+import {ErrorHandlerService} from "./error-handler.service";
 
 @Component({
   selector: "app-feedback-modal",
@@ -45,8 +46,11 @@ export class FeedbackModalComponent {
   category: string = ""; // or set a default category if you prefer
   attachment: string | null = null;
   categories: string[] = ["Bug Report", "Feature Request", "General Feedback"];
+  isUploading: boolean = false;
 
   constructor(
+    private errorHandler: ErrorHandlerService,
+    private loadingController: LoadingController,
     private modalCtrl: ModalController,
     private storeService: StoreService,
   ) {}
@@ -69,32 +73,38 @@ export class FeedbackModalComponent {
   async uploadFile(file: File) {
     const storageRef = ref(
       this.storage,
-      `feedback/${this.user?.uid}-${file.name}`,
+      `feedback/${this.user?.uid}/${new Date()}-${file.name}`,
     ); // This creates a reference to the file's future location
 
     const uploadTask = uploadBytesResumable(storageRef, file);
 
-    await uploadTask.on(
+    // Present the loader
+    const loading = await this.loadingController.create({
+      message: "Uploading file...",
+    });
+    await loading.present();
+
+    this.isUploading = true;
+
+    uploadTask.on(
       "state_changed",
       (snapshot) => {
         // Handle the upload progress, maybe update a progress bar or show a message
         const progress =
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        if (progress == 100) {
-        } else if (progress == 0) {
-        }
-        console.log(`Upload is ${progress}% done`);
+        // console.log(`Upload is ${progress}% done`);
         switch (snapshot.state) {
           case "paused":
-            console.log("Upload is paused");
+            loading.message = `Upload is paused`; // Update the loader message
             break;
           case "running":
-            console.log("Upload is running");
+            loading.message = `Uploading file... ${progress.toFixed(0)}%`; // Update the loader message
             break;
         }
       },
-      (error) => {
+      async (error) => {
         // Handle errors, maybe show a message to the user
+        this.errorHandler.handleError(error);
         switch (error.code) {
           case "storage/unauthorized":
             console.error("User doesn't have permission to access the object");
@@ -108,8 +118,10 @@ export class FeedbackModalComponent {
             );
             break;
         }
+        this.isUploading = false;
+        await loading.dismiss(); // Dismiss the loader on error
       },
-      () => {
+      async () => {
         // Once the upload is complete, get the download URL
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
           console.log("File available at", downloadURL);
@@ -117,6 +129,8 @@ export class FeedbackModalComponent {
           console.log("uploadedFileURL set to:", this.uploadedFileURL);
           this.attachment = this.uploadedFileURL;
         });
+        this.isUploading = false;
+        await loading.dismiss(); // Dismiss the loader on error
       },
     );
   }

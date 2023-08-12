@@ -19,7 +19,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <ion-header>
   <ion-toolbar>
-    <ion-title>Feedback from {{ user?.displayName }}</ion-title>
+    <ion-title>Feedback</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="closeModal()">Close</ion-button>
     </ion-buttons>
@@ -27,7 +27,48 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 </ion-header>
 
 <ion-content class="ion-padding">
-  <p>Email: {{ user?.email }}</p>
-  <ion-textarea [(ngModel)]="feedbackText" placeholder="Enter your feedback here..."></ion-textarea>
-  <ion-button expand="full" (click)="submitFeedback()">Submit Feedback</ion-button>
+  <ion-item *ngIf="!user">
+    <ion-label position="floating">Name</ion-label>
+    <ion-input type="text"></ion-input>
+  </ion-item>
+
+  <ion-item *ngIf="!user">
+    <ion-label position="floating">Email</ion-label>
+    <ion-input type="email"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="floating">Feedback</ion-label>
+    <ion-textarea [(ngModel)]="feedback"></ion-textarea>
+  </ion-item>
+
+  <ion-item>
+    <ion-label>Rating</ion-label>
+    <ion-range min="1" max="5" step="1" snaps="true" [(ngModel)]="rating">
+      <ion-icon size="small" slot="start" name="star-outline"></ion-icon>
+      <ion-icon slot="end" name="star"></ion-icon>
+    </ion-range>
+  </ion-item>
+
+  <ion-item>
+    <ion-label>Category</ion-label>
+    <ion-select [(ngModel)]="category">
+      <ion-select-option value="Bug Report">Bug Report</ion-select-option>
+      <ion-select-option value="Feature Request"
+        >Feature Request</ion-select-option
+      >
+      <ion-select-option value="General Feedback"
+        >General Feedback</ion-select-option
+      >
+    </ion-select>
+  </ion-item>
+
+  <ion-item>
+    <ion-label>Attachments</ion-label>
+    <input type="file" (change)="onFileChange($event)" />
+  </ion-item>
+
+  <ion-button expand="full" (click)="submitFeedback()"
+    >Submit Feedback</ion-button
+  >
 </ion-content>

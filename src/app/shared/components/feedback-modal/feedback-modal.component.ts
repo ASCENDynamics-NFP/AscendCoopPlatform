@@ -18,36 +18,120 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Component, Input} from "@angular/core";
+import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule, ModalController} from "@ionic/angular";
 import {User} from "firebase/auth";
 import {StoreService} from "../../../core/services/store.service";
 import {AppFeedback} from "../../../models/feedback.model";
+import {
+  ref,
+  getStorage,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage";
 
 @Component({
   selector: "app-feedback-modal",
   templateUrl: "./feedback-modal.component.html",
   styleUrls: ["./feedback-modal.component.scss"],
   standalone: true,
-  imports: [IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule],
 })
 export class FeedbackModalComponent {
   @Input() user?: User; // You can replace 'any' with your user type if you have one
-  public feedbackText: string = "";
+  feedback: string = "";
+  rating: number = 0; // or any default value you prefer
+  category: string = ""; // or set a default category if you prefer
+  attachment: string | null = null;
+  categories: string[] = ["Bug Report", "Feature Request", "General Feedback"];
 
   constructor(
     private modalCtrl: ModalController,
     private storeService: StoreService,
   ) {}
 
+  storage = getStorage(); // This gets the default Firebase app's storage instance
+
+  onFileChange(event: any) {
+    console.log(event);
+    console.log(event.target);
+    const fileList: FileList = event.target.files;
+    console.log(fileList);
+    if (fileList.length > 0) {
+      const file: File = fileList[0];
+      this.uploadFile(file);
+    }
+  }
+  // Add a new class property to store the download URL of the uploaded file
+  uploadedFileURL: string | null = null;
+
+  async uploadFile(file: File) {
+    const storageRef = ref(
+      this.storage,
+      `feedback/${this.user?.uid}-${file.name}`,
+    ); // This creates a reference to the file's future location
+
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    await uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        // Handle the upload progress, maybe update a progress bar or show a message
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        if (progress == 100) {
+        } else if (progress == 0) {
+        }
+        console.log(`Upload is ${progress}% done`);
+        switch (snapshot.state) {
+          case "paused":
+            console.log("Upload is paused");
+            break;
+          case "running":
+            console.log("Upload is running");
+            break;
+        }
+      },
+      (error) => {
+        // Handle errors, maybe show a message to the user
+        switch (error.code) {
+          case "storage/unauthorized":
+            console.error("User doesn't have permission to access the object");
+            break;
+          case "storage/canceled":
+            console.error("User canceled the upload");
+            break;
+          case "storage/unknown":
+            console.error(
+              "Unknown error occurred, inspect error.serverResponse",
+            );
+            break;
+        }
+      },
+      () => {
+        // Once the upload is complete, get the download URL
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          console.log("File available at", downloadURL);
+          this.uploadedFileURL = downloadURL;
+          console.log("uploadedFileURL set to:", this.uploadedFileURL);
+          this.attachment = this.uploadedFileURL;
+        });
+      },
+    );
+  }
+
   submitFeedback() {
+    console.log(this.feedback, this.rating, this.category, this.attachment);
     // Here you can send the feedback to your server or handle it as you wish
     this.storeService.createDoc("feedback", {
       email: this.user?.email,
-      ame: this.user?.displayName,
+      name: this.user?.displayName, // Fixed the typo here
       emailVerified: this.user?.emailVerified,
-      feedback: this.feedbackText,
-      type: "feedback",
+      feedback: this.feedback,
+      rating: this.rating,
+      category: this.category,
+      attachment: this.uploadedFileURL, // Save the download URL instead of the FileList object
       isRead: false,
       isResolved: false,
     } as Partial<AppFeedback>);

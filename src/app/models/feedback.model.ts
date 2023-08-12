@@ -30,6 +30,9 @@ export interface AppFeedback {
   name: string; // Name of the user who submitted the feedback
   feedback: string; // Feedback text
   type: string; // Feedback type
+  attachment: string; // URL of the attachment
+  rating: number; // Rating of the feedback
+  category: string; // Category of the feedback
   isRead: boolean; // Whether the feedback has been read
   isResolved: boolean; // Whether the feedback has been resolved
 }

@@ -32,26 +32,50 @@ import {ImageUploadModalComponent} from "../../../../../../shared/components/ima
 })
 export class HeroComponent {
   @Input() user?: Partial<AppUser>; // define your user here
+  @Input() isProfileOwner: boolean = false; // define if the user is the current user (for edit profile button
 
   constructor(private modalController: ModalController) {}
 
-  async openImageUploadModal() {
-    const modal = await this.modalController.create({
-      component: ImageUploadModalComponent,
-      componentProps: {
-        collectionName: "users",
-        docId: this.user?.id,
-        firestoreLocation: `users/${this.user?.id}/profile`,
-        maxHeight: 200,
-        maxWidth: 200,
-      },
-    });
+  async openImageUploadModal(imageType: string) {
+    if (!this.user?.id || !this.isProfileOwner) return;
+    if (imageType === "heroImage") {
+      let modal = await this.modalController.create({
+        component: ImageUploadModalComponent,
+        componentProps: {
+          collectionName: "users",
+          docId: this.user?.id,
+          firestoreLocation: `users/${this.user?.id}/profile`,
+          maxHeight: 200,
+          maxWidth: 200,
+          fieldName: "heroImage",
+        },
+      });
 
-    await modal.present();
+      await modal.present();
 
-    const {data} = await modal.onWillDismiss();
-    if (data) {
-      const profileImageUrl = data;
+      // const {data} = await modal.onWillDismiss();
+      // if (data) {
+      //   const profileImageUrl = data;
+      // }
+    } else if (imageType === "profilePicture") {
+      let modal = await this.modalController.create({
+        component: ImageUploadModalComponent,
+        componentProps: {
+          collectionName: "users",
+          docId: this.user?.id,
+          firestoreLocation: `users/${this.user?.id}/profile`,
+          maxHeight: 300,
+          maxWidth: 900,
+          fieldName: "profilePicture",
+        },
+      });
+
+      await modal.present();
+
+      // const {data} = await modal.onWillDismiss();
+      // if (data) {
+      //   const profileImageUrl = data;
+      // }
     }
   }
 }

@@ -18,6 +18,7 @@ export class ImageUploadModalComponent {
   @Input() firestoreLocation!: string; // e.g. 'users/userId/profileImage'
   @Input() imageHeight!: number;
   @Input() imageWidth!: number;
+  @Input() fieldName!: string;
   imagePreview!: SafeUrl | string | ArrayBuffer;
   selectedFile: File | null = null;
 
@@ -54,6 +55,7 @@ export class ImageUploadModalComponent {
           this.docId,
           this.imageWidth,
           this.imageHeight,
+          this.fieldName,
         );
         this.modalCtrl.dismiss(downloadURL);
       } else {

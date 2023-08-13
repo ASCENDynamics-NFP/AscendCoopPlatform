@@ -27,6 +27,7 @@ export class ImageUploadService {
     docId: string,
     maxWidth: number,
     maxHeight: number,
+    fieldName: string,
   ): Promise<string> {
     const loading = await this.loadingController.create({
       message: "Starting upload...",
@@ -34,7 +35,7 @@ export class ImageUploadService {
     await loading.present();
 
     const resizedImageBlob = await this.resizeImage(file, maxWidth, maxHeight);
-    const filePath = `${firestoreLocation}/${file.name}`;
+    const filePath = `${firestoreLocation}/${new Date() + file.name}`;
     const storageRef = ref(this.storage, filePath);
     const uploadTask = uploadBytesResumable(storageRef, resizedImageBlob);
 
@@ -60,7 +61,12 @@ export class ImageUploadService {
         },
         async () => {
           const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          await this.saveImageToFirestore(collectionName, docId, downloadURL);
+          await this.saveImageToFirestore(
+            collectionName,
+            docId,
+            downloadURL,
+            fieldName,
+          );
           loading.dismiss();
           resolve(downloadURL);
         },
@@ -72,11 +78,23 @@ export class ImageUploadService {
     collectionName: string,
     docId: string,
     downloadURL: string,
+    fieldName: string,
   ) {
-    await this.storeService.updateDoc(collectionName, {
-      id: docId,
-      profilePicture: downloadURL,
-    });
+    if (!docId) {
+      throw new Error("Missing document ID");
+    }
+    if (!downloadURL) {
+      throw new Error("Missing download URL");
+    }
+    if (!fieldName) {
+      throw new Error("Missing field name");
+    }
+    if (!collectionName) {
+      throw new Error("Missing collection name");
+    }
+    let doc = {id: docId} as any;
+    doc[fieldName] = downloadURL;
+    await this.storeService.updateDoc(collectionName, doc);
   }
 
   private async showErrorToast(message: string) {

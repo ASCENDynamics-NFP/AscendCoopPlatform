@@ -20,13 +20,15 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <ion-card *ngIf="user">
   <img width="100%" [alt]="user.displayName" [src]="user.heroImage" />
   <ion-card-header>
-    <ion-card-title>{{ user.displayName }}</ion-card-title>
-    <ion-card-subtitle>101 Hours Volunteer</ion-card-subtitle>
-    <!-- <p>Email: {{ user.email }}</p>
-    <p>Email Verified: {{ user.emailVerified }}</p> -->
+    <ion-item>
+      <ion-avatar slot="start" (click)="openImageUploadModal()">
+        <img alt="Silhouette of a person's head" [src]="user.profilePicture" />
+      </ion-avatar>
+      <ion-label>{{ user.tagline }}</ion-label>
+    </ion-item>
   </ion-card-header>
 
-  <!-- <ion-card-content>
-    Here's a small text description for the card content. Nothing more, nothing less.
-  </ion-card-content> -->
+  <ion-card-content *ngIf="user.bio">
+    {{ user.bio }}
+  </ion-card-content>
 </ion-card>

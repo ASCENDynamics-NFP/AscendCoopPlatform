@@ -44,6 +44,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             lines="none"
             detail="false"
             routerLinkActive="selected"
+            (click)="(p.onclick)"
           >
             <ion-icon
               aria-hidden="true"
@@ -70,6 +71,21 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 [md]="p.buttonIcon"
               ></ion-icon
             ></ion-button>
+          </ion-item>
+          <ion-item
+            style="cursor: pointer"
+            lines="none"
+            detail="false"
+            routerLinkActive="selected"
+            (click)="showFeedbackModal()"
+          >
+            <ion-icon
+              aria-hidden="true"
+              slot="start"
+              ios="ear-outline"
+              md="ear-outline"
+            ></ion-icon>
+            <ion-label>Give Feedback</ion-label>
           </ion-item>
           <!-- <ion-list-header>
             <ion-label>Group</ion-label>

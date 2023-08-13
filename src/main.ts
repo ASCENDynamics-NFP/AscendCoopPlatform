@@ -22,6 +22,7 @@ import {bootstrapApplication} from "@angular/platform-browser";
 import {RouteReuseStrategy, provideRouter} from "@angular/router";
 import {IonicModule, IonicRouteStrategy} from "@ionic/angular";
 import {defineCustomElements} from "@ionic/pwa-elements/loader";
+import {getStorage} from "firebase/storage";
 
 import {routes} from "./app/app.routes";
 import {AppComponent} from "./app/app.component";
@@ -45,7 +46,10 @@ if (environment.production) {
 }
 
 // Initialize Firebase before the application has been bootstrapped
-initializeApp(environment.firebaseConfig);
+const app = initializeApp(environment.firebaseConfig);
+
+// Initialize Cloud Storage and get a reference to the service
+getStorage(app);
 
 bootstrapApplication(AppComponent, {
   providers: [

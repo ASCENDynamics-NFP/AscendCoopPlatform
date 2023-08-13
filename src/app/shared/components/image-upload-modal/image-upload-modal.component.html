@@ -34,8 +34,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-label>Select Image</ion-label>
           <ion-input type="file" (change)="onImageSelected($event)"></ion-input>
         </ion-item>
-        <img *ngIf="imagePreview" [src]="imagePreviewString" alt="Image Preview"
-          style="max-width: 100%; max-height: 70vh" />
+        <img
+          *ngIf="imagePreview"
+          [src]="imagePreviewString"
+          alt="Image Preview"
+          style="max-width: 100%; max-height: 70vh"
+        />
       </ion-col>
     </ion-row>
   </ion-grid>

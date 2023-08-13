@@ -18,11 +18,21 @@ You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <ion-card *ngIf="group">
-  <img width="100%" [alt]="group.name" [src]="group.heroImage" />
+  <img
+    class="hero"
+    width="100%"
+    [alt]="group.name"
+    [src]="group.heroImage"
+    (click)="openImageUploadModal('heroImage')"
+  />
   <ion-card-header>
     <ion-item lines="none">
       <ion-thumbnail *ngIf="group.logoImage" slot="start">
-        <img [src]="group.logoImage" [alt]="group.name" />
+        <img
+          [src]="group.logoImage"
+          [alt]="group.name"
+          (click)="openImageUploadModal('logoImage')"
+        />
       </ion-thumbnail>
       <ion-label>
         <ion-card-title>{{ group.name }}</ion-card-title>

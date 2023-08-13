@@ -45,8 +45,8 @@ export class HeroComponent {
           collectionName: "users",
           docId: this.user?.id,
           firestoreLocation: `users/${this.user?.id}/profile`,
-          maxHeight: 200,
-          maxWidth: 200,
+          maxHeight: 300,
+          maxWidth: 900,
           fieldName: "heroImage",
         },
       });
@@ -64,8 +64,8 @@ export class HeroComponent {
           collectionName: "users",
           docId: this.user?.id,
           firestoreLocation: `users/${this.user?.id}/profile`,
-          maxHeight: 300,
-          maxWidth: 900,
+          maxHeight: 200,
+          maxWidth: 200,
           fieldName: "profilePicture",
         },
       });

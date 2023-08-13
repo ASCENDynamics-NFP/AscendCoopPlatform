@@ -41,8 +41,8 @@ export * from "./auth/user/triggers/onCreate"; // triggers
 export * from "./auth/user/triggers/onDelete"; // triggers
 export * from "./database/relationships/triggers"; // triggers
 export * from "./database/groups/triggers/onCreate"; // triggers
-// export * from "./database/groups/triggers/onUpdate"; // triggers
+export * from "./database/groups/triggers/onUpdate"; // triggers
 export * from "./database/groups/triggers/onDelete"; // triggers
 // export * from "./database/users/triggers/onCreate"; // triggers
-// export * from "./database/users/triggers/onUpdate"; // triggers
+export * from "./database/users/triggers/onUpdate"; // triggers
 export * from "./database/users/triggers/onDelete"; // triggers

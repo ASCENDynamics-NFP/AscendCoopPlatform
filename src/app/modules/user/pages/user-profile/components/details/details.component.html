@@ -23,7 +23,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </ion-card-header>
   <ion-card-content>
     <ion-list>
-      <ion-item lines="none">
+      <!-- <ion-item lines="none">
         <ion-avatar slot="start">
           <img [src]="user.profilePicture" alt="Profile Picture" />
         </ion-avatar>
@@ -31,13 +31,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <h2>{{ user.displayName }}</h2>
           <p>{{ user.email }}</p>
         </ion-label>
-      </ion-item>
+      </ion-item> -->
 
       <ion-item lines="none">
         <ion-icon name="mail" slot="start"></ion-icon>
-        <ion-label
-          >Email Verified: {{ user.emailVerified ? "Yes" : "No" }}</ion-label
-        >
+        <ion-label>Email: {{ user.email }}</ion-label>
       </ion-item>
 
       <ion-item lines="none">
@@ -53,10 +51,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <ion-label>{{user.addressFormatted}}</ion-label>
       </ion-item> -->
 
-      <ion-item lines="none">
+      <!-- <ion-item lines="none">
         <ion-icon name="text" slot="start"></ion-icon>
         <ion-label>Bio: {{ user.bio }}</ion-label>
-      </ion-item>
+      </ion-item> -->
 
       <ion-item lines="none">
         <ion-icon name="book" slot="start"></ion-icon>

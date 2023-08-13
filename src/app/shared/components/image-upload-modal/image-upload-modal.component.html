@@ -17,31 +17,34 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<ion-card *ngIf="user">
-  <img
-    class="hero-image"
-    (click)="openImageUploadModal('heroImage')"
-    [alt]="user.displayName"
-    [src]="user.heroImage"
-  />
-  <ion-card-header>
-    <ion-item lines="none">
-      <ion-avatar slot="start" (click)="openImageUploadModal('profilePicture')">
-        <img [alt]="user.name" [src]="user.profilePicture" />
-      </ion-avatar>
-      <ion-label>
-        <ion-card-title>{{ user.tagline }}</ion-card-title>
-        <!-- <p>{{ user.freinds.length }}</p> -->
-        <ion-card-subtitle>### Hours Volunteer</ion-card-subtitle>
-      </ion-label>
-    </ion-item>
-    <ion-item lines="none">
-      <p>
-        <ion-textarea [readonly]="true" [autoGrow]="true" [value]="user.bio">
-        </ion-textarea>
-      </p>
-    </ion-item>
-  </ion-card-header>
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Upload Image</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">Close</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
 
-  <ion-card-content *ngIf="user.bio"> </ion-card-content>
-</ion-card>
+<ion-content class="ion-padding">
+  <ion-grid style="height: 100%">
+    <ion-row class="ion-align-items-center" style="flex: 1">
+      <ion-col size="12" class="ion-text-center">
+        <ion-item>
+          <ion-label>Select Image</ion-label>
+          <ion-input type="file" (change)="onImageSelected($event)"></ion-input>
+        </ion-item>
+        <img
+          *ngIf="imagePreview"
+          [src]="imagePreviewString"
+          alt="Image Preview"
+          style="max-width: 100%; max-height: 70vh"
+        />
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
+
+<ion-footer>
+  <ion-button expand="full" (click)="uploadImage()">Upload</ion-button>
+</ion-footer>

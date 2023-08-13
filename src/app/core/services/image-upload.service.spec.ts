@@ -17,11 +17,19 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-img.hero-image {
-  width: 100%;
-  /* set the max-height to 1/3 of the width */
-  max-height: calc(100vw / 3);
-  /* center image and crop it */
-  object-fit: cover;
-  object-position: center;
-}
+import {TestBed} from "@angular/core/testing";
+
+import {ImageUploadService} from "./image-upload.service";
+
+describe("ImageUploadService", () => {
+  let service: ImageUploadService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(ImageUploadService);
+  });
+
+  it("should be created", () => {
+    expect(service).toBeTruthy();
+  });
+});

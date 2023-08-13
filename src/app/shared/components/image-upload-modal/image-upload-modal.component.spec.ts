@@ -17,11 +17,27 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-img.hero-image {
-  width: 100%;
-  /* set the max-height to 1/3 of the width */
-  max-height: calc(100vw / 3);
-  /* center image and crop it */
-  object-fit: cover;
-  object-position: center;
-}
+import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
+import {IonicModule} from "@ionic/angular";
+
+import {ImageUploadModalComponent} from "./image-upload-modal.component";
+
+describe("ImageUploadModalComponent", () => {
+  let component: ImageUploadModalComponent;
+  let fixture: ComponentFixture<ImageUploadModalComponent>;
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [],
+      imports: [IonicModule.forRoot()],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(ImageUploadModalComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
+
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

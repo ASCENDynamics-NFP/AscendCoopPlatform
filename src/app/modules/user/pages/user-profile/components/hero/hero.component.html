@@ -18,12 +18,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <ion-card *ngIf="user">
-  <img
-    (click)="openImageUploadModal('heroImage')"
-    width="100%"
-    [alt]="user.displayName"
-    [src]="user.heroImage"
-  />
+  <img class="hero-image" (click)="openImageUploadModal('heroImage')" [alt]="user.displayName" [src]="user.heroImage" />
   <ion-card-header>
     <ion-item>
       <ion-avatar slot="start" (click)="openImageUploadModal('profilePicture')">

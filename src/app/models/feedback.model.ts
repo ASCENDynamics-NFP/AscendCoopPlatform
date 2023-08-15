@@ -17,11 +17,22 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-img.hero-image {
-  width: 100%;
-  /* set the max-height to 1/3 of the width */
-  max-height: calc(100vw / 3);
-  /* center image and crop it */
-  object-fit: cover;
-  object-position: center;
+import {Timestamp} from "firebase/firestore";
+
+export interface AppFeedback {
+  id: string; // Firestore document ID
+  createdAt: Timestamp; // When the group was added
+  createdBy: string; // User ID of the user who created the group
+  lastModifiedAt: Timestamp; // When the group document was last modified
+  lastModifiedBy: string; // User ID of the user who last modified the group
+  email: string; // Email of the user who submitted the feedback
+  emailVerified: boolean; // Whether the user's email has been verified
+  name: string; // Name of the user who submitted the feedback
+  feedback: string; // Feedback text
+  type: string; // Feedback type
+  attachment: string; // URL of the attachment
+  rating: number; // Rating of the feedback
+  category: string; // Category of the feedback
+  isRead: boolean; // Whether the feedback has been read
+  isResolved: boolean; // Whether the feedback has been resolved
 }

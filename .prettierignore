@@ -1,1 +1,13 @@
+.angular
+.github
+.eslintrc.json
+.vscode
+CODE_OF_CONDUCT.md
+CODE_REVIEW_GUIDELINES.md
+CONTRIBUTING.md
+PROJECT_GOALS.md
+TASKS.md
+README.md
 functions/.eslintrc.js
+package-lock.json
+www

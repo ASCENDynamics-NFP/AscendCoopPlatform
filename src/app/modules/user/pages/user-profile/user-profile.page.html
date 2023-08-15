@@ -35,7 +35,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <ion-grid>
     <ion-row>
       <ion-col>
-        <app-hero *ngIf="user" [user]="user"></app-hero>
+        <app-hero
+          *ngIf="user"
+          [user]="user"
+          [isProfileOwner]="isProfileOwner"
+        ></app-hero>
       </ion-col>
     </ion-row>
     <ion-row>

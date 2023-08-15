@@ -44,6 +44,7 @@ import {ErrorHandlerService} from "./error-handler.service";
   providedIn: "root",
 })
 export class FirestoreService {
+  private ignoreCollectionList: string[] = ["feedback"];
   /**
    * A BehaviorSubject that holds an array of objects, each representing a Firestore collection to listen to.
    * Each object contains the name of the collection and an array of document ids to listen to in that collection.
@@ -154,6 +155,9 @@ export class FirestoreService {
    * @param id - The id to add to the collection.
    */
   addIdToCollection(collectionName: string, id: string): void {
+    if (this.ignoreCollectionList.includes(collectionName)) {
+      return;
+    }
     const currentCollections = this.collectionIdsSubject.getValue();
     const collectionIndex = currentCollections.findIndex(
       (collection) => collection.collectionName === collectionName,

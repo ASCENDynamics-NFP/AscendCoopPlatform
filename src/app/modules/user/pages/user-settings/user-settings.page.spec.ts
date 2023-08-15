@@ -27,10 +27,15 @@ import {
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {HttpClient} from "@angular/common/http";
 import {createTranslateLoader} from "../../../../app.component.spec";
-import {SettingsComponent} from "./components/settings/settings.component";
 import {ActivatedRoute} from "@angular/router";
 import {IonicModule} from "@ionic/angular";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
+import {StoreService} from "../../../../core/services/store.service";
+
+const mockStoreService = {
+  loadInitialData: jasmine.createSpy("loadInitialData"),
+  // ... other methods and properties you want to mock
+};
 
 describe("UserSettingsPage", () => {
   let component: UserSettingsPage;
@@ -60,6 +65,7 @@ describe("UserSettingsPage", () => {
       providers: [
         TranslateService,
         {provide: AuthStoreService, useValue: mockAuthStoreService}, // Use the mock service
+        {provide: StoreService, useValue: mockStoreService},
         {
           provide: ActivatedRoute,
           useValue: {

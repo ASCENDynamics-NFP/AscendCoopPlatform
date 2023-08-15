@@ -23,7 +23,7 @@ import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 
 import {TranslateModule} from "@ngx-translate/core";
-import {LanguageSelectorComponent} from "../../components/language-selector/language-selector.component";
+import {SettingsComponent} from "./components/settings/settings.component";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 @Component({
@@ -36,7 +36,7 @@ import {AuthStoreService} from "../../../../core/services/auth-store.service";
     CommonModule,
     FormsModule,
     TranslateModule,
-    LanguageSelectorComponent,
+    SettingsComponent,
   ],
 })
 export class UserSettingsPage {

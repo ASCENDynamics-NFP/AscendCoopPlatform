@@ -51,5 +51,6 @@ export interface AppUser {
   phoneCountryCode: string; // Phone country code (e.g. 1 for US)
   phoneNumber: string; // Phone number (e.g. 1234567890)
   phoneType: string; // Phone type (mobile, landline, etc.)
+  privacySetting: "Public" | "Friends-only" | "Private"; // Privacy setting
   // Other properties...
 }

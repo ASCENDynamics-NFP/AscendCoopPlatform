@@ -36,6 +36,9 @@ import {
  * Service to manage the state of the application.
  */
 export class StoreService {
+  updatePrivacySetting(selectedPrivacySetting: string) {
+    throw new Error("Method not implemented.");
+  }
   /**
    * Subscription to the Firestore collections.
    */

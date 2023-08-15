@@ -1,0 +1,40 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Settings</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-card>
+    <form [formGroup]="settingsForm">
+      <ion-list>
+        <ion-item>
+          <ion-label>Privacy Settings</ion-label>
+          <ion-select formControlName="privacySetting">
+            <ion-select-option value="Public">Public</ion-select-option>
+            <ion-select-option value="Friends-only"
+              >Friends-only</ion-select-option
+            >
+            <ion-select-option value="Private">Private</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label>Language</ion-label>
+          <ion-select
+            formControlName="language"
+            (ionChange)="onLanguageChange($event)"
+          >
+            <ion-select-option
+              *ngFor="let lang of languageList"
+              [value]="lang.code"
+              >{{ lang.text }}</ion-select-option
+            >
+          </ion-select>
+        </ion-item>
+      </ion-list>
+      <ion-button expand="full" (click)="updateSetting()"
+        >Save Changes</ion-button
+      >
+    </form>
+  </ion-card>
+</ion-content>

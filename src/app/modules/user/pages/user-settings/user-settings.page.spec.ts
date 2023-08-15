@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {UserSettingsPage} from "./user-settings.page";
 import {
   TranslateService,
@@ -27,17 +27,27 @@ import {
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {HttpClient} from "@angular/common/http";
 import {createTranslateLoader} from "../../../../app.component.spec";
-import {LanguageSelectorComponent} from "../../components/language-selector/language-selector.component";
+import {SettingsComponent} from "./components/settings/settings.component";
+import {ActivatedRoute} from "@angular/router";
+import {IonicModule} from "@ionic/angular";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
 describe("UserSettingsPage", () => {
   let component: UserSettingsPage;
   let fixture: ComponentFixture<UserSettingsPage>;
 
-  beforeEach(async () => {
+  // Mock the AuthStoreService
+  const mockAuthStoreService = {
+    getCurrentUser: jasmine.createSpy("getCurrentUser").and.returnValue({
+      /* mock user data */
+    }),
+  };
+
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
+      declarations: [],
       imports: [
         HttpClientTestingModule,
-        LanguageSelectorComponent,
         TranslateModule.forRoot({
           loader: {
             provide: TranslateLoader,
@@ -45,13 +55,28 @@ describe("UserSettingsPage", () => {
             deps: [HttpClient],
           },
         }),
+        IonicModule, // You might need this if your component uses Ionic components
       ],
-      providers: [TranslateService],
+      providers: [
+        TranslateService,
+        {provide: AuthStoreService, useValue: mockAuthStoreService}, // Use the mock service
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              paramMap: {
+                get: () => "123",
+              },
+            },
+          },
+        },
+      ],
     }).compileComponents();
+
     fixture = TestBed.createComponent(UserSettingsPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  });
+  }));
 
   it("should create", () => {
     expect(component).toBeTruthy();

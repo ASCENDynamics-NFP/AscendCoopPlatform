@@ -119,6 +119,9 @@ export class StoreService {
         this.firestoreService.addIdToCollection("users", user.uid);
       } else {
         this.collectionsSubscription?.unsubscribe();
+        // clear all existing state data when user logs out
+        this.firestoreService.clearCollectionIdsData();
+        this.clearCollectionsData();
       }
     });
     if (currentUser) {
@@ -304,6 +307,18 @@ export class StoreService {
     const currentState = this.collectionsSubject[collectionName].getValue();
     const updatedState = currentState.filter((d) => d["id"] !== docId);
     this.collectionsSubject[collectionName].next(updatedState);
+  }
+
+  /**
+   * Clears the data in the collectionsSubject for each collection.
+   * This method sets the BehaviorSubject's value for each collection to an empty array.
+   */
+  clearCollectionsData() {
+    for (const key in this.collectionsSubject) {
+      if (this.collectionsSubject.hasOwnProperty(key)) {
+        this.collectionsSubject[key].next([]);
+      }
+    }
   }
 
   /**

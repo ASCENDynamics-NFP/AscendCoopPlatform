@@ -193,6 +193,15 @@ export class FirestoreService {
       }
     }
   }
+
+  /**
+   * Clears the data in the collectionIdsSubject.
+   * This method sets the BehaviorSubject's value to an empty array, effectively clearing its data.
+   */
+  clearCollectionIdsData() {
+    this.collectionIdsSubject.next([]);
+  }
+
   // Obserable Logic (End) //
 
   // Firebase Query Logic (Start) //

@@ -34,7 +34,7 @@ export class SettingsComponent {
   private userSubscription?: Subscription;
 
   settingsForm: FormGroup = new FormGroup({
-    privacySetting: new FormControl("Public"),
+    privacySetting: new FormControl("public"),
     language: new FormControl("en"),
   });
 

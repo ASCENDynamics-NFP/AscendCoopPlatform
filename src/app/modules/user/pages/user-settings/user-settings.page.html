@@ -32,5 +32,5 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-title size="large">User Settings</ion-title>
     </ion-toolbar>
   </ion-header>
-  <app-settings></app-settings>
+  <app-settings *ngIf="user" [authUser]="authUser" [user]="user"></app-settings>
 </ion-content>

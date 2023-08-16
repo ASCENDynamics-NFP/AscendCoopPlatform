@@ -34,6 +34,7 @@ import {StoreService} from "../../../../core/services/store.service";
 
 const mockStoreService = {
   loadInitialData: jasmine.createSpy("loadInitialData"),
+  getCollection: jasmine.createSpy("getCollection"),
   // ... other methods and properties you want to mock
 };
 

@@ -180,7 +180,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         buttonText: "",
         hasButton: false,
         title: "Settings",
-        url: `user-settings/${this.user?.uid}`,
+        url: `user-settings`,
         icon: "settings",
         onclick: null,
       },

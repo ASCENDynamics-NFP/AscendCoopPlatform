@@ -211,13 +211,29 @@ export class StoreService {
    * @param {string} name - The name to search for.
    */
   searchDocsByName(collectionName: string, name: string): void {
-    this.firestoreService.searchByName(collectionName, name).then((docs) => {
-      if (docs) {
-        docs.forEach((doc) => {
-          this.addDocToState(collectionName, doc as Partial<any>);
+    if (collectionName === "users") {
+      this.firestoreService
+        .searchUserByName(
+          collectionName,
+          name,
+          this.authStoreService.getCurrentUser()?.uid,
+        )
+        .then((docs) => {
+          if (docs) {
+            docs.forEach((doc) => {
+              this.addDocToState(collectionName, doc as Partial<any>);
+            });
+          }
         });
-      }
-    });
+    } else {
+      this.firestoreService.searchByName(collectionName, name).then((docs) => {
+        if (docs) {
+          docs.forEach((doc) => {
+            this.addDocToState(collectionName, doc as Partial<any>);
+          });
+        }
+      });
+    }
   }
 
   /**

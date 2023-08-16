@@ -36,7 +36,7 @@ import {Subscription} from "rxjs";
   imports: [IonicModule, CommonModule, ReactiveFormsModule, TranslateModule],
 })
 export class UserLoginPage {
-  private userSubscription: Subscription | undefined;
+  private userSubscription?: Subscription;
   public loginForm = this.fb.nonNullable.group({
     // Using Validators.compose() for multiple validation rules
     email: ["", Validators.compose([Validators.required, Validators.email])],
@@ -51,7 +51,21 @@ export class UserLoginPage {
     private authStoreService: AuthStoreService,
     private fb: FormBuilder,
     private router: Router, // private storeService: StoreService,
-  ) {
+  ) {}
+
+  ionViewWillEnter() {
+    this.initiateSubscribers();
+    this.loadFormData();
+    this.authStoreService.onSignInWithEmailLink();
+    // .then(async (uid) => this.updateUserLoginTime(uid));
+  }
+
+  ionViewWillLeave() {
+    this.userSubscription?.unsubscribe();
+  }
+
+  initiateSubscribers() {
+    // Redirect to user profile if user is logged in
     this.userSubscription = this.authStoreService.user$.subscribe((user) => {
       if (user) {
         console.log("GOT USER ON LOGIN");
@@ -60,16 +74,6 @@ export class UserLoginPage {
         });
       }
     });
-  }
-
-  ionViewWillEnter() {
-    this.loadFormData();
-    this.authStoreService.onSignInWithEmailLink();
-    // .then(async (uid) => this.updateUserLoginTime(uid));
-  }
-
-  ionViewWillLeave() {
-    this.userSubscription?.unsubscribe();
   }
 
   login() {

@@ -18,69 +18,48 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
-import {UserSettingsPage} from "./user-settings.page";
-import {
-  TranslateService,
-  TranslateModule,
-  TranslateLoader,
-} from "@ngx-translate/core";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {HttpClient} from "@angular/common/http";
-import {createTranslateLoader} from "../../../../app.component.spec";
-import {ActivatedRoute} from "@angular/router";
 import {IonicModule} from "@ionic/angular";
-import {AuthStoreService} from "../../../../core/services/auth-store.service";
-import {StoreService} from "../../../../core/services/store.service";
+import {SettingsComponent} from "./settings.component";
+import {ActivatedRoute} from "@angular/router";
+import {ReactiveFormsModule} from "@angular/forms";
+import {TranslateModule} from "@ngx-translate/core";
+import {StoreService} from "../../../../../../core/services/store.service";
+import {of} from "rxjs";
 
-const mockStoreService = {
-  loadInitialData: jasmine.createSpy("loadInitialData"),
-  getCollection: jasmine.createSpy("getCollection"),
-  // ... other methods and properties you want to mock
-};
+class MockStoreService {
+  // Mock the methods and properties used by the component
+  users$ = of([]); // You'll need to import 'of' from 'rxjs'
+  updateDoc() {}
+}
 
-describe("UserSettingsPage", () => {
-  let component: UserSettingsPage;
-  let fixture: ComponentFixture<UserSettingsPage>;
-
-  // Mock the AuthStoreService
-  const mockAuthStoreService = {
-    getCurrentUser: jasmine.createSpy("getCurrentUser").and.returnValue({
-      /* mock user data */
-    }),
-  };
+describe("SettingsComponent", () => {
+  let component: SettingsComponent;
+  let fixture: ComponentFixture<SettingsComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [],
+      declarations: [], // Include the component under test
       imports: [
-        HttpClientTestingModule,
-        TranslateModule.forRoot({
-          loader: {
-            provide: TranslateLoader,
-            useFactory: createTranslateLoader,
-            deps: [HttpClient],
-          },
-        }),
-        IonicModule, // You might need this if your component uses Ionic components
+        IonicModule.forRoot(),
+        ReactiveFormsModule,
+        TranslateModule.forRoot(), // Use forRoot() for testing
       ],
       providers: [
-        TranslateService,
-        {provide: AuthStoreService, useValue: mockAuthStoreService}, // Use the mock service
-        {provide: StoreService, useValue: mockStoreService},
         {
           provide: ActivatedRoute,
           useValue: {
             snapshot: {
               paramMap: {
-                get: () => "123",
+                get: () => "123", // provide your mock value here
               },
             },
           },
         },
+        {provide: StoreService, useClass: MockStoreService}, // Mock the StoreService
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(UserSettingsPage);
+    fixture = TestBed.createComponent(SettingsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

@@ -74,6 +74,7 @@ async function saveUserProfileToFirestore(
     groups: [],
     pendingFriends: [],
     pendingGroups: [],
+    privacySetting: "public",
     // ... any other fields you want to add
   };
 

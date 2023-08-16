@@ -90,7 +90,7 @@ export const routes: Routes = [
     canActivate: [SecureInnerPagesGuard],
   },
   {
-    path: "user-settings/:uid",
+    path: "user-settings",
     loadComponent: () =>
       import("./modules/user/pages/user-settings/user-settings.page").then(
         (m) => m.UserSettingsPage,

@@ -22,28 +22,42 @@ import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 
-import {TranslateModule} from "@ngx-translate/core";
-import {LanguageSelectorComponent} from "../../components/language-selector/language-selector.component";
+import {SettingsComponent} from "./components/settings/settings.component";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
+import {Subscription} from "rxjs";
+import {StoreService} from "../../../../core/services/store.service";
+import {AppUser} from "../../../../models/user.model";
 
 @Component({
   selector: "app-user-settings",
   templateUrl: "./user-settings.page.html",
   styleUrls: ["./user-settings.page.scss"],
   standalone: true,
-  imports: [
-    IonicModule,
-    CommonModule,
-    FormsModule,
-    TranslateModule,
-    LanguageSelectorComponent,
-  ],
+  imports: [IonicModule, CommonModule, FormsModule, SettingsComponent],
 })
 export class UserSettingsPage {
-  user = this.authStoreService.getCurrentUser();
-  constructor(private authStoreService: AuthStoreService) {}
+  private userSubscription?: Subscription;
+  authUser = this.authStoreService.getCurrentUser();
+  user?: Partial<AppUser> | null;
+  constructor(
+    private authStoreService: AuthStoreService,
+    private storeService: StoreService,
+  ) {
+    this.authUser = this.authStoreService.getCurrentUser();
+  }
 
-  ionViewWillEnter() {}
+  ionViewWillEnter() {
+    this.userSubscription = this.storeService.users$.subscribe((users) => {
+      this.user = users.find((u) => u.id === this.authUser?.uid);
+    });
+    if (!this.user) {
+      this.user = this.storeService
+        .getCollection("users")
+        .find((u) => u["id"] === this.authUser?.uid);
+    }
+  }
 
-  ionViewWillLeave() {}
+  ionViewWillLeave() {
+    this.userSubscription?.unsubscribe();
+  }
 }

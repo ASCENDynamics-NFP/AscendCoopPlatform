@@ -378,6 +378,95 @@ export class FirestoreService {
   }
 
   /**
+   * Searches for documents in a collection based on a name field.
+   *
+   * @param {string} collectionName - Name of the collection.
+   * @param {string} searchTerm - Term to search for.
+   * @param {string} userId - Current user Id.
+   * @returns {Promise<DocumentData[] | null>} - Returns an array of documents that match the search term, otherwise null.
+   */
+  searchUserByName(
+    collectionName: string,
+    searchTerm: string,
+    userId: string | undefined,
+  ): Promise<DocumentData[] | null> {
+    if (!userId) {
+      throw new Error("User ID must be provided");
+    }
+    return getDocs(
+      query(
+        collection(this.firestore, collectionName),
+        or(
+          // query as-is:
+          and(
+            where("name", ">=", searchTerm),
+            where("name", "<=", searchTerm + "\uf8ff"),
+            where("privacySetting", "==", "public"),
+          ),
+          and(
+            where("name", ">=", searchTerm),
+            where("name", "<=", searchTerm + "\uf8ff"),
+            where("privacySetting", "==", "friends-only"),
+            where("friends", "array-contains", userId),
+          ),
+          // capitalize first letter:
+          and(
+            where(
+              "name",
+              ">=",
+              searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1),
+            ),
+            where(
+              "name",
+              "<=",
+              searchTerm.charAt(0).toUpperCase() +
+                searchTerm.slice(1) +
+                "\uf8ff",
+            ),
+            where("privacySetting", "==", "public"),
+          ),
+          and(
+            where(
+              "name",
+              ">=",
+              searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1),
+            ),
+            where(
+              "name",
+              "<=",
+              searchTerm.charAt(0).toUpperCase() +
+                searchTerm.slice(1) +
+                "\uf8ff",
+            ),
+            where("privacySetting", "==", "friends-only"),
+            where("friends", "array-contains", userId),
+          ),
+          // lowercase:
+          and(
+            where("name", ">=", searchTerm.toLowerCase()),
+            where("name", "<=", searchTerm.toLowerCase() + "\uf8ff"),
+            where("privacySetting", "==", "public"),
+          ),
+          and(
+            where("name", ">=", searchTerm.toLowerCase()),
+            where("name", "<=", searchTerm.toLowerCase() + "\uf8ff"),
+            where("privacySetting", "==", "friends-only"),
+            where("friends", "array-contains", userId),
+          ),
+        ),
+      ),
+    )
+      .then((querySnapshot) => {
+        return this.processFirebaseData(querySnapshot);
+      })
+      .catch((error) => {
+        console.error("Error retrieving collection: ", error);
+        this.errorHandler.handleFirebaseAuthError(error);
+        return [];
+      });
+  }
+
+  /**
    * Retrieves documents from a collection where the sender or receiver ID matches the provided ID.
    *
    * @param {string} collectionName - Name of the collection.

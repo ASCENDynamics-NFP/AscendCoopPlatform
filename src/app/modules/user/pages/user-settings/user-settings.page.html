@@ -32,16 +32,5 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-title size="large">User Settings</ion-title>
     </ion-toolbar>
   </ion-header>
-  <ion-list>
-    <ion-item>
-      <ion-card style="width: 100% !important">
-        <ion-card-header>
-          <ion-card-title>POC: Language Selector</ion-card-title>
-        </ion-card-header>
-        <ion-item>
-          <app-language-selector></app-language-selector>
-        </ion-item>
-      </ion-card>
-    </ion-item>
-  </ion-list>
+  <app-settings *ngIf="user" [authUser]="authUser" [user]="user"></app-settings>
 </ion-content>

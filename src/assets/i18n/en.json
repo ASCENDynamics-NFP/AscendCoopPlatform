@@ -32,7 +32,7 @@
       "email_error": "Please insert your email",
       "password_label": "Password:",
       "password_error": "Please insert valid password",
-      "submit": "Sign up",
+      "submit": "Sign Up",
       "login": "Login"
     }
   },

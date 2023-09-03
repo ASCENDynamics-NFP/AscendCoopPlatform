@@ -17,46 +17,27 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Routes} from "@angular/router";
-import {PartnersPage} from "./partners.page";
+import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
+import {IonicModule} from "@ionic/angular";
 
-export const routes: Routes = [
-  // {
-  //   path: "",
-  //   component: PartnersPage,
-  //   children: [
-  //     //   {
-  //     //     path: "tab1",
-  //     //     loadComponent: () =>
-  //     //       import("../tab1/tab1.page").then((m) => m.Tab1Page),
-  //     //   },
-  //     {
-  //       path: ":groupId/groups",
-  //       loadComponent: () =>
-  //         import("./partners.page").then((m) => m.PartnersPage),
-  //     },
-  //     {
-  //       path: ":groupId/members",
-  //       loadComponent: () =>
-  //         import("../member-list/member-list.page").then(
-  //           (m) => m.MemberListPage,
-  //         ),
-  //     },
-  //     {
-  //       path: ":groupId/search",
-  //       loadComponent: () =>
-  //         import("../search/search.page").then((m) => m.SearchPage),
-  //     },
-  //     {
-  //       path: "",
-  //       redirectTo: "search",
-  //       pathMatch: "full",
-  //     },
-  //   ],
-  // },
-  // {
-  //   path: "",
-  //   redirectTo: "search",
-  //   pathMatch: "full",
-  // },
-];
+import {AppHeaderComponent} from "./app-header.component";
+
+describe("AppHeaderComponent", () => {
+  let component: AppHeaderComponent;
+  let fixture: ComponentFixture<AppHeaderComponent>;
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [],
+      imports: [IonicModule.forRoot()],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(AppHeaderComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
+
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

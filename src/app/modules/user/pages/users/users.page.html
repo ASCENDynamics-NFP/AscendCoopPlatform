@@ -17,19 +17,13 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>Users</ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-header
+  *ngIf="user"
+  [title]="'Search Users'"
+  [image]="user.profilePicture"
+></app-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Users</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
   <ion-grid>
     <ion-row>
       <ion-col>
@@ -58,7 +52,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 <p>{{ item["bio"] }}</p>
               </ion-label>
               <ion-button
-                *ngIf="(user && !item['friends']?.includes(user.uid) && user.uid !== item['id'] && !item['pendingFriends']?.includes(user.uid))"
+                *ngIf="(authUser && !item['friends']?.includes(authUser.uid) && authUser.uid !== item['id'] && !item['pendingFriends']?.includes(authUser.uid))"
                 slot="end"
                 mode="md"
                 expand="block"

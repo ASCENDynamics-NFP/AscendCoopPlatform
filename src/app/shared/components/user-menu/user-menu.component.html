@@ -17,12 +17,32 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<app-header
-  *ngIf="user"
-  [title]="'Settings'"
-  [image]="user.profilePicture"
-></app-header>
-
-<ion-content [fullscreen]="true">
-  <app-settings *ngIf="user" [authUser]="authUser" [user]="user"></app-settings>
-</ion-content>
+<ion-list>
+  <ion-item (click)="goToProfile()">
+    <ion-label>Profile</ion-label>
+    <ion-icon
+      aria-hidden="true"
+      slot="start"
+      ios="person-outline"
+      md="person-outline"
+    ></ion-icon>
+  </ion-item>
+  <ion-item (click)="goToSettings()">
+    <ion-label>Settings</ion-label>
+    <ion-icon
+      aria-hidden="true"
+      slot="start"
+      ios="settings-outline"
+      md="settings-outline"
+    ></ion-icon>
+  </ion-item>
+  <ion-item (click)="logout()">
+    <ion-label>Logout</ion-label>
+    <ion-icon
+      aria-hidden="true"
+      slot="start"
+      ios="log-out-outline"
+      md="log-out-outline"
+    ></ion-icon>
+  </ion-item>
+</ion-list>

@@ -25,25 +25,35 @@ import {ActivatedRoute, RouterModule} from "@angular/router";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {StoreService} from "../../../../core/services/store.service";
 import {Subscription} from "rxjs";
+import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
 import {AppRelationship} from "../../../../models/relationship.model";
+import {AppUser} from "../../../../models/user.model";
 
 @Component({
   selector: "app-friends",
   templateUrl: "./friends.page.html",
   styleUrls: ["./friends.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
+  imports: [
+    IonicModule,
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    AppHeaderComponent,
+  ],
 })
 /**
  * Represents a page where users can manage their friends.
  */
 export class FriendsPage implements OnInit {
-  private relationshipsSubscription: Subscription | undefined;
+  private relationshipsSubscription?: Subscription;
+  private usersSubscription?: Subscription;
   relationships: Partial<AppRelationship>[] = [];
   currentFriendsList: any[] = [];
   pendingFriendsList: any[] = [];
   userId: string | null = null;
   currentUser: any;
+  user?: Partial<AppUser>;
 
   /**
    * Constructs the FriendsPage.
@@ -81,6 +91,9 @@ export class FriendsPage implements OnInit {
         this.sortRelationships(relationships);
       },
     );
+    this.usersSubscription = this.storeService.users$.subscribe((users) => {
+      this.user = users.find((u) => u.id === this.userId);
+    });
   }
 
   /**
@@ -88,6 +101,7 @@ export class FriendsPage implements OnInit {
    */
   ionViewWillLeave() {
     this.relationshipsSubscription?.unsubscribe();
+    this.usersSubscription?.unsubscribe();
   }
 
   /**

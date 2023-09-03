@@ -210,9 +210,9 @@ export class MenuComponent implements OnInit, OnDestroy {
     };
   }
 
-  signOut() {
-    this.authStoreService.signOut();
-  }
+  // signOut() {
+  //   this.authStoreService.signOut();
+  // }
 
   async handleButtonClick(buttonLink: string) {
     console.log("Button Clicked");

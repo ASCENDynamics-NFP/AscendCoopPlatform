@@ -32,6 +32,7 @@ import {AppUser} from "../../../../models/user.model";
 import {Subscription} from "rxjs";
 import {StoreService} from "../../../../core/services/store.service";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
+import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
 
 @Component({
   selector: "app-user-profile",
@@ -46,6 +47,7 @@ import {AuthStoreService} from "../../../../core/services/auth-store.service";
     GroupMembershipListComponent,
     HeroComponent,
     DetailsComponent,
+    AppHeaderComponent,
   ],
 })
 export class UserProfilePage implements OnInit {

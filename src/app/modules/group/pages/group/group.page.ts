@@ -24,19 +24,23 @@ import {ActivatedRoute, RouterModule} from "@angular/router";
 import {StoreService} from "../../../../core/services/store.service";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {Subscription} from "rxjs";
+import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
 import {AppGroup} from "../../../../models/group.model";
+import {AppUser} from "../../../../models/user.model";
 
 @Component({
   selector: "app-group",
   templateUrl: "./group.page.html",
   styleUrls: ["./group.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, RouterModule],
+  imports: [IonicModule, CommonModule, RouterModule, AppHeaderComponent],
 })
 export class GroupPage {
-  private groupsSubscription: Subscription | undefined;
+  private groupsSubscription?: Subscription;
+  private usersSubscription?: Subscription;
   group: Partial<AppGroup> | null = null;
   groupId: string | null = null;
+  user?: Partial<AppUser>;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -64,11 +68,17 @@ export class GroupPage {
   ionViewWillLeave() {
     // Unsubscribe from the groups$ observable when the component is destroyed
     this.groupsSubscription?.unsubscribe();
+    this.usersSubscription?.unsubscribe();
   }
 
   initiateSubscribers() {
     this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
       this.group = groups.find((group) => group.id === this.groupId) || null;
+    });
+    this.usersSubscription = this.storeService.users$.subscribe((users) => {
+      this.user = users.find(
+        (u) => u.id === this.authStoreService.getCurrentUser()?.uid,
+      );
     });
   }
 }

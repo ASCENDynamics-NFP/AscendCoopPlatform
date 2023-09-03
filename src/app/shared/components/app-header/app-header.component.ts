@@ -17,36 +17,36 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
-import {PartnersPage} from "./partners.page";
-import {ActivatedRoute} from "@angular/router";
+import {CommonModule} from "@angular/common";
+import {Component, Input} from "@angular/core";
+import {IonicModule, PopoverController} from "@ionic/angular";
+import {UserMenuComponent} from "../user-menu/user-menu.component";
 
-describe("PartnersPage", () => {
-  let component: PartnersPage;
-  let fixture: ComponentFixture<PartnersPage>;
+@Component({
+  selector: "app-header",
+  templateUrl: "./app-header.component.html",
+  styleUrls: ["./app-header.component.scss"],
+  standalone: true,
+  imports: [IonicModule, CommonModule, UserMenuComponent],
+})
+export class AppHeaderComponent {
+  @Input() title?: string;
+  @Input() image?: string;
+  public popoverEvent: any;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      declarations: [],
-      providers: [
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            snapshot: {
-              paramMap: {
-                get: () => "123", // provide your mock value here
-              },
-            },
-          },
-        },
-      ],
-    }).compileComponents();
-    fixture = TestBed.createComponent(PartnersPage);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  }));
+  constructor(private popoverController: PopoverController) {}
 
-  it("should create", () => {
-    expect(component).toBeTruthy();
-  });
-});
+  async presentPopover(ev: any) {
+    this.popoverEvent = ev;
+    const popover = await this.popoverController.create({
+      component: UserMenuComponent, // This is where you pass the component to the popover
+      event: ev,
+      translucent: true,
+    });
+    return popover.present();
+  }
+
+  onPopoverDismiss(event: any) {
+    // Handle popover dismiss if needed
+  }
+}

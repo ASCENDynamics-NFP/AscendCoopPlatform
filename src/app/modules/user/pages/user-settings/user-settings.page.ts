@@ -26,6 +26,7 @@ import {SettingsComponent} from "./components/settings/settings.component";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {Subscription} from "rxjs";
 import {StoreService} from "../../../../core/services/store.service";
+import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
 import {AppUser} from "../../../../models/user.model";
 
 @Component({
@@ -33,7 +34,13 @@ import {AppUser} from "../../../../models/user.model";
   templateUrl: "./user-settings.page.html",
   styleUrls: ["./user-settings.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, SettingsComponent],
+  imports: [
+    IonicModule,
+    CommonModule,
+    FormsModule,
+    SettingsComponent,
+    AppHeaderComponent,
+  ],
 })
 export class UserSettingsPage {
   private userSubscription?: Subscription;

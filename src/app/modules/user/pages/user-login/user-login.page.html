@@ -32,6 +32,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-title size="large" translate>user.login.title</ion-title>
     </ion-toolbar>
   </ion-header>
+  <div class="logo-title-container">
+    <img
+      src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
+      alt="ASCENDynamics NFP"
+      class="logo"
+    />
+  </div>
+  <!-- <h2>Login to ASCENDdynamics Platform</h2> -->
   <ion-card>
     <ion-card-content>
       <form [formGroup]="loginForm" (ngSubmit)="login()">
@@ -74,6 +82,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           strong="true"
           [disabled]="loginForm.invalid"
           translate
+          style="width: 100%"
         >
           user.login.submit</ion-button
         >
@@ -82,19 +91,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-button
             type="button"
             expand="block"
-            color="primary"
-            fill="outline"
-            (click)="goToSignUp()"
-            translate
-          >
-            <ion-icon name="person-outline" slot="start"></ion-icon>
-            user.login.create_account
-          </ion-button>
-
-          <ion-button
-            type="button"
-            expand="block"
             color="secondary"
+            fill="outline"
             (click)="forgotPassword()"
             translate
           >
@@ -105,7 +103,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-button
             type="button"
             expand="block"
-            color="tertiary"
+            color="primary"
             (click)="getEmailSignInLink()"
             translate
           >
@@ -129,6 +127,19 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           </ion-button> -->
         </div>
       </form>
+
+      <h2>OR</h2>
+      <ion-button
+        type="button"
+        expand="block"
+        color="primary"
+        fill="outline"
+        (click)="goToSignUp()"
+        translate
+      >
+        <ion-icon name="person-add-outline" slot="start"></ion-icon>
+        user.login.create_account
+      </ion-button>
     </ion-card-content>
   </ion-card>
 </ion-content>

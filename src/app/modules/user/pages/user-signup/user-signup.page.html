@@ -32,6 +32,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-title size="large" translate>user.signup.title</ion-title>
     </ion-toolbar>
   </ion-header>
+  <div class="logo-title-container">
+    <img
+      src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
+      alt="ASCENDynamics NFP"
+      class="logo"
+    />
+  </div>
+  <!-- <h2>Sign Up for ASCENDdynamics Platform</h2> -->
   <ion-card>
     <ion-card-content>
       <form [formGroup]="signupForm" (ngSubmit)="signup()">
@@ -72,9 +80,22 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           expend="block"
           strong="true"
           [disabled]="signupForm.invalid"
+          style="width: 100%"
           translate
           >user.signup.submit</ion-button
         >
+        <h2>OR</h2>
+        <ion-button
+          type="button"
+          expand="block"
+          color="primary"
+          fill="outline"
+          (click)="goToLogin()"
+          translate
+        >
+          <ion-icon name="log-in-outline" slot="start"></ion-icon>
+          user.signup.login
+        </ion-button>
       </form>
     </ion-card-content>
   </ion-card>

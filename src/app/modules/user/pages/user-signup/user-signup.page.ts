@@ -70,6 +70,10 @@ export class UserSignupPage implements OnDestroy {
     this.authStoreService.signUp(email, password);
   }
 
+  goToLogin() {
+    this.router.navigateByUrl("/user-login");
+  }
+
   ngOnDestroy(): void {
     this.authSubscription.unsubscribe();
   }

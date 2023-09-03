@@ -27,27 +27,37 @@ import {RouterModule} from "@angular/router";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {Subscription} from "rxjs";
 import {StoreService} from "../../../../core/services/store.service";
+import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
 import {AppRelationship} from "../../../../models/relationship.model";
+import {AppUser} from "../../../../models/user.model";
 
 @Component({
   selector: "app-group-list",
   templateUrl: "./group-list.page.html",
   styleUrls: ["./group-list.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
+  imports: [
+    IonicModule,
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    AppHeaderComponent,
+  ],
 })
 export class GroupListPage {
-  private groupsSubscription: Subscription | undefined;
-  user: User | null = null; // define your user here
+  private groupsSubscription?: Subscription;
+  private usersSubscription?: Subscription;
+  authUser: User | null = null; // define your user here
   groups: Partial<AppGroup>[] | null = [];
   private searchTerm: any;
   searchResults: Partial<AppGroup>[] | null = [];
+  user?: Partial<AppUser>;
 
   constructor(
     private authStoreService: AuthStoreService,
     private storeService: StoreService,
   ) {
-    this.user = this.authStoreService.getCurrentUser();
+    this.authUser = this.authStoreService.getCurrentUser();
   }
 
   ionViewWillEnter() {
@@ -62,10 +72,18 @@ export class GroupListPage {
         }
       }
     });
+    this.usersSubscription = this.storeService.users$.subscribe((users) => {
+      this.user = users.find((u) => u.id === this.authUser?.uid);
+    });
   }
 
   ionViewWillLeave() {
     this.groupsSubscription?.unsubscribe();
+    this.usersSubscription?.unsubscribe();
+  }
+
+  get image() {
+    return this.user?.profilePicture ? this.user.profilePicture : "";
   }
 
   searchGroups(event: any) {
@@ -84,12 +102,12 @@ export class GroupListPage {
   }
 
   sendRequest(group: Partial<AppGroup>) {
-    if (!this.user?.uid || !group.id) {
+    if (!this.authUser?.uid || !group.id) {
       return;
     }
     const relationship: Partial<AppRelationship> = {
-      relatedIds: [this.user?.uid, group.id],
-      senderId: this.user?.uid,
+      relatedIds: [this.authUser?.uid, group.id],
+      senderId: this.authUser?.uid,
       receiverId: group.id,
       type: "member",
       status: "pending",
@@ -101,8 +119,8 @@ export class GroupListPage {
         ? group.logoImage
         : "assets/icon/favicon.png",
       receiverTagline: group.tagline,
-      senderName: this.user?.displayName ? this.user.displayName : "",
-      senderImage: this.user?.photoURL ? this.user.photoURL : "",
+      senderName: this.authUser?.displayName ? this.authUser.displayName : "",
+      senderImage: this.authUser?.photoURL ? this.authUser.photoURL : "",
       senderTagline: "",
     };
 
@@ -111,8 +129,8 @@ export class GroupListPage {
       if (!group.pendingMembers) {
         group.pendingMembers = [];
       }
-      group.pendingMembers = this.user?.uid
-        ? [...group.pendingMembers, this.user.uid]
+      group.pendingMembers = this.authUser?.uid
+        ? [...group.pendingMembers, this.authUser.uid]
         : [...group.pendingMembers];
       this.storeService.updateDocInState("groups", group);
     });

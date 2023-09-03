@@ -24,7 +24,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     </ion-buttons>
     <ion-title>{{ title }}</ion-title>
     <ion-buttons slot="end">
-      <ion-avatar class="padded-avatar" (click)="presentPopover($event)">
+      <ion-avatar
+        *ngIf="image"
+        class="padded-avatar"
+        (click)="presentPopover($event)"
+      >
         <img [src]="image" />
       </ion-avatar>
     </ion-buttons>
@@ -36,7 +40,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ion-toolbar>
       <ion-title size="large">{{ title }}</ion-title>
       <ion-buttons slot="end">
-        <ion-avatar class="padded-avatar" (click)="presentPopover($event)">
+        <ion-avatar
+          *ngIf="image"
+          class="padded-avatar"
+          (click)="presentPopover($event)"
+        >
           <img [src]="image" />
         </ion-avatar>
       </ion-buttons>

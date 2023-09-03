@@ -17,9 +17,40 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-.padded-avatar {
-  max-height: 46px;
-  max-width: 46px;
-  margin: 3px;
-  border: 2px solid #000;
+import {CommonModule} from "@angular/common";
+import {Component} from "@angular/core";
+import {Router} from "@angular/router";
+import {IonicModule, PopoverController} from "@ionic/angular";
+import {AuthStoreService} from "../../../core/services/auth-store.service";
+
+@Component({
+  selector: "user-menu",
+  templateUrl: "./user-menu.component.html",
+  styleUrls: ["./user-menu.component.scss"],
+  standalone: true,
+  imports: [IonicModule, CommonModule],
+})
+export class UserMenuComponent {
+  constructor(
+    private router: Router,
+    private popoverCtrl: PopoverController,
+    private authStoreService: AuthStoreService,
+  ) {}
+
+  logout() {
+    this.popoverCtrl.dismiss();
+    this.authStoreService.signOut();
+  }
+
+  goToProfile() {
+    this.popoverCtrl.dismiss();
+    this.router.navigate([
+      `/user-profile/${this.authStoreService.getCurrentUser()?.uid}`,
+    ]);
+  }
+
+  goToSettings() {
+    this.popoverCtrl.dismiss();
+    this.router.navigate(["/user-settings"]);
+  }
 }

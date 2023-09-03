@@ -19,24 +19,39 @@
 ***********************************************************************************************/
 import {CommonModule} from "@angular/common";
 import {Component, Input} from "@angular/core";
-import {Router} from "@angular/router";
-import {IonicModule} from "@ionic/angular";
+import {IonicModule, PopoverController} from "@ionic/angular";
 import {AppUser} from "../../../models/user.model";
+import {UserMenuComponent} from "../user-menu/user-menu.component";
 
 @Component({
   selector: "app-header",
   templateUrl: "./app-header.component.html",
   styleUrls: ["./app-header.component.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule],
+  imports: [IonicModule, CommonModule, UserMenuComponent],
 })
 export class AppHeaderComponent {
   @Input() title?: string;
   @Input() user?: Partial<AppUser>; // Ideally you should replace 'any' with a user model.
+  public popoverEvent: any;
 
-  constructor(private router: Router) {}
+  constructor(private popoverController: PopoverController) {}
 
-  navigateToUserProfile() {
-    this.router.navigate(["/profile", this.user?.id]);
+  get profilePicture() {
+    return this.user?.profilePicture;
+  }
+
+  async presentPopover(ev: any) {
+    this.popoverEvent = ev;
+    const popover = await this.popoverController.create({
+      component: UserMenuComponent, // This is where you pass the component to the popover
+      event: ev,
+      translucent: true,
+    });
+    return popover.present();
+  }
+
+  onPopoverDismiss(event: any) {
+    // Handle popover dismiss if needed
   }
 }

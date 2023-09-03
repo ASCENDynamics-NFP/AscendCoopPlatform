@@ -119,24 +119,13 @@ export const routes: Routes = [
       ).then((m) => m.EditUserProfilePage),
     canActivate: [AuthGuard],
   },
-  // {
-  //   path: "group/:groupId/partners",
-  //   loadChildren: () =>
-  //     import("./modules/group/pages/partners/partners.routes").then(
-  //       (m) => m.routes,
-  //     ),
-  //   canActivate: [AuthGuard],
-  //   // loadComponent: () =>
-  //   //   import("./modules/group/pages/partners/partners.page").then(
-  //   //     (m) => m.PartnersPage,
-  //   //   ),
-  // },
   {
     path: "user-profile/:uid/groups",
     loadComponent: () =>
       import("./modules/user/pages/user-groups/user-groups.page").then(
         (m) => m.UserGroupsPage,
       ),
+    canActivate: [AuthGuard],
   },
   {
     path: "group/:groupId",

@@ -27,21 +27,25 @@ import {User} from "firebase/auth";
 import {StoreService} from "../../../../core/services/store.service";
 import {Subscription} from "rxjs";
 import {AppRelationship} from "../../../../models/relationship.model";
+import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
+import {AppUser} from "../../../../models/user.model";
 
 @Component({
   selector: "app-user-groups",
   templateUrl: "./user-groups.page.html",
   styleUrls: ["./user-groups.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, RouterModule],
+  imports: [IonicModule, CommonModule, RouterModule, AppHeaderComponent],
 })
 export class UserGroupsPage {
-  private relationshipsSubscription: Subscription | undefined;
+  private relationshipsSubscription?: Subscription;
+  private usersSubscription?: Subscription;
   private relationships: Partial<AppRelationship>[] = [];
   currentGroupsList: any[] = [];
   pendingGroupsList: any[] = [];
-  userId: string;
   currentUser: User | null = this.authStoreService.getCurrentUser();
+  userId: string;
+  user?: Partial<AppUser>;
   constructor(
     private activatedRoute: ActivatedRoute,
     private authStoreService: AuthStoreService,
@@ -57,10 +61,14 @@ export class UserGroupsPage {
         this.sortRelationships(relationships);
       },
     );
+    this.usersSubscription = this.storeService.users$.subscribe((users) => {
+      this.user = users.find((u) => u.id === this.userId);
+    });
   }
 
   ionViewWillLeave() {
     this.relationshipsSubscription?.unsubscribe();
+    this.usersSubscription?.unsubscribe();
   }
 
   acceptGroupRequest(request: any) {

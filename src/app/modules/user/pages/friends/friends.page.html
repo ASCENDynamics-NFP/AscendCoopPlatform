@@ -17,18 +17,13 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>Friends</ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-header
+  *ngIf="user"
+  [title]="user.name"
+  [image]="user.profilePicture"
+></app-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Friends</ion-title>
-    </ion-toolbar>
-  </ion-header>
   <ion-grid>
     <ion-row>
       <ion-col>

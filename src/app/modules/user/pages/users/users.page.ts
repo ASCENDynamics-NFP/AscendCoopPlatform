@@ -27,6 +27,7 @@ import {AppUser} from "../../../../models/user.model";
 import {StoreService} from "../../../../core/services/store.service";
 import {Subscription} from "rxjs";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
+import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
 import {AppRelationship} from "../../../../models/relationship.model";
 
 @Component({
@@ -34,11 +35,18 @@ import {AppRelationship} from "../../../../models/relationship.model";
   templateUrl: "./users.page.html",
   styleUrls: ["./users.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
+  imports: [
+    IonicModule,
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    AppHeaderComponent,
+  ],
 })
 export class UsersPage {
-  private usersSubscription: Subscription | undefined;
-  user: User | null = null; // define your user here
+  private usersSubscription?: Subscription;
+  authUser: User | null = null; // define your user here
+  user?: Partial<AppUser>;
   userList: Partial<AppUser>[] | null = []; // define your user list here
   searchedValue: string = "";
 
@@ -46,12 +54,13 @@ export class UsersPage {
     private authStoreService: AuthStoreService,
     private storeService: StoreService,
   ) {
-    this.user = this.authStoreService.getCurrentUser();
+    this.authUser = this.authStoreService.getCurrentUser();
   } // inject your Firebase service
 
   ionViewWillEnter() {
     this.usersSubscription = this.storeService.users$.subscribe((users) => {
       if (users) {
+        this.user = users.find((u) => u.id === this.authUser?.uid);
         this.userList = users.filter((user) =>
           user.displayName
             ?.toLowerCase()
@@ -66,13 +75,13 @@ export class UsersPage {
   }
 
   sendFriendRequest(user: Partial<AppUser>) {
-    if (!this.user?.uid || !user["id"]) {
+    if (!this.authUser?.uid || !user["id"]) {
       return;
     }
     this.storeService
       .createDoc("relationships", {
-        senderId: this.user?.uid,
-        relatedIds: [this.user?.uid, user["id"]],
+        senderId: this.authUser?.uid,
+        relatedIds: [this.authUser?.uid, user["id"]],
         receiverId: user["id"],
         type: "friend",
         status: "pending",
@@ -82,12 +91,12 @@ export class UsersPage {
         receiverName: user["displayName"],
         receiverImage: user["profilePicture"],
         receiverTagline: user["bio"],
-        senderName: this.user?.displayName ? this.user.displayName : "",
-        senderImage: this.user?.photoURL ? this.user.photoURL : "",
+        senderName: this.authUser?.displayName ? this.authUser.displayName : "",
+        senderImage: this.authUser?.photoURL ? this.authUser.photoURL : "",
         senderTagline: "",
       } as Partial<AppRelationship>)
       .then(() => {
-        if (this.user) {
+        if (this.authUser) {
           // updated friends list on userList item to include receiverId in friends list so that the button doesn't show
           const updatedUserListItem = this.userList?.find(
             (userListItem: Partial<AppUser>) => userListItem.id === user["id"],
@@ -97,7 +106,7 @@ export class UsersPage {
             if (!updatedUserListItem.pendingFriends) {
               updatedUserListItem.pendingFriends = [];
             }
-            updatedUserListItem.pendingFriends.push(this.user?.uid);
+            updatedUserListItem.pendingFriends.push(this.authUser?.uid);
 
             // Use addDocToState to update the state
             this.storeService.addDocToState("users", updatedUserListItem);

@@ -32,13 +32,14 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {Timestamp} from "firebase/firestore";
 import {StoreService} from "../../../../core/services/store.service";
 import {Subscription} from "rxjs";
+import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
 
 @Component({
   selector: "app-edit-user-profile",
   templateUrl: "./edit-user-profile.page.html",
   styleUrls: ["./edit-user-profile.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
+  imports: [IonicModule, CommonModule, ReactiveFormsModule, AppHeaderComponent],
 })
 export class EditUserProfilePage {
   private uid: string | null = null;

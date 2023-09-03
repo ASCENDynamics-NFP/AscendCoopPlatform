@@ -25,7 +25,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ion-title>{{ title }}</ion-title>
     <ion-buttons slot="end">
       <ion-avatar class="padded-avatar" (click)="presentPopover($event)">
-        <img [src]="profilePicture" />
+        <img [src]="image" />
       </ion-avatar>
     </ion-buttons>
   </ion-toolbar>
@@ -37,15 +37,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-title size="large">{{ title }}</ion-title>
       <ion-buttons slot="end">
         <ion-avatar class="padded-avatar" (click)="presentPopover($event)">
-          <img [src]="profilePicture" />
+          <img [src]="image" />
         </ion-avatar>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
-  <ion-popover
-    [event]="popoverEvent"
-    [cssClass]="'user-popover'"
-    (ionPopoverDidDismiss)="onPopoverDismiss($event)"
-  >
+  <ion-popover [event]="popoverEvent" [cssClass]="'user-popover'" (ionPopoverDidDismiss)="onPopoverDismiss($event)">
   </ion-popover>
 </ion-content>

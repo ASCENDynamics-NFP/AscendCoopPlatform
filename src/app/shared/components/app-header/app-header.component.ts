@@ -20,7 +20,6 @@
 import {CommonModule} from "@angular/common";
 import {Component, Input} from "@angular/core";
 import {IonicModule, PopoverController} from "@ionic/angular";
-import {AppUser} from "../../../models/user.model";
 import {UserMenuComponent} from "../user-menu/user-menu.component";
 
 @Component({
@@ -32,14 +31,10 @@ import {UserMenuComponent} from "../user-menu/user-menu.component";
 })
 export class AppHeaderComponent {
   @Input() title?: string;
-  @Input() user?: Partial<AppUser>; // Ideally you should replace 'any' with a user model.
+  @Input() image?: string;
   public popoverEvent: any;
 
   constructor(private popoverController: PopoverController) {}
-
-  get profilePicture() {
-    return this.user?.profilePicture;
-  }
 
   async presentPopover(ev: any) {
     this.popoverEvent = ev;

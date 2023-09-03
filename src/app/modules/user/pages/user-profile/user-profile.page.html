@@ -17,29 +17,53 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<app-header *ngIf="user" [title]="user.name" [image]="user.profilePicture"></app-header>
+<app-header
+  *ngIf="user"
+  [title]="user.name"
+  [image]="user.profilePicture"
+></app-header>
 
 <ion-content [fullscreen]="true">
   <ion-grid>
     <ion-row>
       <ion-col>
-        <app-hero *ngIf="user" [user]="user" [isProfileOwner]="isProfileOwner"></app-hero>
+        <app-hero
+          *ngIf="user"
+          [user]="user"
+          [isProfileOwner]="isProfileOwner"
+        ></app-hero>
       </ion-col>
     </ion-row>
     <ion-row>
       <ion-col>
         <ion-row>
           <ion-col>
-            <app-details *ngIf="user" [user]="user" [isProfileOwner]="isProfileOwner"></app-details></ion-col>
+            <app-details
+              *ngIf="user"
+              [user]="user"
+              [isProfileOwner]="isProfileOwner"
+            ></app-details
+          ></ion-col>
         </ion-row>
       </ion-col>
       <ion-col>
         <ion-row>
-          <ion-col><app-group-membership-list *ngIf="user" [user]="user"
-              [groupList]="groupList"></app-group-membership-list></ion-col>
+          <ion-col
+            ><app-group-membership-list
+              *ngIf="user"
+              [user]="user"
+              [groupList]="groupList"
+            ></app-group-membership-list
+          ></ion-col>
         </ion-row>
         <ion-row>
-          <ion-col><app-friend-list *ngIf="user" [user]="user" [friendList]="friendList"></app-friend-list></ion-col>
+          <ion-col
+            ><app-friend-list
+              *ngIf="user"
+              [user]="user"
+              [friendList]="friendList"
+            ></app-friend-list
+          ></ion-col>
         </ion-row>
       </ion-col>
     </ion-row>

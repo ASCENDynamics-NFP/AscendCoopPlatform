@@ -42,6 +42,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
-  <ion-popover [event]="popoverEvent" [cssClass]="'user-popover'" (ionPopoverDidDismiss)="onPopoverDismiss($event)">
+  <ion-popover
+    [event]="popoverEvent"
+    [cssClass]="'user-popover'"
+    (ionPopoverDidDismiss)="onPopoverDismiss($event)"
+  >
   </ion-popover>
 </ion-content>

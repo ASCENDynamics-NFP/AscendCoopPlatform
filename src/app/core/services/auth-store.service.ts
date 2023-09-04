@@ -64,7 +64,6 @@ export class AuthStoreService {
   };
   user$ = this.userSubject.asObservable();
   isLoggedIn$ = this.user$.pipe(map((user) => user !== null));
-  isLoggedOut$ = this.isLoggedIn$.pipe(map((loggedIn) => !loggedIn));
 
   constructor(
     private errorHandler: ErrorHandlerService,

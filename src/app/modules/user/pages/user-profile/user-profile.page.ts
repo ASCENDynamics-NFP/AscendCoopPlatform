@@ -33,6 +33,7 @@ import {Subscription} from "rxjs";
 import {StoreService} from "../../../../core/services/store.service";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
+import {User} from "firebase/auth";
 
 @Component({
   selector: "app-user-profile",
@@ -52,8 +53,9 @@ import {AppHeaderComponent} from "../../../../shared/components/app-header/app-h
 })
 export class UserProfilePage implements OnInit {
   private uid: string | null = null;
-  private relationshipsSubscription: Subscription | undefined;
-  private usersSubscription: Subscription | undefined;
+  private relationshipsSubscription?: Subscription;
+  private usersSubscription?: Subscription;
+  authUser: User | null = null;
   user: Partial<AppUser> | null = null;
   friendList: Partial<AppRelationship>[] = [];
   groupList: Partial<AppRelationship>[] = [];
@@ -63,6 +65,7 @@ export class UserProfilePage implements OnInit {
     private storeService: StoreService,
   ) {
     this.uid = this.route.snapshot.paramMap.get("uid");
+    this.authUser = this.authStoreService.getCurrentUser();
   }
 
   ngOnInit() {
@@ -75,7 +78,7 @@ export class UserProfilePage implements OnInit {
   }
 
   get isProfileOwner(): boolean {
-    return this.uid === this.authStoreService.getCurrentUser()?.uid;
+    return this.uid === this.authUser?.uid;
   }
 
   ionViewWillEnter() {

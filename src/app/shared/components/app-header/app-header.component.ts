@@ -18,9 +18,13 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {CommonModule} from "@angular/common";
-import {Component, Input} from "@angular/core";
+import {Component, Input, OnDestroy, OnInit} from "@angular/core";
 import {IonicModule, PopoverController} from "@ionic/angular";
 import {UserMenuComponent} from "../user-menu/user-menu.component";
+import {Subscription} from "rxjs";
+import {StoreService} from "../../../core/services/store.service";
+import {AppUser} from "../../../models/user.model";
+import {AuthStoreService} from "../../../core/services/auth-store.service";
 
 @Component({
   selector: "app-header",
@@ -29,12 +33,38 @@ import {UserMenuComponent} from "../user-menu/user-menu.component";
   standalone: true,
   imports: [IonicModule, CommonModule, UserMenuComponent],
 })
-export class AppHeaderComponent {
+export class AppHeaderComponent implements OnInit, OnDestroy {
   @Input() title?: string;
-  @Input() image?: string;
+  private user?: Partial<AppUser>;
+  private usersSubscription?: Subscription;
   public popoverEvent: any;
 
-  constructor(private popoverController: PopoverController) {}
+  constructor(
+    private authStoreService: AuthStoreService,
+    private popoverController: PopoverController,
+    private storeService: StoreService,
+  ) {}
+
+  get image() {
+    return this.user?.profilePicture || "assets/avatar/male2.png";
+  }
+
+  ngOnInit() {
+    this.initiateSubscribers();
+  }
+
+  ngOnDestroy() {
+    this.usersSubscription?.unsubscribe();
+  }
+
+  initiateSubscribers() {
+    // Subscribe to users$ observable
+    this.usersSubscription = this.storeService.users$.subscribe((users) => {
+      this.user = users.find(
+        (user) => user.id === this.authStoreService.getCurrentUser()?.uid,
+      );
+    });
+  }
 
   async presentPopover(ev: any) {
     this.popoverEvent = ev;

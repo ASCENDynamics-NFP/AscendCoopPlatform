@@ -300,6 +300,11 @@ export class ErrorHandlerService {
       message:
         "The action code in your link seems to be incorrect or expired. Make sure you've copied it right or request a new one!",
     },
+    "storage/unauthorized": {
+      title: "Uh Oh! You Don't Have Permission to Upload That File",
+      message:
+        "You don't have permission to upload this file. Please ensure the file is a JPEG, PNG, or GIF and is no larger than 5MB.",
+    },
   };
 
   constructor(private toastController: ToastController) {}

@@ -19,15 +19,15 @@
 ***********************************************************************************************/
 import {Injectable} from "@angular/core";
 import {BehaviorSubject, Observable, Subscription} from "rxjs";
-import {AppUser} from "../../models/user.model";
+import {Account} from "../../models/account.model";
 import {AuthStoreService} from "./auth-store.service";
-import {AppGroup} from "../../models/group.model";
 import {environment} from "../../../environments/environment";
 import {FirestoreService} from "./firestore.service";
 import {
   prepareDataForCreate,
   prepareDataForUpdate,
 } from "../utils/firebase.util";
+import {AppRelationship} from "../../models/relationship.model";
 
 @Injectable({
   providedIn: "root",
@@ -48,24 +48,19 @@ export class StoreService {
    */
   private collectionsSubject: {[key: string]: BehaviorSubject<Partial<any>[]>} =
     {
-      groups: new BehaviorSubject<Partial<AppGroup>[]>([]),
-      users: new BehaviorSubject<Partial<AppUser>[]>([]),
-      relationships: new BehaviorSubject<Partial<AppUser>[]>([]),
+      accounts: new BehaviorSubject<Partial<Account>[]>([]),
+      relationships: new BehaviorSubject<Partial<AppRelationship>[]>([]),
     };
   /**
-   * Observable of the groups collection.
+   * Observable of the accounts collection.
    */
-  groups$: Observable<Partial<AppGroup>[]> =
-    this.collectionsSubject["groups"].asObservable();
+  accounts$: Observable<Partial<Account>[]> =
+    this.collectionsSubject["accounts"].asObservable();
+
   /**
    * Observable of the relationships collection.
    */
   relationships$ = this.collectionsSubject["relationships"].asObservable();
-  /**
-   * Observable of the users collection.
-   */
-  users$: Observable<Partial<AppUser>[]> =
-    this.collectionsSubject["users"].asObservable();
 
   /**
    * Constructor for the StoreService.
@@ -102,8 +97,8 @@ export class StoreService {
             "Firestore",
             this.firestoreService.getCollectionsSubject().getValue(),
             data,
-            "Groups",
-            this.collectionsSubject["groups"].getValue(),
+            "Accounts",
+            this.collectionsSubject["accounts"].getValue(),
             "Users",
             this.collectionsSubject["users"].getValue(),
           );
@@ -117,9 +112,9 @@ export class StoreService {
    */
   loadInitialData() {
     const currentUser = this.authStoreService.getCurrentUser();
-    this.authStoreService.user$.subscribe((user) => {
-      if (user) {
-        this.firestoreService.addIdToCollection("users", user.uid);
+    this.authStoreService.authUser$.subscribe((authUser) => {
+      if (authUser) {
+        this.firestoreService.addIdToCollection("accounts", authUser.uid);
       } else {
         this.collectionsSubscription?.unsubscribe();
         // clear all existing state data when user logs out
@@ -130,16 +125,19 @@ export class StoreService {
     if (currentUser) {
       this.firestoreService
         .getCollectionWithCondition(
-          "groups",
-          "admins",
+          "accounts",
+          "group.admins",
           "array-contains",
           currentUser.uid,
         )
-        .then((groups) => {
-          if (groups) {
-            groups.forEach((group) => {
-              this.addDocToState("groups", group as Partial<any>);
-              this.firestoreService.addIdToCollection("groups", group["id"]);
+        .then((accounts) => {
+          if (accounts) {
+            accounts.forEach((account) => {
+              this.addDocToState("accounts", account as Partial<any>);
+              this.firestoreService.addIdToCollection(
+                "accounts",
+                account["id"],
+              );
             });
           }
         });

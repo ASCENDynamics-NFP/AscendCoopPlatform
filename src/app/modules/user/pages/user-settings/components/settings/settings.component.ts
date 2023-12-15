@@ -23,8 +23,8 @@ import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {TranslateModule, TranslateService} from "@ngx-translate/core";
 import {StoreService} from "../../../../../../core/services/store.service";
-import {AppUser} from "../../../../../../models/user.model";
 import {User} from "firebase/auth";
+import {Account} from "../../../../../../models/account.model";
 
 @Component({
   selector: "app-settings",
@@ -35,7 +35,7 @@ import {User} from "firebase/auth";
 })
 export class SettingsComponent implements OnChanges {
   @Input() authUser?: User | null;
-  @Input() user?: Partial<AppUser> | null;
+  @Input() account?: Partial<Account> | null;
   @Output() languageChange = new EventEmitter<string>();
 
   settingsForm = this.fb.group({
@@ -66,7 +66,7 @@ export class SettingsComponent implements OnChanges {
 
   updateSetting() {
     if (this.authUser?.uid) {
-      this.storeService.updateDoc("users", {
+      this.storeService.updateDoc("accounts", {
         id: this.authUser?.uid,
         privacySetting: this.settingsForm.value.privacySetting, // this.settingsForm.get("privacySetting")?.value,
         language: this.settingsForm.value.language, //this.settingsForm.get("language")?.value,
@@ -75,11 +75,11 @@ export class SettingsComponent implements OnChanges {
   }
 
   loadFormData() {
-    if (!this.user) return;
-    // Update the form with the user data
+    if (!this.account) return;
+    // Update the form with the account data
     this.settingsForm.patchValue({
-      privacySetting: this.user.privacySetting,
-      language: this.user.language,
+      privacySetting: this.account.privacySetting,
+      language: this.account.language,
     });
   }
 }

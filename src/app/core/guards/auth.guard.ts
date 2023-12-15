@@ -40,14 +40,14 @@ export class AuthGuard {
     _next: ActivatedRouteSnapshot,
     _state: RouterStateSnapshot,
   ): Promise<boolean> {
-    const user = await firstValueFrom(this.authStoreService.user$);
-    if (!user) {
+    const authUser = await firstValueFrom(this.authStoreService.authUser$);
+    if (!authUser) {
       // window.alert("Access Denied, Login is Required to Access This Page!");
       this.router.navigate(["user-login"]);
       return false;
-    } else if (user && !user.emailVerified) {
-      if (user.email) {
-        this.authStoreService.sendVerificationMail(user.email);
+    } else if (authUser && !authUser.emailVerified) {
+      if (authUser.email) {
+        this.authStoreService.sendVerificationMail(authUser.email);
       }
       this.authStoreService.signOut();
       return false;

@@ -45,7 +45,7 @@ describe("UserLoginPage", () => {
 
   beforeEach(async () => {
     authStoreServiceMock = {
-      user$: of(null),
+      authUser$: of(null),
       onSignInWithEmailLink: jasmine
         .createSpy()
         .and.returnValue(Promise.resolve(null)),

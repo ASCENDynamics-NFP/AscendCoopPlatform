@@ -62,8 +62,8 @@ export class AuthStoreService {
     // },
     // dynamicLinkDomain: 'example.page.link'
   };
-  user$ = this.userSubject.asObservable();
-  isLoggedIn$ = this.user$.pipe(map((user) => user !== null));
+  authUser$ = this.userSubject.asObservable();
+  isLoggedIn$ = this.authUser$.pipe(map((authUser) => authUser !== null));
 
   constructor(
     private errorHandler: ErrorHandlerService,

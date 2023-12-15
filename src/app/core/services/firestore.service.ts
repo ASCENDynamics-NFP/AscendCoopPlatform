@@ -54,12 +54,12 @@ export class FirestoreService {
    * Example:
    * [
    *   {
-   *     collectionName: "users",
-   *     ids: ["user1", "user2"],
+   *     collectionName: "accounts",
+   *     ids: ["account1", "account2"],
    *   },
    *   {
-   *     collectionName: "groups",
-   *     ids: ["group"],
+   *     collectionName: "relationships",
+   *     ids: ["relationship1"],
    *   },
    * ]
    *
@@ -84,15 +84,15 @@ export class FirestoreService {
    * const collectionIdsSubject = firestoreService.getCollectionsSubject();
    * collectionIdsSubject.next([
    *  {
-   *   collectionName: "users",
-   *  ids: ["user1", "user2"],
+   *   collectionName: "accounts",
+   *  ids: ["account1", "account2"],
    * },
    * {
-   *  collectionName: "groups",
-   * ids: ["group"],
+   *  collectionName: "relationships",
+   * ids: ["relationship1"],
    * },
    * ]);
-   * // This will cause the FirestoreService to listen to the documents with ids "user1" and "user2" in the "users" collection, and the document with id "group" in the "groups" collection.
+   * // This will cause the FirestoreService to listen to the documents with ids "account1" and "account2" in the "accounts" collection, and the document with id "relationship1" in the "relationships" collection.
    * // Whenever any of these documents change, the FirestoreService will emit the new data of all the documents.
    * // If the documents don't exist, the FirestoreService will emit null.
    * // If the documents are deleted, the FirestoreService will emit null.

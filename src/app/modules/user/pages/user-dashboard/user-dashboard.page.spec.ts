@@ -29,8 +29,8 @@ describe("UserDashboardPage", () => {
   let authSpy: any = {};
 
   beforeEach(async () => {
-    // Mock user$ as an Observable that emits null
-    authSpy.user$ = of(null);
+    // Mock authUser$ as an Observable that emits null
+    authSpy.authUser$ = of(null);
     TestBed.configureTestingModule({
       providers: [{provide: AuthStoreService, useValue: authSpy}],
     });

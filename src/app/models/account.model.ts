@@ -73,7 +73,11 @@ export type Account = {
   associations: Associations;
   userDetails?: UserSpecific;
   groupDetails?: GroupSpecific;
-  privacySetting: "public" | "users-only" | "groups-only" | "private"; // Privacy setting
+  privacySetting:
+    | "public"
+    | "accepted-users-only"
+    | "accepted-groups-only"
+    | "private"; // Privacy setting
   iconImage: string;
   heroImage: string;
 };

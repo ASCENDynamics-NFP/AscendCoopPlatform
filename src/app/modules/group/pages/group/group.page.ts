@@ -25,8 +25,7 @@ import {StoreService} from "../../../../core/services/store.service";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {Subscription} from "rxjs";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
-import {AppGroup} from "../../../../models/group.model";
-import {AppUser} from "../../../../models/user.model";
+import {Account} from "../../../../models/account.model";
 
 @Component({
   selector: "app-group",
@@ -36,11 +35,10 @@ import {AppUser} from "../../../../models/user.model";
   imports: [IonicModule, CommonModule, RouterModule, AppHeaderComponent],
 })
 export class GroupPage {
-  private groupsSubscription?: Subscription;
-  private usersSubscription?: Subscription;
-  group: Partial<AppGroup> | null = null;
+  private accountSubscription?: Subscription;
+  group: Partial<Account> | null = null;
   groupId: string | null = null;
-  user?: Partial<AppUser>;
+  currentUserAccount?: Partial<Account>;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -66,19 +64,25 @@ export class GroupPage {
   }
 
   ionViewWillLeave() {
-    // Unsubscribe from the groups$ observable when the component is destroyed
-    this.groupsSubscription?.unsubscribe();
-    this.usersSubscription?.unsubscribe();
+    this.accountSubscription?.unsubscribe();
   }
 
   initiateSubscribers() {
-    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
-      this.group = groups.find((group) => group.id === this.groupId) || null;
-    });
-    this.usersSubscription = this.storeService.users$.subscribe((users) => {
-      this.user = users.find(
-        (u) => u.id === this.authStoreService.getCurrentUser()?.uid,
-      );
-    });
+    this.accountSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        // Find the group by groupId
+        this.group =
+          accounts.find(
+            (account) =>
+              account.id === this.groupId && account.type === "group",
+          ) || null;
+
+        // Find the current user account
+        this.currentUserAccount = accounts.find(
+          (account) =>
+            account.id === this.currentUser?.uid && account.type === "user",
+        );
+      },
+    );
   }
 }

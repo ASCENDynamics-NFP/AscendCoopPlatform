@@ -20,7 +20,6 @@
 import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
-
 import {ActivatedRoute, RouterModule} from "@angular/router";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {User} from "firebase/auth";
@@ -28,7 +27,7 @@ import {StoreService} from "../../../../core/services/store.service";
 import {Subscription} from "rxjs";
 import {AppRelationship} from "../../../../models/relationship.model";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
-import {AppUser} from "../../../../models/user.model";
+import {Account} from "../../../../models/account.model";
 
 @Component({
   selector: "app-user-groups",
@@ -39,13 +38,13 @@ import {AppUser} from "../../../../models/user.model";
 })
 export class UserGroupsPage {
   private relationshipsSubscription?: Subscription;
-  private usersSubscription?: Subscription;
+  private accountsSubscription?: Subscription;
   private relationships: Partial<AppRelationship>[] = [];
   currentGroupsList: any[] = [];
   pendingGroupsList: any[] = [];
   currentUser: User | null = this.authStoreService.getCurrentUser();
   userId: string;
-  user?: Partial<AppUser>;
+  account?: Partial<Account>;
   constructor(
     private activatedRoute: ActivatedRoute,
     private authStoreService: AuthStoreService,
@@ -61,14 +60,16 @@ export class UserGroupsPage {
         this.sortRelationships(relationships);
       },
     );
-    this.usersSubscription = this.storeService.users$.subscribe((users) => {
-      this.user = users.find((u) => u.id === this.userId);
-    });
+    this.accountsSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        this.account = accounts.find((acc) => acc.id === this.userId);
+      },
+    );
   }
 
   ionViewWillLeave() {
     this.relationshipsSubscription?.unsubscribe();
-    this.usersSubscription?.unsubscribe();
+    this.accountsSubscription?.unsubscribe();
   }
 
   acceptGroupRequest(request: any) {

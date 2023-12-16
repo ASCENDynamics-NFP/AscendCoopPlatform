@@ -27,7 +27,7 @@ import {StoreService} from "../../../../core/services/store.service";
 import {Subscription} from "rxjs";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
 import {AppRelationship} from "../../../../models/relationship.model";
-import {AppUser} from "../../../../models/user.model";
+import {Account} from "../../../../models/account.model";
 
 @Component({
   selector: "app-friends",
@@ -47,13 +47,13 @@ import {AppUser} from "../../../../models/user.model";
  */
 export class FriendsPage implements OnInit {
   private relationshipsSubscription?: Subscription;
-  private usersSubscription?: Subscription;
+  private accountsSubscription?: Subscription;
   relationships: Partial<AppRelationship>[] = [];
   currentFriendsList: any[] = [];
   pendingFriendsList: any[] = [];
   userId: string | null = null;
   currentUser: any;
-  user?: Partial<AppUser>;
+  account?: Partial<Account>;
 
   /**
    * Constructs the FriendsPage.
@@ -74,7 +74,7 @@ export class FriendsPage implements OnInit {
    */
   ngOnInit() {
     if (this.userId) {
-      this.storeService.getDocsWithSenderOrRecieverId(
+      this.storeService.getDocsWithSenderOrReceiverId(
         "relationships",
         this.userId,
       );
@@ -91,9 +91,11 @@ export class FriendsPage implements OnInit {
         this.sortRelationships(relationships);
       },
     );
-    this.usersSubscription = this.storeService.users$.subscribe((users) => {
-      this.user = users.find((u) => u.id === this.userId);
-    });
+    this.accountsSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        this.account = accounts.find((acc) => acc.id === this.userId);
+      },
+    );
   }
 
   /**
@@ -101,7 +103,7 @@ export class FriendsPage implements OnInit {
    */
   ionViewWillLeave() {
     this.relationshipsSubscription?.unsubscribe();
-    this.usersSubscription?.unsubscribe();
+    this.accountsSubscription?.unsubscribe();
   }
 
   /**

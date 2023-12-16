@@ -27,13 +27,13 @@ import {FriendListComponent} from "./components/friend-list/friend-list.componen
 import {GroupMembershipListComponent} from "./components/group-membership-list/group-membership-list.component";
 import {HeroComponent} from "./components/hero/hero.component";
 import {DetailsComponent} from "./components/details/details.component";
-import {AppRelationship} from "../../../../models/relationship.model";
-import {AppUser} from "../../../../models/user.model";
+import {Account} from "../../../../models/account.model"; // Updated model import
 import {Subscription} from "rxjs";
 import {StoreService} from "../../../../core/services/store.service";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
 import {User} from "firebase/auth";
+import {AppRelationship} from "../../../../models/relationship.model";
 
 @Component({
   selector: "app-user-profile",
@@ -53,12 +53,13 @@ import {User} from "firebase/auth";
 })
 export class UserProfilePage implements OnInit {
   private uid: string | null = null;
+  private accountsSubscription?: Subscription;
   private relationshipsSubscription?: Subscription;
-  private usersSubscription?: Subscription;
   authUser: User | null = null;
-  user: Partial<AppUser> | null = null;
+  account: Partial<Account> | null = null;
   friendList: Partial<AppRelationship>[] = [];
   groupList: Partial<AppRelationship>[] = [];
+
   constructor(
     private authStoreService: AuthStoreService,
     private route: ActivatedRoute,
@@ -70,7 +71,7 @@ export class UserProfilePage implements OnInit {
 
   ngOnInit() {
     if (this.uid) {
-      this.storeService.getDocsWithSenderOrRecieverId(
+      this.storeService.getDocsWithSenderOrReceiverId(
         "relationships",
         this.uid,
       );
@@ -87,19 +88,21 @@ export class UserProfilePage implements OnInit {
 
   ionViewWillLeave() {
     this.relationshipsSubscription?.unsubscribe();
-    this.usersSubscription?.unsubscribe();
+    this.accountsSubscription?.unsubscribe();
   }
 
   initiateSubscribers() {
-    // Subscribe to users$ observable
-    this.usersSubscription = this.storeService.users$.subscribe((users) => {
-      this.user = users.find((user) => user.id === this.uid) ?? null;
-      if (!this.user) {
-        console.log("User not found in store, fetching from server");
-        this.storeService.getDocById("users", this.uid);
-      }
-    });
-    // Subscribe to relationships$ observable
+    this.accountsSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        this.account =
+          accounts.find((account) => account.id === this.uid) ?? null;
+        if (!this.account) {
+          console.log("Account not found in store, fetching from server");
+          this.storeService.getDocById("accounts", this.uid);
+        }
+      },
+    );
+
     this.relationshipsSubscription = this.storeService.relationships$.subscribe(
       (relationships) => {
         this.sortRelationships(relationships);
@@ -111,10 +114,7 @@ export class UserProfilePage implements OnInit {
     this.friendList = [];
     this.groupList = [];
     for (let relationship of relationships) {
-      if (
-        relationship.senderId === this.uid ||
-        relationship.receiverId === this.uid
-      ) {
+      if (this.uid && relationship.relatedIds?.includes(this.uid)) {
         if (
           relationship.type === "friend" &&
           relationship.status === "accepted"

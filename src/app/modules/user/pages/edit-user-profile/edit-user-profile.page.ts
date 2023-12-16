@@ -19,15 +19,9 @@
 ***********************************************************************************************/
 import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
-import {
-  AbstractControl,
-  FormBuilder,
-  ReactiveFormsModule,
-  ValidatorFn,
-  Validators,
-} from "@angular/forms";
+import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {AppUser} from "../../../../models/user.model";
+import {Account} from "../../../../models/account.model";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Timestamp} from "firebase/firestore";
 import {StoreService} from "../../../../core/services/store.service";
@@ -43,29 +37,31 @@ import {AppHeaderComponent} from "../../../../shared/components/app-header/app-h
 })
 export class EditUserProfilePage {
   private uid: string | null = null;
-  private usersSubscription: Subscription | undefined;
-  user: Partial<AppUser> | null = null; // define your user here
+  private accountsSubscription: Subscription | undefined;
+  public account?: Partial<Account>;
 
   editProfileForm = this.fb.group({
-    displayName: [""],
-    email: ["", [Validators.required, Validators.email]],
-    bio: [""],
-    tagline: [""],
     name: ["", Validators.required],
+    email: ["", [Validators.required, Validators.email]],
+    description: [""],
+    tagline: [""],
     language: [""],
-    phoneCountryCode: ["", [Validators.pattern("^[0-9]*$")]],
-    phoneNumber: ["", [Validators.pattern("^\\d{10}$")]],
-    phoneType: [""],
-    addressName: [""],
-    addressStreet: ["", Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
-    addressCity: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-    addressState: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-    addressZipcode: ["", Validators.pattern("^[0-9]*$")],
-    addressCountry: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-    dateOfBirth: [
-      new Date().toISOString(),
-      [Validators.required], //, this.ageValidator(18)],
-    ],
+    userDetails: this.fb.group({
+      dateOfBirth: [new Date().toISOString(), [Validators.required]],
+    }),
+    address: this.fb.group({
+      name: [""],
+      street: ["", Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
+      city: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+      state: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+      zipcode: ["", Validators.pattern("^[0-9]*$")],
+      country: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+    }),
+    phone: this.fb.group({
+      number: ["", [Validators.pattern("^\\d{10}$")]],
+      countryCode: ["", [Validators.pattern("^[0-9]*$")]],
+      type: [""],
+    }),
   });
 
   constructor(
@@ -78,56 +74,65 @@ export class EditUserProfilePage {
   }
 
   ionViewWillEnter() {
-    this.usersSubscription = this.storeService.users$.subscribe((users) => {
-      this.user = users.find((user) => user.id === this.uid) ?? null;
-      if (this.user) {
-        this.loadFormData();
-      }
-    });
-    if (!this.user) {
-      // console.log("User not found in store, fetching from server");
-      this.storeService.getDocById("users", this.uid);
+    this.accountsSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        this.account = accounts.find((account) => account.id === this.uid);
+        if (this.account) {
+          this.loadFormData();
+        }
+      },
+    );
+    if (!this.account) {
+      this.storeService.getDocById("accounts", this.uid);
     }
   }
 
   ionViewWillLeave() {
-    this.usersSubscription?.unsubscribe();
+    this.accountsSubscription?.unsubscribe();
   }
 
   onSubmit() {
-    // Call the API to save changes
-    if (this.user) {
-      this.user.email = this.editProfileForm.value.email || "";
-      this.user.phoneNumber = this.editProfileForm.value.phoneNumber || "";
-      this.user.bio = this.editProfileForm.value.bio || "";
-      this.user.tagline = this.editProfileForm.value.tagline || "";
-      this.user.name = this.editProfileForm.value.name || "";
-      this.user.displayName = this.editProfileForm.value.name || "";
-      this.user.language = this.editProfileForm.value.language || "";
-      this.user.phoneCountryCode =
-        this.editProfileForm.value.phoneCountryCode || "";
-      this.user.phoneType = this.editProfileForm.value.phoneType || "";
-      this.user.addressName = this.editProfileForm.value.addressName || "";
-      this.user.addressStreet = this.editProfileForm.value.addressStreet || "";
-      this.user.addressCity = this.editProfileForm.value.addressCity || "";
-      this.user.addressState = this.editProfileForm.value.addressState || "";
-      this.user.addressZipcode =
-        this.editProfileForm.value.addressZipcode || "";
-      this.user.addressCountry =
-        this.editProfileForm.value.addressCountry || "";
-      this.user.dateOfBirth = Timestamp.fromDate(
-        new Date(this.editProfileForm.value.dateOfBirth || ""),
-      );
-      this.user.heroImage = this.user?.heroImage ?? "assets/image/userhero.png";
-      this.user.profilePicture =
-        this.user?.profilePicture ?? "assets/avatar/male1.png";
+    if (this.account) {
+      // Update the account object with form values
+      this.account.email = this.editProfileForm.value.email ?? "";
+      this.account.description = this.editProfileForm.value.description ?? "";
+      this.account.tagline = this.editProfileForm.value.tagline ?? "";
+      this.account.name = this.editProfileForm.value.name ?? "";
+      this.account.language = this.editProfileForm.value.language ?? "";
 
-      this.storeService.updateDoc("users", this.user);
+      this.account.userDetails = {
+        ...this.account.userDetails,
+        firstName: this.account.userDetails?.firstName ?? "",
+        lastName: this.account.userDetails?.lastName ?? "",
+        username: this.account.userDetails?.username ?? "",
+        dateOfBirth: Timestamp.fromDate(
+          new Date(this.editProfileForm.value.userDetails?.dateOfBirth ?? ""),
+        ),
+      };
+      this.account.address = {
+        ...this.account.address,
+        street: this.editProfileForm.value.address?.street ?? "",
+        city: this.editProfileForm.value.address?.city ?? "",
+        state: this.editProfileForm.value.address?.state ?? "",
+        zipcode: this.editProfileForm.value.address?.zipcode ?? "",
+        country: this.editProfileForm.value.address?.country ?? "",
+        name: this.editProfileForm.value.address?.name ?? "",
+        formatted: this.account.address?.formatted ?? "",
+        geopoint: this.account.address?.geopoint ?? "",
+      };
+      this.account.phone = {
+        ...this.account.phone,
+        number: this.editProfileForm.value.phone?.number ?? "",
+        type: this.editProfileForm.value.phone?.type ?? "",
+        countryCode: this.editProfileForm.value.phone?.countryCode ?? "",
+      };
+
+      this.storeService.updateDoc("accounts", this.account);
     }
   }
 
   backToProfile() {
-    this.router.navigate(["/user-profile/", this.user?.id]);
+    this.router.navigate(["/user-profile/", this.account?.id]);
   }
 
   // ageValidator(minAge: number): ValidatorFn {
@@ -150,25 +155,24 @@ export class EditUserProfilePage {
   // }
 
   loadFormData() {
-    if (!this.user) return;
-    // Update the form with the user data
+    if (!this.account) return;
     this.editProfileForm.patchValue({
-      displayName: this.user.name,
-      email: this.user.email,
-      phoneNumber: this.user.phoneNumber,
-      bio: this.user.bio,
-      tagline: this.user.tagline,
-      name: this.user.name,
-      language: this.user.language,
-      phoneCountryCode: this.user.phoneCountryCode,
-      phoneType: this.user.phoneType,
-      addressName: this.user.addressName,
-      addressStreet: this.user.addressStreet,
-      addressCity: this.user.addressCity,
-      addressState: this.user.addressState,
-      addressZipcode: this.user.addressZipcode,
-      addressCountry: this.user.addressCountry,
-      dateOfBirth: this.user.dateOfBirth?.toDate().toISOString(), // Make sure dateOfBirth is a Date object
+      name: this.account.name,
+      email: this.account.email,
+      description: this.account.description,
+      tagline: this.account.tagline,
+      language: this.account.language,
+      userDetails: {
+        dateOfBirth: this.account.userDetails?.dateOfBirth
+          .toDate()
+          .toISOString(),
+      },
+      address: {
+        ...this.account.address,
+      },
+      phone: {
+        ...this.account.phone,
+      },
     });
   }
 }

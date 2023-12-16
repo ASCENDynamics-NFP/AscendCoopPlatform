@@ -23,7 +23,7 @@ import {User} from "firebase/auth";
 import {Subscription} from "rxjs";
 import {AuthStoreService} from "../../../../../../core/services/auth-store.service";
 import {StoreService} from "../../../../../../core/services/store.service";
-import {AppGroup} from "../../../../../../models/group.model";
+import {Account} from "../../../../../../models/account.model";
 import {AppRelationship} from "../../../../../../models/relationship.model";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
@@ -36,13 +36,13 @@ import {IonicModule} from "@ionic/angular";
   imports: [IonicModule, CommonModule, RouterModule],
 })
 export class PartnersComponent {
-  private groupsSubscription: Subscription | undefined;
-  private relationshipsSubscription: Subscription | undefined;
+  private groupsSubscription?: Subscription;
+  private relationshipsSubscription?: Subscription;
   relationships: Partial<AppRelationship>[] = [];
   currentGroupsList: any[] = [];
   pendingGroupsList: any[] = [];
   groupId: string | null = null;
-  group: Partial<AppGroup> | null = null;
+  account?: Partial<Account>;
   currentUser: User | null = this.authStoreService.getCurrentUser();
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -51,8 +51,9 @@ export class PartnersComponent {
   ) {
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
 
+    // Update to fetch relationships for the current account
     if (this.groupId) {
-      this.storeService.getDocsWithSenderOrRecieverId(
+      this.storeService.getDocsWithSenderOrReceiverId(
         "relationships",
         this.groupId,
       );
@@ -64,15 +65,17 @@ export class PartnersComponent {
   }
 
   ionViewWillLeave() {
-    // Unsubscribe from the groups$ observable when the component is destroyed
+    // Unsubscribe from the accounts$ observable when the component is destroyed
     this.groupsSubscription?.unsubscribe();
     this.relationshipsSubscription?.unsubscribe();
   }
 
   initiateSubscribers() {
-    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
-      this.group = groups.find((group) => group.id === this.groupId) || null;
-    });
+    this.groupsSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        this.account = accounts.find((account) => account.id === this.groupId);
+      },
+    );
     this.relationshipsSubscription = this.storeService.relationships$.subscribe(
       (relationships) => {
         this.relationships = relationships;
@@ -83,29 +86,28 @@ export class PartnersComponent {
 
   acceptPartnerRequest(request: any) {
     const relationship = this.relationships.find(
-      (relationship) => relationship.id === request.relationshipId,
+      (rel) => rel.id === request.relationshipId,
     );
-    if (!relationship) {
-      return;
-    }
-    relationship.status = "accepted";
-    this.storeService.updateDoc("relationships", relationship as Partial<any>);
-    // After updating the relationship status, execute the following logic
+    if (relationship) {
+      relationship.status = "accepted";
+      this.storeService.updateDoc("relationships", relationship);
 
-    this.addPartner(request);
+      // Logic to add partner to the current account's list of partners
+      if (this.account?.associations?.accounts) {
+        this.account["associations"].accounts.push(request.partnerGroupId);
+        this.storeService.updateDoc("accounts", this.account);
+      }
+    }
   }
 
   rejectPartnerRequest(request: any) {
     const relationship = this.relationships.find(
-      (relationship) => relationship.id === request.relationshipId,
+      (rel) => rel.id === request.relationshipId,
     );
-    if (!relationship) {
-      return;
+    if (relationship) {
+      relationship.status = "rejected";
+      this.storeService.updateDoc("relationships", relationship);
     }
-    relationship.status = "rejected";
-    this.storeService.updateDoc("relationships", relationship as Partial<any>);
-    // After updating the relationship status, execute the following logic
-    this.removePartner(request);
   }
 
   /**
@@ -115,39 +117,34 @@ export class PartnersComponent {
   removePartnerRequest(request: any) {
     if (request.relationshipId) {
       this.storeService.deleteDoc("relationships", request.relationshipId);
-      // After deleting the relationship, execute the following logic
-      this.removePartner(request);
+      this.removePartner(request.partnerGroupId);
     }
   }
 
   addPartner(request: any) {
-    // Add the partner to the group's groups lists
-    const updatedGroupDoc = this.storeService
-      .getCollection("groups")
-      .find((g) => g["id"] === request.groupId);
-    if (updatedGroupDoc) {
-      updatedGroupDoc["groups"] = updatedGroupDoc["groups"].push(
-        request.partnerGroupId,
-      );
-      updatedGroupDoc["pendingGroups"] = updatedGroupDoc[
-        "pendingGroups"
-      ].filter((pendingMember: string) => pendingMember !== request.memberId);
-      // Use addDocToState to update the state
-      this.storeService.addDocToState("groups", updatedGroupDoc);
+    // Add the partner to the current account's list of partners
+    if (this.account && this.account["associations"]?.accounts) {
+      if (
+        !this.account["associations"].accounts.includes(request.partnerGroupId)
+      ) {
+        this.account["associations"].accounts.push(request.partnerGroupId);
+        this.storeService.updateDoc("accounts", this.account);
+      }
     }
-    // Add the group to the partner's groups lists
+
+    // Retrieve the partner account and add the current account to its list
     const updatedPartnerDoc = this.storeService
-      .getCollection("groups")
-      .find((g) => g["id"] === request.partnerGroupId);
+      .getCollection("accounts")
+      .find(request.partnerGroupId);
     if (updatedPartnerDoc) {
-      updatedPartnerDoc["groups"] = updatedPartnerDoc["groups"].push(
-        request.groupId,
-      );
-      updatedPartnerDoc["pendingGroups"] = updatedPartnerDoc[
-        "pendingGroups"
-      ].filter((pendingGroup: string) => pendingGroup !== request.groupId);
-      // Use addDocToState to update the state
-      this.storeService.addDocToState("groups", updatedPartnerDoc);
+      if (updatedPartnerDoc && updatedPartnerDoc["associations"]?.accounts) {
+        if (
+          !updatedPartnerDoc["associations"].accounts.includes(this.account?.id)
+        ) {
+          updatedPartnerDoc["associations"].accounts.push(this.account?.id);
+          this.storeService.addDocToState("accounts", updatedPartnerDoc);
+        }
+      }
     }
   }
 
@@ -155,91 +152,74 @@ export class PartnersComponent {
    * Removes a partner from the group.
    * @param {any} request - The partner request to process.
    */
-  removePartner(request: any) {
-    // Remove the group from the partner's groups lists
-    const updatedPartnerDoc = this.storeService
-      .getCollection("users")
-      .find((pg) => pg["id"] === request.partnerGroupId);
-    if (updatedPartnerDoc) {
-      updatedPartnerDoc["groups"] = updatedPartnerDoc["groups"].filter(
-        (group: string) => group !== this.groupId,
-      );
-      updatedPartnerDoc["pendingGroups"] = updatedPartnerDoc[
-        "pendingGroups"
-      ].filter((pendingGroup: string) => pendingGroup !== this.groupId);
-      // Use addDocToState to update the state
-      this.storeService.addDocToState("groups", updatedPartnerDoc);
+  removePartner(partnerGroupId: string) {
+    // Remove the partner from the current account's list of partners
+    if (this.account && this.account["associations"]?.accounts) {
+      this.account["associations"].accounts = this.account[
+        "associations"
+      ].accounts.filter((id) => id !== partnerGroupId);
+      this.storeService.updateDoc("accounts", this.account);
     }
-    // Remove the partner from the group's groups lists
-    const updatedGroupDoc = this.storeService
-      .getCollection("groups")
-      .find((g) => g["id"] === request.groupId);
-    if (updatedGroupDoc) {
-      updatedGroupDoc["groups"] = updatedGroupDoc["groups"].filter(
-        (member: string) => member !== request.friendId,
-      );
-      updatedGroupDoc["pendingGroups"] = updatedGroupDoc[
-        "pendingGroups"
-      ].filter((pendingMember: string) => pendingMember !== request.friendId);
-      // Use addDocToState to update the state
-      this.storeService.addDocToState("groups", updatedGroupDoc);
+
+    // Retrieve the partner account and remove the current account from its list
+    const partnerAccount = this.storeService
+      .getCollection("accounts")
+      .find((pg) => pg["id"] === partnerGroupId);
+
+    if (partnerAccount && partnerAccount["associations"]?.accounts) {
+      partnerAccount["associations"].accounts = partnerAccount[
+        "associations"
+      ].accounts.filter((id: string) => id !== this.account?.id);
+      this.storeService.updateDoc("accounts", partnerAccount);
     }
   }
 
   relationshipToGroup(relationship: Partial<AppRelationship>) {
-    if (!this.group || !this.currentUser) return;
-    if (!this.group.admins) this.group.admins = [];
-    const isAdmin = this.group.admins.includes(this.currentUser.uid);
-    if (relationship.senderId === this.groupId) {
-      // my requests
-      return {
-        relationshipId: relationship.id,
-        groupId: relationship.senderId,
-        partnerGroupId: relationship.receiverId,
-        name: relationship.receiverName,
-        image: relationship.receiverImage,
-        tagline: relationship.receiverTagline,
-        isPending: relationship.status === "pending",
-        showRemoveButton: isAdmin,
-        showAcceptRejectButtons: false,
-      };
-    } else {
-      // other's requests
-      return {
-        relationshipId: relationship.id,
-        groupId: relationship.receiverId,
-        partnerGroupId: relationship.senderId,
-        name: relationship.senderName,
-        image: relationship.senderImage,
-        tagline: relationship.senderTagline,
-        isPending: relationship.status === "pending",
-        showRemoveButton: relationship.status === "accepted" && isAdmin,
-        showAcceptRejectButtons: isAdmin,
-      };
-    }
+    // Assuming you want to display partner details
+    let isAdmin = this.currentUser
+      ? this.account?.groupDetails?.admins.includes(this.currentUser?.uid)
+      : false;
+    return {
+      relationshipId: relationship.id,
+      partnerGroupId:
+        relationship.senderId === this.groupId
+          ? relationship.receiverId
+          : relationship.senderId,
+      name:
+        relationship.senderId === this.groupId
+          ? relationship.receiverName
+          : relationship.senderName,
+      image:
+        relationship.senderId === this.groupId
+          ? relationship.receiverImage
+          : relationship.senderImage,
+      tagline:
+        relationship.senderId === this.groupId
+          ? relationship.receiverTagline
+          : relationship.senderTagline,
+      isPending: relationship.status === "pending",
+      showAcceptRejectButtons: isAdmin && relationship.status === "pending",
+      showRemoveButton: isAdmin && relationship.status === "accepted",
+    };
   }
 
   sortRelationships(relationships: Partial<AppRelationship>[]) {
-    this.currentGroupsList = [];
-    this.pendingGroupsList = [];
+    this.currentGroupsList = relationships
+      .filter(
+        (rel) =>
+          (rel.senderId === this.groupId || rel.receiverId === this.groupId) &&
+          rel.type === "group" &&
+          rel.status === "accepted",
+      )
+      .map(this.relationshipToGroup);
 
-    for (let relationship of relationships) {
-      if (
-        relationship.senderId === this.groupId ||
-        relationship.receiverId === this.groupId
-      ) {
-        if (
-          relationship.type === "group" &&
-          relationship.status === "accepted"
-        ) {
-          this.currentGroupsList.push(this.relationshipToGroup(relationship));
-        } else if (
-          relationship.type === "group" &&
-          relationship.status === "pending"
-        ) {
-          this.pendingGroupsList.push(this.relationshipToGroup(relationship));
-        }
-      }
-    }
+    this.pendingGroupsList = relationships
+      .filter(
+        (rel) =>
+          (rel.senderId === this.groupId || rel.receiverId === this.groupId) &&
+          rel.type === "group" &&
+          rel.status === "pending",
+      )
+      .map(this.relationshipToGroup);
   }
 }

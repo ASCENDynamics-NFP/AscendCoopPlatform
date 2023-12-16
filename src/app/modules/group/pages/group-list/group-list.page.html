@@ -25,36 +25,21 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-col>
         <ion-card>
           <ion-card-header>
-            <ion-searchbar
-              [debounce]="1000"
-              (ionInput)="searchGroups($event)"
-            ></ion-searchbar>
+            <ion-searchbar [debounce]="1000" (ionInput)="searchGroups($event)"></ion-searchbar>
           </ion-card-header>
           <ion-list>
-            <ion-item
-              *ngFor="let item of searchResults; let i = index"
-              routerLink="/group/{{item.id}}/{{item.id}}/details"
-              button
-            >
+            <ion-item *ngFor="let item of searchResults; let i = index"
+              routerLink="/group/{{item.id}}/{{item.id}}/details" button>
               <ion-thumbnail slot="start">
-                <img
-                  *ngIf="item.logoImage"
-                  [alt]="item.name"
-                  [src]="item.logoImage"
-                />
+                <img *ngIf="item.iconImage" [alt]="item.name" [src]="item.iconImage" />
               </ion-thumbnail>
               <ion-label>
                 <h3>{{ item?.name }}</h3>
                 <p>{{ item?.tagline }}</p>
               </ion-label>
-              <ion-button
-                *ngIf="(authUser && !item.members?.includes(authUser.uid) && !item.pendingMembers?.includes(authUser.uid))"
-                slot="end"
-                mode="md"
-                expand="block"
-                (click)="$event.stopPropagation();$event.preventDefault();sendRequest(item);"
-                >Send Request</ion-button
-              >
+              <ion-button *ngIf="(authUser && !item.associations?.accounts?.includes(authUser.uid))" slot="end"
+                mode="md" expand="block"
+                (click)="$event.stopPropagation();$event.preventDefault();sendRequest(item);">Send Request</ion-button>
             </ion-item>
           </ion-list>
         </ion-card>

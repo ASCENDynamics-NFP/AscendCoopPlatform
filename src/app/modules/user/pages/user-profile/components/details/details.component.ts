@@ -20,7 +20,7 @@
 import {CommonModule} from "@angular/common";
 import {Component, Input, OnInit} from "@angular/core";
 import {IonicModule} from "@ionic/angular";
-import {AppUser} from "../../../../../../models/user.model";
+import {Account} from "../../../../../../models/account.model";
 import {RouterModule} from "@angular/router";
 import {PhoneFormatPipe} from "../../../../../../shared/pipes/phone-format.pipe";
 
@@ -32,7 +32,7 @@ import {PhoneFormatPipe} from "../../../../../../shared/pipes/phone-format.pipe"
   imports: [IonicModule, CommonModule, RouterModule, PhoneFormatPipe],
 })
 export class DetailsComponent implements OnInit {
-  @Input() user: Partial<AppUser> | null = null; // define your user here
+  @Input() account: Partial<Account> | null = null; // define your user here
   @Input() isProfileOwner: boolean = false; // define your user here
   dateOfBirth = new Date().toISOString(); // default initialization
 
@@ -41,6 +41,7 @@ export class DetailsComponent implements OnInit {
   ngOnInit() {
     // If user and dateOfBirth exist, convert to Date, otherwise leave as default Date
     this.dateOfBirth =
-      this.user?.dateOfBirth?.toDate().toISOString() || this.dateOfBirth;
+      this.account?.userDetails?.dateOfBirth?.toDate().toISOString() ||
+      this.dateOfBirth;
   }
 }

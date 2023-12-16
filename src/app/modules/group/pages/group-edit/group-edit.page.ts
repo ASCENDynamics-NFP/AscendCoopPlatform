@@ -53,7 +53,7 @@ export class GroupEditPage {
     name: ["", Validators.required],
     supportedlanguages: [["en"]],
     phoneCountryCode: ["", [Validators.pattern("^[0-9]*$")]],
-    phoneNumber: ["", [Validators.pattern("^\\d{10}$")]],
+    number: ["", [Validators.pattern("^\\d{10}$")]],
     addressName: [""],
     addressStreet: ["", Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
     addressCity: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
@@ -73,32 +73,34 @@ export class GroupEditPage {
   }
 
   ionViewWillEnter() {
-    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
-      this.group = groups.find((group) => group.id === this.groupId) || null;
-      if (this.group) {
-        // Update the form with the group data
-        this.editGroupForm.patchValue({
-          name: this.group.name,
-          email: this.group.email,
-          phoneNumber: this.group.phoneNumber,
-          description: this.group.description,
-          tagline: this.group.tagline,
-          supportedlanguages: this.group.supportedlanguages,
-          phoneCountryCode: this.group.phoneCountryCode,
-          addressName: this.group.addressName,
-          addressStreet: this.group.addressStreet,
-          addressCity: this.group.addressCity,
-          addressState: this.group.addressState,
-          addressZipcode: this.group.addressZipcode,
-          addressCountry: this.group.addressCountry,
-          dateFounded: this.group.dateFounded?.toDate().toISOString(), // Make sure dateFounded is a Date object
-        });
-      }
-    });
+    this.groupsSubscription = this.storeService.accounts$.subscribe(
+      (groups) => {
+        this.group = groups.find((group) => group.id === this.groupId) || null;
+        if (this.group) {
+          // Update the form with the group data
+          this.editGroupForm.patchValue({
+            name: this.group.name,
+            email: this.group.email,
+            number: this.group.number,
+            description: this.group.description,
+            tagline: this.group.tagline,
+            supportedlanguages: this.group.supportedlanguages,
+            phoneCountryCode: this.group.phoneCountryCode,
+            addressName: this.group.addressName,
+            addressStreet: this.group.addressStreet,
+            addressCity: this.group.addressCity,
+            addressState: this.group.addressState,
+            addressZipcode: this.group.addressZipcode,
+            addressCountry: this.group.addressCountry,
+            dateFounded: this.group.dateFounded?.toDate().toISOString(), // Make sure dateFounded is a Date object
+          });
+        }
+      },
+    );
   }
 
   ionViewWillLeave() {
-    // Unsubscribe from the groups$ observable when the component is destroyed
+    // Unsubscribe from the accounts$ observable when the component is destroyed
     this.groupsSubscription?.unsubscribe();
   }
 
@@ -111,7 +113,7 @@ export class GroupEditPage {
         ? this.groupId
         : "";
       this.group.email = this.editGroupForm.value.email || "";
-      this.group.phoneNumber = this.editGroupForm.value.phoneNumber || "";
+      this.group.number = this.editGroupForm.value.number || "";
       this.group.description = this.editGroupForm.value.description || "";
       this.group.tagline = this.editGroupForm.value.tagline || "";
       this.group.name = this.editGroupForm.value.name || "";

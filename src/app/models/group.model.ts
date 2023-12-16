@@ -45,7 +45,7 @@ export interface AppGroup {
   logoImage: string; // base64 string
   heroImage: string; // base64 string
   phoneCountryCode: string; // Phone country code (e.g. 1 for US)
-  phoneNumber: string; // Phone number (e.g. 1234567890)
+  number: string; // Phone number (e.g. 1234567890)
   email: string; // Contact email
   dateFounded: Timestamp; // Date founded
   supportedlanguages: string[] | undefined; // Supported languages

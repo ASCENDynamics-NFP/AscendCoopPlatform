@@ -22,7 +22,7 @@ import {Router} from "@angular/router";
 import {IonicModule} from "@ionic/angular";
 import {CommonModule} from "@angular/common";
 import {AppRelationship} from "../../../../../../models/relationship.model";
-import {AppUser} from "../../../../../../models/user.model";
+import {Account} from "../../../../../../models/account.model";
 
 @Component({
   selector: "app-group-membership-list",
@@ -32,8 +32,8 @@ import {AppUser} from "../../../../../../models/user.model";
   imports: [IonicModule, CommonModule],
 })
 export class GroupMembershipListComponent {
-  @Input() user: Partial<AppUser> | null = null; // define your user here
-  @Input() groupList: Partial<AppRelationship>[] = []; // define your user here
+  @Input() account: Partial<Account> | null = null;
+  @Input() groupList: Partial<AppRelationship>[] = [];
 
   constructor(private router: Router) {}
 
@@ -43,10 +43,10 @@ export class GroupMembershipListComponent {
       if (
         relationship.status !== "accepted" ||
         !relationship.type?.includes("member") ||
-        !this.user
+        !this.account
       )
         continue;
-      if (relationship.senderId === this.user.id) {
+      if (relationship.senderId === this.account.id) {
         allGroups.push({
           id: relationship.receiverId,
           name: relationship.receiverName,
@@ -70,6 +70,8 @@ export class GroupMembershipListComponent {
   }
 
   goToGroupList() {
-    this.router.navigate([`/user-profile/${this.user?.id}/groups`]);
+    if (this.account?.id) {
+      this.router.navigate([`/user-profile/${this.account.id}/groups`]);
+    }
   }
 }

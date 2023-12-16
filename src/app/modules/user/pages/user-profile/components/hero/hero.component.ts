@@ -20,7 +20,7 @@
 import {CommonModule} from "@angular/common";
 import {Component, Input} from "@angular/core";
 import {IonicModule, ModalController} from "@ionic/angular";
-import {AppUser} from "../../../../../../models/user.model"; // import your user model
+import {Account} from "../../../../../../models/account.model";
 import {ImageUploadModalComponent} from "../../../../../../shared/components/image-upload-modal/image-upload-modal.component";
 
 @Component({
@@ -31,20 +31,20 @@ import {ImageUploadModalComponent} from "../../../../../../shared/components/ima
   imports: [IonicModule, CommonModule, ImageUploadModalComponent],
 })
 export class HeroComponent {
-  @Input() user?: Partial<AppUser>; // define your user here
+  @Input() account?: Partial<Account>; // define your user here
   @Input() isProfileOwner: boolean = false; // define if the user is the current user (for edit profile button
 
   constructor(private modalController: ModalController) {}
 
   async openImageUploadModal(imageType: string) {
-    if (!this.user?.id || !this.isProfileOwner) return;
+    if (!this.account?.id || !this.isProfileOwner) return;
     if (imageType === "heroImage") {
       let modal = await this.modalController.create({
         component: ImageUploadModalComponent,
         componentProps: {
           collectionName: "users",
-          docId: this.user?.id,
-          firestoreLocation: `users/${this.user?.id}/profile`,
+          docId: this.account?.id,
+          firestoreLocation: `users/${this.account?.id}/profile`,
           maxHeight: 300,
           maxWidth: 900,
           fieldName: "heroImage",
@@ -62,8 +62,8 @@ export class HeroComponent {
         component: ImageUploadModalComponent,
         componentProps: {
           collectionName: "users",
-          docId: this.user?.id,
-          firestoreLocation: `users/${this.user?.id}/profile`,
+          docId: this.account?.id,
+          firestoreLocation: `users/${this.account?.id}/profile`,
           maxHeight: 200,
           maxWidth: 200,
           fieldName: "profilePicture",

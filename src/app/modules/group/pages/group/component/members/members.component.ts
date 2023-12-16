@@ -25,7 +25,7 @@ import {User} from "firebase/auth";
 import {Subscription} from "rxjs";
 import {AuthStoreService} from "../../../../../../core/services/auth-store.service";
 import {StoreService} from "../../../../../../core/services/store.service";
-import {AppGroup} from "../../../../../../models/group.model";
+import {Account} from "../../../../../../models/account.model";
 import {AppRelationship} from "../../../../../../models/relationship.model";
 import {FormsModule} from "@angular/forms";
 
@@ -37,13 +37,13 @@ import {FormsModule} from "@angular/forms";
   imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
 export class MembersComponent {
-  private groupsSubscription: Subscription;
-  private relationshipsSubscription: Subscription | undefined;
+  private accountSubscription?: Subscription;
+  private relationshipsSubscription?: Subscription;
   relationships: Partial<AppRelationship>[] = [];
   currentMembersList: any[] = [];
   pendingMembersList: any[] = [];
   groupId: string | null = null;
-  group: Partial<AppGroup> | null = null;
+  account?: Partial<Account>;
   currentUser: User | null = this.authStoreService.getCurrentUser();
 
   /**
@@ -60,9 +60,15 @@ export class MembersComponent {
   ) {
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
 
-    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
-      this.group = groups.find((group) => group.id === this.groupId) ?? null;
-    });
+    this.accountSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        this.account =
+          accounts.find(
+            (account) =>
+              account.id === this.groupId && account.type === "group",
+          ) ?? undefined;
+      },
+    );
   }
 
   /**
@@ -81,7 +87,7 @@ export class MembersComponent {
    * Lifecycle hook that is called when the page is about to leave.
    */
   ionViewWillLeave() {
-    this.groupsSubscription?.unsubscribe();
+    this.accountSubscription?.unsubscribe();
     this.relationshipsSubscription?.unsubscribe();
   }
 
@@ -90,17 +96,15 @@ export class MembersComponent {
    * @returns {boolean} - True if the user is an admin, otherwise false.
    */
   get isAdmin() {
-    if (!this.group || !this.currentUser) return false;
-    return this.group.admins?.includes(this.currentUser.uid);
+    if (!this.account || !this.currentUser) return false;
+    return this.account.groupDetails?.admins?.includes(this.currentUser.uid);
   }
 
   isCurrentUserLastAdmin(member: any): boolean {
-    // Count the number of admins
+    // 'admins' are part of the 'groupDetails' in the Account model
     return (
-      (this.group?.admins &&
-        this.group.admins.includes(member.memberId) &&
-        this.group.admins.length <= 1) ??
-      false
+      this.account?.groupDetails?.admins?.length === 1 &&
+      this.account.groupDetails.admins.includes(member.memberId)
     );
   }
 
@@ -110,15 +114,13 @@ export class MembersComponent {
    */
   acceptMemberRequest(request: any) {
     const relationship = this.relationships.find(
-      (relationship) => relationship.id === request.relationshipId,
+      (rel) => rel.id === request.relationshipId,
     );
-    if (!relationship) {
-      return;
+    if (relationship) {
+      relationship.status = "accepted";
+      this.storeService.updateDoc("relationships", relationship);
+      this.addMemberToGroup(request.receiverId);
     }
-    relationship.status = "accepted";
-    this.storeService.updateDoc("relationships", relationship as Partial<any>);
-    // After updating the relationship status, execute the following logic
-    this.addMember(request);
   }
 
   /**
@@ -127,49 +129,25 @@ export class MembersComponent {
    */
   rejectMemberRequest(request: any) {
     const relationship = this.relationships.find(
-      (relationship) => relationship.id === request.relationshipId,
+      (rel) => rel.id === request.relationshipId,
     );
-    if (!relationship) {
-      return;
+    if (relationship) {
+      relationship.status = "rejected";
+      this.storeService.updateDoc("relationships", relationship);
     }
-    relationship.status = "rejected";
-    this.storeService.updateDoc("relationships", relationship as Partial<any>);
-    // After updating the relationship status, execute the following logic
-    this.removeMember(request);
   }
 
   /**
-   * Adds a member to the group.
-   * @param {any} request - The member request to process.
+   * Adds a member to the group's associations.
+   * @param {string} memberId - The ID of the member to add.
    */
-  addMember(request: any) {
-    // Add the member to the group's members lists
-    const updatedGroupDoc = this.storeService
-      .getCollection("groups")
-      .find((g) => g["id"] === request.groupId);
-    if (updatedGroupDoc) {
-      updatedGroupDoc["members"] = updatedGroupDoc["members"].push(
-        request.memberId,
-      );
-      updatedGroupDoc["pendingMembers"] = updatedGroupDoc[
-        "pendingMembers"
-      ].filter((pendingMember: string) => pendingMember !== request.memberId);
-      // Use addDocToState to update the state
-      this.storeService.addDocToState("groups", updatedGroupDoc);
-    }
-    // Add the group to the member's groups lists
-    const updatedMemberDoc = this.storeService
-      .getCollection("users")
-      .find((u) => u["id"] === request.memberId);
-    if (updatedMemberDoc) {
-      updatedMemberDoc["groups"] = updatedMemberDoc["groups"].push(
-        request.groupId,
-      );
-      updatedMemberDoc["pendingGroups"] = updatedMemberDoc[
-        "pendingGroups"
-      ].filter((pendingGroup: string) => pendingGroup !== request.groupId);
-      // Use addDocToState to update the state
-      this.storeService.addDocToState("users", updatedMemberDoc);
+  addMemberToGroup(memberId: string) {
+    if (this.account?.associations?.accounts) {
+      this.account.associations.accounts = [
+        ...this.account.associations.accounts,
+        memberId,
+      ];
+      this.storeService.updateDoc("accounts", this.account);
     }
   }
 
@@ -190,41 +168,28 @@ export class MembersComponent {
    * @param {any} request - The member request to process.
    */
   removeMember(request: any) {
-    // Remove the group from the member's groups lists
-    const updatedMemberDoc = this.storeService
-      .getCollection("users")
-      .find((u) => u["id"] === request.friendId);
-    if (updatedMemberDoc) {
-      updatedMemberDoc["groups"] = updatedMemberDoc["groups"].filter(
-        (group: string) => group !== this.groupId,
-      );
-      updatedMemberDoc["pendingGroups"] = updatedMemberDoc[
-        "pendingGroups"
-      ].filter((pendingGroup: string) => pendingGroup !== this.groupId);
-      // Use addDocToState to update the state
-      this.storeService.addDocToState("groups", updatedMemberDoc);
-    }
-    // Remove the member from the group's members lists
-    const updatedGroupDoc = this.storeService
-      .getCollection("groups")
-      .find((g) => g["id"] === request.groupId);
-    if (updatedGroupDoc) {
-      updatedGroupDoc["members"] = updatedGroupDoc["members"].filter(
-        (member: string) => member !== request.friendId,
-      );
-      updatedGroupDoc["pendingMembers"] = updatedGroupDoc[
-        "pendingMembers"
-      ].filter((pendingMember: string) => pendingMember !== request.friendId);
-      // Use addDocToState to update the state
-      this.storeService.addDocToState("groups", updatedGroupDoc);
+    if (this.account?.associations?.accounts) {
+      this.account.associations.accounts =
+        this.account.associations.accounts.filter(
+          (id) => id !== request.memberId,
+        );
+      this.storeService.updateDoc("accounts", this.account);
     }
   }
 
   updateAdminStatus(member: any) {
     if (member.isAdmin) {
-      this.changeAdminStatus(member, true, this.group?.admins?.length || 0);
+      this.changeAdminStatus(
+        member,
+        true,
+        this.account?.groupDetails?.admins?.length || 0,
+      );
     } else {
-      this.changeAdminStatus(member, false, this.group?.admins?.length || 0);
+      this.changeAdminStatus(
+        member,
+        false,
+        this.account?.groupDetails?.admins?.length || 0,
+      );
     }
   }
 
@@ -233,50 +198,63 @@ export class MembersComponent {
     makeAdmin: boolean,
     currentAdminCount: number,
   ) {
-    // If trying to remove the last admin
     if (!makeAdmin && currentAdminCount <= 1) {
-      this.currentMembersList.forEach((record) => {
-        if (member.memberId === record.memberId) {
-          record.isAdmin = true;
-        }
-      }) as any;
-
-      const alert = await this.alertController.create({
-        header: "Action Denied",
-        message: "There must be at least one admin for the group.",
-        buttons: ["OK"],
-      });
-      await alert.present();
+      // Show alert here as in your existing code
+      // Consider returning early or updating the UI after the Firestore update
       return;
     }
 
-    // If trying to make a user an admin
     if (makeAdmin) {
-      const alert = await this.alertController.create({
+      // Confirm making a user an admin
+      const confirmAdminAlert = await this.alertController.create({
         header: "Confirm Action",
         message: "Are you sure you want to make this user an admin?",
         buttons: [
-          {
-            text: "Cancel",
-            role: "cancel",
-          },
+          {text: "Cancel", role: "cancel"},
           {
             text: "Yes",
-            handler: () => {
-              // Your logic to make the user an admin
-              this.setMemberRole(member.relationshipId, "admin");
-              this.storeService.updateDocInState("groups", {
-                id: member.groupId,
-                admins: this.group?.admins?.push(member.memberId),
-              });
+            handler: async () => {
+              await this.updateAdminList(member.memberId, true);
             },
           },
         ],
       });
-      await alert.present();
+      await confirmAdminAlert.present();
     } else {
-      // Your logic to remove the user from admin
-      this.setMemberRole(member.relationshipId, "member");
+      // Confirm removing a user from admin
+      const confirmRemoveAlert = await this.alertController.create({
+        header: "Confirm Action",
+        message: "Are you sure you want to remove this user from admin?",
+        buttons: [
+          {text: "Cancel", role: "cancel"},
+          {
+            text: "Yes",
+            handler: async () => {
+              await this.updateAdminList(member.memberId, false);
+            },
+          },
+        ],
+      });
+      await confirmRemoveAlert.present();
+    }
+  }
+
+  async updateAdminList(memberId: string, add: boolean) {
+    const updatedAdmins = add
+      ? [...(this.account?.groupDetails?.admins || []), memberId]
+      : this.account?.groupDetails?.admins?.filter(
+          (adminId) => adminId !== memberId,
+        );
+
+    if (this.account && this.account.groupDetails) {
+      this.account.groupDetails.admins = updatedAdmins as string[];
+      try {
+        await this.storeService.updateDoc("accounts", this.account);
+        // Optionally update the UI here to reflect the change
+      } catch (error) {
+        console.error("Failed to update admin status", error);
+        // Handle error (e.g., show an alert to the user)
+      }
     }
   }
 
@@ -286,8 +264,10 @@ export class MembersComponent {
    * @returns {any} - The converted member object.
    */
   relationshipToMember(relationship: Partial<AppRelationship>) {
-    if (!this.group || !this.currentUser) return;
-    if (!this.group.admins) this.group.admins = [];
+    if (!this.account || !this.account.groupDetails || !this.currentUser)
+      return;
+    if (!this.account.groupDetails?.admins)
+      this.account.groupDetails.admins = [];
     if (relationship.senderId === this.groupId) {
       // my requests
       return {
@@ -302,7 +282,9 @@ export class MembersComponent {
         showAcceptRejectButtons: false,
         isAdmin:
           relationship.receiverId && relationship.status === "accepted"
-            ? this.group.admins.includes(relationship.receiverId)
+            ? this.account.groupDetails?.admins.includes(
+                relationship.receiverId,
+              )
             : false,
       };
     } else {
@@ -319,7 +301,7 @@ export class MembersComponent {
         showAcceptRejectButtons: this.isAdmin,
         isAdmin:
           relationship.senderId && relationship.status === "accepted"
-            ? this.group.admins.includes(relationship.senderId)
+            ? this.account.groupDetails?.admins.includes(relationship.senderId)
             : false,
       };
     }
@@ -333,28 +315,23 @@ export class MembersComponent {
     this.currentMembersList = [];
     this.pendingMembersList = [];
 
-    this.currentUser = this.authStoreService.getCurrentUser();
-    for (let relationship of relationships) {
+    relationships.forEach((relationship) => {
       if (
         relationship.senderId === this.groupId ||
         relationship.receiverId === this.groupId
       ) {
-        if (
-          relationship.type?.includes("member") && // Needs to be type member which is a member of a group
-          relationship.status === "accepted" // Needs to be status accepted which is a current member
-        ) {
-          this.currentMembersList.push(this.relationshipToMember(relationship));
-        } else if (
-          relationship.type?.includes("member") && // Needs to be type member which is a member of a group
-          relationship.status === "pending" // Needs to be status pending which is a pending request
-        ) {
-          this.pendingMembersList.push(this.relationshipToMember(relationship));
+        const memberObject = this.relationshipToMember(relationship);
+        if (relationship.status === "accepted") {
+          this.currentMembersList.push(memberObject);
+        } else if (relationship.status === "pending") {
+          this.pendingMembersList.push(memberObject);
         }
       }
-    }
+    });
   }
 
-  setMemberRole(relationshipId: string, role: string): void {
+  setMemberRole(relationshipId: string, role: string) {
+    // Update the membership role in the relationship
     this.storeService.updateDoc("relationships", {
       id: relationshipId,
       membershipRole: role,

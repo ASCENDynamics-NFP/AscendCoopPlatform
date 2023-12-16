@@ -42,7 +42,7 @@ export class StoreService {
   /**
    * Subscription to the Firestore collections.
    */
-  private collectionsSubscription: Subscription;
+  private collectionsSubscription?: Subscription;
   /**
    * Subjects for each collection in the Firestore database.
    */
@@ -71,6 +71,11 @@ export class StoreService {
     private authStoreService: AuthStoreService,
     private firestoreService: FirestoreService,
   ) {
+    this.initSubscriptions();
+    this.loadInitialData();
+  }
+
+  private initSubscriptions() {
     this.collectionsSubscription = this.firestoreService
       .listenToMultipleDocumentsInMultipleCollections(
         this.firestoreService.getCollectionsSubject(),
@@ -99,12 +104,9 @@ export class StoreService {
             data,
             "Accounts",
             this.collectionsSubject["accounts"].getValue(),
-            "Users",
-            this.collectionsSubject["users"].getValue(),
           );
         }
       });
-    this.loadInitialData();
   }
 
   /**
@@ -141,7 +143,7 @@ export class StoreService {
             });
           }
         });
-      this.getDocsWithSenderOrRecieverId("relationships", currentUser.uid);
+      this.getDocsWithSenderOrReceiverId("relationships", currentUser.uid);
     }
   }
 
@@ -152,12 +154,12 @@ export class StoreService {
    * @param {string} collectionName - Name of the collection to query.
    * @param {string} senderOrRecieverId - ID to match against sender or receiver fields in the collection.
    */
-  getDocsWithSenderOrRecieverId(
+  getDocsWithSenderOrReceiverId(
     collectionName: string,
     senderOrRecieverId: string,
   ) {
     this.firestoreService
-      .getDocsWithSenderOrRecieverId(collectionName, senderOrRecieverId)
+      .getDocsWithSenderOrReceiverId(collectionName, senderOrRecieverId)
       .then((relationships) => {
         relationships.forEach((relationship) => {
           this.addDocToState(collectionName, relationship);

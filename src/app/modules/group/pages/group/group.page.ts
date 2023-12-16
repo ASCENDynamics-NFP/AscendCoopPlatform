@@ -38,7 +38,7 @@ export class GroupPage {
   private accountSubscription?: Subscription;
   group: Partial<Account> | null = null;
   groupId: string | null = null;
-  currentUserAccount?: Partial<Account>;
+  public currentUserAccount?: Partial<Account>;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -48,7 +48,7 @@ export class GroupPage {
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
 
     if (this.groupId) {
-      this.storeService.getDocsWithSenderOrRecieverId(
+      this.storeService.getDocsWithSenderOrReceiverId(
         "relationships",
         this.groupId,
       );

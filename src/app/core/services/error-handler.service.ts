@@ -205,7 +205,7 @@ export class ErrorHandlerService {
     "auth/invalid-phone-number": {
       title: "Hold Up! That Phone Number Looks Odd",
       message:
-        "The provided value for the phoneNumber is invalid. It must be a non-empty E.164 standard compliant identifier string.",
+        "The provided value for the phone number is invalid. It must be a non-empty E.164 standard compliant identifier string.",
     },
     "auth/invalid-photo-url": {
       title: "Whoa! That Photo URL Looks Off",

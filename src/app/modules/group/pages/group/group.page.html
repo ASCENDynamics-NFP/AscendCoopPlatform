@@ -34,7 +34,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <ion-icon name="business"></ion-icon>
         Partners
       </ion-tab-button>
-      <ion-tab-button *ngIf="currentUserAccount && group?.groupDetails?.admins?.includes(currentUserAccount.id)"
+      <ion-tab-button *ngIf="currentUserAccount && group?.groupDetails?.admins?.includes(currentUserAccount.id!)"
         [tab]="groupId + '/search'">
         <ion-icon name="search"></ion-icon>
         Search

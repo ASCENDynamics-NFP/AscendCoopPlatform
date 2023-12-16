@@ -68,7 +68,7 @@ export class GroupProfilePage implements OnInit {
   ngOnInit() {
     if (this.groupId)
       // Pulls relationships from the database
-      this.storeService.getDocsWithSenderOrRecieverId(
+      this.storeService.getDocsWithSenderOrReceiverId(
         "relationships",
         this.groupId,
       );
@@ -79,32 +79,34 @@ export class GroupProfilePage implements OnInit {
   }
 
   ionViewWillLeave() {
-    // Unsubscribe from the groups$ observable when the component is destroyed
+    // Unsubscribe from the accounts$ observable when the component is destroyed
     this.groupsSubscription?.unsubscribe();
     this.relationshipsSubscription?.unsubscribe();
   }
 
   initiateSubscribers() {
-    // Subscribe to the groups$ observable
-    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
-      this.group = groups.find((group) => group.id === this.groupId) || null;
-      if (!this.group) {
-        this.storeService.getDocById("groups", this.groupId);
-      } else {
-        let user = this.authStoreService.getCurrentUser();
-        let userId = user?.uid ? user.uid : "";
-        this.isAdmin = userId
-          ? this.group?.admins?.includes(userId) || false
-          : false;
-        this.isMember = userId
-          ? this.group?.members?.includes(userId) || false
-          : false;
-        this.isPendingMember = userId
-          ? this.group?.pendingMembers?.includes(userId) || false
-          : false;
-      }
-    });
-    // Subscribe to the groups$ observable
+    // Subscribe to the accounts$ observable
+    this.groupsSubscription = this.storeService.accounts$.subscribe(
+      (groups) => {
+        this.group = groups.find((group) => group.id === this.groupId) || null;
+        if (!this.group) {
+          this.storeService.getDocById("groups", this.groupId);
+        } else {
+          let user = this.authStoreService.getCurrentUser();
+          let userId = user?.uid ? user.uid : "";
+          this.isAdmin = userId
+            ? this.group?.admins?.includes(userId) || false
+            : false;
+          this.isMember = userId
+            ? this.group?.members?.includes(userId) || false
+            : false;
+          this.isPendingMember = userId
+            ? this.group?.pendingMembers?.includes(userId) || false
+            : false;
+        }
+      },
+    );
+    // Subscribe to the accounts$ observable
     this.relationshipsSubscription = this.storeService.relationships$.subscribe(
       (relationships) => {
         this.sortRelationships(relationships);

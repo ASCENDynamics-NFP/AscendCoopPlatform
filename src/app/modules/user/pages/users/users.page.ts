@@ -23,7 +23,7 @@ import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {User} from "firebase/auth";
 import {RouterModule} from "@angular/router";
-import {AppUser} from "../../../../models/user.model";
+import {Account} from "../../../../models/account.model"; // Updated model import
 import {StoreService} from "../../../../core/services/store.service";
 import {Subscription} from "rxjs";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
@@ -44,10 +44,10 @@ import {AppRelationship} from "../../../../models/relationship.model";
   ],
 })
 export class UsersPage {
-  private usersSubscription?: Subscription;
-  authUser: User | null = null; // define your user here
-  user?: Partial<AppUser>;
-  userList: Partial<AppUser>[] | null = []; // define your user list here
+  private accountsSubscription?: Subscription;
+  authUser: User | null = null;
+  account?: Partial<Account>;
+  accountList: Partial<Account>[] | null = [];
   searchedValue: string = "";
 
   constructor(
@@ -55,79 +55,87 @@ export class UsersPage {
     private storeService: StoreService,
   ) {
     this.authUser = this.authStoreService.getCurrentUser();
-  } // inject your Firebase service
+  }
 
   ionViewWillEnter() {
-    this.usersSubscription = this.storeService.users$.subscribe((users) => {
-      if (users) {
-        this.user = users.find((u) => u.id === this.authUser?.uid);
-        this.userList = users.filter((user) =>
-          user.displayName
-            ?.toLowerCase()
-            .includes(this.searchedValue.toLowerCase()),
-        );
-      }
-    });
+    this.accountsSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        if (accounts) {
+          this.account = accounts.find((acc) => acc.id === this.authUser?.uid);
+          this.accountList = accounts.filter((acc) =>
+            acc.name?.toLowerCase().includes(this.searchedValue.toLowerCase()),
+          );
+        }
+      },
+    );
   }
 
   ionViewWillLeave() {
-    this.usersSubscription?.unsubscribe();
+    this.accountsSubscription?.unsubscribe();
   }
 
-  sendFriendRequest(user: Partial<AppUser>) {
-    if (!this.authUser?.uid || !user["id"]) {
+  sendFriendRequest(account: Partial<Account>) {
+    if (!this.authUser?.uid || !account.id) {
       return;
     }
-    this.storeService
-      .createDoc("relationships", {
-        senderId: this.authUser?.uid,
-        relatedIds: [this.authUser?.uid, user["id"]],
-        receiverId: user["id"],
-        type: "friend",
-        status: "pending",
-        membershipRole: "",
-        receiverRelationship: "friend",
-        senderRelationship: "friend",
-        receiverName: user["displayName"],
-        receiverImage: user["profilePicture"],
-        receiverTagline: user["bio"],
-        senderName: this.authUser?.displayName ? this.authUser.displayName : "",
-        senderImage: this.authUser?.photoURL ? this.authUser.photoURL : "",
-        senderTagline: "",
-      } as Partial<AppRelationship>)
-      .then(() => {
-        if (this.authUser) {
-          // updated friends list on userList item to include receiverId in friends list so that the button doesn't show
-          const updatedUserListItem = this.userList?.find(
-            (userListItem: Partial<AppUser>) => userListItem.id === user["id"],
-          );
 
-          if (updatedUserListItem) {
-            if (!updatedUserListItem.pendingFriends) {
-              updatedUserListItem.pendingFriends = [];
-            }
-            updatedUserListItem.pendingFriends.push(this.authUser?.uid);
+    const newRelationship: Partial<AppRelationship> = {
+      senderId: this.authUser.uid,
+      relatedIds: [this.authUser.uid, account.id],
+      receiverId: account.id,
+      type: "friend",
+      status: "pending",
+      membershipRole: "",
+      receiverRelationship: "friend",
+      senderRelationship: "friend",
+      receiverName: account["name"],
+      receiverImage: account["iconImage"],
+      receiverTagline: account["description"],
+      senderName: this.authUser?.displayName ? this.authUser.displayName : "",
+      senderImage: this.authUser?.photoURL ? this.authUser.photoURL : "",
+      senderTagline: "",
+    };
 
-            // Use addDocToState to update the state
-            this.storeService.addDocToState("users", updatedUserListItem);
-          }
-        }
-      });
+    this.storeService.createDoc("relationships", newRelationship);
+    // .then(() => {
+    //   if (this.authUser) {
+    //     // updated friends list on userList item to include receiverId in friends list so that the button doesn't show
+    //     const updatedUserListItem = this.accountList?.find(
+    //       (userListItem: Partial<Account>) => userListItem.id === account["id"],
+    //     );
+
+    //     // if (updatedUserListItem) {
+    //     //   if (!updatedUserListItem.pendingFriends) {
+    //     //     updatedUserListItem.pendingFriends = [];
+    //     //   }
+    //     //   updatedUserListItem.pendingFriends.push(this.authUser?.uid);
+
+    //     //   // Use addDocToState to update the state
+    //     //   this.storeService.addDocToState("accounts", updatedUserListItem);
+    //     // }
+    //   }
+    // });
   }
 
   searchUsers(event: any) {
     const value = event.target.value;
     this.searchedValue = value;
+
     if (value) {
-      this.storeService.searchDocsByName("users", value);
-    } else {
-      this.userList = this.storeService.getCollection("users").sort((a, b) => {
-        if (a["displayName"] && b["displayName"]) {
-          return a["displayName"].localeCompare(b["displayName"]);
+      // Perform search
+      this.storeService.searchDocsByName("accounts", value);
+    }
+
+    // Get all accounts of type 'user' and sort them
+    this.accountList = this.storeService
+      .getCollection("accounts")
+      .filter((account) => account["type"] === "user") // Filter for user type accounts
+      .sort((a, b) => {
+        if (a["name"]) {
+          return a["name"].localeCompare(b["name"]);
         } else {
           return 0;
         }
       });
-    }
   }
 }

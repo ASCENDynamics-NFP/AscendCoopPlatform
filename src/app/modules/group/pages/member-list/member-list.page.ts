@@ -61,9 +61,11 @@ export class MemberListPage {
   ) {
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
 
-    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
-      this.group = groups.find((group) => group.id === this.groupId) ?? null;
-    });
+    this.groupsSubscription = this.storeService.accounts$.subscribe(
+      (groups) => {
+        this.group = groups.find((group) => group.id === this.groupId) ?? null;
+      },
+    );
   }
 
   /**

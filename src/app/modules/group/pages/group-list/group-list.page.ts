@@ -21,7 +21,7 @@ import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {AppGroup} from "../../../../models/group.model";
+import {Account} from "../../../../models/account.model";
 import {User} from "firebase/auth";
 import {RouterModule} from "@angular/router";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
@@ -29,7 +29,6 @@ import {Subscription} from "rxjs";
 import {StoreService} from "../../../../core/services/store.service";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
 import {AppRelationship} from "../../../../models/relationship.model";
-import {AppUser} from "../../../../models/user.model";
 
 @Component({
   selector: "app-group-list",
@@ -45,13 +44,12 @@ import {AppUser} from "../../../../models/user.model";
   ],
 })
 export class GroupListPage {
-  private groupsSubscription?: Subscription;
-  private usersSubscription?: Subscription;
-  authUser: User | null = null; // define your user here
-  groups: Partial<AppGroup>[] | null = [];
+  private accountsSubscription?: Subscription;
+  authUser: User | null = null;
+  groups: Partial<Account>[] | null = [];
   private searchTerm: any;
-  searchResults: Partial<AppGroup>[] | null = [];
-  user?: Partial<AppUser>;
+  searchResults: Partial<Account>[] | null = [];
+  user?: Partial<Account>;
 
   constructor(
     private authStoreService: AuthStoreService,
@@ -61,37 +59,37 @@ export class GroupListPage {
   }
 
   ionViewWillEnter() {
-    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
-      if (groups) {
-        this.groups = groups;
+    this.accountsSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        this.groups = accounts.filter((account) => account.type === "group");
         this.searchResults = this.groups;
         if (this.searchTerm) {
-          this.searchResults = groups.filter((group) =>
+          this.searchResults = this.groups.filter((group) =>
             group.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
           );
         }
-      }
-    });
-    this.usersSubscription = this.storeService.users$.subscribe((users) => {
-      this.user = users.find((u) => u.id === this.authUser?.uid);
-    });
+        this.user = accounts.find(
+          (account) =>
+            account.type === "user" && account.id === this.authUser?.uid,
+        );
+      },
+    );
   }
 
   ionViewWillLeave() {
-    this.groupsSubscription?.unsubscribe();
-    this.usersSubscription?.unsubscribe();
+    this.accountsSubscription?.unsubscribe();
   }
 
   get image() {
-    return this.user?.profilePicture ? this.user.profilePicture : "";
+    return this.user?.iconImage ? this.user.iconImage : "default-image-path";
   }
 
   searchGroups(event: any) {
     this.searchTerm = event.target.value;
     if (this.searchTerm) {
-      this.storeService.searchDocsByName("groups", this.searchTerm);
+      this.storeService.searchDocsByName("accounts", this.searchTerm);
     } else {
-      this.searchResults = this.storeService.getCollection("groups");
+      this.searchResults = this.storeService.getCollection("accounts");
       this.searchResults = this.searchResults.sort((a, b) => {
         if (a.name && b.name) {
           return a.name.localeCompare(b.name);
@@ -101,7 +99,7 @@ export class GroupListPage {
     }
   }
 
-  sendRequest(group: Partial<AppGroup>) {
+  sendRequest(group: Partial<Account>) {
     if (!this.authUser?.uid || !group.id) {
       return;
     }
@@ -115,8 +113,8 @@ export class GroupListPage {
       receiverRelationship: "group",
       senderRelationship: "user",
       receiverName: group.name,
-      receiverImage: group.logoImage
-        ? group.logoImage
+      receiverImage: group.iconImage
+        ? group.iconImage
         : "assets/icon/favicon.png",
       receiverTagline: group.tagline,
       senderName: this.authUser?.displayName ? this.authUser.displayName : "",
@@ -126,13 +124,13 @@ export class GroupListPage {
 
     this.storeService.createDoc("relationships", relationship).then(() => {
       // Update the group's pendingMembers in the state
-      if (!group.pendingMembers) {
-        group.pendingMembers = [];
-      }
-      group.pendingMembers = this.authUser?.uid
-        ? [...group.pendingMembers, this.authUser.uid]
-        : [...group.pendingMembers];
-      this.storeService.updateDocInState("groups", group);
+      // if (!group.pendingMembers) {
+      //   group.pendingMembers = [];
+      // }
+      // group.pendingMembers = this.authUser?.uid
+      //   ? [...group.pendingMembers, this.authUser.uid]
+      //   : [...group.pendingMembers];
+      this.storeService.updateDocInState("accounts", group);
     });
   }
 }

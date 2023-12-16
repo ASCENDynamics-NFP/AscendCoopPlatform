@@ -45,9 +45,9 @@ describe("AppComponent", () => {
     authSpy.onSignOut.and.returnValue(Promise.resolve());
 
     // Create a spy for StoreService
-    storeSpy = jasmine.createSpyObj("store", ["users$", "currentUser$"]);
-    // Mock users$ and currentUser$ as Observables
-    storeSpy.users$ = of([]);
+    storeSpy = jasmine.createSpyObj("store", ["accounts$", "currentUser$"]);
+    // Mock accounts$ and currentUser$ as Observables
+    storeSpy.accounts$ = of([]);
     storeSpy.currentUser$ = of(null);
 
     TestBed.configureTestingModule({

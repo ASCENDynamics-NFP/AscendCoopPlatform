@@ -21,7 +21,7 @@ import {Component, Input, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
 import {Router} from "@angular/router";
-import {AppUser} from "../../../../../../models/user.model";
+import {Account} from "../../../../../../models/account.model";
 import {AppRelationship} from "../../../../../../models/relationship.model";
 
 @Component({
@@ -32,8 +32,9 @@ import {AppRelationship} from "../../../../../../models/relationship.model";
   imports: [IonicModule, CommonModule],
 })
 export class FriendListComponent implements OnInit {
-  @Input() user: Partial<AppUser> | null = null; // define your user here
+  @Input() account: Partial<Account> | null = null;
   @Input() friendList: Partial<AppRelationship>[] = [];
+
   constructor(private router: Router) {}
 
   ngOnInit() {}
@@ -42,7 +43,7 @@ export class FriendListComponent implements OnInit {
     let allFriends = [];
     for (let friend of this.friendList) {
       if (friend.status !== "accepted") continue;
-      if (friend.senderId === this.user?.id) {
+      if (friend.senderId === this.account?.id) {
         allFriends.push({
           id: friend.receiverId,
           name: friend.receiverName,
@@ -62,11 +63,11 @@ export class FriendListComponent implements OnInit {
   }
 
   get userName() {
-    return this.user?.displayName ? this.user.displayName : "";
+    return this.account?.name || "";
   }
 
   get userTagline() {
-    return this.user?.email ? this.user.email : "";
+    return this.account?.tagline || "";
   }
 
   goToUserProfile(id: string | undefined) {
@@ -74,8 +75,8 @@ export class FriendListComponent implements OnInit {
   }
 
   goToFriendList() {
-    if (this.user?.id) {
-      this.router.navigate([`/user-profile/${this.user.id}/friends`]);
+    if (this.account?.id) {
+      this.router.navigate([`/user-profile/${this.account.id}/friends`]);
     }
   }
 }

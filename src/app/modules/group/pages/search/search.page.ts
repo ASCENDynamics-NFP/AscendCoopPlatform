@@ -68,11 +68,15 @@ export class SearchPage {
   }
 
   ionViewWillEnter() {
-    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
-      this.currentGroup = groups.find((group) => group["id"] === this.groupId);
-      this.groups = this.sortbyName(groups);
-    });
-    this.usersSubscription = this.storeService.users$.subscribe((users) => {
+    this.groupsSubscription = this.storeService.accounts$.subscribe(
+      (groups) => {
+        this.currentGroup = groups.find(
+          (group) => group["id"] === this.groupId,
+        );
+        this.groups = this.sortbyName(groups);
+      },
+    );
+    this.usersSubscription = this.storeService.accounts$.subscribe((users) => {
       this.users = this.sortbyName(users);
     });
   }

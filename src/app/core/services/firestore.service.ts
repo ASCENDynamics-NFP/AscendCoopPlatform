@@ -473,7 +473,7 @@ export class FirestoreService {
    * @param {string | null} senderOrReceiverId - ID to match against sender or receiver fields.
    * @returns {Promise<Partial<any>[]>} - Returns an array of documents that match the provided ID.
    */
-  async getDocsWithSenderOrRecieverId(
+  async getDocsWithSenderOrReceiverId(
     collectionName: string,
     senderOrReceiverId: string | null,
   ): Promise<Partial<any>[]> {

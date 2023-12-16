@@ -33,7 +33,7 @@ type Address = {
 type Phone = {
   countryCode: string;
   number: string;
-  phoneType: string;
+  type: string;
 };
 
 type Associations = {
@@ -68,7 +68,7 @@ export type Account = {
   tagline: string;
   email: string;
   emailVerified: boolean;
-  phone: Phone[];
+  phone: Phone;
   language: string;
   associations: Associations;
   userDetails?: UserSpecific;

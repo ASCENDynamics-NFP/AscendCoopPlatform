@@ -49,11 +49,11 @@ async function handleGroupUpdate(
     const beforeData = change.before.data();
     const afterData = change.after.data();
 
-    // Check if tagline, name, or logoImage fields have changed
+    // Check if tagline, name, or iconImage fields have changed
     if (
       beforeData?.tagline !== afterData?.tagline ||
       beforeData?.name !== afterData?.name ||
-      beforeData?.logoImage !== afterData?.logoImage
+      beforeData?.iconImage !== afterData?.iconImage
     ) {
       // Query for relationships where the relatedIds field contains the groupId
       const querySnapshot = await db
@@ -70,13 +70,13 @@ async function handleGroupUpdate(
           batch.update(doc.ref, {
             senderTagline: afterData?.tagline,
             senderName: afterData?.name,
-            senderImage: afterData?.logoImage,
+            senderImage: afterData?.iconImage,
           });
         } else if (doc.data().receiverId === groupId) {
           batch.update(doc.ref, {
             receiverTagline: afterData?.tagline,
             receiverName: afterData?.name,
-            receiverImage: afterData?.logoImage,
+            receiverImage: afterData?.iconImage,
           });
         }
       });

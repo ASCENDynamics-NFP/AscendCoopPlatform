@@ -42,9 +42,9 @@ export class HeroComponent {
       let modal = await this.modalController.create({
         component: ImageUploadModalComponent,
         componentProps: {
-          collectionName: "users",
+          collectionName: "accounts",
           docId: this.account?.id,
-          firestoreLocation: `users/${this.account?.id}/profile`,
+          firestoreLocation: `accounts/${this.account?.id}/profile`,
           maxHeight: 300,
           maxWidth: 900,
           fieldName: "heroImage",
@@ -57,16 +57,16 @@ export class HeroComponent {
       // if (data) {
       //   const profileImageUrl = data;
       // }
-    } else if (imageType === "profilePicture") {
+    } else if (imageType === "iconImage") {
       let modal = await this.modalController.create({
         component: ImageUploadModalComponent,
         componentProps: {
-          collectionName: "users",
+          collectionName: "accounts",
           docId: this.account?.id,
-          firestoreLocation: `users/${this.account?.id}/profile`,
+          firestoreLocation: `accounts/${this.account?.id}/profile`,
           maxHeight: 200,
           maxWidth: 200,
-          fieldName: "profilePicture",
+          fieldName: "iconImage",
         },
       });
 

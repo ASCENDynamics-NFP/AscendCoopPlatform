@@ -36,7 +36,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               </ion-thumbnail>
               <ion-label>
                 <h3>{{ friend["name"] }}</h3>
-                <p>{{ friend["bio"] }}</p>
+                <p>{{ friend["description"] }}</p>
               </ion-label>
               <ion-button *ngIf="friend['showRemoveButton']" slot="end" expand="block" color="secondary"
                 (click)="$event.stopPropagation();$event.preventDefault();removeFriendRequest(friend);">Remove</ion-button>
@@ -57,7 +57,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               </ion-thumbnail>
               <ion-label>
                 <h3>{{ friend["name"] }}</h3>
-                <p>{{ friend["bio"] }}</p>
+                <p>{{ friend["description"] }}</p>
               </ion-label>
               <ion-button *ngIf="friend['showAcceptRejectButtons']" slot="end" expand="block"
                 (click)="$event.stopPropagation();$event.preventDefault();acceptFriendRequest(friend);">Accept</ion-button>

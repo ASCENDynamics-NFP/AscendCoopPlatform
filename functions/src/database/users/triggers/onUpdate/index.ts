@@ -49,11 +49,11 @@ async function handleUserUpdate(
     const beforeData = change.before.data();
     const afterData = change.after.data();
 
-    // Check if tagline, name, or logoImage fields have changed
+    // Check if tagline, name, or iconImage fields have changed
     if (
       beforeData?.tagline !== afterData?.tagline ||
       beforeData?.name !== afterData?.name ||
-      beforeData?.profilePicture !== afterData?.profilePicture
+      beforeData?.iconImage !== afterData?.iconImage
     ) {
       // Query for relationships where the relatedIds field contains the userId
       const querySnapshot = await db
@@ -70,13 +70,13 @@ async function handleUserUpdate(
           batch.update(doc.ref, {
             senderTagline: afterData?.tagline,
             senderName: afterData?.name,
-            senderImage: afterData?.profilePicture,
+            senderImage: afterData?.iconImage,
           });
         } else if (doc.data().receiverId === userId) {
           batch.update(doc.ref, {
             receiverTagline: afterData?.tagline,
             receiverName: afterData?.name,
-            receiverImage: afterData?.profilePicture,
+            receiverImage: afterData?.iconImage,
           });
         }
       });

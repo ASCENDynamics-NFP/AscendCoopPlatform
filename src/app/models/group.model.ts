@@ -42,7 +42,7 @@ export interface AppGroup {
   admins: string[]; // User IDs of admins of group
   description: string; // Description of group
   groupPicture: string; // base64 string
-  logoImage: string; // base64 string
+  iconImage: string; // base64 string
   heroImage: string; // base64 string
   phoneCountryCode: string; // Phone country code (e.g. 1 for US)
   number: string; // Phone number (e.g. 1234567890)

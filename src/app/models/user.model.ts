@@ -34,14 +34,14 @@ export interface AppUser {
   addressCountry: string; // Country
   addressFormatted: string; // Formatted address (e.g. 123 Main St, Anytown, CA 12345, USA)
   addressGeopoint: string; // Geopoint (e.g. 37.4219983,-122.084)
-  bio: string; // Short bio
+  description: string; // Short description
   tagline: string; // Tagline
   displayName: string; // Full name
   email: string; // Email address
   emailVerified: boolean; // Whether the user's email is verified
   name: string; // First and last name
   heroImage: string; // base64 string
-  profilePicture: string; // base64 string
+  iconImage: string; // base64 string
   dateOfBirth: Timestamp; // Birthday
   language: string; // User's language
   friends: string[]; // Array of user IDs of the user's friends

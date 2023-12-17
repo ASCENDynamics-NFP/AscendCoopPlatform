@@ -69,10 +69,10 @@ async function handleGroupCreation(snapshot: any, context: any) {
             receiverRelationship: "group",
             senderRelationship: "user",
             senderName: userData?.displayName, // Assuming the user data has a 'displayName' field
-            senderImage: userData?.profilePicture, // Assuming the user data has an 'profilePicture' field
+            senderImage: userData?.iconImage, // Assuming the user data has an 'iconImage' field
             senderTagline: userData?.tagline, // Assuming the user data has a 'tagline' field
             receiverName: newGroup.name, // Assuming the group data has a 'name' field
-            receiverImage: newGroup.logoImage, // Assuming the group data has an 'logoImage' field
+            receiverImage: newGroup.iconImage, // Assuming the group data has an 'iconImage' field
             receiverTagline: newGroup.tagline, // Assuming the group data has a 'tagline' field
             lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
             lastModifiedBy: newGroup.createdBy,

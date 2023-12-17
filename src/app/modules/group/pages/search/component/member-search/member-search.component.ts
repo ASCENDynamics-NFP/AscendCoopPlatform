@@ -25,8 +25,7 @@ import {AppRelationship} from "../../../../../../models/relationship.model";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {AppGroup} from "../../../../../../models/group.model";
-import {AppUser} from "../../../../../../models/user.model";
+import {Account} from "../../../../../../models/account.model";
 
 @Component({
   selector: "app-member-search",
@@ -38,8 +37,8 @@ import {AppUser} from "../../../../../../models/user.model";
 export class MemberSearchComponent {
   @Input() isAdmin: boolean = false;
   @Input() user: User | null = null; // define your user here
-  @Input() currentGroup: Partial<AppGroup> | null = null;
-  @Input() users: Partial<AppUser>[] | null = [];
+  @Input() currentGroup?: Partial<Account>;
+  @Input() users: Partial<Account>[] | null = [];
   searchTerm: string = "";
 
   constructor(private storeService: StoreService) {}
@@ -67,7 +66,7 @@ export class MemberSearchComponent {
     }
   }
 
-  inviteUser(user: Partial<AppUser>) {
+  inviteUser(user: Partial<Account>) {
     if (!this.currentGroup?.id || !user.id) {
       return;
     }
@@ -81,22 +80,22 @@ export class MemberSearchComponent {
       receiverRelationship: "user",
       senderRelationship: "group",
       receiverName: user.name,
-      receiverImage: user.profilePicture,
+      receiverImage: user.iconImage,
       receiverTagline: user.tagline,
       senderName: this.currentGroup.name,
-      senderImage: this.currentGroup.logoImage,
+      senderImage: this.currentGroup.iconImage,
       senderTagline: this.currentGroup.tagline,
     };
 
     this.storeService.createDoc("relationships", relationship).then(() => {
       // Update the user's pendingGroups in the state
-      if (!user.pendingGroups) {
-        user.pendingGroups = [];
-      }
-      user.pendingGroups = this.user?.uid
-        ? [...user.pendingGroups, this.user.uid]
-        : [...user.pendingGroups];
-      this.storeService.updateDocInState("users", user);
+      // if (!user.pendingGroups) {
+      //   user.pendingGroups = [];
+      // }
+      // user.pendingGroups = this.user?.uid
+      //   ? [...user.pendingGroups, this.user.uid]
+      //   : [...user.pendingGroups];
+      this.storeService.updateDocInState("accounts", user);
     });
   }
 }

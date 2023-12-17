@@ -59,7 +59,7 @@ export class HeroComponent {
       // if (data) {
       //   const profileImageUrl = data;
       // }
-    } else if (imageType === "logoImage") {
+    } else if (imageType === "iconImage") {
       let modal = await this.modalController.create({
         component: ImageUploadModalComponent,
         componentProps: {
@@ -68,7 +68,7 @@ export class HeroComponent {
           firestoreLocation: `groups/${this.group?.id}/profile`,
           maxHeight: 200,
           maxWidth: 200,
-          fieldName: "logoImage",
+          fieldName: "iconImage",
         },
       });
 

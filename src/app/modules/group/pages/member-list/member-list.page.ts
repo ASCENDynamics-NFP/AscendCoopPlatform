@@ -21,7 +21,7 @@ import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
 import {ActivatedRoute, RouterModule} from "@angular/router";
-import {AppGroup} from "../../../../models/group.model";
+import {Account} from "../../../../models/account.model";
 import {User} from "firebase/auth";
 import {AppRelationship} from "../../../../models/relationship.model";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
@@ -39,13 +39,13 @@ import {Subscription} from "rxjs";
  * Represents a page where group admins can manage their group members.
  */
 export class MemberListPage {
-  private groupsSubscription: Subscription;
-  private relationshipsSubscription: Subscription | undefined;
+  private accountsSubscription?: Subscription;
+  private relationshipsSubscription?: Subscription;
   relationships: Partial<AppRelationship>[] = [];
   currentMembersList: any[] = [];
   pendingMembersList: any[] = [];
   groupId: string | null = null;
-  group: Partial<AppGroup> | null = null;
+  account: Partial<Account> | null = null;
   currentUser: User | null = this.authStoreService.getCurrentUser();
 
   /**
@@ -61,9 +61,10 @@ export class MemberListPage {
   ) {
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
 
-    this.groupsSubscription = this.storeService.accounts$.subscribe(
-      (groups) => {
-        this.group = groups.find((group) => group.id === this.groupId) ?? null;
+    this.accountsSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        this.account =
+          accounts.find((account) => account.id === this.groupId) ?? null;
       },
     );
   }
@@ -84,7 +85,7 @@ export class MemberListPage {
    * Lifecycle hook that is called when the page is about to leave.
    */
   ionViewWillLeave() {
-    this.groupsSubscription?.unsubscribe();
+    this.accountsSubscription?.unsubscribe();
     this.relationshipsSubscription?.unsubscribe();
   }
 
@@ -93,8 +94,8 @@ export class MemberListPage {
    * @returns {boolean} - True if the user is an admin, otherwise false.
    */
   get isAdmin() {
-    if (!this.group || !this.currentUser) return false;
-    return this.group.admins?.includes(this.currentUser.uid);
+    if (!this.account?.groupDetails || !this.currentUser) return false;
+    return this.account.groupDetails.admins?.includes(this.currentUser.uid);
   }
 
   /**
@@ -138,17 +139,17 @@ export class MemberListPage {
   addMember(request: any) {
     // Add the member to the group's members lists
     const updatedGroupDoc = this.storeService
-      .getCollection("groups")
+      .getCollection("accounts")
       .find((g) => g["id"] === request.groupId);
     if (updatedGroupDoc) {
       updatedGroupDoc["members"] = updatedGroupDoc["members"].push(
         request.memberId,
       );
-      updatedGroupDoc["pendingMembers"] = updatedGroupDoc[
-        "pendingMembers"
-      ].filter((pendingMember: string) => pendingMember !== request.memberId);
+      // updatedGroupDoc["pendingMembers"] = updatedGroupDoc[
+      //   "pendingMembers"
+      // ].filter((pendingMember: string) => pendingMember !== request.memberId);
       // Use addDocToState to update the state
-      this.storeService.addDocToState("groups", updatedGroupDoc);
+      this.storeService.addDocToState("accounts", updatedGroupDoc);
     }
     // Add the group to the member's groups lists
     const updatedMemberDoc = this.storeService
@@ -158,11 +159,11 @@ export class MemberListPage {
       updatedMemberDoc["groups"] = updatedMemberDoc["groups"].push(
         request.groupId,
       );
-      updatedMemberDoc["pendingGroups"] = updatedMemberDoc[
-        "pendingGroups"
-      ].filter((pendingGroup: string) => pendingGroup !== request.groupId);
+      // updatedMemberDoc["pendingGroups"] = updatedMemberDoc[
+      //   "pendingGroups"
+      // ].filter((pendingGroup: string) => pendingGroup !== request.groupId);
       // Use addDocToState to update the state
-      this.storeService.addDocToState("users", updatedMemberDoc);
+      this.storeService.addDocToState("accounts", updatedMemberDoc);
     }
   }
 
@@ -185,7 +186,7 @@ export class MemberListPage {
   removeMember(request: any) {
     // Remove the group from the member's groups lists
     const updatedMemberDoc = this.storeService
-      .getCollection("users")
+      .getCollection("accounts")
       .find((u) => u["id"] === request.friendId);
     if (updatedMemberDoc) {
       updatedMemberDoc["groups"] = updatedMemberDoc["groups"].filter(
@@ -195,11 +196,11 @@ export class MemberListPage {
         "pendingGroups"
       ].filter((pendingGroup: string) => pendingGroup !== this.groupId);
       // Use addDocToState to update the state
-      this.storeService.addDocToState("groups", updatedMemberDoc);
+      this.storeService.addDocToState("accounts", updatedMemberDoc);
     }
     // Remove the member from the group's members lists
     const updatedGroupDoc = this.storeService
-      .getCollection("groups")
+      .getCollection("accounts")
       .find((g) => g["id"] === request.groupId);
     if (updatedGroupDoc) {
       updatedGroupDoc["members"] = updatedGroupDoc["members"].filter(
@@ -209,7 +210,7 @@ export class MemberListPage {
         "pendingMembers"
       ].filter((pendingMember: string) => pendingMember !== request.friendId);
       // Use addDocToState to update the state
-      this.storeService.addDocToState("groups", updatedGroupDoc);
+      this.storeService.addDocToState("accounts", updatedGroupDoc);
     }
   }
 
@@ -219,8 +220,9 @@ export class MemberListPage {
    * @returns {any} - The converted member object.
    */
   relationshipToMember(relationship: Partial<AppRelationship>) {
-    if (!this.group || !this.currentUser) return;
-    if (!this.group.admins) this.group.admins = [];
+    if (!this.account?.groupDetails || !this.currentUser) return;
+    if (!this.account.groupDetails.admins)
+      this.account.groupDetails.admins = [];
     if (relationship.senderId === this.groupId) {
       // my requests
       return {

@@ -79,11 +79,11 @@ export class PartnerSearchComponent {
       receiverRelationship: "group",
       senderRelationship: "group",
       receiverName: group.name,
-      receiverImage: group.logoImage,
+      receiverImage: group.iconImage,
       receiverTagline: group.tagline,
       senderName: this.currentGroup?.name ? this.currentGroup.name : "",
-      senderImage: this.currentGroup?.logoImage
-        ? this.currentGroup.logoImage
+      senderImage: this.currentGroup?.iconImage
+        ? this.currentGroup.iconImage
         : "",
       senderTagline: this.currentGroup?.tagline
         ? this.currentGroup.tagline

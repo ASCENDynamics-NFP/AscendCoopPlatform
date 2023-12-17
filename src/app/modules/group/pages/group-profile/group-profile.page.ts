@@ -22,7 +22,7 @@ import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {ActivatedRoute} from "@angular/router";
-import {AppGroup} from "../../../../models/group.model";
+import {Account} from "../../../../models/account.model";
 import {DetailsComponent} from "./components/details/details.component";
 import {HeroComponent} from "./components/hero/hero.component";
 import {AppRelationship} from "../../../../models/relationship.model";
@@ -48,10 +48,10 @@ import {StoreService} from "../../../../core/services/store.service";
   ],
 })
 export class GroupProfilePage implements OnInit {
-  private groupsSubscription: Subscription | undefined;
-  private relationshipsSubscription: Subscription | undefined;
+  private accountsSubscription?: Subscription;
+  private relationshipsSubscription?: Subscription;
   groupId: string | null = "";
-  group: Partial<AppGroup> | null = {};
+  group: Partial<Account> | null = {};
   memberList: Partial<AppRelationship>[] = [];
   groupList: Partial<AppRelationship>[] = [];
   isAdmin: boolean = false;
@@ -80,29 +80,29 @@ export class GroupProfilePage implements OnInit {
 
   ionViewWillLeave() {
     // Unsubscribe from the accounts$ observable when the component is destroyed
-    this.groupsSubscription?.unsubscribe();
+    this.accountsSubscription?.unsubscribe();
     this.relationshipsSubscription?.unsubscribe();
   }
 
   initiateSubscribers() {
     // Subscribe to the accounts$ observable
-    this.groupsSubscription = this.storeService.accounts$.subscribe(
+    this.accountsSubscription = this.storeService.accounts$.subscribe(
       (groups) => {
         this.group = groups.find((group) => group.id === this.groupId) || null;
         if (!this.group) {
-          this.storeService.getDocById("groups", this.groupId);
+          this.storeService.getDocById("accounts", this.groupId);
         } else {
           let user = this.authStoreService.getCurrentUser();
           let userId = user?.uid ? user.uid : "";
           this.isAdmin = userId
-            ? this.group?.admins?.includes(userId) || false
+            ? this.group?.groupDetails?.admins?.includes(userId) || false
             : false;
-          this.isMember = userId
-            ? this.group?.members?.includes(userId) || false
-            : false;
-          this.isPendingMember = userId
-            ? this.group?.pendingMembers?.includes(userId) || false
-            : false;
+          // this.isMember = userId
+          //   ? this.group?.members?.includes(userId) || false
+          //   : false;
+          // this.isPendingMember = userId
+          //   ? this.group?.pendingMembers?.includes(userId) || false
+          //   : false;
         }
       },
     );

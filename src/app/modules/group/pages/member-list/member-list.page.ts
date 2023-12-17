@@ -45,7 +45,7 @@ export class MemberListPage {
   currentMembersList: any[] = [];
   pendingMembersList: any[] = [];
   groupId: string | null = null;
-  account: Partial<Account> | null = null;
+  account?: Partial<Account>;
   currentUser: User | null = this.authStoreService.getCurrentUser();
 
   /**

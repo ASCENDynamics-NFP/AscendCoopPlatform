@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 import {Component, Input} from "@angular/core";
 import {StoreService} from "../../../../../../core/services/store.service";
-import {AppGroup} from "../../../../../../models/group.model";
+import {Account} from "../../../../../../models/account.model";
 import {AppRelationship} from "../../../../../../models/relationship.model";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
@@ -35,8 +35,8 @@ import {IonicModule} from "@ionic/angular";
 })
 export class PartnerSearchComponent {
   @Input() isAdmin: boolean = false;
-  @Input() currentGroup: Partial<AppGroup> | undefined;
-  @Input() groups: Partial<AppGroup>[] | null = [];
+  @Input() currentGroup?: Partial<Account>;
+  @Input() groups: Partial<Account>[] | null = [];
   private searchTerm: string = "";
 
   constructor(private storeService: StoreService) {}
@@ -64,7 +64,7 @@ export class PartnerSearchComponent {
     }
   }
 
-  sendPartnerGroupRequest(group: Partial<AppGroup>) {
+  sendPartnerGroupRequest(group: Partial<Account>) {
     if (!this.currentGroup?.id || !group.id) {
       console.log("No current group or group ID");
       return;
@@ -92,13 +92,13 @@ export class PartnerSearchComponent {
 
     this.storeService.createDoc("relationships", relationship).then(() => {
       // Update the group's pendingRelatedGroups in the state
-      if (!group.pendingRelatedGroups) {
-        group.pendingRelatedGroups = [];
-      }
-      group.pendingRelatedGroups = this.currentGroup?.id
-        ? [...group.pendingRelatedGroups, this.currentGroup.id]
-        : [...group.pendingRelatedGroups];
-      this.storeService.updateDocInState("groups", group);
+      // if (!group.pendingRelatedGroups) {
+      //   group.pendingRelatedGroups = [];
+      // }
+      // group.pendingRelatedGroups = this.currentGroup?.id
+      //   ? [...group.pendingRelatedGroups, this.currentGroup.id]
+      //   : [...group.pendingRelatedGroups];
+      this.storeService.updateDocInState("accounts", group);
     });
   }
 }

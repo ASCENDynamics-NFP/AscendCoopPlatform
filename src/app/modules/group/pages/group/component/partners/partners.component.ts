@@ -36,7 +36,7 @@ import {IonicModule} from "@ionic/angular";
   imports: [IonicModule, CommonModule, RouterModule],
 })
 export class PartnersComponent {
-  private groupsSubscription?: Subscription;
+  private accountsSubscription?: Subscription;
   private relationshipsSubscription?: Subscription;
   relationships: Partial<AppRelationship>[] = [];
   currentGroupsList: any[] = [];
@@ -66,12 +66,12 @@ export class PartnersComponent {
 
   ionViewWillLeave() {
     // Unsubscribe from the accounts$ observable when the component is destroyed
-    this.groupsSubscription?.unsubscribe();
+    this.accountsSubscription?.unsubscribe();
     this.relationshipsSubscription?.unsubscribe();
   }
 
   initiateSubscribers() {
-    this.groupsSubscription = this.storeService.accounts$.subscribe(
+    this.accountsSubscription = this.storeService.accounts$.subscribe(
       (accounts) => {
         this.account = accounts.find((account) => account.id === this.groupId);
       },

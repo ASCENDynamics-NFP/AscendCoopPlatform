@@ -36,7 +36,7 @@ import {Account} from "../../../../models/account.model";
 })
 export class GroupPage {
   private accountSubscription?: Subscription;
-  group: Partial<Account> | null = null;
+  group?: Partial<Account>;
   groupId: string | null = null;
   public currentUserAccount?: Partial<Account>;
 
@@ -71,11 +71,9 @@ export class GroupPage {
     this.accountSubscription = this.storeService.accounts$.subscribe(
       (accounts) => {
         // Find the group by groupId
-        this.group =
-          accounts.find(
-            (account) =>
-              account.id === this.groupId && account.type === "group",
-          ) || null;
+        this.group = accounts.find(
+          (account) => account.id === this.groupId && account.type === "group",
+        );
 
         // Find the current user account
         this.currentUserAccount = accounts.find(

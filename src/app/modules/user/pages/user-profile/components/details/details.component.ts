@@ -32,7 +32,7 @@ import {PhoneFormatPipe} from "../../../../../../shared/pipes/phone-format.pipe"
   imports: [IonicModule, CommonModule, RouterModule, PhoneFormatPipe],
 })
 export class DetailsComponent implements OnInit {
-  @Input() account: Partial<Account> | null = null; // define your user here
+  @Input() account?: Partial<Account>; // define your user here
   @Input() isProfileOwner: boolean = false; // define your user here
   dateOfBirth = new Date().toISOString(); // default initialization
 

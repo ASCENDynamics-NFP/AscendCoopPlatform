@@ -32,7 +32,7 @@ import {Account} from "../../../../../../models/account.model";
   imports: [IonicModule, CommonModule],
 })
 export class GroupMembershipListComponent {
-  @Input() account: Partial<Account> | null = null;
+  @Input() account?: Partial<Account>;
   @Input() groupList: Partial<AppRelationship>[] = [];
 
   constructor(private router: Router) {}

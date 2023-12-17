@@ -66,26 +66,28 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
                     <ion-item>
                       <ion-label position="floating">Phone Country Code</ion-label>
-                      <ion-input aria-label="Phone Country Code" formControlName="phoneCountryCode" pattern="^[0-9]*$"
+                      <ion-input aria-label="Phone Country Code" formControlName="phone.countryCode" pattern="^[0-9]*$"
                         inputmode="numeric"></ion-input>
                       <ion-note
-                        *ngIf="editGroupForm.controls.phoneCountryCode.invalid && editGroupForm.controls.phoneCountryCode.touched">
+                        *ngIf="editGroupForm.controls['phone']['controls'].countryCode.invalid && editGroupForm.controls['phone']['controls'].countryCode.touched">
                         Please enter a valid country code
                       </ion-note>
                     </ion-item>
 
                     <ion-item>
                       <ion-label position="floating">Phone Number</ion-label>
-                      <ion-input aria-label="Phone Number" formControlName="number" type="tel" pattern="^\d{10}$"
+                      <ion-input aria-label="Phone Number" formControlName="phone.number" type="tel" pattern="^\d{10}$"
                         inputmode="numeric"></ion-input>
-                      <ion-note *ngIf="editGroupForm.controls.number.invalid && editGroupForm.controls.number.touched">
+                      <ion-note
+                        *ngIf="editGroupForm.controls['phone']['controls'].number.invalid && editGroupForm.controls['phone']['controls'].number.touched">
                         Please enter a valid phone number
                       </ion-note>
                     </ion-item>
 
                     <ion-item>
                       <ion-label>Supported Languages</ion-label>
-                      <ion-select aria-label="Supported Languages" formControlName="supportedlanguages" multiple="true">
+                      <ion-select aria-label="Supported Languages" formControlName="groupDetails.supportedLanguages"
+                        multiple="true">
                         <ion-select-option value="en">English</ion-select-option>
                         <ion-select-option value="es">Spanish</ion-select-option>
                         <ion-select-option value="fr">French</ion-select-option>
@@ -96,57 +98,57 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
                     <ion-item>
                       <ion-label position="floating">Date Founded</ion-label>
-                      <ion-datetime aria-label="Date Founded" formControlName="dateFounded" displayFormat="MM/DD/YYYY"
-                        presentation="date" color="primary" size="cover"></ion-datetime>
+                      <ion-datetime aria-label="Date Founded" formControlName="groupDetails.dateFounded"
+                        displayFormat="MM/DD/YYYY" presentation="date" color="primary" size="cover"></ion-datetime>
                     </ion-item>
                   </ion-col>
                   <ion-col>
                     <ion-item>
                       <ion-label position="floating">Street Address</ion-label>
-                      <ion-input aria-label="Street Address" formControlName="addressStreet" type="text"
+                      <ion-input aria-label="Street Address" formControlName="address.street" type="text"
                         pattern="^[a-zA-Z0-9\s,]*$"></ion-input>
                       <ion-note
-                        *ngIf="editGroupForm.controls.addressStreet.invalid && editGroupForm.controls.addressStreet.touched">
+                        *ngIf="editGroupForm.controls['address']['controls'].street.invalid && editGroupForm.controls['address']['controls'].street.touched">
                         Please enter a valid address
                       </ion-note>
                     </ion-item>
 
                     <ion-item>
                       <ion-label position="floating">City</ion-label>
-                      <ion-input aria-label="City" formControlName="addressCity" type="text"
+                      <ion-input aria-label="City" formControlName="address.city" type="text"
                         pattern="^[a-zA-Z\s]*$"></ion-input>
                       <ion-note
-                        *ngIf="editGroupForm.controls.addressCity.invalid && editGroupForm.controls.addressCity.touched">
+                        *ngIf="editGroupForm.controls['address']['controls'].city.invalid && editGroupForm.controls['address']['controls'].city.touched">
                         Please enter a valid city name
                       </ion-note>
                     </ion-item>
 
                     <ion-item>
                       <ion-label position="floating">State</ion-label>
-                      <ion-input aria-label="State" formControlName="addressState" type="text"
+                      <ion-input aria-label="State" formControlName="address.state" type="text"
                         pattern="^[a-zA-Z\s]*$"></ion-input>
                       <ion-note
-                        *ngIf="editGroupForm.controls.addressState.invalid && editGroupForm.controls.addressState.touched">
+                        *ngIf="editGroupForm.controls['address']['controls'].state.invalid && editGroupForm.controls['address']['controls'].state.touched">
                         Please enter a valid state name
                       </ion-note>
                     </ion-item>
 
                     <ion-item>
                       <ion-label position="floating">Zip Code</ion-label>
-                      <ion-input aria-label="Zip Code" formControlName="addressZipcode" type="text"
+                      <ion-input aria-label="Zip Code" formControlName="address.zipcode" type="text"
                         pattern="^[0-9]*$"></ion-input>
                       <ion-note
-                        *ngIf="editGroupForm.controls.addressZipcode.invalid && editGroupForm.controls.addressZipcode.touched">
+                        *ngIf="editGroupForm.controls['address']['controls'].zipcode.invalid && editGroupForm.controls['address']['controls'].zipcode.touched">
                         Please enter a valid zip code
                       </ion-note>
                     </ion-item>
 
                     <ion-item>
                       <ion-label position="floating">Country</ion-label>
-                      <ion-input aria-label="Country" formControlName="addressCountry" type="text"
+                      <ion-input aria-label="Country" formControlName="address.country" type="text"
                         pattern="^[a-zA-Z\s]*$"></ion-input>
                       <ion-note
-                        *ngIf="editGroupForm.controls.addressCountry.invalid && editGroupForm.controls.addressCountry.touched">
+                        *ngIf="editGroupForm.controls['address']['controls'].country.invalid && editGroupForm.controls['address']['controls'].country.touched">
                         Please enter a valid country name
                       </ion-note>
                     </ion-item>

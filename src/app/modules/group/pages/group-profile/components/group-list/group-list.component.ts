@@ -21,7 +21,7 @@ import {Component, Input} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
 import {Router} from "@angular/router";
-import {AppGroup} from "../../../../../../models/group.model";
+import {Account} from "../../../../../../models/account.model";
 import {AppRelationship} from "../../../../../../models/relationship.model";
 
 @Component({
@@ -32,7 +32,7 @@ import {AppRelationship} from "../../../../../../models/relationship.model";
   imports: [IonicModule, CommonModule],
 })
 export class GroupListComponent {
-  @Input() group: Partial<AppGroup> | null = null; // define your group here
+  @Input() group?: Partial<Account>; // define your group here
   @Input() groupList: Partial<AppRelationship>[] = [];
 
   constructor(private router: Router) {}

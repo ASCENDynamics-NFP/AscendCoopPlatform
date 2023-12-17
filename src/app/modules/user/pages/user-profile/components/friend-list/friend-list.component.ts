@@ -32,7 +32,7 @@ import {AppRelationship} from "../../../../../../models/relationship.model";
   imports: [IonicModule, CommonModule],
 })
 export class FriendListComponent implements OnInit {
-  @Input() account: Partial<Account> | null = null;
+  @Input() account?: Partial<Account>;
   @Input() friendList: Partial<AppRelationship>[] = [];
 
   constructor(private router: Router) {}

@@ -37,7 +37,7 @@ import {AppHeaderComponent} from "../../../../shared/components/app-header/app-h
 })
 export class EditUserProfilePage {
   private uid: string | null = null;
-  private accountsSubscription: Subscription | undefined;
+  private accountsSubscription?: Subscription;
   public account?: Partial<Account>;
 
   editProfileForm = this.fb.group({

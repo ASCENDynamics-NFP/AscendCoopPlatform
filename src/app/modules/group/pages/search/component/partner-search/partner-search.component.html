@@ -34,8 +34,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-button *ngIf="
           isAdmin &&
           item.id &&
-          !currentGroup.relatedGroups?.includes(item.id) &&
-          !currentGroup.pendingRelatedGroups?.includes(item.id) &&
+          !currentGroup.associations?.accounts?.includes(item.id) &&
           item.id !== currentGroup.id
         " slot="end" mode="md" expand="block" (click)="
           $event.stopPropagation();

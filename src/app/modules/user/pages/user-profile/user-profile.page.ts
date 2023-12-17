@@ -56,7 +56,7 @@ export class UserProfilePage implements OnInit {
   private accountsSubscription?: Subscription;
   private relationshipsSubscription?: Subscription;
   authUser: User | null = null;
-  account: Partial<Account> | null = null;
+  account?: Partial<Account>;
   friendList: Partial<AppRelationship>[] = [];
   groupList: Partial<AppRelationship>[] = [];
 
@@ -94,8 +94,7 @@ export class UserProfilePage implements OnInit {
   initiateSubscribers() {
     this.accountsSubscription = this.storeService.accounts$.subscribe(
       (accounts) => {
-        this.account =
-          accounts.find((account) => account.id === this.uid) ?? null;
+        this.account = accounts.find((account) => account.id === this.uid);
         if (!this.account) {
           console.log("Account not found in store, fetching from server");
           this.storeService.getDocById("accounts", this.uid);

@@ -22,7 +22,7 @@ import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
 import {Router} from "@angular/router";
 import {AppRelationship} from "../../../../../../models/relationship.model";
-import {AppGroup} from "../../../../../../models/group.model";
+import {Account} from "../../../../../../models/account.model";
 
 @Component({
   selector: "app-member-list",
@@ -32,7 +32,7 @@ import {AppGroup} from "../../../../../../models/group.model";
   imports: [IonicModule, CommonModule],
 })
 export class MemberListComponent {
-  @Input() group: Partial<AppGroup> | null = null; // define your group here
+  @Input() group?: Partial<Account>; // define your group here
   @Input() memberList: Partial<AppRelationship>[] = [];
 
   constructor(private router: Router) {}

@@ -58,8 +58,8 @@ export class EditUserProfilePage {
       country: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
     }),
     phone: this.fb.group({
-      number: ["", [Validators.pattern("^\\d{10}$")]],
       countryCode: ["", [Validators.pattern("^[0-9]*$")]],
+      number: ["", [Validators.pattern("^\\d{10}$")]],
       type: [""],
     }),
   });

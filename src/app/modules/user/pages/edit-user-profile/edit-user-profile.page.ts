@@ -40,7 +40,7 @@ export class EditUserProfilePage {
   private accountsSubscription?: Subscription;
   public account?: Partial<Account>;
 
-  editProfileForm = this.fb.group({
+  editAccountForm = this.fb.group({
     name: ["", Validators.required],
     email: ["", [Validators.required, Validators.email]],
     description: [""],
@@ -94,11 +94,11 @@ export class EditUserProfilePage {
   onSubmit() {
     if (this.account) {
       // Update the account object with form values
-      this.account.email = this.editProfileForm.value.email ?? "";
-      this.account.description = this.editProfileForm.value.description ?? "";
-      this.account.tagline = this.editProfileForm.value.tagline ?? "";
-      this.account.name = this.editProfileForm.value.name ?? "";
-      this.account.language = this.editProfileForm.value.language ?? "";
+      this.account.email = this.editAccountForm.value.email ?? "";
+      this.account.description = this.editAccountForm.value.description ?? "";
+      this.account.tagline = this.editAccountForm.value.tagline ?? "";
+      this.account.name = this.editAccountForm.value.name ?? "";
+      this.account.language = this.editAccountForm.value.language ?? "";
 
       this.account.userDetails = {
         ...this.account.userDetails,
@@ -106,25 +106,25 @@ export class EditUserProfilePage {
         lastName: this.account.userDetails?.lastName ?? "",
         username: this.account.userDetails?.username ?? "",
         dateOfBirth: Timestamp.fromDate(
-          new Date(this.editProfileForm.value.userDetails?.dateOfBirth ?? ""),
+          new Date(this.editAccountForm.value.userDetails?.dateOfBirth ?? ""),
         ),
       };
       this.account.address = {
         ...this.account.address,
-        street: this.editProfileForm.value.address?.street ?? "",
-        city: this.editProfileForm.value.address?.city ?? "",
-        state: this.editProfileForm.value.address?.state ?? "",
-        zipcode: this.editProfileForm.value.address?.zipcode ?? "",
-        country: this.editProfileForm.value.address?.country ?? "",
-        name: this.editProfileForm.value.address?.name ?? "",
+        street: this.editAccountForm.value.address?.street ?? "",
+        city: this.editAccountForm.value.address?.city ?? "",
+        state: this.editAccountForm.value.address?.state ?? "",
+        zipcode: this.editAccountForm.value.address?.zipcode ?? "",
+        country: this.editAccountForm.value.address?.country ?? "",
+        name: this.editAccountForm.value.address?.name ?? "",
         formatted: this.account.address?.formatted ?? "",
         geopoint: this.account.address?.geopoint ?? "",
       };
       this.account.phone = {
         ...this.account.phone,
-        number: this.editProfileForm.value.phone?.number ?? "",
-        type: this.editProfileForm.value.phone?.type ?? "",
-        countryCode: this.editProfileForm.value.phone?.countryCode ?? "",
+        number: this.editAccountForm.value.phone?.number ?? "",
+        type: this.editAccountForm.value.phone?.type ?? "",
+        countryCode: this.editAccountForm.value.phone?.countryCode ?? "",
       };
 
       this.storeService.updateDoc("accounts", this.account);
@@ -156,7 +156,7 @@ export class EditUserProfilePage {
 
   loadFormData() {
     if (!this.account) return;
-    this.editProfileForm.patchValue({
+    this.editAccountForm.patchValue({
       name: this.account.name,
       email: this.account.email,
       description: this.account.description,

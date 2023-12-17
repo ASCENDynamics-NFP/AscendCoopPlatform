@@ -45,7 +45,7 @@ export class GroupEditPage {
   account: Partial<Account> | null = {}; // define your user here
   groupId: string | null = null;
 
-  editGroupForm = this.fb.group({
+  editAccountForm = this.fb.group({
     email: ["", [Validators.required, Validators.email]],
     description: [""],
     tagline: [""],
@@ -86,7 +86,7 @@ export class GroupEditPage {
           accounts.find((account) => account.id === this.groupId) || null;
         if (this.account) {
           // Update the form with the group data
-          this.editGroupForm.patchValue({
+          this.editAccountForm.patchValue({
             name: this.account.name,
             email: this.account.email,
             description: this.account.description,
@@ -100,20 +100,20 @@ export class GroupEditPage {
             },
             address: {
               ...this.account.address,
-              street: this.editGroupForm.value.address?.street ?? "",
-              city: this.editGroupForm.value.address?.city ?? "",
-              state: this.editGroupForm.value.address?.state ?? "",
-              zipcode: this.editGroupForm.value.address?.zipcode ?? "",
-              country: this.editGroupForm.value.address?.country ?? "",
-              name: this.editGroupForm.value.address?.name ?? "",
+              street: this.editAccountForm.value.address?.street ?? "",
+              city: this.editAccountForm.value.address?.city ?? "",
+              state: this.editAccountForm.value.address?.state ?? "",
+              zipcode: this.editAccountForm.value.address?.zipcode ?? "",
+              country: this.editAccountForm.value.address?.country ?? "",
+              name: this.editAccountForm.value.address?.name ?? "",
               // formatted: this.account.address?.formatted ?? "",
               // geopoint: this.account.address?.geopoint ?? "",
             },
             phone: {
               ...this.account.phone,
-              number: this.editGroupForm.value.phone?.number ?? "",
-              type: this.editGroupForm.value.phone?.type ?? "",
-              countryCode: this.editGroupForm.value.phone?.countryCode ?? "",
+              number: this.editAccountForm.value.phone?.number ?? "",
+              type: this.editAccountForm.value.phone?.type ?? "",
+              countryCode: this.editAccountForm.value.phone?.countryCode ?? "",
             },
           });
         }
@@ -134,30 +134,30 @@ export class GroupEditPage {
         : this.groupId
         ? this.groupId
         : "";
-      this.account.email = this.editGroupForm.value.email || "";
+      this.account.email = this.editAccountForm.value.email || "";
       this.account.phone = {
-        countryCode: this.editGroupForm.value.phone?.countryCode || "",
-        number: this.editGroupForm.value.phone?.number || "",
-        type: this.editGroupForm.value.phone?.type || "",
+        countryCode: this.editAccountForm.value.phone?.countryCode || "",
+        number: this.editAccountForm.value.phone?.number || "",
+        type: this.editAccountForm.value.phone?.type || "",
       };
-      this.account.description = this.editGroupForm.value.description || "";
-      this.account.tagline = this.editGroupForm.value.tagline || "";
-      this.account.name = this.editGroupForm.value.name || "";
+      this.account.description = this.editAccountForm.value.description || "";
+      this.account.tagline = this.editAccountForm.value.tagline || "";
+      this.account.name = this.editAccountForm.value.name || "";
       this.account.groupDetails = {
         admins: this.account.groupDetails?.admins || [],
         dateFounded: Timestamp.fromDate(
-          new Date(this.editGroupForm.value.groupDetails?.dateFounded || ""),
+          new Date(this.editAccountForm.value.groupDetails?.dateFounded || ""),
         ),
         supportedLanguages:
-          this.editGroupForm.value.groupDetails?.supportedLanguages || [],
+          this.editAccountForm.value.groupDetails?.supportedLanguages || [],
       };
       this.account.address = {
-        street: this.editGroupForm.value.address?.street ?? "",
-        city: this.editGroupForm.value.address?.city ?? "",
-        state: this.editGroupForm.value.address?.state ?? "",
-        zipcode: this.editGroupForm.value.address?.zipcode ?? "",
-        country: this.editGroupForm.value.address?.country ?? "",
-        name: this.editGroupForm.value.address?.name ?? "",
+        street: this.editAccountForm.value.address?.street ?? "",
+        city: this.editAccountForm.value.address?.city ?? "",
+        state: this.editAccountForm.value.address?.state ?? "",
+        zipcode: this.editAccountForm.value.address?.zipcode ?? "",
+        country: this.editAccountForm.value.address?.country ?? "",
+        name: this.editAccountForm.value.address?.name ?? "",
         formatted: this.account.address?.formatted ?? "",
         geopoint: this.account.address?.geopoint ?? "",
       };

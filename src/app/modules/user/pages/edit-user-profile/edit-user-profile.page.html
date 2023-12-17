@@ -25,7 +25,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-col>
         <ion-card>
           <ion-card-content>
-            <form [formGroup]="editProfileForm" (ngSubmit)="onSubmit()">
+            <form [formGroup]="editAccountForm" (ngSubmit)="onSubmit()">
               <ion-grid>
                 <ion-row>
                   <ion-col>
@@ -56,7 +56,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                         <ion-input aria-label="Phone Country Code" formControlName="countryCode" pattern="^[0-9]*$"
                           inputmode="numeric"></ion-input>
                         <ion-note
-                          *ngIf="editProfileForm.get('phone')?.get('countryCode')?.invalid && editProfileForm.get('phone')?.get('countryCode')?.touched">
+                          *ngIf="editAccountForm.get('phone')?.get('countryCode')?.invalid && editAccountForm.get('phone')?.get('countryCode')?.touched">
                           Please enter a valid country code
                         </ion-note>
                       </ion-item>
@@ -66,7 +66,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                         <ion-input aria-label="Phone Number" formControlName="number" pattern="^\d{10}$"
                           inputmode="numeric"></ion-input>
                         <ion-note
-                          *ngIf="editProfileForm.get('phone')?.get('number')?.invalid && editProfileForm.get('phone')?.get('number')?.touched">
+                          *ngIf="editAccountForm.get('phone')?.get('number')?.invalid && editAccountForm.get('phone')?.get('number')?.touched">
                           Please enter a valid phone number
                         </ion-note>
                       </ion-item>
@@ -87,7 +87,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                         <ion-label position="floating">Street Address</ion-label>
                         <ion-input aria-label="Street Address" formControlName="street" type="text"></ion-input>
                         <ion-note
-                          *ngIf="editProfileForm.get('address')?.get('street')?.invalid && editProfileForm.get('address')?.get('street')?.touched">
+                          *ngIf="editAccountForm.get('address')?.get('street')?.invalid && editAccountForm.get('address')?.get('street')?.touched">
                           Please enter a valid address
                         </ion-note>
                       </ion-item>
@@ -97,7 +97,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                         <ion-input aria-label="City" formControlName="city" type="text"
                           pattern="^[a-zA-Z\s]*$"></ion-input>
                         <ion-note
-                          *ngIf="editProfileForm.get('address')?.get('city')?.invalid && editProfileForm.get('address')?.get('city')?.touched">
+                          *ngIf="editAccountForm.get('address')?.get('city')?.invalid && editAccountForm.get('address')?.get('city')?.touched">
                           Please enter a valid city name
                         </ion-note>
                       </ion-item>
@@ -107,7 +107,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                         <ion-input aria-label="State" formControlName="state" type="text"
                           pattern="^[a-zA-Z\s]*$"></ion-input>
                         <ion-note
-                          *ngIf="editProfileForm.get('address')?.get('state')?.invalid && editProfileForm.get('address')?.get('state')?.touched">
+                          *ngIf="editAccountForm.get('address')?.get('state')?.invalid && editAccountForm.get('address')?.get('state')?.touched">
                           Please enter a valid state name
                         </ion-note>
                       </ion-item>
@@ -117,7 +117,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                         <ion-input aria-label="Zip Code" formControlName="zipcode" type="text"
                           pattern="^[0-9]*$"></ion-input>
                         <ion-note
-                          *ngIf="editProfileForm.get('address')?.get('zipcode')?.invalid && editProfileForm.get('address')?.get('zipcode')?.touched">
+                          *ngIf="editAccountForm.get('address')?.get('zipcode')?.invalid && editAccountForm.get('address')?.get('zipcode')?.touched">
                           Please enter a valid zip code
                         </ion-note>
                       </ion-item>
@@ -127,7 +127,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                         <ion-input aria-label="Country" formControlName="country" type="text"
                           pattern="^[a-zA-Z\s]*$"></ion-input>
                         <ion-note
-                          *ngIf="editProfileForm.get('address')?.get('country')?.invalid && editProfileForm.get('address')?.get('country')?.touched">
+                          *ngIf="editAccountForm.get('address')?.get('country')?.invalid && editAccountForm.get('address')?.get('country')?.touched">
                           Please enter a valid country name
                         </ion-note>
                       </ion-item>
@@ -146,7 +146,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 </ion-row>
                 <ion-row>
                   <ion-col>
-                    <ion-button expand="block" type="submit" [disabled]="!editProfileForm.valid">Save
+                    <ion-button expand="block" type="submit" [disabled]="!editAccountForm.valid">Save
                       Changes</ion-button>
                   </ion-col>
                   <ion-col>

@@ -108,8 +108,8 @@ export class MenuComponent implements OnInit, OnDestroy {
       },
       {
         title: "Donate",
-        url: "https://www.paypal.com/donate/?hosted_button_id=NZNUBUCTZA75S",
-        icon: "logo-paypal",
+        url: "https://buy.stripe.com/bIY5mC9sY1ob4TufYY",
+        icon: "heart-sharp",
       },
       {
         title: "Project Repository",

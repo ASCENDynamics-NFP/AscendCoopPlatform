@@ -18,63 +18,13 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {BaseDocument} from "./base-document";
-import {Timestamp} from "firebase/firestore";
 
-type Address = {
-  name: string;
-  street: string;
-  city: string;
-  state: string;
-  zipcode: string;
-  country: string;
-  formatted: string;
-  geopoint: string; // or a more specific geopoint type
-};
-
-type Phone = {
-  countryCode: string;
-  number: string;
-  type: string;
-};
-
-type Associations = {
-  accounts: string[];
-  feedback: string[];
-};
-
-type UserSpecific = {
-  dateOfBirth: Timestamp;
-  firstName: string;
-  lastName: string;
-  username: string;
-};
-
-type GroupSpecific = {
-  admins: string[];
-  dateFounded: Timestamp;
-  supportedLanguages: string[];
-};
-
-export type Account = BaseDocument & {
-  id: string;
-  type: "user" | "group";
-  name: string;
-  description: string;
-  lastLoginAt: Timestamp;
-  address: Address;
-  tagline: string;
-  email: string;
-  emailVerified: boolean;
-  phone: Phone;
-  language: string;
-  associations: Associations;
-  userDetails?: UserSpecific;
-  groupDetails?: GroupSpecific;
-  privacySetting:
-    | "public"
-    | "accepted-users-only"
-    | "accepted-groups-only"
-    | "private"; // Privacy setting
-  iconImage: string;
-  heroImage: string;
+export type RelatedAccount = BaseDocument & {
+  id: string; // The ID of the related account
+  name: string; // Name of the related user or group
+  iconImage: string; // URL or path to the icon image
+  tagline: string; // Tagline or short description
+  type: "user" | "group"; // Type of the related account
+  status: "pending" | "accepted" | "rejected"; // Relationship status
+  relationship: string; // Details about the relationship (e.g., 'friend', 'member')
 };

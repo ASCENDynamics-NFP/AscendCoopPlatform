@@ -84,14 +84,14 @@ export class UserGroupsPage {
     this.storeService.updateDoc("relationships", relationship as Partial<any>);
     // update the group in state to add the user to the members list
     let storedGroup = this.storeService
-      .getCollection("groups")
+      .getCollection("accounts")
       .find((g) => g["id"] === request.groupId);
     if (storedGroup) {
       storedGroup["members"] = storedGroup["members"].push(this.userId);
       storedGroup["pendingMembers"] = storedGroup["pendingMembers"].filter(
         (pendingMember: string) => pendingMember !== this.userId,
       );
-      this.storeService.addDocToState("groups", storedGroup);
+      this.storeService.addDocToState("accounts", storedGroup);
     }
   }
 
@@ -107,7 +107,7 @@ export class UserGroupsPage {
     this.storeService.updateDoc("relationships", relationship as Partial<any>);
     // update the group in state to remove the user from the admin, members and pendingMembers list
     let storedGroup = this.storeService
-      .getCollection("groups")
+      .getCollection("accounts")
       .find((g) => g["id"] === request.groupId);
     if (storedGroup) {
       storedGroup["admins"] = storedGroup["admins"].filter(
@@ -119,7 +119,7 @@ export class UserGroupsPage {
       storedGroup["pendingMembers"] = storedGroup["pendingMembers"].filter(
         (pendingMember: string) => pendingMember !== this.userId,
       );
-      this.storeService.addDocToState("groups", storedGroup);
+      this.storeService.addDocToState("accounts", storedGroup);
     }
   }
 
@@ -138,7 +138,7 @@ export class UserGroupsPage {
       );
       // After deleting the relationship, update the group in state to remove the user from the admin, pendingMembers and members list
       const updatedGroup = this.storeService
-        .getCollection("groups")
+        .getCollection("accounts")
         .find((g) => g["id"] === request.groupId);
       if (updatedGroup) {
         updatedGroup["admins"] = updatedGroup["admins"].filter(
@@ -150,7 +150,7 @@ export class UserGroupsPage {
         updatedGroup["pendingMembers"] = updatedGroup["pendingMembers"].filter(
           (pendingMember: string) => pendingMember !== this.userId,
         );
-        this.storeService.addDocToState("groups", updatedGroup);
+        this.storeService.addDocToState("accounts", updatedGroup);
       }
     }
   }

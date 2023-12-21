@@ -158,7 +158,7 @@ export class FriendsPage implements OnInit {
    */
   addFriend(request: any) {
     const updatedDoc = this.storeService
-      .getCollection("users")
+      .getCollection("accounts")
       .find((u) => u["id"] === request.friendId);
     if (updatedDoc) {
       updatedDoc["friends"] = updatedDoc["friends"].push(this.userId);
@@ -166,7 +166,7 @@ export class FriendsPage implements OnInit {
         (pendingFriends: string) => pendingFriends !== this.userId,
       );
       // Use addDocToState to update the state
-      this.storeService.addDocToState("users", updatedDoc);
+      this.storeService.addDocToState("accounts", updatedDoc);
     }
   }
 
@@ -176,7 +176,7 @@ export class FriendsPage implements OnInit {
    */
   removeFriend(request: any) {
     const updatedDoc = this.storeService
-      .getCollection("users")
+      .getCollection("accounts")
       .find((u) => u["id"] === request.friendId);
     if (updatedDoc) {
       updatedDoc["friends"] = updatedDoc["friends"].filter(
@@ -186,7 +186,7 @@ export class FriendsPage implements OnInit {
         (pendingFriends: string) => pendingFriends !== this.userId,
       );
       // Use addDocToState to update the state
-      this.storeService.addDocToState("users", updatedDoc);
+      this.storeService.addDocToState("accounts", updatedDoc);
     }
   }
 

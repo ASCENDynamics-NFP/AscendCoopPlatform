@@ -153,7 +153,7 @@ export class MemberListPage {
     }
     // Add the group to the member's groups lists
     const updatedMemberDoc = this.storeService
-      .getCollection("users")
+      .getCollection("accounts")
       .find((u) => u["id"] === request.memberId);
     if (updatedMemberDoc) {
       updatedMemberDoc["groups"] = updatedMemberDoc["groups"].push(

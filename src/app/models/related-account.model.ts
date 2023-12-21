@@ -25,6 +25,8 @@ export type RelatedAccount = BaseDocument & {
   iconImage: string; // URL or path to the icon image
   tagline: string; // Tagline or short description
   type: "user" | "group"; // Type of the related account
-  status: "pending" | "accepted" | "rejected"; // Relationship status
-  relationship: string; // Details about the relationship (e.g., 'friend', 'member')
+  status: "pending" | "accepted" | "rejected" | "blocked"; // Relationship status
+  relationship: "friend" | "member" | "partner"; // Details about the relationship (e.g., 'friend', 'member')
+  initiatorId: string; // ID of the account who initiated the request
+  targetId: string; // ID of the account who received the request
 };

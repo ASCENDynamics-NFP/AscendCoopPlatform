@@ -39,6 +39,9 @@
 // });
 export * from "./auth/user/triggers/onCreate"; // triggers
 export * from "./auth/user/triggers/onDelete"; // triggers
+export * from "./database/accounts/relatedAccounts/triggers/onCreate"; // triggers
+export * from "./database/accounts/relatedAccounts/triggers/onDelete"; // triggers
+export * from "./database/accounts/relatedAccounts/triggers/onUpdate"; // triggers
 export * from "./database/relationships/triggers"; // triggers
 export * from "./database/groups/triggers/onCreate"; // triggers
 export * from "./database/groups/triggers/onUpdate"; // triggers

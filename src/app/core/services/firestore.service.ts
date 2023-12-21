@@ -44,7 +44,7 @@ import {ErrorHandlerService} from "./error-handler.service";
   providedIn: "root",
 })
 export class FirestoreService {
-  private ignoreCollectionList: string[] = ["feedback"];
+  private ignoreCollectionList: string[] = ["feedback", "relatedAccounts"];
   /**
    * A BehaviorSubject that holds an array of objects, each representing a Firestore collection to listen to.
    * Each object contains the name of the collection and an array of document ids to listen to in that collection.
@@ -250,6 +250,26 @@ export class FirestoreService {
     } catch (error) {
       console.error("Error adding document: ", error);
       return null;
+    }
+  }
+
+  /**
+   * Adds or updates a document at a specified path in Firestore.
+   *
+   * @param {string} docPath - The full path to the document, including its ID.
+   * @param {any} documentData - Data of the document to add or update.
+   * @returns {Promise<void>} - Promise that resolves when the operation is complete.
+   */
+  async setDocument(docPath: string, documentData: any): Promise<void> {
+    try {
+      // The path should include the collection and the custom document ID
+      // For example: 'accounts/{accountId}/relatedAccounts/{relatedAccountId}'
+      const documentRef = doc(this.firestore, docPath);
+      await setDoc(documentRef, documentData);
+
+      console.log("Document set successfully");
+    } catch (error) {
+      console.error("Error setting document: ", error);
     }
   }
 

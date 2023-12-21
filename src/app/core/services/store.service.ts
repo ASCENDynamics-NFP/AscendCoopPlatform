@@ -174,7 +174,7 @@ export class StoreService {
    * @returns {any[]} - Returns the current value of the specified collection.
    */
   getCollection(collectionName: string) {
-    return this.collectionsSubject[collectionName].getValue();
+    return this.collectionsSubject[collectionName]?.getValue();
   }
 
   /**
@@ -269,6 +269,19 @@ export class StoreService {
   }
 
   /**
+   * Updates a document and updates it in the state.
+   * @param {string} collectionName - The name of the collection that the document is in.
+   * @param {Partial<any>} doc - The document to update.
+   */
+  setDoc(collectionName: string, doc: Partial<any>) {
+    this.firestoreService.setDocument(
+      collectionName + "/" + doc["id"],
+      prepareDataForUpdate(doc, this.authStoreService.getCurrentUser()?.uid),
+    );
+    this.updateDocInState(collectionName, doc);
+  }
+
+  /**
    * Deletes a document and removes it from the state.
    * @param {string} collectionName - The name of the collection that the document is in.
    * @param {string} docId - The id of the document to delete.
@@ -310,11 +323,11 @@ export class StoreService {
    * @param {Partial<any>} doc - The document to update in the state.
    */
   updateDocInState(collectionName: string, doc: Partial<any>) {
-    const currentState = this.collectionsSubject[collectionName].getValue();
-    const updatedState = currentState.map((d) =>
+    const currentState = this.collectionsSubject[collectionName]?.getValue();
+    const updatedState = currentState?.map((d) =>
       d["id"] === doc["id"] ? {...d, ...doc} : d,
     );
-    this.collectionsSubject[collectionName].next(updatedState);
+    this.collectionsSubject[collectionName]?.next(updatedState);
   }
 
   /**

@@ -23,12 +23,12 @@ import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {User} from "firebase/auth";
 import {RouterModule} from "@angular/router";
-import {Account} from "../../../../models/account.model"; // Updated model import
+import {Account} from "../../../../models/account.model";
 import {StoreService} from "../../../../core/services/store.service";
 import {Subscription} from "rxjs";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
-import {AppRelationship} from "../../../../models/relationship.model";
+import {RelatedAccount} from "../../../../models/related-account.model";
 
 @Component({
   selector: "app-users",
@@ -79,24 +79,22 @@ export class UsersPage {
       return;
     }
 
-    const newRelationship: Partial<AppRelationship> = {
-      senderId: this.authUser.uid,
-      relatedIds: [this.authUser.uid, account.id],
-      receiverId: account.id,
-      type: "friend",
+    const newRelatedAccount: Partial<RelatedAccount> = {
+      id: account.id,
+      initiatorId: this.authUser.uid,
+      targetId: account.id,
+      type: "user",
       status: "pending",
-      membershipRole: "",
-      receiverRelationship: "friend",
-      senderRelationship: "friend",
-      receiverName: account["name"],
-      receiverImage: account["iconImage"],
-      receiverTagline: account["description"],
-      senderName: this.authUser?.displayName ? this.authUser.displayName : "",
-      senderImage: this.authUser?.photoURL ? this.authUser.photoURL : "",
-      senderTagline: "",
+      relationship: "friend",
+      tagline: account.tagline,
+      name: account.name,
+      iconImage: account.iconImage,
     };
 
-    this.storeService.createDoc("relationships", newRelationship);
+    this.storeService.setDoc(
+      `accounts/${this.authUser.uid}/relatedAccounts`,
+      newRelatedAccount,
+    );
     // .then(() => {
     //   if (this.authUser) {
     //     // updated friends list on userList item to include receiverId in friends list so that the button doesn't show

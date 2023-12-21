@@ -68,13 +68,6 @@ async function handleRelatedAccountCreate(
     const initiatorAccountData = initiatorAccountDoc.data();
     const targetAccountData = targetAccountDoc.data();
 
-    // Create a relatedAccount document for the initiator
-    // const initiatorRelatedAccountRef = db
-    //   .collection("accounts")
-    //   .doc(accountId)
-    //   .collection("relatedAccounts")
-    //   .doc(relatedAccountId);
-
     const relationship =
       initiatorAccountData?.type === "group" &&
       targetAccountData?.type === "group"
@@ -83,23 +76,6 @@ async function handleRelatedAccountCreate(
           targetAccountData?.type === "group"
         ? "member"
         : "friend";
-
-    // const initiatorRelatedAccount = {
-    //   id: relatedAccountId,
-    //   name: targetAccountData?.name,
-    //   iconImage: targetAccountData?.iconImage,
-    //   tagline: targetAccountData?.tagline,
-    //   type: targetAccountData?.type,
-    //   status: "pending", // default status is pending
-    //   relationship: relationship,
-    //   createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    //   createdBy: accountId,
-    //   lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
-    //   lastModifiedBy: accountId,
-    //   initiatorId: accountId,
-    //   targetId: relatedAccountId,
-    // };
-    // await initiatorRelatedAccountRef.set(initiatorRelatedAccount);
 
     // Create a relatedAccount document for the target
     const targetRelatedAccountRef = db

@@ -60,7 +60,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
 
   initiateSubscribers() {
     // Subscribe to accounts$ observable
-    this.accountsSubscription = this.storeService.accounts$.subscribe(
+    this.accountsSubscription = this.storeService?.accounts$?.subscribe(
       (accounts) => {
         this.account = accounts.find(
           (account) =>

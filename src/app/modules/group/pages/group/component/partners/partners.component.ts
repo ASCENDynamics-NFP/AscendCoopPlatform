@@ -17,14 +17,13 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, RouterModule} from "@angular/router";
 import {User} from "firebase/auth";
 import {Subscription} from "rxjs";
 import {AuthStoreService} from "../../../../../../core/services/auth-store.service";
 import {StoreService} from "../../../../../../core/services/store.service";
-import {Account} from "../../../../../../models/account.model";
-import {AppRelationship} from "../../../../../../models/relationship.model";
+import {Account, RelatedAccount} from "../../../../../../models/account.model";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
 
@@ -35,29 +34,41 @@ import {IonicModule} from "@ionic/angular";
   standalone: true,
   imports: [IonicModule, CommonModule, RouterModule],
 })
-export class PartnersComponent {
+export class PartnersComponent implements OnInit {
   private accountsSubscription?: Subscription;
-  private relationshipsSubscription?: Subscription;
-  relationships: Partial<AppRelationship>[] = [];
+
+  relatedAccounts: any[] = [];
+
   currentGroupsList: any[] = [];
   pendingGroupsList: any[] = [];
   groupId: string | null = null;
   account?: Partial<Account>;
   currentUser: User | null = this.authStoreService.getCurrentUser();
+
   constructor(
     private activatedRoute: ActivatedRoute,
     private authStoreService: AuthStoreService,
     private storeService: StoreService,
   ) {
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
+  }
 
-    // Update to fetch relationships for the current account
+  ngOnInit() {
     if (this.groupId) {
-      this.storeService.getDocsWithSenderOrReceiverId(
-        "relationships",
-        this.groupId,
-      );
+      this.storeService.getAndSortRelatedAccounts(this.groupId);
     }
+
+    this.storeService.relatedAccounts$.subscribe((accounts) => {
+      this.relatedAccounts = accounts;
+    });
+  }
+
+  sortRelatedAccounts() {
+    // Sorting logic
+    this.relatedAccounts.sort((a, b) => {
+      // Replace 'name' with the field you want to sort by
+      return a.name.localeCompare(b.name);
+    });
   }
 
   ionViewWillEnter() {
@@ -65,9 +76,7 @@ export class PartnersComponent {
   }
 
   ionViewWillLeave() {
-    // Unsubscribe from the accounts$ observable when the component is destroyed
     this.accountsSubscription?.unsubscribe();
-    this.relationshipsSubscription?.unsubscribe();
   }
 
   initiateSubscribers() {
@@ -76,150 +85,27 @@ export class PartnersComponent {
         this.account = accounts.find((account) => account.id === this.groupId);
       },
     );
-    this.relationshipsSubscription = this.storeService.relationships$.subscribe(
-      (relationships) => {
-        this.relationships = relationships;
-        this.sortRelationships(relationships);
-      },
-    );
   }
 
-  acceptPartnerRequest(request: any) {
-    const relationship = this.relationships.find(
-      (rel) => rel.id === request.relationshipId,
-    );
-    if (relationship) {
-      relationship.status = "accepted";
-      this.storeService.updateDoc("relationships", relationship);
-
-      // Logic to add partner to the current account's list of partners
-      if (this.account?.associations?.accounts) {
-        this.account["associations"].accounts.push(request.partnerGroupId);
-        this.storeService.updateDoc("accounts", this.account);
-      }
-    }
+  acceptPartnerRequest(request: Partial<RelatedAccount>) {
+    this.updateRelatedAccountStatus(request, "accepted");
   }
 
-  rejectPartnerRequest(request: any) {
-    const relationship = this.relationships.find(
-      (rel) => rel.id === request.relationshipId,
-    );
-    if (relationship) {
-      relationship.status = "rejected";
-      this.storeService.updateDoc("relationships", relationship);
-    }
+  rejectPartnerRequest(request: Partial<RelatedAccount>) {
+    this.updateRelatedAccountStatus(request, "rejected");
   }
 
-  /**
-   * Removes a partner request.
-   * @param {any} request - The partner request to remove.
-   */
-  removePartnerRequest(request: any) {
-    if (request.relationshipId) {
-      this.storeService.deleteDoc("relationships", request.relationshipId);
-      this.removePartner(request.partnerGroupId);
-    }
+  removePartnerRequest(request: Partial<RelatedAccount>) {
+    const docPath = `accounts/${this.groupId}/relatedAccounts/${request.id}`;
+    this.storeService.deleteDocAtPath(docPath);
   }
 
-  addPartner(request: any) {
-    // Add the partner to the current account's list of partners
-    if (this.account && this.account["associations"]?.accounts) {
-      if (
-        !this.account["associations"].accounts.includes(request.partnerGroupId)
-      ) {
-        this.account["associations"].accounts.push(request.partnerGroupId);
-        this.storeService.updateDoc("accounts", this.account);
-      }
-    }
-
-    // Retrieve the partner account and add the current account to its list
-    const updatedPartnerDoc = this.storeService
-      .getCollection("accounts")
-      .find(request.partnerGroupId);
-    if (updatedPartnerDoc) {
-      if (updatedPartnerDoc && updatedPartnerDoc["associations"]?.accounts) {
-        if (
-          !updatedPartnerDoc["associations"].accounts.includes(this.account?.id)
-        ) {
-          updatedPartnerDoc["associations"].accounts.push(this.account?.id);
-          this.storeService.addDocToState("accounts", updatedPartnerDoc);
-        }
-      }
-    }
-  }
-
-  /**
-   * Removes a partner from the group.
-   * @param {any} request - The partner request to process.
-   */
-  removePartner(partnerGroupId: string) {
-    // Remove the partner from the current account's list of partners
-    if (this.account && this.account["associations"]?.accounts) {
-      this.account["associations"].accounts = this.account[
-        "associations"
-      ].accounts.filter((id) => id !== partnerGroupId);
-      this.storeService.updateDoc("accounts", this.account);
-    }
-
-    // Retrieve the partner account and remove the current account from its list
-    const partnerAccount = this.storeService
-      .getCollection("accounts")
-      .find((pg) => pg["id"] === partnerGroupId);
-
-    if (partnerAccount && partnerAccount["associations"]?.accounts) {
-      partnerAccount["associations"].accounts = partnerAccount[
-        "associations"
-      ].accounts.filter((id: string) => id !== this.account?.id);
-      this.storeService.updateDoc("accounts", partnerAccount);
-    }
-  }
-
-  relationshipToGroup(relationship: Partial<AppRelationship>) {
-    // Assuming you want to display partner details
-    let isAdmin = this.currentUser
-      ? this.account?.groupDetails?.admins.includes(this.currentUser?.uid)
-      : false;
-    return {
-      relationshipId: relationship.id,
-      partnerGroupId:
-        relationship.senderId === this.groupId
-          ? relationship.receiverId
-          : relationship.senderId,
-      name:
-        relationship.senderId === this.groupId
-          ? relationship.receiverName
-          : relationship.senderName,
-      image:
-        relationship.senderId === this.groupId
-          ? relationship.receiverImage
-          : relationship.senderImage,
-      tagline:
-        relationship.senderId === this.groupId
-          ? relationship.receiverTagline
-          : relationship.senderTagline,
-      isPending: relationship.status === "pending",
-      showAcceptRejectButtons: isAdmin && relationship.status === "pending",
-      showRemoveButton: isAdmin && relationship.status === "accepted",
-    };
-  }
-
-  sortRelationships(relationships: Partial<AppRelationship>[]) {
-    this.currentGroupsList = relationships
-      .filter(
-        (rel) =>
-          (rel.senderId === this.groupId || rel.receiverId === this.groupId) &&
-          rel.type === "group" &&
-          rel.status === "accepted",
-      )
-      .map(this.relationshipToGroup);
-
-    this.pendingGroupsList = relationships
-      .filter(
-        (rel) =>
-          (rel.senderId === this.groupId || rel.receiverId === this.groupId) &&
-          rel.type === "group" &&
-          rel.status === "pending",
-      )
-      .map(this.relationshipToGroup);
+  private updateRelatedAccountStatus(
+    request: Partial<RelatedAccount>,
+    status: "accepted" | "rejected",
+  ) {
+    const docPath = `accounts/${this.groupId}/relatedAccounts/${request.id}`;
+    const updatedData = {status: status};
+    this.storeService.updateDoc(docPath, updatedData);
   }
 }

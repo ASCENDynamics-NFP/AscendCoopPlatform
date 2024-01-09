@@ -31,12 +31,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <h3>{{ item?.name }}</h3>
         <p>{{ item?.tagline }}</p>
       </ion-label>
-      <ion-button *ngIf="
-          isAdmin &&
-          item.id &&
-          !currentGroup.associations?.accounts?.includes(item.id) &&
-          item.id !== currentGroup.id
-        " slot="end" mode="md" expand="block" (click)="
+      <ion-button *ngIf="isAdmin && item.id && canInvite(item)" slot="end" mode="md" expand="block" (click)="
           $event.stopPropagation();
           $event.preventDefault();
           sendPartnerGroupRequest(item)

@@ -23,12 +23,11 @@ import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {User} from "firebase/auth";
 import {RouterModule} from "@angular/router";
-import {Account} from "../../../../models/account.model";
+import {Account, RelatedAccount} from "../../../../models/account.model";
 import {StoreService} from "../../../../core/services/store.service";
 import {Subscription} from "rxjs";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
-import {RelatedAccount} from "../../../../models/related-account.model";
 
 @Component({
   selector: "app-users",
@@ -73,9 +72,9 @@ export class UsersPage {
   ionViewWillLeave() {
     this.accountsSubscription?.unsubscribe();
   }
-
-  sendFriendRequest(account: Partial<Account>) {
+  async sendFriendRequest(account: Partial<Account>) {
     if (!this.authUser?.uid || !account.id) {
+      console.error("User ID or Account ID is missing");
       return;
     }
 
@@ -91,28 +90,24 @@ export class UsersPage {
       iconImage: account.iconImage,
     };
 
-    this.storeService.setDoc(
-      `accounts/${this.authUser.uid}/relatedAccounts`,
+    // Add the new related account to Firestore
+    await this.storeService.setDoc(
+      `accounts/${this.authUser.uid}/relatedAccounts/${account.id}`,
       newRelatedAccount,
     );
-    // .then(() => {
-    //   if (this.authUser) {
-    //     // updated friends list on userList item to include receiverId in friends list so that the button doesn't show
-    //     const updatedUserListItem = this.accountList?.find(
-    //       (userListItem: Partial<Account>) => userListItem.id === account["id"],
-    //     );
 
-    //     // if (updatedUserListItem) {
-    //     //   if (!updatedUserListItem.pendingFriends) {
-    //     //     updatedUserListItem.pendingFriends = [];
-    //     //   }
-    //     //   updatedUserListItem.pendingFriends.push(this.authUser?.uid);
+    // Fetch the current user's account to update the relatedAccounts array
+    this.updateRelatedAccounts(newRelatedAccount);
+  }
 
-    //     //   // Use addDocToState to update the state
-    //     //   this.storeService.addDocToState("accounts", updatedUserListItem);
-    //     // }
-    //   }
-    // });
+  private updateRelatedAccounts(relatedAccount: Partial<RelatedAccount>) {
+    if (this.account) {
+      this.account.relatedAccounts = [
+        ...(this?.account?.relatedAccounts || []),
+        relatedAccount,
+      ];
+      this.storeService.updateDocInState("accounts", this.account);
+    }
   }
 
   searchUsers(event: any) {
@@ -135,5 +130,20 @@ export class UsersPage {
           return 0;
         }
       });
+  }
+
+  shouldDisplaySendRequestButton(item: Partial<Account>): boolean {
+    const authUserId = this.authUser?.uid;
+    if (!authUserId || authUserId === item.id) {
+      return false;
+    }
+
+    const alreadyRequestedOrAccepted = this.account?.relatedAccounts?.some(
+      (ra) =>
+        ra.id === item.id &&
+        (ra.status === "accepted" || ra.status === "pending"),
+    );
+
+    return !alreadyRequestedOrAccepted;
   }
 }

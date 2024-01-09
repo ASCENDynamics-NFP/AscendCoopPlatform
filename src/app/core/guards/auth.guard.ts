@@ -19,37 +19,40 @@
 ***********************************************************************************************/
 import {Injectable} from "@angular/core";
 import {
+  CanActivate,
   ActivatedRouteSnapshot,
-  Router,
   RouterStateSnapshot,
+  Router,
 } from "@angular/router";
-import {firstValueFrom} from "rxjs";
 import {AuthStoreService} from "../services/auth-store.service";
+import {firstValueFrom} from "rxjs";
 
 @Injectable({
   providedIn: "root",
 })
-export class AuthGuard {
+export class AuthGuard implements CanActivate {
   constructor(
-    public authStoreService: AuthStoreService,
-    public router: Router,
+    private authStoreService: AuthStoreService,
+    private router: Router,
   ) {}
 
-  // Used to restrict pages to users when they are logged out
   async canActivate(
     _next: ActivatedRouteSnapshot,
     _state: RouterStateSnapshot,
   ): Promise<boolean> {
     const authUser = await firstValueFrom(this.authStoreService.authUser$);
     if (!authUser) {
-      // window.alert("Access Denied, Login is Required to Access This Page!");
+      // Redirect to login if not authenticated
       this.router.navigate(["user-login"]);
       return false;
     } else if (authUser && !authUser.emailVerified) {
+      // Send verification email if the user is not verified
       if (authUser.email) {
-        this.authStoreService.sendVerificationMail(authUser.email);
+        await this.authStoreService.sendVerificationMail(authUser.email);
       }
-      this.authStoreService.signOut();
+      // Sign out the user and redirect to login
+      await this.authStoreService.signOut();
+      this.router.navigate(["user-login"]);
       return false;
     }
     return true;

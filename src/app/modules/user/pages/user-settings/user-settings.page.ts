@@ -45,7 +45,7 @@ import {Account} from "../../../../models/account.model";
 export class UserSettingsPage {
   private accountSubscription?: Subscription;
   authUser = this.authStoreService.getCurrentUser();
-  user?: Partial<Account> | null;
+  account?: Partial<Account>;
 
   constructor(
     private authStoreService: AuthStoreService,
@@ -57,14 +57,14 @@ export class UserSettingsPage {
   ionViewWillEnter() {
     this.accountSubscription = this.storeService.accounts$.subscribe(
       (accounts) => {
-        this.user = accounts.find(
+        this.account = accounts.find(
           (account) => account.id === this.authUser?.uid,
         );
       },
     );
 
-    if (!this.user) {
-      this.user = this.storeService
+    if (!this.account) {
+      this.account = this.storeService
         .getCollection("accounts")
         .find((account) => account["id"] === this.authUser?.uid);
     }

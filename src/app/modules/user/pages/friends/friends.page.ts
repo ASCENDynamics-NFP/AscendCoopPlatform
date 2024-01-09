@@ -26,8 +26,7 @@ import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {StoreService} from "../../../../core/services/store.service";
 import {Subscription} from "rxjs";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
-import {AppRelationship} from "../../../../models/relationship.model";
-import {Account} from "../../../../models/account.model";
+import {Account, RelatedAccount} from "../../../../models/account.model";
 
 @Component({
   selector: "app-friends",
@@ -42,25 +41,14 @@ import {Account} from "../../../../models/account.model";
     AppHeaderComponent,
   ],
 })
-/**
- * Represents a page where users can manage their friends.
- */
 export class FriendsPage implements OnInit {
-  private relationshipsSubscription?: Subscription;
   private accountsSubscription?: Subscription;
-  relationships: Partial<AppRelationship>[] = [];
-  currentFriendsList: any[] = [];
-  pendingFriendsList: any[] = [];
+  currentFriendsList: Partial<RelatedAccount>[] = [];
+  pendingFriendsList: Partial<RelatedAccount>[] = [];
   userId: string | null = null;
   currentUser: any;
   account?: Partial<Account>;
 
-  /**
-   * Constructs the FriendsPage.
-   * @param {ActivatedRoute} activatedRoute - The activated route.
-   * @param {AuthStoreService} authStoreService - The authentication store service.
-   * @param {StoreService} storeService - The store service.
-   */
   constructor(
     private activatedRoute: ActivatedRoute,
     private authStoreService: AuthStoreService,
@@ -69,191 +57,55 @@ export class FriendsPage implements OnInit {
     this.userId = this.activatedRoute.snapshot.paramMap.get("uid");
   }
 
-  /**
-   * Lifecycle hook that is called after data-bound properties are initialized. Ran once per per page load.
-   */
   ngOnInit() {
+    this.currentUser = this.authStoreService.getCurrentUser();
     if (this.userId) {
-      this.storeService.getDocsWithSenderOrReceiverId(
-        "relationships",
-        this.userId,
-      );
+      // Fetch the account with the relatedAccounts sub-collection
+      this.storeService.getDocById("accounts", this.userId);
     }
   }
 
-  /**
-   * Lifecycle hook that is called when the page is about to enter.
-   */
   ionViewWillEnter() {
-    this.relationshipsSubscription = this.storeService.relationships$.subscribe(
-      (relationships) => {
-        this.relationships = relationships;
-        this.sortRelationships(relationships);
-      },
-    );
     this.accountsSubscription = this.storeService.accounts$.subscribe(
       (accounts) => {
-        this.account = accounts.find((acc) => acc.id === this.userId);
+        const account = accounts.find((acc) => acc.id === this.userId);
+        if (account) {
+          this.account = account;
+          this.sortRelatedAccounts(account.relatedAccounts || []);
+        }
       },
     );
   }
 
-  /**
-   * Lifecycle hook that is called when the page is about to leave.
-   */
   ionViewWillLeave() {
-    this.relationshipsSubscription?.unsubscribe();
     this.accountsSubscription?.unsubscribe();
   }
 
-  /**
-   * Accepts a friend request.
-   * @param {any} request - The friend request to accept.
-   */
-  acceptFriendRequest(request: any) {
-    const relationship = this.relationships.find(
-      (relationship) => relationship.id === request.relationshipId,
+  sortRelatedAccounts(relatedAccounts: Partial<RelatedAccount>[]) {
+    this.currentFriendsList = relatedAccounts.filter(
+      (ra) => ra.type === "user" && ra.status === "accepted",
     );
-    if (!relationship) {
-      return;
-    }
-    relationship.status = "accepted";
-    this.storeService.updateDoc("relationships", relationship as Partial<any>);
-    // After updating the relationship status, execute the following logic
-    this.addFriend(request);
-  }
-
-  /**
-   * Rejects a friend request.
-   * @param {any} request - The friend request to reject.
-   */
-  rejectFriendRequest(request: any) {
-    const relationship = this.relationships.find(
-      (relationship) => relationship.id === request.relationshipId,
+    this.pendingFriendsList = relatedAccounts.filter(
+      (ra) => ra.type === "user" && ra.status === "pending",
     );
-    if (!relationship) {
-      return;
-    }
-    relationship.status = "rejected";
-    this.storeService.updateDoc("relationships", relationship as Partial<any>);
-    // After updating the relationship status, remove the friend from the pendingFriends list
-    this.removeFriend(request);
   }
 
-  /**
-   * Removes a friend request.
-   * @param {any} request - The friend request to remove.
-   */
-  removeFriendRequest(request: any) {
-    if (request.friendId) {
-      this.storeService.deleteDoc("relationships", request.relationshipId);
-      // After deleting the relationship, update the user to remove the user from the friends and pendingFriends list
-      this.removeFriend(request);
-    }
+  updateFriendStatus(request: Partial<RelatedAccount>, status: string) {
+    const docPath = `accounts/${this.userId}/relatedAccounts/${request.id}`;
+    const updatedData = {status: status};
+    this.storeService.updateDocAtPath(docPath, updatedData);
   }
 
-  /**
-   * Adds a friend to the user's friend list and removes the friend from the pendingFriends list.
-   * @param {any} request - The friend request to process.
-   */
-  addFriend(request: any) {
-    const updatedDoc = this.storeService
-      .getCollection("accounts")
-      .find((u) => u["id"] === request.friendId);
-    if (updatedDoc) {
-      updatedDoc["friends"] = updatedDoc["friends"].push(this.userId);
-      updatedDoc["pendingFriends"] = updatedDoc["pendingFriends"].filter(
-        (pendingFriends: string) => pendingFriends !== this.userId,
-      );
-      // Use addDocToState to update the state
-      this.storeService.addDocToState("accounts", updatedDoc);
-    }
+  acceptFriendRequest(request: Partial<RelatedAccount>) {
+    this.updateFriendStatus(request, "accepted");
   }
 
-  /**
-   * Removes a friend from the user's friend list and removes the friend from the pendingFriends list.
-   * @param {any} request - The friend request to process.
-   */
-  removeFriend(request: any) {
-    const updatedDoc = this.storeService
-      .getCollection("accounts")
-      .find((u) => u["id"] === request.friendId);
-    if (updatedDoc) {
-      updatedDoc["friends"] = updatedDoc["friends"].filter(
-        (friend: string) => friend !== this.userId,
-      );
-      updatedDoc["pendingFriends"] = updatedDoc["pendingFriends"].filter(
-        (pendingFriends: string) => pendingFriends !== this.userId,
-      );
-      // Use addDocToState to update the state
-      this.storeService.addDocToState("accounts", updatedDoc);
-    }
+  rejectFriendRequest(request: Partial<RelatedAccount>) {
+    this.updateFriendStatus(request, "rejected");
   }
 
-  /**
-   * Converts a relationship object to a friend object.
-   * @param {any} relationship - The relationship to convert.
-   * @returns {any} - The converted friend object.
-   */
-  relationshipToFriend(relationship: any) {
-    this.userId = this.userId ? this.userId : "";
-    const isCurrentUser = this.currentUser?.uid === this.userId;
-    if (relationship.senderId === this.userId) {
-      // my requests
-      return {
-        relationshipId: relationship.id,
-        friendId: relationship.receiverId,
-        userId: relationship.senderId,
-        name: relationship.receiverName,
-        image: relationship.receiverImage,
-        tagline: relationship.receiverTagline,
-        isPending: relationship.status === "pending",
-        showRemoveButton: isCurrentUser,
-        showAcceptRejectButtons: false,
-      };
-    } else {
-      // other's requests
-      return {
-        relationshipId: relationship.id,
-        friendId: relationship.senderId,
-        userId: relationship.receiverId,
-        name: relationship.senderName,
-        image: relationship.senderImage,
-        tagline: relationship.senderTagline,
-        isPending: relationship.status === "pending",
-        showRemoveButton: relationship.status === "accepted" && isCurrentUser,
-        showAcceptRejectButtons: isCurrentUser,
-      };
-    }
-  }
-
-  /**
-   * Sorts relationships into current friends and pending friends lists.
-   * @param {Partial<AppRelationship>[]} relationships - The relationships to sort.
-   */
-  sortRelationships(relationships: Partial<AppRelationship>[]) {
-    this.currentFriendsList = [];
-    this.pendingFriendsList = [];
-
-    this.currentUser = this.authStoreService.getCurrentUser();
-    for (let relationship of relationships) {
-      if (
-        relationship.senderId === this.userId ||
-        relationship.receiverId === this.userId
-      ) {
-        if (
-          relationship.type === "friend" &&
-          relationship.status === "accepted"
-        ) {
-          this.currentFriendsList.push(this.relationshipToFriend(relationship));
-        } else if (
-          relationship.type === "friend" &&
-          relationship.status === "pending" &&
-          this.currentUser?.uid === this.userId
-        ) {
-          this.pendingFriendsList.push(this.relationshipToFriend(relationship));
-        }
-      }
-    }
+  removeFriendRequest(request: Partial<RelatedAccount>) {
+    const docPath = `accounts/${this.userId}/relatedAccounts/${request.id}`;
+    this.storeService.deleteDocAtPath(docPath);
   }
 }

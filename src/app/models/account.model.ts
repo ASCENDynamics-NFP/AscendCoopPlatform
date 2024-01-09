@@ -61,6 +61,7 @@ export type Account = BaseDocument & {
   name: string;
   description: string;
   lastLoginAt: Timestamp;
+  relatedAccounts: Partial<RelatedAccount>[];
   address: Address;
   tagline: string;
   email: string;
@@ -77,4 +78,16 @@ export type Account = BaseDocument & {
     | "private"; // Privacy setting
   iconImage: string;
   heroImage: string;
+};
+
+export type RelatedAccount = BaseDocument & {
+  id: string; // The ID of the related account
+  name: string; // Name of the related user or group
+  iconImage: string; // URL or path to the icon image
+  tagline: string; // Tagline or short description
+  type: "user" | "group"; // Type of the related account
+  status: "pending" | "accepted" | "rejected" | "blocked"; // Relationship status
+  relationship: "admin" | "friend" | "member" | "partner"; // Details about the relationship (e.g., 'friend', 'member')
+  initiatorId: string; // ID of the account who initiated the request
+  targetId: string; // ID of the account who received the request
 };

@@ -21,19 +21,17 @@ import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {ActivatedRoute} from "@angular/router";
-
+import {ActivatedRoute, Router} from "@angular/router";
 import {FriendListComponent} from "./components/friend-list/friend-list.component";
 import {GroupMembershipListComponent} from "./components/group-membership-list/group-membership-list.component";
 import {HeroComponent} from "./components/hero/hero.component";
 import {DetailsComponent} from "./components/details/details.component";
-import {Account} from "../../../../models/account.model"; // Updated model import
+import {Account, RelatedAccount} from "../../../../models/account.model";
 import {Subscription} from "rxjs";
 import {StoreService} from "../../../../core/services/store.service";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
 import {User} from "firebase/auth";
-import {AppRelationship} from "../../../../models/relationship.model";
 
 @Component({
   selector: "app-user-profile",
@@ -52,29 +50,26 @@ import {AppRelationship} from "../../../../models/relationship.model";
   ],
 })
 export class UserProfilePage implements OnInit {
-  private uid: string | null = null;
+  private uid?: string;
   private accountsSubscription?: Subscription;
-  private relationshipsSubscription?: Subscription;
   authUser: User | null = null;
   account?: Partial<Account>;
-  friendList: Partial<AppRelationship>[] = [];
-  groupList: Partial<AppRelationship>[] = [];
+  friendList: Partial<RelatedAccount>[] = [];
+  groupList: Partial<RelatedAccount>[] = [];
 
   constructor(
     private authStoreService: AuthStoreService,
     private route: ActivatedRoute,
+    private router: Router,
     private storeService: StoreService,
   ) {
-    this.uid = this.route.snapshot.paramMap.get("uid");
+    this.uid = this.route.snapshot.paramMap.get("uid") ?? undefined;
     this.authUser = this.authStoreService.getCurrentUser();
   }
 
   ngOnInit() {
     if (this.uid) {
-      this.storeService.getDocsWithSenderOrReceiverId(
-        "relationships",
-        this.uid,
-      );
+      this.storeService.getDocById("accounts", this.uid);
     }
   }
 
@@ -87,7 +82,6 @@ export class UserProfilePage implements OnInit {
   }
 
   ionViewWillLeave() {
-    this.relationshipsSubscription?.unsubscribe();
     this.accountsSubscription?.unsubscribe();
   }
 
@@ -95,37 +89,20 @@ export class UserProfilePage implements OnInit {
     this.accountsSubscription = this.storeService.accounts$.subscribe(
       (accounts) => {
         this.account = accounts.find((account) => account.id === this.uid);
-        if (!this.account) {
-          console.log("Account not found in store, fetching from server");
-          this.storeService.getDocById("accounts", this.uid);
+        if (this.account?.type === "group") {
+          this.router.navigate([`/group/${this.uid}/${this.uid}/details`]); // Navigate to group-profile
         }
-      },
-    );
-
-    this.relationshipsSubscription = this.storeService.relationships$.subscribe(
-      (relationships) => {
-        this.sortRelationships(relationships);
+        this.sortRelationships(this.account?.relatedAccounts ?? []);
       },
     );
   }
 
-  sortRelationships(relationships: Partial<AppRelationship>[]) {
-    this.friendList = [];
-    this.groupList = [];
-    for (let relationship of relationships) {
-      if (this.uid && relationship.relatedIds?.includes(this.uid)) {
-        if (
-          relationship.type === "friend" &&
-          relationship.status === "accepted"
-        ) {
-          this.friendList.push(relationship);
-        } else if (
-          relationship.type?.includes("member") &&
-          relationship.status === "accepted"
-        ) {
-          this.groupList.push(relationship);
-        }
-      }
-    }
+  sortRelationships(relatedAccounts: Partial<RelatedAccount>[]) {
+    this.friendList = relatedAccounts.filter(
+      (ra) => ra.type === "user" && ra.status === "accepted",
+    );
+    this.groupList = relatedAccounts.filter(
+      (ra) => ra.type === "group" && ra.status === "accepted",
+    );
   }
 }

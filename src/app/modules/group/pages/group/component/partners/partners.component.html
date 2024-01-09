@@ -20,109 +20,53 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <!-- <ion-title>Partners</ion-title> -->
+    <ion-title>Partners</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-card>
     <ion-card-header>
-      <ion-card-title>Partners</ion-card-title>
-      <ion-card-subtitle
-        >{{ currentGroupsList.length }} partners</ion-card-subtitle
-      >
+      <ion-card-title>Current Partners</ion-card-title>
+      <ion-card-subtitle>{{ currentGroupsList.length }} partners</ion-card-subtitle>
     </ion-card-header>
     <ion-list>
-      <ion-item
-        *ngFor="let group of currentGroupsList; let i = index"
-        routerLink="/group-profile/{{ group['partnerGroupId'] }}"
-        button
-      >
+      <ion-item *ngFor="let partner of currentGroupsList; let i = index"
+        routerLink="/group-profile/{{ partner['partnerGroupId'] }}" button>
         <ion-thumbnail slot="start">
-          <img
-            *ngIf="group['image']"
-            [alt]="group['name']"
-            [src]="group['image']"
-          />
+          <img *ngIf="partner['image']" [alt]="partner['name']" [src]="partner['image']" />
         </ion-thumbnail>
         <ion-label>
-          <h3>{{ group["name"] }}</h3>
-          <p>{{ group["tagline"] }}</p>
+          <h3>{{ partner["name"] }}</h3>
+          <p>{{ partner["tagline"] }}</p>
         </ion-label>
-        <ion-button
-          *ngIf="group['showRemoveButton']"
-          slot="end"
-          expand="block"
-          color="secondary"
-          (click)="
-            $event.stopPropagation();
-            $event.preventDefault();
-            removePartnerRequest(group)
-          "
-          >Remove</ion-button
-        >
+        <ion-button *ngIf="partner['showRemoveButton']" slot="end" expand="block" color="secondary"
+          (click)="$event.stopPropagation(); $event.preventDefault(); removePartnerRequest(partner);">Remove</ion-button>
       </ion-item>
     </ion-list>
   </ion-card>
+
   <ion-card *ngIf="pendingGroupsList.length">
     <ion-card-header>
-      <ion-card-title>Partners</ion-card-title>
-      <ion-card-subtitle
-        >{{ pendingGroupsList.length }} pending groups</ion-card-subtitle
-      >
+      <ion-card-title>Pending Partners</ion-card-title>
+      <ion-card-subtitle>{{ pendingGroupsList.length }} pending</ion-card-subtitle>
     </ion-card-header>
     <ion-list>
-      <ion-item
-        *ngFor="let group of pendingGroupsList; let i = index"
-        routerLink="/group-profile/{{ group['partnerGroupId'] }}"
-        button
-      >
+      <ion-item *ngFor="let partner of pendingGroupsList; let i = index"
+        routerLink="/group-profile/{{ partner['partnerGroupId'] }}" button>
         <ion-thumbnail slot="start">
-          <img
-            *ngIf="group['image']"
-            [alt]="group['name']"
-            [src]="group['image']"
-          />
+          <img *ngIf="partner['image']" [alt]="partner['name']" [src]="partner['image']" />
         </ion-thumbnail>
         <ion-label>
-          <h3>{{ group["name"] }}</h3>
-          <p>{{ group["tagline"] }}</p>
+          <h3>{{ partner["name"] }}</h3>
+          <p>{{ partner["tagline"] }}</p>
         </ion-label>
-        <ion-button
-          *ngIf="group['showAcceptRejectButtons']"
-          slot="end"
-          expand="block"
-          (click)="
-            $event.stopPropagation();
-            $event.preventDefault();
-            acceptPartnerRequest(group)
-          "
-          >Accept</ion-button
-        >
-        <ion-button
-          *ngIf="group['showAcceptRejectButtons']"
-          slot="end"
-          expand="block"
-          color="secondary"
-          (click)="
-            $event.stopPropagation();
-            $event.preventDefault();
-            rejectPartnerRequest(group)
-          "
-          >Reject</ion-button
-        >
-        <ion-button
-          *ngIf="group['showRemoveButton']"
-          slot="end"
-          expand="block"
-          color="secondary"
-          (click)="
-            $event.stopPropagation();
-            $event.preventDefault();
-            removePartnerRequest(group)
-          "
-          >Remove</ion-button
-        >
+        <ion-button *ngIf="partner['showAcceptRejectButtons']" slot="end" expand="block"
+          (click)="$event.stopPropagation(); $event.preventDefault(); acceptPartnerRequest(partner);">Accept</ion-button>
+        <ion-button *ngIf="partner['showAcceptRejectButtons']" slot="end" expand="block" color="secondary"
+          (click)="$event.stopPropagation(); $event.preventDefault(); rejectPartnerRequest(partner);">Reject</ion-button>
+        <ion-button *ngIf="partner['showRemoveButton']" slot="end" expand="block" color="secondary"
+          (click)="$event.stopPropagation(); $event.preventDefault(); removePartnerRequest(partner);">Remove</ion-button>
       </ion-item>
     </ion-list>
   </ion-card>

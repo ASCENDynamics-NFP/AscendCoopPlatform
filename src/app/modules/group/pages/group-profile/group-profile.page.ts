@@ -17,15 +17,14 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
+import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {ActivatedRoute} from "@angular/router";
-import {Account} from "../../../../models/account.model";
+import {ActivatedRoute, Router, RouterModule} from "@angular/router";
+import {Account, RelatedAccount} from "../../../../models/account.model";
 import {DetailsComponent} from "./components/details/details.component";
 import {HeroComponent} from "./components/hero/hero.component";
-import {AppRelationship} from "../../../../models/relationship.model";
 import {MemberListComponent} from "./components/member-list/member-list.component";
 import {GroupListComponent} from "./components/group-list/group-list.component";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
@@ -45,33 +44,29 @@ import {StoreService} from "../../../../core/services/store.service";
     DetailsComponent,
     MemberListComponent,
     GroupListComponent,
+    RouterModule,
   ],
 })
-export class GroupProfilePage implements OnInit {
+export class GroupProfilePage {
   private accountsSubscription?: Subscription;
-  private relationshipsSubscription?: Subscription;
   groupId: string | null = "";
-  group: Partial<Account> | null = {};
-  memberList: Partial<AppRelationship>[] = [];
-  groupList: Partial<AppRelationship>[] = [];
+  group?: Partial<Account>;
+  memberList: Partial<RelatedAccount>[] = [];
+  groupList: Partial<RelatedAccount>[] = [];
   isAdmin: boolean = false;
   isMember: boolean = false;
   isPendingMember: boolean = false;
+
   constructor(
     private authStoreService: AuthStoreService,
     private route: ActivatedRoute,
     private storeService: StoreService,
+    private router: Router,
   ) {
     this.groupId = this.route.snapshot.paramMap.get("groupId");
-  }
-
-  ngOnInit() {
-    if (this.groupId)
-      // Pulls relationships from the database
-      this.storeService.getDocsWithSenderOrReceiverId(
-        "relationships",
-        this.groupId,
-      );
+    if (this.groupId) {
+      this.storeService.getAndSortRelatedAccounts(this.groupId);
+    }
   }
 
   ionViewWillEnter() {
@@ -81,59 +76,34 @@ export class GroupProfilePage implements OnInit {
   ionViewWillLeave() {
     // Unsubscribe from the accounts$ observable when the component is destroyed
     this.accountsSubscription?.unsubscribe();
-    this.relationshipsSubscription?.unsubscribe();
   }
 
   initiateSubscribers() {
-    // Subscribe to the accounts$ observable
     this.accountsSubscription = this.storeService.accounts$.subscribe(
       (groups) => {
-        this.group = groups.find((group) => group.id === this.groupId) || null;
-        if (!this.group) {
-          this.storeService.getDocById("accounts", this.groupId);
-        } else {
+        this.group = groups.find((group) => group.id === this.groupId);
+
+        if (this.group) {
+          if (this.group.type === "user") {
+            // redirect user to /user-profile/:groupId
+            this.router.navigate(["/user-profile", this.group.id]);
+          }
           let user = this.authStoreService.getCurrentUser();
           let userId = user?.uid ? user.uid : "";
-          this.isAdmin = userId
-            ? this.group?.groupDetails?.admins?.includes(userId) || false
-            : false;
-          // this.isMember = userId
-          //   ? this.group?.members?.includes(userId) || false
-          //   : false;
-          // this.isPendingMember = userId
-          //   ? this.group?.pendingMembers?.includes(userId) || false
-          //   : false;
-        }
-      },
-    );
-    // Subscribe to the accounts$ observable
-    this.relationshipsSubscription = this.storeService.relationships$.subscribe(
-      (relationships) => {
-        this.sortRelationships(relationships);
-      },
-    );
-  }
+          this.isAdmin =
+            this.group.groupDetails?.admins?.includes(userId) || false;
 
-  sortRelationships(relationships: Partial<AppRelationship>[]) {
-    this.groupList = [];
-    this.memberList = [];
-    for (let relationship of relationships) {
-      if (
-        relationship.senderId === this.groupId ||
-        relationship.receiverId === this.groupId
-      ) {
-        if (
-          relationship.type === "group" &&
-          relationship.status === "accepted"
-        ) {
-          this.groupList.push(relationship);
-        } else if (
-          relationship.type?.includes("member") &&
-          relationship.status === "accepted"
-        ) {
-          this.memberList.push(relationship);
+          // Sort the related accounts into member and group lists
+          this.memberList =
+            this.group.relatedAccounts?.filter(
+              (ra) => ra.type === "user" && ra.status !== "blocked",
+            ) || [];
+          this.groupList =
+            this.group.relatedAccounts?.filter(
+              (ra) => ra.type === "group" && ra.status !== "blocked",
+            ) || [];
         }
-      }
-    }
+      },
+    );
   }
 }

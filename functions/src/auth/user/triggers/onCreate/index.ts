@@ -70,8 +70,10 @@ async function saveAccountToFirestore(
     language: "",
     associations: {accounts: [], feedback: []},
     privacySetting: "public",
-    iconImage: user.photoURL || "default_icon.png",
-    heroImage: "default_hero.png",
+    iconImage:
+      user.photoURL ||
+      "assets/image/logo/ASCENDynamics NFP-logos_transparent.png",
+    heroImage: "assets/image/userhero.png",
     description: "",
     tagline: "",
     address: {

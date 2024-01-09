@@ -35,12 +35,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-col>
       <ion-col>
         <ion-row>
-          <ion-col><app-group-membership-list *ngIf="account" [account]="account"
-              [groupList]="groupList"></app-group-membership-list></ion-col>
+          <ion-col><app-group-membership-list *ngIf="account" [account]="account"></app-group-membership-list></ion-col>
         </ion-row>
         <ion-row>
-          <ion-col><app-friend-list *ngIf="account" [account]="account"
-              [friendList]="friendList"></app-friend-list></ion-col>
+          <ion-col><app-friend-list *ngIf="account" [account]="account"></app-friend-list></ion-col>
         </ion-row>
       </ion-col>
     </ion-row>

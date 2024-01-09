@@ -35,7 +35,7 @@ import {Account} from "../../../../../../models/account.model";
 })
 export class SettingsComponent implements OnChanges {
   @Input() authUser?: User | null;
-  @Input() account?: Partial<Account> | null;
+  @Input() account?: Partial<Account>;
   @Output() languageChange = new EventEmitter<string>();
 
   settingsForm = this.fb.group({
@@ -58,7 +58,7 @@ export class SettingsComponent implements OnChanges {
     this.loadFormData();
   }
 
-  onLanguageChange(event: any) {
+  onLanguageChange(_event: any) {
     let lang = this.settingsForm.value.language ?? "en";
     this.translateService.use(lang);
     this.languageChange.emit(lang);
@@ -68,8 +68,8 @@ export class SettingsComponent implements OnChanges {
     if (this.authUser?.uid) {
       this.storeService.updateDoc("accounts", {
         id: this.authUser?.uid,
-        privacySetting: this.settingsForm.value.privacySetting, // this.settingsForm.get("privacySetting")?.value,
-        language: this.settingsForm.value.language, //this.settingsForm.get("language")?.value,
+        privacySetting: this.settingsForm.value.privacySetting,
+        language: this.settingsForm.value.language,
       });
     }
   }

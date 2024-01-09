@@ -20,7 +20,7 @@
 import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
-import {ActivatedRoute, RouterModule} from "@angular/router";
+import {ActivatedRoute, Router, RouterModule} from "@angular/router";
 import {StoreService} from "../../../../core/services/store.service";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {Subscription} from "rxjs";
@@ -39,19 +39,18 @@ export class GroupPage {
   group?: Partial<Account>;
   groupId: string | null = null;
   public currentUserAccount?: Partial<Account>;
+  public isGroupAdmin: Boolean = false;
 
   constructor(
     private activatedRoute: ActivatedRoute,
     private authStoreService: AuthStoreService,
     private storeService: StoreService,
+    private router: Router,
   ) {
     this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
 
     if (this.groupId) {
-      this.storeService.getDocsWithSenderOrReceiverId(
-        "relationships",
-        this.groupId,
-      );
+      this.storeService.getDocById("accounts", this.groupId);
     }
   }
 
@@ -71,15 +70,23 @@ export class GroupPage {
     this.accountSubscription = this.storeService.accounts$.subscribe(
       (accounts) => {
         // Find the group by groupId
-        this.group = accounts.find(
-          (account) => account.id === this.groupId && account.type === "group",
-        );
+        this.group = accounts.find((account) => account.id === this.groupId);
+        if (this.group?.type === "user") {
+          this.router.navigate([`/user-profile/${this.groupId}`]); // Navigate to group-profile
+        }
 
         // Find the current user account
         this.currentUserAccount = accounts.find(
-          (account) =>
-            account.id === this.currentUser?.uid && account.type === "user",
+          (account) => account.id === this.currentUser?.uid,
         );
+        if (this.currentUser?.uid === this.groupId) {
+          this.isGroupAdmin = true;
+        }
+
+        // If the current user's account is found, fetch its related accounts
+        if (this.currentUserAccount?.id) {
+          this.storeService.getDocById("accounts", this.currentUserAccount.id);
+        }
       },
     );
   }

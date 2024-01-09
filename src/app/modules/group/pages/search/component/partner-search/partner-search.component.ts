@@ -17,10 +17,9 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, Input} from "@angular/core";
+import {Component, Input, OnInit} from "@angular/core";
 import {StoreService} from "../../../../../../core/services/store.service";
-import {Account} from "../../../../../../models/account.model";
-import {AppRelationship} from "../../../../../../models/relationship.model";
+import {Account, RelatedAccount} from "../../../../../../models/account.model";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {RouterModule} from "@angular/router";
@@ -33,34 +32,34 @@ import {IonicModule} from "@ionic/angular";
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
-export class PartnerSearchComponent {
+export class PartnerSearchComponent implements OnInit {
   @Input() isAdmin: boolean = false;
   @Input() currentGroup?: Partial<Account>;
-  @Input() groups: Partial<Account>[] | null = [];
+  groups: Partial<Account>[] | null = [];
+  relatedAccounts: Partial<RelatedAccount>[] = [];
   private searchTerm: string = "";
 
   constructor(private storeService: StoreService) {}
 
-  ionViewWillEnter() {}
-
-  ionViewWillLeave() {}
+  ngOnInit() {
+    // Fetch groups
+    this.groups = this.storeService
+      .getCollection("accounts")
+      .filter((g) => g["type"] === "group");
+  }
 
   get searchResults() {
-    if (!this.groups) {
-      return [];
-    }
-    if (!this.searchTerm) {
-      return this.groups;
-    }
-    return this.groups.filter((group) =>
-      group.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
+    return (
+      this.groups?.filter((group) =>
+        group.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
+      ) ?? []
     );
   }
 
   searchGroups(event: any) {
     this.searchTerm = event.target.value;
     if (this.searchTerm) {
-      this.storeService.searchDocsByName("groups", this.searchTerm);
+      this.storeService.searchDocsByName("accounts", this.searchTerm);
     }
   }
 
@@ -69,36 +68,35 @@ export class PartnerSearchComponent {
       console.log("No current group or group ID");
       return;
     }
-    const relationship: Partial<AppRelationship> = {
-      relatedIds: [this.currentGroup.id, group.id],
-      senderId: this.currentGroup.id,
-      receiverId: group.id,
+
+    // Create a related account for the partner group
+    const relatedAccount = {
+      id: group.id,
+      name: group.name,
+      iconImage: group.iconImage,
+      tagline: group.tagline,
       type: "group",
       status: "pending",
-      membershipRole: "partner",
-      receiverRelationship: "group",
-      senderRelationship: "group",
-      receiverName: group.name,
-      receiverImage: group.iconImage,
-      receiverTagline: group.tagline,
-      senderName: this.currentGroup?.name ? this.currentGroup.name : "",
-      senderImage: this.currentGroup?.iconImage
-        ? this.currentGroup.iconImage
-        : "",
-      senderTagline: this.currentGroup?.tagline
-        ? this.currentGroup.tagline
-        : "",
+      relationship: "partner",
+      initiatorId: this.currentGroup.id,
+      targetId: group.id,
     };
 
-    this.storeService.createDoc("relationships", relationship).then(() => {
-      // Update the group's pendingRelatedGroups in the state
-      // if (!group.pendingRelatedGroups) {
-      //   group.pendingRelatedGroups = [];
-      // }
-      // group.pendingRelatedGroups = this.currentGroup?.id
-      //   ? [...group.pendingRelatedGroups, this.currentGroup.id]
-      //   : [...group.pendingRelatedGroups];
-      this.storeService.updateDocInState("accounts", group);
-    });
+    const docPath = `accounts/${this.currentGroup.id}/relatedAccounts/${group.id}`;
+    this.storeService.updateDocAtPath(docPath, relatedAccount);
+  }
+
+  canInvite(group: Partial<Account>): boolean {
+    if (group.id === this.currentGroup?.id) {
+      // Cannot invite the same group
+      return false;
+    }
+
+    // Check if the group is already a partner
+    const isAlreadyPartner = this.relatedAccounts.some(
+      (ra) => ra.id === group.id && ra.status !== "rejected", // You may adjust the condition as needed
+    );
+
+    return !isAlreadyPartner;
   }
 }

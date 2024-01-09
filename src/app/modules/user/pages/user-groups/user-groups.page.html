@@ -30,40 +30,39 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           </ion-card-header>
           <ion-list>
             <ion-item *ngFor="let group of currentGroupsList; let i = index"
-              routerLink="/group/{{group['groupId']}}/{{group['groupId']}}/details" button>
+              routerLink="/group/{{group['id']}}/{{group['id']}}/details" button>
               <ion-thumbnail slot="start">
-                <img *ngIf="group['image']" [alt]="group['name']" [src]="group['image']" />
+                <img *ngIf="group['iconImage']" [alt]="group['name']" [src]="group['iconImage']" />
               </ion-thumbnail>
               <ion-label>
                 <h3>{{ group["name"] }}</h3>
-                <p>{{ group["description"] }}</p>
+                <p>{{ group["tagline"] }}</p>
               </ion-label>
-              <ion-button *ngIf="group['showRemoveButton']" slot="end" expand="block" color="secondary"
-                (click)="$event.stopPropagation();$event.preventDefault();removeGroupRequest(group);">Remove</ion-button>
+              <ion-button *ngIf="userId === group['id']" slot="end" expand="block" color="secondary"
+                (click)="$event.stopPropagation();$event.preventDefault();removeGroupRequest(group);">Leave</ion-button>
             </ion-item>
           </ion-list>
         </ion-card>
+
         <ion-card *ngIf="pendingGroupsList.length">
           <ion-card-header>
-            <ion-card-title>Groups</ion-card-title>
+            <ion-card-title>Pending Group Requests</ion-card-title>
             <ion-card-subtitle>{{ pendingGroupsList.length }} pending groups</ion-card-subtitle>
           </ion-card-header>
           <ion-list>
             <ion-item *ngFor="let group of pendingGroupsList; let i = index"
-              routerLink="/group/{{group['groupId']}}/{{group['groupId']}}/details" button>
+              routerLink="/group/{{group['id']}}/{{group['id']}}/details" button>
               <ion-thumbnail slot="start">
-                <img *ngIf="group['image']" [alt]="group['name']" [src]="group['image']" />
+                <img *ngIf="group['iconImage']" [alt]="group['name']" [src]="group['iconImage']" />
               </ion-thumbnail>
               <ion-label>
                 <h3>{{ group["name"] }}</h3>
-                <p>{{ group["description"] }}</p>
+                <p>{{ group["tagline"] }}</p>
               </ion-label>
-              <ion-button *ngIf="group['showAcceptRejectButtons']" slot="end" expand="block"
+              <ion-button *ngIf="group['id'] !== group['initiatorId']" slot="end" expand="block"
                 (click)="$event.stopPropagation();$event.preventDefault();acceptGroupRequest(group);">Accept</ion-button>
-              <ion-button *ngIf="group['showAcceptRejectButtons']" slot="end" expand="block" color="secondary"
+              <ion-button *ngIf="group['id'] !== group['initiatorId']" slot="end" expand="block" color="secondary"
                 (click)="$event.stopPropagation();$event.preventDefault();rejectGroupRequest(group);">Reject</ion-button>
-              <ion-button *ngIf="group['showRemoveButton']" slot="end" expand="block" color="secondary"
-                (click)="$event.stopPropagation();$event.preventDefault();removeGroupRequest(group);">Remove</ion-button>
             </ion-item>
           </ion-list>
         </ion-card>

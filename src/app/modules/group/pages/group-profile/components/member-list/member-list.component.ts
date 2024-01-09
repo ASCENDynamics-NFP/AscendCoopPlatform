@@ -21,8 +21,7 @@ import {Component, Input} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
 import {Router} from "@angular/router";
-import {AppRelationship} from "../../../../../../models/relationship.model";
-import {Account} from "../../../../../../models/account.model";
+import {Account, RelatedAccount} from "../../../../../../models/account.model";
 
 @Component({
   selector: "app-member-list",
@@ -32,36 +31,26 @@ import {Account} from "../../../../../../models/account.model";
   imports: [IonicModule, CommonModule],
 })
 export class MemberListComponent {
-  @Input() group?: Partial<Account>; // define your group here
-  @Input() memberList: Partial<AppRelationship>[] = [];
+  @Input() group?: Partial<Account>;
+  @Input() relatedAccounts: Partial<RelatedAccount>[] = [];
 
   constructor(private router: Router) {}
 
   get allMembers() {
-    let allMembers = [];
-    for (let member of this.memberList) {
-      if (member.status !== "accepted") continue;
-      if (member.senderId === this.group?.id) {
-        allMembers.push({
-          id: member.receiverId,
-          name: member.receiverName,
-          image: member.receiverImage,
-          tagline: member.receiverTagline,
-        });
-      } else {
-        allMembers.push({
-          id: member.senderId,
-          name: member.senderName,
-          image: member.senderImage,
-          tagline: member.senderTagline,
-        });
-      }
-    }
-    return allMembers;
+    return this.relatedAccounts
+      .filter((ra) => ra.type === "user" && ra.status === "accepted")
+      .map((member) => ({
+        id: member.id,
+        name: member.name,
+        image: member.iconImage,
+        tagline: member.tagline,
+      }));
   }
 
   goToUserProfile(id: string | undefined) {
-    this.router.navigate([`/user-profile/${id}`]);
+    if (id) {
+      this.router.navigate([`/user-profile/${id}`]);
+    }
   }
 
   goToMemberList() {

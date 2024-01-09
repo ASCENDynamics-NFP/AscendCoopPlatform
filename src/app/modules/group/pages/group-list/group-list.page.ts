@@ -21,14 +21,13 @@ import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {Account} from "../../../../models/account.model";
+import {Account, RelatedAccount} from "../../../../models/account.model";
 import {User} from "firebase/auth";
 import {RouterModule} from "@angular/router";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {Subscription} from "rxjs";
 import {StoreService} from "../../../../core/services/store.service";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
-import {AppRelationship} from "../../../../models/relationship.model";
 
 @Component({
   selector: "app-group-list",
@@ -59,6 +58,7 @@ export class GroupListPage {
   }
 
   ionViewWillEnter() {
+    // Subscribe to accounts and fetch related accounts
     this.accountsSubscription = this.storeService.accounts$.subscribe(
       (accounts) => {
         this.groups = accounts.filter((account) => account.type === "group");
@@ -72,8 +72,22 @@ export class GroupListPage {
           (account) =>
             account.type === "user" && account.id === this.authUser?.uid,
         );
+
+        // Fetch related accounts for the current user
+        if (this.authUser?.uid) {
+          this.storeService.getAndSortRelatedAccounts(this.authUser.uid);
+          this.storeService.getCollection(
+            `accounts/${this.authUser.uid}/relatedAccounts`,
+          );
+        }
       },
     );
+
+    // Subscribe to relatedAccounts$ to update group request status
+    this.storeService.relatedAccounts$.subscribe((relatedAccounts) => {
+      // Logic to handle related accounts, e.g., update group request status
+      // ...
+    });
   }
 
   ionViewWillLeave() {
@@ -103,34 +117,47 @@ export class GroupListPage {
     if (!this.authUser?.uid || !group.id) {
       return;
     }
-    const relationship: Partial<AppRelationship> = {
-      relatedIds: [this.authUser?.uid, group.id],
-      senderId: this.authUser?.uid,
-      receiverId: group.id,
-      type: "member",
+
+    // Construct the path to the 'relatedAccounts' sub-collection
+    const relatedAccountsPath = `accounts/${this.authUser.uid}/relatedAccounts/${group.id}`;
+
+    // Create a related account request
+    const relatedAccount: Partial<RelatedAccount> = {
+      id: group.id, // ID of the group
+      initiatorId: this.authUser.uid,
+      targetId: group.id,
+      type: "group",
       status: "pending",
-      membershipRole: "member",
-      receiverRelationship: "group",
-      senderRelationship: "user",
-      receiverName: group.name,
-      receiverImage: group.iconImage
-        ? group.iconImage
-        : "assets/icon/favicon.png",
-      receiverTagline: group.tagline,
-      senderName: this.authUser?.displayName ? this.authUser.displayName : "",
-      senderImage: this.authUser?.photoURL ? this.authUser.photoURL : "",
-      senderTagline: "",
+      relationship: "member",
+      tagline: group.tagline,
+      name: group.name,
+      iconImage: group.iconImage,
     };
 
-    this.storeService.createDoc("relationships", relationship).then(() => {
-      // Update the group's pendingMembers in the state
-      // if (!group.pendingMembers) {
-      //   group.pendingMembers = [];
-      // }
-      // group.pendingMembers = this.authUser?.uid
-      //   ? [...group.pendingMembers, this.authUser.uid]
-      //   : [...group.pendingMembers];
-      this.storeService.updateDocInState("accounts", group);
-    });
+    // Use createDocAtPath method to create the new related account document
+    this.storeService
+      .updateDocAtPath(relatedAccountsPath, relatedAccount)
+      .then(() => {
+        // Handle successful request creation
+        // Update UI or state as needed
+        console.log("Related account request sent successfully.");
+      })
+      .catch((error) => {
+        console.error("Error sending related account request:", error);
+        // Handle the error appropriately
+      });
+  }
+
+  // Inside GroupListPage class
+  isMemberOrPending(group: Partial<Account>): boolean {
+    // Check if the current user's related accounts include the group with a status of 'accepted' or 'pending'
+    return (
+      this.user?.relatedAccounts?.some(
+        (relatedAccount) =>
+          relatedAccount.id === group.id &&
+          (relatedAccount.status === "accepted" ||
+            relatedAccount.status === "pending"),
+      ) ?? false
+    );
   }
 }

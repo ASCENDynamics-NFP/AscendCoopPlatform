@@ -148,15 +148,17 @@ export class GroupListPage {
       });
   }
 
-  // Inside GroupListPage class
-  isMemberOrPending(group: Partial<Account>): boolean {
-    // Check if the current user's related accounts include the group with a status of 'accepted' or 'pending'
+  showRequestBtn(group: Partial<Account>): boolean {
+    // Checks to see if same account or already has an existing relationship
     return (
-      this.user?.relatedAccounts?.some(
-        (relatedAccount) =>
-          relatedAccount.id === group.id &&
-          (relatedAccount.status === "accepted" ||
-            relatedAccount.status === "pending"),
+      !(
+        this.user?.relatedAccounts?.some(
+          (relatedAccount) =>
+            relatedAccount.id === group.id &&
+            (relatedAccount.status === "accepted" ||
+              relatedAccount.status === "pending" ||
+              relatedAccount.status === "blocked"),
+        ) || group.id === this.authUser?.uid
       ) ?? false
     );
   }

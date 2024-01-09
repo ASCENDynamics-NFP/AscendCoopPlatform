@@ -39,7 +39,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   <p>{{ item?.tagline }}</p>
                 </ion-label>
                 <!-- Check if the user is not already a member or has a pending request -->
-                <ion-button *ngIf="authUser && !isMemberOrPending(item)" slot="end" mode="md" expand="block"
+                <ion-button *ngIf="showRequestBtn(item)" slot="end" mode="md" expand="block"
                   (click)="$event.stopPropagation();$event.preventDefault();sendRequest(item);">
                   Send Request
                 </ion-button>

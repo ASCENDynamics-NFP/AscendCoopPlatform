@@ -90,17 +90,28 @@ export class GroupProfilePage {
           }
           let user = this.authStoreService.getCurrentUser();
           let userId = user?.uid ? user.uid : "";
-          this.isAdmin =
-            this.group.groupDetails?.admins?.includes(userId) || false;
+          // Filter for admin relationships
+          const adminAccount = this.group?.relatedAccounts?.filter(
+            (ra) => ra.relationship === "admin" && ra.id === userId,
+          );
+          this.isAdmin = this.group.id === userId || adminAccount !== undefined;
 
           // Sort the related accounts into member and group lists
           this.memberList =
             this.group.relatedAccounts?.filter(
-              (ra) => ra.type === "user" && ra.status !== "blocked",
+              (ra) =>
+                ra.type === "user" &&
+                ra.status !== "blocked" &&
+                ra.status !== "rejected" &&
+                ra.status !== "pending",
             ) || [];
           this.groupList =
             this.group.relatedAccounts?.filter(
-              (ra) => ra.type === "group" && ra.status !== "blocked",
+              (ra) =>
+                ra.type === "group" &&
+                ra.status !== "blocked" &&
+                ra.status !== "rejected" &&
+                ra.status !== "pending",
             ) || [];
         }
       },

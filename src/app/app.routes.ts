@@ -50,7 +50,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: "user-dashboard/:uid",
+    path: "user-dashboard/:accountId",
     loadComponent: () =>
       import("./modules/user/pages/user-dashboard/user-dashboard.page").then(
         (m) => m.UserDashboardPage,
@@ -58,7 +58,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: "user-profile/:uid",
+    path: "user-profile/:accountId",
     loadComponent: () =>
       import("./modules/user/pages/user-profile/user-profile.page").then(
         (m) => m.UserProfilePage,
@@ -66,7 +66,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: "user-profile/:uid/friends",
+    path: "user-profile/:accountId/friends",
     loadComponent: () =>
       import("./modules/user/pages/friends/friends.page").then(
         (m) => m.FriendsPage,
@@ -112,7 +112,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: "user-profile/:uid/edit",
+    path: "user-profile/:accountId/edit",
     loadComponent: () =>
       import(
         "./modules/user/pages/edit-user-profile/edit-user-profile.page"
@@ -120,7 +120,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: "user-profile/:uid/groups",
+    path: "user-profile/:accountId/groups",
     loadComponent: () =>
       import("./modules/user/pages/user-groups/user-groups.page").then(
         (m) => m.UserGroupsPage,

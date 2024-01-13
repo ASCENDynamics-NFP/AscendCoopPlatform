@@ -1,21 +1,43 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Rules for Account
+
+    // Match the Account collection
     match /accounts/{accountId} {
+      
       function isAccountOwner() {
-        return request.auth.uid == accountId;
+        return request.auth != null && request.auth.uid == accountId;
       }
 
-      function isFriend() {
-        return request.auth.uid in resource.data.friends;
+      // Friends-only access
+      function isAcceptedFriend() {
+        return (request.auth != null && exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid))
+          && get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.type == 'user'
+          && get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted');
       }
 
-      allow read: if (isAccountOwner() // Account owner can always read their own data
-      								|| (resource.data.privacySetting == 'public')
-      								|| (resource.data.privacySetting == 'friends-only' && isFriend()));
-                  
-      allow write: if isAccountOwner(); // Only the account owner can write to their own data
+      // Groups-only access
+      function isAcceptedGroup() {
+        return (request.auth != null && exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid))
+          && get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.type == 'group'
+          && get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted');
+      }
+
+      // Public Group access
+      function isPublicGroup() {
+        return (resource.data.privacySetting == 'public' && resource.data.type == 'group');
+      }
+
+      // Public User access
+      function isPublicUser() {
+        return (request.auth != null && resource.data.privacySetting == 'public' && resource.data.type == 'user');
+      }
+
+      // Allow read if the user is accessing their own account
+      allow read: if (isAccountOwner() || isAcceptedFriend() || isAcceptedGroup() || isPublicGroup() || isPublicUser());
+
+      // General write rule (customize as needed)
+      allow create, write: if isAccountOwner();
     }
 
     // Rules for relatedAccount

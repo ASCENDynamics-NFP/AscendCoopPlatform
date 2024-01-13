@@ -109,7 +109,6 @@ export class StoreService {
    */
 
   loadInitialData() {
-    const currentUser = this.authStoreService.getCurrentUser();
     this.authStoreService.authUser$.subscribe((authUser) => {
       if (authUser) {
         this.firestoreService.addIdToCollection("accounts", authUser.uid);
@@ -134,7 +133,7 @@ export class StoreService {
       if (account) {
         account["relatedAccounts"] = relatedAccounts;
         this.updateDocInState("accounts", account);
-        this.relatedAccountsSubject.next(relatedAccounts);
+        this.relatedAccountsSubject.next(relatedAccounts); // May Remove this Overserver
       }
     } catch (error) {
       this.handleError(error, true);
@@ -213,6 +212,15 @@ export class StoreService {
           docs.forEach((doc) => {
             this.addDocToState(collectionName, doc as Partial<any>);
           });
+        }
+        if (!environment.production) {
+          console.log(
+            "Firestore",
+            this.firestoreService.getCollectionsSubject().getValue(),
+            docs,
+            "Accounts",
+            this.collectionsSubject["accounts"].getValue(),
+          );
         }
       });
   }

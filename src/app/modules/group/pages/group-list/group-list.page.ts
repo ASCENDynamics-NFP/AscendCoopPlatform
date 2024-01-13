@@ -72,22 +72,21 @@ export class GroupListPage {
           (account) =>
             account.type === "user" && account.id === this.authUser?.uid,
         );
-
-        // Fetch related accounts for the current user
-        if (this.authUser?.uid) {
-          this.storeService.getAndSortRelatedAccounts(this.authUser.uid);
-          this.storeService.getCollection(
-            `accounts/${this.authUser.uid}/relatedAccounts`,
-          );
-        }
       },
     );
 
+    // Fetch related accounts for the current user
+    if (this.authUser?.uid) {
+      this.storeService.getAndSortRelatedAccounts(this.authUser.uid);
+      // this.storeService.getCollection(
+      //   `accounts/${this.authUser.uid}/relatedAccounts`,
+      // );
+    }
     // Subscribe to relatedAccounts$ to update group request status
-    this.storeService.relatedAccounts$.subscribe((relatedAccounts) => {
-      // Logic to handle related accounts, e.g., update group request status
-      // ...
-    });
+    // this.storeService.relatedAccounts$.subscribe((relatedAccounts) => {
+    //   // Logic to handle related accounts, e.g., update group request status
+    //   // ...
+    // });
   }
 
   ionViewWillLeave() {

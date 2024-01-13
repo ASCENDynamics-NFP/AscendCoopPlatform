@@ -50,7 +50,7 @@ import {User} from "firebase/auth";
   ],
 })
 export class UserProfilePage implements OnInit {
-  private uid?: string;
+  public accountId: string | null;
   private accountsSubscription?: Subscription;
   authUser: User | null = null;
   account?: Partial<Account>;
@@ -63,18 +63,18 @@ export class UserProfilePage implements OnInit {
     private router: Router,
     private storeService: StoreService,
   ) {
-    this.uid = this.route.snapshot.paramMap.get("uid") ?? undefined;
+    this.accountId = this.route.snapshot.paramMap.get("accountId");
     this.authUser = this.authStoreService.getCurrentUser();
   }
 
   ngOnInit() {
-    if (this.uid) {
-      this.storeService.getDocById("accounts", this.uid);
-    }
+    // if (this.accountId) {
+    //   this.storeService.getDocById("accounts", this.accountId);
+    // }
   }
 
   get isProfileOwner(): boolean {
-    return this.uid === this.authUser?.uid;
+    return this.accountId === this.authUser?.uid;
   }
 
   ionViewWillEnter() {
@@ -88,11 +88,23 @@ export class UserProfilePage implements OnInit {
   initiateSubscribers() {
     this.accountsSubscription = this.storeService.accounts$.subscribe(
       (accounts) => {
-        this.account = accounts.find((account) => account.id === this.uid);
-        if (this.account?.type === "group") {
-          this.router.navigate([`/group/${this.uid}/${this.uid}/details`]); // Navigate to group-profile
+        if (!this.accountId) return;
+        this.account = accounts.find(
+          (account) => account.id === this.accountId,
+        );
+        if (!this.account) {
+          this.storeService.getDocById("accounts", this.accountId); // get and add doc to store
+        } else {
+          if (this.account?.type === "group") {
+            this.router.navigate([
+              `/group/${this.accountId}/${this.accountId}/details`,
+            ]); // Navigate to group-profile
+          }
+          if (!this.account?.relatedAccounts) {
+            this.storeService.getAndSortRelatedAccounts(this.accountId);
+          }
+          this.sortRelationships(this.account?.relatedAccounts ?? []);
         }
-        this.sortRelationships(this.account?.relatedAccounts ?? []);
       },
     );
   }

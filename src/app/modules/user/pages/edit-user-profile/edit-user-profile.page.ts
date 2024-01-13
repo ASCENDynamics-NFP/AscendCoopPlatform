@@ -36,7 +36,7 @@ import {AppHeaderComponent} from "../../../../shared/components/app-header/app-h
   imports: [IonicModule, CommonModule, ReactiveFormsModule, AppHeaderComponent],
 })
 export class EditUserProfilePage {
-  private uid: string | null = null;
+  private accountId: string | null = null;
   private accountsSubscription?: Subscription;
   public account?: Partial<Account>;
 
@@ -70,20 +70,22 @@ export class EditUserProfilePage {
     private router: Router,
     private storeService: StoreService,
   ) {
-    this.uid = this.activatedRoute.snapshot.paramMap.get("uid");
+    this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
   }
 
   ionViewWillEnter() {
     this.accountsSubscription = this.storeService.accounts$.subscribe(
       (accounts) => {
-        this.account = accounts.find((account) => account.id === this.uid);
+        this.account = accounts.find(
+          (account) => account.id === this.accountId,
+        );
         if (this.account) {
           this.loadFormData();
         }
       },
     );
     if (!this.account) {
-      this.storeService.getDocById("accounts", this.uid);
+      this.storeService.getDocById("accounts", this.accountId);
     }
   }
 

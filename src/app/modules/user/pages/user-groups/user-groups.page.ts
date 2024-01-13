@@ -48,7 +48,7 @@ export class UserGroupsPage {
     private authStoreService: AuthStoreService,
     private storeService: StoreService,
   ) {
-    this.userId = this.activatedRoute.snapshot.paramMap.get("uid") ?? "";
+    this.userId = this.activatedRoute.snapshot.paramMap.get("accountId") ?? "";
   }
 
   ionViewWillEnter() {

@@ -41,6 +41,7 @@ import {
   combineLatest,
   combineLatestAll,
   map,
+  switchMap,
 } from "rxjs";
 import {FirebaseError} from "firebase/app";
 import {RelatedAccount} from "../../models/account.model";
@@ -109,39 +110,45 @@ export class FirestoreService {
    */
 
   // Observable Logic for Multiple Documents
-  listenToMultipleDocumentsInMultipleCollections(): Observable<any[]> {
+  /**
+   * Listen to multiple documents in multiple Firestore collections.
+   * The documents and collections to listen to are determined by the value of collectionIdsSubject.
+   * @param {BehaviorSubject<Object[]>} collectionIdsSubject - A BehaviorSubject of an array of objects, each containing the name of the collection and the ids of the documents to listen to.
+   * @returns {Observable<DocumentData[]>} - An Observable that emits the data of the documents whenever any of them change.
+   */
+  listenToMultipleDocumentsInMultipleCollections(): Observable<DocumentData[]> {
     return this.collectionIdsSubject.pipe(
-      map((collections) => this.fetchCollectionsData(collections)),
-      combineLatestAll(),
-      map((arrays) => arrays.flat()),
+      switchMap((collections) => {
+        return combineLatest(
+          collections.map((collection) => {
+            const docObservables = collection.ids.map((id) => {
+              return new Observable<DocumentData>((subscriber) => {
+                const unsubscribe = onSnapshot(
+                  doc(this.firestore, collection.collectionName, id),
+                  (docSnapshot) => {
+                    // Include the id in the emitted data
+                    const data = docSnapshot.data();
+                    if (data) {
+                      data["id"] = docSnapshot.id;
+                      subscriber.next(data);
+                    }
+                  },
+                  (error) => {
+                    subscriber.error(error);
+                  },
+                );
+
+                return unsubscribe; // This function will be called when the Observable is unsubscribed from
+              });
+            });
+
+            return combineLatest(docObservables);
+          }),
+        ).pipe(
+          map((arrays) => arrays.flat()), // Flatten the array of arrays into a single array
+        );
+      }),
     );
-  }
-
-  private fetchCollectionsData(
-    collections: {collectionName: string; ids: string[]}[],
-  ) {
-    return collections.map((collection) => {
-      return collection.ids.map((id) =>
-        this.getDocumentWithFallback(collection.collectionName, id),
-      );
-    });
-  }
-
-  private getDocumentWithFallback(
-    collectionName: string,
-    documentId: string,
-  ): Observable<any> {
-    return new Observable((subscriber) => {
-      getDoc(doc(this.firestore, collectionName, documentId))
-        .then((docSnapshot) => {
-          if (docSnapshot.exists()) {
-            subscriber.next({...docSnapshot.data(), id: docSnapshot.id});
-          } else {
-            subscriber.next(null);
-          }
-        })
-        .catch((error) => subscriber.error(error));
-    });
   }
 
   /**
@@ -365,9 +372,6 @@ export class FirestoreService {
     searchTerm: string,
     userId: string | undefined,
   ): Promise<DocumentData[] | null> {
-    if (!userId) {
-      throw new Error("User ID must be provided");
-    }
     return getDocs(
       query(
         collection(this.firestore, collectionName),
@@ -399,17 +403,19 @@ export class FirestoreService {
               where("name", "<=", searchTerm.toLowerCase() + "\uf8ff"),
             ),
           ),
-          or(
-            where("privacySetting", "==", "public"),
-            and(
-              where("privacySetting", "==", "friends-only"),
-              where("associations.accounts", "array-contains", userId),
-            ),
-            and(
-              where("privacySetting", "==", "groups-only"),
-              where("associations.accounts", "array-contains", userId),
-            ),
-          ),
+          where("privacySetting", "==", "public"),
+          where("type", "in", ["user", "group"]),
+          //         or(
+          //           where("privacySetting", "==", "public"),
+          //           and(
+          //             where("privacySetting", "==", "friends-only"),
+          //             where("associations.accounts", "array-contains", userId),
+          //           ),
+          //           and(
+          //             where("privacySetting", "==", "groups-only"),
+          //             where("associations.accounts", "array-contains", userId),
+          //           ),
+          //         ),
         ),
       ),
     )
@@ -421,7 +427,6 @@ export class FirestoreService {
           "get-document-error",
           `Error getting document: ${error}`,
         );
-        return [];
       });
   }
 

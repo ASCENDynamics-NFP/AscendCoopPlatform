@@ -72,6 +72,7 @@ export class UsersPage {
   ionViewWillLeave() {
     this.accountsSubscription?.unsubscribe();
   }
+
   async sendFriendRequest(account: Partial<Account>) {
     if (!this.authUser?.uid || !account.id) {
       console.error("User ID or Account ID is missing");
@@ -82,7 +83,7 @@ export class UsersPage {
       id: account.id,
       initiatorId: this.authUser.uid,
       targetId: account.id,
-      type: "user",
+      type: account.type,
       status: "pending",
       relationship: "friend",
       tagline: account.tagline,
@@ -120,16 +121,16 @@ export class UsersPage {
     }
 
     // Get all accounts of type 'user' and sort them
-    this.accountList = this.storeService
-      .getCollection("accounts")
-      .filter((account) => account["type"] === "user") // Filter for user type accounts
-      .sort((a, b) => {
-        if (a["name"]) {
-          return a["name"].localeCompare(b["name"]);
-        } else {
-          return 0;
-        }
-      });
+    // this.accountList = this.storeService
+    //   .getCollection("accounts")
+    //   .filter((account) => account["type"] === "user") // Filter for user type accounts
+    //   .sort((a, b) => {
+    //     if (a["name"]) {
+    //       return a["name"].localeCompare(b["name"]);
+    //     } else {
+    //       return 0;
+    //     }
+    //   });
   }
 
   shouldDisplaySendRequestButton(item: Partial<Account>): boolean {

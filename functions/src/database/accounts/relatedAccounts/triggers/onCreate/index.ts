@@ -84,6 +84,15 @@ async function handleRelatedAccountCreate(
       .collection("relatedAccounts")
       .doc(accountId);
 
+    // Check if the related account document already exists
+    const targetRelatedAccountDoc = await targetRelatedAccountRef.get();
+    if (targetRelatedAccountDoc.exists) {
+      logger.info(
+        "Related account document already exists, skipping creation.",
+      );
+      return;
+    }
+
     const targetRelatedAccount = {
       id: accountId,
       name: initiatorAccountData?.name,

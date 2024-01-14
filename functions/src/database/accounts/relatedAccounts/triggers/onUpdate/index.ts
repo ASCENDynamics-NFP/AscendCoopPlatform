@@ -68,7 +68,7 @@ async function handleRelatedAccountUpdate(
         relationship: after.relationship,
         status: after.status,
         lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
-        modifiedBy: accountId,
+        lastModifiedBy: accountId,
       });
 
       logger.info("Related accounts updated successfully.");

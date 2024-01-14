@@ -37,14 +37,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 <h3>{{ friend.name }}</h3>
                 <p>{{ friend.tagline }}</p>
               </ion-label>
-              <ion-button slot="end" expand="block" color="secondary"
+              <ion-button slot="end" expand="block" color="secondary" *ngIf="showRemoveButton(friend);"
                 (click)="$event.stopPropagation();$event.preventDefault();removeFriendRequest(friend);">
                 Remove
               </ion-button>
             </ion-item>
           </ion-list>
         </ion-card>
-        <ion-card *ngIf="pendingFriendsList.length">
+        <ion-card *ngIf="isProfileOwner() && pendingFriendsList.length > 0">
           <ion-card-header>
             <ion-card-title>Pending Friends</ion-card-title>
             <ion-card-subtitle>{{ pendingFriendsList.length }} pending friends</ion-card-subtitle>
@@ -58,13 +58,17 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 <h3>{{ friend.name }}</h3>
                 <p>{{ friend.tagline }}</p>
               </ion-label>
-              <ion-button slot="end" expand="block"
+              <ion-button slot="end" expand="block" *ngIf="showAcceptRejectButtons(friend);"
                 (click)="$event.stopPropagation();$event.preventDefault();acceptFriendRequest(friend);">
                 Accept
               </ion-button>
-              <ion-button slot="end" expand="block" color="secondary"
+              <ion-button slot="end" expand="block" color="secondary" *ngIf="showAcceptRejectButtons(friend)"
                 (click)="$event.stopPropagation();$event.preventDefault();rejectFriendRequest(friend);">
                 Reject
+              </ion-button>
+              <ion-button slot="end" expand="block" color="secondary" *ngIf="showRemoveButton(friend);"
+                (click)="$event.stopPropagation();$event.preventDefault();removeFriendRequest(friend);">
+                Remove
               </ion-button>
             </ion-item>
           </ion-list>

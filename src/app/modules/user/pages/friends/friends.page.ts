@@ -45,7 +45,7 @@ export class FriendsPage implements OnInit {
   private accountsSubscription?: Subscription;
   currentFriendsList: Partial<RelatedAccount>[] = [];
   pendingFriendsList: Partial<RelatedAccount>[] = [];
-  userId: string | null = null;
+  accountId: string | null = null;
   currentUser: any;
   account?: Partial<Account>;
 
@@ -54,7 +54,7 @@ export class FriendsPage implements OnInit {
     private authStoreService: AuthStoreService,
     private storeService: StoreService,
   ) {
-    this.userId = this.activatedRoute.snapshot.paramMap.get("accountId");
+    this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
   }
 
   ngOnInit() {
@@ -64,7 +64,7 @@ export class FriendsPage implements OnInit {
   ionViewWillEnter() {
     this.accountsSubscription = this.storeService.accounts$.subscribe(
       (accounts) => {
-        const account = accounts.find((acc) => acc.id === this.userId);
+        const account = accounts.find((acc) => acc.id === this.accountId);
         if (account) {
           this.account = account;
           this.sortRelatedAccounts(account.relatedAccounts || []);
@@ -87,11 +87,11 @@ export class FriendsPage implements OnInit {
   }
 
   updateFriendStatus(request: Partial<RelatedAccount>, status: string) {
-    const docPath = `accounts/${this.userId}/relatedAccounts/${request.id}`;
+    const docPath = `accounts/${this.accountId}/relatedAccounts/${request.id}`;
     const updatedData = {status: status};
     this.storeService.updateDocAtPath(docPath, updatedData).then(() => {
-      if (!this.userId) return;
-      this.storeService.getAndSortRelatedAccounts(this.userId);
+      if (!this.accountId) return;
+      this.storeService.getAndSortRelatedAccounts(this.accountId);
     });
   }
 
@@ -104,9 +104,30 @@ export class FriendsPage implements OnInit {
   }
 
   removeFriendRequest(request: Partial<RelatedAccount>) {
-    if (!this.userId) return;
-    const docPath = `accounts/${this.userId}/relatedAccounts/${request.id}`;
+    if (!this.accountId) return;
+    const docPath = `accounts/${this.accountId}/relatedAccounts/${request.id}`;
     this.storeService.deleteDocAtPath(docPath);
-    this.storeService.getAndSortRelatedAccounts(this.userId);
+    this.storeService.getAndSortRelatedAccounts(this.accountId);
+  }
+
+  showAcceptRejectButtons(request: Partial<RelatedAccount>) {
+    return (
+      this.isProfileOwner() &&
+      request.status === "pending" &&
+      request.initiatorId !== this.currentUser?.uid
+    );
+  }
+
+  showRemoveButton(request: Partial<RelatedAccount>) {
+    return (
+      this.isProfileOwner() &&
+      (request.status === "accepted" ||
+        (request.status === "pending" &&
+          request.initiatorId === this.currentUser?.uid))
+    );
+  }
+
+  isProfileOwner() {
+    return this.currentUser?.uid === this.accountId;
   }
 }

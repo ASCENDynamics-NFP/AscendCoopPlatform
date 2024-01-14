@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
+import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
@@ -49,7 +49,7 @@ import {User} from "firebase/auth";
     AppHeaderComponent,
   ],
 })
-export class UserProfilePage implements OnInit {
+export class UserProfilePage {
   public accountId: string | null;
   private accountsSubscription?: Subscription;
   authUser: User | null = null;
@@ -65,12 +65,6 @@ export class UserProfilePage implements OnInit {
   ) {
     this.accountId = this.route.snapshot.paramMap.get("accountId");
     this.authUser = this.authStoreService.getCurrentUser();
-  }
-
-  ngOnInit() {
-    // if (this.accountId) {
-    //   this.storeService.getDocById("accounts", this.accountId);
-    // }
   }
 
   get isProfileOwner(): boolean {
@@ -102,8 +96,9 @@ export class UserProfilePage implements OnInit {
           }
           if (!this.account?.relatedAccounts) {
             this.storeService.getAndSortRelatedAccounts(this.accountId);
+          } else {
+            this.sortRelationships(this.account.relatedAccounts);
           }
-          this.sortRelationships(this.account?.relatedAccounts ?? []);
         }
       },
     );

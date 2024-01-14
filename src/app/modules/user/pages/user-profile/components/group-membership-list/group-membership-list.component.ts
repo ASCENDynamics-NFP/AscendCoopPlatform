@@ -39,7 +39,7 @@ export class GroupMembershipListComponent {
     return (
       this.account?.relatedAccounts?.filter(
         (ra: Partial<RelatedAccount>) =>
-          ra.type === "group" && ra.status === "accepted",
+          ra.type === "group" && ra.status === "accepted", // only show accepted groups
       ) ?? []
     );
   }

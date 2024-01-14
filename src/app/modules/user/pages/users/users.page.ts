@@ -61,9 +61,21 @@ export class UsersPage {
       (accounts) => {
         if (accounts) {
           this.account = accounts.find((acc) => acc.id === this.authUser?.uid);
-          this.accountList = accounts.filter((acc) =>
-            acc.name?.toLowerCase().includes(this.searchedValue.toLowerCase()),
-          );
+          this.accountList = accounts
+            .filter(
+              (acc) =>
+                acc.name
+                  ?.toLowerCase()
+                  .includes(this.searchedValue.toLowerCase()) &&
+                acc.type === "user",
+            )
+            .sort((a, b) => {
+              if (a["name"] && b["name"]) {
+                return a["name"].localeCompare(b["name"]);
+              } else {
+                return 0;
+              }
+            });
         }
       },
     );
@@ -92,7 +104,7 @@ export class UsersPage {
     };
 
     // Add the new related account to Firestore
-    await this.storeService.setDoc(
+    await this.storeService.updateDocAtPath(
       `accounts/${this.authUser.uid}/relatedAccounts/${account.id}`,
       newRelatedAccount,
     );
@@ -119,32 +131,24 @@ export class UsersPage {
       // Perform search
       this.storeService.searchDocsByName("accounts", value);
     }
-
-    // Get all accounts of type 'user' and sort them
-    // this.accountList = this.storeService
-    //   .getCollection("accounts")
-    //   .filter((account) => account["type"] === "user") // Filter for user type accounts
-    //   .sort((a, b) => {
-    //     if (a["name"]) {
-    //       return a["name"].localeCompare(b["name"]);
-    //     } else {
-    //       return 0;
-    //     }
-    //   });
   }
 
-  shouldDisplaySendRequestButton(item: Partial<Account>): boolean {
+  /**
+   * Determines whether a request button should be displayed for a given account.
+   *
+   * @param {Partial<Account>} item - The account for which to determine whether a request button should be displayed.
+   * @returns {boolean} - Returns true if the authenticated user is different from the item and there is no non-rejected related account with the same id as the item. Otherwise, it returns false.
+   */
+  displayRequestButton(item: Partial<Account>): boolean {
     const authUserId = this.authUser?.uid;
     if (!authUserId || authUserId === item.id) {
       return false;
     }
 
-    const alreadyRequestedOrAccepted = this.account?.relatedAccounts?.some(
-      (ra) =>
-        ra.id === item.id &&
-        (ra.status === "accepted" || ra.status === "pending"),
-    );
-
-    return !alreadyRequestedOrAccepted;
+    return this.account?.relatedAccounts?.find(
+      (ra) => ra.id === item.id && ra.status !== "rejected",
+    )
+      ? false
+      : true;
   }
 }

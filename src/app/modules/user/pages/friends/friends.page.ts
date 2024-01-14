@@ -59,10 +59,6 @@ export class FriendsPage implements OnInit {
 
   ngOnInit() {
     this.currentUser = this.authStoreService.getCurrentUser();
-    if (this.userId) {
-      // Fetch the account with the relatedAccounts sub-collection
-      this.storeService.getDocById("accounts", this.userId);
-    }
   }
 
   ionViewWillEnter() {
@@ -93,7 +89,10 @@ export class FriendsPage implements OnInit {
   updateFriendStatus(request: Partial<RelatedAccount>, status: string) {
     const docPath = `accounts/${this.userId}/relatedAccounts/${request.id}`;
     const updatedData = {status: status};
-    this.storeService.updateDocAtPath(docPath, updatedData);
+    this.storeService.updateDocAtPath(docPath, updatedData).then(() => {
+      if (!this.userId) return;
+      this.storeService.getAndSortRelatedAccounts(this.userId);
+    });
   }
 
   acceptFriendRequest(request: Partial<RelatedAccount>) {
@@ -105,7 +104,9 @@ export class FriendsPage implements OnInit {
   }
 
   removeFriendRequest(request: Partial<RelatedAccount>) {
+    if (!this.userId) return;
     const docPath = `accounts/${this.userId}/relatedAccounts/${request.id}`;
     this.storeService.deleteDocAtPath(docPath);
+    this.storeService.getAndSortRelatedAccounts(this.userId);
   }
 }

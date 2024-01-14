@@ -38,7 +38,7 @@ export class FriendListComponent {
   get allFriends() {
     return (
       this.account?.relatedAccounts?.filter(
-        (ra) => ra.type === "user" && ra.status === "accepted",
+        (ra) => ra.type === "user" && ra.status === "accepted", // only show accepted friends
       ) ?? []
     );
   }

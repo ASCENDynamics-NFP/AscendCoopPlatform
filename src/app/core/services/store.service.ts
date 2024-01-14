@@ -334,7 +334,14 @@ export class StoreService {
     }
     if (docIndex !== -1) {
       // Document already exists in the state, update it
-      currentState[docIndex] = doc;
+      // Preserve the relatedAccounts from the existing document
+      const existingDoc = currentState[docIndex];
+      const updatedDoc = {
+        ...existingDoc,
+        ...doc,
+        relatedAccounts: existingDoc["relatedAccounts"],
+      };
+      currentState[docIndex] = updatedDoc;
     } else {
       // Document doesn't exist in the state, add it
       currentState.push(doc);

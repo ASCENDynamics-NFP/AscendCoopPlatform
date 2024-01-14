@@ -45,10 +45,9 @@ import {AppHeaderComponent} from "../../../../shared/components/app-header/app-h
 export class GroupListPage {
   private accountsSubscription?: Subscription;
   authUser: User | null = null;
-  groups: Partial<Account>[] | null = [];
-  private searchTerm: any;
-  searchResults: Partial<Account>[] | null = [];
-  user?: Partial<Account>;
+  accountList: Partial<Account>[] | null = [];
+  searchedValue: string = "";
+  account?: Partial<Account>;
 
   constructor(
     private authStoreService: AuthStoreService,
@@ -58,35 +57,28 @@ export class GroupListPage {
   }
 
   ionViewWillEnter() {
-    // Subscribe to accounts and fetch related accounts
     this.accountsSubscription = this.storeService.accounts$.subscribe(
       (accounts) => {
-        this.groups = accounts.filter((account) => account.type === "group");
-        this.searchResults = this.groups;
-        if (this.searchTerm) {
-          this.searchResults = this.groups.filter((group) =>
-            group.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
-          );
+        if (accounts) {
+          this.account = accounts.find((acc) => acc.id === this.authUser?.uid);
+          this.accountList = accounts
+            .filter(
+              (acc) =>
+                acc.name
+                  ?.toLowerCase()
+                  .includes(this.searchedValue.toLowerCase()) &&
+                acc.type === "group",
+            )
+            .sort((a, b) => {
+              if (a["name"] && b["name"]) {
+                return a["name"].localeCompare(b["name"]);
+              } else {
+                return 0;
+              }
+            });
         }
-        this.user = accounts.find(
-          (account) =>
-            account.type === "user" && account.id === this.authUser?.uid,
-        );
       },
     );
-
-    // Fetch related accounts for the current user
-    if (this.authUser?.uid) {
-      this.storeService.getAndSortRelatedAccounts(this.authUser.uid);
-      // this.storeService.getCollection(
-      //   `accounts/${this.authUser.uid}/relatedAccounts`,
-      // );
-    }
-    // Subscribe to relatedAccounts$ to update group request status
-    // this.storeService.relatedAccounts$.subscribe((relatedAccounts) => {
-    //   // Logic to handle related accounts, e.g., update group request status
-    //   // ...
-    // });
   }
 
   ionViewWillLeave() {
@@ -94,71 +86,75 @@ export class GroupListPage {
   }
 
   get image() {
-    return this.user?.iconImage ? this.user.iconImage : "default-image-path";
+    return this.account?.iconImage
+      ? this.account.iconImage
+      : "default-image-path";
   }
 
-  searchGroups(event: any) {
-    this.searchTerm = event.target.value;
-    if (this.searchTerm) {
-      this.storeService.searchDocsByName("accounts", this.searchTerm);
-    } else {
-      this.searchResults = this.storeService.getCollection("accounts");
-      this.searchResults = this.searchResults.sort((a, b) => {
-        if (a.name && b.name) {
-          return a.name.localeCompare(b.name);
-        }
-        return 0;
-      });
+  search(event: any) {
+    const value = event.target.value;
+    this.searchedValue = value;
+
+    if (value) {
+      // Perform search
+      this.storeService.searchDocsByName("accounts", value);
     }
   }
 
-  sendRequest(group: Partial<Account>) {
-    if (!this.authUser?.uid || !group.id) {
+  async sendRequest(account: Partial<Account>) {
+    if (!this.authUser?.uid || !account.id) {
+      console.error("User ID or Account ID is missing");
       return;
     }
 
-    // Construct the path to the 'relatedAccounts' sub-collection
-    const relatedAccountsPath = `accounts/${this.authUser.uid}/relatedAccounts/${group.id}`;
-
-    // Create a related account request
-    const relatedAccount: Partial<RelatedAccount> = {
-      id: group.id, // ID of the group
+    const newRelatedAccount: Partial<RelatedAccount> = {
+      id: account.id,
       initiatorId: this.authUser.uid,
-      targetId: group.id,
-      type: "group",
+      targetId: account.id,
+      type: account.type,
       status: "pending",
       relationship: "member",
-      tagline: group.tagline,
-      name: group.name,
-      iconImage: group.iconImage,
+      tagline: account.tagline,
+      name: account.name,
+      iconImage: account.iconImage,
     };
 
-    // Use createDocAtPath method to create the new related account document
-    this.storeService
-      .updateDocAtPath(relatedAccountsPath, relatedAccount)
-      .then(() => {
-        // Handle successful request creation
-        // Update UI or state as needed
-        console.log("Related account request sent successfully.");
-      })
-      .catch((error) => {
-        console.error("Error sending related account request:", error);
-        // Handle the error appropriately
-      });
+    // Add the new related account to Firestore
+    await this.storeService.updateDocAtPath(
+      `accounts/${this.authUser.uid}/relatedAccounts/${account.id}`,
+      newRelatedAccount,
+    );
+
+    // Fetch the current user's account to update the relatedAccounts array
+    this.updateRelatedAccounts(newRelatedAccount);
   }
 
-  showRequestBtn(group: Partial<Account>): boolean {
-    // Checks to see if same account or already has an existing relationship
-    return (
-      !(
-        this.user?.relatedAccounts?.some(
-          (relatedAccount) =>
-            relatedAccount.id === group.id &&
-            (relatedAccount.status === "accepted" ||
-              relatedAccount.status === "pending" ||
-              relatedAccount.status === "blocked"),
-        ) || group.id === this.authUser?.uid
-      ) ?? false
-    );
+  private updateRelatedAccounts(relatedAccount: Partial<RelatedAccount>) {
+    if (this.account) {
+      this.account.relatedAccounts = [
+        ...(this?.account?.relatedAccounts || []),
+        relatedAccount,
+      ];
+      this.storeService.updateDocInState("accounts", this.account);
+    }
+  }
+
+  /**
+   * Determines whether a request button should be displayed for a given account.
+   *
+   * @param {Partial<Account>} item - The account for which to determine whether a request button should be displayed.
+   * @returns {boolean} - Returns true if the authenticated user is different from the item and there is no non-rejected related account with the same id as the item. Otherwise, it returns false.
+   */
+  showRequestButton(item: Partial<Account>): boolean {
+    const authUserId = this.authUser?.uid;
+    if (!authUserId || authUserId === item.id) {
+      return false;
+    }
+
+    return this.account?.relatedAccounts?.find(
+      (ra) => ra.id === item.id && ra.status !== "rejected",
+    )
+      ? false
+      : true;
   }
 }

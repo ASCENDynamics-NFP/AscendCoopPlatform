@@ -38,13 +38,13 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 <h3>{{ group["name"] }}</h3>
                 <p>{{ group["tagline"] }}</p>
               </ion-label>
-              <ion-button *ngIf="userId === group['id']" slot="end" expand="block" color="secondary"
-                (click)="$event.stopPropagation();$event.preventDefault();removeGroupRequest(group);">Leave</ion-button>
+              <ion-button *ngIf="showRemoveButton(group)" slot="end" expand="block" color="secondary"
+                (click)="$event.stopPropagation();$event.preventDefault();removeRequest(group);">Leave</ion-button>
             </ion-item>
           </ion-list>
         </ion-card>
 
-        <ion-card *ngIf="pendingGroupsList.length">
+        <ion-card *ngIf="isProfileOwner() && pendingGroupsList.length > 0">
           <ion-card-header>
             <ion-card-title>Pending Group Requests</ion-card-title>
             <ion-card-subtitle>{{ pendingGroupsList.length }} pending groups</ion-card-subtitle>
@@ -59,10 +59,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 <h3>{{ group["name"] }}</h3>
                 <p>{{ group["tagline"] }}</p>
               </ion-label>
-              <ion-button *ngIf="group['id'] !== group['initiatorId']" slot="end" expand="block"
-                (click)="$event.stopPropagation();$event.preventDefault();acceptGroupRequest(group);">Accept</ion-button>
-              <ion-button *ngIf="group['id'] !== group['initiatorId']" slot="end" expand="block" color="secondary"
-                (click)="$event.stopPropagation();$event.preventDefault();rejectGroupRequest(group);">Reject</ion-button>
+              <ion-button *ngIf="showAcceptRejectButtons(group)" slot="end" expand="block"
+                (click)="$event.stopPropagation();$event.preventDefault();acceptRequest(group);">Accept</ion-button>
+              <ion-button *ngIf="showAcceptRejectButtons(group)" slot="end" expand="block" color="secondary"
+                (click)="$event.stopPropagation();$event.preventDefault();rejectRequest(group);">Reject</ion-button>
+              <ion-button slot="end" expand="block" color="secondary" *ngIf="showRemoveButton(group);"
+                (click)="$event.stopPropagation();$event.preventDefault();removeRequest(group);">
+                Remove
+              </ion-button>
             </ion-item>
           </ion-list>
         </ion-card>

@@ -139,7 +139,7 @@ export class UsersPage {
    * @param {Partial<Account>} item - The account for which to determine whether a request button should be displayed.
    * @returns {boolean} - Returns true if the authenticated user is different from the item and there is no non-rejected related account with the same id as the item. Otherwise, it returns false.
    */
-  displayRequestButton(item: Partial<Account>): boolean {
+  showRequestButton(item: Partial<Account>): boolean {
     const authUserId = this.authUser?.uid;
     if (!authUserId || authUserId === item.id) {
       return false;

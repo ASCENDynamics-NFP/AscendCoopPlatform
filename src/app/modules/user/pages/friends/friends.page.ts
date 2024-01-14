@@ -86,7 +86,7 @@ export class FriendsPage implements OnInit {
     );
   }
 
-  updateFriendStatus(request: Partial<RelatedAccount>, status: string) {
+  updateStatus(request: Partial<RelatedAccount>, status: string) {
     const docPath = `accounts/${this.accountId}/relatedAccounts/${request.id}`;
     const updatedData = {status: status};
     this.storeService.updateDocAtPath(docPath, updatedData).then(() => {
@@ -95,15 +95,15 @@ export class FriendsPage implements OnInit {
     });
   }
 
-  acceptFriendRequest(request: Partial<RelatedAccount>) {
-    this.updateFriendStatus(request, "accepted");
+  acceptRequest(request: Partial<RelatedAccount>) {
+    this.updateStatus(request, "accepted");
   }
 
-  rejectFriendRequest(request: Partial<RelatedAccount>) {
-    this.updateFriendStatus(request, "rejected");
+  rejectRequest(request: Partial<RelatedAccount>) {
+    this.updateStatus(request, "rejected");
   }
 
-  removeFriendRequest(request: Partial<RelatedAccount>) {
+  removeRequest(request: Partial<RelatedAccount>) {
     if (!this.accountId) return;
     const docPath = `accounts/${this.accountId}/relatedAccounts/${request.id}`;
     this.storeService.deleteDocAtPath(docPath);

@@ -38,7 +38,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 <p>{{ friend.tagline }}</p>
               </ion-label>
               <ion-button slot="end" expand="block" color="secondary" *ngIf="showRemoveButton(friend);"
-                (click)="$event.stopPropagation();$event.preventDefault();removeFriendRequest(friend);">
+                (click)="$event.stopPropagation();$event.preventDefault();removeRequest(friend);">
                 Remove
               </ion-button>
             </ion-item>
@@ -59,15 +59,15 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 <p>{{ friend.tagline }}</p>
               </ion-label>
               <ion-button slot="end" expand="block" *ngIf="showAcceptRejectButtons(friend);"
-                (click)="$event.stopPropagation();$event.preventDefault();acceptFriendRequest(friend);">
+                (click)="$event.stopPropagation();$event.preventDefault();acceptRequest(friend);">
                 Accept
               </ion-button>
               <ion-button slot="end" expand="block" color="secondary" *ngIf="showAcceptRejectButtons(friend)"
-                (click)="$event.stopPropagation();$event.preventDefault();rejectFriendRequest(friend);">
+                (click)="$event.stopPropagation();$event.preventDefault();rejectRequest(friend);">
                 Reject
               </ion-button>
               <ion-button slot="end" expand="block" color="secondary" *ngIf="showRemoveButton(friend);"
-                (click)="$event.stopPropagation();$event.preventDefault();removeFriendRequest(friend);">
+                (click)="$event.stopPropagation();$event.preventDefault();removeRequest(friend);">
                 Remove
               </ion-button>
             </ion-item>

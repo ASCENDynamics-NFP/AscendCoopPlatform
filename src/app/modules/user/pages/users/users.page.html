@@ -36,7 +36,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 <h3>{{ item["name"] }}</h3>
                 <p>{{ item["description"] }}</p>
               </ion-label>
-              <ion-button *ngIf="displayRequestButton(item)" slot="end" mode="md" expand="block"
+              <ion-button *ngIf="showRequestButton(item)" slot="end" mode="md" expand="block"
                 (click)="$event.stopPropagation();$event.preventDefault();sendFriendRequest(item);">Send
                 Request</ion-button>
             </ion-item>

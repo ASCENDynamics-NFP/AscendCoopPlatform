@@ -39,11 +39,11 @@ import {Subscription} from "rxjs";
  */
 export class MemberListPage {
   private accountsSubscription?: Subscription;
-  currentMembersList: any[] = [];
-  pendingMembersList: any[] = [];
-  groupId: string | null = null;
+  currentMembersList: Partial<RelatedAccount>[] = [];
+  pendingMembersList: Partial<RelatedAccount>[] = [];
+  accountId: string | null = null;
   account?: Partial<Account>;
-  currentUser: User | null = this.authStoreService.getCurrentUser();
+  currentUser: User | null = null;
 
   /**
    * Constructs the MemberListPage.
@@ -56,34 +56,22 @@ export class MemberListPage {
     private authStoreService: AuthStoreService,
     private storeService: StoreService,
   ) {
-    this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
-
-    this.accountsSubscription = this.storeService.accounts$.subscribe(
-      (accounts) => {
-        this.account = accounts.find((account) => account.id === this.groupId);
-      },
-    );
+    this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
+    this.currentUser = this.authStoreService.getCurrentUser();
   }
 
   /**
    * Lifecycle hook that is called when the page is about to enter.
    */
   ionViewWillEnter() {
-    if (this.groupId) {
-      this.storeService.getDocById("accounts", this.groupId);
-      this.storeService.accounts$.subscribe((accounts) => {
-        const groupAccount = accounts.find((acc) => acc.id === this.groupId);
-        if (groupAccount) {
-          const relatedAccounts = groupAccount.relatedAccounts ?? [];
-          this.currentMembersList = relatedAccounts.filter(
-            (ra) => ra.status === "accepted",
-          );
-          this.pendingMembersList = relatedAccounts.filter(
-            (ra) => ra.status === "pending",
-          );
+    this.accountsSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        this.account = accounts.find((acc) => acc.id === this.accountId);
+        if (this.account) {
+          this.sortRelatedAccounts(this.account.relatedAccounts || []);
         }
-      });
-    }
+      },
+    );
   }
 
   /**
@@ -93,85 +81,82 @@ export class MemberListPage {
     this.accountsSubscription?.unsubscribe();
   }
 
+  sortRelatedAccounts(relatedAccounts: Partial<RelatedAccount>[]) {
+    this.currentMembersList = relatedAccounts.filter(
+      (ra) => ra.type === "user" && ra.status === "accepted",
+    );
+    this.pendingMembersList = relatedAccounts.filter(
+      (ra) => ra.type === "user" && ra.status === "pending",
+    );
+    console.log(this.currentMembersList, this.pendingMembersList);
+  }
+
   /**
    * Checks if the current user is an admin of the group.
    * @returns {boolean} - True if the user is an admin, otherwise false.
    */
   get isAdmin() {
     if (!this.account?.groupDetails || !this.currentUser) return false;
-    return this.account.groupDetails.admins?.includes(this.currentUser.uid);
-  }
-
-  /**
-   * Accepts a member request to join the group.
-   * @param {any} request - The member request to accept.
-   */
-  acceptMemberRequest(member: Partial<RelatedAccount>) {
-    if (!this.groupId || !member.id) return;
-    const update = {status: "accepted"};
-    this.storeService.updateDocAtPath(
-      `accounts/${this.groupId}/relatedAccounts/${member.id}`,
-      update,
+    return (
+      this.isOwner() ||
+      this.account.groupDetails.admins?.includes(this.currentUser.uid)
     );
   }
 
-  /**
-   * Rejects a member request to join the group.
-   * @param {any} request - The member request to reject.
-   */
-  rejectMemberRequest(member: Partial<RelatedAccount>) {
-    if (!this.groupId || !member.id) return;
-    this.storeService.deleteDocAtPath(
-      `accounts/${this.groupId}/relatedAccounts/${member.id}`,
-    );
+  updateStatus(request: Partial<RelatedAccount>, status: string) {
+    const docPath = `accounts/${this.accountId}/relatedAccounts/${request.id}`;
+    const updatedData = {status: status};
+    this.storeService.updateDocAtPath(docPath, updatedData).then(() => {
+      if (!this.accountId) return;
+      this.storeService.getAndSortRelatedAccounts(this.accountId);
+    });
   }
 
   /**
    * Adds a member to the group.
    * @param {any} request - The member request to process.
    */
-  addMember(request: any) {
-    const groupId = this.groupId;
-    const memberId = request.id;
-
-    if (!groupId || !memberId) return;
-
-    // Add the member to the group's related accounts with status "accepted"
-    this.storeService.updateDocAtPath(
-      `accounts/${groupId}/relatedAccounts/${memberId}`,
-      {status: "accepted"},
-    );
+  acceptRequest(request: Partial<RelatedAccount>) {
+    this.updateStatus(request, "accepted");
   }
 
   /**
-   * Removes a member request.
-   * @param {any} request - The member request to remove.
+   * Rejects a member request to join the group.
+   * @param {any} request - The member request to reject.
    */
-  removeMemberRequest(request: any) {
-    const groupId = this.groupId;
-    const memberId = request.id;
-
-    if (!groupId || !memberId) return;
-
-    // Delete the relationship document
-    this.storeService.deleteDocAtPath(
-      `accounts/${groupId}/relatedAccounts/${memberId}`,
-    );
+  rejectRequest(request: Partial<RelatedAccount>) {
+    this.updateStatus(request, "rejected");
   }
 
   /**
    * Removes a member from the group.
    * @param {any} request - The member request to process.
    */
-  removeMember(request: any) {
-    const groupId = this.groupId;
-    const memberId = request.id;
+  removeRequest(request: Partial<RelatedAccount>) {
+    if (!this.accountId) return;
+    const docPath = `accounts/${this.accountId}/relatedAccounts/${request.id}`;
+    this.storeService.deleteDocAtPath(docPath);
+    this.storeService.getAndSortRelatedAccounts(this.accountId);
+  }
 
-    if (!groupId || !memberId) return;
-
-    // Remove the member from the group's related accounts
-    this.storeService.deleteDocAtPath(
-      `accounts/${groupId}/relatedAccounts/${memberId}`,
+  showAcceptRejectButtons(request: Partial<RelatedAccount>) {
+    return (
+      this.isOwner() &&
+      request.status === "pending" &&
+      request.targetId === this.currentUser?.uid
     );
+  }
+
+  showRemoveButton(request: Partial<RelatedAccount>) {
+    return (
+      this.isOwner() &&
+      (request.status === "accepted" ||
+        (request.status === "pending" &&
+          request.initiatorId === this.currentUser?.uid))
+    );
+  }
+
+  isOwner() {
+    return this.currentUser?.uid === this.accountId;
   }
 }

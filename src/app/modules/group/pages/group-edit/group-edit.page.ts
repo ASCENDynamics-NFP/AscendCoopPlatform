@@ -76,7 +76,7 @@ export class GroupEditPage {
     private activatedRoute: ActivatedRoute,
     private router: Router,
   ) {
-    this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
+    this.groupId = this.activatedRoute.snapshot.paramMap.get("accountId");
   }
 
   ionViewWillEnter() {

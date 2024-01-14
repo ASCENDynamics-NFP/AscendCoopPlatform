@@ -63,7 +63,7 @@ export class GroupProfilePage {
     private storeService: StoreService,
     private router: Router,
   ) {
-    this.groupId = this.route.snapshot.paramMap.get("groupId");
+    this.groupId = this.route.snapshot.paramMap.get("accountId");
     if (this.groupId) {
       this.storeService.getAndSortRelatedAccounts(this.groupId);
     }
@@ -85,7 +85,7 @@ export class GroupProfilePage {
 
         if (this.group) {
           if (this.group.type === "user") {
-            // redirect user to /user-profile/:groupId
+            // redirect user to /user-profile/:accountId
             this.router.navigate(["/user-profile", this.group.id]);
           }
           let user = this.authStoreService.getCurrentUser();

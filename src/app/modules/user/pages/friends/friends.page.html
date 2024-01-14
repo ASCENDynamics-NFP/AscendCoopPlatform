@@ -44,7 +44,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             </ion-item>
           </ion-list>
         </ion-card>
-        <ion-card *ngIf="isProfileOwner() && pendingFriendsList.length > 0">
+        <ion-card *ngIf="isOwner() && pendingFriendsList.length > 0">
           <ion-card-header>
             <ion-card-title>Pending Friends</ion-card-title>
             <ion-card-subtitle>{{ pendingFriendsList.length }} pending friends</ion-card-subtitle>

@@ -112,7 +112,7 @@ export class FriendsPage implements OnInit {
 
   showAcceptRejectButtons(request: Partial<RelatedAccount>) {
     return (
-      this.isProfileOwner() &&
+      this.isOwner() &&
       request.status === "pending" &&
       request.initiatorId !== this.currentUser?.uid
     );
@@ -120,14 +120,14 @@ export class FriendsPage implements OnInit {
 
   showRemoveButton(request: Partial<RelatedAccount>) {
     return (
-      this.isProfileOwner() &&
+      this.isOwner() &&
       (request.status === "accepted" ||
         (request.status === "pending" &&
           request.initiatorId === this.currentUser?.uid))
     );
   }
 
-  isProfileOwner() {
+  isOwner() {
     return this.currentUser?.uid === this.accountId;
   }
 }

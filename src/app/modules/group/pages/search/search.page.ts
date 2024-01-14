@@ -55,7 +55,7 @@ export class SearchPage {
     private storeService: StoreService,
   ) {
     this.user = this.authStoreService.getCurrentUser();
-    this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
+    this.groupId = this.activatedRoute.snapshot.paramMap.get("accountId");
   }
 
   get isAdmin(): boolean {

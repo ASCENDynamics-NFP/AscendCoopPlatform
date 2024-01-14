@@ -47,7 +47,7 @@ export class GroupPage {
     private storeService: StoreService,
     private router: Router,
   ) {
-    this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
+    this.groupId = this.activatedRoute.snapshot.paramMap.get("accountId");
 
     if (this.groupId) {
       this.storeService.getDocById("accounts", this.groupId);

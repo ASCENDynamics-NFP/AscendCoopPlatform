@@ -26,33 +26,33 @@ export const routes: Routes = [
     component: GroupPage,
     children: [
       {
-        path: ":groupId/details",
+        path: ":accountId/details",
         loadComponent: () =>
           import("../group-profile/group-profile.page").then(
             (m) => m.GroupProfilePage,
           ),
       },
       {
-        path: ":groupId/details/edit",
+        path: ":accountId/details/edit",
         loadComponent: () =>
           import("../group-edit/group-edit.page").then((m) => m.GroupEditPage),
       },
       {
-        path: ":groupId/partners",
+        path: ":accountId/partners",
         loadComponent: () =>
           import("./component/partners/partners.component").then(
             (m) => m.PartnersComponent,
           ),
       },
       {
-        path: ":groupId/members",
+        path: ":accountId/members",
         loadComponent: () =>
           import("./component/members/members.component").then(
             (m) => m.MembersComponent,
           ),
       },
       {
-        path: ":groupId/search",
+        path: ":accountId/search",
         loadComponent: () =>
           import("../search/search.page").then((m) => m.SearchPage),
       },

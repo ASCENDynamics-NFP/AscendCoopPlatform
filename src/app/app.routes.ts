@@ -28,7 +28,7 @@ export const routes: Routes = [
     pathMatch: "full",
   },
   {
-    path: "group-profile/:groupId/edit",
+    path: "group-profile/:accountId/edit",
     loadComponent: () =>
       import("./modules/group/pages/group-edit/group-edit.page").then(
         (m) => m.GroupEditPage,
@@ -43,7 +43,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: "group-profile/:groupId",
+    path: "group-profile/:accountId",
     loadComponent: () =>
       import("./modules/group/pages/group-profile/group-profile.page").then(
         (m) => m.GroupProfilePage,
@@ -128,7 +128,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: "group/:groupId",
+    path: "group/:accountId",
     loadChildren: () =>
       import("./modules/group/pages/group/group.routes").then((m) => m.routes),
     canActivate: [AuthGuard],

@@ -50,8 +50,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               </ion-label>
               <ion-toggle *ngIf="isAdmin" slot="end" [checked]="member.relationship === 'admin'"
                 [disabled]="isCurrentUserLastAdmin(member)" (ionChange)="updateAdminStatus(member)"></ion-toggle>
-              <ion-button *ngIf="member.status === 'accepted' && !isCurrentUserLastAdmin(member)" slot="end"
-                color="danger" (click)="removeMemberRequest(member)">Remove</ion-button>
+              <ion-button *ngIf="showRemoveButton(member) && !isCurrentUserLastAdmin(member)" slot="end" expand="block"
+                color="danger"
+                (click)="$event.stopPropagation();$event.preventDefault();removeRequest(member);">Remove</ion-button>
             </ion-item>
           </ion-list>
         </ion-card>
@@ -71,10 +72,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 <h3>{{ member.name }}</h3>
                 <p>{{ member.tagline }}</p>
               </ion-label>
-              <ion-button *ngIf="member.status === 'pending' && member.id === member.initiatorId" slot="end"
-                (click)="acceptMemberRequest(member)">Accept</ion-button>
-              <ion-button *ngIf="member.status === 'pending' && member.id === member.initiatorId" slot="end"
-                color="danger" (click)="rejectMemberRequest(member)">Reject</ion-button>
+              <ion-button *ngIf="showAcceptRejectButtons(member)" slot="end" expand="block"
+                (click)="$event.stopPropagation();$event.preventDefault();acceptRequest(member);">Accept</ion-button>
+              <ion-button *ngIf="showAcceptRejectButtons(member)" slot="end" expand="block" color="secondary"
+                (click)="$event.stopPropagation();$event.preventDefault();rejectRequest(member);">Reject</ion-button>
+              <ion-button *ngIf="showRemoveButton(member)" slot="end" expand="block" color="secondary"
+                (click)="$event.stopPropagation();$event.preventDefault();removeRequest(member);">Remove</ion-button>
             </ion-item>
           </ion-list>
         </ion-card>

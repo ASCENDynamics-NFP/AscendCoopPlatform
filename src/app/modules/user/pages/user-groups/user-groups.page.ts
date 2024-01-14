@@ -103,7 +103,7 @@ export class UserGroupsPage {
 
   showAcceptRejectButtons(request: Partial<RelatedAccount>) {
     return (
-      this.isProfileOwner() &&
+      this.isOwner() &&
       request.status === "pending" &&
       request.targetId === this.currentUser?.uid
     );
@@ -111,14 +111,14 @@ export class UserGroupsPage {
 
   showRemoveButton(request: Partial<RelatedAccount>) {
     return (
-      this.isProfileOwner() &&
+      this.isOwner() &&
       (request.status === "accepted" ||
         (request.status === "pending" &&
           request.initiatorId === this.currentUser?.uid))
     );
   }
 
-  isProfileOwner() {
+  isOwner() {
     return this.currentUser?.uid === this.accountId;
   }
 }

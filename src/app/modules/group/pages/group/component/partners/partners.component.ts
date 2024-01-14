@@ -43,14 +43,15 @@ export class PartnersComponent implements OnInit {
   pendingGroupsList: any[] = [];
   groupId: string | null = null;
   account?: Partial<Account>;
-  currentUser: User | null = this.authStoreService.getCurrentUser();
+  currentUser: User | null = null;
 
   constructor(
     private activatedRoute: ActivatedRoute,
     private authStoreService: AuthStoreService,
     private storeService: StoreService,
   ) {
-    this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
+    this.groupId = this.activatedRoute.snapshot.paramMap.get("accountId");
+    this.currentUser = this.authStoreService.getCurrentUser();
   }
 
   ngOnInit() {

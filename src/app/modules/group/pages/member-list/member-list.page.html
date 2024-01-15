@@ -53,7 +53,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             </ion-item>
           </ion-list>
         </ion-card>
-        <ion-card *ngIf="isAdmin() && pendingMembersList.length">
+        <ion-card *ngIf="isAdmin && pendingMembersList.length">
           <ion-card-header>
             <ion-card-title>Members</ion-card-title>
             <ion-card-subtitle>{{ pendingMembersList.length }} pending

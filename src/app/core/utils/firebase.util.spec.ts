@@ -41,6 +41,7 @@ describe("Firebase utility functions", () => {
       createdDate: fakeTimestamp,
       lastModifiedBy: "test-user",
       lastModifiedDate: fakeTimestamp,
+      relatedAccounts: null,
     });
   });
 
@@ -51,6 +52,7 @@ describe("Firebase utility functions", () => {
       example: "data",
       lastModifiedBy: "test-user",
       lastModifiedDate: fakeTimestamp,
+      relatedAccounts: null,
     });
   });
 });

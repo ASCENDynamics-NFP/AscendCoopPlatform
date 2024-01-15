@@ -6,10 +6,11 @@ service firebase.storage {
       	request.auth != null; 
       allow write: if 
       	request.auth != null && 
-        request.auth.uid == userId && 
+        request.auth.uid == accountId && 
         request.resource.contentType.matches('image/.*') && 
         request.resource.size < 5 * 1024 * 1024; // 5MB
     }
+
     match /feedback/{accountId}/{allPaths=**} {
       allow read: if 
       	request.auth != null; 

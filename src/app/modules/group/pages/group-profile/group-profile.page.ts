@@ -30,6 +30,7 @@ import {GroupListComponent} from "./components/group-list/group-list.component";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {Subscription} from "rxjs";
 import {StoreService} from "../../../../core/services/store.service";
+import {User} from "firebase/auth";
 
 @Component({
   selector: "app-group-profile",
@@ -49,9 +50,9 @@ import {StoreService} from "../../../../core/services/store.service";
 })
 export class GroupProfilePage {
   private accountsSubscription?: Subscription;
-  accountId: string | null = "";
-  group?: Partial<Account>;
-  isAdmin: boolean = false;
+  accountId: string | null = null;
+  currentUser: User | null = null;
+  account?: Partial<Account>;
   isMember: boolean = false;
   isPendingMember: boolean = false;
 
@@ -62,9 +63,21 @@ export class GroupProfilePage {
     private router: Router,
   ) {
     this.accountId = this.route.snapshot.paramMap.get("accountId");
+    this.currentUser = this.authStoreService.getCurrentUser();
     if (this.accountId) {
       this.storeService.getAndSortRelatedAccounts(this.accountId);
     }
+  }
+
+  get isAdmin() {
+    const foundAdmin = this.account?.relatedAccounts?.filter(
+      (ra) => ra.relationship === "admin" && ra.id === this.currentUser?.uid,
+    );
+    return (
+      ((this.accountId && this.currentUser?.uid === this.accountId) ||
+        (foundAdmin && foundAdmin.length > 0)) ??
+      false
+    );
   }
 
   ionViewWillEnter() {
@@ -78,21 +91,26 @@ export class GroupProfilePage {
 
   initiateSubscribers() {
     this.accountsSubscription = this.storeService.accounts$.subscribe(
-      (groups) => {
-        this.group = groups.find((group) => group.id === this.accountId);
+      (accounts) => {
+        this.account = accounts.find((acc) => acc.id === this.accountId);
+      },
+    );
 
-        if (this.group) {
-          if (this.group.type === "user") {
-            // redirect user to /user-profile/:accountId
-            this.router.navigate(["/user-profile", this.group.id]);
+    this.accountsSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        if (!this.accountId) return;
+        this.account = accounts.find(
+          (account) => account.id === this.accountId,
+        );
+        if (!this.account) {
+          this.storeService.getDocById("accounts", this.accountId); // get and add doc to store
+        } else {
+          if (this.account?.type === "user") {
+            this.router.navigate([`/user-profile/${this.accountId}`]); // Navigate to user-profile
           }
-          let user = this.authStoreService.getCurrentUser();
-          let userId = user?.uid ? user.uid : "";
-          // Filter for admin relationships
-          const adminAccount = this.group?.relatedAccounts?.filter(
-            (ra) => ra.relationship === "admin" && ra.id === userId,
-          );
-          this.isAdmin = this.group.id === userId || adminAccount !== undefined;
+          if (!this.account?.relatedAccounts) {
+            this.storeService.getAndSortRelatedAccounts(this.accountId);
+          }
         }
       },
     );

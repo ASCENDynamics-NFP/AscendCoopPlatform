@@ -35,7 +35,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <ion-grid>
     <ion-row>
       <ion-col>
-        <app-hero *ngIf="group" [group]="group" [isMember]="isMember" [isPendingMember]="isPendingMember"
+        <app-hero *ngIf="account" [group]="account" [isMember]="isMember" [isPendingMember]="isPendingMember"
           [isAdmin]="isAdmin"></app-hero>
       </ion-col>
     </ion-row>
@@ -43,15 +43,15 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-col>
         <ion-row>
           <ion-col>
-            <app-details *ngIf="group" [group]="group" [canEdit]="isAdmin"></app-details></ion-col>
+            <app-details *ngIf="account" [group]="account" [canEdit]="isAdmin"></app-details></ion-col>
         </ion-row>
       </ion-col>
       <ion-col>
         <ion-row>
-          <ion-col><app-member-list *ngIf="group" [account]="group"></app-member-list></ion-col>
+          <ion-col><app-member-list *ngIf="account" [account]="account"></app-member-list></ion-col>
         </ion-row>
         <ion-row>
-          <ion-col><app-group-list *ngIf="group" [account]="group"></app-group-list></ion-col>
+          <ion-col><app-group-list *ngIf="account" [account]="account"></app-group-list></ion-col>
         </ion-row>
       </ion-col>
     </ion-row>

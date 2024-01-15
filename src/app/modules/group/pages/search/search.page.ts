@@ -43,7 +43,7 @@ import {Subscription} from "rxjs";
 })
 export class SearchPage {
   private accountsSubscription?: Subscription;
-  groupId: string | null = null;
+  accountId: string | null = null;
   groups: Partial<Account>[] | null = [];
   users: Partial<Account>[] | null = [];
   user: User | null = null; // define your user here
@@ -55,7 +55,7 @@ export class SearchPage {
     private storeService: StoreService,
   ) {
     this.user = this.authStoreService.getCurrentUser();
-    this.groupId = this.activatedRoute.snapshot.paramMap.get("accountId");
+    this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
   }
 
   get isAdmin(): boolean {
@@ -71,7 +71,7 @@ export class SearchPage {
     this.accountsSubscription = this.storeService.accounts$.subscribe(
       (accounts) => {
         this.currentGroup = accounts.find(
-          (group) => group["id"] === this.groupId,
+          (group) => group["id"] === this.accountId,
         );
         this.groups = this.sortbyName(
           accounts.find((account) => account["type"] === "group") as Account[],

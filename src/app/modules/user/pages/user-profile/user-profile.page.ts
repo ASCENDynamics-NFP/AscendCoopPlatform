@@ -26,7 +26,7 @@ import {FriendListComponent} from "./components/friend-list/friend-list.componen
 import {GroupMembershipListComponent} from "./components/group-membership-list/group-membership-list.component";
 import {HeroComponent} from "./components/hero/hero.component";
 import {DetailsComponent} from "./components/details/details.component";
-import {Account, RelatedAccount} from "../../../../models/account.model";
+import {Account} from "../../../../models/account.model";
 import {Subscription} from "rxjs";
 import {StoreService} from "../../../../core/services/store.service";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
@@ -54,8 +54,6 @@ export class UserProfilePage {
   private accountsSubscription?: Subscription;
   authUser: User | null = null;
   account?: Partial<Account>;
-  friendList: Partial<RelatedAccount>[] = [];
-  groupList: Partial<RelatedAccount>[] = [];
 
   constructor(
     private authStoreService: AuthStoreService,
@@ -96,20 +94,9 @@ export class UserProfilePage {
           }
           if (!this.account?.relatedAccounts) {
             this.storeService.getAndSortRelatedAccounts(this.accountId);
-          } else {
-            this.sortRelationships(this.account.relatedAccounts);
           }
         }
       },
-    );
-  }
-
-  sortRelationships(relatedAccounts: Partial<RelatedAccount>[]) {
-    this.friendList = relatedAccounts.filter(
-      (ra) => ra.type === "user" && ra.status === "accepted",
-    );
-    this.groupList = relatedAccounts.filter(
-      (ra) => ra.type === "group" && ra.status === "accepted",
     );
   }
 }

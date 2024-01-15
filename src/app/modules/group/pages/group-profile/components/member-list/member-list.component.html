@@ -20,14 +20,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <ion-card>
   <ion-card-header>
     <ion-card-title>Members</ion-card-title>
-    <ion-card-subtitle>{{ allMembers.length }} members</ion-card-subtitle>
+    <ion-card-subtitle>{{ allMembers?.length || 0 }} members</ion-card-subtitle>
   </ion-card-header>
   <ion-card-content>
-    <ion-list>
+    <ion-list *ngIf="allMembers">
       <ion-item *ngFor="let member of allMembers | slice: 0 : 4; let i = index" button
         (click)="goToUserProfile(member.id)">
         <ion-thumbnail slot="start">
-          <img *ngIf="member.image" [alt]="member.name" [src]="member.image" />
+          <img *ngIf="member.iconImage" [alt]="member.name" [src]="member.iconImage" />
         </ion-thumbnail>
         <ion-label>
           <h3>{{ member.name }}</h3>

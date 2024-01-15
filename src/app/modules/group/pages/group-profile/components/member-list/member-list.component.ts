@@ -31,20 +31,14 @@ import {Account, RelatedAccount} from "../../../../../../models/account.model";
   imports: [IonicModule, CommonModule],
 })
 export class MemberListComponent {
-  @Input() group?: Partial<Account>;
-  @Input() relatedAccounts: Partial<RelatedAccount>[] = [];
+  @Input() account?: Partial<Account>;
 
   constructor(private router: Router) {}
 
   get allMembers() {
-    return this.relatedAccounts
-      .filter((ra) => ra.type === "user" && ra.status === "accepted")
-      .map((member) => ({
-        id: member.id,
-        name: member.name,
-        image: member.iconImage,
-        tagline: member.tagline,
-      }));
+    return this.account?.relatedAccounts?.filter(
+      (ra) => ra.type === "user" && ra.status === "accepted",
+    );
   }
 
   goToUserProfile(id: string | undefined) {
@@ -54,9 +48,9 @@ export class MemberListComponent {
   }
 
   goToMemberList() {
-    if (this.group?.id) {
+    if (this.account?.id) {
       this.router.navigate([
-        `/group/${this.group.id}/${this.group.id}/members`,
+        `/group/${this.account.id}/${this.account.id}/members`,
       ]);
     }
   }

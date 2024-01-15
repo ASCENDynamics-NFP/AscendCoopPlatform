@@ -34,41 +34,41 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         </ion-card-header>
         <ion-list>
           <ion-item *ngFor="let partner of currentGroupsList; let i = index"
-            routerLink="/group-profile/{{ partner['partnerGroupId'] }}" button>
+            routerLink="/group/{{ partner['id'] }}/{{ partner['id'] }}/details" button>
             <ion-thumbnail slot="start">
-              <img *ngIf="partner['image']" [alt]="partner['name']" [src]="partner['image']" />
+              <img *ngIf="partner['iconImage']" [alt]="partner['name']" [src]="partner['iconImage']" />
             </ion-thumbnail>
             <ion-label>
               <h3>{{ partner["name"] }}</h3>
               <p>{{ partner["tagline"] }}</p>
             </ion-label>
-            <ion-button *ngIf="partner['showRemoveButton']" slot="end" expand="block" color="secondary"
-              (click)="$event.stopPropagation(); $event.preventDefault(); removePartnerRequest(partner);">Remove</ion-button>
+            <ion-button *ngIf="showRemoveButton(partner)" slot="end" expand="block" color="secondary"
+              (click)="$event.stopPropagation(); $event.preventDefault(); removeRequest(partner);">Remove</ion-button>
           </ion-item>
         </ion-list>
       </ion-card>
 
-      <ion-card *ngIf="pendingGroupsList.length">
+      <ion-card *ngIf="isAdmin && pendingGroupsList.length">
         <ion-card-header>
           <ion-card-title>Pending Partners</ion-card-title>
           <ion-card-subtitle>{{ pendingGroupsList.length }} pending</ion-card-subtitle>
         </ion-card-header>
         <ion-list>
           <ion-item *ngFor="let partner of pendingGroupsList; let i = index"
-            routerLink="/group-profile/{{ partner['partnerGroupId'] }}" button>
+            routerLink="/group/{{ partner['id'] }}/{{ partner['id'] }}/details" button>
             <ion-thumbnail slot="start">
-              <img *ngIf="partner['image']" [alt]="partner['name']" [src]="partner['image']" />
+              <img *ngIf="partner['iconImage']" [alt]="partner['name']" [src]="partner['iconImage']" />
             </ion-thumbnail>
             <ion-label>
               <h3>{{ partner["name"] }}</h3>
               <p>{{ partner["tagline"] }}</p>
             </ion-label>
-            <ion-button *ngIf="partner['showAcceptRejectButtons']" slot="end" expand="block"
-              (click)="$event.stopPropagation(); $event.preventDefault(); acceptPartnerRequest(partner);">Accept</ion-button>
-            <ion-button *ngIf="partner['showAcceptRejectButtons']" slot="end" expand="block" color="secondary"
-              (click)="$event.stopPropagation(); $event.preventDefault(); rejectPartnerRequest(partner);">Reject</ion-button>
-            <ion-button *ngIf="partner['showRemoveButton']" slot="end" expand="block" color="secondary"
-              (click)="$event.stopPropagation(); $event.preventDefault(); removePartnerRequest(partner);">Remove</ion-button>
+            <ion-button *ngIf="showAcceptRejectButtons(partner)" slot="end" expand="block"
+              (click)="$event.stopPropagation();$event.preventDefault();acceptRequest(partner);">Accept</ion-button>
+            <ion-button *ngIf="showAcceptRejectButtons(partner)" slot="end" expand="block" color="secondary"
+              (click)="$event.stopPropagation();$event.preventDefault();rejectRequest(partner);">Reject</ion-button>
+            <ion-button *ngIf="showRemoveButton(partner)" slot="end" expand="block" color="secondary"
+              (click)="$event.stopPropagation();$event.preventDefault();removeRequest(partner);">Remove</ion-button>
           </ion-item>
         </ion-list>
       </ion-card>

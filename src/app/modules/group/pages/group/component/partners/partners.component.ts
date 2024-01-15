@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
+import {Component} from "@angular/core";
 import {ActivatedRoute, RouterModule} from "@angular/router";
 import {User} from "firebase/auth";
 import {Subscription} from "rxjs";
@@ -34,79 +34,114 @@ import {IonicModule} from "@ionic/angular";
   standalone: true,
   imports: [IonicModule, CommonModule, RouterModule],
 })
-export class PartnersComponent implements OnInit {
+export class PartnersComponent {
   private accountsSubscription?: Subscription;
-
-  relatedAccounts: any[] = [];
-
-  currentGroupsList: any[] = [];
-  pendingGroupsList: any[] = [];
-  groupId: string | null = null;
-  account?: Partial<Account>;
+  currentGroupsList: Partial<RelatedAccount>[] = [];
+  pendingGroupsList: Partial<RelatedAccount>[] = [];
   currentUser: User | null = null;
+  accountId: string | null = null;
+  account?: Partial<Account>;
 
   constructor(
     private activatedRoute: ActivatedRoute,
     private authStoreService: AuthStoreService,
     private storeService: StoreService,
   ) {
-    this.groupId = this.activatedRoute.snapshot.paramMap.get("accountId");
+    this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
     this.currentUser = this.authStoreService.getCurrentUser();
   }
 
-  ngOnInit() {
-    if (this.groupId) {
-      this.storeService.getAndSortRelatedAccounts(this.groupId);
-    }
-
-    this.storeService.relatedAccounts$.subscribe((accounts) => {
-      this.relatedAccounts = accounts;
-    });
-  }
-
-  sortRelatedAccounts() {
-    // Sorting logic
-    this.relatedAccounts.sort((a, b) => {
-      // Replace 'name' with the field you want to sort by
-      return a.name.localeCompare(b.name);
-    });
-  }
-
   ionViewWillEnter() {
-    this.initiateSubscribers();
+    this.accountsSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        this.account = accounts.find((acc) => acc.id === this.accountId);
+        if (this.account) {
+          this.sortRelatedAccounts(this.account.relatedAccounts || []);
+        }
+      },
+    );
   }
 
   ionViewWillLeave() {
     this.accountsSubscription?.unsubscribe();
   }
 
-  initiateSubscribers() {
-    this.accountsSubscription = this.storeService.accounts$.subscribe(
-      (accounts) => {
-        this.account = accounts.find((account) => account.id === this.groupId);
-      },
+  sortRelatedAccounts(relatedAccounts: Partial<RelatedAccount>[]) {
+    this.currentGroupsList = relatedAccounts.filter(
+      (ra) => ra.type === "group" && ra.status === "accepted",
+    );
+    this.pendingGroupsList = relatedAccounts.filter(
+      (ra) => ra.type === "group" && ra.status === "pending",
+    );
+    console.log(this.currentGroupsList, this.pendingGroupsList);
+  }
+
+  /**
+   * Checks if the current user is an admin of the group.
+   * @returns {boolean} - True if the user is an admin, otherwise false.
+   */
+  get isAdmin() {
+    if (!this.account?.groupDetails || !this.currentUser) return false;
+    return (
+      this.isOwner() ||
+      this.account.groupDetails.admins?.includes(this.currentUser.uid)
     );
   }
 
-  acceptPartnerRequest(request: Partial<RelatedAccount>) {
-    this.updateRelatedAccountStatus(request, "accepted");
-  }
-
-  rejectPartnerRequest(request: Partial<RelatedAccount>) {
-    this.updateRelatedAccountStatus(request, "rejected");
-  }
-
-  removePartnerRequest(request: Partial<RelatedAccount>) {
-    const docPath = `accounts/${this.groupId}/relatedAccounts/${request.id}`;
-    this.storeService.deleteDocAtPath(docPath);
-  }
-
-  private updateRelatedAccountStatus(
-    request: Partial<RelatedAccount>,
-    status: "accepted" | "rejected",
-  ) {
-    const docPath = `accounts/${this.groupId}/relatedAccounts/${request.id}`;
+  updateStatus(request: Partial<RelatedAccount>, status: string) {
+    const docPath = `accounts/${this.accountId}/relatedAccounts/${request.id}`;
     const updatedData = {status: status};
-    this.storeService.updateDoc(docPath, updatedData);
+    this.storeService.updateDocAtPath(docPath, updatedData).then(() => {
+      if (!this.accountId) return;
+      this.storeService.getAndSortRelatedAccounts(this.accountId);
+    });
+  }
+
+  /**
+   * Adds a partner to the group.
+   * @param {any} request - The partner request to process.
+   */
+  acceptRequest(request: Partial<RelatedAccount>) {
+    this.updateStatus(request, "accepted");
+  }
+
+  /**
+   * Rejects a partner request to join the group.
+   * @param {any} request - The partner request to reject.
+   */
+  rejectRequest(request: Partial<RelatedAccount>) {
+    this.updateStatus(request, "rejected");
+  }
+
+  /**
+   * Removes a partner from the group.
+   * @param {any} request - The partner request to process.
+   */
+  removeRequest(request: Partial<RelatedAccount>) {
+    if (!this.accountId) return;
+    const docPath = `accounts/${this.accountId}/relatedAccounts/${request.id}`;
+    this.storeService.deleteDocAtPath(docPath);
+    this.storeService.getAndSortRelatedAccounts(this.accountId);
+  }
+
+  showAcceptRejectButtons(request: Partial<RelatedAccount>) {
+    return (
+      this.isOwner() &&
+      request.status === "pending" &&
+      request.targetId === this.currentUser?.uid
+    );
+  }
+
+  showRemoveButton(request: Partial<RelatedAccount>) {
+    return (
+      this.isOwner() &&
+      (request.status === "accepted" ||
+        (request.status === "pending" &&
+          request.initiatorId === this.currentUser?.uid))
+    );
+  }
+
+  isOwner() {
+    return this.currentUser?.uid === this.accountId;
   }
 }

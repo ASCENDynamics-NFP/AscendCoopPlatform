@@ -21,7 +21,7 @@ import {Component, Input} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
 import {Router} from "@angular/router";
-import {Account, RelatedAccount} from "../../../../../../models/account.model";
+import {Account} from "../../../../../../models/account.model";
 
 @Component({
   selector: "app-group-list",

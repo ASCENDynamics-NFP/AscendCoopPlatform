@@ -22,7 +22,7 @@ import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {ActivatedRoute, Router, RouterModule} from "@angular/router";
-import {Account, RelatedAccount} from "../../../../models/account.model";
+import {Account} from "../../../../models/account.model";
 import {DetailsComponent} from "./components/details/details.component";
 import {HeroComponent} from "./components/hero/hero.component";
 import {MemberListComponent} from "./components/member-list/member-list.component";
@@ -49,10 +49,8 @@ import {StoreService} from "../../../../core/services/store.service";
 })
 export class GroupProfilePage {
   private accountsSubscription?: Subscription;
-  groupId: string | null = "";
+  accountId: string | null = "";
   group?: Partial<Account>;
-  memberList: Partial<RelatedAccount>[] = [];
-  groupList: Partial<RelatedAccount>[] = [];
   isAdmin: boolean = false;
   isMember: boolean = false;
   isPendingMember: boolean = false;
@@ -63,9 +61,9 @@ export class GroupProfilePage {
     private storeService: StoreService,
     private router: Router,
   ) {
-    this.groupId = this.route.snapshot.paramMap.get("accountId");
-    if (this.groupId) {
-      this.storeService.getAndSortRelatedAccounts(this.groupId);
+    this.accountId = this.route.snapshot.paramMap.get("accountId");
+    if (this.accountId) {
+      this.storeService.getAndSortRelatedAccounts(this.accountId);
     }
   }
 
@@ -81,7 +79,7 @@ export class GroupProfilePage {
   initiateSubscribers() {
     this.accountsSubscription = this.storeService.accounts$.subscribe(
       (groups) => {
-        this.group = groups.find((group) => group.id === this.groupId);
+        this.group = groups.find((group) => group.id === this.accountId);
 
         if (this.group) {
           if (this.group.type === "user") {
@@ -95,24 +93,6 @@ export class GroupProfilePage {
             (ra) => ra.relationship === "admin" && ra.id === userId,
           );
           this.isAdmin = this.group.id === userId || adminAccount !== undefined;
-
-          // // Sort the related accounts into member and group lists
-          // this.memberList =
-          //   this.group.relatedAccounts?.filter(
-          //     (ra) =>
-          //       ra.type === "user" &&
-          //       ra.status !== "blocked" &&
-          //       ra.status !== "rejected" &&
-          //       ra.status !== "pending",
-          //   ) || [];
-          // this.groupList =
-          //   this.group.relatedAccounts?.filter(
-          //     (ra) =>
-          //       ra.type === "group" &&
-          //       ra.status !== "blocked" &&
-          //       ra.status !== "rejected" &&
-          //       ra.status !== "pending",
-          //   ) || [];
         }
       },
     );

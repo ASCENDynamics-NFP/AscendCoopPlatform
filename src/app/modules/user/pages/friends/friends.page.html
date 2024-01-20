@@ -17,7 +17,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<app-header *ngIf="user" [title]="user.name"></app-header>
+<app-header *ngIf="account" [title]="account.name"></app-header>
 
 <ion-content [fullscreen]="true">
   <ion-grid>
@@ -26,86 +26,50 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <ion-card>
           <ion-card-header>
             <ion-card-title>Friends</ion-card-title>
-            <ion-card-subtitle
-              >{{ currentFriendsList.length }} friends</ion-card-subtitle
-            >
+            <ion-card-subtitle>{{ currentFriendsList.length }} friends</ion-card-subtitle>
           </ion-card-header>
           <ion-list>
-            <ion-item
-              *ngFor="let friend of currentFriendsList; let i = index"
-              routerLink="/user-profile/{{friend['friendId']}}"
-              button
-            >
+            <ion-item *ngFor="let friend of currentFriendsList" routerLink="/user-profile/{{friend.id}}" button>
               <ion-thumbnail slot="start">
-                <img
-                  *ngIf="friend['image']"
-                  [alt]="friend['name']"
-                  [src]="friend['image']"
-                />
+                <img *ngIf="friend.iconImage" [alt]="friend.name" [src]="friend.iconImage" />
               </ion-thumbnail>
               <ion-label>
-                <h3>{{ friend["name"] }}</h3>
-                <p>{{ friend["bio"] }}</p>
+                <h3>{{ friend.name }}</h3>
+                <p>{{ friend.tagline }}</p>
               </ion-label>
-              <ion-button
-                *ngIf="friend['showRemoveButton']"
-                slot="end"
-                expand="block"
-                color="secondary"
-                (click)="$event.stopPropagation();$event.preventDefault();removeFriendRequest(friend);"
-                >Remove</ion-button
-              >
+              <ion-button slot="end" expand="block" color="secondary" *ngIf="showRemoveButton(friend);"
+                (click)="$event.stopPropagation();$event.preventDefault();removeRequest(friend);">
+                Remove
+              </ion-button>
             </ion-item>
           </ion-list>
         </ion-card>
-        <ion-card *ngIf="pendingFriendsList.length">
+        <ion-card *ngIf="isOwner() && pendingFriendsList.length > 0">
           <ion-card-header>
-            <ion-card-title>Friends</ion-card-title>
-            <ion-card-subtitle
-              >{{ pendingFriendsList.length }} pending
-              friends</ion-card-subtitle
-            >
+            <ion-card-title>Pending Friends</ion-card-title>
+            <ion-card-subtitle>{{ pendingFriendsList.length }} pending friends</ion-card-subtitle>
           </ion-card-header>
           <ion-list>
-            <ion-item
-              *ngFor="let friend of pendingFriendsList; let i = index"
-              routerLink="/user-profile/{{friend['friendId']}}"
-              button
-            >
+            <ion-item *ngFor="let friend of pendingFriendsList" routerLink="/user-profile/{{friend.id}}" button>
               <ion-thumbnail slot="start">
-                <img
-                  *ngIf="friend['image']"
-                  [alt]="friend['name']"
-                  [src]="friend['image']"
-                />
+                <img *ngIf="friend.iconImage" [alt]="friend.name" [src]="friend.iconImage" />
               </ion-thumbnail>
               <ion-label>
-                <h3>{{ friend["name"] }}</h3>
-                <p>{{ friend["bio"] }}</p>
+                <h3>{{ friend.name }}</h3>
+                <p>{{ friend.tagline }}</p>
               </ion-label>
-              <ion-button
-                *ngIf="friend['showAcceptRejectButtons']"
-                slot="end"
-                expand="block"
-                (click)="$event.stopPropagation();$event.preventDefault();acceptFriendRequest(friend);"
-                >Accept</ion-button
-              >
-              <ion-button
-                *ngIf="friend['showAcceptRejectButtons']"
-                slot="end"
-                expand="block"
-                color="secondary"
-                (click)="$event.stopPropagation();$event.preventDefault();rejectFriendRequest(friend);"
-                >Reject</ion-button
-              >
-              <ion-button
-                *ngIf="friend['showRemoveButton']"
-                slot="end"
-                expand="block"
-                color="secondary"
-                (click)="$event.stopPropagation();$event.preventDefault();removeFriendRequest(friend);"
-                >Remove</ion-button
-              >
+              <ion-button slot="end" expand="block" *ngIf="showAcceptRejectButtons(friend);"
+                (click)="$event.stopPropagation();$event.preventDefault();acceptRequest(friend);">
+                Accept
+              </ion-button>
+              <ion-button slot="end" expand="block" color="secondary" *ngIf="showAcceptRejectButtons(friend)"
+                (click)="$event.stopPropagation();$event.preventDefault();rejectRequest(friend);">
+                Reject
+              </ion-button>
+              <ion-button slot="end" expand="block" color="secondary" *ngIf="showRemoveButton(friend);"
+                (click)="$event.stopPropagation();$event.preventDefault();removeRequest(friend);">
+                Remove
+              </ion-button>
             </ion-item>
           </ion-list>
         </ion-card>

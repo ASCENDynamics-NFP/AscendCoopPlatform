@@ -25,36 +25,20 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-col>
         <ion-card>
           <ion-card-header>
-            <ion-searchbar
-              [debounce]="1000"
-              (ionInput)="searchUsers($event)"
-            ></ion-searchbar>
+            <ion-searchbar [debounce]="1000" (ionInput)="searchUsers($event)"></ion-searchbar>
           </ion-card-header>
           <ion-list>
-            <ion-item
-              *ngFor="let item of userList; let i = index"
-              routerLink="/user-profile/{{item['id']}}"
-              button
-            >
+            <ion-item *ngFor="let item of accountList; let i = index" routerLink="/user-profile/{{item['id']}}" button>
               <ion-thumbnail slot="start">
-                <img
-                  *ngIf="item['profilePicture']"
-                  [alt]="item['name']"
-                  [src]="item['profilePicture']"
-                />
+                <img *ngIf="item['iconImage']" [alt]="item['name']" [src]="item['iconImage']" />
               </ion-thumbnail>
               <ion-label>
                 <h3>{{ item["name"] }}</h3>
-                <p>{{ item["bio"] }}</p>
+                <p>{{ item["description"] }}</p>
               </ion-label>
-              <ion-button
-                *ngIf="(authUser && !item['friends']?.includes(authUser.uid) && authUser.uid !== item['id'] && !item['pendingFriends']?.includes(authUser.uid))"
-                slot="end"
-                mode="md"
-                expand="block"
-                (click)="$event.stopPropagation();$event.preventDefault();sendFriendRequest(item);"
-                >Send Request</ion-button
-              >
+              <ion-button *ngIf="showRequestButton(item)" slot="end" mode="md" expand="block"
+                (click)="$event.stopPropagation();$event.preventDefault();sendFriendRequest(item);">Send
+                Request</ion-button>
             </ion-item>
           </ion-list>
         </ion-card>

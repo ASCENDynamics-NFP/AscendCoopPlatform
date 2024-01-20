@@ -21,12 +21,10 @@ import {Component, Input} from "@angular/core";
 import {RouterModule} from "@angular/router";
 import {User} from "firebase/auth";
 import {StoreService} from "../../../../../../core/services/store.service";
-import {AppRelationship} from "../../../../../../models/relationship.model";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {AppGroup} from "../../../../../../models/group.model";
-import {AppUser} from "../../../../../../models/user.model";
+import {Account, RelatedAccount} from "../../../../../../models/account.model";
 
 @Component({
   selector: "app-member-search",
@@ -37,9 +35,9 @@ import {AppUser} from "../../../../../../models/user.model";
 })
 export class MemberSearchComponent {
   @Input() isAdmin: boolean = false;
-  @Input() user: User | null = null; // define your user here
-  @Input() currentGroup: Partial<AppGroup> | null = null;
-  @Input() users: Partial<AppUser>[] | null = [];
+  @Input() user: User | null = null;
+  @Input() currentGroup?: Partial<Account>;
+  @Input() users: Partial<Account>[] | null = [];
   searchTerm: string = "";
 
   constructor(private storeService: StoreService) {}
@@ -60,43 +58,46 @@ export class MemberSearchComponent {
     );
   }
 
-  searchGroups(event: any) {
+  searchUsers(event: any) {
     this.searchTerm = event.target.value;
     if (this.searchTerm) {
       this.storeService.searchDocsByName("users", this.searchTerm);
     }
   }
 
-  inviteUser(user: Partial<AppUser>) {
+  canInviteUser(user: Partial<Account>): boolean {
     if (!this.currentGroup?.id || !user.id) {
+      return false;
+    }
+    // Check if the user is already a member or has a pending invitation
+    return !this.currentGroup.relatedAccounts?.some(
+      (ra) =>
+        ra.id === user.id &&
+        (ra.status === "accepted" || ra.status === "pending"),
+    );
+  }
+
+  inviteUser(user: Partial<Account>) {
+    if (!this.canInviteUser(user)) {
+      console.log("Cannot invite user");
       return;
     }
-    const relationship: Partial<AppRelationship> = {
-      relatedIds: [this.currentGroup.id, user.id],
-      senderId: this.currentGroup?.id,
-      receiverId: user.id,
-      type: "member-invite",
+
+    const newRelatedAccount: Partial<RelatedAccount> = {
+      id: user.id,
+      name: user.name,
+      iconImage: user.iconImage,
+      tagline: user.tagline,
+      type: "user",
       status: "pending",
-      membershipRole: "member",
-      receiverRelationship: "user",
-      senderRelationship: "group",
-      receiverName: user.name,
-      receiverImage: user.profilePicture,
-      receiverTagline: user.tagline,
-      senderName: this.currentGroup.name,
-      senderImage: this.currentGroup.logoImage,
-      senderTagline: this.currentGroup.tagline,
+      relationship: "member",
+      initiatorId: this.currentGroup?.id,
+      targetId: user.id,
     };
 
-    this.storeService.createDoc("relationships", relationship).then(() => {
-      // Update the user's pendingGroups in the state
-      if (!user.pendingGroups) {
-        user.pendingGroups = [];
-      }
-      user.pendingGroups = this.user?.uid
-        ? [...user.pendingGroups, this.user.uid]
-        : [...user.pendingGroups];
-      this.storeService.updateDocInState("users", user);
+    const docPath = `accounts/${this.currentGroup?.id}/relatedAccounts/${user.id}`;
+    this.storeService.updateDocAtPath(docPath, newRelatedAccount).then(() => {
+      console.log("Invitation sent to user");
     });
   }
 }

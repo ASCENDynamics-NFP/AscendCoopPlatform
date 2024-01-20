@@ -29,6 +29,7 @@ export function prepareDataForCreate(data: any, userId: string | undefined) {
     createdDate: timestamp,
     lastModifiedBy: userId,
     lastModifiedDate: timestamp,
+    relatedAccounts: null,
   };
 }
 
@@ -40,5 +41,6 @@ export function prepareDataForUpdate(data: any, userId: string | undefined) {
     ...data,
     lastModifiedBy: userId,
     lastModifiedDate: timestamp,
+    relatedAccounts: null,
   };
 }

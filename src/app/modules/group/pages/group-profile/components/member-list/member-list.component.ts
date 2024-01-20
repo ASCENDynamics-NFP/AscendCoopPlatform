@@ -21,8 +21,7 @@ import {Component, Input} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
 import {Router} from "@angular/router";
-import {AppRelationship} from "../../../../../../models/relationship.model";
-import {AppGroup} from "../../../../../../models/group.model";
+import {Account, RelatedAccount} from "../../../../../../models/account.model";
 
 @Component({
   selector: "app-member-list",
@@ -32,42 +31,26 @@ import {AppGroup} from "../../../../../../models/group.model";
   imports: [IonicModule, CommonModule],
 })
 export class MemberListComponent {
-  @Input() group: Partial<AppGroup> | null = null; // define your group here
-  @Input() memberList: Partial<AppRelationship>[] = [];
+  @Input() account?: Partial<Account>;
 
   constructor(private router: Router) {}
 
   get allMembers() {
-    let allMembers = [];
-    for (let member of this.memberList) {
-      if (member.status !== "accepted") continue;
-      if (member.senderId === this.group?.id) {
-        allMembers.push({
-          id: member.receiverId,
-          name: member.receiverName,
-          image: member.receiverImage,
-          tagline: member.receiverTagline,
-        });
-      } else {
-        allMembers.push({
-          id: member.senderId,
-          name: member.senderName,
-          image: member.senderImage,
-          tagline: member.senderTagline,
-        });
-      }
-    }
-    return allMembers;
+    return this.account?.relatedAccounts?.filter(
+      (ra) => ra.type === "user" && ra.status === "accepted",
+    );
   }
 
   goToUserProfile(id: string | undefined) {
-    this.router.navigate([`/user-profile/${id}`]);
+    if (id) {
+      this.router.navigate([`/user-profile/${id}`]);
+    }
   }
 
   goToMemberList() {
-    if (this.group?.id) {
+    if (this.account?.id) {
       this.router.navigate([
-        `/group/${this.group.id}/${this.group.id}/members`,
+        `/group/${this.account.id}/${this.account.id}/members`,
       ]);
     }
   }

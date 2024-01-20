@@ -27,8 +27,7 @@ import {
   Validators,
 } from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-
-import {AppGroup} from "../../../../models/group.model";
+import {Account} from "../../../../models/account.model";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Timestamp} from "firebase/firestore";
 import {StoreService} from "../../../../core/services/store.service";
@@ -42,25 +41,33 @@ import {Subscription} from "rxjs";
   imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
 export class GroupEditPage {
-  private groupsSubscription: Subscription | undefined;
-  group: Partial<AppGroup> | null = {}; // define your user here
+  private accountsSubscription?: Subscription;
+  account: Partial<Account> | null = {}; // define your user here
   groupId: string | null = null;
 
-  editGroupForm = this.fb.group({
+  editAccountForm = this.fb.group({
     email: ["", [Validators.required, Validators.email]],
     description: [""],
     tagline: [""],
     name: ["", Validators.required],
     supportedlanguages: [["en"]],
-    phoneCountryCode: ["", [Validators.pattern("^[0-9]*$")]],
-    phoneNumber: ["", [Validators.pattern("^\\d{10}$")]],
-    addressName: [""],
-    addressStreet: ["", Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
-    addressCity: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-    addressState: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-    addressZipcode: ["", Validators.pattern("^[0-9]*$")],
-    addressCountry: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-    dateFounded: [new Date().toISOString()], //, [Validators.required, this.ageValidator(18)]],
+    groupDetails: this.fb.group({
+      dateFounded: [new Date().toISOString(), [Validators.required]],
+      supportedLanguages: [["en"]],
+    }),
+    address: this.fb.group({
+      name: [""],
+      street: ["", Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
+      city: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+      state: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+      zipcode: ["", Validators.pattern("^[0-9]*$")],
+      country: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+    }),
+    phone: this.fb.group({
+      number: ["", [Validators.pattern("^\\d{10}$")]],
+      countryCode: ["", [Validators.pattern("^[0-9]*$")]],
+      type: [""],
+    }),
   });
 
   constructor(
@@ -69,72 +76,98 @@ export class GroupEditPage {
     private activatedRoute: ActivatedRoute,
     private router: Router,
   ) {
-    this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
+    this.groupId = this.activatedRoute.snapshot.paramMap.get("accountId");
   }
 
   ionViewWillEnter() {
-    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
-      this.group = groups.find((group) => group.id === this.groupId) || null;
-      if (this.group) {
-        // Update the form with the group data
-        this.editGroupForm.patchValue({
-          name: this.group.name,
-          email: this.group.email,
-          phoneNumber: this.group.phoneNumber,
-          description: this.group.description,
-          tagline: this.group.tagline,
-          supportedlanguages: this.group.supportedlanguages,
-          phoneCountryCode: this.group.phoneCountryCode,
-          addressName: this.group.addressName,
-          addressStreet: this.group.addressStreet,
-          addressCity: this.group.addressCity,
-          addressState: this.group.addressState,
-          addressZipcode: this.group.addressZipcode,
-          addressCountry: this.group.addressCountry,
-          dateFounded: this.group.dateFounded?.toDate().toISOString(), // Make sure dateFounded is a Date object
-        });
-      }
-    });
+    this.accountsSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        this.account =
+          accounts.find((account) => account.id === this.groupId) || null;
+        if (this.account) {
+          // Update the form with the group data
+          this.editAccountForm.patchValue({
+            name: this.account.name,
+            email: this.account.email,
+            description: this.account.description,
+            tagline: this.account.tagline,
+            groupDetails: {
+              ...this.account.groupDetails,
+              // admins: this.account.groupDetails?.admins ?? [],
+              dateFounded: this.account.groupDetails?.dateFounded
+                ?.toDate()
+                .toISOString(), // Make sure dateFounded is a Date object
+            },
+            address: {
+              ...this.account.address,
+              street: this.editAccountForm.value.address?.street ?? "",
+              city: this.editAccountForm.value.address?.city ?? "",
+              state: this.editAccountForm.value.address?.state ?? "",
+              zipcode: this.editAccountForm.value.address?.zipcode ?? "",
+              country: this.editAccountForm.value.address?.country ?? "",
+              name: this.editAccountForm.value.address?.name ?? "",
+              // formatted: this.account.address?.formatted ?? "",
+              // geopoint: this.account.address?.geopoint ?? "",
+            },
+            phone: {
+              ...this.account.phone,
+              number: this.editAccountForm.value.phone?.number ?? "",
+              type: this.editAccountForm.value.phone?.type ?? "",
+              countryCode: this.editAccountForm.value.phone?.countryCode ?? "",
+            },
+          });
+        }
+      },
+    );
   }
 
   ionViewWillLeave() {
-    // Unsubscribe from the groups$ observable when the component is destroyed
-    this.groupsSubscription?.unsubscribe();
+    // Unsubscribe from the accounts$ observable when the component is destroyed
+    this.accountsSubscription?.unsubscribe();
   }
 
   onSubmit() {
     // Call the API to save changes
-    if (this.group) {
-      this.group.id = this.group.id
-        ? this.group.id
+    if (this.account) {
+      this.account.id = this.account.id
+        ? this.account.id
         : this.groupId
         ? this.groupId
         : "";
-      this.group.email = this.editGroupForm.value.email || "";
-      this.group.phoneNumber = this.editGroupForm.value.phoneNumber || "";
-      this.group.description = this.editGroupForm.value.description || "";
-      this.group.tagline = this.editGroupForm.value.tagline || "";
-      this.group.name = this.editGroupForm.value.name || "";
-      this.group.supportedlanguages =
-        this.editGroupForm.value.supportedlanguages || [];
-      this.group.phoneCountryCode =
-        this.editGroupForm.value.phoneCountryCode || "";
-      this.group.addressName = this.editGroupForm.value.addressName || "";
-      this.group.addressStreet = this.editGroupForm.value.addressStreet || "";
-      this.group.addressCity = this.editGroupForm.value.addressCity || "";
-      this.group.addressState = this.editGroupForm.value.addressState || "";
-      this.group.addressZipcode = this.editGroupForm.value.addressZipcode || "";
-      this.group.addressCountry = this.editGroupForm.value.addressCountry || "";
-      this.group.dateFounded = Timestamp.fromDate(
-        new Date(this.editGroupForm.value.dateFounded || ""),
-      );
+      this.account.email = this.editAccountForm.value.email || "";
+      this.account.phone = {
+        countryCode: this.editAccountForm.value.phone?.countryCode || "",
+        number: this.editAccountForm.value.phone?.number || "",
+        type: this.editAccountForm.value.phone?.type || "",
+      };
+      this.account.description = this.editAccountForm.value.description || "";
+      this.account.tagline = this.editAccountForm.value.tagline || "";
+      this.account.name = this.editAccountForm.value.name || "";
+      this.account.groupDetails = {
+        admins: this.account.groupDetails?.admins || [],
+        dateFounded: Timestamp.fromDate(
+          new Date(this.editAccountForm.value.groupDetails?.dateFounded || ""),
+        ),
+        supportedLanguages:
+          this.editAccountForm.value.groupDetails?.supportedLanguages || [],
+      };
+      this.account.address = {
+        street: this.editAccountForm.value.address?.street ?? "",
+        city: this.editAccountForm.value.address?.city ?? "",
+        state: this.editAccountForm.value.address?.state ?? "",
+        zipcode: this.editAccountForm.value.address?.zipcode ?? "",
+        country: this.editAccountForm.value.address?.country ?? "",
+        name: this.editAccountForm.value.address?.name ?? "",
+        formatted: this.account.address?.formatted ?? "",
+        geopoint: this.account.address?.geopoint ?? "",
+      };
 
-      this.storeService.updateDoc("groups", this.group);
+      this.storeService.updateDoc("accounts", this.account);
     }
   }
 
   deleteGroup() {
-    if (this.groupId) this.storeService.deleteDoc("groups", this.groupId);
+    if (this.groupId) this.storeService.deleteDoc("accounts", this.groupId);
     this.router.navigate(["/group-list"]);
   }
 

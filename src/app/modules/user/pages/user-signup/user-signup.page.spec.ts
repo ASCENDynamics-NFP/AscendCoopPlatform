@@ -32,7 +32,7 @@ describe("UserSignupPage", () => {
     // Add the methods used in your component here.
     // For example, if your component calls `authStoreService.signUp()`, add a `signUp` method:
     signUp: jasmine.createSpy("signUp").and.returnValue(Promise.resolve(true)),
-    user$: of(false), // This is an Observable
+    authUser$: of(false), // This is an Observable
   };
 
   beforeEach(waitForAsync(() => {

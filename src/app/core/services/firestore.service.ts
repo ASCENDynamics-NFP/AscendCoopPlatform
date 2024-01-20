@@ -19,6 +19,7 @@
 ***********************************************************************************************/
 import {Injectable} from "@angular/core";
 import {
+  Firestore,
   getFirestore,
   doc,
   getDoc,
@@ -29,16 +30,21 @@ import {
   where,
   getDocs,
   deleteDoc,
-  DocumentData,
-  Firestore,
   onSnapshot,
-  QuerySnapshot,
-  or,
+  DocumentData,
   and,
-  DocumentSnapshot,
+  or,
 } from "firebase/firestore";
-import {BehaviorSubject, Observable, combineLatest, map, switchMap} from "rxjs";
-import {ErrorHandlerService} from "./error-handler.service";
+import {
+  BehaviorSubject,
+  Observable,
+  combineLatest,
+  combineLatestAll,
+  map,
+  switchMap,
+} from "rxjs";
+import {FirebaseError} from "firebase/app";
+import {RelatedAccount} from "../../models/account.model";
 
 @Injectable({
   providedIn: "root",
@@ -54,12 +60,8 @@ export class FirestoreService {
    * Example:
    * [
    *   {
-   *     collectionName: "users",
-   *     ids: ["user1", "user2"],
-   *   },
-   *   {
-   *     collectionName: "groups",
-   *     ids: ["group"],
+   *     collectionName: "accounts",
+   *     ids: ["account1", "account2"],
    *   },
    * ]
    *
@@ -71,7 +73,7 @@ export class FirestoreService {
   >([]);
   firestore: Firestore;
 
-  constructor(private errorHandler: ErrorHandlerService) {
+  constructor() {
     this.firestore = getFirestore();
   }
 
@@ -84,15 +86,11 @@ export class FirestoreService {
    * const collectionIdsSubject = firestoreService.getCollectionsSubject();
    * collectionIdsSubject.next([
    *  {
-   *   collectionName: "users",
-   *  ids: ["user1", "user2"],
-   * },
-   * {
-   *  collectionName: "groups",
-   * ids: ["group"],
+   *   collectionName: "accounts",
+   *  ids: ["account1", "account2"],
    * },
    * ]);
-   * // This will cause the FirestoreService to listen to the documents with ids "user1" and "user2" in the "users" collection, and the document with id "group" in the "groups" collection.
+   * // This will cause the FirestoreService to listen to the documents with ids "account1" and "account2" in the "accounts" collection.
    * // Whenever any of these documents change, the FirestoreService will emit the new data of all the documents.
    * // If the documents don't exist, the FirestoreService will emit null.
    * // If the documents are deleted, the FirestoreService will emit null.
@@ -110,12 +108,16 @@ export class FirestoreService {
    * @param {BehaviorSubject<Object[]>} collectionIdsSubject - A BehaviorSubject of an array of objects, each containing the name of the collection and the ids of the documents to listen to.
    * @returns {Observable<DocumentData[]>} - An Observable that emits the data of the documents whenever any of them change.
    */
-  listenToMultipleDocumentsInMultipleCollections(
-    collectionIdsSubject: BehaviorSubject<
-      {collectionName: string; ids: string[]}[]
-    >,
-  ): Observable<DocumentData[]> {
-    return collectionIdsSubject.pipe(
+
+  // Observable Logic for Multiple Documents
+  /**
+   * Listen to multiple documents in multiple Firestore collections.
+   * The documents and collections to listen to are determined by the value of collectionIdsSubject.
+   * @param {BehaviorSubject<Object[]>} collectionIdsSubject - A BehaviorSubject of an array of objects, each containing the name of the collection and the ids of the documents to listen to.
+   * @returns {Observable<DocumentData[]>} - An Observable that emits the data of the documents whenever any of them change.
+   */
+  listenToMultipleDocumentsInMultipleCollections(): Observable<DocumentData[]> {
+    return this.collectionIdsSubject.pipe(
       switchMap((collections) => {
         return combineLatest(
           collections.map((collection) => {
@@ -128,8 +130,8 @@ export class FirestoreService {
                     const data = docSnapshot.data();
                     if (data) {
                       data["id"] = docSnapshot.id;
+                      subscriber.next(data);
                     }
-                    subscriber.next(data);
                   },
                   (error) => {
                     subscriber.error(error);
@@ -238,18 +240,43 @@ export class FirestoreService {
    * @param {any} documentData - Data of the document to add.
    * @returns {Promise<string | null>} - Returns the ID of the added document, otherwise null.
    */
+  // Document Manipulation Methods
   async addDocument(
     collectionName: string,
     documentData: any,
   ): Promise<string | null> {
     try {
-      const collectionRef = collection(this.firestore, collectionName);
-      const documentRef = await addDoc(collectionRef, documentData);
-
+      const documentRef = await addDoc(
+        collection(this.firestore, collectionName),
+        documentData,
+      );
       return documentRef.id;
     } catch (error) {
-      console.error("Error adding document: ", error);
-      return null;
+      throw new FirebaseError(
+        "add-document-error",
+        `Error adding document: ${error}`,
+      );
+    }
+  }
+
+  /**
+   * Sets a document in Firestore, creating or updating it as necessary.
+   * @param docPath The path to the document.
+   * @param documentData The data of the document.
+   * @param options Options for setting the document.
+   */
+  async setDocument(
+    docPath: string,
+    documentData: any,
+    options?: {merge: boolean},
+  ): Promise<void> {
+    try {
+      const documentRef = doc(this.firestore, docPath);
+      await setDoc(documentRef, documentData, options || {});
+      console.log("Document set successfully at path:", docPath);
+    } catch (error) {
+      console.error("Error setting document at path:", docPath, error);
+      throw error; // Propagate the error
     }
   }
 
@@ -266,10 +293,16 @@ export class FirestoreService {
     updatedData: any,
   ) {
     try {
-      const documentRef = doc(this.firestore, collectionName, documentId);
-      await setDoc(documentRef, updatedData, {merge: true});
+      await setDoc(
+        doc(this.firestore, collectionName, documentId),
+        updatedData,
+        {merge: true},
+      );
     } catch (error) {
-      console.error("Error updating document: ", error);
+      throw new FirebaseError(
+        "update-document-error",
+        `Error updating document: ${error}`,
+      );
     }
   }
 
@@ -281,10 +314,12 @@ export class FirestoreService {
    */
   async deleteDocument(collectionName: string, documentId: string) {
     try {
-      const documentRef = doc(this.firestore, collectionName, documentId);
-      await deleteDoc(documentRef);
+      await deleteDoc(doc(this.firestore, collectionName, documentId));
     } catch (error) {
-      console.error("Error deleting document: ", error);
+      throw new FirebaseError(
+        "delete-document-error",
+        `Error deleting document: ${error}`,
+      );
     }
   }
 
@@ -329,130 +364,58 @@ export class FirestoreService {
    *
    * @param {string} collectionName - Name of the collection.
    * @param {string} searchTerm - Term to search for.
-   * @returns {Promise<DocumentData[] | null>} - Returns an array of documents that match the search term, otherwise null.
-   */
-  searchByName(
-    collectionName: string,
-    searchTerm: string,
-  ): Promise<DocumentData[] | null> {
-    return getDocs(
-      query(
-        collection(this.firestore, collectionName),
-        or(
-          // query as-is:
-          and(
-            where("name", ">=", searchTerm),
-            where("name", "<=", searchTerm + "\uf8ff"),
-          ),
-          // capitalize first letter:
-          and(
-            where(
-              "name",
-              ">=",
-              searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1),
-            ),
-            where(
-              "name",
-              "<=",
-              searchTerm.charAt(0).toUpperCase() +
-                searchTerm.slice(1) +
-                "\uf8ff",
-            ),
-          ),
-          // lowercase:
-          and(
-            where("name", ">=", searchTerm.toLowerCase()),
-            where("name", "<=", searchTerm.toLowerCase() + "\uf8ff"),
-          ),
-        ),
-      ),
-    )
-      .then((querySnapshot) => {
-        return this.processFirebaseData(querySnapshot);
-      })
-      .catch((error) => {
-        console.error("Error retrieving collection: ", error);
-        this.errorHandler.handleFirebaseAuthError(error);
-        return [];
-      });
-  }
-
-  /**
-   * Searches for documents in a collection based on a name field.
-   *
-   * @param {string} collectionName - Name of the collection.
-   * @param {string} searchTerm - Term to search for.
    * @param {string} userId - Current user Id.
    * @returns {Promise<DocumentData[] | null>} - Returns an array of documents that match the search term, otherwise null.
    */
-  searchUserByName(
+  searchAccountByName(
     collectionName: string,
     searchTerm: string,
     userId: string | undefined,
   ): Promise<DocumentData[] | null> {
-    if (!userId) {
-      throw new Error("User ID must be provided");
-    }
     return getDocs(
       query(
         collection(this.firestore, collectionName),
-        or(
-          // query as-is:
-          and(
-            where("name", ">=", searchTerm),
-            where("name", "<=", searchTerm + "\uf8ff"),
-            where("privacySetting", "==", "public"),
-          ),
-          and(
-            where("name", ">=", searchTerm),
-            where("name", "<=", searchTerm + "\uf8ff"),
-            where("privacySetting", "==", "friends-only"),
-            where("friends", "array-contains", userId),
-          ),
-          // capitalize first letter:
-          and(
-            where(
-              "name",
-              ">=",
-              searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1),
+        and(
+          or(
+            and(
+              // query as-is:
+              where("name", ">=", searchTerm),
+              where("name", "<=", searchTerm + "\uf8ff"),
             ),
-            where(
-              "name",
-              "<=",
-              searchTerm.charAt(0).toUpperCase() +
-                searchTerm.slice(1) +
-                "\uf8ff",
+            and(
+              // capitalize first letter:
+              where(
+                "name",
+                ">=",
+                searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1),
+              ),
+              where(
+                "name",
+                "<=",
+                searchTerm.charAt(0).toUpperCase() +
+                  searchTerm.slice(1) +
+                  "\uf8ff",
+              ),
             ),
-            where("privacySetting", "==", "public"),
-          ),
-          and(
-            where(
-              "name",
-              ">=",
-              searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1),
+            and(
+              // lowercase:
+              where("name", ">=", searchTerm.toLowerCase()),
+              where("name", "<=", searchTerm.toLowerCase() + "\uf8ff"),
             ),
-            where(
-              "name",
-              "<=",
-              searchTerm.charAt(0).toUpperCase() +
-                searchTerm.slice(1) +
-                "\uf8ff",
-            ),
-            where("privacySetting", "==", "friends-only"),
-            where("friends", "array-contains", userId),
           ),
-          // lowercase:
-          and(
-            where("name", ">=", searchTerm.toLowerCase()),
-            where("name", "<=", searchTerm.toLowerCase() + "\uf8ff"),
-            where("privacySetting", "==", "public"),
-          ),
-          and(
-            where("name", ">=", searchTerm.toLowerCase()),
-            where("name", "<=", searchTerm.toLowerCase() + "\uf8ff"),
-            where("privacySetting", "==", "friends-only"),
-            where("friends", "array-contains", userId),
-          ),
+          where("privacySetting", "==", "public"),
+          where("type", "in", ["user", "group"]),
+          //         or(
+          //           where("privacySetting", "==", "public"),
+          //           and(
+          //             where("privacySetting", "==", "friends-only"),
+          //             where("associations.accounts", "array-contains", userId),
+          //           ),
+          //           and(
+          //             where("privacySetting", "==", "groups-only"),
+          //             where("associations.accounts", "array-contains", userId),
+          //           ),
+          //         ),
         ),
       ),
     )
@@ -460,50 +423,47 @@ export class FirestoreService {
         return this.processFirebaseData(querySnapshot);
       })
       .catch((error) => {
-        console.error("Error retrieving collection: ", error);
-        this.errorHandler.handleFirebaseAuthError(error);
-        return [];
+        throw new FirebaseError(
+          "get-document-error",
+          `Error getting document: ${error}`,
+        );
       });
   }
 
   /**
-   * Retrieves documents from a collection where the sender or receiver ID matches the provided ID.
+   * Deletes a document at the given path in Firestore.
    *
-   * @param {string} collectionName - Name of the collection.
-   * @param {string | null} senderOrReceiverId - ID to match against sender or receiver fields.
-   * @returns {Promise<Partial<any>[]>} - Returns an array of documents that match the provided ID.
+   * @param docPath The full path to the document, including its ID.
    */
-  async getDocsWithSenderOrRecieverId(
-    collectionName: string,
-    senderOrReceiverId: string | null,
-  ): Promise<Partial<any>[]> {
-    if (!senderOrReceiverId) {
-      this.errorHandler.handleFirebaseAuthError({
-        code: "",
-        message: "Id must be provided",
-      });
-      return [];
-    }
-    return await getDocs(
-      query(
-        collection(this.firestore, collectionName),
-        and(
-          where("status", "in", ["pending", "accepted"]),
-          or(
-            where("senderId", "==", senderOrReceiverId),
-            where("receiverId", "==", senderOrReceiverId),
-          ),
-        ),
-      ),
-    )
-      .then((querySnapshot) => {
-        return this.processFirebaseData(querySnapshot);
-      })
-      .catch((error) => {
-        this.errorHandler.handleFirebaseAuthError(error);
-        return [];
-      });
+  async deleteDocumentAtPath(docPath: string): Promise<void> {
+    const documentRef = doc(this.firestore, docPath);
+    await deleteDoc(documentRef);
   }
+
+  /**
+   * Retrieves documents from a relatedAccounts sub-collection for a given account.
+   *
+   * @param {string} accountId - ID of the account.
+   * @returns {Promise<Partial<any>[]>} - Returns an array of related accounts.
+   */
+  async getRelatedAccounts(
+    accountId: string,
+  ): Promise<Partial<RelatedAccount>[]> {
+    try {
+      const relatedAccountsRef = collection(
+        this.firestore,
+        `accounts/${accountId}/relatedAccounts`,
+      );
+      const querySnapshot = await getDocs(relatedAccountsRef);
+      return this.processFirebaseData(querySnapshot);
+    } catch (error) {
+      throw new FirebaseError(
+        "get-document-error",
+        `Error getting documents: ${error}`,
+      );
+    }
+  }
+
   // Firebase Query Logic (Ends) //
 
   // Helper Functions (Start) //
@@ -513,25 +473,14 @@ export class FirestoreService {
    * @param {QuerySnapshot | DocumentSnapshot} querySnapshot - Snapshot of the data from Firebase.
    * @returns {any} - Returns an array of documents if multiple documents are found, a single document if one is found, or null if none are found.
    */
-  processFirebaseData(querySnapshot: QuerySnapshot | DocumentSnapshot): any {
-    if (querySnapshot instanceof QuerySnapshot) {
-      // Processing for array of documents
-      const documents: Partial<any>[] = [];
-      querySnapshot.forEach((doc) => {
-        let data = doc.data() as Partial<any>;
-        data = {...data, id: doc.id};
-        documents.push(data);
-      });
-      return documents;
-    } else if (querySnapshot instanceof DocumentSnapshot) {
-      // Processing for single document
-      if (querySnapshot.exists()) {
-        let data = querySnapshot.data() as Partial<any>;
-        data = {...data, id: querySnapshot.id};
-        return data;
-      }
+  processFirebaseData(querySnapshot: any): any[] {
+    if (!querySnapshot.empty) {
+      return querySnapshot.docs.map((doc: any) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
     }
-    return null;
+    return []; // Return an empty array if no documents found
   }
   // Helper Functions (End) //
 }

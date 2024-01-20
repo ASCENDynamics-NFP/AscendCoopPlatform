@@ -66,14 +66,16 @@ export class UserLoginPage {
 
   initiateSubscribers() {
     // Redirect to user profile if user is logged in
-    this.userSubscription = this.authStoreService.user$.subscribe((user) => {
-      if (user) {
-        console.log("GOT USER ON LOGIN");
-        this.router.navigateByUrl("/user-profile/" + user.uid, {
-          replaceUrl: true,
-        });
-      }
-    });
+    this.userSubscription = this.authStoreService.authUser$.subscribe(
+      (authUser) => {
+        if (authUser) {
+          console.log("GOT USER ON LOGIN");
+          this.router.navigateByUrl("/user-profile/" + authUser.uid, {
+            replaceUrl: true,
+          });
+        }
+      },
+    );
   }
 
   login() {

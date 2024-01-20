@@ -17,41 +17,12 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, Input} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {IonicModule} from "@ionic/angular";
-import {Router} from "@angular/router";
-import {Account} from "../../../../../../models/account.model";
+import {Timestamp} from "firebase/firestore";
 
-@Component({
-  selector: "app-friend-list",
-  templateUrl: "./friend-list.component.html",
-  styleUrls: ["./friend-list.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule],
-})
-export class FriendListComponent {
-  @Input() account?: Partial<Account>;
-
-  constructor(private router: Router) {}
-
-  get allFriends() {
-    return (
-      this.account?.relatedAccounts?.filter(
-        (ra) => ra.type === "user" && ra.status === "accepted", // only show accepted friends
-      ) ?? []
-    );
-  }
-
-  goToUserProfile(id: string | undefined) {
-    if (id) {
-      this.router.navigate([`/user-profile/${id}`]);
-    }
-  }
-
-  goToFriendList() {
-    if (this.account?.id) {
-      this.router.navigate([`/user-profile/${this.account.id}/friends`]);
-    }
-  }
+// Base type for common fields
+export interface BaseDocument {
+  createdAt: Timestamp;
+  createdBy: string;
+  lastModifiedAt: Timestamp;
+  lastModifiedBy: string;
 }

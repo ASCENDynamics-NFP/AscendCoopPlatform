@@ -20,7 +20,7 @@
 import {CommonModule} from "@angular/common";
 import {Component, Input, OnInit} from "@angular/core";
 import {IonicModule} from "@ionic/angular";
-import {AppGroup} from "../../../../../../models/group.model";
+import {Account} from "../../../../../../models/account.model";
 import {RouterModule} from "@angular/router";
 import {PhoneFormatPipe} from "../../../../../../shared/pipes/phone-format.pipe";
 
@@ -32,7 +32,7 @@ import {PhoneFormatPipe} from "../../../../../../shared/pipes/phone-format.pipe"
   imports: [IonicModule, CommonModule, RouterModule, PhoneFormatPipe],
 })
 export class DetailsComponent implements OnInit {
-  @Input() group: Partial<AppGroup> | null = null; // define your user here
+  @Input() group?: Partial<Account>; // define your user here
   @Input() canEdit: boolean = false; // define your user here
   dateFounded = new Date().toISOString(); // default initialization
 
@@ -41,6 +41,7 @@ export class DetailsComponent implements OnInit {
   ngOnInit() {
     // If user and dateFounded exist, convert to Date, otherwise leave as default Date
     this.dateFounded =
-      this.group?.dateFounded?.toDate().toISOString() || this.dateFounded;
+      this.group?.groupDetails?.dateFounded?.toDate().toISOString() ||
+      this.dateFounded;
   }
 }

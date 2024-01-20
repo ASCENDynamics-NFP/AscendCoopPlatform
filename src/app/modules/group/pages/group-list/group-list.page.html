@@ -25,38 +25,34 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-col>
         <ion-card>
           <ion-card-header>
-            <ion-searchbar
-              [debounce]="1000"
-              (ionInput)="searchGroups($event)"
-            ></ion-searchbar>
+            <ion-searchbar [debounce]="1000" (ionInput)="search($event)"></ion-searchbar>
           </ion-card-header>
           <ion-list>
-            <ion-item
-              *ngFor="let item of searchResults; let i = index"
-              routerLink="/group/{{item.id}}/{{item.id}}/details"
-              button
-            >
-              <ion-thumbnail slot="start">
-                <img
-                  *ngIf="item.logoImage"
-                  [alt]="item.name"
-                  [src]="item.logoImage"
-                />
-              </ion-thumbnail>
-              <ion-label>
-                <h3>{{ item?.name }}</h3>
-                <p>{{ item?.tagline }}</p>
-              </ion-label>
-              <ion-button
-                *ngIf="(authUser && !item.members?.includes(authUser.uid) && !item.pendingMembers?.includes(authUser.uid))"
-                slot="end"
-                mode="md"
-                expand="block"
-                (click)="$event.stopPropagation();$event.preventDefault();sendRequest(item);"
-                >Send Request</ion-button
-              >
-            </ion-item>
+            <ng-container *ngIf="accountList?.length; else noResultsTemplate">
+              <ion-item *ngFor="let item of accountList; let i = index"
+                routerLink="/group/{{item.id}}/{{item.id}}/details" button>
+                <ion-thumbnail slot="start">
+                  <img *ngIf="item.iconImage" [alt]="item.name" [src]="item.iconImage" />
+                </ion-thumbnail>
+                <ion-label>
+                  <h3>{{ item?.name }}</h3>
+                  <p>{{ item?.tagline }}</p>
+                </ion-label>
+                <!-- Check if the user is not already a member or has a pending request -->
+                <ion-button *ngIf="showRequestButton(item)" slot="end" mode="md" expand="block"
+                  (click)="$event.stopPropagation();$event.preventDefault();sendRequest(item);">
+                  Send Request
+                </ion-button>
+              </ion-item>
+            </ng-container>
           </ion-list>
+          <ng-template #noResultsTemplate>
+            <ion-item>
+              <ion-label class="ion-text-center">
+                No groups found. Try a different search term.
+              </ion-label>
+            </ion-item>
+          </ng-template>
         </ion-card>
       </ion-col>
     </ion-row>

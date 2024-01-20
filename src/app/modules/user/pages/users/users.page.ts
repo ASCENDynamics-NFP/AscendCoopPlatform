@@ -23,12 +23,11 @@ import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {User} from "firebase/auth";
 import {RouterModule} from "@angular/router";
-import {AppUser} from "../../../../models/user.model";
+import {Account, RelatedAccount} from "../../../../models/account.model";
 import {StoreService} from "../../../../core/services/store.service";
 import {Subscription} from "rxjs";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
-import {AppRelationship} from "../../../../models/relationship.model";
 
 @Component({
   selector: "app-users",
@@ -44,10 +43,10 @@ import {AppRelationship} from "../../../../models/relationship.model";
   ],
 })
 export class UsersPage {
-  private usersSubscription?: Subscription;
-  authUser: User | null = null; // define your user here
-  user?: Partial<AppUser>;
-  userList: Partial<AppUser>[] | null = []; // define your user list here
+  private accountsSubscription?: Subscription;
+  authUser: User | null = null;
+  account?: Partial<Account>;
+  accountList: Partial<Account>[] | null = [];
   searchedValue: string = "";
 
   constructor(
@@ -55,79 +54,101 @@ export class UsersPage {
     private storeService: StoreService,
   ) {
     this.authUser = this.authStoreService.getCurrentUser();
-  } // inject your Firebase service
+  }
 
   ionViewWillEnter() {
-    this.usersSubscription = this.storeService.users$.subscribe((users) => {
-      if (users) {
-        this.user = users.find((u) => u.id === this.authUser?.uid);
-        this.userList = users.filter((user) =>
-          user.displayName
-            ?.toLowerCase()
-            .includes(this.searchedValue.toLowerCase()),
-        );
-      }
-    });
+    this.accountsSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        if (accounts) {
+          this.account = accounts.find((acc) => acc.id === this.authUser?.uid);
+          this.accountList = accounts
+            .filter(
+              (acc) =>
+                acc.name
+                  ?.toLowerCase()
+                  .includes(this.searchedValue.toLowerCase()) &&
+                acc.type === "user",
+            )
+            .sort((a, b) => {
+              if (a["name"] && b["name"]) {
+                return a["name"].localeCompare(b["name"]);
+              } else {
+                return 0;
+              }
+            });
+        }
+      },
+    );
   }
 
   ionViewWillLeave() {
-    this.usersSubscription?.unsubscribe();
+    this.accountsSubscription?.unsubscribe();
   }
 
-  sendFriendRequest(user: Partial<AppUser>) {
-    if (!this.authUser?.uid || !user["id"]) {
+  async sendFriendRequest(account: Partial<Account>) {
+    if (!this.authUser?.uid || !account.id) {
+      console.error("User ID or Account ID is missing");
       return;
     }
-    this.storeService
-      .createDoc("relationships", {
-        senderId: this.authUser?.uid,
-        relatedIds: [this.authUser?.uid, user["id"]],
-        receiverId: user["id"],
-        type: "friend",
-        status: "pending",
-        membershipRole: "",
-        receiverRelationship: "friend",
-        senderRelationship: "friend",
-        receiverName: user["displayName"],
-        receiverImage: user["profilePicture"],
-        receiverTagline: user["bio"],
-        senderName: this.authUser?.displayName ? this.authUser.displayName : "",
-        senderImage: this.authUser?.photoURL ? this.authUser.photoURL : "",
-        senderTagline: "",
-      } as Partial<AppRelationship>)
-      .then(() => {
-        if (this.authUser) {
-          // updated friends list on userList item to include receiverId in friends list so that the button doesn't show
-          const updatedUserListItem = this.userList?.find(
-            (userListItem: Partial<AppUser>) => userListItem.id === user["id"],
-          );
 
-          if (updatedUserListItem) {
-            if (!updatedUserListItem.pendingFriends) {
-              updatedUserListItem.pendingFriends = [];
-            }
-            updatedUserListItem.pendingFriends.push(this.authUser?.uid);
+    const newRelatedAccount: Partial<RelatedAccount> = {
+      id: account.id,
+      initiatorId: this.authUser.uid,
+      targetId: account.id,
+      type: account.type,
+      status: "pending",
+      relationship: "friend",
+      tagline: account.tagline,
+      name: account.name,
+      iconImage: account.iconImage,
+    };
 
-            // Use addDocToState to update the state
-            this.storeService.addDocToState("users", updatedUserListItem);
-          }
-        }
-      });
+    // Add the new related account to Firestore
+    await this.storeService.updateDocAtPath(
+      `accounts/${this.authUser.uid}/relatedAccounts/${account.id}`,
+      newRelatedAccount,
+    );
+
+    // Fetch the current user's account to update the relatedAccounts array
+    this.updateRelatedAccounts(newRelatedAccount);
+  }
+
+  private updateRelatedAccounts(relatedAccount: Partial<RelatedAccount>) {
+    if (this.account) {
+      this.account.relatedAccounts = [
+        ...(this?.account?.relatedAccounts || []),
+        relatedAccount,
+      ];
+      this.storeService.updateDocInState("accounts", this.account);
+    }
   }
 
   searchUsers(event: any) {
     const value = event.target.value;
     this.searchedValue = value;
+
     if (value) {
-      this.storeService.searchDocsByName("users", value);
-    } else {
-      this.userList = this.storeService.getCollection("users").sort((a, b) => {
-        if (a["displayName"] && b["displayName"]) {
-          return a["displayName"].localeCompare(b["displayName"]);
-        } else {
-          return 0;
-        }
-      });
+      // Perform search
+      this.storeService.searchDocsByName("accounts", value);
     }
+  }
+
+  /**
+   * Determines whether a request button should be displayed for a given account.
+   *
+   * @param {Partial<Account>} item - The account for which to determine whether a request button should be displayed.
+   * @returns {boolean} - Returns true if the authenticated user is different from the item and there is no non-rejected related account with the same id as the item. Otherwise, it returns false.
+   */
+  showRequestButton(item: Partial<Account>): boolean {
+    const authUserId = this.authUser?.uid;
+    if (!authUserId || authUserId === item.id) {
+      return false;
+    }
+
+    return this.account?.relatedAccounts?.find(
+      (ra) => ra.id === item.id && ra.status !== "rejected",
+    )
+      ? false
+      : true;
   }
 }

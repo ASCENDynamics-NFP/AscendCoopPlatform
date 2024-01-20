@@ -19,9 +19,8 @@
 ***********************************************************************************************/
 import {Injectable} from "@angular/core";
 import {BehaviorSubject, Observable, Subscription} from "rxjs";
-import {AppUser} from "../../models/user.model";
+import {Account, RelatedAccount} from "../../models/account.model";
 import {AuthStoreService} from "./auth-store.service";
-import {AppGroup} from "../../models/group.model";
 import {environment} from "../../../environments/environment";
 import {FirestoreService} from "./firestore.service";
 import {
@@ -36,36 +35,29 @@ import {
  * Service to manage the state of the application.
  */
 export class StoreService {
-  updatePrivacySetting(selectedPrivacySetting: string) {
-    throw new Error("Method not implemented.");
-  }
   /**
    * Subscription to the Firestore collections.
    */
-  private collectionsSubscription: Subscription;
+  private collectionsSubscription?: Subscription;
   /**
    * Subjects for each collection in the Firestore database.
    */
   private collectionsSubject: {[key: string]: BehaviorSubject<Partial<any>[]>} =
     {
-      groups: new BehaviorSubject<Partial<AppGroup>[]>([]),
-      users: new BehaviorSubject<Partial<AppUser>[]>([]),
-      relationships: new BehaviorSubject<Partial<AppUser>[]>([]),
+      accounts: new BehaviorSubject<Partial<Account>[]>([]),
     };
   /**
-   * Observable of the groups collection.
+   * Observable of the accounts collection.
    */
-  groups$: Observable<Partial<AppGroup>[]> =
-    this.collectionsSubject["groups"].asObservable();
-  /**
-   * Observable of the relationships collection.
-   */
-  relationships$ = this.collectionsSubject["relationships"].asObservable();
-  /**
-   * Observable of the users collection.
-   */
-  users$: Observable<Partial<AppUser>[]> =
-    this.collectionsSubject["users"].asObservable();
+  accounts$: Observable<Partial<Account>[]> =
+    this.collectionsSubject["accounts"].asObservable();
+
+  private relatedAccountsSubject = new BehaviorSubject<
+    Partial<RelatedAccount>[]
+  >([]);
+
+  // Observable exposed to components
+  public relatedAccounts$ = this.relatedAccountsSubject.asObservable();
 
   /**
    * Constructor for the StoreService.
@@ -76,10 +68,13 @@ export class StoreService {
     private authStoreService: AuthStoreService,
     private firestoreService: FirestoreService,
   ) {
+    this.initSubscriptions();
+    this.loadInitialData();
+  }
+
+  private initSubscriptions() {
     this.collectionsSubscription = this.firestoreService
-      .listenToMultipleDocumentsInMultipleCollections(
-        this.firestoreService.getCollectionsSubject(),
-      )
+      .listenToMultipleDocumentsInMultipleCollections()
       .subscribe((data) => {
         // Get the current collections from the subject
         const currentCollections = this.firestoreService
@@ -102,69 +97,61 @@ export class StoreService {
             "Firestore",
             this.firestoreService.getCollectionsSubject().getValue(),
             data,
-            "Groups",
-            this.collectionsSubject["groups"].getValue(),
-            "Users",
-            this.collectionsSubject["users"].getValue(),
+            "Accounts",
+            this.collectionsSubject["accounts"].getValue(),
           );
         }
       });
-    this.loadInitialData();
   }
 
   /**
    * Loads the initial data for the application.
    */
+
   loadInitialData() {
-    const currentUser = this.authStoreService.getCurrentUser();
-    this.authStoreService.user$.subscribe((user) => {
-      if (user) {
-        this.firestoreService.addIdToCollection("users", user.uid);
+    this.authStoreService.authUser$.subscribe((authUser) => {
+      if (authUser) {
+        this.firestoreService.addIdToCollection("accounts", authUser.uid);
+        this.getAndSortRelatedAccounts(authUser.uid);
       } else {
         this.collectionsSubscription?.unsubscribe();
-        // clear all existing state data when user logs out
         this.firestoreService.clearCollectionIdsData();
         this.clearCollectionsData();
       }
     });
-    if (currentUser) {
-      this.firestoreService
-        .getCollectionWithCondition(
-          "groups",
-          "admins",
-          "array-contains",
-          currentUser.uid,
-        )
-        .then((groups) => {
-          if (groups) {
-            groups.forEach((group) => {
-              this.addDocToState("groups", group as Partial<any>);
-              this.firestoreService.addIdToCollection("groups", group["id"]);
-            });
-          }
-        });
-      this.getDocsWithSenderOrRecieverId("relationships", currentUser.uid);
+  }
+
+  private async appendRelatedAccountsToAccount(
+    accountId: string,
+    relatedAccounts: Partial<RelatedAccount>[],
+  ) {
+    try {
+      const account = await this.firestoreService.getDocument(
+        "accounts",
+        accountId,
+      );
+      if (account) {
+        account["relatedAccounts"] = relatedAccounts;
+        this.updateDocInState("accounts", account);
+        this.relatedAccountsSubject.next(relatedAccounts); // May Remove this Overserver
+      }
+    } catch (error) {
+      this.handleError(error, true);
     }
   }
 
-  /**
-   * Retrieves documents from a specified collection where either the sender or receiver ID matches the provided ID.
-   * After retrieval, each document is added to the state.
-   *
-   * @param {string} collectionName - Name of the collection to query.
-   * @param {string} senderOrRecieverId - ID to match against sender or receiver fields in the collection.
-   */
-  getDocsWithSenderOrRecieverId(
-    collectionName: string,
-    senderOrRecieverId: string,
-  ) {
+  getAndSortRelatedAccounts(accountId: string) {
     this.firestoreService
-      .getDocsWithSenderOrRecieverId(collectionName, senderOrRecieverId)
-      .then((relationships) => {
-        relationships.forEach((relationship) => {
-          this.addDocToState(collectionName, relationship);
+      .getRelatedAccounts(accountId)
+      .then((relatedAccounts) => {
+        relatedAccounts.sort((a, b) => {
+          const nameA = a["name"] || ""; // Default to empty string if null/undefined
+          const nameB = b["name"] || "";
+          return nameA.localeCompare(nameB);
         });
-      });
+        this.appendRelatedAccountsToAccount(accountId, relatedAccounts);
+      })
+      .catch((error) => this.handleError(error, true));
   }
 
   /**
@@ -174,7 +161,7 @@ export class StoreService {
    * @returns {any[]} - Returns the current value of the specified collection.
    */
   getCollection(collectionName: string) {
-    return this.collectionsSubject[collectionName].getValue();
+    return this.collectionsSubject[collectionName]?.getValue();
   }
 
   /**
@@ -214,29 +201,28 @@ export class StoreService {
    * @param {string} name - The name to search for.
    */
   searchDocsByName(collectionName: string, name: string): void {
-    if (collectionName === "users") {
-      this.firestoreService
-        .searchUserByName(
-          collectionName,
-          name,
-          this.authStoreService.getCurrentUser()?.uid,
-        )
-        .then((docs) => {
-          if (docs) {
-            docs.forEach((doc) => {
-              this.addDocToState(collectionName, doc as Partial<any>);
-            });
-          }
-        });
-    } else {
-      this.firestoreService.searchByName(collectionName, name).then((docs) => {
+    this.firestoreService
+      .searchAccountByName(
+        collectionName,
+        name,
+        this.authStoreService.getCurrentUser()?.uid,
+      )
+      .then((docs) => {
         if (docs) {
           docs.forEach((doc) => {
             this.addDocToState(collectionName, doc as Partial<any>);
           });
         }
+        if (!environment.production) {
+          console.log(
+            "Firestore",
+            this.firestoreService.getCollectionsSubject().getValue(),
+            docs,
+            "Accounts",
+            this.collectionsSubject["accounts"].getValue(),
+          );
+        }
       });
-    }
   }
 
   /**
@@ -269,6 +255,42 @@ export class StoreService {
   }
 
   /**
+   * Updates a document at a specific path in Firestore.
+   * @param docPath The path to the document in Firestore.
+   * @param updatedData The data to update the document with.
+   */
+  async updateDocAtPath(docPath: string, updatedData: any): Promise<void> {
+    try {
+      await this.firestoreService.setDocument(
+        docPath,
+        prepareDataForUpdate(
+          updatedData,
+          this.authStoreService.getCurrentUser()?.uid,
+        ),
+        {
+          merge: true,
+        },
+      );
+      console.log("Document updated successfully at path:", docPath);
+    } catch (error) {
+      console.error("Error updating document at path:", docPath, error);
+    }
+  }
+
+  /**
+   * Updates a document and updates it in the state.
+   * @param {string} collectionName - The name of the collection that the document is in.
+   * @param {Partial<any>} doc - The document to update.
+   */
+  setDoc(collectionName: string, doc: Partial<any>) {
+    this.firestoreService.setDocument(
+      collectionName + "/" + doc["id"],
+      prepareDataForUpdate(doc, this.authStoreService.getCurrentUser()?.uid),
+    );
+    this.updateDocInState(collectionName, doc);
+  }
+
+  /**
    * Deletes a document and removes it from the state.
    * @param {string} collectionName - The name of the collection that the document is in.
    * @param {string} docId - The id of the document to delete.
@@ -277,6 +299,23 @@ export class StoreService {
     this.firestoreService.deleteDocument(collectionName, docId);
     this.firestoreService.removeIdFromCollection(collectionName, docId);
     this.removeDocFromState(collectionName, docId);
+  }
+
+  /**
+   * Deletes a document at the specified path in Firestore.
+   *
+   * @param docPath The path to the document to delete. It should include both the collection and the document ID.
+   *                For example, "accounts/{accountId}/relatedAccounts/{relatedAccountId}"
+   */
+  async deleteDocAtPath(docPath: string): Promise<void> {
+    try {
+      await this.firestoreService.deleteDocumentAtPath(docPath);
+      // Optionally, handle any post-deletion logic or state updates here
+      console.log(`Document at path ${docPath} deleted successfully.`);
+    } catch (error) {
+      console.error("Error deleting document at path: ", docPath, error);
+      // Handle errors appropriately
+    }
   }
 
   /**
@@ -295,7 +334,14 @@ export class StoreService {
     }
     if (docIndex !== -1) {
       // Document already exists in the state, update it
-      currentState[docIndex] = doc;
+      // Preserve the relatedAccounts from the existing document
+      const existingDoc = currentState[docIndex];
+      const updatedDoc = {
+        ...existingDoc,
+        ...doc,
+        relatedAccounts: existingDoc["relatedAccounts"],
+      };
+      currentState[docIndex] = updatedDoc;
     } else {
       // Document doesn't exist in the state, add it
       currentState.push(doc);
@@ -310,11 +356,11 @@ export class StoreService {
    * @param {Partial<any>} doc - The document to update in the state.
    */
   updateDocInState(collectionName: string, doc: Partial<any>) {
-    const currentState = this.collectionsSubject[collectionName].getValue();
-    const updatedState = currentState.map((d) =>
+    const currentState = this.collectionsSubject[collectionName]?.getValue();
+    const updatedState = currentState?.map((d) =>
       d["id"] === doc["id"] ? {...d, ...doc} : d,
     );
-    this.collectionsSubject[collectionName].next(updatedState);
+    this.collectionsSubject[collectionName]?.next(updatedState);
   }
 
   /**
@@ -340,6 +386,11 @@ export class StoreService {
     }
   }
 
+  private handleError(error: any, throwBack = false): void {
+    console.error("Firestore Service Error: ", error);
+    if (throwBack) throw error;
+  }
+
   /**
    * Logs changes to the state.
    * @param {string} collection - The name of the collection that changed.
@@ -347,7 +398,7 @@ export class StoreService {
    * @param {any} currentState - The current state of the collection.
    * @param {any} updatedState - The updated state of the collection.
    */
-  logChange(
+  private logChange(
     collection: string,
     newValue: any,
     currentState: any,

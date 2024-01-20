@@ -21,14 +21,13 @@ import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
 import {User} from "firebase/auth";
-import {AppGroup} from "../../../../models/group.model";
+import {Account} from "../../../../models/account.model";
 import {ActivatedRoute} from "@angular/router";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {StoreService} from "../../../../core/services/store.service";
 import {PartnerSearchComponent} from "./component/partner-search/partner-search.component";
 import {MemberSearchComponent} from "./component/member-search/member-search.component";
 import {Subscription} from "rxjs";
-import {AppUser} from "../../../../models/user.model";
 
 @Component({
   selector: "app-search",
@@ -43,13 +42,12 @@ import {AppUser} from "../../../../models/user.model";
   ],
 })
 export class SearchPage {
-  private groupsSubscription: Subscription | undefined;
-  private usersSubscription: Subscription | undefined;
-  groupId: string | null = null;
-  groups: Partial<AppGroup>[] | null = [];
+  private accountsSubscription?: Subscription;
+  accountId: string | null = null;
+  groups: Partial<Account>[] | null = [];
+  users: Partial<Account>[] | null = [];
   user: User | null = null; // define your user here
-  users: Partial<AppUser>[] | null = [];
-  currentGroup: Partial<AppGroup> | undefined;
+  currentGroup?: Partial<Account>;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -57,29 +55,36 @@ export class SearchPage {
     private storeService: StoreService,
   ) {
     this.user = this.authStoreService.getCurrentUser();
-    this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
+    this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
   }
 
   get isAdmin(): boolean {
     if (!this.user?.uid) {
       return false;
     }
-    return this.currentGroup?.admins?.includes(this.user?.uid) ?? false;
+    return (
+      this.currentGroup?.groupDetails?.admins?.includes(this.user?.uid) ?? false
+    );
   }
 
   ionViewWillEnter() {
-    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
-      this.currentGroup = groups.find((group) => group["id"] === this.groupId);
-      this.groups = this.sortbyName(groups);
-    });
-    this.usersSubscription = this.storeService.users$.subscribe((users) => {
-      this.users = this.sortbyName(users);
-    });
+    this.accountsSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        this.currentGroup = accounts.find(
+          (group) => group["id"] === this.accountId,
+        );
+        this.groups = this.sortbyName(
+          accounts.find((account) => account["type"] === "group") as Account[],
+        );
+        this.users = this.sortbyName(
+          accounts.find((account) => account["type"] === "user") as Account[],
+        );
+      },
+    );
   }
 
   ionViewWillLeave() {
-    this.groupsSubscription?.unsubscribe();
-    this.usersSubscription?.unsubscribe();
+    this.accountsSubscription?.unsubscribe();
   }
 
   sortbyName(records: any[]) {

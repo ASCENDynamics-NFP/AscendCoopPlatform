@@ -21,8 +21,7 @@ import {Component, Input} from "@angular/core";
 import {Router} from "@angular/router";
 import {IonicModule} from "@ionic/angular";
 import {CommonModule} from "@angular/common";
-import {AppRelationship} from "../../../../../../models/relationship.model";
-import {AppUser} from "../../../../../../models/user.model";
+import {Account, RelatedAccount} from "../../../../../../models/account.model";
 
 @Component({
   selector: "app-group-membership-list",
@@ -32,44 +31,28 @@ import {AppUser} from "../../../../../../models/user.model";
   imports: [IonicModule, CommonModule],
 })
 export class GroupMembershipListComponent {
-  @Input() user: Partial<AppUser> | null = null; // define your user here
-  @Input() groupList: Partial<AppRelationship>[] = []; // define your user here
+  @Input() account?: Partial<Account>;
 
   constructor(private router: Router) {}
 
   get allGroups() {
-    let allGroups = [];
-    for (let relationship of this.groupList) {
-      if (
-        relationship.status !== "accepted" ||
-        !relationship.type?.includes("member") ||
-        !this.user
-      )
-        continue;
-      if (relationship.senderId === this.user.id) {
-        allGroups.push({
-          id: relationship.receiverId,
-          name: relationship.receiverName,
-          image: relationship.receiverImage,
-          tagline: relationship.receiverTagline,
-        });
-      } else {
-        allGroups.push({
-          id: relationship.senderId,
-          name: relationship.senderName,
-          image: relationship.senderImage,
-          tagline: relationship.senderTagline,
-        });
-      }
-    }
-    return allGroups;
+    return (
+      this.account?.relatedAccounts?.filter(
+        (ra: Partial<RelatedAccount>) =>
+          ra.type === "group" && ra.status === "accepted", // only show accepted groups
+      ) ?? []
+    );
   }
 
   goToGroupPage(id: string | undefined) {
-    this.router.navigate([`/group/${id}/${id}/details`]);
+    if (id) {
+      this.router.navigate([`/group/${id}/${id}/details`]);
+    }
   }
 
   goToGroupList() {
-    this.router.navigate([`/user-profile/${this.user?.id}/groups`]);
+    if (this.account?.id) {
+      this.router.navigate([`/user-profile/${this.account.id}/groups`]);
+    }
   }
 }

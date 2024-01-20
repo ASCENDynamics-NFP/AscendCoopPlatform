@@ -29,23 +29,17 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <ion-content>
   <form [formGroup]="groupForm" (ngSubmit)="onSubmit()">
     <ion-item>
-      <ion-label position="stacked"
-        >Group Name <ion-text color="danger">*</ion-text></ion-label
-      >
+      <ion-label position="stacked">Group Name <ion-text color="danger">*</ion-text></ion-label>
       <ion-input type="text" formControlName="name"></ion-input>
     </ion-item>
 
     <ion-item>
-      <ion-label position="stacked"
-        >Group Description <ion-text color="danger">*</ion-text></ion-label
-      >
+      <ion-label position="stacked">Group Description <ion-text color="danger">*</ion-text></ion-label>
       <ion-textarea formControlName="description"></ion-textarea>
     </ion-item>
 
     <ion-item>
-      <ion-label position="stacked"
-        >Group Tagline <ion-text color="danger">*</ion-text></ion-label
-      >
+      <ion-label position="stacked">Group Tagline <ion-text color="danger">*</ion-text></ion-label>
       <ion-input type="text" formControlName="tagline"></ion-input>
     </ion-item>
 

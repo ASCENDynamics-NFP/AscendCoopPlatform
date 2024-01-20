@@ -24,22 +24,19 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ion-tab-bar slot="bottom">
       <ion-tab-button [tab]="groupId + '/details'">
         <ion-icon name="business"></ion-icon>
-        Details
+        <ion-label>Details</ion-label>
       </ion-tab-button>
       <ion-tab-button [tab]="groupId + '/members'">
         <ion-icon name="people-circle"></ion-icon>
-        Members
+        <ion-label>Members</ion-label>
       </ion-tab-button>
       <ion-tab-button [tab]="groupId + '/partners'">
         <ion-icon name="business"></ion-icon>
-        Partners
+        <ion-label>Partners</ion-label>
       </ion-tab-button>
-      <ion-tab-button
-        *ngIf="currentUser && group?.admins?.includes(currentUser.uid)"
-        [tab]="groupId + '/search'"
-      >
+      <ion-tab-button *ngIf="isGroupAdmin" [tab]="groupId + '/search'">
         <ion-icon name="search"></ion-icon>
-        Search
+        <ion-label>Search</ion-label>
       </ion-tab-button>
     </ion-tab-bar>
   </ion-tabs>

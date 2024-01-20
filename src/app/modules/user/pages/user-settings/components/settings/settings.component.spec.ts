@@ -28,7 +28,7 @@ import {of} from "rxjs";
 
 class MockStoreService {
   // Mock the methods and properties used by the component
-  users$ = of([]); // You'll need to import 'of' from 'rxjs'
+  accounts$ = of([]); // You'll need to import 'of' from 'rxjs'
   updateDoc() {}
 }
 

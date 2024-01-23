@@ -4,13 +4,6 @@ about: Create an issue for a specific piece of work required to complete a featu
 labels: task
 ---
 
-### Title:
-[Task] [Title of the Task]
-
-### Body:
-#### Task Title:
-[Title of the Task]
-
 #### Description:
 Provide a clear and concise description of the task. Explain what needs to be done and why it's important for the project or feature it's associated with.
 

@@ -4,13 +4,6 @@ about: Create an issue for a larger body of work that encompasses multiple tasks
 labels: epic
 ---
 
-### Title:
-[Epic] [Title of the Epic]
-
-### Body:
-#### Epic Title:
-[Title of the Epic]
-
 #### Epic Description:
 Provide a detailed description of the Epic. Explain what the Epic is, its purpose, and its overall goal. Mention any high-level details that provide context about what needs to be achieved.
 

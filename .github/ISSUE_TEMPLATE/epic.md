@@ -1,3 +1,9 @@
+---
+name: Epic
+about: Create an issue for a larger body of work that encompasses multiple tasks or stories
+labels: epic
+---
+
 ### Title:
 [Epic] [Title of the Epic]
 

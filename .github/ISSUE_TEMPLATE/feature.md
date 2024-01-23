@@ -1,3 +1,9 @@
+---
+name: Feature Story
+about: Create an issue for a specific feature or functionality within the project
+labels: feature
+---
+
 ### Title:
 [Feature] [Title of the Feature Story]
 

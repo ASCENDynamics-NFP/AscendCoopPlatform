@@ -7,8 +7,6 @@ labels: epic
 #### Epic Description:
 Provide a detailed description of the Epic. Explain what the Epic is, its purpose, and its overall goal. Mention any high-level details that provide context about what needs to be achieved.
 
-#### Business Justification:
-Explain why this Epic is important. Mention how it aligns with broader business goals or objectives.
 
 #### Acceptance Criteria:
 List the high-level criteria that define when the Epic is completed. What are the key outcomes that need to be achieved?
@@ -16,14 +14,12 @@ List the high-level criteria that define when the Epic is completed. What are th
 #### Dependencies:
 List any dependencies that this Epic has on other tasks or projects. Include dependencies both within and outside the team.
 
-#### Related User Stories and Tasks:
-- [ ] [Link to related user story or task #1]
-- [ ] [Link to related user story or task #2]
-- [ ] [Link to related user story or task #3]
+#### Related Features and Tasks:
+- [ ] [Link to related feature or task #1]
+- [ ] [Link to related feature or task #2]
+- [ ] [Link to related feature or task #3]
 (Add as many as necessary)
 
-#### Non-Functional Requirements (if applicable):
-List any non-functional requirements related to this Epic (e.g., performance, accessibility, security).
 
 #### Risks and Mitigations:
 Identify any potential risks associated with this Epic and outline plans to mitigate them.

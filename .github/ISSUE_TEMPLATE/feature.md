@@ -4,13 +4,6 @@ about: Create an issue for a specific feature or functionality within the projec
 labels: feature
 ---
 
-### Title:
-[Feature] [Title of the Feature Story]
-
-### Body:
-#### Feature Story Title:
-[Title of the Feature Story]
-
 #### Description:
 Provide a detailed description of the feature story. Explain what the feature is, what it is intended to do, and how it fits into the larger project or Epic.
 

@@ -134,7 +134,10 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: 'registration',
-    loadComponent: () => import('./modules/account/pages/registration/registration.page').then( m => m.RegistrationPage)
+    path: "registration/:accountId",
+    loadComponent: () =>
+      import("./modules/account/pages/registration/registration.page").then(
+        (m) => m.RegistrationPage,
+      ),
   },
 ];

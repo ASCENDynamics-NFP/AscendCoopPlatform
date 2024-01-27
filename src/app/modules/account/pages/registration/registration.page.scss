@@ -17,25 +17,47 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-.registration-container {
-    text-align: center;
-  }
-  
-  .card-selection {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-  }
-  
-  .card {
-    padding: 10px;
-    margin: 0 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .card:hover {
-    background-color: #f0f0f0;
-  }
-  
+.registration-description {
+  text-align: center;
+  margin: 20px 0;
+}
+
+ion-card {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+ion-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+ion-card-content {
+  text-align: center;
+}
+
+ion-icon {
+  font-size: 3em;
+  margin-bottom: 15px;
+}
+
+ion-card-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.app-user-registration, .app-group-registration {
+  margin-top: 30px;
+}
+
+.selected-card {
+  border: 2px solid blue;
+}

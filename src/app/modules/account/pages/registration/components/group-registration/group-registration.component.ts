@@ -1,7 +1,8 @@
 import {CommonModule} from "@angular/common";
-import {Component, OnInit} from "@angular/core";
+import {Component, Input} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
+import {Account} from "../../../../../../models/account.model";
 
 @Component({
   selector: "app-group-registration",
@@ -10,8 +11,7 @@ import {IonicModule} from "@ionic/angular";
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule],
 })
-export class GroupRegistrationComponent implements OnInit {
+export class GroupRegistrationComponent {
+  @Input() account?: Partial<Account>;
   constructor() {}
-
-  ngOnInit() {}
 }

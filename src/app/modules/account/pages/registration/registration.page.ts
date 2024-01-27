@@ -17,12 +17,18 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
+import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {GroupRegistrationComponent} from "./components/group-registration/group-registration.component";
 import {UserRegistrationComponent} from "./components/user-registration/user-registration.component";
+import {Subscription} from "rxjs";
+import {ActivatedRoute, Router} from "@angular/router";
+import {User} from "firebase/auth";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
+import {StoreService} from "../../../../core/services/store.service";
+import {Account} from "../../../../models/account.model";
 
 @Component({
   selector: "app-registration",
@@ -37,12 +43,52 @@ import {UserRegistrationComponent} from "./components/user-registration/user-reg
     UserRegistrationComponent,
   ],
 })
-export class RegistrationPage implements OnInit {
+export class RegistrationPage {
+  private accountsSubscription?: Subscription;
+  public accountId: string | null = null;
+  authUser: User | null = null;
+  account?: Partial<Account>;
   public selectedType: string = "";
 
-  constructor() {}
+  constructor(
+    private authStoreService: AuthStoreService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private storeService: StoreService,
+  ) {
+    this.authUser = this.authStoreService.getCurrentUser();
+    this.accountId = this.route.snapshot.paramMap.get("accountId");
+  }
 
-  ngOnInit() {}
+  ionViewWillEnter() {
+    this.initiateSubscribers();
+  }
+
+  ionViewWillLeave() {
+    this.accountsSubscription?.unsubscribe();
+  }
+
+  initiateSubscribers() {
+    this.accountsSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        if (!this.accountId) return;
+        this.account = accounts.find(
+          (account) => account.id === this.accountId,
+        );
+        if (!this.account) {
+          this.storeService.getDocById("accounts", this.accountId); // get and add doc to store
+        } else {
+          // if (this.account?.type === "group") {
+          //   this.router.navigate([
+          //     `/group/${this.accountId}/${this.accountId}/details`,
+          //   ]); // Navigate to group-profile
+          // } else if (this.account?.type === "user") {
+          //   this.router.navigate([`/user-profile/${this.accountId}`]); // Navigate to group-profile
+          // }
+        }
+      },
+    );
+  }
 
   selectType(type: string) {
     this.selectedType = type;

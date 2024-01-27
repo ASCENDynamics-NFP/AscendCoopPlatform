@@ -17,34 +17,61 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<ion-header [translucent]="true">
+<!-- <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>registration</ion-title>
   </ion-toolbar>
-</ion-header>
+</ion-header> -->
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
+  <!-- <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">registration</ion-title>
     </ion-toolbar>
-  </ion-header>
+  </ion-header> -->
 
-  <div class="registration-container">
-    <div class="card-selection">
-      <div class="card user-card" (click)="selectType('user')">User</div>
-      <div class="card group-card" (click)="selectType('group')">Group</div>
-    </div>
 
-    <div *ngIf="selectedType === 'user'">
-      <!-- User Registration Component -->
-      <app-user-registration></app-user-registration>
-    </div>
-
-    <div *ngIf="selectedType === 'group'">
-      <!-- Group Registration Component -->
-      <app-group-registration></app-group-registration>
-    </div>
+  <div class="registration-description">
+    <ion-text>
+      <h2>Get Started</h2>
+      <p>Choose an account type to create:</p>
+    </ion-text>
   </div>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col size-md="6">
+        <ion-card (click)="selectType('user')" [class.selected-card]="selectedType === 'user'">
+          <ion-card-content>
+            <ion-icon name="person-outline" size="large"></ion-icon>
+            <ion-card-title>User</ion-card-title>
+            <p>Create a personal user account.</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <ion-col size-md="6">
+        <ion-card (click)="selectType('group')" [class.selected-card]="selectedType === 'group'">
+          <ion-card-content>
+            <ion-icon name="people-outline" size="large"></ion-icon>
+            <ion-card-title>Group</ion-card-title>
+            <p>Create an account for your group or organization.</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="12">
+        <div *ngIf="selectedType === 'user'">
+          <!-- User Registration Component -->
+          <app-user-registration [account]="account"></app-user-registration>
+        </div>
+
+        <div *ngIf="selectedType === 'group'">
+          <!-- Group Registration Component -->
+          <app-group-registration [account]="account"></app-group-registration>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 
 </ion-content>

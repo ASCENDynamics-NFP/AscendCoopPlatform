@@ -53,7 +53,7 @@ export class UserSignupPage implements OnDestroy {
       (authUser) => {
         if (authUser) {
           console.log("GOT USER ON SIGN UP");
-          this.router.navigateByUrl("/user-profile/" + authUser.uid, {
+          this.router.navigateByUrl("/registration/" + authUser.uid, {
             replaceUrl: true,
           });
         }

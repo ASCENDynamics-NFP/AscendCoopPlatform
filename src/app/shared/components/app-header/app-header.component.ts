@@ -23,7 +23,7 @@ import {IonicModule, PopoverController} from "@ionic/angular";
 import {UserMenuComponent} from "../user-menu/user-menu.component";
 import {Subscription} from "rxjs";
 import {StoreService} from "../../../core/services/store.service";
-import {AppUser} from "../../../models/user.model";
+import {Account} from "../../../models/account.model"; // Updated import
 import {AuthStoreService} from "../../../core/services/auth-store.service";
 
 @Component({
@@ -35,8 +35,8 @@ import {AuthStoreService} from "../../../core/services/auth-store.service";
 })
 export class AppHeaderComponent implements OnInit, OnDestroy {
   @Input() title?: string;
-  private user?: Partial<AppUser>;
-  private usersSubscription?: Subscription;
+  private account?: Partial<Account>; // Using Account model
+  private accountsSubscription?: Subscription;
   public popoverEvent: any;
 
   constructor(
@@ -46,7 +46,8 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   ) {}
 
   get image() {
-    return this.user?.profilePicture || "assets/avatar/male2.png";
+    // Assuming the Account model has a profile picture field
+    return this.account?.iconImage || "assets/avatar/male2.png";
   }
 
   ngOnInit() {
@@ -54,22 +55,25 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.usersSubscription?.unsubscribe();
+    this.accountsSubscription?.unsubscribe();
   }
 
   initiateSubscribers() {
-    // Subscribe to users$ observable
-    this.usersSubscription = this.storeService.users$.subscribe((users) => {
-      this.user = users.find(
-        (user) => user.id === this.authStoreService.getCurrentUser()?.uid,
-      );
-    });
+    // Subscribe to accounts$ observable
+    this.accountsSubscription = this.storeService?.accounts$?.subscribe(
+      (accounts) => {
+        this.account = accounts.find(
+          (account) =>
+            account.id === this.authStoreService.getCurrentUser()?.uid,
+        );
+      },
+    );
   }
 
   async presentPopover(ev: any) {
     this.popoverEvent = ev;
     const popover = await this.popoverController.create({
-      component: UserMenuComponent, // This is where you pass the component to the popover
+      component: UserMenuComponent, // Passing the component to the popover
       event: ev,
       translucent: true,
     });

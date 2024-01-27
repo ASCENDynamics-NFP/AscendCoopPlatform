@@ -17,12 +17,11 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, Input, OnInit} from "@angular/core";
+import {Component, Input} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
 import {Router} from "@angular/router";
-import {AppUser} from "../../../../../../models/user.model";
-import {AppRelationship} from "../../../../../../models/relationship.model";
+import {Account} from "../../../../../../models/account.model";
 
 @Component({
   selector: "app-friend-list",
@@ -31,51 +30,28 @@ import {AppRelationship} from "../../../../../../models/relationship.model";
   standalone: true,
   imports: [IonicModule, CommonModule],
 })
-export class FriendListComponent implements OnInit {
-  @Input() user: Partial<AppUser> | null = null; // define your user here
-  @Input() friendList: Partial<AppRelationship>[] = [];
+export class FriendListComponent {
+  @Input() account?: Partial<Account>;
+
   constructor(private router: Router) {}
 
-  ngOnInit() {}
-
   get allFriends() {
-    let allFriends = [];
-    for (let friend of this.friendList) {
-      if (friend.status !== "accepted") continue;
-      if (friend.senderId === this.user?.id) {
-        allFriends.push({
-          id: friend.receiverId,
-          name: friend.receiverName,
-          image: friend.receiverImage,
-          tagline: friend.receiverTagline,
-        });
-      } else {
-        allFriends.push({
-          id: friend.senderId,
-          name: friend.senderName,
-          image: friend.senderImage,
-          tagline: friend.senderTagline,
-        });
-      }
-    }
-    return allFriends;
-  }
-
-  get userName() {
-    return this.user?.displayName ? this.user.displayName : "";
-  }
-
-  get userTagline() {
-    return this.user?.email ? this.user.email : "";
+    return (
+      this.account?.relatedAccounts?.filter(
+        (ra) => ra.type === "user" && ra.status === "accepted", // only show accepted friends
+      ) ?? []
+    );
   }
 
   goToUserProfile(id: string | undefined) {
-    this.router.navigate([`/user-profile/${id}`]);
+    if (id) {
+      this.router.navigate([`/user-profile/${id}`]);
+    }
   }
 
   goToFriendList() {
-    if (this.user?.id) {
-      this.router.navigate([`/user-profile/${this.user.id}/friends`]);
+    if (this.account?.id) {
+      this.router.navigate([`/user-profile/${this.account.id}/friends`]);
     }
   }
 }

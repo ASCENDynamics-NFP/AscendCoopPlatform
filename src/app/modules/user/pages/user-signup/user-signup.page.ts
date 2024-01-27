@@ -49,14 +49,16 @@ export class UserSignupPage implements OnDestroy {
     private authStoreService: AuthStoreService,
     private router: Router,
   ) {
-    this.authSubscription = this.authStoreService.user$.subscribe((user) => {
-      if (user) {
-        console.log("GOT USER ON SIGN UP");
-        this.router.navigateByUrl("/user-profile/" + user.uid, {
-          replaceUrl: true,
-        });
-      }
-    });
+    this.authSubscription = this.authStoreService.authUser$.subscribe(
+      (authUser) => {
+        if (authUser) {
+          console.log("GOT USER ON SIGN UP");
+          this.router.navigateByUrl("/user-profile/" + authUser.uid, {
+            replaceUrl: true,
+          });
+        }
+      },
+    );
   }
 
   ionViewWillEnter() {}

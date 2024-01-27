@@ -17,7 +17,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<ion-card *ngIf="user">
+<ion-card *ngIf="account">
   <ion-card-header>
     <ion-card-title>About Me</ion-card-title>
   </ion-card-header>
@@ -25,25 +25,23 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ion-list>
       <!-- <ion-item lines="none">
         <ion-avatar slot="start">
-          <img [src]="user.profilePicture" alt="Profile Picture" />
+          <img [src]="user.iconImage" alt="Profile Picture" />
         </ion-avatar>
         <ion-label>
-          <h2>{{ user.displayName }}</h2>
+          <h2>{{ user.name }}</h2>
           <p>{{ user.email }}</p>
         </ion-label>
       </ion-item> -->
 
       <ion-item lines="none">
         <ion-icon name="mail" slot="start"></ion-icon>
-        <ion-label>Email: {{ user.email }}</ion-label>
+        <ion-label>Email: {{ account.email }}</ion-label>
       </ion-item>
 
       <ion-item lines="none">
         <ion-icon name="call" slot="start"></ion-icon>
-        <ion-label *ngIf="user.phoneNumber"
-          >{{ user.phoneType }} Phone: {{ user.phoneCountryCode }}
-          {{ user.phoneNumber | phoneFormat }}</ion-label
-        >
+        <ion-label *ngIf="account.phone?.number">{{ account.phone?.type }} Phone: {{ account.phone?.countryCode }}
+          {{ account.phone?.number || "" | phoneFormat }}</ion-label>
       </ion-item>
       <!-- 
       <ion-item>
@@ -53,33 +51,25 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
       <!-- <ion-item lines="none">
         <ion-icon name="text" slot="start"></ion-icon>
-        <ion-label>Bio: {{ user.bio }}</ion-label>
+        <ion-label>Bio: {{ user.description }}</ion-label>
       </ion-item> -->
 
       <ion-item lines="none">
         <ion-icon name="book" slot="start"></ion-icon>
-        <ion-label>Tagline: {{ user.tagline }}</ion-label>
+        <ion-label>Tagline: {{ account.tagline }}</ion-label>
       </ion-item>
 
       <ion-item lines="none">
         <ion-icon name="calendar" slot="start"></ion-icon>
-        <ion-label
-          >Date of Birth: {{ dateOfBirth | date : "mediumDate" }}</ion-label
-        >
+        <ion-label>Date of Birth: {{ dateOfBirth | date : "mediumDate" }}</ion-label>
       </ion-item>
 
       <ion-item lines="none">
         <ion-icon name="language" slot="start"></ion-icon>
-        <ion-label>Language: {{ user.language }}</ion-label>
+        <ion-label>Language: {{ account.language }}</ion-label>
       </ion-item>
     </ion-list>
   </ion-card-content>
-  <ion-button
-    *ngIf="isProfileOwner"
-    expend="block"
-    fill="clear"
-    color="primary"
-    routerLink="/user-profile/{{ user.id }}/edit"
-    >Edit Profile</ion-button
-  >
+  <ion-button *ngIf="isProfileOwner" expend="block" fill="clear" color="primary"
+    routerLink="/user-profile/{{ account.id }}/edit">Edit Profile</ion-button>
 </ion-card>

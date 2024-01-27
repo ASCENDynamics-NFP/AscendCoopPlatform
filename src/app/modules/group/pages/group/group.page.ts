@@ -20,13 +20,12 @@
 import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
-import {ActivatedRoute, RouterModule} from "@angular/router";
+import {ActivatedRoute, Router, RouterModule} from "@angular/router";
 import {StoreService} from "../../../../core/services/store.service";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {Subscription} from "rxjs";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
-import {AppGroup} from "../../../../models/group.model";
-import {AppUser} from "../../../../models/user.model";
+import {Account} from "../../../../models/account.model";
 
 @Component({
   selector: "app-group",
@@ -36,24 +35,22 @@ import {AppUser} from "../../../../models/user.model";
   imports: [IonicModule, CommonModule, RouterModule, AppHeaderComponent],
 })
 export class GroupPage {
-  private groupsSubscription?: Subscription;
-  private usersSubscription?: Subscription;
-  group: Partial<AppGroup> | null = null;
+  private accountSubscription?: Subscription;
+  group?: Partial<Account>;
   groupId: string | null = null;
-  user?: Partial<AppUser>;
+  public currentUserAccount?: Partial<Account>;
+  public isGroupAdmin: Boolean = false;
 
   constructor(
     private activatedRoute: ActivatedRoute,
     private authStoreService: AuthStoreService,
     private storeService: StoreService,
+    private router: Router,
   ) {
-    this.groupId = this.activatedRoute.snapshot.paramMap.get("groupId");
+    this.groupId = this.activatedRoute.snapshot.paramMap.get("accountId");
 
     if (this.groupId) {
-      this.storeService.getDocsWithSenderOrRecieverId(
-        "relationships",
-        this.groupId,
-      );
+      this.storeService.getDocById("accounts", this.groupId);
     }
   }
 
@@ -66,19 +63,31 @@ export class GroupPage {
   }
 
   ionViewWillLeave() {
-    // Unsubscribe from the groups$ observable when the component is destroyed
-    this.groupsSubscription?.unsubscribe();
-    this.usersSubscription?.unsubscribe();
+    this.accountSubscription?.unsubscribe();
   }
 
   initiateSubscribers() {
-    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
-      this.group = groups.find((group) => group.id === this.groupId) || null;
-    });
-    this.usersSubscription = this.storeService.users$.subscribe((users) => {
-      this.user = users.find(
-        (u) => u.id === this.authStoreService.getCurrentUser()?.uid,
-      );
-    });
+    this.accountSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        // Find the group by groupId
+        this.group = accounts.find((account) => account.id === this.groupId);
+        if (this.group?.type === "user") {
+          this.router.navigate([`/user-profile/${this.groupId}`]); // Navigate to group-profile
+        }
+
+        // Find the current user account
+        this.currentUserAccount = accounts.find(
+          (account) => account.id === this.currentUser?.uid,
+        );
+        if (this.currentUser?.uid === this.groupId) {
+          this.isGroupAdmin = true;
+        }
+
+        // If the current user's account is found, fetch its related accounts
+        if (this.currentUserAccount?.id) {
+          this.storeService.getDocById("accounts", this.currentUserAccount.id);
+        }
+      },
+    );
   }
 }

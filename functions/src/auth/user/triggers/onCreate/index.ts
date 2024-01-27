@@ -20,64 +20,92 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
-import {WriteResult} from "firebase-admin/firestore";
+import {Timestamp} from "firebase-admin/firestore";
 
 // Initialize the Firebase admin SDK
 if (!admin.apps.length) {
   admin.initializeApp();
 }
+
 // Reference to the Firestore database
 const db = admin.firestore();
-// Triggered when a new user is created in Firebase Authentication (i.e. signed up) and adds a new user profile to Firestore.
+
+// Triggered when a new user is created in Firebase Authentication
 export const createUserProfile = functions.auth
   .user()
   .onCreate(async (user) => {
     try {
-      await saveUserProfileToFirestore(user);
+      await saveAccountToFirestore(user, "user"); // Specify 'user' for user profiles
       logger.info(`User profile for ${user.uid} saved successfully.`);
     } catch (error) {
       logger.error(`Error saving user profile for ${user.uid}:`, error);
-      throw error; // This will make the cloud function execution fail and will be retried.
+      throw error;
     }
   });
 
 /**
- * Saves the user's profile to Firestore.
+ * Saves an account to Firestore in the 'accounts' collection.
  * @param {admin.auth.UserRecord} user - The user record from Firebase Authentication.
- * @return {Promise<WriteResult>} - A promise that resolves when the operation is complete.
+ * @param {string} type - The type of the account ('user' or 'group').
+ * @return {Promise<void>} - A promise that resolves when the operation is complete.
  */
-async function saveUserProfileToFirestore(
+async function saveAccountToFirestore(
   user: admin.auth.UserRecord,
-): Promise<WriteResult> {
-  // Reference to the user's profile in Firestore
-  const userRef = db.collection("users").doc(user.uid);
+  type: "user" | "group",
+): Promise<void> {
+  const accountRef = db.collection("accounts").doc(user.uid);
 
-  // The data you want to save for the user
-  const userProfile = {
+  const accountData = {
     id: user.uid,
-    lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
-    lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    type: type,
+    name: user.displayName || "New User",
+    createdAt: Timestamp.now(),
     createdBy: user.uid,
+    lastLoginAt: Timestamp.now(),
+    lastModifiedAt: Timestamp.now(),
     lastModifiedBy: user.uid,
     email: user.email,
     emailVerified: user.emailVerified,
-    name: user.displayName ? user.displayName : "Volunteer",
-    displayName: user.displayName ? user.displayName : "Volunteer",
-    profilePicture: user.photoURL ? user.photoURL : "assets/avatar/male1.png",
-    bio: "Glad to be here with everyone!",
-    tagline: "Lets help each other out!",
-    heroImage: "assets/image/userhero.png",
-    dateOfBirth: admin.firestore.FieldValue.serverTimestamp(),
-    phoneNumber: user.phoneNumber ? user.phoneNumber : "",
-    friends: [],
-    groups: [],
-    pendingFriends: [],
-    pendingGroups: [],
+    phone: {countryCode: "", number: user.phoneNumber || "", type: ""},
+    language: "",
+    associations: {accounts: [], feedback: []},
     privacySetting: "public",
-    // ... any other fields you want to add
+    iconImage:
+      user.photoURL ||
+      "assets/image/logo/ASCENDynamics NFP-logos_transparent.png",
+    heroImage: "assets/image/userhero.png",
+    description: "",
+    tagline: "",
+    address: {
+      name: "",
+      street: "",
+      city: "",
+      state: "",
+      zipcode: "",
+      country: "",
+      formatted: "",
+      geopoint: "",
+    },
+    // User specific fields
+    userDetails:
+      type === "user"
+        ? {
+            dateOfBirth: Timestamp.now(),
+            firstName: "",
+            lastName: "",
+            username: user.displayName || user.uid,
+          }
+        : null,
+    // Group specific fields
+    groupDetails:
+      type === "group"
+        ? {
+            admins: [user.uid],
+            dateFounded: Timestamp.now(),
+            supportedLanguages: [],
+          }
+        : null,
   };
 
-  // Save the user profile to Firestore
-  return userRef.set(userProfile);
+  await accountRef.set(accountData);
 }

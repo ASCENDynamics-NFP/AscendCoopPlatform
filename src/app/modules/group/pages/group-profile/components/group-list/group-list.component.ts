@@ -21,8 +21,7 @@ import {Component, Input} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
 import {Router} from "@angular/router";
-import {AppGroup} from "../../../../../../models/group.model";
-import {AppRelationship} from "../../../../../../models/relationship.model";
+import {Account} from "../../../../../../models/account.model";
 
 @Component({
   selector: "app-group-list",
@@ -32,42 +31,26 @@ import {AppRelationship} from "../../../../../../models/relationship.model";
   imports: [IonicModule, CommonModule],
 })
 export class GroupListComponent {
-  @Input() group: Partial<AppGroup> | null = null; // define your group here
-  @Input() groupList: Partial<AppRelationship>[] = [];
+  @Input() account?: Partial<Account>;
 
   constructor(private router: Router) {}
 
   get allGroups() {
-    let allGroups = [];
-    for (let relationship of this.groupList) {
-      if (relationship.status !== "accepted") continue;
-      if (relationship.senderId === this.group?.id) {
-        allGroups.push({
-          id: relationship.receiverId,
-          name: relationship.receiverName,
-          image: relationship.receiverImage,
-          tagline: relationship.receiverTagline,
-        });
-      } else {
-        allGroups.push({
-          id: relationship.senderId,
-          name: relationship.senderName,
-          image: relationship.senderImage,
-          tagline: relationship.senderTagline,
-        });
-      }
-    }
-    return allGroups;
+    return this.account?.relatedAccounts?.filter(
+      (ra) => ra.type === "group" && ra.status === "accepted",
+    );
   }
 
   goToPartnerDetails(id: string | undefined) {
-    this.router.navigate([`/group/${id}/${id}/details`]);
+    if (id) {
+      this.router.navigate([`/group/${id}/${id}/details`]);
+    }
   }
 
   goToPartnersList() {
-    if (this.group?.id) {
+    if (this.account?.id) {
       this.router.navigate([
-        `/group/${this.group.id}/${this.group.id}/partners`,
+        `/group/${this.account.id}/${this.account.id}/partners`,
       ]);
     }
   }

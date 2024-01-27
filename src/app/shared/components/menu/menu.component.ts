@@ -58,15 +58,17 @@ export class MenuComponent implements OnInit, OnDestroy {
     private modalCtrl: ModalController,
     private router: Router,
   ) {
-    this.authSubscription = this.authStoreService.user$.subscribe((user) => {
-      if (user) {
-        console.log("GOT USER ON MENU");
-        this.user = user;
-        this.translateUserItems();
-      } else {
-        this.translateGuestItems();
-      }
-    });
+    this.authSubscription = this.authStoreService.authUser$.subscribe(
+      (authUser) => {
+        if (authUser) {
+          console.log("GOT USER ON MENU");
+          this.user = authUser;
+          this.translateUserItems();
+        } else {
+          this.translateGuestItems();
+        }
+      },
+    );
     this.translate.onLangChange.subscribe((event: LangChangeEvent) => {
       // Do something with the updated translations
       if (this.user) {
@@ -106,8 +108,8 @@ export class MenuComponent implements OnInit, OnDestroy {
       },
       {
         title: "Donate",
-        url: "https://www.paypal.com/donate/?hosted_button_id=NZNUBUCTZA75S",
-        icon: "logo-paypal",
+        url: "https://buy.stripe.com/bIY5mC9sY1ob4TufYY",
+        icon: "heart-sharp",
       },
       {
         title: "Project Repository",

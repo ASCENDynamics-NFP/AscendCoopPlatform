@@ -17,18 +17,16 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
+import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {ActivatedRoute} from "@angular/router";
-
+import {ActivatedRoute, Router} from "@angular/router";
 import {FriendListComponent} from "./components/friend-list/friend-list.component";
 import {GroupMembershipListComponent} from "./components/group-membership-list/group-membership-list.component";
 import {HeroComponent} from "./components/hero/hero.component";
 import {DetailsComponent} from "./components/details/details.component";
-import {AppRelationship} from "../../../../models/relationship.model";
-import {AppUser} from "../../../../models/user.model";
+import {Account} from "../../../../models/account.model";
 import {Subscription} from "rxjs";
 import {StoreService} from "../../../../core/services/store.service";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
@@ -51,34 +49,24 @@ import {User} from "firebase/auth";
     AppHeaderComponent,
   ],
 })
-export class UserProfilePage implements OnInit {
-  private uid: string | null = null;
-  private relationshipsSubscription?: Subscription;
-  private usersSubscription?: Subscription;
+export class UserProfilePage {
+  public accountId: string | null;
+  private accountsSubscription?: Subscription;
   authUser: User | null = null;
-  user: Partial<AppUser> | null = null;
-  friendList: Partial<AppRelationship>[] = [];
-  groupList: Partial<AppRelationship>[] = [];
+  account?: Partial<Account>;
+
   constructor(
     private authStoreService: AuthStoreService,
     private route: ActivatedRoute,
+    private router: Router,
     private storeService: StoreService,
   ) {
-    this.uid = this.route.snapshot.paramMap.get("uid");
+    this.accountId = this.route.snapshot.paramMap.get("accountId");
     this.authUser = this.authStoreService.getCurrentUser();
   }
 
-  ngOnInit() {
-    if (this.uid) {
-      this.storeService.getDocsWithSenderOrRecieverId(
-        "relationships",
-        this.uid,
-      );
-    }
-  }
-
   get isProfileOwner(): boolean {
-    return this.uid === this.authUser?.uid;
+    return this.accountId === this.authUser?.uid;
   }
 
   ionViewWillEnter() {
@@ -86,47 +74,29 @@ export class UserProfilePage implements OnInit {
   }
 
   ionViewWillLeave() {
-    this.relationshipsSubscription?.unsubscribe();
-    this.usersSubscription?.unsubscribe();
+    this.accountsSubscription?.unsubscribe();
   }
 
   initiateSubscribers() {
-    // Subscribe to users$ observable
-    this.usersSubscription = this.storeService.users$.subscribe((users) => {
-      this.user = users.find((user) => user.id === this.uid) ?? null;
-      if (!this.user) {
-        console.log("User not found in store, fetching from server");
-        this.storeService.getDocById("users", this.uid);
-      }
-    });
-    // Subscribe to relationships$ observable
-    this.relationshipsSubscription = this.storeService.relationships$.subscribe(
-      (relationships) => {
-        this.sortRelationships(relationships);
+    this.accountsSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        if (!this.accountId) return;
+        this.account = accounts.find(
+          (account) => account.id === this.accountId,
+        );
+        if (!this.account) {
+          this.storeService.getDocById("accounts", this.accountId); // get and add doc to store
+        } else {
+          if (this.account?.type === "group") {
+            this.router.navigate([
+              `/group/${this.accountId}/${this.accountId}/details`,
+            ]); // Navigate to group-profile
+          }
+          if (!this.account?.relatedAccounts) {
+            this.storeService.getAndSortRelatedAccounts(this.accountId);
+          }
+        }
       },
     );
-  }
-
-  sortRelationships(relationships: Partial<AppRelationship>[]) {
-    this.friendList = [];
-    this.groupList = [];
-    for (let relationship of relationships) {
-      if (
-        relationship.senderId === this.uid ||
-        relationship.receiverId === this.uid
-      ) {
-        if (
-          relationship.type === "friend" &&
-          relationship.status === "accepted"
-        ) {
-          this.friendList.push(relationship);
-        } else if (
-          relationship.type?.includes("member") &&
-          relationship.status === "accepted"
-        ) {
-          this.groupList.push(relationship);
-        }
-      }
-    }
   }
 }

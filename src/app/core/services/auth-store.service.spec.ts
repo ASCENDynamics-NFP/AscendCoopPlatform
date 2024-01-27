@@ -34,8 +34,8 @@ describe("AuthStoreService", () => {
     // Mock the onAuthStateChanged function
     authSpy.onAuthStateChanged = (callback: (user: User | null) => void) =>
       callback(null);
-    // Mock user$ as an Observable that emits null
-    authSpy.user$ = of(null);
+    // Mock authUser$ as an Observable that emits null
+    authSpy.authUser$ = of(null);
 
     TestBed.configureTestingModule({
       providers: [{provide: AuthStoreService, useValue: authSpy}],
@@ -67,8 +67,8 @@ describe("AuthStoreService", () => {
     expect(authSpy.signOut).toHaveBeenCalled();
   });
 
-  it("should emit null for user$ when signed out", (done) => {
-    service.user$.subscribe((user) => {
+  it("should emit null for authUser$ when signed out", (done) => {
+    service.authUser$.subscribe((user) => {
       expect(user).toBeNull();
       done();
     });

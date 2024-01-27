@@ -1,9 +1,59 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if
-          request.time < timestamp.date(2023, 6, 9);
+
+    // Match the Account collection
+    match /accounts/{accountId} {
+      
+      function isAccountOwner() {
+        return request.auth != null && request.auth.uid == accountId;
+      }
+
+      // Friends-only access
+      function isAcceptedFriend() {
+        return (request.auth != null && exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid))
+          && get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.type == 'user'
+          && get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted');
+      }
+
+      // Groups-only access
+      function isAcceptedGroup() {
+        return (request.auth != null && exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid))
+          && get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.type == 'group'
+          && get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted');
+      }
+
+      // Public Group access
+      function isPublicGroup() {
+        return (resource.data.privacySetting == 'public' && resource.data.type == 'group');
+      }
+
+      // Public User access
+      function isPublicUser() {
+        return (request.auth != null && resource.data.privacySetting == 'public' && resource.data.type == 'user');
+      }
+
+      // Allow read if the user is accessing their own account
+      allow read: if (isAccountOwner() || isAcceptedFriend() || isAcceptedGroup() || isPublicGroup() || isPublicUser());
+
+      // General write rule (customize as needed)
+      allow create, write: if isAccountOwner();
+    }
+
+    // Rules for relatedAccount
+    match /accounts/{accountId}/relatedAccounts/{relatedAccountId} {
+      allow create, read, write, delete: if request.auth.uid != null; // Only the user can write to their own data
+    }
+    
+    // Rules for AppFeedback
+    match /feedback/{accountId} {
+      function isAccountOwner() {
+        return request.auth.uid == accountId;
+      }
+
+      allow create: if isAccountOwner();
+      allow read, write: if request.auth.uid != null; // Only logged in users can read and write feedback
+      allow delete: if false;
     }
   }
 }

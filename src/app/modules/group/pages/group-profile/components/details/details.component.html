@@ -25,7 +25,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ion-list>
       <ion-item lines="none">
         <ion-avatar slot="start">
-          <img [src]="group.logoImage" alt="Group Picture" />
+          <img [src]="group.iconImage" alt="Group Picture" />
         </ion-avatar>
         <ion-label>
           <h2>{{ group.name }}</h2>
@@ -33,13 +33,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         </ion-label>
       </ion-item>
 
-      <ion-item *ngIf="group.phoneNumber" lines="none">
+      <ion-item *ngIf="group.phone?.number" lines="none">
         <ion-icon name="call" slot="start"></ion-icon>
-        <ion-label
-          >Phone:
-          {{ group.phoneCountryCode ? "+" + group.phoneCountryCode : "" }}
-          {{ group.phoneNumber | phoneFormat }}</ion-label
-        >
+        <ion-label>Phone:
+          {{ group.phone?.countryCode ? "+" + group.phone?.countryCode : "" }}
+          {{ group.phone?.number || '' | phoneFormat }}</ion-label>
       </ion-item>
       <!-- 
       <ion-item>
@@ -59,25 +57,15 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
       <ion-item lines="none">
         <ion-icon name="calendar" slot="start"></ion-icon>
-        <ion-label
-          >Date Founded: {{ dateFounded | date : "mediumDate" }}</ion-label
-        >
+        <ion-label>Date Founded: {{ dateFounded | date : "mediumDate" }}</ion-label>
       </ion-item>
 
       <ion-item lines="none">
         <ion-icon name="language" slot="start"></ion-icon>
-        <ion-label
-          >Supported Language: {{ group.supportedlanguages }}</ion-label
-        >
+        <ion-label>Supported Language: {{ group.groupDetails?.supportedLanguages }}</ion-label>
       </ion-item>
     </ion-list>
   </ion-card-content>
-  <ion-button
-    *ngIf="canEdit"
-    expend="block"
-    fill="clear"
-    color="primary"
-    routerLink="/group/{{ group.id }}/{{ group.id }}/details/edit"
-    >Edit Profile</ion-button
-  >
+  <ion-button *ngIf="canEdit" expend="block" fill="clear" color="primary"
+    routerLink="/group/{{ group.id }}/{{ group.id }}/details/edit">Edit Profile</ion-button>
 </ion-card>

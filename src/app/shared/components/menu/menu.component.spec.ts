@@ -33,8 +33,8 @@ describe("MenuComponent", () => {
 
   beforeEach(() => {
     authSpy = jasmine.createSpyObj("auth", ["onSignOut"]);
-    // Mock user$ as an Observable that emits null
-    authSpy.user$ = of(null);
+    // Mock authUser$ as an Observable that emits null
+    authSpy.authUser$ = of(null);
     authSpy.onSignOut.and.returnValue(Promise.resolve());
 
     TestBed.configureTestingModule({

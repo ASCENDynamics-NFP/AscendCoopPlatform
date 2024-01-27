@@ -20,7 +20,7 @@
 import {CommonModule} from "@angular/common";
 import {Component, Input} from "@angular/core";
 import {IonicModule, ModalController} from "@ionic/angular";
-import {AppGroup} from "../../../../../../models/group.model";
+import {Account} from "../../../../../../models/account.model";
 import {ImageUploadModalComponent} from "../../../../../../shared/components/image-upload-modal/image-upload-modal.component";
 
 @Component({
@@ -31,7 +31,7 @@ import {ImageUploadModalComponent} from "../../../../../../shared/components/ima
   imports: [IonicModule, CommonModule, ImageUploadModalComponent],
 })
 export class HeroComponent {
-  @Input() group: Partial<AppGroup> | null = null; // define your user here
+  @Input() group?: Partial<Account>; // define your user here
   @Input() isAdmin: boolean = false;
   @Input() isMember: boolean = false;
   @Input() isPendingMember: boolean = false;
@@ -59,7 +59,7 @@ export class HeroComponent {
       // if (data) {
       //   const profileImageUrl = data;
       // }
-    } else if (imageType === "logoImage") {
+    } else if (imageType === "iconImage") {
       let modal = await this.modalController.create({
         component: ImageUploadModalComponent,
         componentProps: {
@@ -68,7 +68,7 @@ export class HeroComponent {
           firestoreLocation: `groups/${this.group?.id}/profile`,
           maxHeight: 200,
           maxWidth: 200,
-          fieldName: "logoImage",
+          fieldName: "iconImage",
         },
       });
 

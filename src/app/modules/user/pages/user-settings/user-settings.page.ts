@@ -27,7 +27,7 @@ import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {Subscription} from "rxjs";
 import {StoreService} from "../../../../core/services/store.service";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
-import {AppUser} from "../../../../models/user.model";
+import {Account} from "../../../../models/account.model";
 
 @Component({
   selector: "app-user-settings",
@@ -43,9 +43,10 @@ import {AppUser} from "../../../../models/user.model";
   ],
 })
 export class UserSettingsPage {
-  private userSubscription?: Subscription;
+  private accountSubscription?: Subscription;
   authUser = this.authStoreService.getCurrentUser();
-  user?: Partial<AppUser> | null;
+  account?: Partial<Account>;
+
   constructor(
     private authStoreService: AuthStoreService,
     private storeService: StoreService,
@@ -54,17 +55,22 @@ export class UserSettingsPage {
   }
 
   ionViewWillEnter() {
-    this.userSubscription = this.storeService.users$.subscribe((users) => {
-      this.user = users.find((u) => u.id === this.authUser?.uid);
-    });
-    if (!this.user) {
-      this.user = this.storeService
-        .getCollection("users")
-        .find((u) => u["id"] === this.authUser?.uid);
+    this.accountSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        this.account = accounts.find(
+          (account) => account.id === this.authUser?.uid,
+        );
+      },
+    );
+
+    if (!this.account) {
+      this.account = this.storeService
+        .getCollection("accounts")
+        .find((account) => account["id"] === this.authUser?.uid);
     }
   }
 
   ionViewWillLeave() {
-    this.userSubscription?.unsubscribe();
+    this.accountSubscription?.unsubscribe();
   }
 }

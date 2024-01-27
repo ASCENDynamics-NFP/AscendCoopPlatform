@@ -17,14 +17,10 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Timestamp} from "firebase/firestore";
+import {BaseDocument} from "./base-document";
 
-export interface AppFeedback {
+export type AppFeedback = BaseDocument & {
   id: string; // Firestore document ID
-  createdAt: Timestamp; // When the group was added
-  createdBy: string; // User ID of the user who created the group
-  lastModifiedAt: Timestamp; // When the group document was last modified
-  lastModifiedBy: string; // User ID of the user who last modified the group
   email: string; // Email of the user who submitted the feedback
   emailVerified: boolean; // Whether the user's email has been verified
   name: string; // Name of the user who submitted the feedback
@@ -35,4 +31,4 @@ export interface AppFeedback {
   category: string; // Category of the feedback
   isRead: boolean; // Whether the feedback has been read
   isResolved: boolean; // Whether the feedback has been resolved
-}
+};

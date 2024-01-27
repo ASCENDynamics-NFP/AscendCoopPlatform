@@ -20,20 +20,17 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <ion-card>
   <ion-card-header>
     <ion-card-title>Partner Organizations</ion-card-title>
-    <ion-card-subtitle>{{ groupList.length }} groups</ion-card-subtitle>
+    <ion-card-subtitle>{{ allGroups?.length || 0 }} groups</ion-card-subtitle>
   </ion-card-header>
   <ion-card-content>
-    <ion-list>
-      <ion-item
-        *ngFor="let group of allGroups | slice : 0 : 4; let i = index"
-        button
-        (click)="goToPartnerDetails(group.id)"
-      >
+    <ion-list *ngIf="allGroups">
+      <ion-item *ngFor="let group of allGroups | slice : 0 : 4; let i = index" button
+        (click)="goToPartnerDetails(group.id)">
         <ion-thumbnail slot="start">
-          <img *ngIf="group.image" [alt]="group.name" [src]="group.image" />
+          <img *ngIf="group.iconImage" [alt]="group.name" [src]="group.iconImage" />
         </ion-thumbnail>
         <ion-label>
-          <h3>{{ group["name"] }}</h3>
+          <h3>{{ group.name }}</h3>
           <p>Group</p>
         </ion-label>
       </ion-item>

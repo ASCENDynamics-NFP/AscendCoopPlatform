@@ -21,15 +21,13 @@ import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {AppGroup} from "../../../../models/group.model";
+import {Account, RelatedAccount} from "../../../../models/account.model";
 import {User} from "firebase/auth";
 import {RouterModule} from "@angular/router";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {Subscription} from "rxjs";
 import {StoreService} from "../../../../core/services/store.service";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
-import {AppRelationship} from "../../../../models/relationship.model";
-import {AppUser} from "../../../../models/user.model";
 
 @Component({
   selector: "app-group-list",
@@ -45,13 +43,11 @@ import {AppUser} from "../../../../models/user.model";
   ],
 })
 export class GroupListPage {
-  private groupsSubscription?: Subscription;
-  private usersSubscription?: Subscription;
-  authUser: User | null = null; // define your user here
-  groups: Partial<AppGroup>[] | null = [];
-  private searchTerm: any;
-  searchResults: Partial<AppGroup>[] | null = [];
-  user?: Partial<AppUser>;
+  private accountsSubscription?: Subscription;
+  authUser: User | null = null;
+  accountList: Partial<Account>[] | null = [];
+  searchedValue: string = "";
+  account?: Partial<Account>;
 
   constructor(
     private authStoreService: AuthStoreService,
@@ -61,78 +57,104 @@ export class GroupListPage {
   }
 
   ionViewWillEnter() {
-    this.groupsSubscription = this.storeService.groups$.subscribe((groups) => {
-      if (groups) {
-        this.groups = groups;
-        this.searchResults = this.groups;
-        if (this.searchTerm) {
-          this.searchResults = groups.filter((group) =>
-            group.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
-          );
+    this.accountsSubscription = this.storeService.accounts$.subscribe(
+      (accounts) => {
+        if (accounts) {
+          this.account = accounts.find((acc) => acc.id === this.authUser?.uid);
+          this.accountList = accounts
+            .filter(
+              (acc) =>
+                acc.name
+                  ?.toLowerCase()
+                  .includes(this.searchedValue.toLowerCase()) &&
+                acc.type === "group",
+            )
+            .sort((a, b) => {
+              if (a["name"] && b["name"]) {
+                return a["name"].localeCompare(b["name"]);
+              } else {
+                return 0;
+              }
+            });
         }
-      }
-    });
-    this.usersSubscription = this.storeService.users$.subscribe((users) => {
-      this.user = users.find((u) => u.id === this.authUser?.uid);
-    });
+      },
+    );
   }
 
   ionViewWillLeave() {
-    this.groupsSubscription?.unsubscribe();
-    this.usersSubscription?.unsubscribe();
+    this.accountsSubscription?.unsubscribe();
   }
 
   get image() {
-    return this.user?.profilePicture ? this.user.profilePicture : "";
+    return this.account?.iconImage
+      ? this.account.iconImage
+      : "default-image-path";
   }
 
-  searchGroups(event: any) {
-    this.searchTerm = event.target.value;
-    if (this.searchTerm) {
-      this.storeService.searchDocsByName("groups", this.searchTerm);
-    } else {
-      this.searchResults = this.storeService.getCollection("groups");
-      this.searchResults = this.searchResults.sort((a, b) => {
-        if (a.name && b.name) {
-          return a.name.localeCompare(b.name);
-        }
-        return 0;
-      });
+  search(event: any) {
+    const value = event.target.value;
+    this.searchedValue = value;
+
+    if (value) {
+      // Perform search
+      this.storeService.searchDocsByName("accounts", value);
     }
   }
 
-  sendRequest(group: Partial<AppGroup>) {
-    if (!this.authUser?.uid || !group.id) {
+  async sendRequest(account: Partial<Account>) {
+    if (!this.authUser?.uid || !account.id) {
+      console.error("User ID or Account ID is missing");
       return;
     }
-    const relationship: Partial<AppRelationship> = {
-      relatedIds: [this.authUser?.uid, group.id],
-      senderId: this.authUser?.uid,
-      receiverId: group.id,
-      type: "member",
+
+    const newRelatedAccount: Partial<RelatedAccount> = {
+      id: account.id,
+      initiatorId: this.authUser.uid,
+      targetId: account.id,
+      type: account.type,
       status: "pending",
-      membershipRole: "member",
-      receiverRelationship: "group",
-      senderRelationship: "user",
-      receiverName: group.name,
-      receiverImage: group.logoImage
-        ? group.logoImage
-        : "assets/icon/favicon.png",
-      receiverTagline: group.tagline,
-      senderName: this.authUser?.displayName ? this.authUser.displayName : "",
-      senderImage: this.authUser?.photoURL ? this.authUser.photoURL : "",
-      senderTagline: "",
+      relationship: "member",
+      tagline: account.tagline,
+      name: account.name,
+      iconImage: account.iconImage,
     };
 
-    this.storeService.createDoc("relationships", relationship).then(() => {
-      // Update the group's pendingMembers in the state
-      if (!group.pendingMembers) {
-        group.pendingMembers = [];
-      }
-      group.pendingMembers = this.authUser?.uid
-        ? [...group.pendingMembers, this.authUser.uid]
-        : [...group.pendingMembers];
-      this.storeService.updateDocInState("groups", group);
-    });
+    // Add the new related account to Firestore
+    await this.storeService.updateDocAtPath(
+      `accounts/${this.authUser.uid}/relatedAccounts/${account.id}`,
+      newRelatedAccount,
+    );
+
+    // Fetch the current user's account to update the relatedAccounts array
+    this.updateRelatedAccounts(newRelatedAccount);
+  }
+
+  private updateRelatedAccounts(relatedAccount: Partial<RelatedAccount>) {
+    if (this.account) {
+      this.account.relatedAccounts = [
+        ...(this?.account?.relatedAccounts || []),
+        relatedAccount,
+      ];
+      this.storeService.updateDocInState("accounts", this.account);
+    }
+  }
+
+  /**
+   * Determines whether a request button should be displayed for a given account.
+   *
+   * @param {Partial<Account>} item - The account for which to determine whether a request button should be displayed.
+   * @returns {boolean} - Returns true if the authenticated user is different from the item and there is no non-rejected related account with the same id as the item. Otherwise, it returns false.
+   */
+  showRequestButton(item: Partial<Account>): boolean {
+    const authUserId = this.authUser?.uid;
+    if (!authUserId || authUserId === item.id) {
+      return false;
+    }
+
+    return this.account?.relatedAccounts?.find(
+      (ra) => ra.id === item.id && ra.status !== "rejected",
+    )
+      ? false
+      : true;
   }
 }

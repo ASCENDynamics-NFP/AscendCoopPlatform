@@ -1,5 +1,5 @@
 ---
-name: Feature Request
+name: Request
 about: Suggest a new feature or enhancement for the project
 labels: enhancement
 ---

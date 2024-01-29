@@ -133,4 +133,11 @@ export const routes: Routes = [
       import("./modules/group/pages/group/group.routes").then((m) => m.routes),
     canActivate: [AuthGuard],
   },
+  {
+    path: "registration/:accountId",
+    loadComponent: () =>
+      import("./modules/account/pages/registration/registration.page").then(
+        (m) => m.RegistrationPage,
+      ),
+  },
 ];

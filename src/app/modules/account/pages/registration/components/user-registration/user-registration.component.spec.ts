@@ -19,7 +19,6 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
-
 import {UserRegistrationComponent} from "./user-registration.component";
 
 describe("UserRegistrationComponent", () => {
@@ -28,8 +27,10 @@ describe("UserRegistrationComponent", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [UserRegistrationComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [
+        IonicModule.forRoot(),
+        UserRegistrationComponent, // Add the standalone component here in imports
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(UserRegistrationComponent);

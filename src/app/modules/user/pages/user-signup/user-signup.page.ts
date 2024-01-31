@@ -20,19 +20,26 @@
 import {Component, OnDestroy} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
+import {IonicModule, ModalController} from "@ionic/angular";
 import {Router} from "@angular/router";
 
 import {TranslateModule} from "@ngx-translate/core";
 import {Subscription} from "rxjs";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
+import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
 
 @Component({
   selector: "app-user-signup",
   templateUrl: "./user-signup.page.html",
   styleUrls: ["./user-signup.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule, TranslateModule],
+  imports: [
+    IonicModule,
+    CommonModule,
+    ReactiveFormsModule,
+    TranslateModule,
+    LegalModalComponent,
+  ],
 })
 export class UserSignupPage implements OnDestroy {
   private authSubscription: Subscription;
@@ -42,12 +49,14 @@ export class UserSignupPage implements OnDestroy {
       "",
       Validators.compose([Validators.required, Validators.minLength(6)]),
     ],
+    agreedToTerms: [false, Validators.requiredTrue],
   });
 
   constructor(
     private fb: FormBuilder,
     private authStoreService: AuthStoreService,
     private router: Router,
+    private modalController: ModalController,
   ) {
     this.authSubscription = this.authStoreService.authUser$.subscribe(
       (authUser) => {
@@ -78,5 +87,13 @@ export class UserSignupPage implements OnDestroy {
 
   ngOnDestroy(): void {
     this.authSubscription.unsubscribe();
+  }
+
+  async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {
+    const modal = await this.modalController.create({
+      component: LegalModalComponent,
+      componentProps: {content: contentType},
+    });
+    return await modal.present();
   }
 }

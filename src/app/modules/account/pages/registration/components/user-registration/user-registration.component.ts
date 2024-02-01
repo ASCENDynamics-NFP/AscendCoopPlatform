@@ -18,8 +18,8 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {CommonModule} from "@angular/common";
-import {Component, Input} from "@angular/core";
-import {FormsModule} from "@angular/forms";
+import {Component, Input, OnInit} from "@angular/core";
+import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {Account} from "../../../../../../models/account.model";
 
@@ -28,9 +28,44 @@ import {Account} from "../../../../../../models/account.model";
   templateUrl: "./user-registration.component.html",
   styleUrls: ["./user-registration.component.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [IonicModule, CommonModule, FormsModule,ReactiveFormsModule],
 })
-export class UserRegistrationComponent {
+export class UserRegistrationComponent implements OnInit{
   @Input() account?: Partial<Account>;
-  constructor() {}
+  registrationForm: FormGroup;
+
+  constructor(private fb: FormBuilder) {
+    this.registrationForm = this.fb.group({
+      name: ['', Validators.required],
+      tagline:[''],
+      Description :[''],
+      phoneNumber:['', Validators.pattern(/^-?\d+$/)],
+      alternateEmail:['',[Validators.email]],
+      mailingAddress:[''],
+      emergencyContactNumber:['', Validators.pattern(/^-?\d+$/)],
+      preferredMethodOfContact :[''],
+      occupation:[''],
+      employerName:[''],
+      workExperience:[''],
+      skillsAndExpertise:[''],
+      currentJobTitle:[''],
+      linkedInProfile:[''],
+      educationalBackground:['']
+    });
+  }
+
+  ngOnInit(){
+
+  
+  }
+
+  onSubmit() {
+    if (this.registrationForm.valid) {
+      // Handle form submission
+      const formData = this.registrationForm.value;
+      console.log(formData);
+    } else {
+      // Handle invalid form
+    }
+  }
 }

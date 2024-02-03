@@ -17,26 +17,26 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-a {
-  cursor: pointer;
-}
+import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
+import {IonicModule} from "@ionic/angular";
 
-.logo-title-container {
-  text-align: center;
-  margin-bottom: 20px;
-}
+import {LegalModalComponent} from "./legal-modal.component";
 
-.logo {
-  width: 400px;
-  max-width: 100%;
-  height: auto;
-  margin: 0 auto;
-}
+describe("LegalModalComponent", () => {
+  let component: LegalModalComponent;
+  let fixture: ComponentFixture<LegalModalComponent>;
 
-h2 {
-  margin-top: 10px;
-  margin-bottom: 10px;
-  font-size: 24px;
-  font-weight: bold;
-  text-align: center;
-}
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [IonicModule.forRoot(), LegalModalComponent],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(LegalModalComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
+
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

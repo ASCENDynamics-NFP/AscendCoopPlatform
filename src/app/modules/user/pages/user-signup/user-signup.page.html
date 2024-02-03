@@ -33,66 +33,43 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     </ion-toolbar>
   </ion-header>
   <div class="logo-title-container">
-    <img
-      src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
-      alt="ASCENDynamics NFP"
-      class="logo"
-    />
+    <img src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png" alt="ASCENDynamics NFP" class="logo" />
   </div>
   <!-- <h2>Sign Up for ASCENDdynamics Platform</h2> -->
   <ion-card>
     <ion-card-content>
       <form [formGroup]="signupForm" (ngSubmit)="signup()">
         <ion-item>
-          <ion-label position="stacked" translate
-            >user.signup.email_label
+          <ion-label position="stacked" translate>user.signup.email_label
           </ion-label>
-          <ion-input
-            type="email"
-            inputmode="email"
-            formControlName="email"
-          ></ion-input>
-          <ion-note
-            slot="error"
+          <ion-input type="email" inputmode="email" formControlName="email"></ion-input>
+          <ion-note slot="error"
             *ngIf="(signupForm.controls.email.dirty || signupForm.controls.email.touched) && signupForm.controls.email.errors"
-            translate
-            >user.signup.email_error</ion-note
-          >
+            translate>user.signup.email_error</ion-note>
         </ion-item>
         <ion-item>
           <ion-label position="stacked" translate>
             user.signup.password_label
           </ion-label>
-          <ion-input
-            type="password"
-            inputmode="text"
-            formControlName="password"
-          ></ion-input>
-          <ion-note
-            slot="error"
+          <ion-input type="password" inputmode="text" formControlName="password"></ion-input>
+          <ion-note slot="error"
             *ngIf="(signupForm.controls.password.dirty || signupForm.controls.password.touched) && signupForm.controls.password.errors"
-            translate
-            >user.signup.password_error</ion-note
-          >
+            translate>user.signup.password_error</ion-note>
         </ion-item>
-        <ion-button
-          type="submit"
-          expend="block"
-          strong="true"
-          [disabled]="signupForm.invalid"
-          style="width: 100%"
-          translate
-          >user.signup.submit</ion-button
-        >
+        <ion-item>
+          <ion-checkbox slot="start" formControlName="agreedToTerms"></ion-checkbox>
+          <ion-text>
+            I have read and agree to the
+            <a class="cursor: pointer;" (click)="openLegalModal('privacyPolicy')">Privacy
+              Policy</a> and
+            <a (click)="openLegalModal('termsOfUse')">Terms of
+              Use</a>.
+          </ion-text>
+        </ion-item>
+        <ion-button type="submit" expend="block" strong="true" [disabled]="signupForm.invalid" style="width: 100%"
+          translate>user.signup.submit</ion-button>
         <h2>OR</h2>
-        <ion-button
-          type="button"
-          expand="block"
-          color="primary"
-          fill="outline"
-          (click)="goToLogin()"
-          translate
-        >
+        <ion-button type="button" expand="block" color="primary" fill="outline" (click)="goToLogin()" translate>
           <ion-icon name="log-in-outline" slot="start"></ion-icon>
           user.signup.login
         </ion-button>

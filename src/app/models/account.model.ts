@@ -55,6 +55,17 @@ type GroupSpecific = {
   supportedLanguages: string[];
 };
 
+type LegalAgreement = {
+  accepted: boolean;
+  datetime: Timestamp;
+  version: string;
+};
+
+type LegalAgreements = {
+  termsOfService: LegalAgreement;
+  privacyPolicy: LegalAgreement;
+};
+
 export type Account = BaseDocument & {
   id: string;
   type: "user" | "group";
@@ -67,6 +78,7 @@ export type Account = BaseDocument & {
   email: string;
   emailVerified: boolean;
   phone: Phone;
+  legalAgreements: LegalAgreements;
   language: string;
   associations: Associations;
   userDetails?: UserSpecific;

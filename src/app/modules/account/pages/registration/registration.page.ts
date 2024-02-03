@@ -78,13 +78,13 @@ export class RegistrationPage {
         if (!this.account) {
           this.storeService.getDocById("accounts", this.accountId); // get and add doc to store
         } else {
-          // if (this.account?.type === "group") {
-          //   this.router.navigate([
-          //     `/group/${this.accountId}/${this.accountId}/details`,
-          //   ]); // Navigate to group-profile
-          // } else if (this.account?.type === "user") {
-          //   this.router.navigate([`/user-profile/${this.accountId}`]); // Navigate to group-profile
-          // }
+          if (this.account?.type === "group") {
+            this.router.navigate([
+              `/group/${this.accountId}/${this.accountId}/details`,
+            ]); // Navigate to group-profile
+          } else if (this.account?.type === "user") {
+            this.router.navigate([`/user-profile/${this.accountId}`]); // Navigate to group-profile
+          }
         }
       },
     );

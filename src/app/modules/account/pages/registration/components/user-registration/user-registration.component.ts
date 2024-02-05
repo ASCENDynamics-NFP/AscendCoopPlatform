@@ -33,16 +33,18 @@ import {Account} from "../../../../../../models/account.model";
 export class UserRegistrationComponent implements OnInit{
   @Input() account?: Partial<Account>;
   registrationForm: FormGroup;
-
+  countryCodes: { value: string; label: string }[] = [];
   constructor(private fb: FormBuilder) {
     this.registrationForm = this.fb.group({
       name: ['', Validators.required],
       tagline:[''],
-      Description :[''],
+      description :[''],
       phoneNumber:['', Validators.pattern(/^-?\d+$/)],
+      countryCode: [''],
       alternateEmail:['',[Validators.email]],
       mailingAddress:[''],
       emergencyContactNumber:['', Validators.pattern(/^-?\d+$/)],
+      EmergencycountryCode:[''],
       preferredMethodOfContact :[''],
       occupation:[''],
       employerName:[''],
@@ -52,6 +54,12 @@ export class UserRegistrationComponent implements OnInit{
       linkedInProfile:[''],
       educationalBackground:['']
     });
+
+    this.countryCodes = [
+      { value: '+1', label: '+1 (USA)' },
+      { value: '+44', label: '+44 (UK)' },
+      // Add more entries as needed
+    ];
   }
 
   ngOnInit(){

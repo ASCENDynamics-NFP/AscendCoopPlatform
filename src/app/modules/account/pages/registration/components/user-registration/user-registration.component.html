@@ -22,80 +22,102 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ion-row>
       <ion-col>
 
-        <ion-input class="custom-ion-item" formControlName="name" type="text" label="Name" label-placement="floating"
-          fill="outline" placeholder="Enter Name"></ion-input>
+        <ion-row>
+          <ion-input class="custom-ion-item" formControlName="name" type="text" label="Name" label-placement="floating"
+            fill="outline" placeholder="Enter Name"></ion-input>
+        </ion-row>
 
-        <ion-input class="custom-ion-item" formControlName="tagline" type="text" label="Tagline"
-          label-placement="floating" fill="outline" placeholder="Enter Tagline"></ion-input>
+        <ion-row>
+          <ion-input class="custom-ion-item" formControlName="tagline" type="text" label="Tagline"
+            label-placement="floating" fill="outline" placeholder="Enter Tagline"></ion-input>
+        </ion-row>
 
+        <ion-row>
+          <ion-input type="text" label="Description" label-placement="floating" fill="outline"
+            placeholder="Enter Description" formControlName="description" class="custom-ion-item"></ion-input>
+        </ion-row>
+     
+        <ion-row style="margin-left: 2px;margin-right: 2px;">
+          <ion-col size="2.5">
+            <ion-select formControlName="countryCode" placeholder="Country Code" fill="outline">
+              <ion-select-option *ngFor="let code of countryCodes" [value]="code.value">{{ code.label }}</ion-select-option>
+            </ion-select>
+          </ion-col>
+          <ion-col>
+            <ion-input placeholder="888-888-8888" type="tel" label="Phone Number" label-placement="floating"
+              fill="outline" formControlName="phoneNumber"></ion-input>
+          </ion-col>
+        </ion-row>
 
-        <ion-input class="custom-ion-item" type="text" label="Description" label-placement="floating" fill="outline"
-          placeholder="Enter Description" formControlName="description"></ion-input>
+        <ion-row>
+          <ion-input class="custom-ion-item" placeholder="email@domain.com" type="email" label="Alternate Email"
+            label-placement="floating" fill="outline" placeholder="Enter Name"
+            formControlName="alternateEmail"></ion-input>
+        </ion-row>
 
-
-        <ion-input class="custom-ion-item" placeholder="888-888-8888"  type="tel" label="Phone Number"
-          label-placement="floating" fill="outline" formControlName="phoneNumber"></ion-input>
-
-
-
-        <ion-input class="custom-ion-item"  placeholder="email@domain.com" type="email"
-          label="Alternate Email" label-placement="floating" fill="outline" placeholder="Enter Name"
-          formControlName="alternateEmail"></ion-input>
-
-
-        <ion-input class="custom-ion-item" type="text" label="Mailing Address" label-placement="floating" fill="outline"
-          placeholder="Enter mailing Address" formControlName="mailingAddress"></ion-input>
-
-        <ion-input class="custom-ion-item" placeholder="888-888-8888"  type="tel"
-          label="Emergency ContactNumber" label-placement="floating" fill="outline"
-          formControlName="emergencyContactNumber"></ion-input>
-
-
-        <ion-select class="custom-ion-item" label="preferred Contact " label-placement="floating" fill="outline"
-          formControlName="preferredMethodOfContact ">
-          <ion-select-option value="">Select an option</ion-select-option>
-          <ion-select-option value="email">Email</ion-select-option>
-          <ion-select-option value="phone">Phone</ion-select-option>
-          <ion-select-option value="text">Text</ion-select-option>
-        </ion-select>
-
-
-
-        <ion-input class="custom-ion-item" formControlName="occupation" label="Occupation" label-placement="floating"
-          fill="outline" type="text" placeholder="Enter Occupation"></ion-input>
+        <ion-row>
+          <ion-input class="custom-ion-item" type="text" label="Mailing Address" label-placement="floating"
+            fill="outline" placeholder="Enter mailing Address" formControlName="mailingAddress"></ion-input>
+        </ion-row>
 
 
-        <ion-input class="custom-ion-item" label="Employer Name" formControlName="employerName" label="Employer Name"
-          type="text" label-placement="floating" fill="outline"  placeholder="Enter Employer Name"></ion-input>
+          <ion-row style="margin-left: 2px;margin-right: 2px;">
+            <ion-col size="2.5">
+              <ion-select formControlName="EmergencycountryCode" placeholder="Country Code" fill="outline">
+                <ion-select-option *ngFor="let code of countryCodes" [value]="code.value">{{ code.label }}</ion-select-option>
+              </ion-select>
+            </ion-col>
 
+            <ion-col>
+              <ion-input placeholder="888-888-8888" type="tel" label="Emergency Contact Number" label-placement="floating"
+                fill="outline" formControlName="emergencyContactNumber"></ion-input>
+            </ion-col>
+          </ion-row>
 
-        <ion-input class="custom-ion-item" placeholder="000" type="number" label="Work Experience"
-          formControlName="workExperience" label-placement="floating" fill="outline" type="text"></ion-input>
+          <ion-row>
+          <ion-select class="custom-ion-item" label="Preferred Contact " label-placement="floating" fill="outline"
+            formControlName="preferredMethodOfContact ">
+            <ion-select-option value="email">Email</ion-select-option>
+            <ion-select-option value="phone">Phone</ion-select-option>
+            <ion-select-option value="text">SMS</ion-select-option>
+          </ion-select>
+ </ion-row>
 
+        <ion-row>
+          <ion-input class="custom-ion-item" formControlName="occupation" label="Occupation" label-placement="floating"
+            fill="outline" type="text" placeholder="Enter Occupation"></ion-input>
+        </ion-row>
 
-        <ion-input class="custom-ion-item" label="Skills And Expertise" formControlName="skillsAndExpertise" type="text"
-          label-placement="floating" fill="outline"  placeholder="Enter skills And Expertise"></ion-input>
+        <ion-row>
+          <ion-input class="custom-ion-item" label="Employer Name" formControlName="employerName" label="Employer Name"
+            type="text" label-placement="floating" fill="outline" placeholder="Enter Employer Name"></ion-input>
+        </ion-row>
 
+        <ion-row>
+          <ion-input class="custom-ion-item" placeholder="000" type="number" label="Work Experience"
+            formControlName="workExperience" label-placement="floating" fill="outline" type="text"></ion-input>
+        </ion-row>
 
-        <ion-input class="custom-ion-item" label="Current Job Title" formControlName="currentJobTitle" type="text"
-          label-placement="floating" fill="outline" placeholder="current Job Title"></ion-input>
+        <ion-row>
+          <ion-input class="custom-ion-item" label="Skills And Expertise" formControlName="skillsAndExpertise"
+            type="text" label-placement="floating" fill="outline" placeholder="Enter skills And Expertise"></ion-input>
+        </ion-row>
 
+        <ion-row>
+          <ion-input class="custom-ion-item" label="Current Job Title" formControlName="currentJobTitle" type="text"
+            label-placement="floating" fill="outline" placeholder="current Job Title"></ion-input>
+        </ion-row>
 
-        <ion-input class="custom-ion-item" label="LinkedIn Profile" formControlName="linkedInProfile" type="text"
-          label-placement="floating" fill="outline" placeholder="linkedIn Profile" ></ion-input>
+        <ion-row>
+          <ion-input class="custom-ion-item" label="LinkedIn Profile" formControlName="linkedInProfile" type="text"
+            label-placement="floating" fill="outline" placeholder="linkedIn Profile"></ion-input>
+        </ion-row>
 
-
-        <ion-input class="custom-ion-item" label="Educational Background" formControlName="educationalBackground"
-          type="text" label-placement="floating" fill="outline" placeholder="Educational Background"  ></ion-input>
-
-
-
+        <ion-row>
+          <ion-input class="custom-ion-item" label="Educational Background" formControlName="educationalBackground"
+            type="text" label-placement="floating" fill="outline" placeholder="Educational Background"></ion-input>
+        </ion-row>
       </ion-col>
-
-    </ion-row>
-    <ion-row>
-
-
     </ion-row>
   </ion-grid>
   <ion-button class="custom-ion-button" type="submit" expand="full" [disabled]="registrationForm.invalid">

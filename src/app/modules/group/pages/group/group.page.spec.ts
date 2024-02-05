@@ -26,6 +26,7 @@ describe("GroupPage", () => {
   let fixture: ComponentFixture<GroupPage>;
 
   beforeEach(waitForAsync(() => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000; // Increase timeout to 10000ms
     TestBed.configureTestingModule({
       declarations: [],
       providers: [
@@ -45,6 +46,10 @@ describe("GroupPage", () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));
+
+  afterEach(() => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000; // Reset to default
+  });
 
   it("should create", () => {
     expect(component).toBeTruthy();

@@ -91,6 +91,8 @@ export class UserProfilePage {
             this.router.navigate([
               `/group/${this.accountId}/${this.accountId}/details`,
             ]); // Navigate to group-profile
+          } else if (!this.account?.type) {
+            this.router.navigate([`/registration/${this.accountId}`]); // Navigate to registration
           }
           if (!this.account?.relatedAccounts) {
             this.storeService.getAndSortRelatedAccounts(this.accountId);

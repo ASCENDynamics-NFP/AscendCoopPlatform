@@ -63,11 +63,10 @@ async function saveAccountToFirestore(
     lastModifiedAt: Timestamp.now(),
     lastModifiedBy: user.uid,
     email: user.email,
-    emailVerified: user.emailVerified,
     phone: {countryCode: "", number: user.phoneNumber || "", type: ""},
     language: "",
     associations: {accounts: [], feedback: []},
-    privacySetting: "public",
+    privacy: "public",
     iconImage:
       user.photoURL ||
       "assets/image/logo/ASCENDynamics NFP-logos_transparent.png",

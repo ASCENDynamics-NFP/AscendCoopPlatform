@@ -25,12 +25,12 @@ service cloud.firestore {
 
       // Public Group access
       function isPublicGroup() {
-        return (resource.data.privacySetting == 'public' && resource.data.type == 'group');
+        return (resource.data.privacy == 'public' && resource.data.type == 'group');
       }
 
       // Public User access
       function isPublicUser() {
-        return (request.auth != null && resource.data.privacySetting == 'public' && resource.data.type == 'user');
+        return (request.auth != null && resource.data.privacy == 'public' && resource.data.type == 'user');
       }
 
       // Allow read if the user is accessing their own account

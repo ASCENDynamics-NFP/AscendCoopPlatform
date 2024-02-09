@@ -39,7 +39,7 @@ export class SettingsComponent implements OnChanges {
   @Output() languageChange = new EventEmitter<string>();
 
   settingsForm = this.fb.group({
-    privacySetting: ["public", Validators.required],
+    privacy: ["public", Validators.required],
     language: ["en"],
   });
 
@@ -68,7 +68,7 @@ export class SettingsComponent implements OnChanges {
     if (this.authUser?.uid) {
       this.storeService.updateDoc("accounts", {
         id: this.authUser?.uid,
-        privacySetting: this.settingsForm.value.privacySetting,
+        privacy: this.settingsForm.value.privacy,
         language: this.settingsForm.value.language,
       });
     }
@@ -78,7 +78,7 @@ export class SettingsComponent implements OnChanges {
     if (!this.account) return;
     // Update the form with the account data
     this.settingsForm.patchValue({
-      privacySetting: this.account.privacySetting,
+      privacy: this.account.privacy,
       language: this.account.language,
     });
   }

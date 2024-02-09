@@ -40,8 +40,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
       <ion-item lines="none">
         <ion-icon name="call" slot="start"></ion-icon>
-        <ion-label *ngIf="account.phone?.number">{{ account.phone?.type }} Phone: {{ account.phone?.countryCode }}
-          {{ account.phone?.number || "" | phoneFormat }}</ion-label>
+        <ion-label *ngIf="account.contactInformation?.phoneNumbers[0]?.number">{{
+          account.contactInformation?.phoneNumbers[0]?.type }} Phone: {{
+          account.contactInformation?.phoneNumbers[0]?.countryCode }}
+          {{ account.contactInformation?.phoneNumbers[0]?.number || "" | phoneFormat }}</ion-label>
       </ion-item>
       <!-- 
       <ion-item>

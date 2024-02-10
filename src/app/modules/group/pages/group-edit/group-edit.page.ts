@@ -48,7 +48,7 @@ export class GroupEditPage {
 
   editAccountForm = this.fb.group({
     description: [""],
-    tagline: [""],
+    tagline: ["", Validators.required],
     name: ["", Validators.required],
     contactInformation: this.fb.group({
       emails: this.fb.array([
@@ -123,14 +123,16 @@ export class GroupEditPage {
 
   loadFormData() {
     if (!this.account) return;
+
     this.editAccountForm.patchValue({
       name: this.account.name,
       description: this.account.description,
       tagline: this.account.tagline,
       groupDetails: {
-        dateFounded:
-          this.account.groupDetails?.dateFounded?.toDate().toISOString() ||
-          new Date().toISOString(),
+        dateFounded: this.account.groupDetails?.dateFounded
+          ? this.account.groupDetails.dateFounded.toDate().toISOString()
+          : new Date().toISOString(),
+
         supportedLanguages: this.account.groupDetails?.supportedLanguages || [
           "en",
         ],
@@ -163,7 +165,25 @@ export class GroupEditPage {
     if (this.account) {
       // Prepare the account object with form values
       const formValue = this.editAccountForm.value;
-      this.storeService.updateDoc("accounts", {...this.account, ...formValue});
+
+      // Prepare the account object for update
+      const updatedAccount = {
+        ...this.account,
+        ...formValue,
+        groupDetails: {
+          ...formValue.groupDetails,
+          // Only convert dateFounded to Timestamp if it exists and is a valid date string
+          dateFounded: formValue.groupDetails?.dateFounded
+            ? Timestamp.fromDate(new Date(formValue.groupDetails.dateFounded))
+            : Timestamp.fromDate(new Date()), // Handle null or undefined appropriately
+          supportedLanguages: formValue.groupDetails?.supportedLanguages
+            ? [...formValue.groupDetails.supportedLanguages]
+            : ["en"], // Use an empty array as fallback
+        },
+      };
+
+      // Now update the document with the updatedAccount
+      this.storeService.updateDoc("accounts", updatedAccount);
       // .then(() => {
       //   console.log("Group updated successfully");
       //   this.toGroupPage(); // Navigate to the group page or show a success message

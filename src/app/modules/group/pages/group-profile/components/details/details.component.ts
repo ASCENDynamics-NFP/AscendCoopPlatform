@@ -34,22 +34,15 @@ import {PhoneFormatPipe} from "../../../../../../shared/pipes/phone-format.pipe"
 export class DetailsComponent implements OnInit {
   @Input() group?: Partial<Account>; // define your user here
   @Input() canEdit: boolean = false; // define your user here
-  // dateFounded = new Date().toISOString(); // default initialization
+  dateFounded = new Date().toISOString(); // default initialization
 
   constructor() {}
 
   ngOnInit() {
     // If user and dateFounded exist, convert to Date, otherwise leave as default Date
-    // this.dateFounded =
-    //   this.group?.groupDetails?.dateFounded?.toDate().toISOString() ||
-    //   this.dateFounded;
-  }
-
-  get dateFounded() {
-    return (
+    this.dateFounded =
       this.group?.groupDetails?.dateFounded?.toDate().toISOString() ||
-      new Date().toISOString()
-    );
+      this.dateFounded;
   }
 
   get email() {

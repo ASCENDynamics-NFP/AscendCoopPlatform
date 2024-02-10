@@ -69,7 +69,7 @@ export class SettingsComponent implements OnChanges {
       this.storeService.updateDoc("accounts", {
         id: this.authUser?.uid,
         privacy: this.settingsForm.value.privacy,
-        language: this.settingsForm.value.language,
+        accessibility: {preferredLanguage: this.settingsForm.value.language},
       });
     }
   }
@@ -79,7 +79,7 @@ export class SettingsComponent implements OnChanges {
     // Update the form with the account data
     this.settingsForm.patchValue({
       privacy: this.account.privacy,
-      language: this.account.language,
+      language: this.account.accessibility?.preferredLanguage ?? "en",
     });
   }
 }

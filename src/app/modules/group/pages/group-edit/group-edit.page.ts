@@ -42,31 +42,45 @@ import {Subscription} from "rxjs";
 })
 export class GroupEditPage {
   private accountsSubscription?: Subscription;
-  account: Partial<Account> | null = {}; // define your user here
+  account: Partial<Account> | null = null;
   groupId: string | null = null;
 
   editAccountForm = this.fb.group({
-    email: ["", [Validators.required, Validators.email]],
     description: [""],
     tagline: [""],
     name: ["", Validators.required],
-    supportedlanguages: [["en"]],
+    accessibility: this.fb.group({
+      preferredLanguage: [""], // Assuming default language setting
+    }),
+    contactInformation: this.fb.group({
+      emails: this.fb.array([
+        this.fb.group({
+          name: ["Primary", Validators.required],
+          email: ["", [Validators.required, Validators.email]],
+        }),
+      ]),
+      phoneNumbers: this.fb.array([
+        this.fb.group({
+          countryCode: ["", [Validators.pattern("^[0-9]*$")]],
+          number: ["", [Validators.pattern("^\\d{10}$")]],
+          type: [""],
+          isEmergencyNumber: [false],
+        }),
+      ]),
+      address: this.fb.group({
+        name: [""],
+        street: ["", Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
+        city: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+        state: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+        zipcode: ["", Validators.pattern("^[0-9]*$")],
+        country: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+        // Include formatted and geopoint if needed here, or handle them in your backend logic
+      }),
+      preferredMethodOfContact: ["Email"],
+    }),
     groupDetails: this.fb.group({
       dateFounded: [new Date().toISOString(), [Validators.required]],
-      supportedLanguages: [["en"]],
-    }),
-    address: this.fb.group({
-      name: [""],
-      street: ["", Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
-      city: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-      state: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-      zipcode: ["", Validators.pattern("^[0-9]*$")],
-      country: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-    }),
-    phone: this.fb.group({
-      number: ["", [Validators.pattern("^\\d{10}$")]],
-      countryCode: ["", [Validators.pattern("^[0-9]*$")]],
-      type: [""],
+      supportedLanguages: this.fb.array(["en"]), // Assuming 'en' as a default supported language
     }),
   });
 
@@ -85,40 +99,13 @@ export class GroupEditPage {
         this.account =
           accounts.find((account) => account.id === this.groupId) || null;
         if (this.account) {
-          // Update the form with the group data
-          this.editAccountForm.patchValue({
-            name: this.account.name,
-            email: this.account.email,
-            description: this.account.description,
-            tagline: this.account.tagline,
-            groupDetails: {
-              ...this.account.groupDetails,
-              // admins: this.account.groupDetails?.admins ?? [],
-              dateFounded: this.account.groupDetails?.dateFounded
-                ?.toDate()
-                .toISOString(), // Make sure dateFounded is a Date object
-            },
-            address: {
-              ...this.account.address,
-              street: this.editAccountForm.value.address?.street ?? "",
-              city: this.editAccountForm.value.address?.city ?? "",
-              state: this.editAccountForm.value.address?.state ?? "",
-              zipcode: this.editAccountForm.value.address?.zipcode ?? "",
-              country: this.editAccountForm.value.address?.country ?? "",
-              name: this.editAccountForm.value.address?.name ?? "",
-              // formatted: this.account.address?.formatted ?? "",
-              // geopoint: this.account.address?.geopoint ?? "",
-            },
-            phone: {
-              ...this.account.phone,
-              number: this.editAccountForm.value.phone?.number ?? "",
-              type: this.editAccountForm.value.phone?.type ?? "",
-              countryCode: this.editAccountForm.value.phone?.countryCode ?? "",
-            },
-          });
+          this.loadFormData();
         }
       },
     );
+    if (!this.account) {
+      this.storeService.getDocById("accounts", this.groupId);
+    }
   }
 
   ionViewWillLeave() {
@@ -126,43 +113,55 @@ export class GroupEditPage {
     this.accountsSubscription?.unsubscribe();
   }
 
+  loadFormData() {
+    if (!this.account) return;
+    this.editAccountForm.patchValue({
+      name: this.account.name,
+      description: this.account.description,
+      tagline: this.account.tagline,
+      contactInformation: {
+        emails: this.account.contactInformation?.emails?.map((email) => ({
+          name: email.name,
+          email: email.email,
+        })) || [{name: "Primary", email: ""}],
+        phoneNumbers: this.account.contactInformation?.phoneNumbers?.map(
+          (phone) => ({
+            countryCode: phone.countryCode,
+            number: phone.number,
+            type: phone.type,
+            isEmergencyNumber: phone.isEmergencyNumber,
+          }),
+        ) || [
+          {countryCode: "", number: "", type: "", isEmergencyNumber: false},
+        ],
+        address: this.account.contactInformation?.address || {},
+        preferredMethodOfContact:
+          this.account.contactInformation?.preferredMethodOfContact || "Email",
+      },
+      groupDetails: {
+        dateFounded:
+          this.account.groupDetails?.dateFounded?.toDate().toISOString() ||
+          new Date().toISOString(),
+        supportedLanguages: this.account.groupDetails?.supportedLanguages || [
+          "en",
+        ],
+      },
+      // Add other necessary field updates here
+    });
+  }
+
   onSubmit() {
     // Call the API to save changes
     if (this.account) {
-      this.account.id = this.account.id
-        ? this.account.id
-        : this.groupId
-        ? this.groupId
-        : "";
-      this.account.email = this.editAccountForm.value.email || "";
-      this.account.phone = {
-        countryCode: this.editAccountForm.value.phone?.countryCode || "",
-        number: this.editAccountForm.value.phone?.number || "",
-        type: this.editAccountForm.value.phone?.type || "",
-      };
-      this.account.description = this.editAccountForm.value.description || "";
-      this.account.tagline = this.editAccountForm.value.tagline || "";
-      this.account.name = this.editAccountForm.value.name || "";
-      this.account.groupDetails = {
-        admins: this.account.groupDetails?.admins || [],
-        dateFounded: Timestamp.fromDate(
-          new Date(this.editAccountForm.value.groupDetails?.dateFounded || ""),
-        ),
-        supportedLanguages:
-          this.editAccountForm.value.groupDetails?.supportedLanguages || [],
-      };
-      this.account.address = {
-        street: this.editAccountForm.value.address?.street ?? "",
-        city: this.editAccountForm.value.address?.city ?? "",
-        state: this.editAccountForm.value.address?.state ?? "",
-        zipcode: this.editAccountForm.value.address?.zipcode ?? "",
-        country: this.editAccountForm.value.address?.country ?? "",
-        name: this.editAccountForm.value.address?.name ?? "",
-        formatted: this.account.address?.formatted ?? "",
-        geopoint: this.account.address?.geopoint ?? "",
-      };
-
-      this.storeService.updateDoc("accounts", this.account);
+      // Prepare the account object with form values
+      const formValue = this.editAccountForm.value;
+      this.storeService.updateDoc("accounts", {...this.account, ...formValue});
+      // .then(() => {
+      //   console.log("Group updated successfully");
+      //   this.toGroupPage(); // Navigate to the group page or show a success message
+      // }).catch(error => {
+      //   console.error("Error updating group:", error);
+      // });
     }
   }
 

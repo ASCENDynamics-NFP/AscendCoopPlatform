@@ -50,13 +50,10 @@ export class GroupEditPage {
     description: [""],
     tagline: [""],
     name: ["", Validators.required],
-    accessibility: this.fb.group({
-      preferredLanguage: [""], // Assuming default language setting
-    }),
     contactInformation: this.fb.group({
       emails: this.fb.array([
         this.fb.group({
-          name: ["Primary", Validators.required],
+          name: ["Primary"],
           email: ["", [Validators.required, Validators.email]],
         }),
       ]),
@@ -81,7 +78,7 @@ export class GroupEditPage {
     }),
     groupDetails: this.fb.group({
       dateFounded: [new Date().toISOString(), [Validators.required]],
-      supportedLanguages: this.fb.array(["en"]), // Assuming 'en' as a default supported language
+      supportedLanguages: [["en"]], // Assuming 'en' as a default supported language
     }),
   });
 
@@ -130,6 +127,14 @@ export class GroupEditPage {
       name: this.account.name,
       description: this.account.description,
       tagline: this.account.tagline,
+      groupDetails: {
+        dateFounded:
+          this.account.groupDetails?.dateFounded?.toDate().toISOString() ||
+          new Date().toISOString(),
+        supportedLanguages: this.account.groupDetails?.supportedLanguages || [
+          "en",
+        ],
+      },
       contactInformation: {
         emails: this.account.contactInformation?.emails?.map((email) => ({
           name: email.name,
@@ -148,14 +153,6 @@ export class GroupEditPage {
         address: this.account.contactInformation?.address || {},
         preferredMethodOfContact:
           this.account.contactInformation?.preferredMethodOfContact || "Email",
-      },
-      groupDetails: {
-        dateFounded:
-          this.account.groupDetails?.dateFounded?.toDate().toISOString() ||
-          new Date().toISOString(),
-        supportedLanguages: this.account.groupDetails?.supportedLanguages || [
-          "en",
-        ],
       },
       // Add other necessary field updates here
     });

@@ -29,6 +29,7 @@ import {User} from "firebase/auth";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {StoreService} from "../../../../core/services/store.service";
 import {Account} from "../../../../models/account.model";
+import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
 
 @Component({
   selector: "app-registration",
@@ -39,6 +40,7 @@ import {Account} from "../../../../models/account.model";
     IonicModule,
     CommonModule,
     FormsModule,
+    AppHeaderComponent,
     GroupRegistrationComponent,
     UserRegistrationComponent,
   ],

@@ -20,6 +20,7 @@
 import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {
+  FormArray,
   // AbstractControl,
   FormBuilder,
   ReactiveFormsModule,
@@ -111,6 +112,16 @@ export class GroupEditPage {
   ionViewWillLeave() {
     // Unsubscribe from the accounts$ observable when the component is destroyed
     this.accountsSubscription?.unsubscribe();
+  }
+
+  get phoneNumbersFormArray(): FormArray {
+    return this.editAccountForm.get(
+      "contactInformation.phoneNumbers",
+    ) as FormArray;
+  }
+
+  get emailsFormArray(): FormArray {
+    return this.editAccountForm.get("contactInformation.emails") as FormArray;
   }
 
   loadFormData() {

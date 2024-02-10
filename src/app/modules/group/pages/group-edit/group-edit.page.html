@@ -62,9 +62,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                     <!-- Emails FormArray -->
                     <div formArrayName="contactInformation">
                       <div formGroupName="emails">
-                        <div
-                          *ngFor="let emailControl of editAccountForm.get('contactInformation.emails').controls; let i = index"
-                          [formGroupName]="i">
+                        <div *ngFor="let emailControl of emailsFormArray.controls; let i = index" [formGroupName]="i">
                           <ion-item>
                             <ion-label position="floating">Email</ion-label>
                             <ion-input aria-label="Email" required formControlName="email" type="email"></ion-input>
@@ -74,15 +72,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
                       <!-- PhoneNumbers FormArray -->
                       <div formGroupName="phoneNumbers">
-                        <div
-                          *ngFor="let phoneControl of editAccountForm.get('contactInformation.phoneNumbers').controls; let i = index"
+                        <div *ngFor="let phoneControl of phoneNumbersFormArray.controls; let i = index"
                           [formGroupName]="i">
                           <ion-item>
                             <ion-label position="floating">Phone Country Code</ion-label>
                             <ion-input aria-label="Phone Country Code" formControlName="countryCode"
                               type="text"></ion-input>
                             <ion-note
-                              *ngIf="editAccountForm.get('phone')?.get('countryCode')?.invalid && editAccountForm.get('phone')?.get('countryCode')?.touched">
+                              *ngIf="phoneControl.get('countryCode')?.invalid && phoneControl.get('countryCode')?.touched">
                               Please enter a valid country code
                             </ion-note>
                           </ion-item>
@@ -91,7 +88,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                             <ion-label position="floating">Phone Number</ion-label>
                             <ion-input aria-label="Phone Number" formControlName="number" type="text"></ion-input>
                             <ion-note
-                              *ngIf="editAccountForm.get('phone')?.get('number')?.invalid && editAccountForm.get('phone')?.get('number')?.touched">
+                              *ngIf="phoneControl.get('number')?.invalid && phoneControl.get('number')?.touched">
                               Please enter a valid phone number
                             </ion-note>
                           </ion-item>
@@ -124,40 +121,38 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                           <ion-label position="floating">Street Address</ion-label>
                           <ion-input aria-label="Street Address" formControlName="street" type="text"></ion-input>
                           <ion-note
-                            *ngIf="editAccountForm.get('address')?.get('street')?.invalid && editAccountForm.get('address')?.get('street')?.touched">
+                            *ngIf="editAccountForm.get('contactInformation.address.street')?.invalid && editAccountForm.get('contactInformation.address.street')?.touched">
                             Please enter a valid address
                           </ion-note>
                         </ion-item>
 
                         <ion-item>
                           <ion-label position="floating">City</ion-label>
-                          <ion-input aria-label="City" formControlName="city" type="text"
-                            pattern="^[a-zA-Z\s]*$"></ion-input>
+                          <ion-input aria-label="City" formControlName="city" type="text"></ion-input>
                           <ion-note
-                            *ngIf="editAccountForm.get('address')?.get('city')?.invalid && editAccountForm.get('address')?.get('city')?.touched">
+                            *ngIf="editAccountForm.get('contactInformation.address.city')?.invalid && editAccountForm.get('contactInformation.address.city')?.touched">
                             Please enter a valid city name
                           </ion-note>
                         </ion-item>
 
                         <ion-item>
                           <ion-label position="floating">State/Province/Region</ion-label>
-                          <ion-input aria-label="State" formControlName="state" type="text"
-                            pattern="^[a-zA-Z\s]*$"></ion-input>
+                          <ion-input aria-label="State" formControlName="state" type="text"></ion-input>
                           <ion-note
-                            *ngIf="editAccountForm.get('address')?.get('state')?.invalid && editAccountForm.get('address')?.get('state')?.touched">
+                            *ngIf="editAccountForm.get('contactInformation.address.state')?.invalid && editAccountForm.get('contactInformation.address.state')?.touched">
                             Please enter a valid state name
                           </ion-note>
                         </ion-item>
 
                         <ion-item>
                           <ion-label position="floating">Zip/Postal Code</ion-label>
-                          <ion-input aria-label="Zip/Postal Code" formControlName="zipcode" type="text"
-                            pattern="^[0-9]*$"></ion-input>
+                          <ion-input aria-label="Zip/Postal Code" formControlName="zipcode" type="text"></ion-input>
                           <ion-note
-                            *ngIf="editAccountForm.get('address')?.get('zipcode')?.invalid && editAccountForm.get('address')?.get('zipcode')?.touched">
+                            *ngIf="editAccountForm.get('contactInformation.address.zipcode')?.invalid && editAccountForm.get('contactInformation.address.zipcode')?.touched">
                             Please enter a valid zip code
                           </ion-note>
                         </ion-item>
+
 
                         <ion-item>
                           <ion-label position="floating">Country</ion-label>

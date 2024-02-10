@@ -19,7 +19,12 @@
 ***********************************************************************************************/
 import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
-import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
+import {
+  FormArray,
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {Account, Email, PhoneNumber} from "../../../../models/account.model";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -51,7 +56,7 @@ export class EditUserProfilePage {
     contactInformation: this.fb.group({
       emails: this.fb.array([
         this.fb.group({
-          name: ["Primary"],
+          name: [""],
           email: ["", [Validators.required, Validators.email]],
         }),
       ]),
@@ -104,6 +109,16 @@ export class EditUserProfilePage {
     this.accountsSubscription?.unsubscribe();
   }
 
+  get phoneNumbersFormArray(): FormArray {
+    return this.editAccountForm.get(
+      "contactInformation.phoneNumbers",
+    ) as FormArray;
+  }
+
+  get emailsFormArray(): FormArray {
+    return this.editAccountForm.get("contactInformation.emails") as FormArray;
+  }
+
   onSubmit() {
     if (this.account) {
       // Prepare the account object with form values
@@ -127,15 +142,16 @@ export class EditUserProfilePage {
                 email: email.email ?? "",
               }),
             ) ?? [],
-          phoneNumbers:
-            formValue.contactInformation?.phoneNumbers?.map(
-              (phone: Partial<PhoneNumber>) => ({
-                countryCode: phone.countryCode ?? "",
-                number: phone.number ?? "",
-                type: phone.type ?? "",
-                isEmergencyNumber: phone.isEmergencyNumber ?? false,
-              }),
-            ) ?? [],
+          phoneNumbers: formValue.contactInformation?.phoneNumbers?.map(
+            (phone: Partial<PhoneNumber>) => ({
+              countryCode: phone.countryCode || "",
+              number: phone.number || "",
+              type: phone.type || "",
+              isEmergencyNumber: phone.isEmergencyNumber || false,
+            }),
+          ) ?? [
+            {countryCode: "", number: "", type: "", isEmergencyNumber: false},
+          ],
           address: formValue.contactInformation?.address
             ? {
                 ...formValue.contactInformation.address,
@@ -209,8 +225,20 @@ export class EditUserProfilePage {
           new Date().toISOString(),
       },
       contactInformation: {
-        emails: this.account.contactInformation?.emails ?? [],
-        phoneNumbers: this.account.contactInformation?.phoneNumbers ?? [],
+        emails: this.account.contactInformation?.emails?.map((email) => ({
+          name: email.name,
+          email: email.email,
+        })) || [{name: "Primary", email: ""}],
+        phoneNumbers: this.account.contactInformation?.phoneNumbers?.map(
+          (phone) => ({
+            countryCode: phone.countryCode,
+            number: phone.number,
+            type: phone.type,
+            isEmergencyNumber: phone.isEmergencyNumber,
+          }),
+        ) || [
+          {countryCode: "", number: "", type: "", isEmergencyNumber: false},
+        ],
         address: this.account.contactInformation?.address ?? {},
         preferredMethodOfContact:
           this.account.contactInformation?.preferredMethodOfContact,

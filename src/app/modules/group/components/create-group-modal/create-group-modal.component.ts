@@ -63,26 +63,21 @@ export class CreateGroupModalComponent {
     const groupData = this.groupForm.value;
     const newGroup: Partial<Account> = {
       ...groupData,
+      name: groupData.name || undefined,
+      description: groupData.description || undefined,
+      tagline: groupData.tagline || undefined,
       type: "group", // Specify that this account is a group
       // Include other necessary fields like address, language, etc.
       // Default images or placeholder values
       iconImage: "assets/icon/favicon.png",
       heroImage: "assets/image/orghero.png",
       // Initialize other group-specific properties if needed
-      associations: {
-        accounts: ["user-id"], // Initialize the accounts array
-        feedback: [], // Initialize the feedback array
-        // Other association-specific fields
-      },
       groupDetails: {
         admins: ["user-id"], // Set the user ID of the creator as an admin
         dateFounded: Timestamp.now(), // Set the founding date
         supportedLanguages: ["en"], // Example value
         // Other group-specific fields
       },
-      name: groupData.name || undefined,
-      description: groupData.description || undefined,
-      tagline: groupData.tagline || undefined,
     };
 
     this.storeService.createDoc("accounts", newGroup).then((accountId) => {

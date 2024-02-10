@@ -29,15 +29,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         </ion-avatar>
         <ion-label>
           <h2>{{ group.name }}</h2>
-          <p>{{ group.email }}</p>
+          <p>{{ email }}</p>
         </ion-label>
       </ion-item>
 
-      <ion-item *ngIf="group.phone?.number" lines="none">
+      <ion-item *ngIf="phoneNumber" lines="none">
         <ion-icon name="call" slot="start"></ion-icon>
-        <ion-label>Phone:
-          {{ group.phone?.countryCode ? "+" + group.phone?.countryCode : "" }}
-          {{ group.phone?.number || '' | phoneFormat }}</ion-label>
+        <ion-label>
+          {{ phoneNumber }}</ion-label>
       </ion-item>
       <!-- 
       <ion-item>

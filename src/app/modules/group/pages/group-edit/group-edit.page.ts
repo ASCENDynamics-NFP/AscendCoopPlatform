@@ -28,7 +28,7 @@ import {
   Validators,
 } from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {Account} from "../../../../models/account.model";
+import {Account, Email, PhoneNumber} from "../../../../models/account.model";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Timestamp} from "firebase/firestore";
 import {StoreService} from "../../../../core/services/store.service";
@@ -167,9 +167,12 @@ export class GroupEditPage {
       const formValue = this.editAccountForm.value;
 
       // Prepare the account object for update
-      const updatedAccount = {
+      const updatedAccount: Partial<Account> = {
         ...this.account,
         ...formValue,
+        name: formValue.name!,
+        tagline: formValue.tagline!,
+        description: formValue.description ?? "",
         groupDetails: {
           ...formValue.groupDetails,
           // Only convert dateFounded to Timestamp if it exists and is a valid date string
@@ -179,6 +182,33 @@ export class GroupEditPage {
           supportedLanguages: formValue.groupDetails?.supportedLanguages
             ? [...formValue.groupDetails.supportedLanguages]
             : ["en"], // Use an empty array as fallback
+        },
+        contactInformation: {
+          ...formValue.contactInformation,
+          emails:
+            formValue.contactInformation!.emails?.map(
+              (email: Partial<Email>) => ({
+                name: email.name ?? null,
+                email: email.email!,
+              }),
+            ) ?? [],
+          phoneNumbers: formValue.contactInformation!.phoneNumbers?.map(
+            (phone: Partial<PhoneNumber>) => ({
+              countryCode: phone.countryCode ?? null,
+              number: phone.number ?? null,
+              type: phone.type ?? null,
+              isEmergencyNumber: phone.isEmergencyNumber || false,
+            }),
+          ) ?? [
+            {
+              countryCode: null,
+              number: null,
+              type: null,
+              isEmergencyNumber: false,
+            },
+          ],
+          address: formValue.contactInformation!.address,
+          preferredMethodOfContact: "Email",
         },
       };
 

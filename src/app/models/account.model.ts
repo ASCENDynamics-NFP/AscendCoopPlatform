@@ -21,14 +21,14 @@ import {BaseDocument} from "./base-document";
 import {Timestamp} from "firebase/firestore";
 
 interface Address {
-  name: string | null;
-  street: string | null;
-  city: string | null;
-  state: string | null;
-  zipcode: string | null;
-  country: string | null;
-  formatted: string | null;
-  geopoint: string | null; // or a more specific geopoint type
+  name?: string | null;
+  street?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipcode?: string | null;
+  country?: string | null;
+  formatted?: string | null;
+  geopoint?: string | null; // or a more specific geopoint type
 }
 
 export interface PhoneNumber {
@@ -47,9 +47,9 @@ interface UserSpecific {
 }
 
 interface GroupSpecific {
-  admins: string[];
-  dateFounded: Timestamp;
-  supportedLanguages: string[];
+  admins?: string[];
+  dateFounded?: Timestamp;
+  supportedLanguages?: string[];
   groupObjectivesMissionStatement?: string;
   groupHistoryBackground?: string;
   // faqs?: string[]; // Optional, for common queries related to the group

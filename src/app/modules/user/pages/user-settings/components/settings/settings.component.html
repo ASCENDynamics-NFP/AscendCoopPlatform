@@ -24,31 +24,24 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-list>
         <ion-item>
           <ion-label>Privacy Settings</ion-label>
-          <ion-select formControlName="privacySetting">
+          <ion-select formControlName="privacy">
             <ion-select-option value="public">Public</ion-select-option>
-            <ion-select-option value="friends-only"
-              >Friends-only</ion-select-option
-            >
+            <ion-select-option value="friends-only">Friends-only</ion-select-option>
             <ion-select-option value="private">Private</ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item>
           <ion-label>Language</ion-label>
-          <ion-select
-            formControlName="language"
-            (ionChange)="onLanguageChange($event)"
-          >
-            <ion-select-option
-              *ngFor="let lang of languageList"
-              [value]="lang.code"
-              >{{ lang.text }}</ion-select-option
-            >
+          <ion-select formControlName="language" (ionChange)="onLanguageChange($event)">
+            <ion-select-option *ngFor="let lang of languageList" [value]="lang.code">{{ lang.text }}</ion-select-option>
           </ion-select>
         </ion-item>
+        <!-- <ion-item>
+          <ion-label>Dark Mode</ion-label>
+          <ion-toggle aria-label="Dark Mode" (ionChange)="toggleDarkTheme($event)"></ion-toggle>
+        </ion-item> -->
       </ion-list>
-      <ion-button expand="full" (click)="updateSetting()"
-        >Save Changes</ion-button
-      >
+      <ion-button expand="full" (click)="updateSetting()">Save Changes</ion-button>
     </form>
   </ion-card>
 </ion-content>

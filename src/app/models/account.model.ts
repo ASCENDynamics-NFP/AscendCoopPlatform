@@ -20,80 +20,177 @@
 import {BaseDocument} from "./base-document";
 import {Timestamp} from "firebase/firestore";
 
-type Address = {
-  name: string;
-  street: string;
-  city: string;
-  state: string;
-  zipcode: string;
-  country: string;
-  formatted: string;
-  geopoint: string; // or a more specific geopoint type
-};
+interface Address {
+  name?: string | null;
+  street?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipcode?: string | null;
+  country?: string | null;
+  formatted?: string | null;
+  geopoint?: string | null; // or a more specific geopoint type
+}
 
-type Phone = {
-  countryCode: string;
-  number: string;
-  type: string;
-};
+export interface PhoneNumber {
+  countryCode: string | null;
+  number: string | null;
+  type: string | null;
+  isEmergencyNumber: boolean | null;
+}
 
-type Associations = {
-  accounts: string[];
-  feedback: string[];
-};
+interface UserSpecific {
+  dateOfBirth?: Timestamp;
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+  hobbiesAndInterests?: string[];
+}
 
-type UserSpecific = {
-  dateOfBirth: Timestamp;
-  firstName: string;
-  lastName: string;
-  username: string;
-};
+interface GroupSpecific {
+  admins?: string[];
+  dateFounded?: Timestamp;
+  supportedLanguages?: string[];
+  groupObjectivesMissionStatement?: string;
+  groupHistoryBackground?: string;
+  // faqs?: string[]; // Optional, for common queries related to the group
+}
 
-type GroupSpecific = {
-  admins: string[];
-  dateFounded: Timestamp;
-  supportedLanguages: string[];
-};
-
-type LegalAgreement = {
+interface LegalAgreement {
   accepted: boolean;
   datetime: Timestamp;
   version: string;
-};
+}
 
-type LegalAgreements = {
+interface LegalAgreements {
   termsOfService: LegalAgreement;
   privacyPolicy: LegalAgreement;
-};
+}
 
-export type Account = BaseDocument & {
-  id: string;
-  type: "user" | "group";
-  name: string;
-  description: string;
-  lastLoginAt: Timestamp;
-  relatedAccounts: Partial<RelatedAccount>[];
-  address: Address;
-  tagline: string;
-  email: string;
-  emailVerified: boolean;
-  phone: Phone;
-  legalAgreements: LegalAgreements;
-  language: string;
-  associations: Associations;
-  userDetails?: UserSpecific;
-  groupDetails?: GroupSpecific;
-  privacySetting:
+export interface Email {
+  name: string | null;
+  email: string | null;
+}
+
+interface ContactInformation {
+  privacy?: "public" | "private" | "specific-users"; // Privacy setting
+  address?: Address | null;
+  phoneNumbers: PhoneNumber[];
+  emails: Email[];
+  mailingAddress?: string;
+  preferredMethodOfContact: "Email" | "Phone" | "SMS" | "Fax";
+}
+
+interface Accessibility {
+  preferredLanguage: string;
+  accessibilityNeeds?: string[];
+}
+
+interface ProfessionalInformation {
+  occupation: string;
+  employerName?: string;
+  workExperience?: string;
+  skillsAndExpertise?: string[];
+  currentJobTitle?: string;
+  linkedInProfile?: string;
+  // resumeUpload?: File; // TODO: Add support for resume upload
+  educationalBackground?: string;
+}
+interface VolunteerPreferences {
+  areasOfInterest: string[];
+  availability: "Weekdays" | "Weekends" | "Evenings";
+  preferredVolunteerRoles: string[];
+  previousVolunteerExperience?: string;
+  willingnessToTravelForVolunteering?: boolean;
+  desiredLevelOfCommitment: "One-time" | "Occasional" | "Regular";
+}
+interface MutualAidCommunityEngagement {
+  servicesOffered: string[];
+  servicesNeeded?: string[];
+  communityAffiliations: string[];
+  willingnessToProvideMentorship?: boolean;
+  interestInReceivingMentorship?: boolean;
+  groupsOrForumsParticipation?: string[];
+}
+interface LaborRights {
+  unionMembership: "Yes" | "No" | "Prefer not to say";
+  workplaceConcerns?: string[];
+  preferredAdvocacyAreas?: string[];
+  experienceWithLaborRightsIssues?: string;
+}
+interface WebLink {
+  name: string; // e.g., "LinkedIn", "Personal Blog", "Portfolio"
+  url: string; // The actual URL
+  category:
+    | "Social Media"
+    | "Donation Link"
+    | "Hobbies"
+    | "Publications"
+    | "Portfolio"
+    | "Personal Website"
+    | "External Resources"
+    | "Other";
+}
+
+interface GroupCategory {
+  primaryCategory: string; // e.g., "Education", "Health"
+  secondaryCategories?: string[]; // Optional, e.g., ["Advocacy", "Community Service"]
+  tagsKeywords?: string[]; // Optional, for search and categorization
+}
+
+interface Event {
+  // TODO: Add support for events
+  title: string;
+  description?: string;
+  startDate: Timestamp;
+  endDate: Timestamp;
+  location?: string; // Optional, physical location or online link
+}
+
+interface User {
+  userDetails?: UserSpecific; // User-specific details
+  accessibility: Accessibility; // Accessibility and language preferences
+  professionalInformation?: ProfessionalInformation; // Professional information and work experience
+  volunteerPreferences?: VolunteerPreferences; // Volunteer preferences and experience
+  mutualAidCommunityEngagement?: MutualAidCommunityEngagement; // Mutual aid, community engagement, and mentorship
+  laborRights?: LaborRights; // Labor rights and advocacy
+}
+
+interface Group {
+  groupDetails?: GroupSpecific; // Group-specific details
+  groupCategoriesInterests?: GroupCategory;
+  groupActivitiesEvents?: {
+    // Optional, can be added later
+    regularMeetingSchedule?: string; // Optional, e.g., "Every Tuesday at 6 PM"
+    upcomingEvents?: Event[]; // Optional, can be added later
+    pastEvents?: Event[]; // Optional, can be added later
+  };
+  administrativeSettings?: {
+    // Optional, can be added later
+    groupAdminsManagers: string[]; // Assign initial administrators or managers for the group
+    notificationPreferences?: string; // e.g., "Email notifications for new posts, member requests"
+  };
+}
+
+export interface Account extends BaseDocument, Group, User {
+  privacy:
     | "public"
     | "accepted-users-only"
     | "accepted-groups-only"
     | "private"; // Privacy setting
+  type: "user" | "group";
+  name: string;
+  tagline: string;
+  description: string;
   iconImage: string;
   heroImage: string;
-};
+  legalAgreements: LegalAgreements; // Legal agreements, such as terms of service and privacy policy
+  contactInformation?: ContactInformation; // Contact information and address
+  webLinks: WebLink[]; // Links to social media, personal websites, etc.
+  relatedAccounts?: Partial<RelatedAccount>[];
+  lastLoginAt: Timestamp;
+}
 
-export type RelatedAccount = BaseDocument & {
-  id: string; // The ID of the related account
+export interface RelatedAccount extends BaseDocument {
   name: string; // Name of the related user or group
   iconImage: string; // URL or path to the icon image
   tagline: string; // Tagline or short description
@@ -102,4 +199,5 @@ export type RelatedAccount = BaseDocument & {
   relationship: "admin" | "friend" | "member" | "partner"; // Details about the relationship (e.g., 'friend', 'member')
   initiatorId: string; // ID of the account who initiated the request
   targetId: string; // ID of the account who received the request
-};
+  canAccessContactInfo: boolean; // Whether the related account can access the contact information
+}

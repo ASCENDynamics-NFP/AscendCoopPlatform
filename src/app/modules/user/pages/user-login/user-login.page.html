@@ -33,11 +33,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     </ion-toolbar>
   </ion-header>
   <div class="logo-title-container">
-    <img
-      src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
-      alt="ASCENDynamics NFP"
-      class="logo"
-    />
+    <img src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png" alt="ASCENDynamics NFP" class="logo" />
   </div>
   <!-- <h2>Login to ASCENDdynamics Platform</h2> -->
   <ion-card>
@@ -47,77 +43,37 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-label position="stacked" translate>
             user.login.email_label
           </ion-label>
-          <ion-input
-            type="email"
-            inputmode="email"
-            formControlName="email"
-          ></ion-input>
-          <ion-note
-            slot="error"
+          <ion-input type="email" inputmode="email" formControlName="email"></ion-input>
+          <ion-note slot="error"
             *ngIf="(loginForm.controls.email.dirty || loginForm.controls.email.touched) && loginForm.controls.email.errors"
-            translate
-          >
-            user.login.email_error</ion-note
-          >
+            translate>
+            user.login.email_error</ion-note>
         </ion-item>
         <ion-item>
-          <ion-label position="stacked" translate
-            >user.login.password_label
+          <ion-label position="stacked" translate>user.login.password_label
           </ion-label>
-          <ion-input
-            type="password"
-            inputmode="text"
-            formControlName="password"
-          ></ion-input>
-          <ion-note
-            slot="error"
+          <ion-input type="password" inputmode="text" formControlName="password"></ion-input>
+          <ion-note slot="error"
             *ngIf="(loginForm.controls.password.dirty || loginForm.controls.password.touched) && loginForm.controls.password.errors"
-            translate
-            >user.login.password_error</ion-note
-          >
+            translate>user.login.password_error</ion-note>
         </ion-item>
-        <ion-button
-          type="submit"
-          expend="block"
-          strong="true"
-          [disabled]="loginForm.invalid"
-          translate
-          style="width: 100%"
-        >
-          user.login.submit</ion-button
-        >
+        <ion-button type="submit" expend="block" strong="true" [disabled]="loginForm.invalid" translate
+          style="width: 100%">
+          user.login.submit</ion-button>
 
         <div class="ion-margin-top">
-          <ion-button
-            type="button"
-            expand="block"
-            color="secondary"
-            fill="outline"
-            (click)="forgotPassword()"
-            translate
-          >
+          <ion-button type="button" expand="block" color="secondary" fill="outline" (click)="forgotPassword()"
+            translate>
             <ion-icon name="key-outline" slot="start"></ion-icon>
             user.login.forgot_password
           </ion-button>
 
-          <ion-button
-            type="button"
-            expand="block"
-            color="primary"
-            (click)="getEmailSignInLink()"
-            translate
-          >
+          <ion-button type="button" expand="block" color="tertiary" (click)="getEmailSignInLink()" translate>
             <ion-icon name="mail-outline" slot="start"></ion-icon>
             user.login.email_signin_link
           </ion-button>
 
-          <ion-button
-            type="button"
-            expand="block"
-            color="danger"
-            (click)="signInWithGoogle()"
-            translate
-          >
+          <ion-button type="button" expand="block" color="danger" (click)="signInWithGoogle()" translate>
             <ion-icon name="logo-google" slot="start"></ion-icon>
             user.login.google_login
           </ion-button>
@@ -129,14 +85,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </form>
 
       <h2>OR</h2>
-      <ion-button
-        type="button"
-        expand="block"
-        color="primary"
-        fill="outline"
-        (click)="goToSignUp()"
-        translate
-      >
+      <ion-button type="button" expand="block" color="primary" fill="outline" (click)="goToSignUp()" translate>
         <ion-icon name="person-add-outline" slot="start"></ion-icon>
         user.login.create_account
       </ion-button>

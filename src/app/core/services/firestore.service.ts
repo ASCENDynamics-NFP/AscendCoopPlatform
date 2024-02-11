@@ -403,16 +403,16 @@ export class FirestoreService {
               where("name", "<=", searchTerm.toLowerCase() + "\uf8ff"),
             ),
           ),
-          where("privacySetting", "==", "public"),
+          where("privacy", "==", "public"),
           where("type", "in", ["user", "group"]),
           //         or(
-          //           where("privacySetting", "==", "public"),
+          //           where("privacy", "==", "public"),
           //           and(
-          //             where("privacySetting", "==", "friends-only"),
+          //             where("privacy", "==", "friends-only"),
           //             where("associations.accounts", "array-contains", userId),
           //           ),
           //           and(
-          //             where("privacySetting", "==", "groups-only"),
+          //             where("privacy", "==", "groups-only"),
           //             where("associations.accounts", "array-contains", userId),
           //           ),
           //         ),

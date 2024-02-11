@@ -19,9 +19,14 @@
 ***********************************************************************************************/
 import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
-import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
+import {
+  FormArray,
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {Account} from "../../../../models/account.model";
+import {Account, Email, PhoneNumber} from "../../../../models/account.model";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Timestamp} from "firebase/firestore";
 import {StoreService} from "../../../../core/services/store.service";
@@ -42,25 +47,36 @@ export class EditUserProfilePage {
 
   editAccountForm = this.fb.group({
     name: ["", Validators.required],
-    email: ["", [Validators.required, Validators.email]],
-    description: [""],
     tagline: [""],
-    language: [""],
+    description: [""],
+    accessibility: this.fb.group({preferredLanguage: [""]}),
     userDetails: this.fb.group({
       dateOfBirth: [new Date().toISOString(), [Validators.required]],
     }),
-    address: this.fb.group({
-      name: [""],
-      street: ["", Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
-      city: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-      state: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-      zipcode: ["", Validators.pattern("^[0-9]*$")],
-      country: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-    }),
-    phone: this.fb.group({
-      countryCode: ["", [Validators.pattern("^[0-9]*$")]],
-      number: ["", [Validators.pattern("^\\d{10}$")]],
-      type: [""],
+    contactInformation: this.fb.group({
+      emails: this.fb.array([
+        this.fb.group({
+          name: [""],
+          email: ["", [Validators.required, Validators.email]],
+        }),
+      ]),
+      phoneNumbers: this.fb.array([
+        this.fb.group({
+          countryCode: ["", [Validators.pattern("^[0-9]*$")]],
+          number: ["", [Validators.pattern("^\\d{10}$")]],
+          type: [""],
+          isEmergencyNumber: [false],
+        }),
+      ]),
+      address: this.fb.group({
+        name: [""],
+        street: ["", Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
+        city: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+        state: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+        zipcode: ["", Validators.pattern("^[0-9]*$")],
+        country: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+      }),
+      preferredMethodOfContact: ["Email"],
     }),
   });
 
@@ -93,43 +109,81 @@ export class EditUserProfilePage {
     this.accountsSubscription?.unsubscribe();
   }
 
+  get phoneNumbersFormArray(): FormArray {
+    return this.editAccountForm.get(
+      "contactInformation.phoneNumbers",
+    ) as FormArray;
+  }
+
+  get emailsFormArray(): FormArray {
+    return this.editAccountForm.get("contactInformation.emails") as FormArray;
+  }
+
   onSubmit() {
     if (this.account) {
-      // Update the account object with form values
-      this.account.email = this.editAccountForm.value.email ?? "";
-      this.account.description = this.editAccountForm.value.description ?? "";
-      this.account.tagline = this.editAccountForm.value.tagline ?? "";
-      this.account.name = this.editAccountForm.value.name ?? "";
-      this.account.language = this.editAccountForm.value.language ?? "";
+      // Prepare the account object with form values
+      const formValue = this.editAccountForm.value;
+      const updatedAccount: Partial<Account> = {
+        ...this.account,
+        name: formValue.name ?? "",
+        tagline: formValue.tagline ?? "",
+        description: formValue.description ?? "",
+        accessibility: {
+          ...this.account.accessibility,
+          preferredLanguage:
+            formValue.accessibility?.preferredLanguage || "English",
+        },
+        contactInformation: {
+          ...formValue.contactInformation,
+          emails:
+            formValue.contactInformation?.emails?.map(
+              (email: Partial<Email>) => ({
+                name: email.name ?? "Primary",
+                email: email.email ?? "",
+              }),
+            ) ?? [],
+          phoneNumbers: formValue.contactInformation?.phoneNumbers?.map(
+            (phone: Partial<PhoneNumber>) => ({
+              countryCode: phone.countryCode || "",
+              number: phone.number || "",
+              type: phone.type || "",
+              isEmergencyNumber: phone.isEmergencyNumber || false,
+            }),
+          ) ?? [
+            {countryCode: "", number: "", type: "", isEmergencyNumber: false},
+          ],
+          address: formValue.contactInformation?.address
+            ? {
+                ...formValue.contactInformation.address,
+                name: formValue.contactInformation.address?.name || "", // Assign default or calculated value
+                street: formValue.contactInformation.address?.street || "", // Assign default or calculated value
+                city: formValue.contactInformation.address?.city || "", // Assign default or calculated value
+                state: formValue.contactInformation.address?.state || "", // Assign default or calculated value
+                zipcode: formValue.contactInformation.address?.zipcode || "", // Assign default or calculated value
+                country: formValue.contactInformation.address?.country || "", // Assign default or calculated value
+                formatted: formValue.contactInformation.address?.street || "", // Assign default or calculated value
+                geopoint: formValue.contactInformation.address?.street || "", // Assign default or calculated value
+              }
+            : null, // Ensure address is null if undefined or not provided
+          preferredMethodOfContact: "Email",
+        },
+        userDetails: {
+          ...this.account.userDetails,
+          dateOfBirth: Timestamp.fromDate(
+            new Date(this.editAccountForm.value.userDetails?.dateOfBirth ?? ""),
+          ),
+        },
+      };
 
-      this.account.userDetails = {
-        ...this.account.userDetails,
-        firstName: this.account.userDetails?.firstName ?? "",
-        lastName: this.account.userDetails?.lastName ?? "",
-        username: this.account.userDetails?.username ?? "",
-        dateOfBirth: Timestamp.fromDate(
-          new Date(this.editAccountForm.value.userDetails?.dateOfBirth ?? ""),
-        ),
-      };
-      this.account.address = {
-        ...this.account.address,
-        street: this.editAccountForm.value.address?.street ?? "",
-        city: this.editAccountForm.value.address?.city ?? "",
-        state: this.editAccountForm.value.address?.state ?? "",
-        zipcode: this.editAccountForm.value.address?.zipcode ?? "",
-        country: this.editAccountForm.value.address?.country ?? "",
-        name: this.editAccountForm.value.address?.name ?? "",
-        formatted: this.account.address?.formatted ?? "",
-        geopoint: this.account.address?.geopoint ?? "",
-      };
-      this.account.phone = {
-        ...this.account.phone,
-        number: this.editAccountForm.value.phone?.number ?? "",
-        type: this.editAccountForm.value.phone?.type ?? "",
-        countryCode: this.editAccountForm.value.phone?.countryCode ?? "",
-      };
-
-      this.storeService.updateDoc("accounts", this.account);
+      // Update the Firestore document
+      this.storeService.updateDoc("accounts", updatedAccount);
+      // .then(() => {
+      //   console.log("Account updated successfully");
+      //   this.backToProfile();
+      // })
+      // .catch((error) => {
+      //   console.error("Error updating account:", error);
+      // });
     }
   }
 
@@ -160,20 +214,34 @@ export class EditUserProfilePage {
     if (!this.account) return;
     this.editAccountForm.patchValue({
       name: this.account.name,
-      email: this.account.email,
-      description: this.account.description,
       tagline: this.account.tagline,
-      language: this.account.language,
+      description: this.account.description,
+      accessibility: {
+        preferredLanguage: this.account.accessibility?.preferredLanguage,
+      },
       userDetails: {
-        dateOfBirth: this.account.userDetails?.dateOfBirth
-          .toDate()
-          .toISOString(),
+        dateOfBirth:
+          this.account.userDetails?.dateOfBirth?.toDate().toISOString() ??
+          new Date().toISOString(),
       },
-      address: {
-        ...this.account.address,
-      },
-      phone: {
-        ...this.account.phone,
+      contactInformation: {
+        emails: this.account.contactInformation?.emails?.map((email) => ({
+          name: email.name,
+          email: email.email,
+        })) || [{name: "Primary", email: ""}],
+        phoneNumbers: this.account.contactInformation?.phoneNumbers?.map(
+          (phone) => ({
+            countryCode: phone.countryCode,
+            number: phone.number,
+            type: phone.type,
+            isEmergencyNumber: phone.isEmergencyNumber,
+          }),
+        ) || [
+          {countryCode: "", number: "", type: "", isEmergencyNumber: false},
+        ],
+        address: this.account.contactInformation?.address ?? {},
+        preferredMethodOfContact:
+          this.account.contactInformation?.preferredMethodOfContact,
       },
     });
   }

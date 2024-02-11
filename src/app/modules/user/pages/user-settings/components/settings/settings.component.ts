@@ -82,4 +82,9 @@ export class SettingsComponent implements OnChanges {
       language: this.account.accessibility?.preferredLanguage ?? "en",
     });
   }
+
+  toggleDarkTheme(event: CustomEvent) {
+    const isDarkModeEnabled = event.detail.checked;
+    document.body.classList.toggle("dark", isDarkModeEnabled);
+  }
 }

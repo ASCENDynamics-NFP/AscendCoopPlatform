@@ -29,7 +29,7 @@ export function prepareDataForCreate(data: any, accountId: string | undefined) {
     createdDate: timestamp,
     lastModifiedBy: accountId,
     lastModifiedDate: timestamp,
-    relatedAccounts: undefined, // This is to clear any related accounts before creating a new document
+    relatedAccounts: null, // This is to clear any related accounts before creating a new document
   };
 }
 
@@ -41,6 +41,6 @@ export function prepareDataForUpdate(data: any, accountId: string | undefined) {
     ...data,
     lastModifiedBy: accountId,
     lastModifiedDate: timestamp,
-    relatedAccounts: undefined, // This is to clear any related accounts before updating an existing document
+    relatedAccounts: null, // This is to clear any related accounts before updating an existing document
   };
 }

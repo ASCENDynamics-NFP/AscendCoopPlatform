@@ -21,10 +21,8 @@ import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {
   FormArray,
-  // AbstractControl,
   FormBuilder,
   ReactiveFormsModule,
-  // ValidatorFn,
   Validators,
 } from "@angular/forms";
 import {IonicModule} from "@ionic/angular";

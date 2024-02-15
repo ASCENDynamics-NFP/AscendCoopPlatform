@@ -36,14 +36,13 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <ion-card-content class="content-center">
     <ion-row>
       <ion-col size="12" size-md="6" class="ion-text-center">
-        <div class="logo-title-container ion-padding-bottom">
+        <div class="col-container ion-padding-bottom">
           <img width="100%" src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png" alt="ASCENDynamics NFP"
             class="logo" />
         </div>
       </ion-col>
       <ion-col size="12" size-md="6" class="ion-text-center">
-        <div class="logo-title-container">
-
+        <div class="col-container">
           <form [formGroup]="signupForm" (ngSubmit)="signup()">
             <ion-row>
               <ion-col>
@@ -103,7 +102,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             <ion-button class="ion-margin-top" type="submit" expend="block" strong="true"
               [disabled]="signupForm.invalid || !matchPasswords" style="width: 100%"
               translate>user.signup.submit</ion-button>
-            <ion-text (click)="goToLogin()">
+            <ion-text>
               Already have an account? <a (click)="goToLogin()" translate> user.signup.login </a>
             </ion-text>
           </form>

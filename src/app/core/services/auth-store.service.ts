@@ -119,7 +119,7 @@ export class AuthStoreService {
         );
         this.router.navigate(["user-profile/" + result.user.uid]);
       })
-      .catch(this.handleError)
+      .catch((error) => this.handleError(error))
       .finally(() => loading.dismiss());
   }
 
@@ -131,7 +131,7 @@ export class AuthStoreService {
           "Verification email sent! Please check your inbox.",
         ),
       )
-      .catch(this.handleError);
+      .catch((error) => this.handleError(error));
   }
 
   /* SIGN IN METHODS */
@@ -177,7 +177,7 @@ export class AuthStoreService {
         this.successHandler.handleSuccess("Successfully signed in!");
         return result.user?.uid;
       })
-      .catch(this.handleError)
+      .catch((error) => this.handleError(error))
       .finally(() => loading.dismiss());
   }
 
@@ -191,7 +191,7 @@ export class AuthStoreService {
           "Email sent! Check your inbox for the magic link.",
         );
       })
-      .catch(this.handleError)
+      .catch((error) => this.handleError(error))
       .finally(() => loading.dismiss());
   }
 
@@ -211,7 +211,7 @@ export class AuthStoreService {
             this.successHandler.handleSuccess("You have been signed in!");
             return result.user?.uid;
           })
-          .catch(this.handleError)
+          .catch((error) => this.handleError(error))
           .finally(() => loading.dismiss());
       }
     }
@@ -225,7 +225,7 @@ export class AuthStoreService {
         this.successHandler.handleSuccess("You have been signed out!");
         this.router.navigate(["user-login"]);
       })
-      .catch(this.handleError)
+      .catch((error) => this.handleError(error))
       .finally(() => loading.dismiss());
   }
 
@@ -238,7 +238,7 @@ export class AuthStoreService {
           "Please check your email for further instructions!",
         );
       })
-      .catch(this.handleError)
+      .catch((error) => this.handleError(error))
       .finally(() => loading.dismiss());
   }
 

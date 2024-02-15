@@ -21,7 +21,6 @@ a {
   cursor: pointer;
 }
 
-
 .logo {
   width: 500px;
   max-width: 100%;
@@ -58,13 +57,9 @@ ion-content {
   }
 }
 
-.logo-title-container {
+.col-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100%; /* Ensure the container takes full height to center its content */
-}
-
-ion-item {
-  background: #000;
 }

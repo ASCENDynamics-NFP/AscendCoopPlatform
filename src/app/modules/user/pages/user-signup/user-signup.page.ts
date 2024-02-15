@@ -17,9 +17,14 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnDestroy} from "@angular/core";
+import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
-import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from "@angular/forms";
 import {IonicModule, ModalController} from "@ionic/angular";
 import {Router} from "@angular/router";
 
@@ -41,11 +46,15 @@ import {LegalModalComponent} from "../../../../shared/components/legal-modal/leg
     LegalModalComponent,
   ],
 })
-export class UserSignupPage implements OnDestroy {
-  private authSubscription: Subscription;
+export class UserSignupPage {
+  private authSubscription?: Subscription;
   signupForm = this.fb.nonNullable.group({
     email: ["", Validators.compose([Validators.required, Validators.email])],
     password: [
+      "",
+      Validators.compose([Validators.required, Validators.minLength(6)]),
+    ],
+    confirmPassword: [
       "",
       Validators.compose([Validators.required, Validators.minLength(6)]),
     ],
@@ -57,7 +66,16 @@ export class UserSignupPage implements OnDestroy {
     private authStoreService: AuthStoreService,
     private router: Router,
     private modalController: ModalController,
-  ) {
+  ) {}
+
+  // Custom validator function to match passwords
+  get matchPasswords() {
+    let password = this.signupForm.controls["password"].value;
+    let confirmPassword = this.signupForm.controls["confirmPassword"].value;
+    return password === confirmPassword ? true : false;
+  }
+
+  ionViewWillEnter() {
     this.authSubscription = this.authStoreService.authUser$.subscribe(
       (authUser) => {
         if (authUser) {
@@ -70,9 +88,9 @@ export class UserSignupPage implements OnDestroy {
     );
   }
 
-  ionViewWillEnter() {}
-
-  ionViewWillLeave() {}
+  ionViewWillLeave() {
+    this.authSubscription?.unsubscribe();
+  }
 
   signup() {
     const email = this.signupForm.value.email;
@@ -83,10 +101,6 @@ export class UserSignupPage implements OnDestroy {
 
   goToLogin() {
     this.router.navigateByUrl("/user-login");
-  }
-
-  ngOnDestroy(): void {
-    this.authSubscription.unsubscribe();
   }
 
   async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {

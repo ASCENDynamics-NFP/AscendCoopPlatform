@@ -25,8 +25,6 @@ import {GroupRegistrationComponent} from "./components/group-registration/group-
 import {UserRegistrationComponent} from "./components/user-registration/user-registration.component";
 import {Subscription} from "rxjs";
 import {ActivatedRoute, Router} from "@angular/router";
-import {User} from "firebase/auth";
-import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {StoreService} from "../../../../core/services/store.service";
 import {Account} from "../../../../models/account.model";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
@@ -48,17 +46,14 @@ import {AppHeaderComponent} from "../../../../shared/components/app-header/app-h
 export class RegistrationPage {
   private accountsSubscription?: Subscription;
   public accountId: string | null = null;
-  authUser: User | null = null;
   account?: Partial<Account>;
   public selectedType: string = "";
 
   constructor(
-    private authStoreService: AuthStoreService,
     private route: ActivatedRoute,
     private router: Router,
     private storeService: StoreService,
   ) {
-    this.authUser = this.authStoreService.getCurrentUser();
     this.accountId = this.route.snapshot.paramMap.get("accountId");
   }
 
@@ -79,14 +74,12 @@ export class RegistrationPage {
         );
         if (!this.account) {
           this.storeService.getDocById("accounts", this.accountId); // get and add doc to store
-        } else {
-          if (this.account?.type === "group") {
-            this.router.navigate([
-              `/group/${this.accountId}/${this.accountId}/details`,
-            ]); // Navigate to group-profile
-          } else if (this.account?.type === "user") {
-            this.router.navigate([`/user-profile/${this.accountId}`]); // Navigate to group-profile
-          }
+        } else if (this.account?.type === "group") {
+          this.router.navigate([
+            `/group/${this.accountId}/${this.accountId}/details`,
+          ]); // Navigate to group-profile
+        } else if (this.account?.type === "user") {
+          this.router.navigate([`/user-profile/${this.accountId}`]); // Navigate to group-profile
         }
       },
     );

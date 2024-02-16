@@ -19,116 +19,158 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <ion-card-content>
   <form [formGroup]="editAccountForm" (ngSubmit)="onSubmit()">
-    <ion-accordion-group [multiple]="true" [value]="['basicInformation', 'groupDetails', 'contactInformation']">
-
-      <!-- Basic Information Section -->
+    <ion-accordion-group [multiple]="true" [value]="['basicInformation', 'contactInformation']">
       <ion-accordion value="basicInformation" toggleIcon="caret-down-circle" toggleIconSlot="start">
         <ion-item slot="header" color="primary">
           <ion-label>Basic Information</ion-label>
         </ion-item>
 
-        <div slot="content">
-          <ion-item>
-            <ion-label position="floating">Group Name</ion-label>
-            <ion-input aria-label="Group Name" formControlName="name" type="text" min="1" max="255"></ion-input>
-          </ion-item>
+        <ion-grid slot="content">
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-label position="floating">Group Name</ion-label>
+                <ion-input aria-label="Group Name" formControlName="name" type="text"></ion-input>
+              </ion-item>
 
-          <ion-item>
-            <ion-label position="floating">Tagline</ion-label>
-            <ion-input aria-label="Tagline" formControlName="tagline" min="0" max="255"></ion-input>
-          </ion-item>
+              <div formGroupName="groupDetails">
+                <ion-item>
+                  <ion-label position="floating">Group Type</ion-label>
+                  <ion-select aria-label="Group Type" formControlName="groupType">
+                    <ion-select-option value="Nonprofit">Nonprofit</ion-select-option>
+                    <ion-select-option value="Community">Community</ion-select-option>
+                    <!-- <ion-select-option value="Interest-Based">Interest-Based</ion-select-option> -->
+                    <ion-select-option value="Business">Business</ion-select-option>
+                    <ion-select-option value="Government">Government</ion-select-option>
+                    <ion-select-option value="Other">Other</ion-select-option>
+                  </ion-select>
+                </ion-item>
+              </div>
+            </ion-col>
 
-          <ion-item>
-            <ion-label position="floating">Description</ion-label>
-            <ion-textarea rows="4" aria-label="Description" formControlName="description" min="0"
-              max="1000"></ion-textarea>
-          </ion-item>
-        </div>
+            <ion-col>
+              <ion-item>
+                <ion-label position="floating">Tagline</ion-label>
+                <ion-input aria-label="Tagline" formControlName="tagline"></ion-input>
+              </ion-item>
+
+              <ion-item>
+                <ion-label position="floating">Description</ion-label>
+                <ion-textarea rows="4" aria-label="Description" formControlName="description"></ion-textarea>
+              </ion-item>
+
+              <!-- <ion-item>
+                <ion-label position="floating">Supported Languages</ion-label>
+                <ion-select aria-label="Supported Languages" formControlName="supportedLanguages" multiple="true">
+                  <ion-select-option value="en">English</ion-select-option>
+                  <ion-select-option value="es">Spanish</ion-select-option>
+                  <ion-select-option value="fr">French</ion-select-option>
+                  <ion-select-option value="de">German</ion-select-option>
+                </ion-select>
+              </ion-item>
+
+              <ion-item>
+                <ion-label position="floating">Date Founded</ion-label>
+                <ion-datetime formControlName="dateFounded" presentation="date"></ion-datetime>
+              </ion-item> -->
+            </ion-col>
+          </ion-row>
+        </ion-grid>
       </ion-accordion>
 
-      <!-- GroupDetails Section -->
-      <ion-accordion value="groupDetails" toggleIcon="caret-down-circle" toggleIconSlot="start">
-        <ion-item slot="header" color="primary">
-          <ion-label>Group Details</ion-label>
-        </ion-item>
-        <!-- Nested FormGroup for 'groupDetails' -->
-        <div slot="content" formGroupName="groupDetails">
-          <ion-item>
-            <ion-label position="floating">Supported Languages</ion-label>
-            <ion-select aria-label="Supported Languages" formControlName="supportedLanguages" multiple="true">
-              <ion-select-option value="en">English</ion-select-option>
-              <ion-select-option value="es">Spanish</ion-select-option>
-              <ion-select-option value="fr">French</ion-select-option>
-              <ion-select-option value="de">German</ion-select-option>
-
-            </ion-select>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="floating">Date Founded</ion-label>
-            <ion-datetime formControlName="dateFounded" presentation="date"></ion-datetime>
-          </ion-item>
-        </div>
-      </ion-accordion>
 
       <!-- Contact Information Section -->
       <ion-accordion value="contactInformation" toggleIcon="caret-down-circle" toggleIconSlot="start">
         <ion-item slot="header" color="primary">
           <ion-label>Contact Information</ion-label>
         </ion-item>
-        <div slot="content" formArrayName="contactInformation">
+        <div slot="content" formArrayName="contactInformation" class="phone-numbers-array">
           <!-- Emails FormArray -->
-          <div formGroupName="emails">
-            <div *ngFor="let emailControl of emailsFormArray.controls; let i = index" [formGroupName]="i">
-              <ion-item>
-                <ion-label position="floating">Name</ion-label>
-                <ion-input aria-label="Name" formControlName="name" type="text"></ion-input>
-              </ion-item>
-              <ion-item>
-                <ion-label position="floating">Email</ion-label>
-                <ion-input aria-label="Email" required formControlName="email" type="email"></ion-input>
-                <ion-note *ngIf="emailControl.get('email')?.invalid && emailControl.get('email')?.touched">
-                  Please enter a valid email
-                </ion-note>
-              </ion-item>
-            </div>
-          </div>
+          <ion-item lines="full" class="phone-number-item"
+            *ngFor="let emailControl of emailsFormArray.controls; let i = index" [formGroupName]="i">
+            <ion-grid formArrayName="emails">
+              <ion-row>
+                <ion-col>
+                  <ion-item>
+                    <ion-label position="stacked">Name</ion-label>
+                    <ion-input aria-label="Name" formControlName="name" type="text"></ion-input>
+                  </ion-item>
+                </ion-col>
+                <ion-col>
+                  <ion-item>
+                    <ion-label position="stacked">Email</ion-label>
+                    <ion-input aria-label="Email" required formControlName="email" type="email"></ion-input>
+                    <ion-note slot="end"
+                      *ngIf="emailControl.get('email')?.invalid && emailControl.get('email')?.touched">
+                      Please enter a valid email
+                    </ion-note>
+                  </ion-item>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+            <ion-button fill="clear" (click)="removeEmail(i)" aria-label="Remove Email">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+          <ion-button fill="clear" (click)="addEmail()" aria-label="Add Email" class="add-phone-btn">
+            <ion-icon slot="start" name="add-circle-outline"></ion-icon>Add Email
+          </ion-button>
+
 
           <!-- PhoneNumbers FormArray -->
-          <div formGroupName="phoneNumbers">
+          <div formArrayName="phoneNumbers" class="phone-numbers-array">
             <div *ngFor="let phoneControl of phoneNumbersFormArray.controls; let i = index" [formGroupName]="i">
-              <ion-item>
-                <ion-label position="floating">Phone Country Code</ion-label>
-                <ion-input aria-label="Phone Country Code" formControlName="countryCode" type="text"></ion-input>
-                <ion-note *ngIf="phoneControl.get('countryCode')?.invalid && phoneControl.get('countryCode')?.touched">
-                  Please enter a valid country code
-                </ion-note>
-              </ion-item>
-
-              <ion-item>
-                <ion-label position="floating">Phone Number</ion-label>
-                <ion-input aria-label="Phone Number" formControlName="number" type="text"></ion-input>
-                <ion-note *ngIf="phoneControl.get('number')?.invalid && phoneControl.get('number')?.touched">
-                  Please enter a valid phone number
-                </ion-note>
-              </ion-item>
-
-              <ion-item>
-                <ion-label position="floating">Phone Type</ion-label>
-                <ion-select aria-label="Phone Type" formControlName="type">
-                  <ion-select-option value="Mobile">Mobile</ion-select-option>
-                  <ion-select-option value="Home">Home</ion-select-option>
-                  <ion-select-option value="Work">Work</ion-select-option>
-                </ion-select>
-              </ion-item>
-
-              <ion-item>
-                <ion-checkbox aria-label="Is Emergency Number" slot="start"
-                  formControlName="isEmergencyNumber"></ion-checkbox>
-                <ion-text>Is this an emergency number?</ion-text>
+              <ion-item lines="full" class="phone-number-item">
+                <ion-grid>
+                  <ion-row>
+                    <ion-col size="2">
+                      <ion-item>
+                        <ion-label position="stacked">Type</ion-label>
+                        <ion-select formControlName="type">
+                          <ion-select-option value="Mobile">Mobile</ion-select-option>
+                          <ion-select-option value="Home">Home</ion-select-option>
+                          <ion-select-option value="Work">Work</ion-select-option>
+                        </ion-select>
+                      </ion-item>
+                    </ion-col>
+                    <ion-col size="3">
+                      <ion-item>
+                        <ion-label position="stacked">Country Code</ion-label>
+                        <ion-input formControlName="countryCode" type="tel"></ion-input>
+                        <ion-note
+                          *ngIf="phoneControl.get('countryCode')?.invalid && phoneControl.get('countryCode')?.touched">
+                          Please enter a valid country code
+                        </ion-note>
+                      </ion-item>
+                    </ion-col>
+                    <ion-col size="4">
+                      <ion-item>
+                        <ion-label position="stacked">Number</ion-label>
+                        <ion-input formControlName="number" type="tel"></ion-input>
+                        <ion-note *ngIf="phoneControl.get('number')?.invalid && phoneControl.get('number')?.touched">
+                          Please enter a valid phone number
+                        </ion-note>
+                      </ion-item>
+                    </ion-col>
+                    <ion-col size="3" class="ion-align-self-center">
+                      <ion-item lines="none">
+                        <ion-label>Emergency</ion-label>
+                        <ion-checkbox slot="start" formControlName="isEmergencyNumber"></ion-checkbox>
+                      </ion-item>
+                    </ion-col>
+                  </ion-row>
+                </ion-grid>
+                <ion-button fill="clear" (click)="removePhoneNumber(i)">
+                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-button>
               </ion-item>
             </div>
+            <ion-button fill="clear" class="add-phone-btn" (click)="addPhoneNumber()">
+              <ion-icon slot="start" name="add-circle"></ion-icon>
+              Add Phone Number
+            </ion-button>
           </div>
+
 
           <!-- Address FormGroup -->
           <div formGroupName="address">

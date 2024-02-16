@@ -22,6 +22,7 @@ import {Component, Input} from "@angular/core";
 import {
   FormArray,
   FormBuilder,
+  FormGroup,
   ReactiveFormsModule,
   Validators,
 } from "@angular/forms";
@@ -31,8 +32,6 @@ import {
   Email,
   PhoneNumber,
 } from "../../../../../../models/account.model";
-import {ActivatedRoute, Router} from "@angular/router";
-import {Timestamp} from "firebase/firestore";
 import {StoreService} from "../../../../../../core/services/store.service";
 
 @Component({
@@ -56,14 +55,7 @@ export class GroupRegistrationComponent {
           email: ["", [Validators.required, Validators.email]],
         }),
       ]),
-      phoneNumbers: this.fb.array([
-        this.fb.group({
-          countryCode: ["", [Validators.pattern("^[0-9]*$")]],
-          number: ["", [Validators.pattern("^\\d{10}$")]],
-          type: [""],
-          isEmergencyNumber: [false],
-        }),
-      ]),
+      phoneNumbers: this.fb.array([this.createPhoneNumberFormGroup()]),
       address: this.fb.group({
         name: [""],
         street: ["", Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
@@ -76,21 +68,13 @@ export class GroupRegistrationComponent {
       preferredMethodOfContact: ["Email"],
     }),
     groupDetails: this.fb.group({
-      dateFounded: [new Date().toISOString(), [Validators.required]],
-      supportedLanguages: [["en"]], // Assuming 'en' as a default supported language
+      // dateFounded: [new Date().toISOString(), [Validators.required]],
+      // supportedLanguages: [["en"]], // Assuming 'en' as a default supported language
+      groupType: ["Nonprofit"],
     }),
   });
 
-  constructor(
-    private fb: FormBuilder,
-    private storeService: StoreService,
-    private activatedRoute: ActivatedRoute,
-    private router: Router,
-  ) {}
-
-  ionViewWillEnter() {}
-
-  ionViewWillLeave() {}
+  constructor(private fb: FormBuilder, private storeService: StoreService) {}
 
   get phoneNumbersFormArray(): FormArray {
     return this.editAccountForm.get(
@@ -102,43 +86,37 @@ export class GroupRegistrationComponent {
     return this.editAccountForm.get("contactInformation.emails") as FormArray;
   }
 
-  loadFormData() {
-    if (!this.account) return;
+  addEmail(): void {
+    this.emailsFormArray.push(this.createEmailFormGroup());
+  }
 
-    this.editAccountForm.patchValue({
-      name: this.account.name,
-      description: this.account.description,
-      tagline: this.account.tagline,
-      groupDetails: {
-        dateFounded: this.account.groupDetails?.dateFounded
-          ? this.account.groupDetails.dateFounded.toDate().toISOString()
-          : new Date().toISOString(),
+  removeEmail(index: number): void {
+    this.emailsFormArray.removeAt(index);
+  }
 
-        supportedLanguages: this.account.groupDetails?.supportedLanguages || [
-          "en",
-        ],
-      },
-      contactInformation: {
-        emails: this.account.contactInformation?.emails?.map((email) => ({
-          name: email.name,
-          email: email.email,
-        })) || [{name: "Primary", email: ""}],
-        phoneNumbers: this.account.contactInformation?.phoneNumbers?.map(
-          (phone) => ({
-            countryCode: phone.countryCode,
-            number: phone.number,
-            type: phone.type,
-            isEmergencyNumber: phone.isEmergencyNumber,
-          }),
-        ) || [
-          {countryCode: "", number: "", type: "", isEmergencyNumber: false},
-        ],
-        address: this.account.contactInformation?.address || {},
-        preferredMethodOfContact:
-          this.account.contactInformation?.preferredMethodOfContact || "Email",
-      },
-      // Add other necessary field updates here
+  private createEmailFormGroup(): FormGroup {
+    return this.fb.group({
+      name: [""],
+      email: ["", [Validators.required, Validators.email]],
     });
+  }
+
+  createPhoneNumberFormGroup(): FormGroup {
+    return this.fb.group({
+      countryCode: ["", [Validators.pattern("^[0-9]*$")]],
+      number: ["", [Validators.pattern("^\\d{10}$")]],
+      type: [""],
+      isEmergencyNumber: [false],
+    });
+  }
+
+  addPhoneNumber(): void {
+    this.phoneNumbersFormArray.push(this.createPhoneNumberFormGroup());
+  }
+
+  removePhoneNumber(index: number): void {
+    // Remove the phone number form group at the given index
+    this.phoneNumbersFormArray.removeAt(index);
   }
 
   onSubmit() {
@@ -158,12 +136,13 @@ export class GroupRegistrationComponent {
         groupDetails: {
           ...formValue.groupDetails,
           // Only convert dateFounded to Timestamp if it exists and is a valid date string
-          dateFounded: formValue.groupDetails?.dateFounded
-            ? Timestamp.fromDate(new Date(formValue.groupDetails.dateFounded))
-            : Timestamp.fromDate(new Date()), // Handle null or undefined appropriately
-          supportedLanguages: formValue.groupDetails?.supportedLanguages
-            ? [...formValue.groupDetails.supportedLanguages]
-            : ["en"], // Use an empty array as fallback
+          // dateFounded: formValue.groupDetails?.dateFounded
+          //   ? Timestamp.fromDate(new Date(formValue.groupDetails.dateFounded))
+          //   : Timestamp.fromDate(new Date()), // Handle null or undefined appropriately
+          // supportedLanguages: formValue.groupDetails?.supportedLanguages
+          //   ? [...formValue.groupDetails.supportedLanguages]
+          //   : ["en"], // Use an empty array as fallback
+          groupType: formValue.groupDetails?.groupType || "Nonprofit",
         },
         contactInformation: {
           ...formValue.contactInformation,

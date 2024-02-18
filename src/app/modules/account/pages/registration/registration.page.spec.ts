@@ -54,7 +54,6 @@ describe("RegistrationPage", () => {
   it("should initialize with default values", () => {
     expect(component.selectedType).toEqual("");
     expect(component.accountId).toBeNull();
-    expect(component.authUser).toBeNull();
   });
 
   it("should set selectedType when selectType is called", () => {

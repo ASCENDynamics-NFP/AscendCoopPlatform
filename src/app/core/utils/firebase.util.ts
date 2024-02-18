@@ -20,27 +20,27 @@
 import {Timestamp} from "@angular/fire/firestore";
 
 // Preparing data before creating a new document in Firestore
-export function prepareDataForCreate(data: any, userId: string | undefined) {
-  if (!userId) throw new Error("User must have a uid");
+export function prepareDataForCreate(data: any, accountId: string | undefined) {
+  if (!accountId) throw new Error("User must have a uid");
   const timestamp = Timestamp.now();
   return {
     ...data,
-    createdBy: userId,
+    createdBy: accountId,
     createdDate: timestamp,
-    lastModifiedBy: userId,
+    lastModifiedBy: accountId,
     lastModifiedDate: timestamp,
-    relatedAccounts: null,
+    relatedAccounts: null, // This is to clear any related accounts before creating a new document
   };
 }
 
 // Preparing data before updating an existing document in Firestore
-export function prepareDataForUpdate(data: any, userId: string | undefined) {
-  if (!userId) throw new Error("User must have a uid");
+export function prepareDataForUpdate(data: any, accountId: string | undefined) {
+  if (!accountId) throw new Error("User must have a uid");
   const timestamp = Timestamp.now();
   return {
     ...data,
-    lastModifiedBy: userId,
+    lastModifiedBy: accountId,
     lastModifiedDate: timestamp,
-    relatedAccounts: null,
+    relatedAccounts: null, // This is to clear any related accounts before updating an existing document
   };
 }

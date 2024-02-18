@@ -50,6 +50,7 @@ interface GroupSpecific {
   admins?: string[];
   dateFounded?: Timestamp;
   supportedLanguages?: string[];
+  groupType?: string;
   groupObjectivesMissionStatement?: string;
   groupHistoryBackground?: string;
   // faqs?: string[]; // Optional, for common queries related to the group

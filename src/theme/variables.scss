@@ -95,6 +95,14 @@
   --ion-color-light-tint: #f5f6f9;
 }
 
+form ion-item {
+  --background: #121212; /* Custom background color */
+  // --padding-start: 16px; /* Custom padding */
+  // --padding-end: 16px;
+  // --inner-padding-end: 16px;
+  // --min-height: 50px; /* Custom height */
+}
+
 @media (prefers-color-scheme: dark) {
   /*
    * Dark Colors

@@ -21,16 +21,9 @@ a {
   cursor: pointer;
 }
 
-.logo-title-container {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
 .logo {
-  width: 400px;
+  width: 500px;
   max-width: 100%;
-  height: auto;
-  margin: 0 auto;
 }
 
 h2 {
@@ -39,4 +32,34 @@ h2 {
   font-size: 24px;
   font-weight: bold;
   text-align: center;
+}
+
+.content-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%; /* This ensures that the ion-card-content takes full available height */
+}
+
+ion-card {
+  height: 100%; /* Make the ion-card take full available height of ion-content */
+}
+
+ion-content {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  
+  ion-text {
+    font-size:small;
+  }
+}
+
+.col-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%; /* Ensure the container takes full height to center its content */
 }

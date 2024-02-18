@@ -39,12 +39,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
             <ion-item>
               <ion-label position="floating">Tagline</ion-label>
-              <ion-textarea aria-label="Tagline" formControlName="tagline"></ion-textarea>
+              <ion-input aria-label="Tagline" formControlName="tagline"></ion-input>
             </ion-item>
 
             <ion-item>
               <ion-label position="floating">Bio</ion-label>
-              <ion-textarea aria-label="Bio" formControlName="description"></ion-textarea>
+              <ion-textarea rows="4" aria-label="Bio" formControlName="description"></ion-textarea>
             </ion-item>
           </div>
         </ion-accordion>
@@ -192,8 +192,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <div slot="content" formGroupName="userDetails">
             <ion-item>
               <ion-label position="floating">Date of Birth</ion-label>
-              <ion-datetime aria-label="Date of Birth" formControlName="dateOfBirth"
-                displayFormat="MM/DD/YYYY"></ion-datetime>
+              <ion-datetime aria-label="Date of Birth" formControlName="dateOfBirth" presentation="date"></ion-datetime>
             </ion-item>
           </div>
         </ion-accordion>

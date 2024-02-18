@@ -51,7 +51,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               </ion-col>
             </ion-row>
             <ion-item>
-              <ion-label position="stacked" translate>user.signup.email_label
+              <ion-label position="stacked" translate>
+                user.signup.email_label <ion-text color="danger">(Required)</ion-text>
               </ion-label>
               <ion-input type="email" inputmode="email" formControlName="email"
                 placeholder="email@domain.com"></ion-input>
@@ -61,25 +62,27 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             </ion-item>
             <ion-item>
               <ion-label position="stacked" translate>
-                user.signup.password_label
+                user.signup.password_label <ion-text color="danger">(Required)</ion-text>
               </ion-label>
               <ion-input formControlName="password" labelPlacement="stacked" type="password" placeholder="Password"
-                min="8">
+                minlength="8">
                 <!-- <ion-icon slot="start" name="lock-closed" aria-hidden="true"></ion-icon>
               <ion-button fill="clear" slot="end" aria-label="Show/hide">
                 <ion-icon slot="icon-only" name="lock-closed" aria-hidden="true"></ion-icon>
               </ion-button> -->
               </ion-input>
               <ion-note slot="error"
-                *ngIf="(signupForm.controls.password.dirty || signupForm.controls.password.touched) && signupForm.controls.password.errors"
-                translate>user.signup.password_error</ion-note>
+                *ngIf="(signupForm.controls.password.hasError('passwordStrength') || signupForm.controls.password.errors) && (signupForm.controls.password.dirty || signupForm.controls.password.touched)">
+                Password must include at least one uppercase letter, one lowercase letter, one numeric digit, and one
+                special character.
+              </ion-note>
             </ion-item>
             <ion-item>
               <ion-label position="stacked">
-                Confirm Password
+                Confirm Password <ion-text color="danger">(Required)</ion-text>
               </ion-label>
               <ion-input formControlName="confirmPassword" labelPlacement="stacked" type="password"
-                placeholder="Confirm Password" min="8">
+                placeholder="Confirm Password" minlength="8">
                 <!-- <ion-icon slot="start" name="lock-closed" aria-hidden="true"></ion-icon>
               <ion-button fill="clear" slot="end" aria-label="Show/hide">
                 <ion-icon slot="icon-only" name="lock-closed" aria-hidden="true"></ion-icon>

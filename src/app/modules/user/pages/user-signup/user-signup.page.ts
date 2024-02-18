@@ -20,9 +20,10 @@
 import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {
+  AbstractControl,
   FormBuilder,
-  FormGroup,
   ReactiveFormsModule,
+  ValidationErrors,
   Validators,
 } from "@angular/forms";
 import {IonicModule, ModalController} from "@ionic/angular";
@@ -32,6 +33,26 @@ import {TranslateModule} from "@ngx-translate/core";
 import {Subscription} from "rxjs";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
+
+function passwordStrengthValidator(
+  control: AbstractControl,
+): ValidationErrors | null {
+  const value = control.value;
+  if (!value) {
+    return null; // Don't validate empty value
+  }
+  const hasUpperCase = /[A-Z]/.test(value);
+  const hasLowerCase = /[a-z]/.test(value);
+  const hasNumeric = /\d/.test(value);
+  const hasSpecialChar = /\W|_/.test(value); // Matches any non-word character or underscore
+
+  const valid = hasUpperCase && hasLowerCase && hasNumeric && hasSpecialChar;
+  if (!valid) {
+    // Return an error if the password doesn't meet the requirements
+    return {passwordStrength: true};
+  }
+  return null; // Return null if there are no errors (i.e., the validation passed)
+}
 
 @Component({
   selector: "app-user-signup",
@@ -52,11 +73,15 @@ export class UserSignupPage {
     email: ["", Validators.compose([Validators.required, Validators.email])],
     password: [
       "",
-      Validators.compose([Validators.required, Validators.minLength(6)]),
+      Validators.compose([
+        Validators.required,
+        Validators.minLength(8),
+        passwordStrengthValidator,
+      ]),
     ],
     confirmPassword: [
       "",
-      Validators.compose([Validators.required, Validators.minLength(6)]),
+      Validators.compose([Validators.required, Validators.minLength(8)]),
     ],
     agreedToTerms: [false, Validators.requiredTrue],
   });

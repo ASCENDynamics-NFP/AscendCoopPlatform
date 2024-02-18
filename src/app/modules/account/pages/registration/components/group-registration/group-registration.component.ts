@@ -18,7 +18,7 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {CommonModule} from "@angular/common";
-import {Component, Input} from "@angular/core";
+import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
 import {
   FormArray,
   FormBuilder,
@@ -41,7 +41,7 @@ import {StoreService} from "../../../../../../core/services/store.service";
   standalone: true,
   imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
-export class GroupRegistrationComponent {
+export class GroupRegistrationComponent implements OnChanges {
   @Input() account?: Partial<Account>;
   public maxEmails = 5;
   public maxLinks = 10;
@@ -74,6 +74,12 @@ export class GroupRegistrationComponent {
   });
 
   constructor(private fb: FormBuilder, private storeService: StoreService) {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes["account"]) {
+      this.loadFormData();
+    }
+  }
 
   get phoneNumbersFormArray(): FormArray {
     return this.editAccountForm.get(
@@ -158,7 +164,15 @@ export class GroupRegistrationComponent {
         name: formValue.name!,
         tagline: formValue.tagline!,
         description: formValue.description ?? "",
-        type: this.account.type ?? "group",
+        type: "group",
+        webLinks:
+          formValue.webLinks?.map((link) => {
+            return {
+              name: link.name!,
+              url: link.url!,
+              category: link.category ?? "",
+            };
+          }) ?? [],
         groupDetails: {
           ...formValue.groupDetails,
           // Only convert dateFounded to Timestamp if it exists and is a valid date string
@@ -208,5 +222,46 @@ export class GroupRegistrationComponent {
       //   console.error("Error updating group:", error);
       // });
     }
+  }
+
+  loadFormData() {
+    if (!this.account) return;
+
+    this.editAccountForm.patchValue({
+      name: this.account.name,
+      description: this.account.description,
+      tagline: this.account.tagline,
+      webLinks: this.account.webLinks?.map((webLink) => ({
+        name: webLink.name,
+        url: webLink.url,
+        category: webLink.category,
+      })) || [this.createWebLinkFormGroup()],
+      // groupDetails: {
+      // dateFounded: this.account.groupDetails?.dateFounded
+      //   ? this.account.groupDetails.dateFounded.toDate().toISOString()
+      //   : new Date().toISOString(),
+      // supportedLanguages: this.account.groupDetails?.supportedLanguages || [
+      //   "en",
+      // ],
+      // },
+      contactInformation: {
+        emails: this.account.contactInformation?.emails?.map((email) => ({
+          name: email.name,
+          email: email.email,
+        })) || [this.createEmailFormGroup()],
+        phoneNumbers: this.account.contactInformation?.phoneNumbers?.map(
+          (phone) => ({
+            countryCode: phone.countryCode,
+            number: phone.number,
+            type: phone.type,
+            isEmergencyNumber: phone.isEmergencyNumber,
+          }),
+        ) || [this.createPhoneNumberFormGroup()],
+        address: this.account.contactInformation?.address || {},
+        // preferredMethodOfContact:
+        //   this.account.contactInformation?.preferredMethodOfContact || "Email",
+      },
+      // Add other necessary field updates here
+    });
   }
 }

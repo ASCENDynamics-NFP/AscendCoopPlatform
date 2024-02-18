@@ -204,7 +204,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                     <ion-col size="3">
                       <ion-item>
                         <ion-label position="stacked">Country Code</ion-label>
-                        <ion-input formControlName="countryCode" type="text"></ion-input>
+                        <ion-input formControlName="countryCode" type="text" max="4"></ion-input>
                         <ion-note
                           *ngIf="phoneControl.get('countryCode')?.invalid && phoneControl.get('countryCode')?.touched">
                           Please enter a valid country code
@@ -214,7 +214,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                     <ion-col size="4">
                       <ion-item>
                         <ion-label position="stacked">Number</ion-label>
-                        <ion-input formControlName="number" type="tel"></ion-input>
+                        <ion-input formControlName="number" type="tel" max="9"></ion-input>
                         <ion-note *ngIf="phoneControl.get('number')?.invalid && phoneControl.get('number')?.touched">
                           Please enter a valid phone number
                         </ion-note>

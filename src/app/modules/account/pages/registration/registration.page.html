@@ -58,12 +58,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-col size="12">
         <div *ngIf="selectedType === 'user'">
           <!-- User Registration Component -->
-          <app-user-registration></app-user-registration>
+          <app-user-registration [account]="account"></app-user-registration>
         </div>
 
         <div *ngIf="selectedType === 'group'">
           <!-- Group Registration Component -->
-          <app-group-registration></app-group-registration>
+          <app-group-registration [account]="account"></app-group-registration>
         </div>
       </ion-col>
     </ion-row>

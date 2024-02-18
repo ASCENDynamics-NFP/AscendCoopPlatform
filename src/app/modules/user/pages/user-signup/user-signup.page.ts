@@ -54,6 +54,21 @@ function passwordStrengthValidator(
   return null; // Return null if there are no errors (i.e., the validation passed)
 }
 
+function matchingPasswordsValidator(
+  control: AbstractControl,
+): ValidationErrors | null {
+  const password = control.get("password")?.value;
+  const confirmPassword = control.get("confirmPassword")?.value;
+
+  // Check if the password and confirm password fields match
+  if (password !== confirmPassword) {
+    // If they don't match, return an error object
+    return {passwordMismatch: true};
+  }
+  // If they match, return null (no error)
+  return null;
+}
+
 @Component({
   selector: "app-user-signup",
   templateUrl: "./user-signup.page.html",
@@ -69,22 +84,25 @@ function passwordStrengthValidator(
 })
 export class UserSignupPage {
   private authSubscription?: Subscription;
-  signupForm = this.fb.nonNullable.group({
-    email: ["", Validators.compose([Validators.required, Validators.email])],
-    password: [
-      "",
-      Validators.compose([
-        Validators.required,
-        Validators.minLength(8),
-        passwordStrengthValidator,
-      ]),
-    ],
-    confirmPassword: [
-      "",
-      Validators.compose([Validators.required, Validators.minLength(8)]),
-    ],
-    agreedToTerms: [false, Validators.requiredTrue],
-  });
+  signupForm = this.fb.nonNullable.group(
+    {
+      email: ["", Validators.compose([Validators.required, Validators.email])],
+      password: [
+        "",
+        Validators.compose([
+          Validators.required,
+          Validators.minLength(8),
+          passwordStrengthValidator,
+        ]),
+      ],
+      confirmPassword: [
+        "",
+        Validators.compose([Validators.required, Validators.minLength(8)]),
+      ],
+      agreedToTerms: [false, Validators.requiredTrue],
+    },
+    {validators: matchingPasswordsValidator},
+  );
 
   constructor(
     private fb: FormBuilder,
@@ -92,13 +110,6 @@ export class UserSignupPage {
     private router: Router,
     private modalController: ModalController,
   ) {}
-
-  // Custom validator function to match passwords
-  get matchPasswords() {
-    let password = this.signupForm.controls["password"].value;
-    let confirmPassword = this.signupForm.controls["confirmPassword"].value;
-    return password === confirmPassword ? true : false;
-  }
 
   ionViewWillEnter() {
     this.authSubscription = this.authStoreService.authUser$.subscribe(

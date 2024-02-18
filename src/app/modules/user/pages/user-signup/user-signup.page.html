@@ -88,7 +88,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 <ion-icon slot="icon-only" name="lock-closed" aria-hidden="true"></ion-icon>
               </ion-button> -->
               </ion-input>
-              <ion-note slot="error" *ngIf="!matchPasswords">
+              <ion-note slot="error"
+                *ngIf="signupForm.errors?.['passwordMismatch'] && signupForm.controls.confirmPassword.touched">
                 Passwords do not match.
               </ion-note>
             </ion-item>
@@ -103,8 +104,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               </ion-text>
             </ion-item>
             <ion-button class="ion-margin-top" type="submit" expend="block" strong="true"
-              [disabled]="signupForm.invalid || !matchPasswords" style="width: 100%"
-              translate>user.signup.submit</ion-button>
+              [disabled]="signupForm.invalid" style="width: 100%" translate>user.signup.submit</ion-button>
             <ion-text>
               Already have an account? <a (click)="goToLogin()" translate> user.signup.login </a>
             </ion-text>

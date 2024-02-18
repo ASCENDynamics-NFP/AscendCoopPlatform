@@ -67,8 +67,6 @@ export class GroupRegistrationComponent implements OnChanges {
       preferredMethodOfContact: ["Email"],
     }),
     groupDetails: this.fb.group({
-      // dateFounded: [new Date().toISOString(), [Validators.required]],
-      // supportedLanguages: [["en"]], // Assuming 'en' as a default supported language
       groupType: [],
     }),
   });
@@ -91,64 +89,12 @@ export class GroupRegistrationComponent implements OnChanges {
     return this.editAccountForm.get("contactInformation.emails") as FormArray;
   }
 
+  /**
+   * Returns the FormArray for the webLinks control in the editAccountForm.
+   * @returns {FormArray} The FormArray for the webLinks control.
+   */
   get webLinksFormArray(): FormArray {
     return this.editAccountForm.get("webLinks") as FormArray;
-  }
-
-  addEmail(): void {
-    if (this.emailsFormArray.length < this.maxEmails) {
-      this.emailsFormArray.push(this.createEmailFormGroup());
-    }
-  }
-
-  removeEmail(index: number): void {
-    this.emailsFormArray.removeAt(index);
-  }
-
-  private createEmailFormGroup(): FormGroup {
-    return this.fb.group({
-      name: [""],
-      email: ["", [Validators.email]],
-    });
-  }
-
-  createPhoneNumberFormGroup(): FormGroup {
-    return this.fb.group({
-      countryCode: ["", [Validators.pattern("^[0-9]*$")]],
-      number: ["", [Validators.pattern("^\\d{10}$")]],
-      type: [""],
-      isEmergencyNumber: [false],
-    });
-  }
-
-  addPhoneNumber(): void {
-    if (this.phoneNumbersFormArray.length < this.maxPhoneNumbers) {
-      this.phoneNumbersFormArray.push(this.createPhoneNumberFormGroup());
-    }
-  }
-
-  removePhoneNumber(index: number): void {
-    // Remove the phone number form group at the given index
-    this.phoneNumbersFormArray.removeAt(index);
-  }
-
-  createWebLinkFormGroup(): FormGroup {
-    return this.fb.group({
-      name: ["", []],
-      url: ["", []],
-      category: [""],
-    });
-  }
-
-  addWebLink(): void {
-    if (this.webLinksFormArray.length < this.maxLinks) {
-      this.webLinksFormArray.push(this.createPhoneNumberFormGroup());
-    }
-  }
-
-  removeWebLink(index: number): void {
-    // Remove the phone number form group at the given index
-    this.webLinksFormArray.removeAt(index);
   }
 
   onSubmit() {
@@ -226,24 +172,65 @@ export class GroupRegistrationComponent implements OnChanges {
 
   loadFormData() {
     if (!this.account) return;
+    // Reset the form arrays to ensure clean state
+    while (this.webLinksFormArray.length !== 0) {
+      this.webLinksFormArray.removeAt(0);
+    }
+    while (this.emailsFormArray.length !== 0) {
+      this.emailsFormArray.removeAt(0);
+    }
+    while (this.phoneNumbersFormArray.length !== 0) {
+      this.phoneNumbersFormArray.removeAt(0);
+    }
 
+    // If there are webLinks, create a FormGroup for each
+    this.account.webLinks?.forEach((webLink) => {
+      this.webLinksFormArray.push(
+        this.fb.group({
+          name: [webLink.name],
+          url: [webLink.url],
+          category: [webLink.category],
+        }),
+      );
+    });
+
+    // If after loading there are no webLinks, add a blank one
+    if (this.webLinksFormArray.length === 0) {
+      this.addWebLink();
+    }
+
+    // Dynamically load emails and phone numbers from the account, or add a blank one if none exist
+    this.account.contactInformation?.emails?.forEach((email) => {
+      this.emailsFormArray.push(
+        this.fb.group({
+          name: [email.name],
+          email: [email.email, Validators.email],
+        }),
+      );
+    });
+    if (this.emailsFormArray.length === 0) {
+      this.addEmail();
+    }
+
+    this.account.contactInformation?.phoneNumbers?.forEach((phone) => {
+      this.phoneNumbersFormArray.push(
+        this.fb.group({
+          countryCode: [phone.countryCode, [Validators.pattern("^[0-9]*$")]],
+          number: [phone.number, [Validators.pattern("^\\d{10}$")]],
+          type: [phone.type],
+          isEmergencyNumber: [phone.isEmergencyNumber],
+        }),
+      );
+    });
+    if (this.phoneNumbersFormArray.length === 0) {
+      this.addPhoneNumber();
+    }
+
+    // Load other form data as before
     this.editAccountForm.patchValue({
       name: this.account.name,
       description: this.account.description,
       tagline: this.account.tagline,
-      webLinks: this.account.webLinks?.map((webLink) => ({
-        name: webLink.name,
-        url: webLink.url,
-        category: webLink.category,
-      })) || [this.createWebLinkFormGroup()],
-      // groupDetails: {
-      // dateFounded: this.account.groupDetails?.dateFounded
-      //   ? this.account.groupDetails.dateFounded.toDate().toISOString()
-      //   : new Date().toISOString(),
-      // supportedLanguages: this.account.groupDetails?.supportedLanguages || [
-      //   "en",
-      // ],
-      // },
       contactInformation: {
         emails: this.account.contactInformation?.emails?.map((email) => ({
           name: email.name,
@@ -258,10 +245,68 @@ export class GroupRegistrationComponent implements OnChanges {
           }),
         ) || [this.createPhoneNumberFormGroup()],
         address: this.account.contactInformation?.address || {},
-        // preferredMethodOfContact:
-        //   this.account.contactInformation?.preferredMethodOfContact || "Email",
       },
       // Add other necessary field updates here
     });
+  }
+
+  /**
+   * Adds a new email form group to the emails form array, up to a max of maxEmails.
+   * This allows an additional email input to be displayed in the form.
+   */
+  addEmail(): void {
+    if (this.emailsFormArray.length < this.maxEmails) {
+      this.emailsFormArray.push(this.createEmailFormGroup());
+    }
+  }
+
+  removeEmail(index: number): void {
+    this.emailsFormArray.removeAt(index);
+  }
+
+  private createEmailFormGroup(): FormGroup {
+    return this.fb.group({
+      name: [""],
+      email: ["", [Validators.email]],
+    });
+  }
+
+  createPhoneNumberFormGroup(): FormGroup {
+    return this.fb.group({
+      countryCode: ["", [Validators.pattern("^[0-9]*$")]],
+      number: ["", [Validators.pattern("^\\d{10}$")]],
+      type: [""],
+      isEmergencyNumber: [false],
+    });
+  }
+
+  addPhoneNumber(): void {
+    if (this.phoneNumbersFormArray.length < this.maxPhoneNumbers) {
+      this.phoneNumbersFormArray.push(this.createPhoneNumberFormGroup());
+    }
+  }
+
+  removePhoneNumber(index: number): void {
+    // Remove the phone number form group at the given index
+    this.phoneNumbersFormArray.removeAt(index);
+  }
+
+  createWebLinkFormGroup(): FormGroup {
+    return this.fb.group({
+      name: ["", []],
+      url: ["", []],
+      category: [""],
+    });
+  }
+
+  addWebLink(): void {
+    if (this.webLinksFormArray.length < this.maxLinks) {
+      this.webLinksFormArray.push(this.createWebLinkFormGroup());
+    }
+  }
+
+  removeWebLink(index: number): void {
+    // Remove the phone number form group at the given index
+    this.webLinksFormArray.removeAt(index);
   }
 }

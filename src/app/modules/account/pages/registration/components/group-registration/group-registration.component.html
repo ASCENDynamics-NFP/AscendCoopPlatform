@@ -92,14 +92,15 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 </ion-col>
                 <ion-col>
                   <ion-item>
-                    <ion-label position="stacked">Name</ion-label>
+                    <ion-label position="stacked" minlength="0" maxlength="50">Name</ion-label>
                     <ion-input aria-label="Name" formControlName="name" type="text"></ion-input>
                   </ion-item>
                 </ion-col>
                 <ion-col>
                   <ion-item>
                     <ion-label position="stacked">URL</ion-label>
-                    <ion-input aria-label="URL" formControlName="url" type="text"></ion-input>
+                    <ion-input aria-label="URL" formControlName="url" type="text" minlength="0"
+                      maxlength="100"></ion-input>
                   </ion-item>
                   <ion-note *ngIf="linkControl.get('url')?.invalid && linkControl.get('url')?.touched">
                     Please enter a valid URL
@@ -140,13 +141,15 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                         <ion-col>
                           <ion-item>
                             <ion-label position="stacked">Name</ion-label>
-                            <ion-input aria-label="Name" formControlName="name" type="text"></ion-input>
+                            <ion-input aria-label="Name" formControlName="name" type="text" minlength="0"
+                              maxlength="50"></ion-input>
                           </ion-item>
                         </ion-col>
                         <ion-col>
                           <ion-item>
                             <ion-label position="stacked">Email</ion-label>
-                            <ion-input aria-label="Email" formControlName="email" type="email"></ion-input>
+                            <ion-input aria-label="Email" formControlName="email" type="email" minlength="0"
+                              maxlength="50"></ion-input>
                             <ion-note *ngIf="emailControl.get('email')?.invalid && emailControl.get('email')?.touched"
                               color="danger">
                               Please enter a valid email
@@ -193,7 +196,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                         <ion-col size="2">
                           <ion-item>
                             <ion-label aria-label="Country Code" position="stacked">Country Code</ion-label>
-                            <ion-input formControlName="countryCode" type="text" max="4"></ion-input>
+                            <ion-input formControlName="countryCode" type="text" minlength="0"
+                              maxlength="4"></ion-input>
                             <ion-note
                               *ngIf="phoneControl.get('countryCode')?.invalid && phoneControl.get('countryCode')?.touched">
                               Please enter a valid country code
@@ -203,8 +207,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                         <ion-col size="4">
                           <ion-item>
                             <ion-label position="stacked">Number</ion-label>
-                            <ion-input aria-label="Number" formControlName="number" type="tel" min="0"
-                              max="9"></ion-input>
+                            <ion-input aria-label="Number" formControlName="number" type="tel" minlength="0"
+                              maxlength="10"></ion-input>
                             <ion-note
                               *ngIf="phoneControl.get('number')?.invalid && phoneControl.get('number')?.touched">
                               Please enter a valid phone number
@@ -246,12 +250,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               <ion-col>
                 <ion-item>
                   <ion-label position="stacked">Address Name</ion-label>
-                  <ion-input aria-label="Address Name" formControlName="name" type="text"></ion-input>
+                  <ion-input aria-label="Address Name" formControlName="name" type="text" minlength="0"
+                    maxlength="50"></ion-input>
                 </ion-item>
 
                 <ion-item>
                   <ion-label position="stacked">Street Address</ion-label>
-                  <ion-input aria-label="Street Address" formControlName="street" type="text"></ion-input>
+                  <ion-input aria-label="Street Address" formControlName="street" type="text" minlength="0"
+                    maxlength="50"></ion-input>
                   <ion-note
                     *ngIf="editAccountForm.get('contactInformation.address.street')?.invalid && editAccountForm.get('contactInformation.address.street')?.touched">
                     Please enter a valid address
@@ -260,7 +266,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
                 <ion-item>
                   <ion-label position="stacked">City</ion-label>
-                  <ion-input aria-label="City" formControlName="city" type="text"></ion-input>
+                  <ion-input aria-label="City" formControlName="city" type="text" minlength="0"
+                    maxlength="50"></ion-input>
                   <ion-note
                     *ngIf="editAccountForm.get('contactInformation.address.city')?.invalid && editAccountForm.get('contactInformation.address.city')?.touched">
                     Please enter a valid city name
@@ -271,7 +278,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
                 <ion-item>
                   <ion-label position="stacked">State/Province/Region</ion-label>
-                  <ion-input aria-label="State" formControlName="state" type="text"></ion-input>
+                  <ion-input aria-label="State" formControlName="state" type="text" minlength="0"
+                    maxlength="50"></ion-input>
                   <ion-note
                     *ngIf="editAccountForm.get('contactInformation.address.state')?.invalid && editAccountForm.get('contactInformation.address.state')?.touched">
                     Please enter a valid state name
@@ -280,7 +288,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
                 <ion-item>
                   <ion-label position="stacked">Zip/Postal Code</ion-label>
-                  <ion-input aria-label="Zip/Postal Code" formControlName="zipcode" type="text"></ion-input>
+                  <ion-input aria-label="Zip/Postal Code" formControlName="zipcode" type="text" minlength="0"
+                    maxlength="5"></ion-input>
                   <ion-note
                     *ngIf="editAccountForm.get('contactInformation.address.zipcode')?.invalid && editAccountForm.get('contactInformation.address.zipcode')?.touched">
                     Please enter a valid zip code

@@ -62,7 +62,6 @@ export class GroupRegistrationComponent implements OnChanges {
         state: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
         zipcode: ["", Validators.pattern("^[0-9]*$")],
         country: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-        // Include formatted and geopoint if needed here, or handle them in your backend logic
       }),
       preferredMethodOfContact: ["Email"],
     }),
@@ -121,13 +120,6 @@ export class GroupRegistrationComponent implements OnChanges {
           }) ?? [],
         groupDetails: {
           ...formValue.groupDetails,
-          // Only convert dateFounded to Timestamp if it exists and is a valid date string
-          // dateFounded: formValue.groupDetails?.dateFounded
-          //   ? Timestamp.fromDate(new Date(formValue.groupDetails.dateFounded))
-          //   : Timestamp.fromDate(new Date()), // Handle null or undefined appropriately
-          // supportedLanguages: formValue.groupDetails?.supportedLanguages
-          //   ? [...formValue.groupDetails.supportedLanguages]
-          //   : ["en"], // Use an empty array as fallback
           groupType: formValue.groupDetails?.groupType || "Nonprofit",
         },
         contactInformation: {
@@ -246,7 +238,6 @@ export class GroupRegistrationComponent implements OnChanges {
         ) || [this.createPhoneNumberFormGroup()],
         address: this.account.contactInformation?.address || {},
       },
-      // Add other necessary field updates here
     });
   }
 

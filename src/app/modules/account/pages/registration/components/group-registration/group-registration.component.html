@@ -25,51 +25,52 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-label>Basic Information</ion-label>
         </ion-item>
 
-        <ion-item slot="content">
-          <ion-grid>
-            <ion-row>
-              <ion-col>
-                <ion-item>
-                  <ion-label position="stacked">Group Name <ion-text color="danger">(Required)</ion-text></ion-label>
-                  <ion-input aria-label="Group Name" formControlName="name" type="text"></ion-input>
-                  <ion-note color="danger"
-                    *ngIf="editAccountForm.get('name')?.invalid && editAccountForm.get('name')?.touched">
-                    This field is required
-                  </ion-note>
-                </ion-item>
-
-                <div formGroupName="groupDetails">
+        <div slot="content">
+          <ion-item>
+            <ion-grid>
+              <ion-row>
+                <ion-col>
                   <ion-item>
-                    <ion-label position="stacked">Group Type</ion-label>
-                    <ion-select aria-label="Group Type" formControlName="groupType" interface="popover"
-                      placeholder="Select One">
-                      <ion-select-option value="Nonprofit">Nonprofit</ion-select-option>
-                      <ion-select-option value="Community">Community</ion-select-option>
-                      <!-- <ion-select-option value="Interest-Based">Interest-Based</ion-select-option> -->
-                      <ion-select-option value="Business">Business</ion-select-option>
-                      <ion-select-option value="Government">Government</ion-select-option>
-                      <ion-select-option value="Other">Other</ion-select-option>
-                    </ion-select>
+                    <ion-label position="stacked">Group Name <ion-text color="danger">(Required)</ion-text></ion-label>
+                    <ion-input aria-label="Group Name" formControlName="name" type="text"></ion-input>
+                    <ion-note color="danger"
+                      *ngIf="editAccountForm.get('name')?.invalid && editAccountForm.get('name')?.touched">
+                      This field is required
+                    </ion-note>
                   </ion-item>
-                </div>
-              </ion-col>
 
-              <ion-col>
-                <ion-item>
-                  <ion-label position="stacked">Tagline <ion-text color="danger">(Required)</ion-text></ion-label>
-                  <ion-input aria-label="Tagline" formControlName="tagline"></ion-input>
-                  <ion-note color="danger"
-                    *ngIf="editAccountForm.get('tagline')?.invalid && editAccountForm.get('tagline')?.touched">
-                    This field is required
-                  </ion-note>
-                </ion-item>
+                  <div formGroupName="groupDetails">
+                    <ion-item>
+                      <ion-label position="stacked">Group Type</ion-label>
+                      <ion-select aria-label="Group Type" formControlName="groupType" interface="popover"
+                        placeholder="Select One">
+                        <ion-select-option value="Nonprofit">Nonprofit</ion-select-option>
+                        <ion-select-option value="Community">Community</ion-select-option>
+                        <!-- <ion-select-option value="Interest-Based">Interest-Based</ion-select-option> -->
+                        <ion-select-option value="Business">Business</ion-select-option>
+                        <ion-select-option value="Government">Government</ion-select-option>
+                        <ion-select-option value="Other">Other</ion-select-option>
+                      </ion-select>
+                    </ion-item>
+                  </div>
+                </ion-col>
 
-                <ion-item>
-                  <ion-label position="stacked">Description</ion-label>
-                  <ion-textarea rows="4" aria-label="Description" formControlName="description"></ion-textarea>
-                </ion-item>
+                <ion-col>
+                  <ion-item>
+                    <ion-label position="stacked">Tagline <ion-text color="danger">(Required)</ion-text></ion-label>
+                    <ion-input aria-label="Tagline" formControlName="tagline"></ion-input>
+                    <ion-note color="danger"
+                      *ngIf="editAccountForm.get('tagline')?.invalid && editAccountForm.get('tagline')?.touched">
+                      This field is required
+                    </ion-note>
+                  </ion-item>
 
-                <!-- <ion-item>
+                  <ion-item>
+                    <ion-label position="stacked">Description</ion-label>
+                    <ion-textarea rows="4" aria-label="Description" formControlName="description"></ion-textarea>
+                  </ion-item>
+
+                  <!-- <ion-item>
                 <ion-label position="stacked">Supported Languages</ion-label>
                 <ion-select aria-label="Supported Languages" formControlName="supportedLanguages" multiple="true">
                   <ion-select-option value="en">English</ion-select-option>
@@ -83,10 +84,61 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 <ion-label position="stacked">Date Founded</ion-label>
                 <ion-datetime formControlName="dateFounded" presentation="date"></ion-datetime>
               </ion-item> -->
-              </ion-col>
-            </ion-row>
-          </ion-grid>
-        </ion-item>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-item>
+
+          <!-- webLinks FormArray -->
+          <div formArrayName="webLinks">
+            <div *ngFor="let linkControl of webLinksFormArray.controls; let i = index" [formGroupName]="i">
+              <ion-item lines="full" class="phone-number-item">
+                <ion-grid>
+                  <ion-row>
+                    <ion-col>
+                      <ion-item>
+                        <ion-label position="stacked">Category</ion-label>
+                        <ion-select formControlName="category" interface="popover" placeholder="Select One">
+                          <ion-select-option value="Social Media">Social Media</ion-select-option>
+                          <ion-select-option value="Donation">Donation</ion-select-option>
+                          <ion-select-option value="Hobbies">Hobbies</ion-select-option>
+                          <ion-select-option value="Publications">Publications</ion-select-option>
+                          <ion-select-option value="Portfolio">Portfolio</ion-select-option>
+                          <ion-select-option value="Personal Website">Personal Website</ion-select-option>
+                          <ion-select-option value="External Resources">External Resources</ion-select-option>
+                          <ion-select-option value="Other">Other</ion-select-option>
+                        </ion-select>
+                      </ion-item>
+                    </ion-col>
+                    <ion-col>
+                      <ion-item>
+                        <ion-label position="stacked">Name</ion-label>
+                        <ion-input formControlName="name" type="text"></ion-input>
+                      </ion-item>
+                    </ion-col>
+                    <ion-col>
+                      <ion-item>
+                        <ion-label position="stacked">URL</ion-label>
+                        <ion-input formControlName="url" type="text"></ion-input>
+                        <ion-note *ngIf="linkControl.get('url')?.invalid && linkControl.get('url')?.touched">
+                          Please enter a valid URL
+                        </ion-note>
+                      </ion-item>
+                    </ion-col>
+                  </ion-row>
+                </ion-grid>
+                <ion-button fill="clear" (click)="removeWebLink(i)">
+                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-button>
+              </ion-item>
+            </div>
+            <ion-button fill="clear" class="add-phone-btn" (click)="addWebLink()"
+              [disabled]="webLinksFormArray.controls.length >= maxLinks">
+              <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+              Add Link
+            </ion-button>
+          </div>
+        </div>
       </ion-accordion>
 
 
@@ -187,57 +239,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               Add Phone Number
             </ion-button>
           </div>
-
-          <!-- webLinks FormArray -->
-          <div formArrayName="webLinks" class="phone-numbers-array">
-            <div *ngFor="let linkControl of webLinksFormArray.controls; let i = index" [formGroupName]="i">
-              <ion-item lines="full" class="phone-number-item">
-                <ion-grid>
-                  <ion-row>
-                    <ion-col>
-                      <ion-item>
-                        <ion-label position="stacked">Category</ion-label>
-                        <ion-select formControlName="category" interface="popover" placeholder="Select One">
-                          <ion-select-option value="Social Media">Social Media</ion-select-option>
-                          <ion-select-option value="Donation">Donation</ion-select-option>
-                          <ion-select-option value="Hobbies">Hobbies</ion-select-option>
-                          <ion-select-option value="Publications">Publications</ion-select-option>
-                          <ion-select-option value="Portfolio">Portfolio</ion-select-option>
-                          <ion-select-option value="Personal Website">Personal Website</ion-select-option>
-                          <ion-select-option value="External Resources">External Resources</ion-select-option>
-                          <ion-select-option value="Other">Other</ion-select-option>
-                        </ion-select>
-                      </ion-item>
-                    </ion-col>
-                    <ion-col>
-                      <ion-item>
-                        <ion-label position="stacked">Name</ion-label>
-                        <ion-input formControlName="name" type="text"></ion-input>
-                      </ion-item>
-                    </ion-col>
-                    <ion-col>
-                      <ion-item>
-                        <ion-label position="stacked">URL</ion-label>
-                        <ion-input formControlName="url" type="text"></ion-input>
-                        <ion-note *ngIf="linkControl.get('url')?.invalid && linkControl.get('url')?.touched">
-                          Please enter a valid URL
-                        </ion-note>
-                      </ion-item>
-                    </ion-col>
-                  </ion-row>
-                </ion-grid>
-                <ion-button fill="clear" (click)="removeWebLink(i)">
-                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-                </ion-button>
-              </ion-item>
-            </div>
-            <ion-button fill="clear" class="add-phone-btn" (click)="addWebLink()"
-              [disabled]="webLinksFormArray.controls.length >= maxLinks">
-              <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-              Add Link
-            </ion-button>
-          </div>
-
 
           <!-- Address FormGroup -->
           <div formGroupName="address">

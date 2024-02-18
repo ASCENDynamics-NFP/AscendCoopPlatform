@@ -135,8 +135,8 @@ export class GroupRegistrationComponent {
   }
 
   addWebLink(): void {
-    if (this.phoneNumbersFormArray.length < this.maxPhoneNumbers) {
-      this.phoneNumbersFormArray.push(this.createPhoneNumberFormGroup());
+    if (this.webLinksFormArray.length < this.maxLinks) {
+      this.webLinksFormArray.push(this.createPhoneNumberFormGroup());
     }
   }
 

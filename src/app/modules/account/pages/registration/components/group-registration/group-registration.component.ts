@@ -43,18 +43,15 @@ import {StoreService} from "../../../../../../core/services/store.service";
 })
 export class GroupRegistrationComponent {
   @Input() account?: Partial<Account>;
+  public maxEmails = 5;
+  public maxPhoneNumbers = 5;
 
   editAccountForm = this.fb.group({
     description: [""],
     tagline: ["", Validators.required],
     name: ["", Validators.required],
     contactInformation: this.fb.group({
-      emails: this.fb.array([
-        this.fb.group({
-          name: ["Primary"],
-          email: ["", [Validators.required, Validators.email]],
-        }),
-      ]),
+      emails: this.fb.array([this.createEmailFormGroup()]),
       phoneNumbers: this.fb.array([this.createPhoneNumberFormGroup()]),
       address: this.fb.group({
         name: [""],
@@ -70,7 +67,7 @@ export class GroupRegistrationComponent {
     groupDetails: this.fb.group({
       // dateFounded: [new Date().toISOString(), [Validators.required]],
       // supportedLanguages: [["en"]], // Assuming 'en' as a default supported language
-      groupType: ["Nonprofit"],
+      groupType: [],
     }),
   });
 
@@ -87,7 +84,9 @@ export class GroupRegistrationComponent {
   }
 
   addEmail(): void {
-    this.emailsFormArray.push(this.createEmailFormGroup());
+    if (this.emailsFormArray.length < this.maxEmails) {
+      this.emailsFormArray.push(this.createEmailFormGroup());
+    }
   }
 
   removeEmail(index: number): void {
@@ -97,7 +96,7 @@ export class GroupRegistrationComponent {
   private createEmailFormGroup(): FormGroup {
     return this.fb.group({
       name: [""],
-      email: ["", [Validators.required, Validators.email]],
+      email: ["", [Validators.email]],
     });
   }
 
@@ -111,7 +110,9 @@ export class GroupRegistrationComponent {
   }
 
   addPhoneNumber(): void {
-    this.phoneNumbersFormArray.push(this.createPhoneNumberFormGroup());
+    if (this.phoneNumbersFormArray.length < this.maxPhoneNumbers) {
+      this.phoneNumbersFormArray.push(this.createPhoneNumberFormGroup());
+    }
   }
 
   removePhoneNumber(index: number): void {

@@ -19,30 +19,19 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
-import {RouterTestingModule} from "@angular/router/testing";
-import {FormsModule} from "@angular/forms";
-import {RegistrationPage} from "./registration.page";
-import {NO_ERRORS_SCHEMA} from "@angular/core";
 
-describe("RegistrationPage", () => {
-  let component: RegistrationPage;
-  let fixture: ComponentFixture<RegistrationPage>;
+import {LegalModalComponent} from "./legal-modal.component";
+
+describe("LegalModalComponent", () => {
+  let component: LegalModalComponent;
+  let fixture: ComponentFixture<LegalModalComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [
-        IonicModule.forRoot(),
-        FormsModule,
-        RouterTestingModule,
-        RegistrationPage, // Add the standalone component here in imports
-      ],
-      providers: [
-        // ... your mock providers
-      ],
-      schemas: [NO_ERRORS_SCHEMA],
+      imports: [IonicModule.forRoot(), LegalModalComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(RegistrationPage);
+    fixture = TestBed.createComponent(LegalModalComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));
@@ -50,18 +39,4 @@ describe("RegistrationPage", () => {
   it("should create", () => {
     expect(component).toBeTruthy();
   });
-
-  it("should initialize with default values", () => {
-    expect(component.selectedType).toEqual("");
-    expect(component.accountId).toBeNull();
-  });
-
-  it("should set selectedType when selectType is called", () => {
-    component.selectType("user");
-    expect(component.selectedType).toEqual("user");
-    component.selectType("group");
-    expect(component.selectedType).toEqual("group");
-  });
-
-  // Add more tests as needed
 });

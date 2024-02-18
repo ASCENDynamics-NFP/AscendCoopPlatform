@@ -23,53 +23,37 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </ion-card-header>
   <ion-card-content>
     <ion-list>
-      <!-- <ion-item lines="none">
-        <ion-avatar slot="start">
-          <img [src]="user.iconImage" alt="Profile Picture" />
-        </ion-avatar>
-        <ion-label>
-          <h2>{{ user.name }}</h2>
-          <p>{{ user.email }}</p>
-        </ion-label>
-      </ion-item> -->
-
+      <!-- Assuming account.contactInformation.emails[0]?.email for primary email -->
       <ion-item lines="none">
         <ion-icon name="mail" slot="start"></ion-icon>
-        <ion-label>Email: {{ account.email }}</ion-label>
+        <ion-label>Email: {{ email }}</ion-label>
       </ion-item>
 
+      <!-- Displaying the first phone number, make sure to adjust if you want to display all -->
       <ion-item lines="none">
         <ion-icon name="call" slot="start"></ion-icon>
-        <ion-label *ngIf="account.phone?.number">{{ account.phone?.type }} Phone: {{ account.phone?.countryCode }}
-          {{ account.phone?.number || "" | phoneFormat }}</ion-label>
+        <ion-label>{{phoneNumber}}
+        </ion-label>
       </ion-item>
-      <!-- 
-      <ion-item>
-        <ion-icon name="locate" slot="start"></ion-icon>
-        <ion-label>{{user.addressFormatted}}</ion-label>
-      </ion-item> -->
-
-      <!-- <ion-item lines="none">
-        <ion-icon name="text" slot="start"></ion-icon>
-        <ion-label>Bio: {{ user.description }}</ion-label>
-      </ion-item> -->
 
       <ion-item lines="none">
         <ion-icon name="book" slot="start"></ion-icon>
         <ion-label>Tagline: {{ account.tagline }}</ion-label>
       </ion-item>
 
+      <!-- Assuming userDetail?.dateOfBirth exists and converting it to a readable format -->
       <ion-item lines="none">
         <ion-icon name="calendar" slot="start"></ion-icon>
-        <ion-label>Date of Birth: {{ dateOfBirth | date : "mediumDate" }}</ion-label>
+        <!-- Use Angular date pipe to format date -->
+        <ion-label>Date of Birth: {{ dateOfBirth | date: 'mediumDate' }}</ion-label>
       </ion-item>
 
       <ion-item lines="none">
         <ion-icon name="language" slot="start"></ion-icon>
-        <ion-label>Language: {{ account.language }}</ion-label>
+        <ion-label>Language: {{ account.accessibility?.preferredLanguage }}</ion-label>
       </ion-item>
     </ion-list>
   </ion-card-content>
-  <ion-button *ngIf="isProfileOwner" expend="block" fill="clear" color="primary"
+  <ion-button *ngIf="isProfileOwner" expand="block" fill="clear" color="primary"
     routerLink="/user-profile/{{ account.id }}/edit">Edit Profile</ion-button>
 </ion-card>

@@ -17,38 +17,101 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnDestroy} from "@angular/core";
+import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
-import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
+import {
+  AbstractControl,
+  FormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from "@angular/forms";
+import {IonicModule, ModalController} from "@ionic/angular";
 import {Router} from "@angular/router";
 
 import {TranslateModule} from "@ngx-translate/core";
 import {Subscription} from "rxjs";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
+import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
+
+function passwordStrengthValidator(
+  control: AbstractControl,
+): ValidationErrors | null {
+  const value = control.value;
+  if (!value) {
+    return null; // Don't validate empty value
+  }
+  const hasUpperCase = /[A-Z]/.test(value);
+  const hasLowerCase = /[a-z]/.test(value);
+  const hasNumeric = /\d/.test(value);
+  const hasSpecialChar = /\W|_/.test(value); // Matches any non-word character or underscore
+
+  const valid = hasUpperCase && hasLowerCase && hasNumeric && hasSpecialChar;
+  if (!valid) {
+    // Return an error if the password doesn't meet the requirements
+    return {passwordStrength: true};
+  }
+  return null; // Return null if there are no errors (i.e., the validation passed)
+}
+
+function matchingPasswordsValidator(
+  control: AbstractControl,
+): ValidationErrors | null {
+  const password = control.get("password")?.value;
+  const confirmPassword = control.get("confirmPassword")?.value;
+
+  // Check if the password and confirm password fields match
+  if (password !== confirmPassword) {
+    // If they don't match, return an error object
+    return {passwordMismatch: true};
+  }
+  // If they match, return null (no error)
+  return null;
+}
 
 @Component({
   selector: "app-user-signup",
   templateUrl: "./user-signup.page.html",
   styleUrls: ["./user-signup.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule, TranslateModule],
+  imports: [
+    IonicModule,
+    CommonModule,
+    ReactiveFormsModule,
+    TranslateModule,
+    LegalModalComponent,
+  ],
 })
-export class UserSignupPage implements OnDestroy {
-  private authSubscription: Subscription;
-  signupForm = this.fb.nonNullable.group({
-    email: ["", Validators.compose([Validators.required, Validators.email])],
-    password: [
-      "",
-      Validators.compose([Validators.required, Validators.minLength(6)]),
-    ],
-  });
+export class UserSignupPage {
+  private authSubscription?: Subscription;
+  signupForm = this.fb.nonNullable.group(
+    {
+      email: ["", Validators.compose([Validators.required, Validators.email])],
+      password: [
+        "",
+        Validators.compose([
+          Validators.required,
+          Validators.minLength(8),
+          passwordStrengthValidator,
+        ]),
+      ],
+      confirmPassword: [
+        "",
+        Validators.compose([Validators.required, Validators.minLength(8)]),
+      ],
+      agreedToTerms: [false, Validators.requiredTrue],
+    },
+    {validators: matchingPasswordsValidator},
+  );
 
   constructor(
     private fb: FormBuilder,
     private authStoreService: AuthStoreService,
     private router: Router,
-  ) {
+    private modalController: ModalController,
+  ) {}
+
+  ionViewWillEnter() {
     this.authSubscription = this.authStoreService.authUser$.subscribe(
       (authUser) => {
         if (authUser) {
@@ -61,9 +124,9 @@ export class UserSignupPage implements OnDestroy {
     );
   }
 
-  ionViewWillEnter() {}
-
-  ionViewWillLeave() {}
+  ionViewWillLeave() {
+    this.authSubscription?.unsubscribe();
+  }
 
   signup() {
     const email = this.signupForm.value.email;
@@ -76,7 +139,11 @@ export class UserSignupPage implements OnDestroy {
     this.router.navigateByUrl("/user-login");
   }
 
-  ngOnDestroy(): void {
-    this.authSubscription.unsubscribe();
+  async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {
+    const modal = await this.modalController.create({
+      component: LegalModalComponent,
+      componentProps: {content: contentType},
+    });
+    return await modal.present();
   }
 }

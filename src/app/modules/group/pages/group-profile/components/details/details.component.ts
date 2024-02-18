@@ -44,4 +44,17 @@ export class DetailsComponent implements OnInit {
       this.group?.groupDetails?.dateFounded?.toDate().toISOString() ||
       this.dateFounded;
   }
+
+  get email() {
+    return this.group?.contactInformation?.emails?.[0]?.email;
+  }
+
+  get phoneNumber() {
+    return (
+      this.group?.contactInformation?.phoneNumbers?.[0]?.type +
+      " Phone: " +
+      this.group?.contactInformation?.phoneNumbers?.[0]?.countryCode +
+      this.group?.contactInformation?.phoneNumbers?.[0]?.number
+    );
+  }
 }

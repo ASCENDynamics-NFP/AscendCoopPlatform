@@ -35,7 +35,7 @@ export const createUserProfile = functions.auth
   .user()
   .onCreate(async (user) => {
     try {
-      await saveAccountToFirestore(user, "user"); // Specify 'user' for user profiles
+      await saveAccountToFirestore(user);
       logger.info(`User profile for ${user.uid} saved successfully.`);
     } catch (error) {
       logger.error(`Error saving user profile for ${user.uid}:`, error);
@@ -51,31 +51,28 @@ export const createUserProfile = functions.auth
  */
 async function saveAccountToFirestore(
   user: admin.auth.UserRecord,
-  type: "user" | "group",
 ): Promise<void> {
   const accountRef = db.collection("accounts").doc(user.uid);
 
   const accountData = {
     id: user.uid,
-    type: type,
-    name: user.displayName || "New User",
+    name: user.displayName || "New Volunteer",
     createdAt: Timestamp.now(),
     createdBy: user.uid,
     lastLoginAt: Timestamp.now(),
     lastModifiedAt: Timestamp.now(),
     lastModifiedBy: user.uid,
     email: user.email,
-    emailVerified: user.emailVerified,
     phone: {countryCode: "", number: user.phoneNumber || "", type: ""},
     language: "",
     associations: {accounts: [], feedback: []},
-    privacySetting: "public",
+    privacy: "public",
     iconImage:
       user.photoURL ||
       "assets/image/logo/ASCENDynamics NFP-logos_transparent.png",
     heroImage: "assets/image/userhero.png",
     description: "",
-    tagline: "",
+    tagline: "New and looking to help!",
     address: {
       name: "",
       street: "",
@@ -86,25 +83,18 @@ async function saveAccountToFirestore(
       formatted: "",
       geopoint: "",
     },
-    // User specific fields
-    userDetails:
-      type === "user"
-        ? {
-            dateOfBirth: Timestamp.now(),
-            firstName: "",
-            lastName: "",
-            username: user.displayName || user.uid,
-          }
-        : null,
-    // Group specific fields
-    groupDetails:
-      type === "group"
-        ? {
-            admins: [user.uid],
-            dateFounded: Timestamp.now(),
-            supportedLanguages: [],
-          }
-        : null,
+    legalAgreements: {
+      termsOfService: {
+        accepted: true,
+        datetime: Timestamp.now(),
+        version: "1.0.0",
+      },
+      privacyPolicy: {
+        accepted: true,
+        datetime: Timestamp.now(),
+        version: "1.0.0",
+      },
+    },
   };
 
   await accountRef.set(accountData);

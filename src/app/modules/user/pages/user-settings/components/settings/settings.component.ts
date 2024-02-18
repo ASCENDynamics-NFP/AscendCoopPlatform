@@ -39,7 +39,7 @@ export class SettingsComponent implements OnChanges {
   @Output() languageChange = new EventEmitter<string>();
 
   settingsForm = this.fb.group({
-    privacySetting: ["public", Validators.required],
+    privacy: ["public", Validators.required],
     language: ["en"],
   });
 
@@ -68,8 +68,8 @@ export class SettingsComponent implements OnChanges {
     if (this.authUser?.uid) {
       this.storeService.updateDoc("accounts", {
         id: this.authUser?.uid,
-        privacySetting: this.settingsForm.value.privacySetting,
-        language: this.settingsForm.value.language,
+        privacy: this.settingsForm.value.privacy,
+        accessibility: {preferredLanguage: this.settingsForm.value.language},
       });
     }
   }
@@ -78,8 +78,13 @@ export class SettingsComponent implements OnChanges {
     if (!this.account) return;
     // Update the form with the account data
     this.settingsForm.patchValue({
-      privacySetting: this.account.privacySetting,
-      language: this.account.language,
+      privacy: this.account.privacy,
+      language: this.account.accessibility?.preferredLanguage ?? "en",
     });
+  }
+
+  toggleDarkTheme(event: CustomEvent) {
+    const isDarkModeEnabled = event.detail.checked;
+    document.body.classList.toggle("dark", isDarkModeEnabled);
   }
 }

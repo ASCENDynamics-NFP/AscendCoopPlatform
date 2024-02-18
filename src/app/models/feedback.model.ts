@@ -19,8 +19,7 @@
 ***********************************************************************************************/
 import {BaseDocument} from "./base-document";
 
-export type AppFeedback = BaseDocument & {
-  id: string; // Firestore document ID
+export interface AppFeedback extends BaseDocument {
   email: string; // Email of the user who submitted the feedback
   emailVerified: boolean; // Whether the user's email has been verified
   name: string; // Name of the user who submitted the feedback
@@ -31,4 +30,4 @@ export type AppFeedback = BaseDocument & {
   category: string; // Category of the feedback
   isRead: boolean; // Whether the feedback has been read
   isResolved: boolean; // Whether the feedback has been resolved
-};
+}

@@ -32,71 +32,85 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-title size="large" translate>user.signup.title</ion-title>
     </ion-toolbar>
   </ion-header>
-  <div class="logo-title-container">
-    <img
-      src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
-      alt="ASCENDynamics NFP"
-      class="logo"
-    />
-  </div>
-  <!-- <h2>Sign Up for ASCENDdynamics Platform</h2> -->
-  <ion-card>
-    <ion-card-content>
-      <form [formGroup]="signupForm" (ngSubmit)="signup()">
-        <ion-item>
-          <ion-label position="stacked" translate
-            >user.signup.email_label
-          </ion-label>
-          <ion-input
-            type="email"
-            inputmode="email"
-            formControlName="email"
-          ></ion-input>
-          <ion-note
-            slot="error"
-            *ngIf="(signupForm.controls.email.dirty || signupForm.controls.email.touched) && signupForm.controls.email.errors"
-            translate
-            >user.signup.email_error</ion-note
-          >
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked" translate>
-            user.signup.password_label
-          </ion-label>
-          <ion-input
-            type="password"
-            inputmode="text"
-            formControlName="password"
-          ></ion-input>
-          <ion-note
-            slot="error"
-            *ngIf="(signupForm.controls.password.dirty || signupForm.controls.password.touched) && signupForm.controls.password.errors"
-            translate
-            >user.signup.password_error</ion-note
-          >
-        </ion-item>
-        <ion-button
-          type="submit"
-          expend="block"
-          strong="true"
-          [disabled]="signupForm.invalid"
-          style="width: 100%"
-          translate
-          >user.signup.submit</ion-button
-        >
-        <h2>OR</h2>
-        <ion-button
-          type="button"
-          expand="block"
-          color="primary"
-          fill="outline"
-          (click)="goToLogin()"
-          translate
-        >
-          <ion-icon name="log-in-outline" slot="start"></ion-icon>
-          user.signup.login
-        </ion-button>
-      </form>
-    </ion-card-content>
-  </ion-card>
+
+  <ion-card-content class="content-center">
+    <ion-row>
+      <ion-col size="12" size-md="6" class="ion-text-center">
+        <div class="col-container ion-padding-bottom">
+          <img width="100%" src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png" alt="ASCENDynamics NFP"
+            class="logo" />
+        </div>
+      </ion-col>
+      <ion-col size="12" size-md="6" class="ion-text-center">
+        <div class="col-container">
+          <form [formGroup]="signupForm" (ngSubmit)="signup()">
+            <ion-row>
+              <ion-col>
+                <h1 class="ion-padding-bottom"><b>Sign up</b></h1>
+                <h3 class="ion-padding-bottom">ASCENDynamics NFP is committed to creating a utopian society.</h3>
+              </ion-col>
+            </ion-row>
+            <ion-item>
+              <ion-label position="stacked" translate>
+                user.signup.email_label <ion-text color="danger">(Required)</ion-text>
+              </ion-label>
+              <ion-input type="email" inputmode="email" formControlName="email"
+                placeholder="email@domain.com"></ion-input>
+              <ion-note slot="error"
+                *ngIf="(signupForm.controls.email.dirty || signupForm.controls.email.touched) && signupForm.controls.email.errors"
+                translate>user.signup.email_error</ion-note>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked" translate>
+                user.signup.password_label <ion-text color="danger">(Required)</ion-text>
+              </ion-label>
+              <ion-input formControlName="password" labelPlacement="stacked" type="password" placeholder="Password"
+                minlength="8">
+                <!-- <ion-icon slot="start" name="lock-closed" aria-hidden="true"></ion-icon>
+              <ion-button fill="clear" slot="end" aria-label="Show/hide">
+                <ion-icon slot="icon-only" name="lock-closed" aria-hidden="true"></ion-icon>
+              </ion-button> -->
+              </ion-input>
+              <ion-note slot="error"
+                *ngIf="(signupForm.controls.password.hasError('passwordStrength') || signupForm.controls.password.errors) && (signupForm.controls.password.dirty || signupForm.controls.password.touched)">
+                Password must include at least one uppercase letter, one lowercase letter, one numeric digit, and one
+                special character.
+              </ion-note>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">
+                Confirm Password <ion-text color="danger">(Required)</ion-text>
+              </ion-label>
+              <ion-input formControlName="confirmPassword" labelPlacement="stacked" type="password"
+                placeholder="Confirm Password" minlength="8">
+                <!-- <ion-icon slot="start" name="lock-closed" aria-hidden="true"></ion-icon>
+              <ion-button fill="clear" slot="end" aria-label="Show/hide">
+                <ion-icon slot="icon-only" name="lock-closed" aria-hidden="true"></ion-icon>
+              </ion-button> -->
+              </ion-input>
+              <ion-note slot="error"
+                *ngIf="signupForm.errors?.['passwordMismatch'] && signupForm.controls.confirmPassword.touched">
+                Passwords do not match.
+              </ion-note>
+            </ion-item>
+            <ion-item>
+              <ion-checkbox slot="start" formControlName="agreedToTerms"></ion-checkbox>
+              <ion-text>
+                I have read and agree to the
+                <a class="cursor: pointer;" (click)="openLegalModal('privacyPolicy')">Privacy
+                  Policy</a> and
+                <a (click)="openLegalModal('termsOfUse')">Terms of
+                  Use</a>.
+              </ion-text>
+            </ion-item>
+            <ion-button class="ion-margin-top" type="submit" expend="block" strong="true"
+              [disabled]="signupForm.invalid" style="width: 100%" translate>user.signup.submit</ion-button>
+            <ion-text>
+              Already have an account? <a (click)="goToLogin()" translate> user.signup.login </a>
+            </ion-text>
+          </form>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-card-content>
 </ion-content>

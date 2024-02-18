@@ -21,6 +21,7 @@ import {Timestamp} from "firebase/firestore";
 
 // Base type for common fields
 export interface BaseDocument {
+  id: string; // Firestore document ID
   createdAt: Timestamp;
   createdBy: string;
   lastModifiedAt: Timestamp;

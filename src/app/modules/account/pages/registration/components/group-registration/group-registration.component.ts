@@ -44,12 +44,14 @@ import {StoreService} from "../../../../../../core/services/store.service";
 export class GroupRegistrationComponent {
   @Input() account?: Partial<Account>;
   public maxEmails = 5;
+  public maxLinks = 10;
   public maxPhoneNumbers = 5;
 
   editAccountForm = this.fb.group({
     description: [""],
     tagline: ["", Validators.required],
     name: ["", Validators.required],
+    webLinks: this.fb.array([this.createWebLinkFormGroup()]),
     contactInformation: this.fb.group({
       emails: this.fb.array([this.createEmailFormGroup()]),
       phoneNumbers: this.fb.array([this.createPhoneNumberFormGroup()]),
@@ -81,6 +83,10 @@ export class GroupRegistrationComponent {
 
   get emailsFormArray(): FormArray {
     return this.editAccountForm.get("contactInformation.emails") as FormArray;
+  }
+
+  get webLinksFormArray(): FormArray {
+    return this.editAccountForm.get("webLinks") as FormArray;
   }
 
   addEmail(): void {
@@ -118,6 +124,25 @@ export class GroupRegistrationComponent {
   removePhoneNumber(index: number): void {
     // Remove the phone number form group at the given index
     this.phoneNumbersFormArray.removeAt(index);
+  }
+
+  createWebLinkFormGroup(): FormGroup {
+    return this.fb.group({
+      name: ["", []],
+      url: ["", []],
+      category: [""],
+    });
+  }
+
+  addWebLink(): void {
+    if (this.phoneNumbersFormArray.length < this.maxPhoneNumbers) {
+      this.phoneNumbersFormArray.push(this.createPhoneNumberFormGroup());
+    }
+  }
+
+  removeWebLink(index: number): void {
+    // Remove the phone number form group at the given index
+    this.webLinksFormArray.removeAt(index);
   }
 
   onSubmit() {

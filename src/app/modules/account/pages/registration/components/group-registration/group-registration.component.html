@@ -31,9 +31,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             <ion-row>
               <ion-col>
                 <ion-item>
-                  <!-- <ion-label position="stacked">Group Name <ion-text color="danger">(Required)</ion-text></ion-label> -->
-                  <ion-input label="Group Name" placeholder="Enter Name" type="text" inputmode="text"
-                    formControlName="name" minlength="1" maxlength="255"></ion-input>
+                  <ion-label position="stacked">Group Name <ion-text color="danger">(Required)</ion-text></ion-label>
+                  <ion-input aria-label="Group Name" type="text" inputmode="text" formControlName="name" minlength="1"
+                    maxlength="255"></ion-input>
                   <ion-note *ngIf="editAccountForm.get('name')?.invalid && editAccountForm.get('name')?.touched"
                     color="danger">
                     This field is required

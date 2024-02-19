@@ -35,6 +35,8 @@ import {
   WebLink,
 } from "../../../../../../models/account.model";
 import {StoreService} from "../../../../../../core/services/store.service";
+import {countryCodes} from "../../../../../../core/data/phone";
+import {countries, statesProvinces} from "../../../../../../core/data/country";
 
 @Component({
   selector: "app-user-registration",
@@ -49,15 +51,16 @@ export class UserRegistrationComponent implements OnChanges {
   public maxLinks = 10;
   public maxPhoneNumbers = 5;
   registrationForm: FormGroup;
-  countryCodes: {value: string; label: string}[] = [];
+  public countries = countries; // List of countries for the address
+  public countryCodes = countryCodes.sort((a, b) =>
+    Number(a.value) > Number(b.value) ? 1 : -1,
+  ); // List of country codes for phone numbers
+  public statesProvinces = statesProvinces; // List of states/provinces for the selected country
   constructor(private fb: FormBuilder, private storeService: StoreService) {
     this.registrationForm = this.fb.group({
       description: [""],
       tagline: ["", Validators.required],
       name: ["", Validators.required],
-      phoneNumber: ["", Validators.pattern(/^-?\d+$/)],
-      alternateEmail: ["", [Validators.email]],
-      emergencyContactNumber: ["", Validators.pattern(/^-?\d+$/)],
       webLinks: this.fb.array([this.createWebLinkFormGroup()]),
       contactInformation: this.fb.group({
         emails: this.fb.array([this.createEmailFormGroup()]),
@@ -66,19 +69,13 @@ export class UserRegistrationComponent implements OnChanges {
           name: [""],
           street: ["", Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
           city: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-          state: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+          state: [""],
           zipcode: ["", Validators.pattern("^[0-9]*$")],
-          country: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+          country: [""],
         }),
         preferredMethodOfContact: ["Email"],
       }),
     });
-
-    this.countryCodes = [
-      {value: "+1", label: "+1 (USA)"},
-      {value: "+44", label: "+44 (UK)"},
-      // Add more entries as needed
-    ];
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -127,10 +124,6 @@ export class UserRegistrationComponent implements OnChanges {
               category: link.category ?? "",
             };
           }) ?? [],
-        groupDetails: {
-          ...formValue.groupDetails,
-          groupType: formValue.groupDetails?.groupType || "Nonprofit",
-        },
         contactInformation: {
           ...formValue.contactInformation,
           emails:
@@ -210,7 +203,7 @@ export class UserRegistrationComponent implements OnChanges {
     this.account.contactInformation?.phoneNumbers?.forEach((phone) => {
       this.phoneNumbersFormArray.push(
         this.fb.group({
-          countryCode: [phone.countryCode, [Validators.pattern("^[0-9]*$")]],
+          countryCode: [phone.countryCode],
           number: [phone.number, [Validators.pattern("^\\d{10}$")]],
           type: [phone.type],
           isEmergencyNumber: [phone.isEmergencyNumber],
@@ -267,7 +260,7 @@ export class UserRegistrationComponent implements OnChanges {
 
   createPhoneNumberFormGroup(): FormGroup {
     return this.fb.group({
-      countryCode: ["", [Validators.pattern("^[0-9]*$")]],
+      countryCode: [""],
       number: ["", [Validators.pattern("^\\d{10}$")]],
       type: [""],
       isEmergencyNumber: [false],

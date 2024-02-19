@@ -33,6 +33,8 @@ import {
   PhoneNumber,
 } from "../../../../../../models/account.model";
 import {StoreService} from "../../../../../../core/services/store.service";
+import {countryCodes} from "../../../../../../core/data/phone";
+import {countries, statesProvinces} from "../../../../../../core/data/country";
 
 @Component({
   selector: "app-group-registration",
@@ -46,6 +48,11 @@ export class GroupRegistrationComponent implements OnChanges {
   public maxEmails = 5;
   public maxLinks = 10;
   public maxPhoneNumbers = 5;
+  public countries = countries; // List of countries for the address
+  public countryCodes = countryCodes.sort((a, b) =>
+    Number(a.value) > Number(b.value) ? 1 : -1,
+  ); // List of country codes for phone numbers
+  public statesProvinces = statesProvinces; // List of states/provinces for the selected country
 
   editAccountForm = this.fb.group({
     description: [""],
@@ -207,7 +214,7 @@ export class GroupRegistrationComponent implements OnChanges {
     this.account.contactInformation?.phoneNumbers?.forEach((phone) => {
       this.phoneNumbersFormArray.push(
         this.fb.group({
-          countryCode: [phone.countryCode, [Validators.pattern("^[0-9]*$")]],
+          countryCode: [phone.countryCode],
           number: [phone.number, [Validators.pattern("^\\d{10}$")]],
           type: [phone.type],
           isEmergencyNumber: [phone.isEmergencyNumber],
@@ -264,7 +271,7 @@ export class GroupRegistrationComponent implements OnChanges {
 
   createPhoneNumberFormGroup(): FormGroup {
     return this.fb.group({
-      countryCode: ["", [Validators.pattern("^[0-9]*$")]],
+      countryCode: [""],
       number: ["", [Validators.pattern("^\\d{10}$")]],
       type: [""],
       isEmergencyNumber: [false],

@@ -118,7 +118,7 @@ interface LaborRights {
   preferredAdvocacyAreas?: string[];
   experienceWithLaborRightsIssues?: string;
 }
-interface WebLink {
+export interface WebLink {
   name: string; // e.g., "LinkedIn", "Personal Blog", "Portfolio"
   url: string; // The actual URL
   category:

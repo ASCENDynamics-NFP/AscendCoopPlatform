@@ -29,13 +29,13 @@ import {Subscription} from "rxjs";
 // import {Timestamp} from "firebase/firestore";
 
 @Component({
-  selector: "app-user-login",
-  templateUrl: "./user-login.page.html",
-  styleUrls: ["./user-login.page.scss"],
+  selector: "app-login",
+  templateUrl: "./login.page.html",
+  styleUrls: ["./login.page.scss"],
   standalone: true,
   imports: [IonicModule, CommonModule, ReactiveFormsModule, TranslateModule],
 })
-export class UserLoginPage {
+export class LoginPage {
   private userSubscription?: Subscription;
   public loginForm = this.fb.nonNullable.group({
     // Using Validators.compose() for multiple validation rules

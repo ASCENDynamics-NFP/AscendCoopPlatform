@@ -136,7 +136,7 @@ export class SignupPage {
   }
 
   goToLogin() {
-    this.router.navigateByUrl("/user-login");
+    this.router.navigateByUrl("/login");
   }
 
   async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {

@@ -43,6 +43,6 @@ export class UserDashboardPage implements OnInit {
   }
 
   openLogin() {
-    this.navContoller.navigateBack("/user-login");
+    this.navContoller.navigateBack("/login");
   }
 }

@@ -82,10 +82,10 @@ export const routes: Routes = [
     canActivate: [SecureInnerPagesGuard],
   },
   {
-    path: "user-login",
+    path: "login",
     loadComponent: () =>
-      import("./modules/user/pages/user-login/user-login.page").then(
-        (m) => m.UserLoginPage,
+      import("./modules/account/pages/login/login.page").then(
+        (m) => m.LoginPage,
       ),
     canActivate: [SecureInnerPagesGuard],
   },

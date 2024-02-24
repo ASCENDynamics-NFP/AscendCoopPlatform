@@ -121,8 +121,8 @@ export class MenuComponent implements OnInit, OnDestroy {
 
   translateGuestItems() {
     const userItems = [
-      {title: "Login", url: "user-login", icon: "log-in"},
-      {title: "Sign Up", url: "user-signup", icon: "person-add"},
+      {title: "Login", url: "login", icon: "log-in"},
+      {title: "Sign Up", url: "signup", icon: "person-add"},
       {title: "Groups", url: "group-list", icon: "business"},
     ];
     // const groupItems = [

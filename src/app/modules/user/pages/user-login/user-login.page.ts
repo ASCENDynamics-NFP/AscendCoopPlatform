@@ -145,7 +145,7 @@ export class UserLoginPage {
   }
 
   goToSignUp() {
-    this.router.navigateByUrl("/user-signup", {replaceUrl: false});
+    this.router.navigateByUrl("/signup", {replaceUrl: false});
   }
 
   loadFormData() {

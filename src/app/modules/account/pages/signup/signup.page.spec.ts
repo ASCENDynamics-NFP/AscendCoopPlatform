@@ -18,14 +18,14 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
-import {UserSignupPage} from "./user-signup.page";
+import {SignupPage} from "./signup.page";
 import {of} from "rxjs";
 import {TranslateModule, TranslateService} from "@ngx-translate/core";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 
-describe("UserSignupPage", () => {
-  let component: UserSignupPage;
-  let fixture: ComponentFixture<UserSignupPage>;
+describe("SignupPage", () => {
+  let component: SignupPage;
+  let fixture: ComponentFixture<SignupPage>;
   let translate: TranslateService;
 
   const mockAuthStoreService = {
@@ -37,14 +37,14 @@ describe("UserSignupPage", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [UserSignupPage, TranslateModule.forRoot()],
+      imports: [SignupPage, TranslateModule.forRoot()],
       providers: [
         {provide: AuthStoreService, useValue: mockAuthStoreService},
         TranslateService,
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(UserSignupPage);
+    fixture = TestBed.createComponent(SignupPage);
     component = fixture.componentInstance;
     translate = TestBed.inject(TranslateService); // inject TranslateService
     fixture.detectChanges();

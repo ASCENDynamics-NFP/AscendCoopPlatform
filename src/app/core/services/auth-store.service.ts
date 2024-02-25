@@ -47,7 +47,7 @@ export class AuthStoreService {
   private actionCodeSettings = {
     // URL you want to redirect back to. The domain (www.example.com) for this
     // URL must be in the authorized domains list in the Firebase Console.
-    url: `${window.location.origin}/user-login`,
+    url: `${window.location.origin}/login`,
     // This must be true.
     handleCodeInApp: true,
     // iOS: {
@@ -223,7 +223,7 @@ export class AuthStoreService {
     signOut(this.auth)
       .then(() => {
         this.successHandler.handleSuccess("You have been signed out!");
-        this.router.navigate(["user-login"]);
+        this.router.navigate(["login"]);
       })
       .catch((error) => this.handleError(error))
       .finally(() => loading.dismiss());

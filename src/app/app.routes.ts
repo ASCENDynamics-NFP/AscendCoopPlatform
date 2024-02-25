@@ -24,7 +24,7 @@ import {SecureInnerPagesGuard} from "./core/guards/secure-inner-pages.guard";
 export const routes: Routes = [
   {
     path: "",
-    redirectTo: "user-signup",
+    redirectTo: "signup",
     pathMatch: "full",
   },
   {
@@ -74,18 +74,18 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: "user-signup",
+    path: "signup",
     loadComponent: () =>
-      import("./modules/user/pages/user-signup/user-signup.page").then(
-        (m) => m.UserSignupPage,
+      import("./modules/account/pages/signup/signup.page").then(
+        (m) => m.SignupPage,
       ),
     canActivate: [SecureInnerPagesGuard],
   },
   {
-    path: "user-login",
+    path: "login",
     loadComponent: () =>
-      import("./modules/user/pages/user-login/user-login.page").then(
-        (m) => m.UserLoginPage,
+      import("./modules/account/pages/login/login.page").then(
+        (m) => m.LoginPage,
       ),
     canActivate: [SecureInnerPagesGuard],
   },

@@ -18,7 +18,7 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {UserLoginPage} from "./user-login.page";
+import {LoginPage} from "./login.page";
 import {FormBuilder} from "@angular/forms";
 import {of} from "rxjs";
 import {Router} from "@angular/router";
@@ -36,9 +36,9 @@ class FakeLoader implements TranslateLoader {
   }
 }
 
-describe("UserLoginPage", () => {
-  let component: UserLoginPage;
-  let fixture: ComponentFixture<UserLoginPage>;
+describe("LoginPage", () => {
+  let component: LoginPage;
+  let fixture: ComponentFixture<LoginPage>;
   let authStoreServiceMock: any;
   let storeServiceMock: any;
   let routerMock: any;
@@ -81,7 +81,7 @@ describe("UserLoginPage", () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(UserLoginPage);
+    fixture = TestBed.createComponent(LoginPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

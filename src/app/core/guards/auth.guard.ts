@@ -43,7 +43,7 @@ export class AuthGuard implements CanActivate {
     const authUser = await firstValueFrom(this.authStoreService.authUser$);
     if (!authUser) {
       // Redirect to login if not authenticated
-      this.router.navigate(["user-login"]);
+      this.router.navigate(["login"]);
       return false;
     } else if (authUser && !authUser.emailVerified) {
       // Send verification email if the user is not verified
@@ -52,7 +52,7 @@ export class AuthGuard implements CanActivate {
       }
       // Sign out the user and redirect to login
       await this.authStoreService.signOut();
-      this.router.navigate(["user-login"]);
+      this.router.navigate(["login"]);
       return false;
     }
     return true;

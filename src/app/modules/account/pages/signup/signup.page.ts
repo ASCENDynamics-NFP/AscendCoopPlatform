@@ -70,9 +70,9 @@ function matchingPasswordsValidator(
 }
 
 @Component({
-  selector: "app-user-signup",
-  templateUrl: "./user-signup.page.html",
-  styleUrls: ["./user-signup.page.scss"],
+  selector: "app-signup",
+  templateUrl: "./signup.page.html",
+  styleUrls: ["./signup.page.scss"],
   standalone: true,
   imports: [
     IonicModule,
@@ -82,7 +82,7 @@ function matchingPasswordsValidator(
     LegalModalComponent,
   ],
 })
-export class UserSignupPage {
+export class SignupPage {
   private authSubscription?: Subscription;
   signupForm = this.fb.nonNullable.group(
     {
@@ -136,7 +136,7 @@ export class UserSignupPage {
   }
 
   goToLogin() {
-    this.router.navigateByUrl("/user-login");
+    this.router.navigateByUrl("/login");
   }
 
   async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {

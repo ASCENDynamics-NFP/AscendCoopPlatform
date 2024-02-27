@@ -55,5 +55,98 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         </ion-row>
       </ion-col>
     </ion-row>
+    <!-- Categories & Tags -->
+    <ion-row>
+      <ion-col>
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Categories & Tags</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-chip>{{account?.groupCategoriesInterests?.primaryCategory}}</ion-chip>
+            <ion-chip
+              *ngFor="let category of account?.groupCategoriesInterests?.secondaryCategories">{{category}}</ion-chip>
+            <ion-chip *ngFor="let tag of account?.groupCategoriesInterests?.tagsKeywords">{{tag}}</ion-chip>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <!-- Contact & Follow Us -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Contact Us</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-md="6">
+              <!-- Improved Styling for Email -->
+              <div *ngFor="let email of account?.contactInformation?.emails">
+                <ion-icon name="mail-outline" slot="start" style="margin-right: 8px;"></ion-icon>
+                <strong>{{ email.name }}:</strong> <a href="mailto:{{ email.email }}">{{ email.email }}</a>
+              </div>
+
+              <!-- Improved Styling for Phone -->
+              <div *ngFor="let phone of account?.contactInformation?.phoneNumbers">
+                <ion-icon name="call-outline" slot="start" style="margin-right: 8px;"></ion-icon>
+                <strong>{{ phone.type }}:</strong> {{ phone?.countryCode }} {{ phone?.number }}
+              </div>
+
+              <!-- Improved Styling for Address -->
+              <div *ngIf="account?.contactInformation?.address">
+                <ion-icon name="location-outline" slot="start" style="margin-right: 8px;"></ion-icon>
+                <strong>Main Office:</strong> {{ account?.contactInformation?.address?.street }},
+                {{ account?.contactInformation?.address?.city }},
+                {{ account?.contactInformation?.address?.state }},
+                {{ account?.contactInformation?.address?.zipcode }},
+                {{ account?.contactInformation?.address?.country }}
+              </div>
+            </ion-col>
+
+            <ion-col size="12" size-md="6">
+              <!-- Social Media Links with Clickable Names -->
+              <ion-list>
+                <ion-item *ngFor="let link of account?.webLinks" [hidden]="link.category !== 'Social Media'">
+                  <ion-icon [name]="getSocialMediaIcon(link.name)" slot="start" style="margin-right: 8px;"></ion-icon>
+                  <a href="{{ link.url }}" target="_new">{{ link.name }}</a>
+                </ion-item>
+              </ion-list>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+
+
+    <!-- Mission Statement and Group History -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Mission Statement</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>{{account?.groupDetails?.groupObjectivesMissionStatement}}</ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="account?.groupDetails?.groupHistoryBackground">
+      <ion-card-header>
+        <ion-card-title>Group History</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>{{account?.groupDetails?.groupHistoryBackground}}</ion-card-content>
+    </ion-card>
+
+    <!-- External Resources -->
+    <ion-card *ngIf="account?.webLinks && account?.webLinks!.length > 0">
+      <ion-card-header>
+        <ion-card-title>External Resources</ion-card-title>
+      </ion-card-header>
+      <ion-list>
+        <ion-item *ngFor="let link of account?.webLinks" [hidden]="link.category === 'Social Media'">
+          <ion-icon name="globe-outline"></ion-icon>
+          <ion-label>{{ link.name }}</ion-label>
+          <a href="{{ link.url }}" target="_blank">{{ link.url }}</a>
+        </ion-item>
+      </ion-list>
+    </ion-card>
   </ion-grid>
 </ion-content>

@@ -115,4 +115,21 @@ export class GroupProfilePage {
       },
     );
   }
+
+  // Method to get the appropriate icon name based on the social media platform
+  getSocialMediaIcon(platformName: string): string {
+    switch (platformName.toLowerCase()) {
+      case "facebook":
+        return "logo-facebook";
+      case "twitter":
+        return "logo-twitter";
+      case "instagram":
+        return "logo-instagram";
+      case "linkedin":
+        return "logo-linkedin";
+      // Add more cases for other social media platforms as needed
+      default:
+        return "globe-outline"; // Default icon if platform name is not recognized
+    }
+  }
 }

@@ -58,6 +58,12 @@ export class GroupPage {
     return this.authStoreService.getCurrentUser();
   }
 
+  get headerTitle() {
+    return this.group?.groupDetails?.groupType
+      ? this.group?.name + " - " + this.group.groupDetails.groupType
+      : this.group?.name;
+  }
+
   ionViewWillEnter() {
     this.initiateSubscribers();
   }

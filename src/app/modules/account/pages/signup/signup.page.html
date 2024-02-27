@@ -102,14 +102,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             <ion-row>
               <ion-col>
                 <ion-checkbox labelPlacement="end" formControlName="agreedToTerms">
-                  <ion-text>
-                    I have read and agree to the
-                    <a class="cursor: pointer;" (click)="openLegalModal('privacyPolicy')">Privacy
-                      Policy</a> and
-                    <a (click)="openLegalModal('termsOfUse')">Terms of
-                      Use</a>.
-                  </ion-text>
                 </ion-checkbox>
+                <ion-text class="ion-padding">
+                  I have read and agree to the
+                  <a class="cursor: pointer;" (click)="openLegalModal('privacyPolicy')">Privacy
+                    Policy</a> and
+                  <a (click)="openLegalModal('termsOfUse')">Terms of
+                    Use</a>.
+                </ion-text>
               </ion-col>
             </ion-row>
             <ion-row>

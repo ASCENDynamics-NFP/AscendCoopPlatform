@@ -106,7 +106,10 @@ export class AuthStoreService {
     password: string | null | undefined,
   ) {
     if (!email || !password) {
-      this.handleError({code: "", message: "Email and password are required!"});
+      this.handleError({
+        code: "",
+        message: "Email and password are required!",
+      });
       return;
     }
 
@@ -114,6 +117,7 @@ export class AuthStoreService {
     createUserWithEmailAndPassword(this.auth, email, password)
       .then(async (result) => {
         await this.sendVerificationMail(email);
+        this.storeEmailForSignIn(email); // Store email for verification
         this.successHandler.handleSuccess(
           "Successfully signed up! Please verify your email.",
         );
@@ -207,7 +211,7 @@ export class AuthStoreService {
         const loading = await this.presentLoading();
         signInWithEmailLink(this.auth, email, window.location.href)
           .then((result) => {
-            this.clearEmailForSignIn();
+            this.clearEmailForSignIn(); // Clear stored email after verification
             this.successHandler.handleSuccess("You have been signed in!");
             return result.user?.uid;
           })

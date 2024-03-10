@@ -56,33 +56,19 @@ async function saveAccountToFirestore(
 
   const accountData = {
     id: user.uid,
-    name: user.displayName || "New Volunteer",
-    createdAt: Timestamp.now(),
-    createdBy: user.uid,
-    lastLoginAt: Timestamp.now(),
-    lastModifiedAt: Timestamp.now(),
-    lastModifiedBy: user.uid,
-    email: user.email,
-    phone: {countryCode: "", number: user.phoneNumber || "", type: ""},
-    language: "",
-    associations: {accounts: [], feedback: []},
-    privacy: "public",
+    name: user.displayName || user.email?.split("@")[0],
+    tagline: "New and looking to help!",
     iconImage:
       user.photoURL ||
       "assets/image/logo/ASCENDynamics NFP-logos_transparent.png",
     heroImage: "assets/image/userhero.png",
-    description: "",
-    tagline: "New and looking to help!",
-    address: {
-      name: "",
-      street: "",
-      city: "",
-      state: "",
-      zipcode: "",
-      country: "",
-      formatted: "",
-      geopoint: "",
+    contactInformation: {
+      privacy: "private",
+      emails: [{email: user.email}],
+      phoneNumbers: [],
     },
+    email: user.email,
+    privacy: "public",
     legalAgreements: {
       termsOfService: {
         accepted: true,
@@ -95,6 +81,11 @@ async function saveAccountToFirestore(
         version: "1.0.0",
       },
     },
+    createdAt: Timestamp.now(),
+    createdBy: user.uid,
+    lastLoginAt: Timestamp.now(),
+    lastModifiedAt: Timestamp.now(),
+    lastModifiedBy: user.uid,
   };
 
   await accountRef.set(accountData);

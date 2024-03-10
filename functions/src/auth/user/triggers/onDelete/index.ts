@@ -32,23 +32,23 @@ export const onUserRecordDeletion = functions.auth
   .user()
   .onDelete(async (user) => {
     try {
-      await deleteUserDocument(user.uid);
-      logger.info(`User document for ${user.uid} deleted successfully.`);
+      await deleteAccountDocument(user.uid);
+      logger.info(`Account document for ${user.uid} deleted successfully.`);
     } catch (error) {
-      logger.error(`Error deleting user document for ${user.uid}:`, error);
+      logger.error(`Error deleting account document for ${user.uid}:`, error);
       // Just log the error. Throwing an error in a Firebase Authentication trigger won't propagate it to the client.
     }
   });
 
 /**
- * Deletes the user's document from Firestore.
- * @param {string} userId - The ID of the user whose document needs to be deleted.
+ * Deletes the account's document from Firestore.
+ * @param {string} accountId - The ID of the user whose document needs to be deleted.
  * @return {Promise<void>} - A promise that resolves when the operation is complete.
  */
-async function deleteUserDocument(userId: string): Promise<void> {
-  // Reference to the user's document in Firestore
-  const userRef = db.collection("users").doc(userId);
+async function deleteAccountDocument(accountId: string): Promise<void> {
+  // Reference to the account's document in Firestore
+  const accountRef = db.collection("accounts").doc(accountId);
 
-  // Delete the user document from Firestore
-  await userRef.delete();
+  // Delete the account document from Firestore
+  await accountRef.delete();
 }

@@ -106,14 +106,18 @@ export class AuthStoreService {
     password: string | null | undefined,
   ) {
     if (!email || !password) {
-      this.handleError({code: "", message: "Email and password are required!"});
+      this.handleError({
+        code: "",
+        message: "Email and password are required!",
+      });
       return;
     }
 
     const loading = await this.presentLoading();
     createUserWithEmailAndPassword(this.auth, email, password)
       .then(async (result) => {
-        await this.sendVerificationMail(email);
+        // await this.sendVerificationMail(email);  // commenting this out for now, as AuthGuard also triggers this method at the moment.
+        this.storeEmailForSignIn(email); // Store email for verification
         this.successHandler.handleSuccess(
           "Successfully signed up! Please verify your email.",
         );
@@ -128,7 +132,8 @@ export class AuthStoreService {
     sendSignInLinkToEmail(this.auth, email, this.actionCodeSettings)
       .then(() =>
         this.successHandler.handleSuccess(
-          "Verification email sent! Please check your inbox.",
+          "Verification email sent to " + email + "! Please check your inbox.",
+          30000,
         ),
       )
       .catch((error) => this.handleError(error));
@@ -207,7 +212,7 @@ export class AuthStoreService {
         const loading = await this.presentLoading();
         signInWithEmailLink(this.auth, email, window.location.href)
           .then((result) => {
-            this.clearEmailForSignIn();
+            this.clearEmailForSignIn(); // Clear stored email after verification
             this.successHandler.handleSuccess("You have been signed in!");
             return result.user?.uid;
           })

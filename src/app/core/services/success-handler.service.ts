@@ -26,14 +26,14 @@ import {ToastController} from "@ionic/angular";
 export class SuccessHandlerService {
   constructor(private toastController: ToastController) {}
 
-  handleSuccess(message: string): void {
-    this.showToast(message);
+  handleSuccess(message: string, duration?: number): void {
+    this.showToast(message, duration);
   }
 
-  private async showToast(message: string): Promise<void> {
+  private async showToast(message: string, duration?: number): Promise<void> {
     const toast = await this.toastController.create({
       message: message,
-      duration: 8000,
+      duration: duration || 10000,
       position: "top",
       color: "success",
       buttons: [

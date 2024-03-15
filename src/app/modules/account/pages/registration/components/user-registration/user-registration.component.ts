@@ -37,6 +37,7 @@ import {
 import {StoreService} from "../../../../../../core/services/store.service";
 import {countryCodes} from "../../../../../../core/data/phone";
 import {countries, statesProvinces} from "../../../../../../core/data/country";
+import {Router} from "@angular/router";
 
 @Component({
   selector: "app-user-registration",
@@ -47,6 +48,7 @@ import {countries, statesProvinces} from "../../../../../../core/data/country";
 })
 export class UserRegistrationComponent implements OnChanges {
   @Input() account?: Partial<Account>;
+  @Input() redirectSubmit: Boolean = false;
   public maxEmails = 5;
   public maxLinks = 10;
   public maxPhoneNumbers = 5;
@@ -56,7 +58,11 @@ export class UserRegistrationComponent implements OnChanges {
     Number(a.value) > Number(b.value) ? 1 : -1,
   ); // List of country codes for phone numbers
   public statesProvinces = statesProvinces; // List of states/provinces for the selected country
-  constructor(private fb: FormBuilder, private storeService: StoreService) {
+  constructor(
+    private fb: FormBuilder,
+    private storeService: StoreService,
+    private router: Router,
+  ) {
     this.registrationForm = this.fb.group({
       description: [""],
       tagline: ["", Validators.required],
@@ -149,6 +155,11 @@ export class UserRegistrationComponent implements OnChanges {
 
       // Now update the document with the updatedAccount
       this.storeService.updateDoc("accounts", updatedAccount);
+      if (this.redirectSubmit) {
+        // Redirect to the user profile page
+        this.router.navigate(["/user-profile/", this.account?.id]);
+      }
+
       // .then(() => {
       //   console.log("Group updated successfully");
       //   this.toGroupPage(); // Navigate to the group page or show a success message

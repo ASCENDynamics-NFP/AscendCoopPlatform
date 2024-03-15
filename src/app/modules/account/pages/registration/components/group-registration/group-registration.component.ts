@@ -35,6 +35,7 @@ import {
 import {StoreService} from "../../../../../../core/services/store.service";
 import {countryCodes} from "../../../../../../core/data/phone";
 import {countries, statesProvinces} from "../../../../../../core/data/country";
+import {Router} from "@angular/router";
 
 @Component({
   selector: "app-group-registration",
@@ -45,6 +46,7 @@ import {countries, statesProvinces} from "../../../../../../core/data/country";
 })
 export class GroupRegistrationComponent implements OnChanges {
   @Input() account?: Partial<Account>;
+  @Input() redirectSubmit: Boolean = false;
   public maxEmails = 5;
   public maxLinks = 10;
   public maxPhoneNumbers = 5;
@@ -77,7 +79,11 @@ export class GroupRegistrationComponent implements OnChanges {
     }),
   });
 
-  constructor(private fb: FormBuilder, private storeService: StoreService) {}
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private storeService: StoreService,
+  ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes["account"]) {
@@ -160,6 +166,12 @@ export class GroupRegistrationComponent implements OnChanges {
 
       // Now update the document with the updatedAccount
       this.storeService.updateDoc("accounts", updatedAccount);
+      if (this.redirectSubmit) {
+        // Redirect to the user profile page
+        this.router.navigateByUrl(
+          `/group/${this.account.id}/${this.account.id}/details`,
+        );
+      }
       // .then(() => {
       //   console.log("Group updated successfully");
       //   this.toGroupPage(); // Navigate to the group page or show a success message

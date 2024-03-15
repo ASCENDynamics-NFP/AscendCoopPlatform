@@ -19,72 +19,34 @@
 ***********************************************************************************************/
 import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
-import {
-  FormArray,
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators,
-} from "@angular/forms";
+import {ReactiveFormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {Account, Email, PhoneNumber} from "../../../../models/account.model";
-import {ActivatedRoute, Router} from "@angular/router";
-import {Timestamp} from "firebase/firestore";
+import {Account} from "../../../../models/account.model";
+import {ActivatedRoute} from "@angular/router";
 import {StoreService} from "../../../../core/services/store.service";
 import {Subscription} from "rxjs";
+import {GroupRegistrationComponent} from "../../../account/pages/registration/components/group-registration/group-registration.component";
 
 @Component({
   selector: "app-group-edit",
   templateUrl: "./group-edit.page.html",
   styleUrls: ["./group-edit.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
+  imports: [
+    IonicModule,
+    CommonModule,
+    ReactiveFormsModule,
+    GroupRegistrationComponent,
+  ],
 })
 export class GroupEditPage {
   private accountsSubscription?: Subscription;
   account: Partial<Account> | null = null;
   groupId: string | null = null;
 
-  editAccountForm = this.fb.group({
-    description: [""],
-    tagline: ["", Validators.required],
-    name: ["", Validators.required],
-    contactInformation: this.fb.group({
-      emails: this.fb.array([
-        this.fb.group({
-          name: ["Primary"],
-          email: ["", [Validators.required, Validators.email]],
-        }),
-      ]),
-      phoneNumbers: this.fb.array([
-        this.fb.group({
-          countryCode: ["", [Validators.pattern("^[0-9]*$")]],
-          number: ["", [Validators.pattern("^\\d{10}$")]],
-          type: [""],
-          isEmergencyNumber: [false],
-        }),
-      ]),
-      address: this.fb.group({
-        name: [""],
-        street: ["", Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
-        city: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-        state: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-        zipcode: ["", Validators.pattern("^[0-9]*$")],
-        country: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-        // Include formatted and geopoint if needed here, or handle them in your backend logic
-      }),
-      preferredMethodOfContact: ["Email"],
-    }),
-    groupDetails: this.fb.group({
-      dateFounded: [new Date().toISOString(), [Validators.required]],
-      supportedLanguages: [["en"]], // Assuming 'en' as a default supported language
-    }),
-  });
-
   constructor(
-    private fb: FormBuilder,
     private storeService: StoreService,
     private activatedRoute: ActivatedRoute,
-    private router: Router,
   ) {
     this.groupId = this.activatedRoute.snapshot.paramMap.get("accountId");
   }
@@ -94,9 +56,6 @@ export class GroupEditPage {
       (accounts) => {
         this.account =
           accounts.find((account) => account.id === this.groupId) || null;
-        if (this.account) {
-          this.loadFormData();
-        }
       },
     );
     if (!this.account) {
@@ -107,126 +66,5 @@ export class GroupEditPage {
   ionViewWillLeave() {
     // Unsubscribe from the accounts$ observable when the component is destroyed
     this.accountsSubscription?.unsubscribe();
-  }
-
-  get phoneNumbersFormArray(): FormArray {
-    return this.editAccountForm.get(
-      "contactInformation.phoneNumbers",
-    ) as FormArray;
-  }
-
-  get emailsFormArray(): FormArray {
-    return this.editAccountForm.get("contactInformation.emails") as FormArray;
-  }
-
-  loadFormData() {
-    if (!this.account) return;
-
-    this.editAccountForm.patchValue({
-      name: this.account.name,
-      description: this.account.description,
-      tagline: this.account.tagline,
-      groupDetails: {
-        dateFounded: this.account.groupDetails?.dateFounded
-          ? this.account.groupDetails.dateFounded.toDate().toISOString()
-          : new Date().toISOString(),
-
-        supportedLanguages: this.account.groupDetails?.supportedLanguages || [
-          "en",
-        ],
-      },
-      contactInformation: {
-        emails: this.account.contactInformation?.emails?.map((email) => ({
-          name: email.name,
-          email: email.email,
-        })) || [{name: "Primary", email: ""}],
-        phoneNumbers: this.account.contactInformation?.phoneNumbers?.map(
-          (phone) => ({
-            countryCode: phone.countryCode,
-            number: phone.number,
-            type: phone.type,
-            isEmergencyNumber: phone.isEmergencyNumber,
-          }),
-        ) || [
-          {countryCode: "", number: "", type: "", isEmergencyNumber: false},
-        ],
-        address: this.account.contactInformation?.address || {},
-        preferredMethodOfContact:
-          this.account.contactInformation?.preferredMethodOfContact || "Email",
-      },
-      // Add other necessary field updates here
-    });
-  }
-
-  onSubmit() {
-    // Call the API to save changes
-    if (this.account) {
-      // Prepare the account object with form values
-      const formValue = this.editAccountForm.value;
-
-      // Prepare the account object for update
-      const updatedAccount: Partial<Account> = {
-        ...this.account,
-        ...formValue,
-        name: formValue.name!,
-        tagline: formValue.tagline!,
-        description: formValue.description ?? "",
-        groupDetails: {
-          ...formValue.groupDetails,
-          // Only convert dateFounded to Timestamp if it exists and is a valid date string
-          dateFounded: formValue.groupDetails?.dateFounded
-            ? Timestamp.fromDate(new Date(formValue.groupDetails.dateFounded))
-            : Timestamp.fromDate(new Date()), // Handle null or undefined appropriately
-          supportedLanguages: formValue.groupDetails?.supportedLanguages
-            ? [...formValue.groupDetails.supportedLanguages]
-            : ["en"], // Use an empty array as fallback
-        },
-        contactInformation: {
-          ...formValue.contactInformation,
-          emails:
-            formValue.contactInformation!.emails?.map(
-              (email: Partial<Email>) => ({
-                name: email.name ?? null,
-                email: email.email!,
-              }),
-            ) ?? [],
-          phoneNumbers: formValue.contactInformation!.phoneNumbers?.map(
-            (phone: Partial<PhoneNumber>) => ({
-              countryCode: phone.countryCode ?? null,
-              number: phone.number ?? null,
-              type: phone.type ?? null,
-              isEmergencyNumber: phone.isEmergencyNumber || false,
-            }),
-          ) ?? [
-            {
-              countryCode: null,
-              number: null,
-              type: null,
-              isEmergencyNumber: false,
-            },
-          ],
-          address: formValue.contactInformation!.address,
-          preferredMethodOfContact: "Email",
-        },
-      };
-
-      // Now update the document with the updatedAccount
-      this.storeService.updateDoc("accounts", updatedAccount);
-      // .then(() => {
-      //   console.log("Group updated successfully");
-      //   this.toGroupPage(); // Navigate to the group page or show a success message
-      // }).catch(error => {
-      //   console.error("Error updating group:", error);
-      // });
-    }
-  }
-
-  deleteGroup() {
-    if (this.groupId) this.storeService.deleteDoc("accounts", this.groupId);
-    this.router.navigate(["/group-list"]);
-  }
-
-  toGroupPage() {
-    this.router.navigateByUrl(`/group/${this.groupId}/${this.groupId}/details`);
   }
 }

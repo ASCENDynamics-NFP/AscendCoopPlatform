@@ -140,4 +140,16 @@ export const routes: Routes = [
         (m) => m.RegistrationPage,
       ),
   },
+  {
+    path: "details/:accountId",
+    loadComponent: () =>
+      import("./modules/account/pages/details/details.page").then(
+        (m) => m.DetailsPage,
+      ),
+  },
+  {
+    path: "edit/:accountId",
+    loadComponent: () =>
+      import("./modules/account/pages/edit/edit.page").then((m) => m.EditPage),
+  },
 ];

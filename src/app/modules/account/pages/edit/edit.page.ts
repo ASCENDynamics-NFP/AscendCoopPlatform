@@ -26,20 +26,13 @@ import {ActivatedRoute} from "@angular/router";
 import {StoreService} from "../../../../core/services/store.service";
 import {Subscription} from "rxjs";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
-// import {UserRegistrationComponent} from "../../../account/pages/registration/components/user-registration/user-registration.component";
 
 @Component({
   selector: "app-edit",
   templateUrl: "./edit.page.html",
   styleUrls: ["./edit.page.scss"],
   standalone: true,
-  imports: [
-    IonicModule,
-    CommonModule,
-    ReactiveFormsModule,
-    AppHeaderComponent,
-    // UserRegistrationComponent,
-  ],
+  imports: [IonicModule, CommonModule, ReactiveFormsModule, AppHeaderComponent],
 })
 export class EditPage {
   private accountId: string | null = null;

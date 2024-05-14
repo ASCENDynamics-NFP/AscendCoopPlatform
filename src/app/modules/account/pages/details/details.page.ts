@@ -22,10 +22,6 @@ import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {ActivatedRoute, Router} from "@angular/router";
-// import {FriendListComponent} from "./components/friend-list/friend-list.component";
-// import {GroupMembershipListComponent} from "./components/group-membership-list/group-membership-list.component";
-// import {HeroComponent} from "./components/hero/hero.component";
-// import {DetailsComponent} from "./components/details/details.component";
 import {RelatedUsersComponent} from "./components/related-users/related-users.component";
 import {Account} from "../../../../models/account.model";
 import {Subscription} from "rxjs";
@@ -33,6 +29,7 @@ import {StoreService} from "../../../../core/services/store.service";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
 import {User} from "firebase/auth";
+import {HeroComponent} from "./components/hero/hero.component";
 
 @Component({
   selector: "app-details",
@@ -44,10 +41,7 @@ import {User} from "firebase/auth";
     CommonModule,
     FormsModule,
     RelatedUsersComponent,
-    // FriendListComponent,
-    // GroupMembershipListComponent,
-    // HeroComponent,
-    // DetailsComponent,
+    HeroComponent,
     AppHeaderComponent,
   ],
 })
@@ -89,11 +83,6 @@ export class DetailsPage {
         if (!this.account) {
           this.storeService.getDocById("accounts", this.accountId); // get and add doc to store
         } else {
-          // if (this.account?.type === "group") {
-          //   this.router.navigate([
-          //     `/account/profile/${this.accountId}`,
-          //   ]); // Navigate to group-profile
-          // } else
           if (!this.account?.type) {
             this.router.navigate([`/registration/${this.accountId}`]); // Navigate to registration
           }

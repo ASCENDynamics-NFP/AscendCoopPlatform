@@ -26,24 +26,37 @@ import {ActivatedRoute} from "@angular/router";
 import {StoreService} from "../../../../core/services/store.service";
 import {Subscription} from "rxjs";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
+import {EditMenuComponent} from "./components/edit-menu/edit-menu.component";
+import {AuthStoreService} from "../../../../core/services/auth-store.service";
+import {User} from "firebase/auth";
 
 @Component({
   selector: "app-edit",
   templateUrl: "./edit.page.html",
   styleUrls: ["./edit.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule, AppHeaderComponent],
+  imports: [
+    IonicModule,
+    CommonModule,
+    ReactiveFormsModule,
+    AppHeaderComponent,
+    EditMenuComponent,
+  ],
 })
 export class EditPage {
+  selectedForm: String = "contact";
+  authUser: User | null = null;
   private accountId: string | null = null;
   private accountsSubscription?: Subscription;
   public account?: Partial<Account>;
 
   constructor(
     private activatedRoute: ActivatedRoute,
+    private authStoreService: AuthStoreService,
     private storeService: StoreService,
   ) {
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
+    this.authUser = this.authStoreService.getCurrentUser();
   }
 
   ionViewWillEnter() {
@@ -61,5 +74,13 @@ export class EditPage {
 
   ionViewWillLeave() {
     this.accountsSubscription?.unsubscribe();
+  }
+
+  get isProfileOwner(): boolean {
+    return this.accountId === this.authStoreService.getCurrentUser()?.uid;
+  }
+
+  onItemSelected(form: string): void {
+    this.selectedForm = form;
   }
 }

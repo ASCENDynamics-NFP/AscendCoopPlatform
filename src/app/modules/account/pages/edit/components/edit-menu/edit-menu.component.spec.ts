@@ -28,7 +28,7 @@ describe("EditMenuComponent", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [EditMenuComponent],
+      declarations: [],
       imports: [IonicModule.forRoot()],
     }).compileComponents();
 

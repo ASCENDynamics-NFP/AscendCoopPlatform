@@ -62,7 +62,7 @@ export class DetailsPage {
   }
 
   get isProfileOwner(): boolean {
-    return this.accountId === this.authUser?.uid;
+    return this.accountId === this.authStoreService.getCurrentUser()?.uid;
   }
 
   ionViewWillEnter() {

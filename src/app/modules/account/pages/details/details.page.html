@@ -20,6 +20,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <app-header *ngIf="account" [title]="account.name"></app-header>
 
 <ion-content [fullscreen]="true">
-  <app-hero *ngIf="account" [account]="account"></app-hero>
+  <app-hero *ngIf="account" [account]="account" [isProfileOwner]="isProfileOwner"></app-hero>
   <app-related-users *ngIf="account" [account]="account"></app-related-users>
 </ion-content>

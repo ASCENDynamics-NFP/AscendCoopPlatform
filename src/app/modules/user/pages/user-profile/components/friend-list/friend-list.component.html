@@ -24,9 +24,17 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </ion-card-header>
   <ion-card-content>
     <ion-list>
-      <ion-item *ngFor="let friend of allFriends | slice : 0 : 4" button (click)="goToUserProfile(friend.id)">
+      <ion-item
+        *ngFor="let friend of allFriends | slice : 0 : 4"
+        button
+        (click)="goToUserProfile(friend.id)"
+      >
         <ion-thumbnail slot="start">
-          <img *ngIf="friend.iconImage" [alt]="friend.name" [src]="friend.iconImage" />
+          <img
+            *ngIf="friend.iconImage"
+            [alt]="friend.name"
+            [src]="friend.iconImage"
+          />
         </ion-thumbnail>
         <ion-label>
           <h3>{{ friend.name }}</h3>

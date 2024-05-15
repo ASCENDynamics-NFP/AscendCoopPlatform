@@ -32,8 +32,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <!-- Displaying the first phone number, make sure to adjust if you want to display all -->
       <ion-item lines="none">
         <ion-icon name="call" slot="start"></ion-icon>
-        <ion-label>{{phoneNumber}}
-        </ion-label>
+        <ion-label>{{ phoneNumber }} </ion-label>
       </ion-item>
 
       <ion-item lines="none">
@@ -45,15 +44,25 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-item lines="none">
         <ion-icon name="calendar" slot="start"></ion-icon>
         <!-- Use Angular date pipe to format date -->
-        <ion-label>Date of Birth: {{ dateOfBirth | date: 'mediumDate' }}</ion-label>
+        <ion-label
+          >Date of Birth: {{ dateOfBirth | date : "mediumDate" }}</ion-label
+        >
       </ion-item>
 
       <ion-item lines="none">
         <ion-icon name="language" slot="start"></ion-icon>
-        <ion-label>Language: {{ account.accessibility?.preferredLanguage }}</ion-label>
+        <ion-label
+          >Language: {{ account.accessibility?.preferredLanguage }}</ion-label
+        >
       </ion-item>
     </ion-list>
   </ion-card-content>
-  <ion-button *ngIf="isProfileOwner" expand="block" fill="clear" color="primary"
-    routerLink="/user-profile/{{ account.id }}/edit">Edit Profile</ion-button>
+  <ion-button
+    *ngIf="isProfileOwner"
+    expand="block"
+    fill="clear"
+    color="primary"
+    routerLink="/user-profile/{{ account.id }}/edit"
+    >Edit Profile</ion-button
+  >
 </ion-card>

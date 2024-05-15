@@ -37,22 +37,48 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <ion-card>
           <ion-card-header>
             <ion-card-title>Current Members</ion-card-title>
-            <ion-card-subtitle>{{ currentMembersList.length }} members</ion-card-subtitle>
+            <ion-card-subtitle
+              >{{ currentMembersList.length }} members</ion-card-subtitle
+            >
           </ion-card-header>
           <ion-list>
-            <ion-item *ngFor="let member of currentMembersList" routerLink="/user-profile/{{ member.id }}" button>
+            <ion-item
+              *ngFor="let member of currentMembersList"
+              routerLink="/user-profile/{{ member.id }}"
+              button
+            >
               <ion-thumbnail slot="start">
-                <img *ngIf="member.iconImage" [src]="member.iconImage" [alt]="member.name" />
+                <img
+                  *ngIf="member.iconImage"
+                  [src]="member.iconImage"
+                  [alt]="member.name"
+                />
               </ion-thumbnail>
               <ion-label>
                 <h3>{{ member.name }}</h3>
                 <p>{{ member.tagline }}</p>
               </ion-label>
-              <ion-toggle *ngIf="isAdmin" slot="end" [checked]="member.relationship === 'admin'"
-                [disabled]="isCurrentUserLastAdmin(member)" (ionChange)="updateAdminStatus(member)"></ion-toggle>
-              <ion-button *ngIf="showRemoveButton(member) && !isCurrentUserLastAdmin(member)" slot="end" expand="block"
+              <ion-toggle
+                *ngIf="isAdmin"
+                slot="end"
+                [checked]="member.relationship === 'admin'"
+                [disabled]="isCurrentUserLastAdmin(member)"
+                (ionChange)="updateAdminStatus(member)"
+              ></ion-toggle>
+              <ion-button
+                *ngIf="
+                  showRemoveButton(member) && !isCurrentUserLastAdmin(member)
+                "
+                slot="end"
+                expand="block"
                 color="danger"
-                (click)="$event.stopPropagation();$event.preventDefault();removeRequest(member);">Remove</ion-button>
+                (click)="
+                  $event.stopPropagation();
+                  $event.preventDefault();
+                  removeRequest(member)
+                "
+                >Remove</ion-button
+              >
             </ion-item>
           </ion-list>
         </ion-card>
@@ -61,23 +87,63 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <ion-card *ngIf="isAdmin && pendingMembersList.length">
           <ion-card-header>
             <ion-card-title>Pending Members</ion-card-title>
-            <ion-card-subtitle>{{ pendingMembersList.length }} pending members</ion-card-subtitle>
+            <ion-card-subtitle
+              >{{ pendingMembersList.length }} pending
+              members</ion-card-subtitle
+            >
           </ion-card-header>
           <ion-list>
-            <ion-item *ngFor="let member of pendingMembersList" routerLink="/user-profile/{{ member.id }}" button>
+            <ion-item
+              *ngFor="let member of pendingMembersList"
+              routerLink="/user-profile/{{ member.id }}"
+              button
+            >
               <ion-thumbnail slot="start">
-                <img *ngIf="member.iconImage" [src]="member.iconImage" [alt]="member.name" />
+                <img
+                  *ngIf="member.iconImage"
+                  [src]="member.iconImage"
+                  [alt]="member.name"
+                />
               </ion-thumbnail>
               <ion-label>
                 <h3>{{ member.name }}</h3>
                 <p>{{ member.tagline }}</p>
               </ion-label>
-              <ion-button *ngIf="showAcceptRejectButtons(member)" slot="end" expand="block"
-                (click)="$event.stopPropagation();$event.preventDefault();acceptRequest(member);">Accept</ion-button>
-              <ion-button *ngIf="showAcceptRejectButtons(member)" slot="end" expand="block" color="secondary"
-                (click)="$event.stopPropagation();$event.preventDefault();rejectRequest(member);">Reject</ion-button>
-              <ion-button *ngIf="showRemoveButton(member)" slot="end" expand="block" color="secondary"
-                (click)="$event.stopPropagation();$event.preventDefault();removeRequest(member);">Remove</ion-button>
+              <ion-button
+                *ngIf="showAcceptRejectButtons(member)"
+                slot="end"
+                expand="block"
+                (click)="
+                  $event.stopPropagation();
+                  $event.preventDefault();
+                  acceptRequest(member)
+                "
+                >Accept</ion-button
+              >
+              <ion-button
+                *ngIf="showAcceptRejectButtons(member)"
+                slot="end"
+                expand="block"
+                color="secondary"
+                (click)="
+                  $event.stopPropagation();
+                  $event.preventDefault();
+                  rejectRequest(member)
+                "
+                >Reject</ion-button
+              >
+              <ion-button
+                *ngIf="showRemoveButton(member)"
+                slot="end"
+                expand="block"
+                color="secondary"
+                (click)="
+                  $event.stopPropagation();
+                  $event.preventDefault();
+                  removeRequest(member)
+                "
+                >Remove</ion-button
+              >
             </ion-item>
           </ion-list>
         </ion-card>

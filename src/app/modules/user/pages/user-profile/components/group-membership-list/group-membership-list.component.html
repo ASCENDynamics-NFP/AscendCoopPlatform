@@ -24,9 +24,17 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </ion-card-header>
   <ion-card-content>
     <ion-list>
-      <ion-item *ngFor="let group of allGroups | slice : 0 : 4" button (click)="goToGroupPage(group.id)">
+      <ion-item
+        *ngFor="let group of allGroups | slice : 0 : 4"
+        button
+        (click)="goToGroupPage(group.id)"
+      >
         <ion-thumbnail slot="start">
-          <img *ngIf="group.iconImage" [alt]="group.name" [src]="group.iconImage" />
+          <img
+            *ngIf="group.iconImage"
+            [alt]="group.name"
+            [src]="group.iconImage"
+          />
         </ion-thumbnail>
         <ion-label>
           <h3>{{ group.name }}</h3>

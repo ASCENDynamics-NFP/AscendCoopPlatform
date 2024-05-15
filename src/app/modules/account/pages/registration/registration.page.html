@@ -36,7 +36,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <ion-grid>
     <ion-row>
       <ion-col size-md="6">
-        <ion-card (click)="selectType('user')" [class.selected-card]="selectedType === 'user'">
+        <ion-card
+          (click)="selectType('user')"
+          [class.selected-card]="selectedType === 'user'"
+        >
           <ion-card-content>
             <ion-icon name="person-outline" size="large"></ion-icon>
             <ion-card-title>User</ion-card-title>
@@ -45,7 +48,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         </ion-card>
       </ion-col>
       <ion-col size-md="6">
-        <ion-card (click)="selectType('group')" [class.selected-card]="selectedType === 'group'">
+        <ion-card
+          (click)="selectType('group')"
+          [class.selected-card]="selectedType === 'group'"
+        >
           <ion-card-content>
             <ion-icon name="people-outline" size="large"></ion-icon>
             <ion-card-title>Group</ion-card-title>
@@ -68,5 +74,4 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-col>
     </ion-row>
   </ion-grid>
-
 </ion-content>

@@ -19,11 +19,17 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <ion-card>
   <ion-card-header>
-    <ion-searchbar [debounce]="1000" (ionInput)="searchGroups($event)"></ion-searchbar>
+    <ion-searchbar
+      [debounce]="1000"
+      (ionInput)="searchGroups($event)"
+    ></ion-searchbar>
   </ion-card-header>
   <ion-list *ngIf="currentGroup">
-    <ion-item *ngFor="let item of searchResults; let i = index"
-      routerLink="/group/{{ item?.id }}/{{ item?.id }}/details" button>
+    <ion-item
+      *ngFor="let item of searchResults; let i = index"
+      routerLink="/group/{{ item?.id }}/{{ item?.id }}/details"
+      button
+    >
       <ion-thumbnail slot="start">
         <img *ngIf="item.iconImage" [alt]="item.name" [src]="item.iconImage" />
       </ion-thumbnail>
@@ -31,11 +37,18 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <h3>{{ item?.name }}</h3>
         <p>{{ item?.tagline }}</p>
       </ion-label>
-      <ion-button *ngIf="isAdmin && item.id && canInvite(item)" slot="end" mode="md" expand="block" (click)="
+      <ion-button
+        *ngIf="isAdmin && item.id && canInvite(item)"
+        slot="end"
+        mode="md"
+        expand="block"
+        (click)="
           $event.stopPropagation();
           $event.preventDefault();
           sendPartnerGroupRequest(item)
-        ">Invite Partner</ion-button>
+        "
+        >Invite Partner</ion-button
+      >
     </ion-item>
   </ion-list>
 </ion-card>

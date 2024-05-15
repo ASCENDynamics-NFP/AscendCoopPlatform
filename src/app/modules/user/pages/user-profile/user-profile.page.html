@@ -23,22 +23,41 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <ion-grid>
     <ion-row>
       <ion-col>
-        <app-hero *ngIf="account" [account]="account" [isProfileOwner]="isProfileOwner"></app-hero>
+        <app-hero
+          *ngIf="account"
+          [account]="account"
+          [isProfileOwner]="isProfileOwner"
+        ></app-hero>
       </ion-col>
     </ion-row>
     <ion-row>
       <ion-col>
         <ion-row>
           <ion-col>
-            <app-details *ngIf="account" [account]="account" [isProfileOwner]="isProfileOwner"></app-details></ion-col>
+            <app-details
+              *ngIf="account"
+              [account]="account"
+              [isProfileOwner]="isProfileOwner"
+            ></app-details
+          ></ion-col>
         </ion-row>
       </ion-col>
       <ion-col>
         <ion-row>
-          <ion-col><app-group-membership-list *ngIf="account" [account]="account"></app-group-membership-list></ion-col>
+          <ion-col
+            ><app-group-membership-list
+              *ngIf="account"
+              [account]="account"
+            ></app-group-membership-list
+          ></ion-col>
         </ion-row>
         <ion-row>
-          <ion-col><app-friend-list *ngIf="account" [account]="account"></app-friend-list></ion-col>
+          <ion-col
+            ><app-friend-list
+              *ngIf="account"
+              [account]="account"
+            ></app-friend-list
+          ></ion-col>
         </ion-row>
       </ion-col>
     </ion-row>

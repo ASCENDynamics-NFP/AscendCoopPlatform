@@ -33,12 +33,19 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <ion-grid>
     <ion-row>
       <ion-col>
-        <app-partner-search *ngIf="user && currentGroup" [currentGroup]="currentGroup"
-          [isAdmin]="isAdmin"></app-partner-search>
+        <app-partner-search
+          *ngIf="user && currentGroup"
+          [currentGroup]="currentGroup"
+          [isAdmin]="isAdmin"
+        ></app-partner-search>
       </ion-col>
       <ion-col>
-        <app-member-search *ngIf="user && currentGroup" [currentGroup]="currentGroup" [isAdmin]="isAdmin"
-          [users]="users"></app-member-search>
+        <app-member-search
+          *ngIf="user && currentGroup"
+          [currentGroup]="currentGroup"
+          [isAdmin]="isAdmin"
+          [users]="users"
+        ></app-member-search>
       </ion-col>
     </ion-row>
   </ion-grid>

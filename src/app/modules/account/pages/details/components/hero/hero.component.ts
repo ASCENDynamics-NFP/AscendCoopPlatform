@@ -4,13 +4,20 @@ import {IonicModule, ModalController} from "@ionic/angular";
 import {Account} from "../../../../../../models/account.model";
 import {FormsModule} from "@angular/forms";
 import {ImageUploadModalComponent} from "../../../../../../shared/components/image-upload-modal/image-upload-modal.component";
+import {RouterModule} from "@angular/router";
 
 @Component({
   selector: "app-hero",
   templateUrl: "./hero.component.html",
   styleUrls: ["./hero.component.scss"],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, ImageUploadModalComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    RouterModule,
+    ImageUploadModalComponent,
+  ],
 })
 export class HeroComponent {
   @Input() account?: Partial<Account>;

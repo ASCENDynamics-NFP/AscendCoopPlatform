@@ -1,0 +1,45 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<div class="profile-container">
+  <div class="profile-photo">
+    <img *ngIf="account?.iconImage" [src]="account?.iconImage" class="profile-img" alt="Profile Photo">
+    <ion-icon *ngIf="!account?.iconImage" name="person-circle-outline" class="profile-icon"></ion-icon>
+    <ion-button fill="clear" (click)="openImageUploadModal()">Upload photo</ion-button>
+  </div>
+  <h2>{{account?.name}}</h2>
+  <ion-list>
+    <ion-item (click)="selectItem('contact')" [class.selected]="selectedItem === 'contact'">
+      <ion-icon slot="start" name="call-outline"></ion-icon>
+      <ion-label>Contact Information</ion-label>
+    </ion-item>
+    <ion-item (click)="selectItem('professional')" [class.selected]="selectedItem === 'professional'">
+      <ion-icon slot="start" name="briefcase-outline"></ion-icon>
+      <ion-label>Professional Contact</ion-label>
+    </ion-item>
+    <ion-item (click)="selectItem('volunteer')" [class.selected]="selectedItem === 'volunteer'">
+      <ion-icon slot="start" name="people-outline"></ion-icon>
+      <ion-label>Volunteer Preferences</ion-label>
+    </ion-item>
+    <ion-item (click)="selectItem('labor')" [class.selected]="selectedItem === 'labor'">
+      <ion-icon slot="start" name="business-outline"></ion-icon>
+      <ion-label>Labor Rights</ion-label>
+    </ion-item>
+  </ion-list>
+</div>

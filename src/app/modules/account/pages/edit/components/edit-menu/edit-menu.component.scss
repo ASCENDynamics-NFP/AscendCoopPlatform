@@ -1,0 +1,60 @@
+/***********************************************************************************************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+*
+* This file is part of Nonprofit Social Networking Platform.
+*
+* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+
+* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+
+* You should have received a copy of the GNU Affero General Public License
+* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+***********************************************************************************************/
+.profile-container {
+  text-align: center;
+}
+
+.profile-photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.profile-icon,
+.profile-img {
+  font-size: 100px;
+  color: var(--ion-color-medium);
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+  border: 2px solid #E87121;
+}
+
+ion-button {
+  --color: var(--ion-color-primary);
+}
+
+h2 {
+  margin-top: 0;
+  font-size: 24px;
+  color: var(--ion-color-dark);
+}
+  
+ion-item {
+  --inner-padding-start: 0;
+  cursor: pointer;
+}
+  
+ion-item.selected {
+  border-bottom: 2px solid var(--ion-color-primary);
+}

@@ -1,6 +1,9 @@
 <ion-content>
   <div class="header-image">
     <img src="assets/image/userhero.png" alt="Header Background">
+    <ion-button fill="outline" class="edit-button">
+      <ion-icon name="pencil-outline"></ion-icon> Edit
+    </ion-button>
   </div>
 
   <div class="profile-header">
@@ -10,6 +13,9 @@
         <h2>{{account?.name}}</h2>
         <p>{{account?.contactInformation?.address?.city}}/{{account?.contactInformation?.address?.country}}</p>
         <p class="tagline">{{account?.tagline}}</p>
+        <ion-button fill="outline" class="edit-button">
+          <ion-icon name="pencil-outline"></ion-icon> Edit
+        </ion-button>
       </div>
     </div>
     <div class="profile-actions">

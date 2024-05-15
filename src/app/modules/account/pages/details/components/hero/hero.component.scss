@@ -33,6 +33,7 @@ ion-header {
   
   .profile-details {
     flex-grow: 1;
+    position: relative;
   }
   
   .tagline {
@@ -80,6 +81,14 @@ ion-segment {
     right: 0;
     background: transparent;
     z-index: 10;
+  }
+
+  .edit-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: --ion-color-primary;
+    border-radius: 5%;
   }
 
   /* Media Queries for Mobile View */

@@ -37,8 +37,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ion-row>
       <ion-col size="12" size-md="6" class="ion-text-center">
         <div class="col-container ion-padding-bottom">
-          <img width="100%" src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png" alt="ASCENDynamics NFP"
-            class="logo" />
+          <img
+            width="100%"
+            src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
+            alt="ASCENDynamics NFP"
+            class="logo"
+          />
         </div>
       </ion-col>
       <ion-col size="12" size-md="6">
@@ -47,43 +51,82 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             <ion-row>
               <ion-col class="ion-text-center">
                 <h1 class="ion-padding-bottom"><b>Log In</b></h1>
-                <h3 class="ion-padding-bottom">ASCENDynamics NFP is committed to creating a utopian society.</h3>
+                <h3 class="ion-padding-bottom">
+                  ASCENDynamics NFP is committed to creating a utopian society.
+                </h3>
               </ion-col>
             </ion-row>
             <ion-row>
               <ion-col>
-                <ion-input label="Email" label-placement="floating" fill="outline" type="email" inputmode="email"
-                  formControlName="email"></ion-input>
-                <ion-note slot="error"
+                <ion-input
+                  label="Email"
+                  label-placement="floating"
+                  fill="outline"
+                  type="email"
+                  inputmode="email"
+                  formControlName="email"
+                ></ion-input>
+                <ion-note
+                  slot="error"
                   *ngIf="(loginForm.controls.email.dirty || loginForm.controls.email.touched) && loginForm.controls.email.errors"
-                  translate>
-                  user.login.email_error</ion-note>
+                  translate
+                >
+                  user.login.email_error</ion-note
+                >
               </ion-col>
             </ion-row>
             <ion-row>
               <ion-col>
                 <!-- <ion-label position="stacked" translate>user.login.password_label
               </ion-label> -->
-                <ion-input label="Password" label-placement="floating" fill="outline" type="password" inputmode="text"
-                  formControlName="password"></ion-input>
-                <ion-note slot="error"
+                <ion-input
+                  label="Password"
+                  label-placement="floating"
+                  fill="outline"
+                  type="password"
+                  inputmode="text"
+                  formControlName="password"
+                ></ion-input>
+                <ion-note
+                  slot="error"
                   *ngIf="(loginForm.controls.password.dirty || loginForm.controls.password.touched) && loginForm.controls.password.errors"
-                  translate>user.login.password_error</ion-note>
+                  translate
+                  >user.login.password_error</ion-note
+                >
               </ion-col>
             </ion-row>
-            <ion-button class="ion-margin-top" type="submit" expend="block" strong="true" [disabled]="loginForm.invalid"
-              translate style="width: 100%">
+            <ion-button
+              class="ion-margin-top"
+              type="submit"
+              expend="block"
+              strong="true"
+              [disabled]="loginForm.invalid"
+              translate
+              style="width: 100%"
+            >
               user.login.submit
             </ion-button>
 
             <div class="ion-margin-top">
-              <ion-button type="button" expand="block" color="primary" fill="outline" (click)="getEmailSignInLink()"
-                translate>
+              <ion-button
+                type="button"
+                expand="block"
+                color="primary"
+                fill="outline"
+                (click)="getEmailSignInLink()"
+                translate
+              >
                 <ion-icon name="mail-outline" slot="start"></ion-icon>
                 user.login.email_signin_link
               </ion-button>
 
-              <ion-button type="button" expand="block" color="danger" (click)="signInWithGoogle()" translate>
+              <ion-button
+                type="button"
+                expand="block"
+                color="danger"
+                (click)="signInWithGoogle()"
+                translate
+              >
                 <ion-icon name="logo-google" slot="start"></ion-icon>
                 user.login.google_login
               </ion-button>
@@ -94,12 +137,16 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               <ion-row>
                 <ion-col class="ion-text-left">
                   <ion-text>
-                    <a (click)="goToSignUp()" translate> user.login.create_account </a>
+                    <a (click)="goToSignUp()" translate>
+                      user.login.create_account
+                    </a>
                   </ion-text>
                 </ion-col>
                 <ion-col class="ion-text-right">
                   <ion-text>
-                    <a (click)="forgotPassword()" translate> user.login.forgot_password </a>
+                    <a (click)="forgotPassword()" translate>
+                      user.login.forgot_password
+                    </a>
                   </ion-text>
                 </ion-col>
               </ion-row>

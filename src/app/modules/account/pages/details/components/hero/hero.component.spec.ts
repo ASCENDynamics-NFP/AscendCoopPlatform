@@ -17,9 +17,40 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-.padded-avatar {
-  max-height: 40px;
-  max-width: 40px;
-  margin: 3px 15px 3px 3px;
-  border: 2px solid #e87121;
-}
+import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
+import {IonicModule} from "@ionic/angular";
+import {ActivatedRoute} from "@angular/router";
+
+import {HeroComponent} from "./hero.component";
+
+describe("HeroComponent", () => {
+  let component: HeroComponent;
+  let fixture: ComponentFixture<HeroComponent>;
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [],
+      imports: [IonicModule.forRoot()],
+      providers: [
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              paramMap: {
+                get: () => "123", // provide your mock value here
+              },
+            },
+          },
+        },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(HeroComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
+
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

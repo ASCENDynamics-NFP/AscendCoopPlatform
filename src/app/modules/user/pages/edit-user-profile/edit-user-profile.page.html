@@ -23,7 +23,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <ion-grid>
     <ion-row>
       <ion-col size="12">
-        <app-user-registration *ngIf="account" [account]="account" [redirectSubmit]="true"></app-user-registration>
+        <app-user-registration
+          *ngIf="account"
+          [account]="account"
+          [redirectSubmit]="true"
+        ></app-user-registration>
       </ion-col>
     </ion-row>
   </ion-grid>

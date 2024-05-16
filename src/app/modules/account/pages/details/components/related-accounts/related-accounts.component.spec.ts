@@ -17,3 +17,27 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
+import {IonicModule} from "@ionic/angular";
+
+import {RelatedAccountsComponent} from "./related-accounts.component";
+
+describe("RelatedAccountsComponent", () => {
+  let component: RelatedAccountsComponent;
+  let fixture: ComponentFixture<RelatedAccountsComponent>;
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [],
+      imports: [IonicModule.forRoot()],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(RelatedAccountsComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
+
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

@@ -66,7 +66,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: "user-profile/:accountId/friends",
+    path: ":accountId/friends",
     loadComponent: () =>
       import("./modules/user/pages/friends/friends.page").then(
         (m) => m.FriendsPage,
@@ -120,7 +120,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: "user-profile/:accountId/groups",
+    path: ":accountId/groups",
     loadComponent: () =>
       import("./modules/user/pages/user-groups/user-groups.page").then(
         (m) => m.UserGroupsPage,

@@ -19,29 +19,32 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <ion-card>
   <ion-card-header>
-    <ion-card-title>Friends</ion-card-title>
-    <ion-card-subtitle>{{ allFriends.length }} friends</ion-card-subtitle>
+    <ion-card-title>{{ title }}</ion-card-title>
+    <ion-card-subtitle
+      >{{ relatedAccounts.length }}
+      {{ title?.toLowerCase() }}</ion-card-subtitle
+    >
   </ion-card-header>
   <ion-card-content>
     <ion-list>
       <ion-item
-        *ngFor="let friend of allFriends | slice : 0 : 4"
+        *ngFor="let account of relatedAccounts | slice : 0 : 4"
         button
-        (click)="goToUserProfile(friend.id)"
+        (click)="goToRelatedAccount(account.id)"
       >
         <ion-thumbnail slot="start">
           <img
-            *ngIf="friend.iconImage"
-            [alt]="friend.name"
-            [src]="friend.iconImage"
+            *ngIf="account.iconImage"
+            [alt]="account.name"
+            [src]="account.iconImage"
           />
         </ion-thumbnail>
         <ion-label>
-          <h3>{{ friend.name }}</h3>
-          <p>Friend</p>
+          <h3>{{ account.name }}</h3>
+          <p>account.tagline</p>
         </ion-label>
       </ion-item>
     </ion-list>
   </ion-card-content>
-  <ion-button fill="clear" (click)="goToFriendList()">View All</ion-button>
+  <ion-button fill="clear" (click)="viewAll()">View All</ion-button>
 </ion-card>

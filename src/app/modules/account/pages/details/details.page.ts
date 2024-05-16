@@ -22,7 +22,7 @@ import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {ActivatedRoute, Router} from "@angular/router";
-import {RelatedUsersComponent} from "./components/related-users/related-users.component";
+import {RelatedAccountsComponent} from "./components/related-accounts/related-accounts.component";
 import {Account} from "../../../../models/account.model";
 import {Subscription} from "rxjs";
 import {StoreService} from "../../../../core/services/store.service";
@@ -40,9 +40,9 @@ import {HeroComponent} from "./components/hero/hero.component";
     IonicModule,
     CommonModule,
     FormsModule,
-    RelatedUsersComponent,
     HeroComponent,
     AppHeaderComponent,
+    RelatedAccountsComponent,
   ],
 })
 export class DetailsPage {

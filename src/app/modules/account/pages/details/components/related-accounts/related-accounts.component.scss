@@ -17,26 +17,6 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
-import {IonicModule} from "@ionic/angular";
-
-import {RelatedUsersComponent} from "./related-users.component";
-
-describe("RelatedUsersComponent", () => {
-  let component: RelatedUsersComponent;
-  let fixture: ComponentFixture<RelatedUsersComponent>;
-
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      imports: [IonicModule.forRoot()],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(RelatedUsersComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  }));
-
-  it("should create", () => {
-    expect(component).toBeTruthy();
-  });
-});
+ion-card {
+  border: 1px solid #e87121; /* Add your desired border color */
+}

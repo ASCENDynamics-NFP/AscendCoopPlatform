@@ -24,34 +24,47 @@ import {Router} from "@angular/router";
 import {Account} from "../../../../../../models/account.model";
 
 @Component({
-  selector: "app-related-users",
-  templateUrl: "./related-users.component.html",
-  styleUrls: ["./related-users.component.scss"],
+  selector: "app-related-accounts",
+  templateUrl: "./related-accounts.component.html",
+  styleUrls: ["./related-accounts.component.scss"],
   standalone: true,
   imports: [IonicModule, CommonModule],
 })
-export class RelatedUsersComponent {
+export class RelatedAccountsComponent {
   @Input() account?: Partial<Account>;
+  @Input() type?: "user" | "group";
 
   constructor(private router: Router) {}
 
-  get allFriends() {
+  get title() {
+    return this.type === "user" && this.account?.type === "user"
+      ? "Friends"
+      : this.type === "user" && this.account?.type === "group"
+      ? "Members"
+      : "Organizations";
+  }
+
+  get relatedAccounts() {
     return (
       this.account?.relatedAccounts?.filter(
-        (ra) => ra.type === "user" && ra.status === "accepted", // only show accepted friends
+        (ra) => ra.type === this.type && ra.status === "accepted", // only show accepted friends
       ) ?? []
     );
   }
 
-  goToUserProfile(id: string | undefined) {
+  goToRelatedAccount(id: string | undefined) {
     if (id) {
       this.router.navigate([`/${id}`]);
     }
   }
 
-  goToFriendList() {
+  viewAll() {
     if (this.account?.id) {
-      this.router.navigate([`/${this.account.id}/friends`]);
+      if (this.type === "user") {
+        this.router.navigate([`/${this.account.id}/friends`]);
+      } else {
+        this.router.navigate([`/${this.account.id}/groups`]);
+      }
     }
   }
 }

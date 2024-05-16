@@ -43,7 +43,7 @@ export class MemberListComponent {
 
   goToUserProfile(id: string | undefined) {
     if (id) {
-      this.router.navigate([`/user-profile/${id}`]);
+      this.router.navigate([`/${id}`]);
     }
   }
 

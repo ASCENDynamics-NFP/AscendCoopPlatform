@@ -44,9 +44,7 @@ export class UserMenuComponent {
 
   goToProfile() {
     this.popoverCtrl.dismiss();
-    this.router.navigate([
-      `/user-profile/${this.authStoreService.getCurrentUser()?.uid}`,
-    ]);
+    this.router.navigate([`/${this.authStoreService.getCurrentUser()?.uid}`]);
   }
 
   goToSettings() {

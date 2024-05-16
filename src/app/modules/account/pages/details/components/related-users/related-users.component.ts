@@ -45,13 +45,13 @@ export class RelatedUsersComponent {
 
   goToUserProfile(id: string | undefined) {
     if (id) {
-      this.router.navigate([`/details/${id}`]);
+      this.router.navigate([`/${id}`]);
     }
   }
 
   goToFriendList() {
     if (this.account?.id) {
-      this.router.navigate([`/details/${this.account.id}/friends`]);
+      this.router.navigate([`/${this.account.id}/friends`]);
     }
   }
 }

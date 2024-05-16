@@ -19,25 +19,48 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <div class="profile-container">
   <div class="profile-photo">
-    <img *ngIf="account?.iconImage" [src]="account?.iconImage" class="profile-img" alt="Profile Photo">
-    <ion-icon *ngIf="!account?.iconImage" name="person-circle-outline" class="profile-icon"></ion-icon>
-    <ion-button fill="clear" (click)="openImageUploadModal()">Upload photo</ion-button>
+    <img
+      *ngIf="account?.iconImage"
+      [src]="account?.iconImage"
+      class="profile-img"
+      alt="Profile Photo"
+    />
+    <ion-icon
+      *ngIf="!account?.iconImage"
+      name="person-circle-outline"
+      class="profile-icon"
+    ></ion-icon>
+    <ion-button fill="clear" (click)="openImageUploadModal()"
+      >Upload photo</ion-button
+    >
   </div>
-  <h2>{{account?.name}}</h2>
+  <h2>{{ account?.name }}</h2>
   <ion-list>
-    <ion-item (click)="selectItem('contact')" [class.selected]="selectedItem === 'contact'">
+    <ion-item
+      (click)="selectItem('contact')"
+      [class.selected]="selectedItem === 'contact'"
+    >
       <ion-icon slot="start" name="call-outline"></ion-icon>
       <ion-label>Contact Information</ion-label>
     </ion-item>
-    <ion-item (click)="selectItem('professional')" [class.selected]="selectedItem === 'professional'">
+    <ion-item
+      (click)="selectItem('professional')"
+      [class.selected]="selectedItem === 'professional'"
+    >
       <ion-icon slot="start" name="briefcase-outline"></ion-icon>
       <ion-label>Professional Contact</ion-label>
     </ion-item>
-    <ion-item (click)="selectItem('volunteer')" [class.selected]="selectedItem === 'volunteer'">
+    <ion-item
+      (click)="selectItem('volunteer')"
+      [class.selected]="selectedItem === 'volunteer'"
+    >
       <ion-icon slot="start" name="people-outline"></ion-icon>
       <ion-label>Volunteer Preferences</ion-label>
     </ion-item>
-    <ion-item (click)="selectItem('labor')" [class.selected]="selectedItem === 'labor'">
+    <ion-item
+      (click)="selectItem('labor')"
+      [class.selected]="selectedItem === 'labor'"
+    >
       <ion-icon slot="start" name="business-outline"></ion-icon>
       <ion-label>Labor Rights</ion-label>
     </ion-item>

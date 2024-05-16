@@ -106,7 +106,7 @@ export class GroupProfilePage {
           this.storeService.getDocById("accounts", this.accountId); // get and add doc to store
         } else {
           if (this.account?.type === "user") {
-            this.router.navigate([`/user-profile/${this.accountId}`]); // Navigate to user-profile
+            this.router.navigate([`/${this.accountId}`]); // Navigate to user-profile
           }
           if (!this.account?.relatedAccounts) {
             this.storeService.getAndSortRelatedAccounts(this.accountId);

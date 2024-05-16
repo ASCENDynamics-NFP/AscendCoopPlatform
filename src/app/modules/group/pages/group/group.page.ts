@@ -72,7 +72,7 @@ export class GroupPage {
         // Find the group by groupId
         this.group = accounts.find((account) => account.id === this.groupId);
         if (this.group?.type === "user") {
-          this.router.navigate([`/user-profile/${this.groupId}`]); // Navigate to group-profile
+          this.router.navigate([`/${this.groupId}`]); // Navigate to group-profile
         }
 
         // Find the current user account

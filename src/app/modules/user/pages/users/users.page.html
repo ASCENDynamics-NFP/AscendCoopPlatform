@@ -33,7 +33,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-list>
             <ion-item
               *ngFor="let item of accountList; let i = index"
-              routerLink="/user-profile/{{item['id']}}"
+              routerLink="/{{item['id']}}"
               button
             >
               <ion-thumbnail slot="start">

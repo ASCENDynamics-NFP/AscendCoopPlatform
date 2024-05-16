@@ -49,7 +49,7 @@ export class SecureInnerPagesGuard {
         this.navCtrl.back();
       } else {
         this.navCtrl.navigateForward(
-          `/user-profile/${this.authStoreService.getCurrentUser()?.uid}`,
+          `/${this.authStoreService.getCurrentUser()?.uid}`,
         );
       }
       return false;

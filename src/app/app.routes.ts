@@ -141,14 +141,14 @@ export const routes: Routes = [
       ),
   },
   {
-    path: "details/:accountId",
+    path: ":accountId",
     loadComponent: () =>
       import("./modules/account/pages/details/details.page").then(
         (m) => m.DetailsPage,
       ),
   },
   {
-    path: "edit/:accountId",
+    path: ":accountId/edit",
     loadComponent: () =>
       import("./modules/account/pages/edit/edit.page").then((m) => m.EditPage),
   },

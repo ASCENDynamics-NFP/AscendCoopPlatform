@@ -157,7 +157,7 @@ export class UserRegistrationComponent implements OnChanges {
       this.storeService.updateDoc("accounts", updatedAccount);
       if (this.redirectSubmit) {
         // Redirect to the user profile page
-        this.router.navigate(["/user-profile/", this.account?.id]);
+        this.router.navigate([`/${this.account?.id}`]);
       }
 
       // .then(() => {

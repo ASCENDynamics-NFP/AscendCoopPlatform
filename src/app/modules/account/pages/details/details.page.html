@@ -25,5 +25,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     [account]="account"
     [isProfileOwner]="isProfileOwner"
   ></app-hero>
-  <app-related-users *ngIf="account" [account]="account"></app-related-users>
+  <app-related-accounts
+    *ngIf="account"
+    [account]="account"
+    type="user"
+  ></app-related-accounts>
+  <app-related-accounts
+    *ngIf="account"
+    [account]="account"
+    type="group"
+  ></app-related-accounts>
 </ion-content>

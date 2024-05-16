@@ -52,7 +52,7 @@ export class GroupMembershipListComponent {
 
   goToGroupList() {
     if (this.account?.id) {
-      this.router.navigate([`/user-profile/${this.account.id}/groups`]);
+      this.router.navigate([`/${this.account.id}/groups`]);
     }
   }
 }

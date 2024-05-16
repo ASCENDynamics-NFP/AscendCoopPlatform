@@ -152,7 +152,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         buttonText: "",
         hasButton: false,
         title: "Profile",
-        url: `user-profile/${this.user?.uid}`,
+        url: `/${this.user?.uid}`,
         icon: "person",
         onclick: null,
       },

@@ -44,7 +44,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-list>
             <ion-item
               *ngFor="let member of currentMembersList"
-              routerLink="/user-profile/{{ member.id }}"
+              routerLink="/{{ member.id }}"
               button
             >
               <ion-thumbnail slot="start">
@@ -95,7 +95,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-list>
             <ion-item
               *ngFor="let member of pendingMembersList"
-              routerLink="/user-profile/{{ member.id }}"
+              routerLink="/{{ member.id }}"
               button
             >
               <ion-thumbnail slot="start">

@@ -27,7 +27,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <ion-list *ngIf="searchResults && currentGroup">
     <ion-item
       *ngFor="let item of searchResults; let i = index"
-      routerLink="/user-profile/{{ item.id }}"
+      routerLink="/{{ item.id }}"
       button
     >
       <ion-thumbnail slot="start">

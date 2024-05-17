@@ -25,99 +25,84 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ion-grid>
       <ion-row>
         <ion-col>
-          <ion-row>
-            <ion-col>
-              <ion-input
-                label="Name"
-                label-placement="floating"
-                fill="outline"
-                type="text"
-                inputmode="text"
-                formControlName="name"
-                minlength="1"
-                maxlength="255"
-                placeholder="Enter Name"
-              ></ion-input>
-              <ion-note
-                *ngIf="
-                  basicInfoForm.get('name')?.invalid &&
-                  basicInfoForm.get('name')?.touched
-                "
-                color="danger"
-              >
-                This field is required
-              </ion-note>
-            </ion-col>
-          </ion-row>
-          <ion-row>
-            <ion-col>
-              <!-- <ion-label position="stacked">Tagline <ion-text color="danger">(Required)</ion-text></ion-label> -->
-              <ion-input
-                formControlName="tagline"
-                minlength="1"
-                maxlength="255"
-                label="Tagline"
-                label-placement="floating"
-                fill="outline"
-                placeholder="Enter Tagline"
-              ></ion-input>
-              <ion-note
-                *ngIf="
-                  basicInfoForm.get('tagline')?.invalid &&
-                  basicInfoForm.get('tagline')?.touched
-                "
-                color="danger"
-              >
-                This field is required
-              </ion-note>
-            </ion-col>
-          </ion-row>
-          <ion-row
-            *ngIf="account?.type === 'group'"
-            formGroupName="groupDetails"
+          <ion-input
+            label="Name"
+            label-placement="floating"
+            fill="outline"
+            type="text"
+            inputmode="text"
+            formControlName="name"
+            minlength="1"
+            maxlength="255"
+            placeholder="Enter Name"
+          ></ion-input>
+          <ion-note
+            *ngIf="
+              basicInfoForm.get('name')?.invalid &&
+              basicInfoForm.get('name')?.touched
+            "
+            color="danger"
           >
-            <ion-col>
-              <!-- <ion-label position="stacked">Group Type</ion-label> -->
-              <ion-select
-                label="Group Type"
-                label-placement="stacked"
-                formControlName="groupType"
-                interface="popover"
-                placeholder="Select One"
-                fill="outline"
-              >
-                <ion-select-option value="Nonprofit"
-                  >Nonprofit</ion-select-option
-                >
-                <ion-select-option value="Community"
-                  >Community</ion-select-option
-                >
-                <ion-select-option value="Business">Business</ion-select-option>
-                <ion-select-option value="Government"
-                  >Government</ion-select-option
-                >
-                <ion-select-option value="Other">Other</ion-select-option>
-              </ion-select>
-            </ion-col>
-          </ion-row>
+            This field is required
+          </ion-note>
         </ion-col>
+      </ion-row>
+      <ion-row>
         <ion-col>
-          <ion-row>
-            <ion-col>
-              <!-- <ion-label position="stacked">Description</ion-label> -->
-              <ion-textarea
-                label="Description"
-                label-placement="floating"
-                fill="outline"
-                placeholder="Enter Description"
-                formControlName="description"
-                rows="8"
-                minlength="0"
-                maxlength="1000"
-                [counter]="true"
-              ></ion-textarea>
-            </ion-col>
-          </ion-row>
+          <!-- <ion-label position="stacked">Tagline <ion-text color="danger">(Required)</ion-text></ion-label> -->
+          <ion-input
+            formControlName="tagline"
+            minlength="1"
+            maxlength="255"
+            label="Tagline"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter Tagline"
+          ></ion-input>
+          <ion-note
+            *ngIf="
+              basicInfoForm.get('tagline')?.invalid &&
+              basicInfoForm.get('tagline')?.touched
+            "
+            color="danger"
+          >
+            This field is required
+          </ion-note>
+        </ion-col>
+      </ion-row>
+      <ion-row *ngIf="account?.type === 'group'" formGroupName="groupDetails">
+        <ion-col>
+          <!-- <ion-label position="stacked">Group Type</ion-label> -->
+          <ion-select
+            label="Group Type"
+            label-placement="stacked"
+            formControlName="groupType"
+            interface="popover"
+            placeholder="Select One"
+            fill="outline"
+          >
+            <ion-select-option value="Nonprofit">Nonprofit</ion-select-option>
+            <ion-select-option value="Community">Community</ion-select-option>
+            <ion-select-option value="Business">Business</ion-select-option>
+            <ion-select-option value="Government">Government</ion-select-option>
+            <ion-select-option value="Other">Other</ion-select-option>
+          </ion-select>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <!-- <ion-label position="stacked">Description</ion-label> -->
+          <ion-textarea
+            label="Description"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter Description"
+            formControlName="description"
+            rows="8"
+            minlength="0"
+            maxlength="1000"
+            [counter]="true"
+          ></ion-textarea>
         </ion-col>
       </ion-row>
     </ion-grid>

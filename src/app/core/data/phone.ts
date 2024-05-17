@@ -25,6 +25,7 @@ export const countryCodes: {value: string; label: string}[] = [
   {value: "+92", label: "+92 (Pakistan)"},
   {value: "+880", label: "+880 (Bangladesh)"},
   {value: "+20", label: "+20 (Egypt)"},
+  {value: "+234", label: "+234 (Nigeria)"},
   {value: "+966", label: "+966 (Saudi Arabia)"},
   {value: "+971", label: "+971 (United Arab Emirates)"},
   {value: "+90", label: "+90 (Turkey)"},

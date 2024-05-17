@@ -311,7 +311,14 @@ export class GroupRegistrationComponent implements OnChanges {
   createWebLinkFormGroup(): FormGroup {
     return this.fb.group({
       name: ["", []],
-      url: ["", []],
+      url: [
+        "",
+        [
+          Validators.pattern(
+            /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}([\/?].*)?$/,
+          ),
+        ],
+      ],
       category: [""],
     });
   }

@@ -474,6 +474,31 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             <ion-col>
               <ion-row>
                 <ion-col>
+                  <!-- <ion-label position="stacked">Country</ion-label> -->
+                  <!-- <ion-select label="Country" label-placement="floating" fill="outline" formControlName="country"
+                    interface="popover" placeholder="Select One">
+                    <ion-select-option value="USA">USA</ion-select-option>
+                    <ion-select-option value="Canada">Canada</ion-select-option>
+                    <ion-select-option value="UK">UK</ion-select-option>
+                  </ion-select> -->
+                  <ion-select
+                    formControlName="country"
+                    label="Country"
+                    label-placement="stacked"
+                    placeholder="Select Country"
+                    fill="outline"
+                    interface="popover"
+                  >
+                    <ion-select-option
+                      *ngFor="let code of countries"
+                      [value]="code.value"
+                      >{{ code.label }}</ion-select-option
+                    >
+                  </ion-select>
+                </ion-col>
+              </ion-row>
+              <ion-row>
+                <ion-col>
                   <!-- <ion-label position="stacked">State/Province/Region</ion-label> -->
                   <!-- <ion-input label="State" label-placement="floating" fill="outline" formControlName="state" type="text"
                     minlength="0" maxlength="50"></ion-input>
@@ -520,31 +545,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   >
                     Please enter a valid zip code
                   </ion-note>
-                </ion-col>
-              </ion-row>
-              <ion-row>
-                <ion-col>
-                  <!-- <ion-label position="stacked">Country</ion-label> -->
-                  <!-- <ion-select label="Country" label-placement="floating" fill="outline" formControlName="country"
-                    interface="popover" placeholder="Select One">
-                    <ion-select-option value="USA">USA</ion-select-option>
-                    <ion-select-option value="Canada">Canada</ion-select-option>
-                    <ion-select-option value="UK">UK</ion-select-option>
-                  </ion-select> -->
-                  <ion-select
-                    formControlName="country"
-                    label="Country"
-                    label-placement="stacked"
-                    placeholder="Select Country"
-                    fill="outline"
-                    interface="popover"
-                  >
-                    <ion-select-option
-                      *ngFor="let code of countries"
-                      [value]="code.value"
-                      >{{ code.label }}</ion-select-option
-                    >
-                  </ion-select>
                 </ion-col>
               </ion-row>
             </ion-col>

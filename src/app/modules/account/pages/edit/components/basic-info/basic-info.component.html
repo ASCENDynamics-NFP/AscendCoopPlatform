@@ -1,0 +1,224 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<form [formGroup]="basicInfoForm" (ngSubmit)="onSubmit()">
+  <ion-item slot="header">
+    <ion-label>Basic Information</ion-label>
+  </ion-item>
+  <div slot="content">
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <ion-row>
+            <ion-col>
+              <ion-input
+                label="Name"
+                label-placement="floating"
+                fill="outline"
+                type="text"
+                inputmode="text"
+                formControlName="name"
+                minlength="1"
+                maxlength="255"
+                placeholder="Enter Name"
+              ></ion-input>
+              <ion-note
+                *ngIf="
+                  basicInfoForm.get('name')?.invalid &&
+                  basicInfoForm.get('name')?.touched
+                "
+                color="danger"
+              >
+                This field is required
+              </ion-note>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <!-- <ion-label position="stacked">Tagline <ion-text color="danger">(Required)</ion-text></ion-label> -->
+              <ion-input
+                formControlName="tagline"
+                minlength="1"
+                maxlength="255"
+                label="Tagline"
+                label-placement="floating"
+                fill="outline"
+                placeholder="Enter Tagline"
+              ></ion-input>
+              <ion-note
+                *ngIf="
+                  basicInfoForm.get('tagline')?.invalid &&
+                  basicInfoForm.get('tagline')?.touched
+                "
+                color="danger"
+              >
+                This field is required
+              </ion-note>
+            </ion-col>
+          </ion-row>
+          <ion-row
+            *ngIf="account?.type === 'group'"
+            formGroupName="groupDetails"
+          >
+            <ion-col>
+              <!-- <ion-label position="stacked">Group Type</ion-label> -->
+              <ion-select
+                label="Group Type"
+                label-placement="stacked"
+                formControlName="groupType"
+                interface="popover"
+                placeholder="Select One"
+                fill="outline"
+              >
+                <ion-select-option value="Nonprofit"
+                  >Nonprofit</ion-select-option
+                >
+                <ion-select-option value="Community"
+                  >Community</ion-select-option
+                >
+                <ion-select-option value="Business">Business</ion-select-option>
+                <ion-select-option value="Government"
+                  >Government</ion-select-option
+                >
+                <ion-select-option value="Other">Other</ion-select-option>
+              </ion-select>
+            </ion-col>
+          </ion-row>
+        </ion-col>
+        <ion-col>
+          <ion-row>
+            <ion-col>
+              <!-- <ion-label position="stacked">Description</ion-label> -->
+              <ion-textarea
+                label="Description"
+                label-placement="floating"
+                fill="outline"
+                placeholder="Enter Description"
+                formControlName="description"
+                rows="8"
+                minlength="0"
+                maxlength="1000"
+                [counter]="true"
+              ></ion-textarea>
+            </ion-col>
+          </ion-row>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    <ion-item-divider>
+      <ion-label color="tertiary">Web Links</ion-label>
+    </ion-item-divider>
+    <div formArrayName="webLinks">
+      <ion-grid
+        *ngFor="let linkControl of webLinksFormArray.controls; let i = index"
+        [formGroupName]="i"
+      >
+        <ion-row>
+          <ion-col>
+            <!-- <ion-label position="stacked">Category</ion-label> -->
+            <ion-select
+              label="Category"
+              label-placement="stacked"
+              fill="outline"
+              formControlName="category"
+              interface="popover"
+              placeholder="Select One"
+            >
+              <ion-select-option value="Social Media"
+                >Social Media</ion-select-option
+              >
+              <ion-select-option value="Donation">Donation</ion-select-option>
+              <ion-select-option value="Hobbies">Hobbies</ion-select-option>
+              <ion-select-option value="Publications"
+                >Publications</ion-select-option
+              >
+              <ion-select-option value="Portfolio">Portfolio</ion-select-option>
+              <ion-select-option value="Personal Website"
+                >Personal Website</ion-select-option
+              >
+              <ion-select-option value="External Resources"
+                >External Resources</ion-select-option
+              >
+              <ion-select-option value="Other">Other</ion-select-option>
+            </ion-select>
+          </ion-col>
+          <ion-col>
+            <!-- <ion-label position="stacked" minlength="0" maxlength="50">Name</ion-label> -->
+            <ion-input
+              label="Name"
+              label-placement="floating"
+              fill="outline"
+              formControlName="name"
+              type="text"
+            ></ion-input>
+          </ion-col>
+          <ion-col>
+            <!-- <ion-label position="stacked">URL</ion-label> -->
+            <ion-input
+              label="URL"
+              label-placement="floating"
+              fill="outline"
+              formControlName="url"
+              type="text"
+              minlength="0"
+              maxlength="100"
+            ></ion-input>
+            <ion-note
+              *ngIf="
+                linkControl.get('url')?.invalid &&
+                linkControl.get('url')?.touched
+              "
+            >
+              Please enter a valid URL
+            </ion-note>
+          </ion-col>
+          <ion-col size="1">
+            <ion-button fill="clear" (click)="removeWebLink(i)">
+              <ion-icon
+                slot="icon-only"
+                name="trash-outline"
+                class="remove-icon"
+              ></ion-icon>
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+      <ion-button
+        fill="clear"
+        (click)="addWebLink()"
+        [disabled]="webLinksFormArray.controls.length >= maxLinks"
+      >
+        <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+        Add Link
+      </ion-button>
+    </div>
+  </div>
+  <ion-row>
+    <ion-col>
+      <ion-button
+        class="custom-ion-button"
+        type="submit"
+        expand="float"
+        [disabled]="basicInfoForm.invalid"
+      >
+        Save
+      </ion-button>
+    </ion-col>
+  </ion-row>
+</form>

@@ -199,7 +199,14 @@ export class GroupRegistrationComponent implements OnChanges {
       this.webLinksFormArray.push(
         this.fb.group({
           name: [webLink.name],
-          url: [webLink.url, [Validators.pattern(/^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/)]],
+          url: [
+            webLink.url,
+            [
+              Validators.pattern(
+                /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}([\/?].*)?$/,
+              ),
+            ],
+          ],
           category: [webLink.category],
         }),
       );

@@ -27,6 +27,7 @@ import {StoreService} from "../../../../core/services/store.service";
 import {Subscription} from "rxjs";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
 import {EditMenuComponent} from "./components/edit-menu/edit-menu.component";
+import {BasicInfoComponent} from "./components/basic-info/basic-info.component";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {User} from "firebase/auth";
 
@@ -41,10 +42,11 @@ import {User} from "firebase/auth";
     ReactiveFormsModule,
     AppHeaderComponent,
     EditMenuComponent,
+    BasicInfoComponent,
   ],
 })
 export class EditPage {
-  selectedForm: String = "contact";
+  selectedForm: String = "basic";
   authUser: User | null = null;
   private accountId: string | null = null;
   private accountsSubscription?: Subscription;

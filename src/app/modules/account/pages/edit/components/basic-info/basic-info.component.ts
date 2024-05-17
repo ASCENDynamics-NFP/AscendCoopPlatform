@@ -47,7 +47,7 @@ export class BasicInfoComponent {
     name: ["", Validators.required],
     webLinks: this.fb.array([this.createWebLinkFormGroup()]),
     groupDetails: this.fb.group({
-      groupType: [''],
+      groupType: [""],
     }),
   });
 
@@ -144,8 +144,13 @@ export class BasicInfoComponent {
       tagline: this.account.tagline,
     });
 
-    if(this.account?.type === "group" && this.account?.groupDetails?.groupType) {
-    this.basicInfoForm.get('groupDetails.groupType')?.setValue(this.account.groupDetails?.groupType);
+    if (
+      this.account?.type === "group" &&
+      this.account?.groupDetails?.groupType
+    ) {
+      this.basicInfoForm
+        .get("groupDetails.groupType")
+        ?.setValue(this.account.groupDetails?.groupType);
     }
   }
 

@@ -123,7 +123,7 @@ export interface WebLink {
   url: string; // The actual URL
   category:
     | "Social Media"
-    | "Donation Link"
+    | "Donation"
     | "Hobbies"
     | "Publications"
     | "Portfolio"

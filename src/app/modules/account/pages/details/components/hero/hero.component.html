@@ -17,7 +17,6 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<ion-content>
   <div class="header-image">
     <img
       [src]="account?.heroImage || 'assets/image/userhero.png'"
@@ -61,39 +60,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <div class="profile-actions">
       <!-- <ion-button>Follow</ion-button>
       <ion-button>Message</ion-button> -->
-      <ion-button fill="outline">Donate</ion-button>
+      <ion-button *ngIf="hasDonationURL" fill="outline" (click)="onLink('donation')">Donate</ion-button>
     </div>
   </div>
-
-  <ion-segment [(ngModel)]="segment" color="primary" class="tabs">
-    <ion-segment-button value="profile" (click)="scrollTo('profile')">
-      <ion-label>Profile</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="contact" (click)="scrollTo('contact')">
-      <ion-label>Contact Information</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="professional" (click)="scrollTo('professional')">
-      <ion-label>Professional Contact</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="volunteer" (click)="scrollTo('volunteer')">
-      <ion-label>Volunteer Preferences</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="labor" (click)="scrollTo('labor')">
-      <ion-label>Labor Rights</ion-label>
-    </ion-segment-button>
-  </ion-segment>
-
-  <div [ngSwitch]="segment" class="segment-content">
-    <div id="profile" *ngSwitchCase="'profile'">Profile Content</div>
-    <div id="contact" *ngSwitchCase="'contact'">
-      Contact information Content
-    </div>
-    <div id="professional" *ngSwitchCase="'professional'">
-      Professional contact Content
-    </div>
-    <div id="volunteer" *ngSwitchCase="'volunteer'">
-      Volunteer preferences Content
-    </div>
-    <div id="labor" *ngSwitchCase="'labor'">Labor rights Content</div>
-  </div>
-</ion-content>

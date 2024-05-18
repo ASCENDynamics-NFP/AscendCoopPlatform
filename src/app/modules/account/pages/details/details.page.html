@@ -25,12 +25,33 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     [account]="account"
     [isProfileOwner]="isProfileOwner"
   ></app-hero>
-  <app-related-accounts
+
+  <div class="tabs">
+    <a href="{{account?.id}}#profile" class="tab-link">Profile</a>
+    <a href="{{account?.id}}#contact" class="tab-link">Contact Information</a>
+    <a href="{{account?.id}}#professional" class="tab-link">Professional Contact</a>
+    <a href="{{account?.id}}#volunteer" class="tab-link">Volunteer Preferences</a>
+    <a href="{{account?.id}}#users" class="tab-link">Users</a>
+    <a href="{{account?.id}}#groups" class="tab-link">Organizations</a>
+    <a href="{{account?.id}}#labor" class="tab-link">Labor Rights</a>
+  </div>
+  
+  
+  <div>
+    <div id="profile">Profile Content
+
+    </div>
+    <div id="contact">Contact information Content</div>
+    <div id="professional">Professional contact Content</div>
+    <div id="volunteer">Volunteer preferences Content</div>
+    <div id="labor">Labor rights Content</div>
+  </div>
+  <app-related-accounts id="users"
     *ngIf="account"
     [account]="account"
     type="user"
   ></app-related-accounts>
-  <app-related-accounts
+  <app-related-accounts id="groups"
     *ngIf="account"
     [account]="account"
     type="group"

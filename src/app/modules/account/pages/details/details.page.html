@@ -26,20 +26,20 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     [isProfileOwner]="isProfileOwner"
   ></app-hero>
 
-  <div
-    *ngIf="account"
-    class="tabs">
-    <a href="{{account?.id}}#profile" class="tab-link">Profile</a>
-    <a href="{{account?.id}}#contact" class="tab-link">Contact Information</a>
-    <a href="{{account?.id}}#professional" class="tab-link"
+  <div *ngIf="account" class="tabs">
+    <a href="{{account.id + '#profile'}}" class="tab-link">Profile</a>
+    <a href="{{account.id + '#contact'}}" class="tab-link"
+      >Contact Information</a
+    >
+    <a href="{{account.id + '#professional'}}" class="tab-link"
       >Professional Contact</a
     >
-    <a href="{{account?.id}}#volunteer" class="tab-link"
+    <a href="{{account.id + '#volunteer'}}" class="tab-link"
       >Volunteer Preferences</a
     >
-    <a href="{{account?.id}}#users" class="tab-link">Users</a>
-    <a href="{{account?.id}}#groups" class="tab-link">Organizations</a>
-    <a href="{{account?.id}}#labor" class="tab-link">Labor Rights</a>
+    <a href="{{account.id + '#users'}}" class="tab-link">Users</a>
+    <a href="{{account.id + '#groups'}}" class="tab-link">Organizations</a>
+    <a href="{{account.id + '#labor'}}" class="tab-link">Labor Rights</a>
   </div>
 
   <div *ngIf="account">

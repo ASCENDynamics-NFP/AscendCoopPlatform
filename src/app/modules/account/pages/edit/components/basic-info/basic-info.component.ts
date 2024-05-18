@@ -18,7 +18,7 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {CommonModule} from "@angular/common";
-import {Component, Input, SimpleChanges} from "@angular/core";
+import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
 import {
   FormArray,
   FormBuilder,
@@ -37,7 +37,7 @@ import {Account} from "../../../../../../models/account.model";
   standalone: true,
   imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
-export class BasicInfoComponent {
+export class BasicInfoComponent implements OnChanges {
   @Input() account: Partial<Account> | null = null;
   public maxLinks = 10;
 

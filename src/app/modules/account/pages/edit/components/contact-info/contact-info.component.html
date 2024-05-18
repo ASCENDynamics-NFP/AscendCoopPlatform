@@ -1,0 +1,338 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<form [formGroup]="contactInfoForm" (ngSubmit)="onSubmit()">
+  <ion-item slot="header">
+    <ion-label>Contact Information</ion-label>
+  </ion-item>
+  <div slot="content">
+    <ion-grid formGroupName="contactInformation">
+      <!-- Emails Section -->
+      <ion-row>
+        <ion-col>
+          <ion-item-divider>
+            <ion-label color="tertiary">Emails</ion-label>
+          </ion-item-divider>
+          <div formArrayName="emails">
+            <div
+              *ngFor="
+                let emailControl of emailsFormArray.controls;
+                let i = index
+              "
+              [formGroupName]="i"
+            >
+              <ion-grid>
+                <ion-row>
+                  <ion-col>
+                    <ion-input
+                      label="Name"
+                      label-placement="floating"
+                      fill="outline"
+                      formControlName="name"
+                      type="text"
+                      minlength="0"
+                      maxlength="50"
+                    ></ion-input>
+                  </ion-col>
+                  <ion-col>
+                    <ion-input
+                      label="Email"
+                      label-placement="floating"
+                      fill="outline"
+                      formControlName="email"
+                      type="email"
+                      minlength="0"
+                      maxlength="50"
+                    ></ion-input>
+                    <ion-note
+                      *ngIf="
+                        emailControl.get('email')?.invalid &&
+                        emailControl.get('email')?.touched
+                      "
+                      color="danger"
+                    >
+                      Please enter a valid email
+                    </ion-note>
+                  </ion-col>
+                  <ion-col size="1">
+                    <ion-button fill="clear" (click)="removeEmail(i)">
+                      <ion-icon
+                        slot="icon-only"
+                        name="trash-outline"
+                        class="remove-icon"
+                      ></ion-icon>
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </div>
+            <ion-button
+              fill="clear"
+              (click)="addEmail()"
+              [disabled]="emailsFormArray.controls.length >= maxEmails"
+            >
+              <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+              Add Email
+            </ion-button>
+          </div>
+        </ion-col>
+      </ion-row>
+      <!-- Phone Numbers Section -->
+      <ion-row>
+        <ion-col>
+          <ion-item-divider>
+            <ion-label color="tertiary">Phone Numbers</ion-label>
+          </ion-item-divider>
+          <div formArrayName="phoneNumbers">
+            <div
+              *ngFor="
+                let phoneControl of phoneNumbersFormArray.controls;
+                let i = index
+              "
+              [formGroupName]="i"
+            >
+              <ion-grid>
+                <ion-row>
+                  <ion-col size="3">
+                    <ion-select
+                      label="Type"
+                      label-placement="stacked"
+                      fill="outline"
+                      formControlName="type"
+                      interface="popover"
+                      placeholder="Select One"
+                    >
+                      <ion-select-option value="Mobile"
+                        >Mobile</ion-select-option
+                      >
+                      <ion-select-option value="Home">Home</ion-select-option>
+                      <ion-select-option value="Work">Work</ion-select-option>
+                    </ion-select>
+                  </ion-col>
+                  <ion-col size="3">
+                    <ion-select
+                      formControlName="countryCode"
+                      label="Country Code"
+                      label-placement="stacked"
+                      placeholder="Select One"
+                      fill="outline"
+                      interface="popover"
+                    >
+                      <ion-select-option
+                        *ngFor="let code of countryCodes"
+                        [value]="code.value"
+                        >{{ code.label }}</ion-select-option
+                      >
+                    </ion-select>
+                  </ion-col>
+                  <ion-col size="6">
+                    <ion-input
+                      label="Number"
+                      label-placement="floating"
+                      fill="outline"
+                      formControlName="number"
+                      type="tel"
+                      minlength="0"
+                      maxlength="10"
+                    ></ion-input>
+                    <ion-note
+                      *ngIf="
+                        phoneControl.get('number')?.invalid &&
+                        phoneControl.get('number')?.touched
+                      "
+                    >
+                      Please enter a valid phone number
+                    </ion-note>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="11">
+                    <ion-item lines="none">
+                      <ion-checkbox
+                        label-placement="stacked"
+                        formControlName="isEmergencyNumber"
+                        >Emergency Contact</ion-checkbox
+                      >
+                    </ion-item>
+                  </ion-col>
+                  <ion-col size="1">
+                    <ion-button fill="clear" (click)="removePhoneNumber(i)">
+                      <ion-icon
+                        slot="icon-only"
+                        name="trash-outline"
+                        class="remove-icon"
+                      ></ion-icon>
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </div>
+            <ion-button
+              fill="clear"
+              (click)="addPhoneNumber()"
+              [disabled]="
+                phoneNumbersFormArray.controls.length >= maxPhoneNumbers
+              "
+            >
+              <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+              Add Phone Number
+            </ion-button>
+          </div>
+        </ion-col>
+      </ion-row>
+      <!-- Address Section -->
+      <ion-row>
+        <ion-col>
+          <ion-item-divider>
+            <ion-label color="tertiary">Address</ion-label>
+          </ion-item-divider>
+        </ion-col>
+      </ion-row>
+      <ion-row formGroupName="address">
+        <ion-col>
+          <ion-row>
+            <ion-col>
+              <ion-input
+                label="Address Name"
+                label-placement="floating"
+                fill="outline"
+                formControlName="name"
+                type="text"
+                minlength="0"
+                maxlength="50"
+              ></ion-input>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-input
+                label="Street Address"
+                label-placement="floating"
+                fill="outline"
+                formControlName="street"
+                type="text"
+                minlength="0"
+                maxlength="50"
+              ></ion-input>
+              <ion-note
+                *ngIf="
+                  contactInfoForm.get('address.street')?.invalid &&
+                  contactInfoForm.get('address.street')?.touched
+                "
+              >
+                Please enter a valid address
+              </ion-note>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-input
+                label="City"
+                label-placement="floating"
+                fill="outline"
+                formControlName="city"
+                type="text"
+                minlength="0"
+                maxlength="50"
+              ></ion-input>
+              <ion-note
+                *ngIf="
+                  contactInfoForm.get('address.city')?.invalid &&
+                  contactInfoForm.get('address.city')?.touched
+                "
+              >
+                Please enter a valid city name
+              </ion-note>
+            </ion-col>
+          </ion-row>
+        </ion-col>
+        <ion-col>
+          <ion-row>
+            <ion-col>
+              <ion-select
+                formControlName="country"
+                label="Country"
+                label-placement="stacked"
+                placeholder="Select Country"
+                fill="outline"
+                interface="popover"
+              >
+                <ion-select-option
+                  *ngFor="let code of countries"
+                  [value]="code.value"
+                  >{{ code.label }}</ion-select-option
+                >
+              </ion-select>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-select
+                formControlName="state"
+                label="State"
+                label-placement="stacked"
+                placeholder="Select State"
+                fill="outline"
+                interface="popover"
+              >
+                <ion-select-option
+                  *ngFor="let code of statesProvinces"
+                  [value]="code.value"
+                  >{{ code.label }}</ion-select-option
+                >
+              </ion-select>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-input
+                label="Zip/Postal Code"
+                label-placement="floating"
+                fill="outline"
+                formControlName="zipcode"
+                type="text"
+                minlength="0"
+                maxlength="5"
+              ></ion-input>
+              <ion-note
+                *ngIf="
+                  contactInfoForm.get('address.zipcode')?.invalid &&
+                  contactInfoForm.get('address.zipcode')?.touched
+                "
+              >
+                Please enter a valid zip code
+              </ion-note>
+            </ion-col>
+          </ion-row>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <ion-button
+            type="submit"
+            expand="float"
+            [disabled]="contactInfoForm.invalid"
+          >
+            Save
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+</form>

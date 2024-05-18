@@ -17,49 +17,54 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-  <div class="header-image">
-    <img
-      [src]="account?.heroImage || 'assets/image/userhero.png'"
-      alt="Header Background"
-    />
-    <ion-button
-      fill="outline"
-      class="edit-button"
-      size="small"
-      (click)="openImageUploadModal()"
-    >
-      <ion-icon name="pencil-outline"></ion-icon> Edit
-    </ion-button>
-  </div>
+<div class="header-image">
+  <img
+    [src]="account?.heroImage || 'assets/image/userhero.png'"
+    alt="Header Background"
+  />
+  <ion-button
+    fill="outline"
+    class="edit-button"
+    size="small"
+    (click)="openImageUploadModal()"
+  >
+    <ion-icon name="pencil-outline"></ion-icon> Edit
+  </ion-button>
+</div>
 
-  <div class="profile-header">
-    <div class="profile-info">
-      <img
-        [src]="account?.iconImage || 'assets/default-profile.png'"
-        class="profile-img"
-        alt="Profile Photo"
-      />
-      <div class="profile-details">
-        <h2>{{ account?.name }}</h2>
-        <p>
-          {{ account?.contactInformation?.address?.city }}/{{
-            account?.contactInformation?.address?.country
-          }}
-        </p>
-        <p class="tagline">{{ account?.tagline }}</p>
-        <ion-button
-          fill="outline"
-          class="edit-button"
-          size="small"
-          routerLink="/{{ account?.id }}/edit"
-        >
-          <ion-icon name="pencil-outline"></ion-icon> Edit
-        </ion-button>
-      </div>
-    </div>
-    <div class="profile-actions">
-      <!-- <ion-button>Follow</ion-button>
-      <ion-button>Message</ion-button> -->
-      <ion-button *ngIf="hasDonationURL" fill="outline" (click)="onLink('donation')">Donate</ion-button>
+<div class="profile-header">
+  <div class="profile-info">
+    <img
+      [src]="account?.iconImage || 'assets/default-profile.png'"
+      class="profile-img"
+      alt="Profile Photo"
+    />
+    <div class="profile-details">
+      <h2>{{ account?.name }}</h2>
+      <p>
+        {{ account?.contactInformation?.address?.city }}/{{
+          account?.contactInformation?.address?.country
+        }}
+      </p>
+      <p class="tagline">{{ account?.tagline }}</p>
+      <ion-button
+        fill="outline"
+        class="edit-button"
+        size="small"
+        routerLink="/{{ account?.id }}/edit"
+      >
+        <ion-icon name="pencil-outline"></ion-icon> Edit
+      </ion-button>
     </div>
   </div>
+  <div class="profile-actions">
+    <!-- <ion-button>Follow</ion-button>
+      <ion-button>Message</ion-button> -->
+    <ion-button
+      *ngIf="hasDonationURL"
+      fill="outline"
+      (click)="onLink('donation')"
+      >Donate</ion-button
+    >
+  </div>
+</div>

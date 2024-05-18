@@ -47,7 +47,7 @@ export class HeroComponent {
   get hasDonationURL() {
     // find Donation category in account.webLinks array return boolean
     return this.account?.webLinks?.some(
-      webLink => webLink?.category?.toLowerCase() === "donation"
+      (webLink) => webLink?.category?.toLowerCase() === "donation",
     );
   }
 
@@ -70,15 +70,16 @@ export class HeroComponent {
 
   onLink(category: string) {
     if (this.account?.webLinks) {
-      const webLink = this.account.webLinks.find(link => link.category?.toLowerCase() === category.toLowerCase());
+      const webLink = this.account.webLinks.find(
+        (link) => link.category?.toLowerCase() === category.toLowerCase(),
+      );
       if (webLink && webLink.url) {
         window.open(webLink.url, "_blank");
       } else {
         console.error(`No URL found for category: ${category}`);
       }
     } else {
-      console.error('No web links available.');
+      console.error("No web links available.");
     }
   }
-  
 }

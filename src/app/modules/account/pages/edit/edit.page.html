@@ -31,6 +31,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         ></app-edit-menu>
       </ion-col>
       <ion-col size="12" size-sm="12" size-md="7">
+        <app-basic-info
+          *ngIf="account && selectedForm === 'basic'"
+          [account]="account"
+        ></app-basic-info>
         <div *ngIf="'contact' === selectedForm">Show contact info</div>
         <div *ngIf="'professional' === selectedForm">
           Show Professional info

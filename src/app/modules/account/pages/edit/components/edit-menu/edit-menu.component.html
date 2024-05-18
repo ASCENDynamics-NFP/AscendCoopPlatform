@@ -37,6 +37,13 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <h2>{{ account?.name }}</h2>
   <ion-list>
     <ion-item
+      (click)="selectItem('basic')"
+      [class.selected]="selectedItem === 'basic'"
+    >
+      <ion-icon slot="start" name="person-outline"></ion-icon>
+      <ion-label>Basic Information</ion-label>
+    </ion-item>
+    <ion-item
       (click)="selectItem('contact')"
       [class.selected]="selectedItem === 'contact'"
     >

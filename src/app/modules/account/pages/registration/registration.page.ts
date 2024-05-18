@@ -74,7 +74,7 @@ export class RegistrationPage {
         );
         if (!this.account) {
           this.storeService.getDocById("accounts", this.accountId); // get and add doc to store
-        } else if(this.account?.type) {
+        } else if (this.account?.type) {
           this.router.navigate([`/${this.accountId}`]);
         }
       },

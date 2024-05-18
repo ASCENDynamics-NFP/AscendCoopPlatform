@@ -187,7 +187,14 @@ export class UserRegistrationComponent implements OnChanges {
       this.webLinksFormArray.push(
         this.fb.group({
           name: [webLink.name],
-          url: [webLink.url, [Validators.pattern(/^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/)]],
+          url: [
+            webLink.url,
+            [
+              Validators.pattern(
+                /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}([\/?].*)?$/,
+              ),
+            ],
+          ],
           category: [webLink.category],
         }),
       );
@@ -292,7 +299,14 @@ export class UserRegistrationComponent implements OnChanges {
   createWebLinkFormGroup(): FormGroup {
     return this.fb.group({
       name: ["", []],
-      url: ["", []],
+      url: [
+        "",
+        [
+          Validators.pattern(
+            /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}([\/?].*)?$/,
+          ),
+        ],
+      ],
       category: [""],
     });
   }

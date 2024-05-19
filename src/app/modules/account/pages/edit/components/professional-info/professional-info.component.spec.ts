@@ -28,7 +28,7 @@ describe("ProfessionalInfoComponent", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ProfessionalInfoComponent],
+      declarations: [],
       imports: [IonicModule.forRoot()],
     }).compileComponents();
 

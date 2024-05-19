@@ -35,13 +35,13 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           *ngIf="selectedForm === 'basic'"
           [account]="account"
         ></app-basic-info>
-        <app-contact-info
-          *ngIf="'contact' === selectedForm"
-          [account]="account"
+        <app-contact-info *ngIf="'contact' === selectedForm" [account]="account"
           >Show contact info</app-contact-info
         >
-        <app-professional-info *ngIf="'professional' === selectedForm" 
-        [account]="account">
+        <app-professional-info
+          *ngIf="'professional' === selectedForm"
+          [account]="account"
+        >
         </app-professional-info>
         <div *ngIf="'volunteer' === selectedForm">Show Volunteer info</div>
         <div *ngIf="'labor' === selectedForm">Show Labor info</div>

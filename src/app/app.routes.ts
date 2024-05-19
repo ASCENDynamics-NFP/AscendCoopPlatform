@@ -28,49 +28,18 @@ export const routes: Routes = [
     pathMatch: "full",
   },
   {
-    path: "group-profile/:accountId/edit",
-    loadComponent: () =>
-      import("./modules/group/pages/group-edit/group-edit.page").then(
-        (m) => m.GroupEditPage,
-      ),
-    canActivate: [AuthGuard],
-  },
-  {
     path: "group-list",
     loadComponent: () =>
-      import("./modules/group/pages/group-list/group-list.page").then(
+      import("./modules/account/pages/group-list/group-list.page").then(
         (m) => m.GroupListPage,
       ),
   },
   {
-    path: "group-profile/:accountId",
-    loadComponent: () =>
-      import("./modules/group/pages/group-profile/group-profile.page").then(
-        (m) => m.GroupProfilePage,
-      ),
-  },
-  {
-    path: "user-dashboard/:accountId",
-    loadComponent: () =>
-      import("./modules/user/pages/user-dashboard/user-dashboard.page").then(
-        (m) => m.UserDashboardPage,
-      ),
-    canActivate: [AuthGuard],
-  },
-  {
-    path: "user-profile/:accountId",
-    loadComponent: () =>
-      import("./modules/user/pages/user-profile/user-profile.page").then(
-        (m) => m.UserProfilePage,
-      ),
-    canActivate: [AuthGuard],
-  },
-  {
     path: ":accountId/friends",
     loadComponent: () =>
-      import("./modules/user/pages/friends/friends.page").then(
-        (m) => m.FriendsPage,
-      ),
+      import(
+        "./modules/account/relatedAccount/pages/friends/friends.page"
+      ).then((m) => m.FriendsPage),
     canActivate: [AuthGuard],
   },
   {
@@ -90,47 +59,33 @@ export const routes: Routes = [
     canActivate: [SecureInnerPagesGuard],
   },
   {
-    path: "user-settings",
+    path: "settings",
     loadComponent: () =>
-      import("./modules/user/pages/user-settings/user-settings.page").then(
-        (m) => m.UserSettingsPage,
+      import("./modules/account/pages/settings/settings.page").then(
+        (m) => m.SettingsPage,
       ),
     canActivate: [AuthGuard],
   },
   {
     path: "friends",
     loadComponent: () =>
-      import("./modules/user/pages/friends/friends.page").then(
-        (m) => m.FriendsPage,
-      ),
+      import(
+        "./modules/account/relatedAccount/pages/friends/friends.page"
+      ).then((m) => m.FriendsPage),
     canActivate: [AuthGuard],
   },
   {
     path: "users",
     loadComponent: () =>
-      import("./modules/user/pages/users/users.page").then((m) => m.UsersPage),
-    canActivate: [AuthGuard],
-  },
-  {
-    path: "user-profile/:accountId/edit",
-    loadComponent: () =>
-      import(
-        "./modules/user/pages/edit-user-profile/edit-user-profile.page"
-      ).then((m) => m.EditUserProfilePage),
+      import("./modules/account/pages/users/users.page").then((m) => m.UsersPage),
     canActivate: [AuthGuard],
   },
   {
     path: ":accountId/groups",
     loadComponent: () =>
-      import("./modules/user/pages/user-groups/user-groups.page").then(
-        (m) => m.UserGroupsPage,
-      ),
-    canActivate: [AuthGuard],
-  },
-  {
-    path: "group/:accountId",
-    loadChildren: () =>
-      import("./modules/group/pages/group/group.routes").then((m) => m.routes),
+      import(
+        "./modules/account/relatedAccount/pages/user-groups/user-groups.page"
+      ).then((m) => m.UserGroupsPage),
     canActivate: [AuthGuard],
   },
   {

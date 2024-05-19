@@ -18,7 +18,7 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
-import {UserSettingsPage} from "./user-settings.page";
+import {SettingsPage} from "./settings.page";
 import {
   TranslateService,
   TranslateModule,
@@ -39,8 +39,8 @@ const mockStoreService = {
 };
 
 describe("UserSettingsPage", () => {
-  let component: UserSettingsPage;
-  let fixture: ComponentFixture<UserSettingsPage>;
+  let component: SettingsPage;
+  let fixture: ComponentFixture<SettingsPage>;
 
   // Mock the AuthStoreService
   const mockAuthStoreService = {
@@ -80,7 +80,7 @@ describe("UserSettingsPage", () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(UserSettingsPage);
+    fixture = TestBed.createComponent(SettingsPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

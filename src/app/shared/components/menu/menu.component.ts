@@ -182,7 +182,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         buttonText: "",
         hasButton: false,
         title: "Settings",
-        url: `user-settings`,
+        url: `settings`,
         icon: "settings",
         onclick: null,
       },

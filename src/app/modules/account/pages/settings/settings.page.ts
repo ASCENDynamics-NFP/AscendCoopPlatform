@@ -30,9 +30,9 @@ import {AppHeaderComponent} from "../../../../shared/components/app-header/app-h
 import {Account} from "../../../../models/account.model";
 
 @Component({
-  selector: "app-user-settings",
-  templateUrl: "./user-settings.page.html",
-  styleUrls: ["./user-settings.page.scss"],
+  selector: "app-settings",
+  templateUrl: "./settings.page.html",
+  styleUrls: ["./settings.page.scss"],
   standalone: true,
   imports: [
     IonicModule,
@@ -42,7 +42,7 @@ import {Account} from "../../../../models/account.model";
     AppHeaderComponent,
   ],
 })
-export class UserSettingsPage {
+export class SettingsPage {
   private accountSubscription?: Subscription;
   authUser = this.authStoreService.getCurrentUser();
   account?: Partial<Account>;

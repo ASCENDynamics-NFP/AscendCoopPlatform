@@ -74,10 +74,10 @@ export const routes: Routes = [
     canActivate: [SecureInnerPagesGuard],
   },
   {
-    path: "user-settings",
+    path: "settings",
     loadComponent: () =>
-      import("./modules/user/pages/user-settings/user-settings.page").then(
-        (m) => m.UserSettingsPage,
+      import("./modules/account/pages/settings/settings.page").then(
+        (m) => m.SettingsPage,
       ),
     canActivate: [AuthGuard],
   },

@@ -49,6 +49,6 @@ export class UserMenuComponent {
 
   goToSettings() {
     this.popoverCtrl.dismiss();
-    this.router.navigate(["/user-settings"]);
+    this.router.navigate(["/settings"]);
   }
 }

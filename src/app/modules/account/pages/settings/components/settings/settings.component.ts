@@ -27,7 +27,7 @@ import {User} from "firebase/auth";
 import {Account} from "../../../../../../models/account.model";
 
 @Component({
-  selector: "app-settings",
+  selector: "app-settings-form",
   templateUrl: "./settings.component.html",
   styleUrls: ["./settings.component.scss"],
   standalone: true,

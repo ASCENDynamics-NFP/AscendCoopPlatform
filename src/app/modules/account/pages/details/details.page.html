@@ -33,17 +33,17 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       >Contact Information</a
     >
     <a
-      *ngIf="account?.type === 'user'"
+      *ngIf="account.type === 'user'"
       href="{{account.id + '#professional'}}"
       class="tab-link"
       >Professional Contact</a
     >
     <a href="{{account.id + '#users'}}" class="tab-link"
-      >{{account?.type === 'user'? 'Friends':'Members'}}</a
+      >{{account.type === 'user'? 'Friends':'Members'}}</a
     >
     <a href="{{account.id + '#groups'}}" class="tab-link">Organizations</a>
     <a
-      *ngIf="account?.type === 'user'"
+      *ngIf="account.type === 'user'"
       href="{{account.id + '#volunteer'}}"
       class="tab-link"
       >Volunteer Preferences</a
@@ -54,8 +54,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <div id="contact">Contact Info Content</div>
     <app-professional-info
       id="professional"
-      *ngIf="account?.type === 'user'"
-      [professionalInfo]="account?.professionalInformation"
+      *ngIf="account.type === 'user'"
+      [professionalInfo]="account.professionalInformation"
     ></app-professional-info>
     <app-related-accounts
       id="users"
@@ -70,9 +70,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       type="group"
     ></app-related-accounts>
     <app-volunteer-preference-info
-      *ngIf="account?.type === 'user'"
+      *ngIf="account.type === 'user'"
       id="volunteer"
-      [volunteerPreferences]="account?.volunteerPreferences"
+      [volunteerPreferences]="account.volunteerPreferences"
     ></app-volunteer-preference-info>
   </div>
 </ion-content>

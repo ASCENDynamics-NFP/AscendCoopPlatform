@@ -20,9 +20,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <app-header [title]="'Settings'"></app-header>
 
 <ion-content [fullscreen]="true">
-  <app-settings
+  <app-settings-form
     *ngIf="account"
     [authUser]="authUser"
     [account]="account"
-  ></app-settings>
+  ></app-settings-form>
 </ion-content>

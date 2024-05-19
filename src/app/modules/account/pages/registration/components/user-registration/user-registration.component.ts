@@ -30,6 +30,7 @@ import {
 import {IonicModule} from "@ionic/angular";
 import {
   Account,
+  Address,
   Email,
   PhoneNumber,
   WebLink,
@@ -49,6 +50,7 @@ import {Router} from "@angular/router";
 export class UserRegistrationComponent implements OnChanges {
   @Input() account?: Partial<Account>;
   @Input() redirectSubmit: Boolean = false;
+  public maxAddresses = 3; // Set maximum number of addresses
   public maxEmails = 5;
   public maxLinks = 10;
   public maxPhoneNumbers = 5;
@@ -71,14 +73,7 @@ export class UserRegistrationComponent implements OnChanges {
       contactInformation: this.fb.group({
         emails: this.fb.array([this.createEmailFormGroup()]),
         phoneNumbers: this.fb.array([this.createPhoneNumberFormGroup()]),
-        address: this.fb.group({
-          name: [""],
-          street: ["", Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
-          city: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-          state: [""],
-          zipcode: ["", Validators.pattern("^[0-9]*$")],
-          country: [""],
-        }),
+        addresses: this.fb.array([this.createAddressFormGroup()]),
         preferredMethodOfContact: ["Email"],
       }),
     });
@@ -88,6 +83,12 @@ export class UserRegistrationComponent implements OnChanges {
     if (changes["account"]) {
       this.loadFormData();
     }
+  }
+
+  get addressesFormArray(): FormArray {
+    return this.registrationForm.get(
+      "contactInformation.addresses",
+    ) as FormArray;
   }
 
   get phoneNumbersFormArray(): FormArray {
@@ -148,7 +149,17 @@ export class UserRegistrationComponent implements OnChanges {
                 isEmergencyNumber: phone.isEmergencyNumber || false,
               }),
             ) ?? [],
-          address: formValue.contactInformation!.address,
+          addresses:
+            formValue.contactInformation!.addresses?.map(
+              (address: Partial<Address>) => ({
+                name: address.name ?? null,
+                street: address.street ?? null,
+                city: address.city ?? null,
+                state: address.state ?? null,
+                zipcode: address.zipcode ?? null,
+                country: address.country ?? null,
+              }),
+            ) ?? [],
           preferredMethodOfContact: "Email",
         },
       };
@@ -180,6 +191,9 @@ export class UserRegistrationComponent implements OnChanges {
     }
     while (this.phoneNumbersFormArray.length !== 0) {
       this.phoneNumbersFormArray.removeAt(0);
+    }
+    while (this.addressesFormArray.length !== 0) {
+      this.addressesFormArray.removeAt(0);
     }
 
     // If there are webLinks, create a FormGroup for each
@@ -232,6 +246,23 @@ export class UserRegistrationComponent implements OnChanges {
       this.addPhoneNumber();
     }
 
+    this.account.contactInformation?.addresses?.forEach((address) => {
+      this.addressesFormArray.push(
+        this.fb.group({
+          name: [address.name],
+          street: [address.street, Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
+          city: [address.city, Validators.pattern("^[a-zA-Z\\s]*$")],
+          state: [address.state],
+          zipcode: [address.zipcode, Validators.pattern("^[0-9]*$")],
+          country: [address.country],
+          // isPrimaryAddress: [address.isPrimaryAddress || false],
+        }),
+      );
+    });
+    if (this.addressesFormArray.length === 0) {
+      this.addAddress();
+    }
+
     // Load other form data as before
     this.registrationForm.patchValue({
       name: this.account.name,
@@ -250,7 +281,9 @@ export class UserRegistrationComponent implements OnChanges {
             isEmergencyNumber: phone.isEmergencyNumber,
           }),
         ) || [this.createPhoneNumberFormGroup()],
-        address: this.account.contactInformation?.address || {},
+        addresses: this.account.contactInformation?.addresses || [
+          this.createAddressFormGroup(),
+        ],
       },
     });
   }
@@ -320,5 +353,25 @@ export class UserRegistrationComponent implements OnChanges {
   removeWebLink(index: number): void {
     // Remove the phone number form group at the given index
     this.webLinksFormArray.removeAt(index);
+  }
+
+  createAddressFormGroup(): FormGroup {
+    return this.fb.group({
+      name: [""],
+      street: ["", Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
+      city: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+      state: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+      zipcode: ["", Validators.pattern("^[0-9]*$")],
+      country: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+      isPrimaryAddress: [false],
+    });
+  }
+
+  addAddress(): void {
+    this.addressesFormArray.push(this.createAddressFormGroup());
+  }
+
+  removeAddress(index: number): void {
+    this.addressesFormArray.removeAt(index);
   }
 }

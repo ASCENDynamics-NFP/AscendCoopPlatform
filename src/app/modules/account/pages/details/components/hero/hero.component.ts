@@ -51,6 +51,17 @@ export class HeroComponent {
     );
   }
 
+  get getLocation() {
+    if (
+      this.account?.contactInformation?.addresses &&
+      this.account?.contactInformation?.addresses?.length > 0
+    ) {
+      return `${this.account.contactInformation.addresses[0]?.city} /${this.account.contactInformation.addresses[0]?.country}`;
+    } else {
+      return "";
+    }
+  }
+
   async openImageUploadModal() {
     if (!this.account?.id || !this.isProfileOwner) return;
     let modal = await this.modalController.create({

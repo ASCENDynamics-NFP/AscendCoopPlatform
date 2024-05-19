@@ -28,14 +28,6 @@ export const routes: Routes = [
     pathMatch: "full",
   },
   {
-    path: "group-profile/:accountId/edit",
-    loadComponent: () =>
-      import("./modules/group/pages/group-edit/group-edit.page").then(
-        (m) => m.GroupEditPage,
-      ),
-    canActivate: [AuthGuard],
-  },
-  {
     path: "group-list",
     loadComponent: () =>
       import("./modules/group/pages/group-list/group-list.page").then(
@@ -43,16 +35,9 @@ export const routes: Routes = [
       ),
   },
   {
-    path: "group-profile/:accountId",
-    loadComponent: () =>
-      import("./modules/group/pages/group-profile/group-profile.page").then(
-        (m) => m.GroupProfilePage,
-      ),
-  },
-  {
     path: ":accountId/friends",
     loadComponent: () =>
-      import("./modules/user/pages/friends/friends.page").then(
+      import("./modules/account/pages/friends/friends.page").then(
         (m) => m.FriendsPage,
       ),
     canActivate: [AuthGuard],
@@ -84,7 +69,7 @@ export const routes: Routes = [
   {
     path: "friends",
     loadComponent: () =>
-      import("./modules/user/pages/friends/friends.page").then(
+      import("./modules/account/pages/friends/friends.page").then(
         (m) => m.FriendsPage,
       ),
     canActivate: [AuthGuard],
@@ -98,15 +83,9 @@ export const routes: Routes = [
   {
     path: ":accountId/groups",
     loadComponent: () =>
-      import("./modules/user/pages/user-groups/user-groups.page").then(
+      import("./modules/account/pages/user-groups/user-groups.page").then(
         (m) => m.UserGroupsPage,
       ),
-    canActivate: [AuthGuard],
-  },
-  {
-    path: "group/:accountId",
-    loadChildren: () =>
-      import("./modules/group/pages/group/group.routes").then((m) => m.routes),
     canActivate: [AuthGuard],
   },
   {

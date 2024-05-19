@@ -22,11 +22,11 @@ import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {ActivatedRoute, RouterModule} from "@angular/router";
-import {AuthStoreService} from "../../../../core/services/auth-store.service";
-import {StoreService} from "../../../../core/services/store.service";
+import {AuthStoreService} from "../../../../../core/services/auth-store.service";
+import {StoreService} from "../../../../../core/services/store.service";
 import {Subscription} from "rxjs";
-import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
-import {Account, RelatedAccount} from "../../../../models/account.model";
+import {AppHeaderComponent} from "../../../../../shared/components/app-header/app-header.component";
+import {Account, RelatedAccount} from "../../../../../models/account.model";
 
 @Component({
   selector: "app-friends",

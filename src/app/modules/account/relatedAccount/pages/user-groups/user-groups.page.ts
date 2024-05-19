@@ -21,36 +21,28 @@ import {Component} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
 import {ActivatedRoute, RouterModule} from "@angular/router";
-import {Account, RelatedAccount} from "../../../../models/account.model";
+import {AuthStoreService} from "../../../../../core/services/auth-store.service";
 import {User} from "firebase/auth";
-import {AuthStoreService} from "../../../../core/services/auth-store.service";
-import {StoreService} from "../../../../core/services/store.service";
+import {StoreService} from "../../../../../core/services/store.service";
 import {Subscription} from "rxjs";
+import {Account, RelatedAccount} from "../../../../../models/account.model";
+import {AppHeaderComponent} from "../../../../../shared/components/app-header/app-header.component";
 
 @Component({
-  selector: "app-member-list",
-  templateUrl: "./member-list.page.html",
-  styleUrls: ["./member-list.page.scss"],
+  selector: "app-user-groups",
+  templateUrl: "./user-groups.page.html",
+  styleUrls: ["./user-groups.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, RouterModule],
+  imports: [IonicModule, CommonModule, RouterModule, AppHeaderComponent],
 })
-/**
- * Represents a page where group admins can manage their group members.
- */
-export class MemberListPage {
+export class UserGroupsPage {
   private accountsSubscription?: Subscription;
-  currentMembersList: Partial<RelatedAccount>[] = [];
-  pendingMembersList: Partial<RelatedAccount>[] = [];
+  currentGroupsList: Partial<RelatedAccount>[] = [];
+  pendingGroupsList: Partial<RelatedAccount>[] = [];
+  currentUser: User | null = null;
   accountId: string | null = null;
   account?: Partial<Account>;
-  currentUser: User | null = null;
 
-  /**
-   * Constructs the MemberListPage.
-   * @param {ActivatedRoute} activatedRoute - The activated route.
-   * @param {AuthStoreService} authStoreService - The authentication store service.
-   * @param {StoreService} storeService - The store service.
-   */
   constructor(
     private activatedRoute: ActivatedRoute,
     private authStoreService: AuthStoreService,
@@ -60,9 +52,6 @@ export class MemberListPage {
     this.currentUser = this.authStoreService.getCurrentUser();
   }
 
-  /**
-   * Lifecycle hook that is called when the page is about to enter.
-   */
   ionViewWillEnter() {
     this.accountsSubscription = this.storeService.accounts$.subscribe(
       (accounts) => {
@@ -74,33 +63,18 @@ export class MemberListPage {
     );
   }
 
-  /**
-   * Lifecycle hook that is called when the page is about to leave.
-   */
   ionViewWillLeave() {
     this.accountsSubscription?.unsubscribe();
   }
 
   sortRelatedAccounts(relatedAccounts: Partial<RelatedAccount>[]) {
-    this.currentMembersList = relatedAccounts.filter(
-      (ra) => ra.type === "user" && ra.status === "accepted",
+    this.currentGroupsList = relatedAccounts.filter(
+      (ra) => ra.type === "group" && ra.status === "accepted",
     );
-    this.pendingMembersList = relatedAccounts.filter(
-      (ra) => ra.type === "user" && ra.status === "pending",
+    this.pendingGroupsList = relatedAccounts.filter(
+      (ra) => ra.type === "group" && ra.status === "pending",
     );
-    console.log(this.currentMembersList, this.pendingMembersList);
-  }
-
-  /**
-   * Checks if the current user is an admin of the group.
-   * @returns {boolean} - True if the user is an admin, otherwise false.
-   */
-  get isAdmin() {
-    if (!this.account?.groupDetails || !this.currentUser) return false;
-    return (
-      this.isOwner() ||
-      this.account.groupDetails.admins?.includes(this.currentUser.uid)
-    );
+    console.log(this.currentGroupsList, this.pendingGroupsList);
   }
 
   updateStatus(request: Partial<RelatedAccount>, status: string) {
@@ -112,26 +86,14 @@ export class MemberListPage {
     });
   }
 
-  /**
-   * Adds a member to the group.
-   * @param {any} request - The member request to process.
-   */
   acceptRequest(request: Partial<RelatedAccount>) {
     this.updateStatus(request, "accepted");
   }
 
-  /**
-   * Rejects a member request to join the group.
-   * @param {any} request - The member request to reject.
-   */
   rejectRequest(request: Partial<RelatedAccount>) {
     this.updateStatus(request, "rejected");
   }
 
-  /**
-   * Removes a member from the group.
-   * @param {any} request - The member request to process.
-   */
   removeRequest(request: Partial<RelatedAccount>) {
     if (!this.accountId) return;
     const docPath = `accounts/${this.accountId}/relatedAccounts/${request.id}`;

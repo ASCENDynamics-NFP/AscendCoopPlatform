@@ -30,16 +30,16 @@ export const routes: Routes = [
   {
     path: "group-list",
     loadComponent: () =>
-      import("./modules/group/pages/group-list/group-list.page").then(
+      import("./modules/account/pages/group-list/group-list.page").then(
         (m) => m.GroupListPage,
       ),
   },
   {
     path: ":accountId/friends",
     loadComponent: () =>
-      import("./modules/account/pages/friends/friends.page").then(
-        (m) => m.FriendsPage,
-      ),
+      import(
+        "./modules/account/relatedAccount/pages/friends/friends.page"
+      ).then((m) => m.FriendsPage),
     canActivate: [AuthGuard],
   },
   {
@@ -69,23 +69,23 @@ export const routes: Routes = [
   {
     path: "friends",
     loadComponent: () =>
-      import("./modules/account/pages/friends/friends.page").then(
-        (m) => m.FriendsPage,
-      ),
+      import(
+        "./modules/account/relatedAccount/pages/friends/friends.page"
+      ).then((m) => m.FriendsPage),
     canActivate: [AuthGuard],
   },
   {
     path: "users",
     loadComponent: () =>
-      import("./modules/user/pages/users/users.page").then((m) => m.UsersPage),
+      import("./modules/account/pages/users/users.page").then((m) => m.UsersPage),
     canActivate: [AuthGuard],
   },
   {
     path: ":accountId/groups",
     loadComponent: () =>
-      import("./modules/account/pages/user-groups/user-groups.page").then(
-        (m) => m.UserGroupsPage,
-      ),
+      import(
+        "./modules/account/relatedAccount/pages/user-groups/user-groups.page"
+      ).then((m) => m.UserGroupsPage),
     canActivate: [AuthGuard],
   },
   {

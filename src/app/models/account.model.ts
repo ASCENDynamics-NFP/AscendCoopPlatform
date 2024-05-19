@@ -20,7 +20,7 @@
 import {BaseDocument} from "./base-document";
 import {Timestamp} from "firebase/firestore";
 
-interface Address {
+export interface Address {
   name?: string | null;
   street?: string | null;
   city?: string | null;
@@ -74,10 +74,9 @@ export interface Email {
 
 interface ContactInformation {
   privacy?: "public" | "private" | "specific-users"; // Privacy setting
-  address?: Address | null;
+  addresses?: Address[] | null;
   phoneNumbers: PhoneNumber[];
   emails: Email[];
-  mailingAddress?: string;
   preferredMethodOfContact: "Email" | "Phone" | "SMS" | "Fax";
 }
 

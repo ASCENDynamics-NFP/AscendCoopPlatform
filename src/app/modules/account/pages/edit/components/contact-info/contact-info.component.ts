@@ -31,6 +31,7 @@ import {
   Account,
   Email,
   PhoneNumber,
+  Address,
 } from "../../../../../../models/account.model";
 import {StoreService} from "../../../../../../core/services/store.service";
 import {countryCodes} from "../../../../../../core/data/phone";
@@ -44,11 +45,12 @@ import {countries, statesProvinces} from "../../../../../../core/data/country";
   imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
 export class ContactInfoComponent implements OnChanges {
-  public countries = countries; // List of countries for the address
+  public countries = countries;
   public countryCodes = countryCodes.sort((a, b) =>
     Number(a.value) > Number(b.value) ? 1 : -1,
-  ); // List of country codes for phone numbers
-  public statesProvinces = statesProvinces; // List of states/provinces for the selected country
+  );
+  public statesProvinces = statesProvinces;
+  public maxAddresses = 3; // Set maximum number of addresses
   public maxEmails = 5;
   public maxPhoneNumbers = 5;
   @Input() account: Partial<Account> | null = null;
@@ -60,14 +62,7 @@ export class ContactInfoComponent implements OnChanges {
       contactInformation: this.fb.group({
         emails: this.fb.array([this.createEmailFormGroup()]),
         phoneNumbers: this.fb.array([this.createPhoneNumberFormGroup()]),
-        address: this.fb.group({
-          name: [""],
-          street: ["", Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
-          city: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-          state: [""],
-          zipcode: ["", Validators.pattern("^[0-9]*$")],
-          country: [""],
-        }),
+        addresses: this.fb.array([this.createAddressFormGroup()]),
         preferredMethodOfContact: ["Email"],
       }),
     });
@@ -87,6 +82,12 @@ export class ContactInfoComponent implements OnChanges {
 
   get emailsFormArray(): FormArray {
     return this.contactInfoForm.get("contactInformation.emails") as FormArray;
+  }
+
+  get addressesFormArray(): FormArray {
+    return this.contactInfoForm.get(
+      "contactInformation.addresses",
+    ) as FormArray;
   }
 
   onSubmit() {
@@ -109,7 +110,14 @@ export class ContactInfoComponent implements OnChanges {
               isEmergencyNumber: phone.isEmergencyNumber || false,
             }),
           ),
-          address: formValue.address,
+          addresses: formValue.addresses.map((address: Partial<Address>) => ({
+            name: address.name ?? null,
+            street: address.street ?? null,
+            city: address.city ?? null,
+            state: address.state ?? null,
+            zipcode: address.zipcode ?? null,
+            country: address.country ?? null,
+          })),
         },
       };
 
@@ -152,9 +160,25 @@ export class ContactInfoComponent implements OnChanges {
       this.addPhoneNumber();
     }
 
+    contactInfo?.addresses?.forEach((address) => {
+      this.addressesFormArray.push(
+        this.fb.group({
+          name: [address.name],
+          street: [address.street, Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
+          city: [address.city, Validators.pattern("^[a-zA-Z\\s]*$")],
+          state: [address.state],
+          zipcode: [address.zipcode, Validators.pattern("^[0-9]*$")],
+          country: [address.country],
+        }),
+      );
+    });
+
+    if (this.addressesFormArray.length === 0) {
+      this.addAddress();
+    }
+
     this.contactInfoForm.patchValue({
       contactInformation: {
-        address: contactInfo?.address || {},
         preferredMethodOfContact:
           contactInfo?.preferredMethodOfContact || "Email",
       },
@@ -167,6 +191,9 @@ export class ContactInfoComponent implements OnChanges {
     }
     while (this.phoneNumbersFormArray.length !== 0) {
       this.phoneNumbersFormArray.removeAt(0);
+    }
+    while (this.addressesFormArray.length !== 0) {
+      this.addressesFormArray.removeAt(0);
     }
   }
 
@@ -204,5 +231,25 @@ export class ContactInfoComponent implements OnChanges {
 
   removePhoneNumber(index: number): void {
     this.phoneNumbersFormArray.removeAt(index);
+  }
+
+  createAddressFormGroup(): FormGroup {
+    return this.fb.group({
+      name: [""],
+      street: ["", Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
+      city: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
+      state: [""],
+      zipcode: ["", Validators.pattern("^[0-9]*$")],
+      country: [""],
+      isPrimaryAddress: [false],
+    });
+  }
+
+  addAddress(): void {
+    this.addressesFormArray.push(this.createAddressFormGroup());
+  }
+
+  removeAddress(index: number): void {
+    this.addressesFormArray.removeAt(index);
   }
 }

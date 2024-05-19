@@ -200,126 +200,160 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-row>
         <ion-col>
           <ion-item-divider>
-            <ion-label color="tertiary">Address</ion-label>
+            <ion-label color="tertiary">Addresses</ion-label>
           </ion-item-divider>
-        </ion-col>
-      </ion-row>
-      <ion-row formGroupName="address">
-        <ion-col>
-          <ion-row>
-            <ion-col>
-              <ion-input
-                label="Address Name"
-                label-placement="floating"
-                fill="outline"
-                formControlName="name"
-                type="text"
-                minlength="0"
-                maxlength="50"
-              ></ion-input>
-            </ion-col>
-          </ion-row>
-          <ion-row>
-            <ion-col>
-              <ion-input
-                label="Street Address"
-                label-placement="floating"
-                fill="outline"
-                formControlName="street"
-                type="text"
-                minlength="0"
-                maxlength="50"
-              ></ion-input>
-              <ion-note
-                *ngIf="
-                  contactInfoForm.get('address.street')?.invalid &&
-                  contactInfoForm.get('address.street')?.touched
-                "
-              >
-                Please enter a valid address
-              </ion-note>
-            </ion-col>
-          </ion-row>
-          <ion-row>
-            <ion-col>
-              <ion-input
-                label="City"
-                label-placement="floating"
-                fill="outline"
-                formControlName="city"
-                type="text"
-                minlength="0"
-                maxlength="50"
-              ></ion-input>
-              <ion-note
-                *ngIf="
-                  contactInfoForm.get('address.city')?.invalid &&
-                  contactInfoForm.get('address.city')?.touched
-                "
-              >
-                Please enter a valid city name
-              </ion-note>
-            </ion-col>
-          </ion-row>
-        </ion-col>
-        <ion-col>
-          <ion-row>
-            <ion-col>
-              <ion-select
-                formControlName="country"
-                label="Country"
-                label-placement="stacked"
-                placeholder="Select Country"
-                fill="outline"
-                interface="popover"
-              >
-                <ion-select-option
-                  *ngFor="let code of countries"
-                  [value]="code.value"
-                  >{{ code.label }}</ion-select-option
-                >
-              </ion-select>
-            </ion-col>
-          </ion-row>
-          <ion-row>
-            <ion-col>
-              <ion-select
-                formControlName="state"
-                label="State"
-                label-placement="stacked"
-                placeholder="Select State"
-                fill="outline"
-                interface="popover"
-              >
-                <ion-select-option
-                  *ngFor="let code of statesProvinces"
-                  [value]="code.value"
-                  >{{ code.label }}</ion-select-option
-                >
-              </ion-select>
-            </ion-col>
-          </ion-row>
-          <ion-row>
-            <ion-col>
-              <ion-input
-                label="Zip/Postal Code"
-                label-placement="floating"
-                fill="outline"
-                formControlName="zipcode"
-                type="text"
-                minlength="0"
-                maxlength="5"
-              ></ion-input>
-              <ion-note
-                *ngIf="
-                  contactInfoForm.get('address.zipcode')?.invalid &&
-                  contactInfoForm.get('address.zipcode')?.touched
-                "
-              >
-                Please enter a valid zip code
-              </ion-note>
-            </ion-col>
-          </ion-row>
+          <div formArrayName="addresses">
+            <div
+              *ngFor="
+                let addressControl of addressesFormArray.controls;
+                let i = index
+              "
+              [formGroupName]="i"
+            >
+              <ion-grid>
+                <ion-row>
+                  <ion-col>
+                    <ion-input
+                      label="Address Name"
+                      label-placement="floating"
+                      fill="outline"
+                      formControlName="name"
+                      type="text"
+                      minlength="0"
+                      maxlength="50"
+                    ></ion-input>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col>
+                    <ion-input
+                      label="Street Address"
+                      label-placement="floating"
+                      fill="outline"
+                      formControlName="street"
+                      type="text"
+                      minlength="0"
+                      maxlength="50"
+                    ></ion-input>
+                    <ion-note
+                      *ngIf="
+                        addressControl.get('street')?.invalid &&
+                        addressControl.get('street')?.touched
+                      "
+                    >
+                      Please enter a valid address
+                    </ion-note>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col>
+                    <ion-input
+                      label="City"
+                      label-placement="floating"
+                      fill="outline"
+                      formControlName="city"
+                      type="text"
+                      minlength="0"
+                      maxlength="50"
+                    ></ion-input>
+                    <ion-note
+                      *ngIf="
+                        addressControl.get('city')?.invalid &&
+                        addressControl.get('city')?.touched
+                      "
+                    >
+                      Please enter a valid city name
+                    </ion-note>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col>
+                    <ion-select
+                      formControlName="country"
+                      label="Country"
+                      label-placement="stacked"
+                      placeholder="Select Country"
+                      fill="outline"
+                      interface="popover"
+                    >
+                      <ion-select-option
+                        *ngFor="let code of countries"
+                        [value]="code.value"
+                        >{{ code.label }}</ion-select-option
+                      >
+                    </ion-select>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col>
+                    <ion-select
+                      formControlName="state"
+                      label="State"
+                      label-placement="stacked"
+                      placeholder="Select State"
+                      fill="outline"
+                      interface="popover"
+                    >
+                      <ion-select-option
+                        *ngFor="let code of statesProvinces"
+                        [value]="code.value"
+                        >{{ code.label }}</ion-select-option
+                      >
+                    </ion-select>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col>
+                    <ion-input
+                      label="Zip/Postal Code"
+                      label-placement="floating"
+                      fill="outline"
+                      formControlName="zipcode"
+                      type="text"
+                      minlength="0"
+                      maxlength="5"
+                    ></ion-input>
+                    <ion-note
+                      *ngIf="
+                        addressControl.get('zipcode')?.invalid &&
+                        addressControl.get('zipcode')?.touched
+                      "
+                    >
+                      Please enter a valid zip code
+                    </ion-note>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="11">
+                    <ion-item lines="none">
+                      <ion-checkbox
+                        label-placement="stacked"
+                        formControlName="isPrimaryAddress"
+                        >Primary Address</ion-checkbox
+                      >
+                    </ion-item>
+                  </ion-col>
+                  <ion-col size="1">
+                    <ion-button fill="clear" (click)="removeAddress(i)">
+                      <ion-icon
+                        slot="icon-only"
+                        name="trash-outline"
+                        class="remove-icon"
+                      ></ion-icon>
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </div>
+            <ion-button
+              fill="clear"
+              (click)="addAddress()"
+              [disabled]="addressesFormArray.controls.length >= maxAddresses"
+            >
+              <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+              Add Address
+            </ion-button>
+          </div>
         </ion-col>
       </ion-row>
       <ion-row>

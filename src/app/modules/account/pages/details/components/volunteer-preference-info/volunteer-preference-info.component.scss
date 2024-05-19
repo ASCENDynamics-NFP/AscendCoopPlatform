@@ -1,0 +1,25 @@
+.volunteer-info-card {
+  border: 1px solid var(--ion-color-primary);
+}
+
+.volunteer-info-card ion-card-title {
+  font-size: 1.5em;
+  margin-bottom: 16px;
+}
+
+.volunteer-info-card .info-block {
+  margin-bottom: 16px;
+}
+
+.volunteer-info-card h2 {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #fff;
+  margin: 0;
+}
+
+.volunteer-info-card p {
+  font-size: 1em;
+  color: #aaa;
+  margin: 4px 0 0 0;
+}

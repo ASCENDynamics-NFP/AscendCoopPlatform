@@ -21,6 +21,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
 <ion-content [fullscreen]="true">
   <app-hero
+    id="profile"
     *ngIf="account"
     [account]="account"
     [isProfileOwner]="isProfileOwner"
@@ -31,21 +32,31 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <a href="{{account.id + '#contact'}}" class="tab-link"
       >Contact Information</a
     >
-    <a href="{{account.id + '#professional'}}" class="tab-link"
+    <a
+      *ngIf="account?.type === 'user'"
+      href="{{account.id + '#professional'}}"
+      class="tab-link"
       >Professional Contact</a
     >
-    <a href="{{account.id + '#volunteer'}}" class="tab-link"
+    <a href="{{account.id + '#users'}}" class="tab-link"
+      >{{account?.type === 'user'? 'Friends':'Members'}}</a
+    >
+    <a href="{{account.id + '#groups'}}" class="tab-link">Organizations</a>
+    <a
+      *ngIf="account?.type === 'user'"
+      href="{{account.id + '#volunteer'}}"
+      class="tab-link"
       >Volunteer Preferences</a
     >
-    <a href="{{account.id + '#users'}}" class="tab-link">Users</a>
-    <a href="{{account.id + '#groups'}}" class="tab-link">Organizations</a>
-    <a href="{{account.id + '#labor'}}" class="tab-link">Labor Rights</a>
   </div>
 
   <div *ngIf="account">
-    <div id="profile">Profile Content</div>
-    <div id="contact">Contact information Content</div>
-    <div id="professional">Professional contact Content</div>
+    <div id="contact">Contact Info Content</div>
+    <app-professional-info
+      id="professional"
+      *ngIf="account?.type === 'user'"
+      [professionalInfo]="account?.professionalInformation"
+    ></app-professional-info>
     <app-related-accounts
       id="users"
       *ngIf="account"
@@ -58,7 +69,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       [account]="account"
       type="group"
     ></app-related-accounts>
-    <div id="volunteer">Volunteer preferences Content</div>
-    <div id="labor">Labor rights Content</div>
+    <app-volunteer-preference-info
+      *ngIf="account?.type === 'user'"
+      id="volunteer"
+      [volunteerPreferences]="account?.volunteerPreferences"
+    ></app-volunteer-preference-info>
   </div>
 </ion-content>

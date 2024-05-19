@@ -1,0 +1,50 @@
+<ion-card class="volunteer-info-card">
+  <ion-card-header>
+    <ion-card-title>Volunteer Preferences</ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <div class="info-block">
+            <h2>Areas of Interest</h2>
+            <p>
+              {{ volunteerPreferences?.areasOfInterest?.join(", ") || "N/A" }}
+            </p>
+          </div>
+          <div class="info-block">
+            <h2>Availability</h2>
+            <p>{{ volunteerPreferences?.availability || "N/A" }}</p>
+          </div>
+          <div class="info-block">
+            <h2>Willingness to Travel</h2>
+            <p>
+              {{ volunteerPreferences?.willingnessToTravel ? "Yes" : "No" }}
+            </p>
+          </div>
+        </ion-col>
+        <ion-col>
+          <div class="info-block">
+            <h2>Preferred Volunteer Roles</h2>
+            <p>
+              {{
+                volunteerPreferences?.preferredVolunteerRoles?.join(", ") ||
+                  "N/A"
+              }}
+            </p>
+          </div>
+          <div class="info-block">
+            <h2>Desired Level of Commitment</h2>
+            <p>{{ volunteerPreferences?.desiredLevelOfCommitment || "N/A" }}</p>
+          </div>
+          <div class="info-block">
+            <h2>Previous Volunteer Experience</h2>
+            <p>
+              {{ volunteerPreferences?.previousVolunteerExperience || "N/A" }}
+            </p>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-card-content>
+</ion-card>

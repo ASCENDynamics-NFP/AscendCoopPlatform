@@ -28,6 +28,8 @@ import {Subscription} from "rxjs";
 import {StoreService} from "../../../../core/services/store.service";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
+import {ProfessionalInfoComponent} from "./components/professional-info/professional-info.component";
+import {VolunteerPreferenceInfoComponent} from "./components/volunteer-preference-info/volunteer-preference-info.component";
 import {User} from "firebase/auth";
 import {HeroComponent} from "./components/hero/hero.component";
 
@@ -43,6 +45,8 @@ import {HeroComponent} from "./components/hero/hero.component";
     HeroComponent,
     AppHeaderComponent,
     RelatedAccountsComponent,
+    ProfessionalInfoComponent,
+    VolunteerPreferenceInfoComponent,
   ],
 })
 export class DetailsPage {

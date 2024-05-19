@@ -20,7 +20,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <app-header *ngIf="account" [title]="account.name"></app-header>
 
 <ion-content [fullscreen]="true">
-  <ion-grid>
+  <ion-grid *ngIf="account">
     <ion-row>
       <ion-col size="12" size-sm="12" size-md="5">
         <app-edit-menu
@@ -32,17 +32,17 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-col>
       <ion-col size="12" size-sm="12" size-md="7">
         <app-basic-info
-          *ngIf="account && selectedForm === 'basic'"
+          *ngIf="selectedForm === 'basic'"
           [account]="account"
         ></app-basic-info>
-        <app-contact-info
-          *ngIf="account && 'contact' === selectedForm"
-          [account]="account"
+        <app-contact-info *ngIf="'contact' === selectedForm" [account]="account"
           >Show contact info</app-contact-info
         >
-        <div *ngIf="'professional' === selectedForm">
-          Show Professional info
-        </div>
+        <app-professional-info
+          *ngIf="'professional' === selectedForm"
+          [account]="account"
+        >
+        </app-professional-info>
         <div *ngIf="'volunteer' === selectedForm">Show Volunteer info</div>
         <div *ngIf="'labor' === selectedForm">Show Labor info</div>
       </ion-col>

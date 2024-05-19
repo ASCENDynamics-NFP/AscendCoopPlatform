@@ -95,14 +95,16 @@ export interface ProfessionalInformation {
   // resumeUpload?: File; // TODO: Add support for resume upload
   educationalBackground?: string;
 }
-interface VolunteerPreferences {
+
+export interface VolunteerPreferences {
   areasOfInterest: string[];
   availability: "Weekdays" | "Weekends" | "Evenings";
   preferredVolunteerRoles: string[];
   previousVolunteerExperience?: string;
-  willingnessToTravelForVolunteering?: boolean;
+  willingnessToTravel?: boolean;
   desiredLevelOfCommitment: "One-time" | "Occasional" | "Regular";
 }
+
 interface MutualAidCommunityEngagement {
   servicesOffered: string[];
   servicesNeeded?: string[];
@@ -111,12 +113,14 @@ interface MutualAidCommunityEngagement {
   interestInReceivingMentorship?: boolean;
   groupsOrForumsParticipation?: string[];
 }
+
 interface LaborRights {
   unionMembership: "Yes" | "No" | "Prefer not to say";
   workplaceConcerns?: string[];
   preferredAdvocacyAreas?: string[];
   experienceWithLaborRightsIssues?: string;
 }
+
 export interface WebLink {
   name: string; // e.g., "LinkedIn", "Personal Blog", "Portfolio"
   url: string; // The actual URL

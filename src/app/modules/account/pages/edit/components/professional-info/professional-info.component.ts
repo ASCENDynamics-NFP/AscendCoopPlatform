@@ -40,48 +40,63 @@ import {StoreService} from "../../../../../../core/services/store.service";
   imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
 export class ProfessionalInfoComponent implements OnInit {
-  @Input() account: Partial<Account> | null = null;
-  professionalInfoForm: FormGroup;
-  skills = ["Skill1", "Skill2", "Skill3"]; // Populate this with actual skills
+  @Input() account?: Partial<Account>;
+  professionalInformationForm: FormGroup;
+  skillsOptions: string[] = [
+    "Programming",
+    "Project Management",
+    "Data Analysis",
+    "Marketing",
+    "Graphic Design",
+  ];
 
   constructor(private fb: FormBuilder, private storeService: StoreService) {
-    this.professionalInfoForm = this.fb.group({
+    this.professionalInformationForm = this.fb.group({
       occupation: ["", Validators.required],
       employerName: [""],
-      skillsAndExpertise: [[]],
+      workExperience: [""],
+      skillsAndExpertise: [[], Validators.required],
+      currentJobTitle: [""],
+      linkedInProfile: [""],
       educationalBackground: [""],
     });
   }
 
-  ngOnInit(): void {
-    // Load existing data if needed
-    this.loadFormData();
-  }
-
-  onSubmit() {
-    if (this.professionalInfoForm.valid) {
-      const formValue = this.professionalInfoForm.value;
-      const professionalInfo: ProfessionalInformation = {
-        occupation: formValue.occupation,
-        employerName: formValue.employerName,
-        skillsAndExpertise: formValue.skillsAndExpertise,
-        educationalBackground: formValue.educationalBackground,
-      };
-      const updatedAccount: Partial<Account> = {
-        ...this.account,
-        professionalInformation: professionalInfo,
-      };
-      // Save data to the backend
-      this.storeService.updateDoc("accounts", updatedAccount);
+  ngOnInit() {
+    if (this.account?.professionalInformation) {
+      this.loadFormData();
     }
   }
 
   loadFormData() {
-    // Load existing professional information if available
     if (this.account?.professionalInformation) {
-      this.professionalInfoForm.patchValue(
-        this.account?.professionalInformation,
-      );
+      this.professionalInformationForm.patchValue({
+        occupation: this.account.professionalInformation.occupation || "",
+        employerName: this.account.professionalInformation.employerName || "",
+        workExperience:
+          this.account.professionalInformation.workExperience || "",
+        skillsAndExpertise:
+          this.account.professionalInformation.skillsAndExpertise || [],
+        currentJobTitle:
+          this.account.professionalInformation.currentJobTitle || "",
+        linkedInProfile:
+          this.account.professionalInformation.linkedInProfile || "",
+        educationalBackground:
+          this.account.professionalInformation.educationalBackground || "",
+      });
+    }
+  }
+
+  onSubmit() {
+    if (this.professionalInformationForm.valid) {
+      const updatedProfessionalInformation: ProfessionalInformation =
+        this.professionalInformationForm.value;
+      const updatedAccount: Partial<Account> = {
+        ...this.account,
+        professionalInformation: updatedProfessionalInformation,
+      };
+
+      this.storeService.updateDoc("accounts", updatedAccount);
     }
   }
 }

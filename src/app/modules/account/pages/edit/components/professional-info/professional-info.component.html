@@ -1,0 +1,87 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<form [formGroup]="professionalInfoForm" (ngSubmit)="onSubmit()">
+  <ion-item slot="header">
+    <ion-label>Professional Information</ion-label>
+  </ion-item>
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Occupation</ion-label>
+          <ion-input
+            formControlName="occupation"
+            type="text"
+            placeholder="Enter Occupation"
+          ></ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Employer Name</ion-label>
+          <ion-input
+            formControlName="employerName"
+            type="text"
+            placeholder="Enter Employer Name"
+          ></ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Skills and Expertise</ion-label>
+          <ion-select
+            formControlName="skillsAndExpertise"
+            multiple="true"
+            placeholder="Select Skills and Expertise"
+          >
+            <ion-select-option *ngFor="let skill of skills" [value]="skill">{{
+              skill
+            }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Educational Background</ion-label>
+          <ion-textarea
+            formControlName="educationalBackground"
+            placeholder="Enter Educational Background"
+          ></ion-textarea>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-button
+          expand="block"
+          type="submit"
+          [disabled]="professionalInfoForm.invalid"
+          >Save</ion-button
+        >
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</form>

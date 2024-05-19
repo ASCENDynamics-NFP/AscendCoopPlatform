@@ -85,7 +85,7 @@ interface Accessibility {
   accessibilityNeeds?: string[];
 }
 
-interface ProfessionalInformation {
+export interface ProfessionalInformation {
   occupation: string;
   employerName?: string;
   workExperience?: string;

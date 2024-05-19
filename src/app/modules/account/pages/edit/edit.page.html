@@ -43,7 +43,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           [account]="account"
         >
         </app-professional-info>
-        <div *ngIf="'volunteer' === selectedForm">Show Volunteer info</div>
+        <app-volunteer-preference-info
+          *ngIf="'volunteer' === selectedForm"
+          [account]="account"
+        ></app-volunteer-preference-info>
         <div *ngIf="'labor' === selectedForm">Show Labor info</div>
       </ion-col>
       <ion-col size="12" size-sm="12" size-md="7"> </ion-col>

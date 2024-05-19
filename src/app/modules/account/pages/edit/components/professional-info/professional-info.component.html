@@ -17,71 +17,123 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<form [formGroup]="professionalInfoForm" (ngSubmit)="onSubmit()">
+<form [formGroup]="professionalInformationForm" (ngSubmit)="onSubmit()">
   <ion-item slot="header">
     <ion-label>Professional Information</ion-label>
   </ion-item>
-  <ion-grid>
-    <ion-row>
-      <ion-col>
-        <ion-item>
-          <ion-label position="stacked">Occupation</ion-label>
+  <div slot="content">
+    <ion-grid>
+      <!-- Occupation -->
+      <ion-row>
+        <ion-col>
           <ion-input
             formControlName="occupation"
-            type="text"
-            placeholder="Enter Occupation"
+            label="Occupation"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter your occupation"
           ></ion-input>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col>
-        <ion-item>
-          <ion-label position="stacked">Employer Name</ion-label>
+        </ion-col>
+      </ion-row>
+      <!-- Employer Name -->
+      <ion-row>
+        <ion-col>
           <ion-input
             formControlName="employerName"
-            type="text"
-            placeholder="Enter Employer Name"
+            label="Employer Name"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter your employer's name"
           ></ion-input>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col>
-        <ion-item>
-          <ion-label position="stacked">Skills and Expertise</ion-label>
+        </ion-col>
+      </ion-row>
+      <!-- Work Experience -->
+      <ion-row>
+        <ion-col>
+          <ion-textarea
+            formControlName="workExperience"
+            label="Work Experience"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Describe your work experience"
+            rows="6"
+            minlength="0"
+            maxlength="1000"
+            [counter]="true"
+          ></ion-textarea>
+        </ion-col>
+      </ion-row>
+      <!-- Skills and Expertise -->
+      <ion-row>
+        <ion-col>
           <ion-select
             formControlName="skillsAndExpertise"
+            label="Skills and Expertise"
+            label-placement="floating"
+            fill="outline"
+            interface="popover"
             multiple="true"
-            placeholder="Select Skills and Expertise"
           >
-            <ion-select-option *ngFor="let skill of skills" [value]="skill">{{
-              skill
-            }}</ion-select-option>
+            <ion-select-option
+              *ngFor="let skill of skillsOptions"
+              [value]="skill"
+              >{{ skill }}</ion-select-option
+            >
           </ion-select>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col>
-        <ion-item>
-          <ion-label position="stacked">Educational Background</ion-label>
+        </ion-col>
+      </ion-row>
+      <!-- Current Job Title -->
+      <ion-row>
+        <ion-col>
+          <ion-input
+            formControlName="currentJobTitle"
+            label="Current Job Title"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter your current job title"
+          ></ion-input>
+        </ion-col>
+      </ion-row>
+      <!-- LinkedIn Profile -->
+      <ion-row>
+        <ion-col>
+          <ion-input
+            formControlName="linkedInProfile"
+            label="LinkedIn Profile"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter your LinkedIn profile URL"
+          ></ion-input>
+        </ion-col>
+      </ion-row>
+      <!-- Educational Background -->
+      <ion-row>
+        <ion-col>
           <ion-textarea
             formControlName="educationalBackground"
-            placeholder="Enter Educational Background"
+            label="Educational Background"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Describe your educational background"
+            rows="6"
+            minlength="0"
+            maxlength="1000"
+            [counter]="true"
           ></ion-textarea>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col>
-        <ion-button
-          expand="float"
-          type="submit"
-          [disabled]="professionalInfoForm.invalid"
-          >Save</ion-button
-        >
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+        </ion-col>
+      </ion-row>
+      <!-- Save Button -->
+      <ion-row>
+        <ion-col>
+          <ion-button
+            type="submit"
+            expand="block"
+            [disabled]="professionalInformationForm.invalid"
+          >
+            Save
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
 </form>

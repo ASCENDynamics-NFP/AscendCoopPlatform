@@ -3,60 +3,107 @@ name: CI and PR Deployment
 on:
   push:
     branches:
-      - main
+      - main  # Trigger workflow on push events to the main branch
   pull_request:
     branches:
-      - main
+      - main  # Trigger workflow on pull requests targeting the main branch
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
+  lint:
+    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
+
     steps:
+      # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Cache node modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
+      # Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
 
+      # Install dependencies using npm ci
       - name: Install dependencies
         run: npm ci
 
-      - name: Build and Test
-        run: npm run build && npm run test
+      # Run linting
+      - name: Run lint
+        run: npm run lint
 
-  build_and_preview:
-    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
-    runs-on: ubuntu-latest
+  build-and-test:
+    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
+    needs: lint  # This job depends on the successful completion of the lint job
+
     steps:
-      - uses: actions/checkout@v3
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
+      # Cache node modules to speed up installation
       - name: Cache node modules
         uses: actions/cache@v3
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/package.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
+      # Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
 
-      - run: npm ci && npm run build
+      # Install dependencies using npm ci
+      - name: Install dependencies
+        run: npm ci
 
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      # Build the project
+      - name: Build project
+        run: npm run build
+
+      # Run tests
+      - name: Run tests
+        run: npm run test
+
+  build_and_preview:
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}  # Only run this job for pull requests from the same repository
+    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
+    needs: build-and-test  # This job depends on the successful completion of the build-and-test job
+
+    steps:
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Cache node modules to speed up installation
+      - name: Cache node modules
+        uses: actions/cache@v3
         with:
-          repoToken: "${{ secrets.GITHUB_TOKEN }}"
-          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}"
-          projectId: ascendcoopplatform-dev
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      # Install dependencies using npm ci
+      - name: Install dependencies
+        run: npm ci
+
+      # Build the project
+      - name: Build project
+        run: npm run build
+
+      # Deploy to Firebase Preview
+      - name: Deploy to Firebase Preview
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"  # GitHub token for authentication
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}"  # Firebase service account key
+          projectId: ascendcoopplatform-dev  # Firebase project ID

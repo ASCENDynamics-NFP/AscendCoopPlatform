@@ -31,6 +31,7 @@ import {BasicInfoComponent} from "./components/basic-info/basic-info.component";
 import {ContactInfoComponent} from "./components/contact-info/contact-info.component";
 import {ProfessionalInfoComponent} from "./components/professional-info/professional-info.component";
 import {VolunteerPreferenceInfoComponent} from "./components/volunteer-preference-info/volunteer-preference-info.component";
+import {LaborRightsInfoComponent} from "./components/labor-rights-info/labor-rights-info.component";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {User} from "firebase/auth";
 
@@ -49,6 +50,7 @@ import {User} from "firebase/auth";
     ContactInfoComponent,
     ProfessionalInfoComponent,
     VolunteerPreferenceInfoComponent,
+    LaborRightsInfoComponent,
   ],
 })
 export class EditPage {

@@ -27,11 +27,12 @@ import {StoreService} from "../../../../../core/services/store.service";
 import {Subscription} from "rxjs";
 import {AppHeaderComponent} from "../../../../../shared/components/app-header/app-header.component";
 import {Account, RelatedAccount} from "../../../../../models/account.model";
+import {User} from "firebase/auth";
 
 @Component({
-  selector: "app-friends",
-  templateUrl: "./friends.page.html",
-  styleUrls: ["./friends.page.scss"],
+  selector: "app-list",
+  templateUrl: "./list.page.html",
+  styleUrls: ["./list.page.scss"],
   standalone: true,
   imports: [
     IonicModule,
@@ -41,12 +42,13 @@ import {Account, RelatedAccount} from "../../../../../models/account.model";
     AppHeaderComponent,
   ],
 })
-export class FriendsPage implements OnInit {
+export class ListPage implements OnInit {
   private accountsSubscription?: Subscription;
-  currentFriendsList: Partial<RelatedAccount>[] = [];
-  pendingFriendsList: Partial<RelatedAccount>[] = [];
+  currentRelatedAccountsList: Partial<RelatedAccount>[] = [];
+  pendingRelatedAccountsList: Partial<RelatedAccount>[] = [];
   accountId: string | null = null;
-  currentUser: any;
+  listType: string | null = null;
+  currentUser: User | null = null;
   account?: Partial<Account>;
 
   constructor(
@@ -55,6 +57,20 @@ export class FriendsPage implements OnInit {
     private storeService: StoreService,
   ) {
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
+    this.listType = this.activatedRoute.snapshot.paramMap.get("listType");
+  }
+
+  get getTitle() {
+    if (this.listType === "user" && this.account?.type === "user") {
+      return "Friends";
+    } else if (this.listType === "user" && this.account?.type === "group") {
+      return "Members";
+    } else if (this.listType === "group" && this.account?.type === "group") {
+      return "Partners";
+    } else if (this.listType === "group" && this.account?.type === "user") {
+      return "Organizations";
+    }
+    return "";
   }
 
   ngOnInit() {
@@ -78,11 +94,11 @@ export class FriendsPage implements OnInit {
   }
 
   sortRelatedAccounts(relatedAccounts: Partial<RelatedAccount>[]) {
-    this.currentFriendsList = relatedAccounts.filter(
-      (ra) => ra.type === "user" && ra.status === "accepted",
+    this.currentRelatedAccountsList = relatedAccounts.filter(
+      (ra) => ra.type === this.listType && ra.status === "accepted",
     );
-    this.pendingFriendsList = relatedAccounts.filter(
-      (ra) => ra.type === "user" && ra.status === "pending",
+    this.pendingRelatedAccountsList = relatedAccounts.filter(
+      (ra) => ra.type === this.listType && ra.status === "pending",
     );
   }
 

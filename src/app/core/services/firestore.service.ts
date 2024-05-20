@@ -45,6 +45,7 @@ import {
 } from "rxjs";
 import {FirebaseError} from "firebase/app";
 import {RelatedAccount} from "../../models/account.model";
+import {AngularFirestore} from "@angular/fire/compat/firestore";
 
 @Injectable({
   providedIn: "root",
@@ -73,7 +74,7 @@ export class FirestoreService {
   >([]);
   firestore: Firestore;
 
-  constructor() {
+  constructor(private afs: AngularFirestore) {
     this.firestore = getFirestore();
   }
 
@@ -428,6 +429,10 @@ export class FirestoreService {
           `Error getting document: ${error}`,
         );
       });
+  }
+
+  getDocById(collectionName: string, docId: string): Observable<any> {
+    return this.afs.collection(collectionName).doc(docId).valueChanges();
   }
 
   /**

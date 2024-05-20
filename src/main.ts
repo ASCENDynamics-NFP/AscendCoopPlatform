@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {enableProdMode, importProvidersFrom} from "@angular/core";
+import {enableProdMode, importProvidersFrom, isDevMode} from "@angular/core";
 import {bootstrapApplication} from "@angular/platform-browser";
 import {RouteReuseStrategy, provideRouter} from "@angular/router";
 import {IonicModule, IonicRouteStrategy} from "@ionic/angular";
@@ -33,6 +33,9 @@ import {AuthStoreService} from "./app/core/services/auth-store.service";
 import {TranslateModule, TranslateLoader} from "@ngx-translate/core";
 import {TranslateHttpLoader} from "@ngx-translate/http-loader";
 import {HttpClient, HttpClientModule} from "@angular/common/http";
+import {provideStore} from "@ngrx/store";
+import {provideEffects} from "@ngrx/effects";
+import {provideStoreDevtools} from "@ngrx/store-devtools";
 
 // Call the element loader after the platform has been bootstrapped
 defineCustomElements(window);
@@ -67,5 +70,8 @@ bootstrapApplication(AppComponent, {
     ),
     provideRouter(routes),
     AuthStoreService,
+    provideStore(),
+    provideEffects(),
+    provideStoreDevtools({maxAge: 25, logOnly: !isDevMode()}),
   ],
 });

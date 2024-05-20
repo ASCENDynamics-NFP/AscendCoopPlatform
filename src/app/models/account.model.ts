@@ -18,24 +18,29 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {BaseDocument} from "./base-document";
-import {Timestamp} from "firebase/firestore";
+import {GeoPoint, Timestamp} from "firebase/firestore";
 
+// Define a type for optional and nullable fields
+type Nullable<T> = T | null;
+
+// Address interface with optional fields
 export interface Address {
-  name?: string | null;
-  street?: string | null;
-  city?: string | null;
-  state?: string | null;
-  zipcode?: string | null;
-  country?: string | null;
-  formatted?: string | null;
-  geopoint?: string | null; // or a more specific geopoint type
+  name?: Nullable<string>;
+  street?: Nullable<string>;
+  city?: Nullable<string>;
+  state?: Nullable<string>;
+  zipcode?: Nullable<string>;
+  country?: Nullable<string>;
+  formatted?: Nullable<string>;
+  geopoint?: Nullable<GeoPoint>; // Use Firebase GeoPoint
 }
 
+// PhoneNumber interface with nullable fields
 export interface PhoneNumber {
-  countryCode: string | null;
-  number: string | null;
-  type: string | null;
-  isEmergencyNumber: boolean | null;
+  countryCode: Nullable<string>;
+  number: Nullable<string>;
+  type: Nullable<string>;
+  isEmergencyNumber: Nullable<boolean>;
 }
 
 interface UserSpecific {
@@ -68,13 +73,13 @@ interface LegalAgreements {
 }
 
 export interface Email {
-  name: string | null;
-  email: string | null;
+  name: Nullable<string>;
+  email: Nullable<string>;
 }
 
 interface ContactInformation {
   privacy?: "public" | "private" | "specific-users"; // Privacy setting
-  addresses?: Address[] | null;
+  addresses?: Nullable<Address>[];
   phoneNumbers: PhoneNumber[];
   emails: Email[];
   preferredMethodOfContact: "Email" | "Phone" | "SMS" | "Fax";

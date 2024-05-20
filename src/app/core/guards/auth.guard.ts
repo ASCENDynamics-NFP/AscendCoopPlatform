@@ -18,28 +18,20 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Injectable} from "@angular/core";
-import {
-  CanActivate,
-  ActivatedRouteSnapshot,
-  RouterStateSnapshot,
-  Router,
-} from "@angular/router";
+import {Router} from "@angular/router";
 import {AuthStoreService} from "../services/auth-store.service";
 import {firstValueFrom} from "rxjs";
 
 @Injectable({
   providedIn: "root",
 })
-export class AuthGuard implements CanActivate {
+export class AuthGuard {
   constructor(
     private authStoreService: AuthStoreService,
     private router: Router,
   ) {}
 
-  async canActivate(
-    _next: ActivatedRouteSnapshot,
-    _state: RouterStateSnapshot,
-  ): Promise<boolean> {
+  async canActivate(): Promise<boolean> {
     const authUser = await firstValueFrom(this.authStoreService.authUser$);
     if (!authUser) {
       // Redirect to login if not authenticated

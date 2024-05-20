@@ -28,7 +28,7 @@ initializeApp(environment.firebaseConfig);
 describe("FirestoreService", () => {
   let service: FirestoreService;
   let firestoreSpy: any;
-  let docData = {foo: "bar"};
+  const docData = {foo: "bar"};
 
   const docStub = {
     get: jasmine

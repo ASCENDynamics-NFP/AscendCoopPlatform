@@ -73,9 +73,9 @@ async function handleRelatedAccountCreate(
       targetAccountData?.type === "group"
         ? "partner"
         : initiatorAccountData?.type === "group" ||
-          targetAccountData?.type === "group"
-        ? "member"
-        : "friend";
+            targetAccountData?.type === "group"
+          ? "member"
+          : "friend";
 
     // Create a relatedAccount document for the target
     const targetRelatedAccountRef = db

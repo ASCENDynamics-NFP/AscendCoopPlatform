@@ -27,7 +27,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <ion-card-content>
     <ion-list>
       <ion-item
-        *ngFor="let account of relatedAccounts | slice : 0 : 4"
+        *ngFor="let account of relatedAccounts | slice: 0 : 4"
         button
         (click)="goToRelatedAccount(account.id)"
       >

@@ -40,8 +40,8 @@ export class RelatedAccountsComponent {
     return this.type === "user" && this.account?.type === "user"
       ? "Friends"
       : this.type === "user" && this.account?.type === "group"
-      ? "Members"
-      : "Organizations";
+        ? "Members"
+        : "Organizations";
   }
 
   get relatedAccounts() {
@@ -60,11 +60,11 @@ export class RelatedAccountsComponent {
 
   viewAll() {
     if (this.account?.id) {
-      if (this.type === "user") {
-        this.router.navigate([`/${this.account.id}/friends`]);
-      } else {
-        this.router.navigate([`/${this.account.id}/groups`]);
-      }
+      // if (this.type === "user") {
+      //   this.router.navigate([`/${this.account.id}/friends`]);
+      // } else {
+      this.router.navigate([`/${this.account.id}/${this.type}`]);
+      // }
     }
   }
 }

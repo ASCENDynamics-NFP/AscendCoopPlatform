@@ -47,7 +47,10 @@ export class VolunteerPreferenceInfoComponent implements OnInit {
     "Technology",
   ];
 
-  constructor(private fb: FormBuilder, private storeService: StoreService) {
+  constructor(
+    private fb: FormBuilder,
+    private storeService: StoreService,
+  ) {
     this.volunteerPreferencesForm = this.fb.group({
       areasOfInterest: [[], Validators.required],
       availability: ["", Validators.required],

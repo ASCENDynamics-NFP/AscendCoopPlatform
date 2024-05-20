@@ -35,14 +35,6 @@ export const routes: Routes = [
       ),
   },
   {
-    path: ":accountId/friends",
-    loadComponent: () =>
-      import(
-        "./modules/account/relatedAccount/pages/friends/friends.page"
-      ).then((m) => m.FriendsPage),
-    canActivate: [AuthGuard],
-  },
-  {
     path: "signup",
     loadComponent: () =>
       import("./modules/account/pages/signup/signup.page").then(
@@ -67,25 +59,19 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: "friends",
-    loadComponent: () =>
-      import(
-        "./modules/account/relatedAccount/pages/friends/friends.page"
-      ).then((m) => m.FriendsPage),
-    canActivate: [AuthGuard],
-  },
-  {
     path: "users",
     loadComponent: () =>
-      import("./modules/account/pages/users/users.page").then((m) => m.UsersPage),
+      import("./modules/account/pages/users/users.page").then(
+        (m) => m.UsersPage,
+      ),
     canActivate: [AuthGuard],
   },
   {
-    path: ":accountId/groups",
+    path: ":accountId/:listType",
     loadComponent: () =>
-      import(
-        "./modules/account/relatedAccount/pages/user-groups/user-groups.page"
-      ).then((m) => m.UserGroupsPage),
+      import("./modules/account/relatedAccount/pages/list/list.page").then(
+        (m) => m.ListPage,
+      ),
     canActivate: [AuthGuard],
   },
   {

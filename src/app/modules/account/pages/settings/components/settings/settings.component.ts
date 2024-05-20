@@ -58,8 +58,8 @@ export class SettingsComponent implements OnChanges {
     this.loadFormData();
   }
 
-  onLanguageChange(_event: any) {
-    let lang = this.settingsForm.value.language ?? "en";
+  onLanguageChange() {
+    const lang = this.settingsForm.value.language ?? "en";
     this.translateService.use(lang);
     this.languageChange.emit(lang);
   }

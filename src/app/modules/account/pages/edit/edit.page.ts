@@ -52,7 +52,7 @@ import {User} from "firebase/auth";
   ],
 })
 export class EditPage {
-  selectedForm: String = "basic";
+  selectedForm: string = "basic";
   authUser: User | null = null;
   private accountId: string | null = null;
   private accountsSubscription?: Subscription;

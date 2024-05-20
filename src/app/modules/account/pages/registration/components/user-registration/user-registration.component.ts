@@ -49,7 +49,7 @@ import {Router} from "@angular/router";
 })
 export class UserRegistrationComponent implements OnChanges {
   @Input() account?: Partial<Account>;
-  @Input() redirectSubmit: Boolean = false;
+  @Input() redirectSubmit: boolean = false;
   public maxAddresses = 3; // Set maximum number of addresses
   public maxEmails = 5;
   public maxLinks = 10;
@@ -152,12 +152,12 @@ export class UserRegistrationComponent implements OnChanges {
           addresses:
             formValue.contactInformation!.addresses?.map(
               (address: Partial<Address>) => ({
-                name: address.name ?? null,
-                street: address.street ?? null,
-                city: address.city ?? null,
-                state: address.state ?? null,
-                zipcode: address.zipcode ?? null,
-                country: address.country ?? null,
+                name: address?.name ?? null,
+                street: address?.street ?? null,
+                city: address?.city ?? null,
+                state: address?.state ?? null,
+                zipcode: address?.zipcode ?? null,
+                country: address?.country ?? null,
               }),
             ) ?? [],
           preferredMethodOfContact: "Email",
@@ -249,13 +249,13 @@ export class UserRegistrationComponent implements OnChanges {
     this.account.contactInformation?.addresses?.forEach((address) => {
       this.addressesFormArray.push(
         this.fb.group({
-          name: [address.name],
-          street: [address.street, Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
-          city: [address.city, Validators.pattern("^[a-zA-Z\\s]*$")],
-          state: [address.state],
-          zipcode: [address.zipcode, Validators.pattern("^[0-9]*$")],
-          country: [address.country],
-          // isPrimaryAddress: [address.isPrimaryAddress || false],
+          name: [address?.name],
+          street: [address?.street, Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
+          city: [address?.city, Validators.pattern("^[a-zA-Z\\s]*$")],
+          state: [address?.state],
+          zipcode: [address?.zipcode, Validators.pattern("^[0-9]*$")],
+          country: [address?.country],
+          // isPrimaryAddress: [address?.isPrimaryAddress || false],
         }),
       );
     });

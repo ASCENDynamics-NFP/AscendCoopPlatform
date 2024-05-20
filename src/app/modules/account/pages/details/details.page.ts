@@ -17,21 +17,23 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
+import {Component, OnInit, OnDestroy} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {ActivatedRoute, Router} from "@angular/router";
 import {RelatedAccountsComponent} from "./components/related-accounts/related-accounts.component";
 import {Account} from "../../../../models/account.model";
-import {Subscription} from "rxjs";
-import {StoreService} from "../../../../core/services/store.service";
+import {Store} from "@ngrx/store";
+import {Observable, Subscription} from "rxjs";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
 import {ProfessionalInfoComponent} from "./components/professional-info/professional-info.component";
 import {VolunteerPreferenceInfoComponent} from "./components/volunteer-preference-info/volunteer-preference-info.component";
 import {User} from "firebase/auth";
 import {HeroComponent} from "./components/hero/hero.component";
+import {loadAccount} from "../../../../core/state/actions/account.actions";
+import {selectAccount} from "../../../../core/state/selectors/account.selectors";
 
 @Component({
   selector: "app-details",
@@ -49,52 +51,44 @@ import {HeroComponent} from "./components/hero/hero.component";
     VolunteerPreferenceInfoComponent,
   ],
 })
-export class DetailsPage {
+export class DetailsPage implements OnInit, OnDestroy {
   public accountId: string | null;
-  private accountsSubscription?: Subscription;
   authUser: User | null = null;
-  account?: Partial<Account>;
+  account$: Observable<Account | null>;
+  private subscriptions: Subscription = new Subscription();
 
   constructor(
     private authStoreService: AuthStoreService,
     private route: ActivatedRoute,
     private router: Router,
-    private storeService: StoreService,
+    private store: Store,
   ) {
     this.accountId = this.route.snapshot.paramMap.get("accountId");
     this.authUser = this.authStoreService.getCurrentUser();
+    this.account$ = this.store.select(selectAccount);
   }
 
   get isProfileOwner(): boolean {
     return this.accountId === this.authStoreService.getCurrentUser()?.uid;
   }
 
-  ionViewWillEnter() {
-    this.initiateSubscribers();
-  }
+  ngOnInit() {
+    if (this.accountId) {
+      this.store.dispatch(loadAccount({accountId: this.accountId}));
+    }
 
-  ionViewWillLeave() {
-    this.accountsSubscription?.unsubscribe();
-  }
-
-  initiateSubscribers() {
-    this.accountsSubscription = this.storeService.accounts$.subscribe(
-      (accounts) => {
-        if (!this.accountId) return;
-        this.account = accounts.find(
-          (account) => account.id === this.accountId,
-        );
-        if (!this.account) {
-          this.storeService.getDocById("accounts", this.accountId); // get and add doc to store
-        } else {
-          if (!this.account?.type) {
+    this.subscriptions.add(
+      this.account$.subscribe((account) => {
+        if (account) {
+          if (!account.type) {
             this.router.navigate([`/registration/${this.accountId}`]); // Navigate to registration
           }
-          if (!this.account?.relatedAccounts) {
-            this.storeService.getAndSortRelatedAccounts(this.accountId);
-          }
         }
-      },
+      }),
     );
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 }

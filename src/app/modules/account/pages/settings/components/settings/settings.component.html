@@ -36,7 +36,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-label>Language</ion-label>
           <ion-select
             formControlName="language"
-            (ionChange)="onLanguageChange($event)"
+            (ionChange)="onLanguageChange()"
           >
             <ion-select-option
               *ngFor="let lang of languageList"

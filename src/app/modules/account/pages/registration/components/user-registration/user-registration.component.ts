@@ -49,7 +49,7 @@ import {Router} from "@angular/router";
 })
 export class UserRegistrationComponent implements OnChanges {
   @Input() account?: Partial<Account>;
-  @Input() redirectSubmit: Boolean = false;
+  @Input() redirectSubmit: boolean = false;
   public maxAddresses = 3; // Set maximum number of addresses
   public maxEmails = 5;
   public maxLinks = 10;

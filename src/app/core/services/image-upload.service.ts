@@ -111,7 +111,7 @@ export class ImageUploadService {
     if (!collectionName) {
       throw new Error("Missing collection name");
     }
-    let doc = {id: docId} as any;
+    const doc = {id: docId} as any;
     doc[fieldName] = downloadURL;
     await this.storeService.updateDoc(collectionName, doc);
   }

@@ -40,8 +40,8 @@ export class RelatedAccountsComponent {
     return this.type === "user" && this.account?.type === "user"
       ? "Friends"
       : this.type === "user" && this.account?.type === "group"
-      ? "Members"
-      : "Organizations";
+        ? "Members"
+        : "Organizations";
   }
 
   get relatedAccounts() {

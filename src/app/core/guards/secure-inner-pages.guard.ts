@@ -18,11 +18,7 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Injectable} from "@angular/core";
-import {
-  ActivatedRouteSnapshot,
-  Router,
-  RouterStateSnapshot,
-} from "@angular/router";
+import {Router} from "@angular/router";
 import {firstValueFrom} from "rxjs";
 import {AuthStoreService} from "../services/auth-store.service";
 import {NavController} from "@ionic/angular";
@@ -38,10 +34,7 @@ export class SecureInnerPagesGuard {
   ) {}
 
   // Used to restrict pages to users when they are logged in
-  async canActivate(
-    _next: ActivatedRouteSnapshot,
-    _state: RouterStateSnapshot,
-  ): Promise<boolean> {
+  async canActivate(): Promise<boolean> {
     const isLoggedIn = await firstValueFrom(this.authStoreService.isLoggedIn$);
     if (isLoggedIn) {
       // window.alert("Access denied!");

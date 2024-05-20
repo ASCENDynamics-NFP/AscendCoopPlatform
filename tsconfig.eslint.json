@@ -1,0 +1,24 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.spec.ts",
+    "src/**/*.d.ts",
+    "src/**/*.config.ts",
+    "src/**/*.routes.ts",
+    "src/**/*.module.ts",
+    "src/**/*.component.ts",
+    "src/**/*.service.ts",
+    "src/**/*.guard.ts",
+    "src/**/*.pipe.ts",
+    "src/**/*.directive.ts",
+    "src/**/*.page.ts",
+    "src/**/*.model.ts",
+    "src/**/*.util.ts",
+    "src/**/*.environment.ts",
+    "src/**/*.polyfills.ts",
+    "src/**/*.main.ts",
+    "src/**/*.test.ts",
+    "src/**/*.zone-flags.ts"
+  ]
+}

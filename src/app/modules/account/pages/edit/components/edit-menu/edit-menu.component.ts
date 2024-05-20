@@ -40,7 +40,7 @@ export class EditMenuComponent {
 
   async openImageUploadModal() {
     if (!this.account?.id || !this.isProfileOwner) return;
-    let modal = await this.modalController.create({
+    const modal = await this.modalController.create({
       component: ImageUploadModalComponent,
       componentProps: {
         collectionName: "accounts",

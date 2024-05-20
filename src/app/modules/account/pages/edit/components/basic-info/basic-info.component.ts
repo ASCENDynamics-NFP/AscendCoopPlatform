@@ -51,7 +51,10 @@ export class BasicInfoComponent implements OnChanges {
     }),
   });
 
-  constructor(private fb: FormBuilder, private storeService: StoreService) {}
+  constructor(
+    private fb: FormBuilder,
+    private storeService: StoreService,
+  ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes["account"]) {

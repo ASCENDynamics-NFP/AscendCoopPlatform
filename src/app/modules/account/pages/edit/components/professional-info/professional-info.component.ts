@@ -50,7 +50,10 @@ export class ProfessionalInfoComponent implements OnInit {
     "Graphic Design",
   ];
 
-  constructor(private fb: FormBuilder, private storeService: StoreService) {
+  constructor(
+    private fb: FormBuilder,
+    private storeService: StoreService,
+  ) {
     this.professionalInformationForm = this.fb.group({
       occupation: ["", Validators.required],
       employerName: [""],

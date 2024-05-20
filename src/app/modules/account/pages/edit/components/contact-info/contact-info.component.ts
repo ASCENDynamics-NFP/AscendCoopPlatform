@@ -57,7 +57,10 @@ export class ContactInfoComponent implements OnChanges {
 
   contactInfoForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private storeService: StoreService) {
+  constructor(
+    private fb: FormBuilder,
+    private storeService: StoreService,
+  ) {
     this.contactInfoForm = this.fb.group({
       contactInformation: this.fb.group({
         emails: this.fb.array([this.createEmailFormGroup()]),

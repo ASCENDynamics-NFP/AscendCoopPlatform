@@ -114,12 +114,12 @@ export class ContactInfoComponent implements OnChanges {
             }),
           ),
           addresses: formValue.addresses.map((address: Partial<Address>) => ({
-            name: address.name ?? null,
-            street: address.street ?? null,
-            city: address.city ?? null,
-            state: address.state ?? null,
-            zipcode: address.zipcode ?? null,
-            country: address.country ?? null,
+            name: address?.name ?? null,
+            street: address?.street ?? null,
+            city: address?.city ?? null,
+            state: address?.state ?? null,
+            zipcode: address?.zipcode ?? null,
+            country: address?.country ?? null,
           })),
         },
       };
@@ -166,12 +166,12 @@ export class ContactInfoComponent implements OnChanges {
     contactInfo?.addresses?.forEach((address) => {
       this.addressesFormArray.push(
         this.fb.group({
-          name: [address.name],
-          street: [address.street, Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
-          city: [address.city, Validators.pattern("^[a-zA-Z\\s]*$")],
-          state: [address.state],
-          zipcode: [address.zipcode, Validators.pattern("^[0-9]*$")],
-          country: [address.country],
+          name: [address?.name],
+          street: [address?.street, Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
+          city: [address?.city, Validators.pattern("^[a-zA-Z\\s]*$")],
+          state: [address?.state],
+          zipcode: [address?.zipcode, Validators.pattern("^[0-9]*$")],
+          country: [address?.country],
         }),
       );
     });

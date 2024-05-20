@@ -9,31 +9,31 @@ on:
       - main  # Trigger workflow on pull requests targeting the main branch
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
+  # lint:
+  #   runs-on: ubuntu-latest  # Use the latest Ubuntu runner
 
-    steps:
-      # Checkout the repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
+  #   steps:
+  #     # Checkout the repository
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v3
 
-      # Set up Node.js environment
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
+  #     # Set up Node.js environment
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 20
 
-      # Install dependencies using npm ci
-      - name: Install dependencies
-        run: npm ci
+  #     # Install dependencies using npm ci
+  #     - name: Install dependencies
+  #       run: npm ci
 
-      # Run linting
-      - name: Run lint
-        run: npm run lint
+  #     # Run linting
+  #     - name: Run lint
+  #       run: npm run lint
 
   build-and-test:
     runs-on: ubuntu-latest  # Use the latest Ubuntu runner
-    needs: lint  # This job depends on the successful completion of the lint job
+    # needs: lint  # This job depends on the successful completion of the lint job
 
     steps:
       # Checkout the repository

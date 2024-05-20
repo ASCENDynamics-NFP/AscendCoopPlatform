@@ -29,7 +29,7 @@
     "@capacitor/keyboard": "5.0.1",
     "@capacitor/preferences": "^5.0.1",
     "@capacitor/status-bar": "5.0.1",
-    "@ionic/angular": "^7.0.0",
+    "@ionic/angular": "^8.1.2",
     "@ionic/pwa-elements": "^3.1.1",
     "@ngx-translate/core": "^14.0.0",
     "@ngx-translate/http-loader": "^7.0.0",

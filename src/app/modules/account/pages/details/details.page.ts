@@ -30,6 +30,7 @@ import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
 import {ProfessionalInfoComponent} from "./components/professional-info/professional-info.component";
 import {VolunteerPreferenceInfoComponent} from "./components/volunteer-preference-info/volunteer-preference-info.component";
+import {MutualAidCommunityInfoComponent} from "./components/mutual-aid-community-info/mutual-aid-community-info.component";
 import {User} from "firebase/auth";
 import {HeroComponent} from "./components/hero/hero.component";
 
@@ -47,6 +48,7 @@ import {HeroComponent} from "./components/hero/hero.component";
     RelatedAccountsComponent,
     ProfessionalInfoComponent,
     VolunteerPreferenceInfoComponent,
+    MutualAidCommunityInfoComponent,
   ],
 })
 export class DetailsPage {

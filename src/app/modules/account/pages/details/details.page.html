@@ -48,6 +48,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       class="tab-link"
       >Volunteer Preferences</a
     >
+    <a
+      *ngIf="account.type === 'user'"
+      href="{{account.id + '#mutual-aid'}}"
+      class="tab-link"
+      >Mutual Aid</a
+    >
   </div>
 
   <div *ngIf="account">
@@ -74,5 +80,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       id="volunteer"
       [volunteerPreferences]="account.volunteerPreferences"
     ></app-volunteer-preference-info>
+    <app-mutual-aid-community-info
+      *ngIf="account.type === 'user'"
+      id="mutual-aid"
+      [mutualAidCommunityEngagement]="account.mutualAidCommunityEngagement"
+    ></app-mutual-aid-community-info>
   </div>
 </ion-content>

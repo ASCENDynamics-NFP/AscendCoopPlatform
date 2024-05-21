@@ -47,6 +47,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           *ngIf="'volunteer' === selectedForm"
           [account]="account"
         ></app-volunteer-preference-info>
+        <app-mutual-aid-community-engagement
+          *ngIf="'mutual aid' === selectedForm"
+          [account]="account"
+        ></app-mutual-aid-community-engagement>
         <app-labor-rights-info
           *ngIf="'labor' === selectedForm"
           [account]="account"

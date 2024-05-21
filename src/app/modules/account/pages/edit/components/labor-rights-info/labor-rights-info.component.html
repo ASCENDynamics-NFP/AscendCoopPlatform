@@ -29,30 +29,20 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-item lines="none">
             <ion-label>Union Membership</ion-label>
           </ion-item>
-          <ion-item lines="none">
-            <ion-checkbox
-              slot="start"
-              formControlName="unionMembership"
-              value="yes"
-            ></ion-checkbox>
-            <ion-label>Yes</ion-label>
-          </ion-item>
-          <ion-item lines="none">
-            <ion-checkbox
-              slot="start"
-              formControlName="unionMembership"
-              value="no"
-            ></ion-checkbox>
-            <ion-label>No</ion-label>
-          </ion-item>
-          <ion-item lines="none">
-            <ion-checkbox
-              slot="start"
-              formControlName="unionMembership"
-              value="preferNotToSay"
-            ></ion-checkbox>
-            <ion-label>Prefer not to say</ion-label>
-          </ion-item>
+          <ion-radio-group formControlName="unionMembership">
+            <ion-item lines="none">
+              <ion-radio slot="start" value="yes"></ion-radio>
+              <ion-label>Yes</ion-label>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-radio slot="start" value="no"></ion-radio>
+              <ion-label>No</ion-label>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-radio slot="start" value="preferNotToSay"></ion-radio>
+              <ion-label>Prefer not to say</ion-label>
+            </ion-item>
+          </ion-radio-group>
         </ion-col>
       </ion-row>
 
@@ -117,7 +107,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <ion-col>
           <ion-button
             type="submit"
-            expand="block"
+            expand="float"
             [disabled]="laborRightsInfoForm.invalid"
           >
             Save

@@ -32,6 +32,7 @@ import {ContactInfoComponent} from "./components/contact-info/contact-info.compo
 import {ProfessionalInfoComponent} from "./components/professional-info/professional-info.component";
 import {VolunteerPreferenceInfoComponent} from "./components/volunteer-preference-info/volunteer-preference-info.component";
 import {LaborRightsInfoComponent} from "./components/labor-rights-info/labor-rights-info.component";
+import {MutualAidCommunityEngagementComponent} from "./components/mutual-aid-community-engagement/mutual-aid-community-engagement.component";
 import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {User} from "firebase/auth";
 
@@ -51,6 +52,7 @@ import {User} from "firebase/auth";
     ProfessionalInfoComponent,
     VolunteerPreferenceInfoComponent,
     LaborRightsInfoComponent,
+    MutualAidCommunityEngagementComponent,
   ],
 })
 export class EditPage {

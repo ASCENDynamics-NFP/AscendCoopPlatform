@@ -1,0 +1,135 @@
+<form [formGroup]="mutualAidForm" (ngSubmit)="onSubmit()">
+  <ion-item slot="header">
+    <ion-label>Mutual Aid Community Engagement</ion-label>
+  </ion-item>
+  <div slot="content">
+    <ion-grid>
+      <!-- Services Offered -->
+      <ion-row>
+        <ion-col>
+          <ion-select
+            formControlName="servicesOffered"
+            label="Services Offered"
+            label-placement="floating"
+            fill="outline"
+            interface="popover"
+            multiple="true"
+            placeholder="Select services offered"
+          >
+            <ion-select-option
+              *ngFor="let service of servicesOptions"
+              [value]="service"
+            >
+              {{ service }}
+            </ion-select-option>
+          </ion-select>
+        </ion-col>
+      </ion-row>
+
+      <!-- Services Needed -->
+      <ion-row>
+        <ion-col>
+          <ion-select
+            formControlName="servicesNeeded"
+            label="Services Needed"
+            label-placement="floating"
+            fill="outline"
+            interface="popover"
+            multiple="true"
+            placeholder="Select services needed"
+          >
+            <ion-select-option
+              *ngFor="let service of servicesOptions"
+              [value]="service"
+            >
+              {{ service }}
+            </ion-select-option>
+          </ion-select>
+        </ion-col>
+      </ion-row>
+
+      <!-- Community Affiliations -->
+      <ion-row>
+        <ion-col>
+          <ion-select
+            formControlName="communityAffiliations"
+            label="Community Affiliations"
+            label-placement="floating"
+            fill="outline"
+            interface="popover"
+            multiple="true"
+            placeholder="Select community affiliations"
+          >
+            <ion-select-option
+              *ngFor="let affiliation of communityAffiliationsOptions"
+              [value]="affiliation"
+            >
+              {{ affiliation }}
+            </ion-select-option>
+          </ion-select>
+        </ion-col>
+      </ion-row>
+
+      <!-- Willingness to Provide Mentorship -->
+      <ion-row>
+        <ion-col>
+          <ion-item>
+            <ion-label>Willingness to Provide Mentorship</ion-label>
+            <ion-checkbox
+              formControlName="willingnessToProvideMentorship"
+              slot="start"
+            ></ion-checkbox>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+
+      <!-- Interest in Receiving Mentorship -->
+      <ion-row>
+        <ion-col>
+          <ion-item>
+            <ion-label>Interest in Receiving Mentorship</ion-label>
+            <ion-checkbox
+              formControlName="interestInReceivingMentorship"
+              slot="start"
+            ></ion-checkbox>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+
+      <!-- Groups or Forums Participation -->
+      <ion-row>
+        <ion-col>
+          <ion-select
+            formControlName="groupsOrForumsParticipation"
+            label="Groups or Forums Participation"
+            label-placement="floating"
+            fill="outline"
+            interface="popover"
+            multiple="true"
+            placeholder="Select groups or forums"
+          >
+            <ion-select-option
+              *ngFor="let group of groupsOrForumsOptions"
+              [value]="group"
+            >
+              {{ group }}
+            </ion-select-option>
+          </ion-select>
+        </ion-col>
+      </ion-row>
+
+      <!-- Save Button -->
+      <ion-row>
+        <ion-col>
+          <ion-button
+            type="submit"
+            expand="float"
+            [disabled]="mutualAidForm.invalid"
+          >
+            Save
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+</form>

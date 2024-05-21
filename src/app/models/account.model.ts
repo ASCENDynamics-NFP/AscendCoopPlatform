@@ -110,7 +110,7 @@ export interface VolunteerPreferences {
   desiredLevelOfCommitment: "One-time" | "Occasional" | "Regular";
 }
 
-interface MutualAidCommunityEngagement {
+export interface MutualAidCommunityEngagement {
   servicesOffered: string[];
   servicesNeeded?: string[];
   communityAffiliations: string[];

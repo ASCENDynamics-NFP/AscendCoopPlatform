@@ -60,11 +60,7 @@ export class RelatedAccountsComponent {
 
   viewAll() {
     if (this.account?.id) {
-      // if (this.type === "user") {
-      //   this.router.navigate([`/${this.account.id}/friends`]);
-      // } else {
-      this.router.navigate([`/${this.account.id}/${this.type}`]);
-      // }
+      this.router.navigate([`/${this.account.id}/related/${this.type}`]);
     }
   }
 }

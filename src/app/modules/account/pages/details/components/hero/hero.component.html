@@ -23,6 +23,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     alt="Header Background"
   />
   <ion-button
+    *ngIf="isProfileOwner"
     fill="outline"
     class="edit-button"
     size="small"
@@ -46,6 +47,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </p>
       <p class="tagline">{{ account?.tagline }}</p>
       <ion-button
+        *ngIf="isProfileOwner"
         fill="outline"
         class="edit-button"
         size="small"

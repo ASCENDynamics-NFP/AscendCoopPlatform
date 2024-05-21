@@ -67,14 +67,6 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: ":accountId/:listType",
-    loadComponent: () =>
-      import("./modules/account/relatedAccount/pages/list/list.page").then(
-        (m) => m.ListPage,
-      ),
-    canActivate: [AuthGuard],
-  },
-  {
     path: "registration/:accountId",
     loadComponent: () =>
       import("./modules/account/pages/registration/registration.page").then(
@@ -87,10 +79,20 @@ export const routes: Routes = [
       import("./modules/account/pages/details/details.page").then(
         (m) => m.DetailsPage,
       ),
+    canActivate: [AuthGuard],
   },
   {
     path: ":accountId/edit",
     loadComponent: () =>
       import("./modules/account/pages/edit/edit.page").then((m) => m.EditPage),
+    canActivate: [AuthGuard],
+  },
+  {
+    path: ":accountId/related/:listType",
+    loadComponent: () =>
+      import("./modules/account/relatedAccount/pages/list/list.page").then(
+        (m) => m.ListPage,
+      ),
+    canActivate: [AuthGuard],
   },
 ];

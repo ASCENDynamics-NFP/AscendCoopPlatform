@@ -27,6 +27,7 @@ import {
   VolunteerPreferences,
 } from "../../../../../../models/account.model";
 import {StoreService} from "../../../../../../core/services/store.service";
+import {areasOfInterestOptions} from "../../../../../../core/data/options";
 
 @Component({
   selector: "app-volunteer-preference-info",
@@ -38,14 +39,7 @@ import {StoreService} from "../../../../../../core/services/store.service";
 export class VolunteerPreferenceInfoComponent implements OnInit {
   @Input() account?: Partial<Account>;
   volunteerPreferencesForm: FormGroup;
-  areasOfInterestOptions: string[] = [
-    "Community Service",
-    "Education",
-    "Healthcare",
-    "Environment",
-    "Arts",
-    "Technology",
-  ];
+  areasOfInterestOptions: string[] = areasOfInterestOptions;
 
   constructor(
     private fb: FormBuilder,
@@ -73,8 +67,9 @@ export class VolunteerPreferenceInfoComponent implements OnInit {
         areasOfInterest:
           this.account.volunteerPreferences.areasOfInterest || [],
         availability: this.account.volunteerPreferences.availability || "",
-        preferredVolunteerRoles:
-          this.account.volunteerPreferences.preferredVolunteerRoles || [],
+        preferredVolunteerRoles: (
+          this.account.volunteerPreferences.preferredVolunteerRoles || []
+        ).join(", "),
         previousVolunteerExperience:
           this.account.volunteerPreferences.previousVolunteerExperience || "",
         willingnessToTravel:
@@ -87,8 +82,13 @@ export class VolunteerPreferenceInfoComponent implements OnInit {
 
   onSubmit() {
     if (this.volunteerPreferencesForm.valid) {
-      const updatedVolunteerPreferences: VolunteerPreferences =
-        this.volunteerPreferencesForm.value;
+      const formValue = this.volunteerPreferencesForm.value;
+      const updatedVolunteerPreferences: VolunteerPreferences = {
+        ...formValue,
+        preferredVolunteerRoles: formValue.preferredVolunteerRoles
+          .split(",")
+          .map((role: string) => role.trim()),
+      };
       const updatedAccount: Partial<Account> = {
         ...this.account,
         volunteerPreferences: updatedVolunteerPreferences,

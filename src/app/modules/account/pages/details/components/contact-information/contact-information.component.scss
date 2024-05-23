@@ -1,0 +1,27 @@
+:host {
+  div {
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #fff;
+    margin: 0;
+  }
+
+  p {
+    font-size: 1em;
+    color: #aaa;
+    margin: 4px 0 0 0;
+  }
+
+  ion-card-title {
+    font-size: 1.5em;
+    margin-bottom: 16px;
+  }
+}
+
+ion-card {
+  border: 1px solid var(--ion-color-primary);
+}

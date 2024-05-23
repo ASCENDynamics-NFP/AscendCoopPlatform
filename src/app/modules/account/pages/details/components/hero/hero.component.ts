@@ -17,13 +17,14 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {CommonModule} from "@angular/common";
-import {Component, Input} from "@angular/core";
-import {IonicModule, ModalController} from "@ionic/angular";
-import {Account} from "../../../../../../models/account.model";
-import {FormsModule} from "@angular/forms";
-import {ImageUploadModalComponent} from "../../../../../../shared/components/image-upload-modal/image-upload-modal.component";
-import {RouterModule} from "@angular/router";
+import { CommonModule } from "@angular/common";
+import { Component, Input } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { RouterModule } from "@angular/router";
+import { IonicModule, ModalController } from "@ionic/angular";
+import { Account } from "../../../../../../models/account.model";
+import { ImageUploadModalComponent } from "../../../../../../shared/components/image-upload-modal/image-upload-modal.component";
+import { ContactInformationModule } from "../contact-information/contact-information.module";
 
 @Component({
   selector: "app-hero",
@@ -36,6 +37,7 @@ import {RouterModule} from "@angular/router";
     IonicModule,
     RouterModule,
     ImageUploadModalComponent,
+    ContactInformationModule
   ],
 })
 export class HeroComponent {

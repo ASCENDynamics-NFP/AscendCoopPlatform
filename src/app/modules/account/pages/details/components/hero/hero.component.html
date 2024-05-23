@@ -86,7 +86,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <div [ngSwitch]="segment" class="segment-content">
     <div id="profile" *ngSwitchCase="'profile'">Profile Content</div>
     <div id="contact" *ngSwitchCase="'contact'">
-      Contact information Content
+      <app-contact-information [account]="account"></app-contact-information>
     </div>
     <div id="professional" *ngSwitchCase="'professional'">
       Professional contact Content

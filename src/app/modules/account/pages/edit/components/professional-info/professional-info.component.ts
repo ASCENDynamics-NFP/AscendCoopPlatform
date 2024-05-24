@@ -31,6 +31,7 @@ import {
 } from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {StoreService} from "../../../../../../core/services/store.service";
+import {skillsOptions} from "../../../../../../core/data/options";
 
 @Component({
   selector: "app-professional-info",
@@ -42,13 +43,7 @@ import {StoreService} from "../../../../../../core/services/store.service";
 export class ProfessionalInfoComponent implements OnInit {
   @Input() account?: Partial<Account>;
   professionalInformationForm: FormGroup;
-  skillsOptions: string[] = [
-    "Programming",
-    "Project Management",
-    "Data Analysis",
-    "Marketing",
-    "Graphic Design",
-  ];
+  public skillsOptions: string[] = skillsOptions;
 
   constructor(
     private fb: FormBuilder,

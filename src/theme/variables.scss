@@ -23,7 +23,7 @@
 /** Ionic CSS Variables **/
 :root {
   /** primary **/
-  --ion-color-primary: #e87121; /* Orange */
+  --ion-color-primary: #e87121 !important; /* Orange */
   --ion-color-primary-rgb: 232, 113, 33;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
@@ -31,7 +31,7 @@
   --ion-color-primary-tint: tint(#e87121, 10%);
 
   /** secondary **/
-  --ion-color-secondary: #4a90e2; /* Soft Blue */
+  --ion-color-secondary: #4a90e2 !important; /* Soft Blue */
   --ion-color-secondary-rgb: 74, 144, 226;
   --ion-color-secondary-contrast: #ffffff;
   --ion-color-secondary-contrast-rgb: 255, 255, 255;
@@ -39,7 +39,7 @@
   --ion-color-secondary-tint: tint(#4a90e2, 10%);
 
   /** tertiary **/
-  --ion-color-tertiary: #7abd91; /* Muted Green */
+  --ion-color-tertiary: #7abd91 !important; /* Muted Green */
   --ion-color-tertiary-rgb: 122, 189, 145;
   --ion-color-tertiary-contrast: #ffffff;
   --ion-color-tertiary-contrast-rgb: 255, 255, 255;
@@ -93,14 +93,6 @@
   --ion-color-light-contrast-rgb: 0, 0, 0;
   --ion-color-light-shade: #d7d8da;
   --ion-color-light-tint: #f5f6f9;
-}
-
-form ion-item {
-  --background: #121212; /* Custom background color */
-  // --padding-start: 16px; /* Custom padding */
-  // --padding-end: 16px;
-  // --inner-padding-end: 16px;
-  // --min-height: 50px; /* Custom height */
 }
 
 @media (prefers-color-scheme: dark) {

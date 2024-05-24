@@ -33,12 +33,21 @@
 .mutual-aid-info-card h2 {
   font-size: 1.2em;
   font-weight: bold;
-  color: #fff;
+  color: #000;
   margin: 0;
 }
 
 .mutual-aid-info-card p {
   font-size: 1em;
-  color: #aaa;
   margin: 4px 0 0 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .mutual-aid-info-card h2 {
+    color: #fff;
+  }
+  
+  .mutual-aid-info-card p {
+    color: #aaa;
+  }
 }

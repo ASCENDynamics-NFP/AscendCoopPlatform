@@ -18,5 +18,5 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 ion-card {
-  border: 1px solid #e87121; /* Add your desired border color */
+  border: 1px solid var(--ion-color-primary); /* Add your desired border color */
 }

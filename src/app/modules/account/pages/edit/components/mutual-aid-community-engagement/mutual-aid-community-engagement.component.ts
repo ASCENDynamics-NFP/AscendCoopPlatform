@@ -27,6 +27,11 @@ import {
   Account,
   MutualAidCommunityEngagement,
 } from "../../../../../../models/account.model";
+import {
+  servicesOptions,
+  communityAffiliationsOptions,
+  groupsOrForumsOptions,
+} from "../../../../../../core/data/options";
 
 @Component({
   selector: "app-mutual-aid-community-engagement",
@@ -38,27 +43,9 @@ import {
 export class MutualAidCommunityEngagementComponent implements OnInit {
   @Input() account?: Partial<Account>;
   mutualAidForm: FormGroup;
-  servicesOptions: string[] = [
-    "Food Distribution",
-    "Housing Assistance",
-    "Healthcare",
-    "Transportation",
-    "Education",
-  ];
-  communityAffiliationsOptions: string[] = [
-    "Local Non-Profit",
-    "Community Center",
-    "Neighborhood Association",
-    "Religious Organization",
-    "Online Community",
-  ];
-  groupsOrForumsOptions: string[] = [
-    "Facebook Groups",
-    "Reddit",
-    "Local Forums",
-    "Community Boards",
-    "Slack Channels",
-  ];
+  public servicesOptions: string[] = servicesOptions;
+  public communityAffiliationsOptions: string[] = communityAffiliationsOptions;
+  public groupsOrForumsOptions: string[] = groupsOrForumsOptions;
 
   constructor(
     private fb: FormBuilder,

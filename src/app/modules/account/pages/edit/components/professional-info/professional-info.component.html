@@ -1,0 +1,139 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<form [formGroup]="professionalInformationForm" (ngSubmit)="onSubmit()">
+  <ion-item slot="header">
+    <ion-label>Professional Information</ion-label>
+  </ion-item>
+  <div slot="content">
+    <ion-grid>
+      <!-- Occupation -->
+      <ion-row>
+        <ion-col>
+          <ion-input
+            formControlName="occupation"
+            label="Occupation"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter your occupation"
+          ></ion-input>
+        </ion-col>
+      </ion-row>
+      <!-- Employer Name -->
+      <ion-row>
+        <ion-col>
+          <ion-input
+            formControlName="employerName"
+            label="Employer Name"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter your employer's name"
+          ></ion-input>
+        </ion-col>
+      </ion-row>
+      <!-- Work Experience -->
+      <ion-row>
+        <ion-col>
+          <ion-textarea
+            formControlName="workExperience"
+            label="Work Experience"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Describe your work experience"
+            rows="6"
+            minlength="0"
+            maxlength="1000"
+            [counter]="true"
+          ></ion-textarea>
+        </ion-col>
+      </ion-row>
+      <!-- Skills and Expertise -->
+      <ion-row>
+        <ion-col>
+          <ion-select
+            formControlName="skillsAndExpertise"
+            label="Skills and Expertise"
+            label-placement="floating"
+            fill="outline"
+            interface="popover"
+            multiple="true"
+          >
+            <ion-select-option
+              *ngFor="let skill of skillsOptions"
+              [value]="skill"
+              >{{ skill }}</ion-select-option
+            >
+          </ion-select>
+        </ion-col>
+      </ion-row>
+      <!-- Current Job Title -->
+      <ion-row>
+        <ion-col>
+          <ion-input
+            formControlName="currentJobTitle"
+            label="Current Job Title"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter your current job title"
+          ></ion-input>
+        </ion-col>
+      </ion-row>
+      <!-- LinkedIn Profile -->
+      <ion-row>
+        <ion-col>
+          <ion-input
+            formControlName="linkedInProfile"
+            label="LinkedIn Profile"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter your LinkedIn profile URL"
+          ></ion-input>
+        </ion-col>
+      </ion-row>
+      <!-- Educational Background -->
+      <ion-row>
+        <ion-col>
+          <ion-textarea
+            formControlName="educationalBackground"
+            label="Educational Background"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Describe your educational background"
+            rows="6"
+            minlength="0"
+            maxlength="1000"
+            [counter]="true"
+          ></ion-textarea>
+        </ion-col>
+      </ion-row>
+      <!-- Save Button -->
+      <ion-row>
+        <ion-col>
+          <ion-button
+            type="submit"
+            expand="float"
+            [disabled]="professionalInformationForm.invalid"
+          >
+            Save
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+</form>

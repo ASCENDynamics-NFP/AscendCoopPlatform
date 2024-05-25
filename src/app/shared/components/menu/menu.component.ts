@@ -24,7 +24,7 @@ import {IonicModule, ModalController} from "@ionic/angular";
 import {User} from "firebase/auth";
 import {TranslateModule} from "@ngx-translate/core";
 import {TranslateService, LangChangeEvent} from "@ngx-translate/core";
-import {CreateGroupModalComponent} from "../../../modules/group/components/create-group-modal/create-group-modal.component";
+import {CreateGroupModalComponent} from "../../../modules/account/components/create-group-modal/create-group-modal.component";
 import {Subscription} from "rxjs";
 import {AuthStoreService} from "../../../core/services/auth-store.service";
 import {FeedbackModalComponent} from "../feedback-modal/feedback-modal.component";
@@ -182,7 +182,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         buttonText: "",
         hasButton: false,
         title: "Settings",
-        url: `user-settings`,
+        url: `settings`,
         icon: "settings",
         onclick: null,
       },
@@ -230,9 +230,7 @@ export class MenuComponent implements OnInit, OnDestroy {
 
       const {data, role} = await modal.onWillDismiss();
       if (role === "confirm" && data) {
-        this.router.navigate([
-          `/group/${data.groupId}/${data.groupId}/details`,
-        ]);
+        this.router.navigate([`/${data.groupId}`]);
       }
     }
   }

@@ -1,3 +1,22 @@
+/***********************************************************************************************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+*
+* This file is part of Nonprofit Social Networking Platform.
+*
+* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+
+* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+
+* You should have received a copy of the GNU Affero General Public License
+* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+***********************************************************************************************/
 export const countryCodes: {value: string; label: string}[] = [
   {value: "+1", label: "+1 (USA, Canada)"},
   {value: "+44", label: "+44 (UK)"},
@@ -25,6 +44,7 @@ export const countryCodes: {value: string; label: string}[] = [
   {value: "+92", label: "+92 (Pakistan)"},
   {value: "+880", label: "+880 (Bangladesh)"},
   {value: "+20", label: "+20 (Egypt)"},
+  {value: "+234", label: "+234 (Nigeria)"},
   {value: "+966", label: "+966 (Saudi Arabia)"},
   {value: "+971", label: "+971 (United Arab Emirates)"},
   {value: "+90", label: "+90 (Turkey)"},

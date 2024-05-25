@@ -1,0 +1,128 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<form [formGroup]="volunteerPreferencesForm" (ngSubmit)="onSubmit()">
+  <ion-item slot="header">
+    <ion-label>Volunteer Preferences</ion-label>
+  </ion-item>
+  <div slot="content">
+    <ion-grid>
+      <!-- Areas of Interest -->
+      <ion-row>
+        <ion-col>
+          <ion-select
+            formControlName="areasOfInterest"
+            label="Areas of Interest"
+            label-placement="floating"
+            fill="outline"
+            interface="popover"
+            multiple="true"
+          >
+            <ion-select-option
+              *ngFor="let area of areasOfInterestOptions"
+              [value]="area"
+              >{{ area }}</ion-select-option
+            >
+          </ion-select>
+        </ion-col>
+      </ion-row>
+      <!-- Availability -->
+      <ion-row>
+        <ion-col>
+          <ion-select
+            formControlName="availability"
+            label="Availability"
+            label-placement="floating"
+            fill="outline"
+            interface="popover"
+            multiple="true"
+          >
+            <ion-select-option value="Weekdays">Weekdays</ion-select-option>
+            <ion-select-option value="Weekends">Weekends</ion-select-option>
+            <ion-select-option value="Evenings">Evenings</ion-select-option>
+          </ion-select>
+        </ion-col>
+      </ion-row>
+      <!-- Preferred Volunteer Roles -->
+      <ion-row>
+        <ion-col>
+          <ion-input
+            formControlName="preferredVolunteerRoles"
+            label="Preferred Volunteer Roles"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter roles separated by commas"
+          ></ion-input>
+        </ion-col>
+      </ion-row>
+      <!-- Previous Volunteer Experience -->
+      <ion-row>
+        <ion-col>
+          <ion-input
+            formControlName="previousVolunteerExperience"
+            label="Previous Volunteer Experience"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter previous experience"
+          ></ion-input>
+        </ion-col>
+      </ion-row>
+      <!-- Willingness to Travel -->
+      <ion-row>
+        <ion-col>
+          <ion-item>
+            <ion-label>Willingness to Travel</ion-label>
+            <ion-checkbox
+              formControlName="willingnessToTravel"
+              slot="start"
+            ></ion-checkbox>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+      <!-- Level of Commitment -->
+      <ion-row>
+        <ion-col>
+          <ion-select
+            formControlName="desiredLevelOfCommitment"
+            label="Level of Commitment"
+            label-placement="floating"
+            fill="outline"
+            interface="popover"
+          >
+            <ion-select-option value="One-time">One-time</ion-select-option>
+            <ion-select-option value="Occasional">Occasional</ion-select-option>
+            <ion-select-option value="Regular">Regular</ion-select-option>
+          </ion-select>
+        </ion-col>
+      </ion-row>
+      <!-- Save Button -->
+      <ion-row>
+        <ion-col>
+          <ion-button
+            type="submit"
+            expand="float"
+            [disabled]="volunteerPreferencesForm.invalid"
+          >
+            Save
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+</form>

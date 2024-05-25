@@ -43,12 +43,30 @@ import { ContactInformationModule } from "../contact-information/contact-informa
 export class HeroComponent {
   @Input() account?: Partial<Account>;
   @Input() isProfileOwner: boolean = false;
-  segment: string = "profile"; // Default selected segment
+
   constructor(private modalController: ModalController) {}
+
+  get hasDonationURL() {
+    // find Donation category in account.webLinks array return boolean
+    return this.account?.webLinks?.some(
+      (webLink) => webLink?.category?.toLowerCase() === "donation",
+    );
+  }
+
+  get getLocation() {
+    if (
+      this.account?.contactInformation?.addresses &&
+      this.account?.contactInformation?.addresses?.length > 0
+    ) {
+      return `${this.account.contactInformation.addresses[0]?.city} /${this.account.contactInformation.addresses[0]?.country}`;
+    } else {
+      return "";
+    }
+  }
 
   async openImageUploadModal() {
     if (!this.account?.id || !this.isProfileOwner) return;
-    let modal = await this.modalController.create({
+    const modal = await this.modalController.create({
       component: ImageUploadModalComponent,
       componentProps: {
         collectionName: "accounts",
@@ -63,7 +81,18 @@ export class HeroComponent {
     await modal.present();
   }
 
-  scrollTo(section: string) {
-    document.getElementById(section)?.scrollIntoView({behavior: "smooth"});
+  onLink(category: string) {
+    if (this.account?.webLinks) {
+      const webLink = this.account.webLinks.find(
+        (link) => link.category?.toLowerCase() === category.toLowerCase(),
+      );
+      if (webLink && webLink.url) {
+        window.open(webLink.url, "_blank");
+      } else {
+        console.error(`No URL found for category: ${category}`);
+      }
+    } else {
+      console.error("No web links available.");
+    }
   }
 }

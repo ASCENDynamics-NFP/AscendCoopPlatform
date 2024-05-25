@@ -21,18 +21,69 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
 <ion-content [fullscreen]="true">
   <app-hero
+    id="profile"
     *ngIf="account"
     [account]="account"
     [isProfileOwner]="isProfileOwner"
   ></app-hero>
-  <app-related-accounts
-    *ngIf="account"
-    [account]="account"
-    type="user"
-  ></app-related-accounts>
-  <app-related-accounts
-    *ngIf="account"
-    [account]="account"
-    type="group"
-  ></app-related-accounts>
+
+  <div *ngIf="account" class="tabs">
+    <a href="{{account.id + '#profile'}}" class="tab-link">Profile</a>
+    <a href="{{account.id + '#contact'}}" class="tab-link"
+      >Contact Information</a
+    >
+    <a
+      *ngIf="account.type === 'user'"
+      href="{{account.id + '#professional'}}"
+      class="tab-link"
+      >Professional Experience</a
+    >
+    <a href="{{account.id + '#users'}}" class="tab-link"
+      >{{account.type === 'user'? 'Friends':'Members'}}</a
+    >
+    <a href="{{account.id + '#groups'}}" class="tab-link">Organizations</a>
+    <a
+      *ngIf="account.type === 'user'"
+      href="{{account.id + '#volunteer'}}"
+      class="tab-link"
+      >Volunteer Preferences</a
+    >
+    <a
+      *ngIf="account.type === 'user'"
+      href="{{account.id + '#mutual-aid'}}"
+      class="tab-link"
+      >Mutual Aid</a
+    >
+  </div>
+
+  <div *ngIf="account">
+    <div id="contact">Contact Info Content</div>
+    <app-professional-info
+      id="professional"
+      *ngIf="account.type === 'user'"
+      [professionalInfo]="account.professionalInformation"
+    ></app-professional-info>
+    <app-related-accounts
+      id="users"
+      *ngIf="account"
+      [account]="account"
+      type="user"
+    ></app-related-accounts>
+    <app-related-accounts
+      id="groups"
+      *ngIf="account"
+      [account]="account"
+      type="group"
+    ></app-related-accounts>
+    <app-volunteer-preference-info
+      *ngIf="account.type === 'user'"
+      id="volunteer"
+      [volunteerPreferences]="account.volunteerPreferences"
+    ></app-volunteer-preference-info>
+    <app-mutual-aid-community-info
+      *ngIf="account.type === 'user'"
+      id="mutual-aid"
+      [mutualAidCommunityEngagement]="account.mutualAidCommunityEngagement"
+    ></app-mutual-aid-community-info>
+  </div>
 </ion-content>

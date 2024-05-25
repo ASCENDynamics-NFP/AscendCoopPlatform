@@ -1,0 +1,64 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<ion-card class="volunteer-info-card">
+  <ion-card-header>
+    <ion-card-title>Volunteer Preferences</ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <div class="info-block">
+            <h2>Areas of Interest</h2>
+            <p>
+              {{ volunteerPreferences?.areasOfInterest?.join(", ") || "N/A" }}
+            </p>
+          </div>
+          <div class="info-block">
+            <h2>Availability</h2>
+            <p>{{ volunteerPreferences?.availability || "N/A" }}</p>
+          </div>
+          <div class="info-block">
+            <h2>Willingness to Travel</h2>
+            <p>
+              {{ volunteerPreferences?.willingnessToTravel ? "Yes" : "No" }}
+            </p>
+          </div>
+        </ion-col>
+        <ion-col>
+          <div class="info-block">
+            <h2>Preferred Volunteer Roles</h2>
+            <p>{{ preferredVolunteerRolesString || "N/A" }}</p>
+          </div>
+          <div class="info-block">
+            <h2>Desired Level of Commitment</h2>
+            <p>{{ volunteerPreferences?.desiredLevelOfCommitment || "N/A" }}</p>
+          </div>
+          <div class="info-block">
+            <h2>Previous Volunteer Experience</h2>
+            <p>
+              {{ volunteerPreferences?.previousVolunteerExperience || "N/A" }}
+            </p>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-card-content>
+</ion-card>

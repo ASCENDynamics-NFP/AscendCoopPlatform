@@ -231,7 +231,7 @@ export class StoreService {
    * @param {Partial<any>} doc - The document to create.
    */
   async createDoc(collectionName: string, doc: Partial<any>) {
-    let docId = await this.firestoreService.addDocument(
+    const docId = await this.firestoreService.addDocument(
       collectionName,
       prepareDataForCreate(doc, this.authStoreService.getCurrentUser()?.uid),
     );

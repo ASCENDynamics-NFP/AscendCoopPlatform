@@ -20,7 +20,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <app-header *ngIf="account" [title]="account.name"></app-header>
 
 <ion-content [fullscreen]="true">
-  <ion-grid>
+  <ion-grid *ngIf="account">
     <ion-row>
       <ion-col size="12" size-sm="12" size-md="5">
         <app-edit-menu
@@ -31,12 +31,30 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         ></app-edit-menu>
       </ion-col>
       <ion-col size="12" size-sm="12" size-md="7">
-        <div *ngIf="'contact' === selectedForm">Show contact info</div>
-        <div *ngIf="'professional' === selectedForm">
-          Show Professional info
-        </div>
-        <div *ngIf="'volunteer' === selectedForm">Show Volunteer info</div>
-        <div *ngIf="'labor' === selectedForm">Show Labor info</div>
+        <app-basic-info
+          *ngIf="selectedForm === 'basic'"
+          [account]="account"
+        ></app-basic-info>
+        <app-contact-info *ngIf="'contact' === selectedForm" [account]="account"
+          >Show contact info</app-contact-info
+        >
+        <app-professional-info
+          *ngIf="'professional' === selectedForm"
+          [account]="account"
+        >
+        </app-professional-info>
+        <app-volunteer-preference-info
+          *ngIf="'volunteer' === selectedForm"
+          [account]="account"
+        ></app-volunteer-preference-info>
+        <app-mutual-aid-community-engagement
+          *ngIf="'mutual aid' === selectedForm"
+          [account]="account"
+        ></app-mutual-aid-community-engagement>
+        <app-labor-rights-info
+          *ngIf="'labor' === selectedForm"
+          [account]="account"
+        ></app-labor-rights-info>
       </ion-col>
       <ion-col size="12" size-sm="12" size-md="7"> </ion-col>
     </ion-row>

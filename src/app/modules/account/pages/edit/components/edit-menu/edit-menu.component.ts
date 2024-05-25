@@ -34,13 +34,13 @@ export class EditMenuComponent {
   @Input() account?: Partial<Account>;
   @Input() isProfileOwner: boolean = true; // define if the user is the current user (for edit profile button
   @Output() itemSelected = new EventEmitter<string>();
-  selectedItem: string | null = null;
+  selectedItem: string | null = "basic";
 
   constructor(private modalController: ModalController) {}
 
   async openImageUploadModal() {
     if (!this.account?.id || !this.isProfileOwner) return;
-    let modal = await this.modalController.create({
+    const modal = await this.modalController.create({
       component: ImageUploadModalComponent,
       componentProps: {
         collectionName: "accounts",

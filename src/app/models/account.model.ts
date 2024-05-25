@@ -18,24 +18,29 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {BaseDocument} from "./base-document";
-import {Timestamp} from "firebase/firestore";
+import {GeoPoint, Timestamp} from "firebase/firestore";
 
-interface Address {
-  name?: string | null;
-  street?: string | null;
-  city?: string | null;
-  state?: string | null;
-  zipcode?: string | null;
-  country?: string | null;
-  formatted?: string | null;
-  geopoint?: string | null; // or a more specific geopoint type
+// Define a type for optional and nullable fields
+type Nullable<T> = T | null;
+
+// Address interface with optional fields
+export interface Address {
+  name?: Nullable<string>;
+  street?: Nullable<string>;
+  city?: Nullable<string>;
+  state?: Nullable<string>;
+  zipcode?: Nullable<string>;
+  country?: Nullable<string>;
+  formatted?: Nullable<string>;
+  geopoint?: Nullable<GeoPoint>; // Use Firebase GeoPoint
 }
 
+// PhoneNumber interface with nullable fields
 export interface PhoneNumber {
-  countryCode: string | null;
-  number: string | null;
-  type: string | null;
-  isEmergencyNumber: boolean | null;
+  countryCode: Nullable<string>;
+  number: Nullable<string>;
+  type: Nullable<string>;
+  isEmergencyNumber: Nullable<boolean>;
 }
 
 interface UserSpecific {
@@ -68,16 +73,15 @@ interface LegalAgreements {
 }
 
 export interface Email {
-  name: string | null;
-  email: string | null;
+  name: Nullable<string>;
+  email: Nullable<string>;
 }
 
 interface ContactInformation {
   privacy?: "public" | "private" | "specific-users"; // Privacy setting
-  address?: Address | null;
+  addresses?: Nullable<Address>[];
   phoneNumbers: PhoneNumber[];
   emails: Email[];
-  mailingAddress?: string;
   preferredMethodOfContact: "Email" | "Phone" | "SMS" | "Fax";
 }
 
@@ -86,7 +90,7 @@ interface Accessibility {
   accessibilityNeeds?: string[];
 }
 
-interface ProfessionalInformation {
+export interface ProfessionalInformation {
   occupation: string;
   employerName?: string;
   workExperience?: string;
@@ -96,15 +100,17 @@ interface ProfessionalInformation {
   // resumeUpload?: File; // TODO: Add support for resume upload
   educationalBackground?: string;
 }
-interface VolunteerPreferences {
+
+export interface VolunteerPreferences {
   areasOfInterest: string[];
   availability: "Weekdays" | "Weekends" | "Evenings";
   preferredVolunteerRoles: string[];
   previousVolunteerExperience?: string;
-  willingnessToTravelForVolunteering?: boolean;
+  willingnessToTravel?: boolean;
   desiredLevelOfCommitment: "One-time" | "Occasional" | "Regular";
 }
-interface MutualAidCommunityEngagement {
+
+export interface MutualAidCommunityEngagement {
   servicesOffered: string[];
   servicesNeeded?: string[];
   communityAffiliations: string[];
@@ -112,18 +118,20 @@ interface MutualAidCommunityEngagement {
   interestInReceivingMentorship?: boolean;
   groupsOrForumsParticipation?: string[];
 }
+
 interface LaborRights {
   unionMembership: "Yes" | "No" | "Prefer not to say";
   workplaceConcerns?: string[];
   preferredAdvocacyAreas?: string[];
   experienceWithLaborRightsIssues?: string;
 }
+
 export interface WebLink {
   name: string; // e.g., "LinkedIn", "Personal Blog", "Portfolio"
   url: string; // The actual URL
   category:
     | "Social Media"
-    | "Donation Link"
+    | "Donation"
     | "Hobbies"
     | "Publications"
     | "Portfolio"

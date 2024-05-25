@@ -1,0 +1,136 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<app-header *ngIf="account" [title]="account.name"></app-header>
+
+<ion-content [fullscreen]="true">
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>{{getTitle}}</ion-card-title>
+            <ion-card-subtitle
+              >{{ currentRelatedAccountsList.length }}
+              {{getTitle.toLowerCase()}}</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-list>
+            <ion-item
+              *ngFor="let relatedAccount of currentRelatedAccountsList"
+              routerLink="/{{ relatedAccount.id }}"
+              button
+            >
+              <ion-thumbnail slot="start">
+                <img
+                  *ngIf="relatedAccount.iconImage"
+                  [alt]="relatedAccount.name"
+                  [src]="relatedAccount.iconImage"
+                />
+              </ion-thumbnail>
+              <ion-label>
+                <h3>{{ relatedAccount.name }}</h3>
+                <p>{{ relatedAccount.tagline }}</p>
+              </ion-label>
+              <ion-button
+                slot="end"
+                expand="block"
+                color="secondary"
+                *ngIf="showRemoveButton(relatedAccount)"
+                (click)="
+                  $event.stopPropagation();
+                  $event.preventDefault();
+                  removeRequest(relatedAccount)
+                "
+              >
+                Remove
+              </ion-button>
+            </ion-item>
+          </ion-list>
+        </ion-card>
+        <ion-card *ngIf="isOwner() && pendingRelatedAccountsList.length > 0">
+          <ion-card-header>
+            <ion-card-title>Pending {{getTitle}}</ion-card-title>
+            <ion-card-subtitle
+              >{{ pendingRelatedAccountsList.length }} pending
+              {{getTitle.toLowerCase()}}</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-list>
+            <ion-item
+              *ngFor="let relatedAccount of pendingRelatedAccountsList"
+              routerLink="/{{ relatedAccount.id }}"
+              button
+            >
+              <ion-thumbnail slot="start">
+                <img
+                  *ngIf="relatedAccount.iconImage"
+                  [alt]="relatedAccount.name"
+                  [src]="relatedAccount.iconImage"
+                />
+              </ion-thumbnail>
+              <ion-label>
+                <h3>{{ relatedAccount.name }}</h3>
+                <p>{{ relatedAccount.tagline }}</p>
+              </ion-label>
+              <ion-button
+                slot="end"
+                expand="block"
+                *ngIf="showAcceptRejectButtons(relatedAccount)"
+                (click)="
+                  $event.stopPropagation();
+                  $event.preventDefault();
+                  acceptRequest(relatedAccount)
+                "
+              >
+                Accept
+              </ion-button>
+              <ion-button
+                slot="end"
+                expand="block"
+                color="secondary"
+                *ngIf="showAcceptRejectButtons(relatedAccount)"
+                (click)="
+                  $event.stopPropagation();
+                  $event.preventDefault();
+                  rejectRequest(relatedAccount)
+                "
+              >
+                Reject
+              </ion-button>
+              <ion-button
+                slot="end"
+                expand="block"
+                color="secondary"
+                *ngIf="showRemoveButton(relatedAccount)"
+                (click)="
+                  $event.stopPropagation();
+                  $event.preventDefault();
+                  removeRequest(relatedAccount)
+                "
+              >
+                Remove
+              </ion-button>
+            </ion-item>
+          </ion-list>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

@@ -197,7 +197,7 @@ export interface Account extends BaseDocument, Group, User {
   webLinks: WebLink[]; // Links to social media, personal websites, etc.
   relatedAccounts?: Partial<RelatedAccount>[];
   lastLoginAt: Timestamp;
-  email: string
+  email: string;
 }
 
 export interface RelatedAccount extends BaseDocument {

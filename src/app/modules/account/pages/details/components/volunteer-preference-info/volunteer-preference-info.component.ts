@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, Input, SimpleChanges} from "@angular/core";
+import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
 import {VolunteerPreferences} from "../../../../../../models/account.model";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
@@ -29,13 +29,13 @@ import {IonicModule} from "@ionic/angular";
   standalone: true,
   imports: [IonicModule, CommonModule],
 })
-export class VolunteerPreferenceInfoComponent {
+export class VolunteerPreferenceInfoComponent implements OnChanges {
   @Input() volunteerPreferences?: VolunteerPreferences;
   preferredVolunteerRolesString: string | undefined;
 
   constructor() {}
 
-  ngOnChanges(changes: SimpleChanges) {
+  ngOnChanges(changes: SimpleChanges): void {
     if (changes["volunteerPreferences"] && this.volunteerPreferences) {
       this.preferredVolunteerRolesString = Array.isArray(
         this.volunteerPreferences.preferredVolunteerRoles,

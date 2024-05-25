@@ -17,9 +17,27 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-/**
- * Prevents Angular change detection from
- * running with certain Web Component callbacks
- */
-// eslint-disable-next-line no-underscore-dangle, @typescript-eslint/no-explicit-any
-(window as any).__Zone_disable_customElements = true;
+import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
+import {IonicModule} from "@ionic/angular";
+
+import {ContactInformationComponent} from "./contact-information.component";
+
+describe("ContactInformationComponent", () => {
+  let component: ContactInformationComponent;
+  let fixture: ComponentFixture<ContactInformationComponent>;
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [ContactInformationComponent],
+      imports: [IonicModule.forRoot()],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(ContactInformationComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
+
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

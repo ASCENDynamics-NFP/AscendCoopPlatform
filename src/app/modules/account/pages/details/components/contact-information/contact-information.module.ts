@@ -17,9 +17,14 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-/**
- * Prevents Angular change detection from
- * running with certain Web Component callbacks
- */
-// eslint-disable-next-line no-underscore-dangle, @typescript-eslint/no-explicit-any
-(window as any).__Zone_disable_customElements = true;
+import {CommonModule} from "@angular/common";
+import {NgModule} from "@angular/core";
+import {IonicModule} from "@ionic/angular";
+import {ContactInformationComponent} from "./contact-information.component";
+
+@NgModule({
+  declarations: [ContactInformationComponent],
+  imports: [CommonModule, IonicModule],
+  exports: [ContactInformationComponent],
+})
+export class ContactInformationModule {}

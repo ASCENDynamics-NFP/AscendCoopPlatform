@@ -17,9 +17,48 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-/**
- * Prevents Angular change detection from
- * running with certain Web Component callbacks
- */
-// eslint-disable-next-line no-underscore-dangle, @typescript-eslint/no-explicit-any
-(window as any).__Zone_disable_customElements = true;
+.contact-info-card {
+  border: 1px solid var(--ion-color-primary);
+}
+
+.contact-info-card ion-card-title {
+  font-size: 1.5em;
+  margin-bottom: 16px;
+}
+
+.contact-info-card .info-block {
+  margin-bottom: 16px;
+}
+
+.contact-info-card h2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #000;
+  margin: 0;
+
+  ion-button {
+    margin-right: auto;
+    font-size: 0.8em; /* Adjust the font size if needed */
+    padding: 0.2em 0.5em; /* Adjust the padding if needed */
+    --padding-start: 0;
+    --padding-end: 0;
+  }
+}
+
+.contact-info-card p {
+  font-size: 1em;
+  margin: 4px 0 0 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .contact-info-card h2 {
+    color: #fff;
+  }
+
+  .contact-info-card p {
+    color: #aaa;
+  }
+}

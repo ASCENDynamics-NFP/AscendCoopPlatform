@@ -31,6 +31,7 @@ import {AppHeaderComponent} from "../../../../shared/components/app-header/app-h
 import {ProfessionalInfoComponent} from "./components/professional-info/professional-info.component";
 import {VolunteerPreferenceInfoComponent} from "./components/volunteer-preference-info/volunteer-preference-info.component";
 import {MutualAidCommunityInfoComponent} from "./components/mutual-aid-community-info/mutual-aid-community-info.component";
+import {ProfileComponent} from "./components/profile/profile.component";
 import {ContactInformationModule} from "./components/contact-information/contact-information.module";
 import {User} from "firebase/auth";
 import {HeroComponent} from "./components/hero/hero.component";
@@ -50,6 +51,7 @@ import {HeroComponent} from "./components/hero/hero.component";
     ProfessionalInfoComponent,
     VolunteerPreferenceInfoComponent,
     MutualAidCommunityInfoComponent,
+    ProfileComponent,
     ContactInformationModule,
   ],
 })

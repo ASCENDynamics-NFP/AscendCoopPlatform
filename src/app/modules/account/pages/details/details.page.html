@@ -57,6 +57,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </div>
 
   <div *ngIf="account">
+    <app-profile id="profile" [account]="account"></app-profile>
     <app-contact-information id="contact" [account]="account"
       >Contact Info Content</app-contact-information
     >

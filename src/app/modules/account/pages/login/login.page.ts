@@ -70,7 +70,7 @@ export class LoginPage {
       (authUser) => {
         if (authUser) {
           console.log("GOT USER ON LOGIN");
-          this.router.navigateByUrl("/registration/" + authUser.uid, {
+          this.router.navigateByUrl(`/${authUser.uid}`, {
             replaceUrl: true,
           });
         }

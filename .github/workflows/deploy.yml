@@ -21,9 +21,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main  # Trigger workflow on pull requests targeting the main branch
 
 jobs:
   build:

@@ -5,7 +5,7 @@
   "homepage": "https://ASCENDynamics.org/",
   "scripts": {
     "prebuild": "ts-node scripts/setEnv.ts",
-    "build": "ng build --prod",
+    "build": "ng build --configuration production",
     "format": "prettier --write .",
     "ng": "ng",
     "start": "ng serve",

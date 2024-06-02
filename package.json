@@ -4,7 +4,7 @@
   "author": "ASCENDynamics NFP",
   "homepage": "https://ASCENDynamics.org/",
   "scripts": {
-    "prebuild": "ts-node scripts/setEnv.mjs",
+    "prebuild": "ts-node scripts/setEnv.ts",
     "build": "ng build --prod",
     "format": "prettier --write .",
     "ng": "ng",

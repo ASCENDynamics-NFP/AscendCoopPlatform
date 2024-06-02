@@ -1,0 +1,47 @@
+.hero {
+  background-color: var(--ion-color-primary);
+  color: white;
+  text-align: center;
+  padding: 50px 20px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+section {
+  padding: 20px 0;
+}
+
+ion-card-title {
+  font-size: 1.5em;
+  margin-bottom: 16px;
+}
+
+ion-card-content p {
+  font-size: 1em;
+  margin: 10px 0;
+}
+
+form ion-item {
+  margin-bottom: 15px;
+}
+
+form button {
+  --background: var(--ion-color-secondary);
+  color: white;
+  font-size: 1em;
+}
+
+footer {
+  background-color: #333;
+  color: white;
+  text-align: center;
+  padding: 20px 0;
+}
+
+@media (max-width: 768px) {
+  .text-center {
+    padding: 0 10px;
+  }
+}

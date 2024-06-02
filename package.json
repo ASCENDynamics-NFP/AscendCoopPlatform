@@ -96,5 +96,6 @@
       "prettier --write",
       "git add"
     ]
-  }
+  },
+  "type": "module"
 }

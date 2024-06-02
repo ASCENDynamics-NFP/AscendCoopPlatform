@@ -17,21 +17,21 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import * as dotenv from "dotenv";
 import * as fs from "fs";
 import * as path from "path";
+import * as dotenv from "dotenv";
 
 // Load environment variables from .env file
 dotenv.config();
 
-const envConfig = {
-  FIREBASE_API_KEY: process.env.FIREBASE_API_KEY,
-  FIREBASE_AUTH_DOMAIN: process.env.FIREBASE_AUTH_DOMAIN,
-  FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
-  FIREBASE_STORAGE_BUCKET: process.env.FIREBASE_STORAGE_BUCKET,
-  FIREBASE_MESSAGING_SENDER_ID: process.env.FIREBASE_MESSAGING_SENDER_ID,
-  FIREBASE_APP_ID: process.env.FIREBASE_APP_ID,
-  FIREBASE_MEASUREMENT_ID: process.env.FIREBASE_MEASUREMENT_ID,
+const envConfig: {[key: string]: string | undefined} = {
+  FIREBASE_API_KEY: process.env["FIREBASE_API_KEY"],
+  FIREBASE_AUTH_DOMAIN: process.env["FIREBASE_AUTH_DOMAIN"],
+  FIREBASE_PROJECT_ID: process.env["FIREBASE_PROJECT_ID"],
+  FIREBASE_STORAGE_BUCKET: process.env["FIREBASE_STORAGE_BUCKET"],
+  FIREBASE_MESSAGING_SENDER_ID: process.env["FIREBASE_MESSAGING_SENDER_ID"],
+  FIREBASE_APP_ID: process.env["FIREBASE_APP_ID"],
+  FIREBASE_MEASUREMENT_ID: process.env["FIREBASE_MEASUREMENT_ID"],
 };
 
 // Create the environment.ts file content
@@ -56,4 +56,5 @@ const envFilePath = path.resolve(
   "../src/environments/environment.prod.ts",
 );
 fs.writeFileSync(envFilePath, envFileContent);
+
 console.log(`Environment file created at ${envFilePath}`);

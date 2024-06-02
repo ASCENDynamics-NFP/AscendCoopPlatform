@@ -18,9 +18,9 @@
 name: CI and PR Deployment
 
 on:
-  push:
-    branches:
-      - main  # Trigger workflow on push events to the main branch
+  # push:
+  #   branches:
+  #     - main  # Trigger workflow on push events to the main branch
   pull_request:
     branches:
       - main  # Trigger workflow on pull requests targeting the main branch

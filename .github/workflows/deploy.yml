@@ -50,6 +50,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
       - name: Deploy to Firebase
         env:
           FIREBASE_TOKEN: ${{ secrets.PROD_FIREBASE_DEPLOY_TOKEN }}

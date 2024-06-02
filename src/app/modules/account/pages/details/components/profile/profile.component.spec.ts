@@ -19,7 +19,6 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
-
 import {ProfileComponent} from "./profile.component";
 
 describe("ProfileComponent", () => {
@@ -34,10 +33,70 @@ describe("ProfileComponent", () => {
 
     fixture = TestBed.createComponent(ProfileComponent);
     component = fixture.componentInstance;
+
+    // Provide a default value for the account input
+    component.account = {
+      type: "user",
+      description: "Test description",
+      webLinks: [],
+    };
+
     fixture.detectChanges();
   }));
 
   it("should create", () => {
     expect(component).toBeTruthy();
+  });
+
+  it("should return correct section title for user type", () => {
+    component.account = {type: "user"};
+    fixture.detectChanges();
+    expect(component.getSectionTitle).toBe("Profile");
+  });
+
+  it("should return correct section title for non-user type", () => {
+    component.account = {type: "group"};
+    fixture.detectChanges();
+    expect(component.getSectionTitle).toBe("Details");
+  });
+
+  it("should filter web links by category", () => {
+    component.account = {
+      webLinks: [
+        {
+          name: "LinkedIn",
+          url: "https://linkedin.com",
+          category: "Social Media",
+        },
+        {
+          name: "Personal Blog",
+          url: "https://blog.com",
+          category: "Personal Website",
+        },
+      ],
+    };
+    fixture.detectChanges();
+    expect(component.getWebLinks("Social Media")).toEqual([
+      {name: "LinkedIn", url: "https://linkedin.com", category: "Social Media"},
+    ]);
+  });
+
+  it("should filter out other web links not in Donate, Social Media, or Personal Website", () => {
+    component.account = {
+      webLinks: [
+        {name: "GitHub", url: "https://github.com", category: "Other"},
+        {name: "Donate", url: "https://donate.com", category: "Donation"},
+        {name: "Twitter", url: "https://twitter.com", category: "Social Media"},
+        {
+          name: "Portfolio",
+          url: "https://portfolio.com",
+          category: "Personal Website",
+        },
+      ],
+    };
+    fixture.detectChanges();
+    expect(component.getOtherWebLinks()).toEqual([
+      {name: "GitHub", url: "https://github.com", category: "Other"},
+    ]);
   });
 });

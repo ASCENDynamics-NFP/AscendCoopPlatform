@@ -30,7 +30,11 @@ import {Account, WebLink} from "../../../../../../models/account.model";
   imports: [IonicModule, CommonModule],
 })
 export class ProfileComponent {
-  @Input() account!: Partial<Account>;
+  @Input() account: Partial<Account> = {
+    type: "user",
+    description: "",
+    webLinks: [],
+  };
 
   constructor() {}
 
@@ -54,7 +58,9 @@ export class ProfileComponent {
     }
     return this.account.webLinks.filter(
       (link) =>
-        !["Donate", "Social Media", "Personal Website"].includes(link.category),
+        !["Donation", "Social Media", "Personal Website"].includes(
+          link.category,
+        ),
     );
   }
 }

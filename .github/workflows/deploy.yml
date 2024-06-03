@@ -20,7 +20,7 @@ name: Deploy to PROD Firebase
 on:
   push:
     branches:
-      - main
+      - prod
 
 jobs:
   build:

@@ -58,10 +58,20 @@ export class HeroComponent {
       this.account?.contactInformation?.addresses &&
       this.account?.contactInformation?.addresses?.length > 0
     ) {
-      return `${this.account.contactInformation.addresses[0]?.city} /${this.account.contactInformation.addresses[0]?.country}`;
-    } else {
-      return "";
+      if (
+        this.account.contactInformation.addresses[0]?.city &&
+        this.account.contactInformation.addresses[0]?.country
+      ) {
+        return `${this.account.contactInformation.addresses[0]?.city} / ${this.account.contactInformation.addresses[0]?.country}`;
+      } else {
+        this.account.contactInformation.addresses[0]?.city ||
+          this.account.contactInformation.addresses[0]?.country;
+      }
+      {
+        return `${this.account.contactInformation.addresses[0]?.city}${this.account.contactInformation.addresses[0]?.country}`;
+      }
     }
+    return "";
   }
 
   async openImageUploadModal() {

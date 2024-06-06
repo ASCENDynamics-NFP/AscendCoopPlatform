@@ -33,6 +33,7 @@ export interface Address {
   country?: Nullable<string>;
   formatted?: Nullable<string>;
   geopoint?: Nullable<GeoPoint>; // Use Firebase GeoPoint
+  isPrimaryAddress?: Nullable<boolean>;
 }
 
 // PhoneNumber interface with nullable fields

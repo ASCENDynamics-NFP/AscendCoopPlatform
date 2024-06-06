@@ -26,22 +26,36 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-row>
         <ion-col size="6">
           <div class="info-block">
-            <h2>Occupation</h2>
-            <p>{{ professionalInfo?.occupation }}</p>
+            <h2>Employer Name</h2>
+            <p>{{ professionalInfo?.employerName ?? "-" }}</p>
           </div>
           <div class="info-block">
-            <h2>Employer Name</h2>
-            <p>{{ professionalInfo?.employerName }}</p>
+            <h2>Current Title</h2>
+            <p>{{ professionalInfo?.currentJobTitle ?? "-" }}</p>
+          </div>
+          <div class="info-block">
+            <h2>Occupation</h2>
+            <p>{{ professionalInfo?.occupation ?? "-" }}</p>
+          </div>
+          <div class="info-block">
+            <h2>Work Experience</h2>
+            <p>{{ professionalInfo?.workExperience ?? "-" }}</p>
           </div>
         </ion-col>
         <ion-col size="6">
           <div class="info-block">
             <h2>Skills and Expertise</h2>
-            <p>{{ professionalInfo?.skillsAndExpertise?.join(", ") }}</p>
+            <p>{{ professionalInfo?.skillsAndExpertise?.join(", ") ?? "-" }}</p>
           </div>
           <div class="info-block">
             <h2>Educational Background</h2>
-            <p>{{ professionalInfo?.educationalBackground }}</p>
+            <p>{{ professionalInfo?.educationalBackground ?? "-" }}</p>
+          </div>
+          <div class="info-block">
+            <h2>LinkedIn Profile</h2>
+            <a [href]="professionalInfo?.linkedInProfile" target="_blank">{{
+              professionalInfo?.linkedInProfile
+            }}</a>
           </div>
         </ion-col>
       </ion-row>

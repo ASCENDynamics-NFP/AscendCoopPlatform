@@ -33,6 +33,7 @@ export const routes: Routes = [
       import("./modules/account/pages/group-list/group-list.page").then(
         (m) => m.GroupListPage,
       ),
+    canActivate: [AuthGuard],
   },
   {
     path: "signup",

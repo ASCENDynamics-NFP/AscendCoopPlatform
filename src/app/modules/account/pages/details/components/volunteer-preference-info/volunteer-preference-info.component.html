@@ -28,12 +28,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <div class="info-block">
             <h2>Areas of Interest</h2>
             <p>
-              {{ volunteerPreferences?.areasOfInterest?.join(", ") || "N/A" }}
+              {{ volunteerPreferences?.areasOfInterest?.join(", ") || "-" }}
             </p>
           </div>
           <div class="info-block">
             <h2>Availability</h2>
-            <p>{{ volunteerPreferences?.availability || "N/A" }}</p>
+            <p>{{ volunteerPreferences?.availability || "-" }}</p>
           </div>
           <div class="info-block">
             <h2>Willingness to Travel</h2>
@@ -45,16 +45,16 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <ion-col>
           <div class="info-block">
             <h2>Preferred Volunteer Roles</h2>
-            <p>{{ preferredVolunteerRolesString || "N/A" }}</p>
+            <p>{{ preferredVolunteerRolesString || "-" }}</p>
           </div>
           <div class="info-block">
             <h2>Desired Level of Commitment</h2>
-            <p>{{ volunteerPreferences?.desiredLevelOfCommitment || "N/A" }}</p>
+            <p>{{ volunteerPreferences?.desiredLevelOfCommitment || "-" }}</p>
           </div>
           <div class="info-block">
             <h2>Previous Volunteer Experience</h2>
             <p>
-              {{ volunteerPreferences?.previousVolunteerExperience || "N/A" }}
+              {{ volunteerPreferences?.previousVolunteerExperience || "-" }}
             </p>
           </div>
         </ion-col>

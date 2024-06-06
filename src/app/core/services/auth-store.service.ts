@@ -121,7 +121,7 @@ export class AuthStoreService {
         this.successHandler.handleSuccess(
           "Successfully signed up! Please verify your email.",
         );
-        this.router.navigate([`/${result.user.uid}`]);
+        this.router.navigate([`/registration/${result.user.uid}`]);
       })
       .catch((error) => this.handleError(error))
       .finally(() => loading.dismiss());

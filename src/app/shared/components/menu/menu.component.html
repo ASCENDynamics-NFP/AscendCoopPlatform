@@ -59,6 +59,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             </ion-item>
           </ng-container>
           <ion-item
+            *ngIf="isAuthenticated$ | async"
             style="cursor: pointer"
             lines="none"
             detail="false"

@@ -54,7 +54,7 @@ import {FeedbackModalComponent} from "../feedback-modal/feedback-modal.component
 export class MenuComponent implements OnInit, OnDestroy {
   private authSubscription: Subscription;
   private routerSubscription: Subscription;
-  private isAuthenticated$ = new BehaviorSubject<boolean>(false);
+  public isAuthenticated$ = new BehaviorSubject<boolean>(false);
   user: User | null = null;
   public project: any = [];
   public menuPages: any = [];
@@ -130,7 +130,6 @@ export class MenuComponent implements OnInit, OnDestroy {
     const guestItems = [
       {title: "Login", url: "login", icon: "log-in"},
       {title: "Sign Up", url: "signup", icon: "person-add"},
-      {title: "Groups", url: "group-list", icon: "business"},
     ];
 
     const userItems = [
@@ -143,10 +142,10 @@ export class MenuComponent implements OnInit, OnDestroy {
         title: "Groups",
         url: `group-list`,
         icon: "business",
-        buttonIcon: "add",
-        buttonLink: "create-group",
-        buttonText: "Group",
-        hasButton: true,
+        // buttonIcon: "add",
+        // buttonLink: "create-group",
+        // buttonText: "Group",
+        // hasButton: true,
       },
       {
         title: "Users",

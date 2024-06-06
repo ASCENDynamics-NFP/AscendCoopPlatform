@@ -112,7 +112,8 @@ export class ContactInformationComponent {
 
   formatAddress(address: Address): string {
     if (!address.street) return "-";
-    return `${address.name || ""}\n${address.street}\n${address.city || ""}, ${address.state || ""}, ${address.country || ""} ${address.zipcode || ""}`;
+    const primary = address.isPrimaryAddress ? "(Primary)" : "";
+    return `${address.name || ""} ${primary}\n${address.street}\n${address.city || ""}, ${address.state || ""}, ${address.country || ""} ${address.zipcode || ""}`;
   }
 
   toggleShow(type: "phone" | "email" | "address") {

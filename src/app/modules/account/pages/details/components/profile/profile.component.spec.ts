@@ -55,9 +55,14 @@ describe("ProfileComponent", () => {
   });
 
   it("should return correct section title for non-user type", () => {
-    component.account = {type: "group"};
+    component.account = {
+      type: "group",
+      groupDetails: {
+        groupType: "Nonprofit",
+      },
+    };
     fixture.detectChanges();
-    expect(component.getSectionTitle).toBe("Details");
+    expect(component.getSectionTitle).toBe("Organization (Nonprofit)");
   });
 
   it("should filter web links by category", () => {

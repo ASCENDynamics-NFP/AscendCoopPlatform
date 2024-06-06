@@ -42,7 +42,7 @@ export class ProfileComponent {
     if (this.account.type === "user") {
       return "Profile";
     }
-    return "Details";
+    return "Organization (" + this.account.groupDetails?.groupType + ")";
   }
 
   getWebLinks(category: string): WebLink[] {

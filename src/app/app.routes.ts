@@ -35,14 +35,6 @@ export const routes: Routes = [
       ),
   },
   {
-    path: ":accountId/friends",
-    loadChildren: () =>
-      import(
-        "./modules/account/relatedAccount/pages/friends/friends.module"
-      ).then((m) => m.FriendsPageModule),
-    canActivate: [AuthGuard],
-  },
-  {
     path: "signup",
     loadChildren: () =>
       import("./modules/account/pages/signup/signup.module").then(
@@ -67,14 +59,6 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: "friends",
-    loadChildren: () =>
-      import(
-        "./modules/account/relatedAccount/pages/friends/friends.module"
-      ).then((m) => m.FriendsPageModule),
-    canActivate: [AuthGuard],
-  },
-  {
     path: "users",
     loadChildren: () =>
       import("./modules/account/pages/users/users.module").then(
@@ -82,14 +66,14 @@ export const routes: Routes = [
       ),
     canActivate: [AuthGuard],
   },
-  {
-    path: ":accountId/groups",
-    loadChildren: () =>
-      import(
-        "./modules/account/relatedAccount/pages/user-groups/user-groups.module"
-      ).then((m) => m.UserGroupsPageModule),
-    canActivate: [AuthGuard],
-  },
+  // {
+  //   path: ":accountId/groups",
+  //   loadChildren: () =>
+  //     import(
+  //       "./modules/account/relatedAccount/pages/user-groups/user-groups.module"
+  //     ).then((m) => m.UserGroupsPageModule),
+  //   canActivate: [AuthGuard],
+  // },
   {
     path: "registration/:accountId",
     loadChildren: () =>
@@ -103,6 +87,7 @@ export const routes: Routes = [
       import("./modules/account/pages/details/details.module").then(
         (m) => m.DetailsPageModule,
       ),
+    canActivate: [AuthGuard],
   },
   {
     path: ":accountId/edit",
@@ -110,5 +95,14 @@ export const routes: Routes = [
       import("./modules/account/pages/edit/edit.module").then(
         (m) => m.EditPageModule,
       ),
+    canActivate: [AuthGuard],
+  },
+  {
+    path: ":accountId/related/:listType",
+    loadChildren: () =>
+      import("./modules/account/relatedAccount/pages/list/list.module").then(
+        (m) => m.ListPageModule,
+      ),
+    canActivate: [AuthGuard],
   },
 ];

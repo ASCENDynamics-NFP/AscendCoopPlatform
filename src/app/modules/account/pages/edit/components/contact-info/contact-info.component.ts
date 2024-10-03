@@ -112,6 +112,7 @@ export class ContactInfoComponent implements OnChanges {
             state: address?.state ?? null,
             zipcode: address?.zipcode ?? null,
             country: address?.country ?? null,
+            isPrimaryAddress: address?.isPrimaryAddress || false,
           })),
         },
       };
@@ -166,6 +167,7 @@ export class ContactInfoComponent implements OnChanges {
           state: [address?.state],
           zipcode: [address?.zipcode, Validators.pattern("^[0-9]*$")],
           country: [address?.country],
+          isPrimaryAddress: [address?.isPrimaryAddress],
         }),
       );
     });

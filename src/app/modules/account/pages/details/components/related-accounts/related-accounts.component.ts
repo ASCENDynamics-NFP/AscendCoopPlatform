@@ -57,8 +57,7 @@ export class RelatedAccountsComponent {
 
   viewAll() {
     if (this.account?.id) {
-      const route = this.type === "user" ? "friends" : "groups";
-      this.router.navigate([`/${this.account.id}/${route}`]);
+      this.router.navigate([`/${this.account.id}/related/${this.type}`]);
     }
   }
 }

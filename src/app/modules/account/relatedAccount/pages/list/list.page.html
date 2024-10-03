@@ -25,70 +25,79 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-col>
         <ion-card>
           <ion-card-header>
-            <ion-card-title>Friends</ion-card-title>
+            <ion-card-title>{{getTitle}}</ion-card-title>
             <ion-card-subtitle
-              >{{ currentFriendsList.length }} friends</ion-card-subtitle
+              >{{ currentRelatedAccountsList.length }}
+              {{getTitle.toLowerCase()}}</ion-card-subtitle
             >
           </ion-card-header>
           <ion-list>
             <ion-item
-              *ngFor="let friend of currentFriendsList"
-              routerLink="/{{friend.id}}"
+              *ngFor="let relatedAccount of currentRelatedAccountsList"
+              routerLink="/{{ relatedAccount.id }}"
               button
             >
               <ion-thumbnail slot="start">
                 <img
-                  *ngIf="friend.iconImage"
-                  [alt]="friend.name"
-                  [src]="friend.iconImage"
+                  *ngIf="relatedAccount.iconImage"
+                  [alt]="relatedAccount.name"
+                  [src]="relatedAccount.iconImage"
                 />
               </ion-thumbnail>
               <ion-label>
-                <h3>{{ friend.name }}</h3>
-                <p>{{ friend.tagline }}</p>
+                <h3>{{ relatedAccount.name }}</h3>
+                <p>{{ relatedAccount.tagline }}</p>
               </ion-label>
               <ion-button
                 slot="end"
                 expand="block"
                 color="secondary"
-                *ngIf="showRemoveButton(friend);"
-                (click)="$event.stopPropagation();$event.preventDefault();removeRequest(friend);"
+                *ngIf="showRemoveButton(relatedAccount)"
+                (click)="
+                  $event.stopPropagation();
+                  $event.preventDefault();
+                  removeRequest(relatedAccount)
+                "
               >
                 Remove
               </ion-button>
             </ion-item>
           </ion-list>
         </ion-card>
-        <ion-card *ngIf="isOwner() && pendingFriendsList.length > 0">
+        <ion-card *ngIf="isOwner() && pendingRelatedAccountsList.length > 0">
           <ion-card-header>
-            <ion-card-title>Pending Friends</ion-card-title>
+            <ion-card-title>Pending {{getTitle}}</ion-card-title>
             <ion-card-subtitle
-              >{{ pendingFriendsList.length }} pending
-              friends</ion-card-subtitle
+              >{{ pendingRelatedAccountsList.length }} pending
+              {{getTitle.toLowerCase()}}</ion-card-subtitle
             >
           </ion-card-header>
           <ion-list>
             <ion-item
-              *ngFor="let friend of pendingFriendsList"
-              routerLink="/{{friend.id}}"
+              *ngFor="let relatedAccount of pendingRelatedAccountsList"
+              routerLink="/{{ relatedAccount.id }}"
               button
             >
               <ion-thumbnail slot="start">
                 <img
-                  *ngIf="friend.iconImage"
-                  [alt]="friend.name"
-                  [src]="friend.iconImage"
+                  *ngIf="relatedAccount.iconImage"
+                  [alt]="relatedAccount.name"
+                  [src]="relatedAccount.iconImage"
                 />
               </ion-thumbnail>
               <ion-label>
-                <h3>{{ friend.name }}</h3>
-                <p>{{ friend.tagline }}</p>
+                <h3>{{ relatedAccount.name }}</h3>
+                <p>{{ relatedAccount.tagline }}</p>
               </ion-label>
               <ion-button
                 slot="end"
                 expand="block"
-                *ngIf="showAcceptRejectButtons(friend);"
-                (click)="$event.stopPropagation();$event.preventDefault();acceptRequest(friend);"
+                *ngIf="showAcceptRejectButtons(relatedAccount)"
+                (click)="
+                  $event.stopPropagation();
+                  $event.preventDefault();
+                  acceptRequest(relatedAccount)
+                "
               >
                 Accept
               </ion-button>
@@ -96,8 +105,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 slot="end"
                 expand="block"
                 color="secondary"
-                *ngIf="showAcceptRejectButtons(friend)"
-                (click)="$event.stopPropagation();$event.preventDefault();rejectRequest(friend);"
+                *ngIf="showAcceptRejectButtons(relatedAccount)"
+                (click)="
+                  $event.stopPropagation();
+                  $event.preventDefault();
+                  rejectRequest(relatedAccount)
+                "
               >
                 Reject
               </ion-button>
@@ -105,8 +118,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 slot="end"
                 expand="block"
                 color="secondary"
-                *ngIf="showRemoveButton(friend);"
-                (click)="$event.stopPropagation();$event.preventDefault();removeRequest(friend);"
+                *ngIf="showRemoveButton(relatedAccount)"
+                (click)="
+                  $event.stopPropagation();
+                  $event.preventDefault();
+                  removeRequest(relatedAccount)
+                "
               >
                 Remove
               </ion-button>

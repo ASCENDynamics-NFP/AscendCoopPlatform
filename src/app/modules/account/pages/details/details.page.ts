@@ -27,7 +27,6 @@ import {AuthUser} from "../../../../models/auth-user.model";
 import {Store} from "@ngrx/store";
 
 import {Account} from "../../../../models/account.model";
-import {AppState} from "../../../../state/reducers";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {
   selectSelectedAccount,
@@ -49,7 +48,7 @@ export class DetailsPage implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private store: Store<AppState>,
+    private store: Store,
   ) {
     this.accountId = this.route.snapshot.paramMap.get("accountId");
   }

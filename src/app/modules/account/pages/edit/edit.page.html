@@ -47,7 +47,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           *ngIf="'volunteer' === selectedForm"
           [account]="account"
         ></app-volunteer-preference-info>
-        <div *ngIf="'labor' === selectedForm">Show Labor info</div>
+        <app-mutual-aid-community-engagement
+          *ngIf="'mutual aid' === selectedForm"
+          [account]="account"
+        ></app-mutual-aid-community-engagement>
+        <app-labor-rights-info
+          *ngIf="'labor' === selectedForm"
+          [account]="account"
+        ></app-labor-rights-info>
       </ion-col>
       <ion-col size="12" size-sm="12" size-md="7"> </ion-col>
     </ion-row>

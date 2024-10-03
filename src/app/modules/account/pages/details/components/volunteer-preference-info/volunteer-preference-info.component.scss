@@ -33,12 +33,21 @@
 .volunteer-info-card h2 {
   font-size: 1.2em;
   font-weight: bold;
-  color: #fff;
+  color: #000;
   margin: 0;
 }
 
 .volunteer-info-card p {
   font-size: 1em;
-  color: #aaa;
   margin: 4px 0 0 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .volunteer-info-card h2 {
+    color: #fff;
+  }
+
+  .volunteer-info-card p {
+    color: #aaa;
+  }
 }

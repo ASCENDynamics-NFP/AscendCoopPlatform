@@ -50,10 +50,25 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         class="tab-link"
         >Volunteer Preferences</a
       >
+      <a
+        *ngIf="account.type === 'user'"
+        href="{{account.id + '#volunteer'}}"
+        class="tab-link"
+        >Volunteer Preferences</a
+      >
+      <a
+        *ngIf="account.type === 'user'"
+        href="{{account.id + '#mutual-aid'}}"
+        class="tab-link"
+        >Mutual Aid</a
+      >
     </div>
 
     <div>
-      <div id="contact">Contact Info Content</div>
+      <app-profile id="profile" [account]="account"></app-profile>
+      <app-contact-information id="contact" [account]="account"
+        >Contact Info Content</app-contact-information
+      >
       <app-professional-info
         id="professional"
         *ngIf="account.type === 'user'"
@@ -74,6 +89,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         *ngIf="account.type === 'user'"
         [volunteerPreferences]="account.volunteerPreferences"
       ></app-volunteer-preference-info>
+      <app-mutual-aid-community-info
+        *ngIf="account.type === 'user'"
+        id="mutual-aid"
+        [mutualAidCommunityEngagement]="account.mutualAidCommunityEngagement"
+      ></app-mutual-aid-community-info>
+    </div>
     </div>
   </ion-content>
 </ng-container>
@@ -81,3 +102,4 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <ng-template #loading>
   <p>Loading account details...</p>
 </ng-template>
+

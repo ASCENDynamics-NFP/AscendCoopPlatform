@@ -19,33 +19,47 @@
 ***********************************************************************************************/
 import {Component, OnDestroy, OnInit} from "@angular/core";
 import {Account, RelatedAccount} from "../../../../../models/account.model";
-import {AuthUser} from "../../../../../models/auth-user.model";
 import {ActivatedRoute} from "@angular/router";
+import {Subscription} from "rxjs";
 import {Store} from "@ngrx/store";
-import {AppState} from "../../../../../state/reducers";
 import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
 import {selectAccountById} from "../../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../../state/actions/account.actions";
-import {Subscription} from "rxjs";
+import {AuthUser} from "../../../../../models/auth-user.model";
 
 @Component({
-  selector: "app-member-list",
-  templateUrl: "./member-list.page.html",
-  styleUrls: ["./member-list.page.scss"],
+  selector: "app-list",
+  templateUrl: "./list.page.html",
+  styleUrls: ["./list.page.scss"],
 })
-export class MemberListPage implements OnInit, OnDestroy {
+export class ListPage implements OnInit, OnDestroy {
   private subscriptions = new Subscription();
-  currentMembersList: Partial<RelatedAccount>[] = [];
-  pendingMembersList: Partial<RelatedAccount>[] = [];
+  currentRelatedAccountsList: Partial<RelatedAccount>[] = [];
+  pendingRelatedAccountsList: Partial<RelatedAccount>[] = [];
   accountId: string | null = null;
-  account?: Account;
   currentUser: AuthUser | null = null;
+  account?: Account;
+  listType: string | null = null;
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private store: Store<AppState>,
+    private store: Store,
   ) {
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
+    this.listType = this.activatedRoute.snapshot.paramMap.get("listType");
+  }
+
+  get getTitle() {
+    if (this.listType === "user" && this.account?.type === "user") {
+      return "Friends";
+    } else if (this.listType === "user" && this.account?.type === "group") {
+      return "Members";
+    } else if (this.listType === "group" && this.account?.type === "group") {
+      return "Partners";
+    } else if (this.listType === "group" && this.account?.type === "user") {
+      return "Organizations";
+    }
+    return "";
   }
 
   ngOnInit() {
@@ -81,19 +95,11 @@ export class MemberListPage implements OnInit, OnDestroy {
   }
 
   sortRelatedAccounts(relatedAccounts: Partial<RelatedAccount>[]) {
-    this.currentMembersList = relatedAccounts.filter(
-      (ra) => ra.type === "user" && ra.status === "accepted",
+    this.currentRelatedAccountsList = relatedAccounts.filter(
+      (ra) => ra.type === this.listType && ra.status === "accepted",
     );
-    this.pendingMembersList = relatedAccounts.filter(
-      (ra) => ra.type === "user" && ra.status === "pending",
-    );
-  }
-
-  get isAdmin() {
-    if (!this.account?.groupDetails || !this.currentUser) return false;
-    return (
-      this.isOwner() ||
-      this.account.groupDetails.admins?.includes(this.currentUser.uid)
+    this.pendingRelatedAccountsList = relatedAccounts.filter(
+      (ra) => ra.type === this.listType && ra.status === "pending",
     );
   }
 
@@ -101,8 +107,8 @@ export class MemberListPage implements OnInit, OnDestroy {
     if (!this.accountId || !request.id) return;
 
     const updatedRelatedAccount: RelatedAccount = {
-      ...request,
-      status: status,
+      id: request.id,
+      status: status as "pending" | "accepted" | "rejected" | "blocked",
     };
 
     // Dispatch action to update the related account
@@ -138,7 +144,7 @@ export class MemberListPage implements OnInit, OnDestroy {
     return (
       this.isOwner() &&
       request.status === "pending" &&
-      request.targetId === this.currentUser?.uid
+      request.initiatorId !== this.currentUser?.uid
     );
   }
 

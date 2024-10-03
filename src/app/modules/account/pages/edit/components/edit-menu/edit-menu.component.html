@@ -35,19 +35,19 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     >
   </div>
   <h2>{{ account?.name }}</h2>
-  <ion-list>
-    <ion-item
+  <ion-list
+    ><ion-item
       (click)="selectItem('basic')"
       [class.selected]="selectedItem === 'basic'"
     >
-      <ion-icon slot="start" name="person-outline"></ion-icon>
+      <ion-icon slot="start" name="information-circle-outline"></ion-icon>
       <ion-label>Basic Information</ion-label>
     </ion-item>
     <ion-item
       (click)="selectItem('contact')"
       [class.selected]="selectedItem === 'contact'"
     >
-      <ion-icon slot="start" name="call-outline"></ion-icon>
+      <ion-icon slot="start" name="mail-outline"></ion-icon>
       <ion-label>Contact Information</ion-label>
     </ion-item>
     <ion-item
@@ -63,15 +63,23 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       (click)="selectItem('volunteer')"
       [class.selected]="selectedItem === 'volunteer'"
     >
-      <ion-icon slot="start" name="people-outline"></ion-icon>
+      <ion-icon slot="start" name="heart-outline"></ion-icon>
       <ion-label>Volunteer Preferences</ion-label>
+    </ion-item>
+    <ion-item
+      *ngIf="account?.type === 'user'"
+      (click)="selectItem('mutual aid')"
+      [class.selected]="selectedItem === 'mutual aid'"
+    >
+      <ion-icon slot="start" name="medkit-outline"></ion-icon>
+      <ion-label>Mutual Aid Community</ion-label>
     </ion-item>
     <ion-item
       *ngIf="account?.type === 'user'"
       (click)="selectItem('labor')"
       [class.selected]="selectedItem === 'labor'"
     >
-      <ion-icon slot="start" name="business-outline"></ion-icon>
+      <ion-icon slot="start" name="hand-left-outline"></ion-icon>
       <ion-label>Labor Rights</ion-label>
     </ion-item>
   </ion-list>

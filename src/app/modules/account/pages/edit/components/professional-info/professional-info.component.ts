@@ -26,8 +26,8 @@ import {
 } from "../../../../../../models/account.model";
 import {FormGroup, FormBuilder, Validators} from "@angular/forms";
 import {Store} from "@ngrx/store";
-import {AppState} from "../../../../../../state/reducers";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
+import {skillsOptions} from "../../../../../../core/data/options";
 
 @Component({
   selector: "app-professional-info",
@@ -37,17 +37,11 @@ import * as AccountActions from "../../../../../../state/actions/account.actions
 export class ProfessionalInfoComponent implements OnInit {
   @Input() account?: Account;
   professionalInformationForm: FormGroup;
-  skillsOptions: string[] = [
-    "Programming",
-    "Project Management",
-    "Data Analysis",
-    "Marketing",
-    "Graphic Design",
-  ];
+  public skillsOptions: string[] = skillsOptions;
 
   constructor(
     private fb: FormBuilder,
-    private store: Store<AppState>,
+    private store: Store,
   ) {
     this.professionalInformationForm = this.fb.group({
       occupation: ["", Validators.required],

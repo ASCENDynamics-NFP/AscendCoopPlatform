@@ -38,8 +38,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   private authSubscription: Subscription = new Subscription();
   user: AuthUser | null = null;
   public project: any = [];
-  public guestPages: any = {user: [], group: []};
-  public userPages: any = {user: [], group: []};
+  public menuPages: any = [];
   message =
     "This modal example uses the modalController to present and dismiss modals.";
 
@@ -111,110 +110,55 @@ export class MenuComponent implements OnInit, OnDestroy {
     ];
   }
 
-  translateGuestItems() {
-    const userItems = [
+  refreshMenu() {
+    const guestItems = [
       {title: "Login", url: "login", icon: "log-in"},
       {title: "Sign Up", url: "signup", icon: "person-add"},
-      {title: "Groups", url: "group-list", icon: "business"},
     ];
-    // const groupItems = [
-    //   {title: "Group List", url: "group-list", icon: "warning"},
-    //   {title: "Group Profile", url: "group-profile", icon: "warning"},
-    //   {title: "Group Detail", url: "group-detail", icon: "heart"},
-    //   {title: "Group Members", url: "group-members", icon: "warning"},
-    // ];
 
-    this.guestPages = {
-      user: userItems.map((item) => ({
-        ...item,
-        title: this.translate.instant(item.title),
-      })),
-      // group: groupItems.map((item) => ({
-      //   ...item,
-      //   title: this.translate.instant(item.title),
-      // })),
-    };
-  }
-
-  translateUserItems() {
     const userItems = [
       {
-        buttonIcon: "",
-        buttonLink: "",
-        buttonText: "",
-        hasButton: false,
         title: "Profile",
         url: `/${this.user?.uid}`,
         icon: "person",
-        onclick: null,
       },
       {
-        buttonIcon: "add",
-        buttonLink: "create-group",
-        buttonText: "Group",
-        hasButton: true,
         title: "Groups",
         url: `group-list`,
         icon: "business",
-        onclick: null,
+        // buttonIcon: "add",
+        // buttonLink: "create-group",
+        // buttonText: "Group",
+        // hasButton: true,
       },
       {
-        buttonIcon: "",
-        buttonLink: "",
-        buttonText: "",
-        hasButton: false,
         title: "Users",
         url: `users`,
         icon: "people",
-        onclick: null,
       },
       {
-        buttonIcon: "",
-        buttonLink: "",
-        buttonText: "",
-        hasButton: false,
         title: "Settings",
         url: `settings`,
         icon: "settings",
-        onclick: null,
       },
-      // {
-      //   title: "Dashboard",
-      //   url: `user-dashboard/${this.user?.uid}`,
-      //   icon: "newspaper",
-      // },
     ];
-    // const groupItems = [
-    //   {title: "Group Create", url: "group-create", icon: "archive"},
-    //   {title: "Group Profile", url: "group-profile", icon: "warning"},
-    //   {title: "Group Detail", url: "group-detail", icon: "heart"},
-    //   {title: "Group Edit", url: "group-edit", icon: "trash"},
-    //   {title: "Group Members", url: "group-members", icon: "warning"},
-    // ];
 
-    this.userPages = {
-      user: userItems.map((item) => ({
+    this.menuPages = [
+      ...guestItems.map((item) => ({
         ...item,
         title: this.translate.instant(item.title),
+        isVisible: !this.isAuthenticated$.value,
       })),
-      // group: groupItems.map((item) => ({
-      //   ...item,
-      //   title: this.translate.instant(item.title),
-      // })),
-    };
+      ...userItems.map((item) => ({
+        ...item,
+        title: this.translate.instant(item.title),
+        isVisible: this.isAuthenticated$.value,
+      })),
+    ];
   }
 
-  // signOut() {
-  //   this.authStoreService.signOut();
-  // }
-
   async handleButtonClick(buttonLink: string) {
-    console.log("Button Clicked");
-    console.log(buttonLink);
-    if (buttonLink === "") {
-      return;
-    } else if (buttonLink === "create-group") {
-      console.log("Create Group Clicked");
+    if (buttonLink === "create-group") {
       const modal = await this.modalCtrl.create({
         component: CreateGroupModalComponent,
       });
@@ -239,5 +183,6 @@ export class MenuComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.authSubscription.unsubscribe();
+    this.routerSubscription.unsubscribe();
   }
 }

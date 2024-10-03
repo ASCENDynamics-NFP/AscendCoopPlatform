@@ -23,18 +23,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </ion-item>
   <div slot="content">
     <ion-grid>
-      <!-- Occupation -->
-      <ion-row>
-        <ion-col>
-          <ion-input
-            formControlName="occupation"
-            label="Occupation"
-            label-placement="floating"
-            fill="outline"
-            placeholder="Enter your occupation"
-          ></ion-input>
-        </ion-col>
-      </ion-row>
       <!-- Employer Name -->
       <ion-row>
         <ion-col>
@@ -44,6 +32,30 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             label-placement="floating"
             fill="outline"
             placeholder="Enter your employer's name"
+          ></ion-input>
+        </ion-col>
+      </ion-row>
+      <!-- Current Job Title -->
+      <ion-row>
+        <ion-col>
+          <ion-input
+            formControlName="currentJobTitle"
+            label="Current Job Title"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter your current job title"
+          ></ion-input>
+        </ion-col>
+      </ion-row>
+      <!-- Occupation -->
+      <ion-row>
+        <ion-col>
+          <ion-input
+            formControlName="occupation"
+            label="Occupation"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter your occupation"
           ></ion-input>
         </ion-col>
       </ion-row>
@@ -80,18 +92,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               >{{ skill }}</ion-select-option
             >
           </ion-select>
-        </ion-col>
-      </ion-row>
-      <!-- Current Job Title -->
-      <ion-row>
-        <ion-col>
-          <ion-input
-            formControlName="currentJobTitle"
-            label="Current Job Title"
-            label-placement="floating"
-            fill="outline"
-            placeholder="Enter your current job title"
-          ></ion-input>
         </ion-col>
       </ion-row>
       <!-- LinkedIn Profile -->

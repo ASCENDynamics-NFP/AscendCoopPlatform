@@ -207,7 +207,7 @@ export class GroupRegistrationComponent implements OnChanges {
             webLink.url,
             [
               Validators.pattern(
-                /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}([\/?].*)?$/,
+                /^(https?:\/\/)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}([\/?].*)?$/,
               ),
             ],
           ],
@@ -338,7 +338,7 @@ export class GroupRegistrationComponent implements OnChanges {
         "",
         [
           Validators.pattern(
-            /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}([\/?].*)?$/,
+            /^(https?:\/\/)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}([\/?].*)?$/,
           ),
         ],
       ],

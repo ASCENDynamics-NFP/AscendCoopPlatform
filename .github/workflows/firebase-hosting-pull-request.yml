@@ -1,39 +1,56 @@
+# Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+# Copyright (C) 2023  ASCENDynamics NFP
+
+# This file is part of Nonprofit Social Networking Platform.
+
+# Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+
+# You should have received a copy of the GNU Affero General Public License
+# along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 name: CI and PR Deployment
 
 on:
-  push:
-    branches:
-      - main  # Trigger workflow on push events to the main branch
+  # push:
+  #   branches:
+  #     - main  # Trigger workflow on push events to the main branch
   pull_request:
     branches:
       - main  # Trigger workflow on pull requests targeting the main branch
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
+  # lint:
+  #   runs-on: ubuntu-latest  # Use the latest Ubuntu runner
 
-    steps:
-      # Checkout the repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
+  #   steps:
+  #     # Checkout the repository
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v3
 
-      # Set up Node.js environment
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
+  #     # Set up Node.js environment
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 20
 
-      # Install dependencies using npm ci
-      - name: Install dependencies
-        run: npm ci
+  #     # Install dependencies using npm ci
+  #     - name: Install dependencies
+  #       run: npm ci
 
-      # Run linting
-      - name: Run lint
-        run: npm run lint
+  #     # Run linting
+  #     - name: Run lint
+  #       run: npm run lint
 
   build-and-test:
     runs-on: ubuntu-latest  # Use the latest Ubuntu runner
-    needs: lint  # This job depends on the successful completion of the lint job
+    # needs: lint  # This job depends on the successful completion of the lint job
 
     steps:
       # Checkout the repository

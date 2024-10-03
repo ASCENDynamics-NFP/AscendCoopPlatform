@@ -26,8 +26,8 @@ import {
   VolunteerPreferences,
 } from "../../../../../../models/account.model";
 import {Store} from "@ngrx/store";
-import {AppState} from "../../../../../../state/reducers";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
+import {areasOfInterestOptions} from "../../../../../../core/data/options";
 
 @Component({
   selector: "app-volunteer-preference-info",
@@ -37,18 +37,11 @@ import * as AccountActions from "../../../../../../state/actions/account.actions
 export class VolunteerPreferenceInfoComponent implements OnInit {
   @Input() account?: Account;
   volunteerPreferencesForm: FormGroup;
-  areasOfInterestOptions: string[] = [
-    "Community Service",
-    "Education",
-    "Healthcare",
-    "Environment",
-    "Arts",
-    "Technology",
-  ];
+  areasOfInterestOptions: string[] = areasOfInterestOptions;
 
   constructor(
     private fb: FormBuilder,
-    private store: Store<AppState>,
+    private store: Store,
   ) {
     this.volunteerPreferencesForm = this.fb.group({
       areasOfInterest: [[], Validators.required],
@@ -72,8 +65,9 @@ export class VolunteerPreferenceInfoComponent implements OnInit {
         areasOfInterest:
           this.account.volunteerPreferences.areasOfInterest || [],
         availability: this.account.volunteerPreferences.availability || "",
-        preferredVolunteerRoles:
-          this.account.volunteerPreferences.preferredVolunteerRoles || [],
+        preferredVolunteerRoles: (
+          this.account.volunteerPreferences.preferredVolunteerRoles || []
+        ).join(", "),
         previousVolunteerExperience:
           this.account.volunteerPreferences.previousVolunteerExperience || "",
         willingnessToTravel:

@@ -33,6 +33,7 @@ export interface Address {
   country?: Nullable<string>;
   formatted?: Nullable<string>;
   geopoint?: Nullable<GeoPoint>; // Use Firebase GeoPoint
+  isPrimaryAddress?: Nullable<boolean>;
 }
 
 // PhoneNumber interface with nullable fields
@@ -110,7 +111,7 @@ export interface VolunteerPreferences {
   desiredLevelOfCommitment: "One-time" | "Occasional" | "Regular";
 }
 
-interface MutualAidCommunityEngagement {
+export interface MutualAidCommunityEngagement {
   servicesOffered: string[];
   servicesNeeded?: string[];
   communityAffiliations: string[];
@@ -197,6 +198,7 @@ export interface Account extends BaseDocument, Group, User {
   webLinks: WebLink[]; // Links to social media, personal websites, etc.
   relatedAccounts?: RelatedAccount[];
   lastLoginAt: Timestamp;
+  email: string;
 }
 
 export interface RelatedAccount extends BaseDocument {

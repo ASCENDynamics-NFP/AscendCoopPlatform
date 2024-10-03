@@ -19,18 +19,23 @@
 ***********************************************************************************************/
 // src/app/modules/account/pages/signup/signup.page.spec.ts
 
-import { ComponentFixture, TestBed, fakeAsync, tick } from "@angular/core/testing";
-import { SignupPage } from "./signup.page";
-import { ReactiveFormsModule } from "@angular/forms";
-import { IonicModule, ModalController } from "@ionic/angular";
-import { Router } from "@angular/router";
-import { StoreModule, Store } from "@ngrx/store";
-import { authReducer } from "../../../../state/reducers/auth.reducer";
-import { By } from "@angular/platform-browser";
-import { DebugElement } from "@angular/core";
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from "@angular/core/testing";
+import {SignupPage} from "./signup.page";
+import {ReactiveFormsModule} from "@angular/forms";
+import {IonicModule, ModalController} from "@ionic/angular";
+import {Router} from "@angular/router";
+import {StoreModule, Store} from "@ngrx/store";
+import {authReducer} from "../../../../state/reducers/auth.reducer";
+import {By} from "@angular/platform-browser";
+import {DebugElement} from "@angular/core";
 import * as AuthActions from "../../../../state/actions/auth.actions";
-import { of } from "rxjs";
-import { LegalModalComponent } from "../../../../shared/components/legal-modal/legal-modal.component";
+import {of} from "rxjs";
+import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
 
 describe("SignupPage", () => {
   let component: SignupPage;
@@ -50,11 +55,11 @@ describe("SignupPage", () => {
       imports: [
         ReactiveFormsModule,
         IonicModule.forRoot(),
-        StoreModule.forRoot({ auth: authReducer }),
+        StoreModule.forRoot({auth: authReducer}),
       ],
       providers: [
-        { provide: Router, useValue: routerSpy },
-        { provide: ModalController, useValue: modalControllerSpy },
+        {provide: Router, useValue: routerSpy},
+        {provide: ModalController, useValue: modalControllerSpy},
       ],
     }).compileComponents();
 
@@ -134,7 +139,7 @@ describe("SignupPage", () => {
     form.get("agreedToTerms")?.setValue(true);
 
     const submitButton = fixture.debugElement.query(
-      By.css('ion-button[type="submit"]')
+      By.css('ion-button[type="submit"]'),
     );
     submitButton.triggerEventHandler("click", null);
 
@@ -144,7 +149,7 @@ describe("SignupPage", () => {
       AuthActions.signUp({
         email: "test@example.com",
         password: "StrongPass1!",
-      })
+      }),
     );
   });
 
@@ -158,7 +163,7 @@ describe("SignupPage", () => {
     form.get("agreedToTerms")?.setValue(false);
 
     const submitButton = fixture.debugElement.query(
-      By.css('ion-button[type="submit"]')
+      By.css('ion-button[type="submit"]'),
     );
     submitButton.triggerEventHandler("click", null);
 
@@ -174,32 +179,34 @@ describe("SignupPage", () => {
 
   it("should open legal modal with correct content type", async () => {
     const modalSpy = modalController.create as jasmine.Spy;
-    modalSpy.and.returnValue(Promise.resolve({
-      present: jasmine.createSpy("present"),
-    } as any));
+    modalSpy.and.returnValue(
+      Promise.resolve({
+        present: jasmine.createSpy("present"),
+      } as any),
+    );
 
     await component.openLegalModal("privacyPolicy");
     expect(modalController.create).toHaveBeenCalledWith({
       component: LegalModalComponent,
-      componentProps: { content: "privacyPolicy" },
+      componentProps: {content: "privacyPolicy"},
     });
 
     await component.openLegalModal("termsOfUse");
     expect(modalController.create).toHaveBeenCalledWith({
       component: LegalModalComponent,
-      componentProps: { content: "termsOfUse" },
+      componentProps: {content: "termsOfUse"},
     });
   });
 
   it("should display error message from store", () => {
     // Mock the error observable
-    const error = { message: "Sign up failed" };
+    const error = {message: "Sign up failed"};
     spyOn(store, "select").and.returnValue(of(error));
 
     fixture.detectChanges();
 
     const errorMessage = fixture.debugElement.query(
-      By.css(".error-message p")
+      By.css(".error-message p"),
     ).nativeElement;
     expect(errorMessage.textContent).toContain("Sign up failed");
   });

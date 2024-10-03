@@ -70,7 +70,7 @@ export class BasicInfoComponent implements OnChanges {
         "",
         [
           Validators.pattern(
-            /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}([\/?].*)?$/,
+            /^(https?:\/\/)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}([\/?].*)?$/,
           ),
         ],
       ],
@@ -128,7 +128,7 @@ export class BasicInfoComponent implements OnChanges {
             webLink.url,
             [
               Validators.pattern(
-                /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}([\/?].*)?$/,
+                /^(https?:\/\/)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}([\/?].*)?$/,
               ),
             ],
           ],

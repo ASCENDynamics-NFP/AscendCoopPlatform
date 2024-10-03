@@ -4,11 +4,11 @@ import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {RouterModule} from "@angular/router";
 
-import {FriendsPage} from "./friends.page";
+import {ListPage} from "./list.page";
 import {SharedModule} from "../../../../../shared/shared.module";
 
 @NgModule({
-  declarations: [FriendsPage],
+  declarations: [ListPage],
   imports: [
     CommonModule,
     FormsModule,
@@ -16,10 +16,10 @@ import {SharedModule} from "../../../../../shared/shared.module";
     RouterModule.forChild([
       {
         path: "",
-        component: FriendsPage,
+        component: ListPage,
       },
     ]),
     SharedModule,
   ],
 })
-export class FriendsPageModule {}
+export class ListPageModule {}

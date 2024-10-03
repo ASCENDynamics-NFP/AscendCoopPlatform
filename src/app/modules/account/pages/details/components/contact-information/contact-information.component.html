@@ -1,0 +1,112 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<ion-card class="contact-info-card">
+  <ion-card-header>
+    <ion-card-title>Contact Information</ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <ion-grid>
+      <ion-row>
+        <ion-col size="6">
+          <div class="info-block">
+            <h2>
+              Phone
+              <ion-button
+                *ngIf="hasMoreThanOnePhoneNumber"
+                fill="clear"
+                size="small"
+                (click)="toggleShow('phone')"
+              >
+                {{ showMore.phone ? "Hide" : "Show" }} More
+              </ion-button>
+            </h2>
+            <p>{{ getFirstPhoneNumber() }}</p>
+            <div *ngIf="showMore.phone">
+              <p
+                *ngFor="
+                  let phone of account?.contactInformation?.phoneNumbers?.slice(
+                    1
+                  )
+                "
+              >
+                {{ formatPhoneNumber(phone) }}
+              </p>
+            </div>
+          </div>
+          <div class="info-block">
+            <h2>
+              Email Address
+              <ion-button
+                *ngIf="hasMoreThanOneEmail"
+                fill="clear"
+                size="small"
+                (click)="toggleShow('email')"
+              >
+                {{ showMore.email ? "Hide" : "Show" }} More
+              </ion-button>
+            </h2>
+            <p>{{ getFirstEmail() }}</p>
+            <div *ngIf="showMore.email">
+              <p
+                *ngFor="
+                  let email of account?.contactInformation?.emails?.slice(1)
+                "
+              >
+                {{ formatEmail(email) }}
+              </p>
+            </div>
+          </div>
+          <div class="info-block">
+            <h2>
+              Mailing Address
+              <ion-button
+                *ngIf="hasMoreThanOneAddress"
+                fill="clear"
+                size="small"
+                (click)="toggleShow('address')"
+              >
+                {{ showMore.address ? "Hide" : "Show" }} More
+              </ion-button>
+            </h2>
+            <p [innerText]="getFirstAddress()"></p>
+            <div *ngIf="showMore.address">
+              <p
+                *ngFor="
+                  let address of account?.contactInformation?.addresses?.slice(
+                    1
+                  )
+                "
+                [innerText]="address ? formatAddress(address) : '-'"
+              ></p>
+            </div>
+          </div>
+        </ion-col>
+        <ion-col size="6">
+          <div class="info-block">
+            <h2>Preferred Method of Contact</h2>
+            <p>
+              {{ account?.contactInformation?.preferredMethodOfContact ?? "-" }}
+            </p>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-card-content>
+</ion-card>

@@ -29,7 +29,6 @@ import {
   selector: "app-contact-information",
   templateUrl: "./contact-information.component.html",
   styleUrls: ["./contact-information.component.scss"],
-  standalone: false,
 })
 export class ContactInformationComponent {
   _account!: Partial<Account>;

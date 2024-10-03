@@ -17,7 +17,8 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// edit.page.ts
+// src/app/modules/account/pages/edit/edit.page.ts
+
 import {Component, OnDestroy, OnInit} from "@angular/core";
 import {Account} from "../../../../models/account.model";
 import {ActivatedRoute} from "@angular/router";
@@ -39,7 +40,7 @@ export class EditPage implements OnInit, OnDestroy {
   authUser: AuthUser | null = null;
   private accountId: string | null = null;
   private subscriptions = new Subscription();
-  public account?: Account;
+  public account!: Account; // Changed to non-null assertion to ensure account is defined
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -48,7 +49,7 @@ export class EditPage implements OnInit, OnDestroy {
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.subscriptions.add(
       this.store.select(selectAuthUser).subscribe((user) => {
         this.authUser = user;
@@ -64,13 +65,15 @@ export class EditPage implements OnInit, OnDestroy {
         this.store
           .select(selectAccountById(this.accountId))
           .subscribe((account) => {
-            this.account = account;
+            if (account) {
+              this.account = account;
+            }
           }),
       );
     }
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }
 

@@ -17,11 +17,11 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<!-- src/app/components/hero/hero.component.html -->
+<!-- src/app/modules/account/pages/details/components/hero/hero.component.html -->
 
 <div class="header-image">
   <img
-    [src]="account?.heroImage || 'assets/image/userhero.png'"
+    [src]="account.heroImage || 'assets/image/userhero.png'"
     alt="Header Background"
   />
   <ion-button
@@ -38,22 +38,22 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <div class="profile-header">
   <div class="profile-info">
     <img
-      [src]="account?.iconImage || 'assets/default-profile.png'"
+      [src]="account.iconImage || 'assets/default-profile.png'"
       class="profile-img"
       alt="Profile Photo"
     />
     <div class="profile-details">
-      <h2>{{ account?.name }}</h2>
+      <h2>{{ account.name }}</h2>
       <p>
         {{ getLocation }}
       </p>
-      <p class="tagline">{{ account?.tagline }}</p>
+      <p class="tagline">{{ account.tagline }}</p>
       <ion-button
         *ngIf="isProfileOwner"
         fill="outline"
         class="edit-button"
         size="small"
-        routerLink="/{{ account?.id }}/edit"
+        [routerLink]="'/' + account.id + '/edit'"
       >
         <ion-icon name="pencil-outline"></ion-icon> Edit
       </ion-button>

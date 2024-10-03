@@ -9,14 +9,20 @@ import {RelatedAccountsComponent} from "./components/related-accounts/related-ac
 import {VolunteerPreferenceInfoComponent} from "./components/volunteer-preference-info/volunteer-preference-info.component";
 import {SharedModule} from "../../../../shared/shared.module";
 import {TranslateModule} from "@ngx-translate/core";
+import {ContactInformationComponent} from "./components/contact-information/contact-information.component";
+import {ProfileComponent} from "./components/profile/profile.component";
+import {MutualAidCommunityInfoComponent} from "./components/mutual-aid-community-info/mutual-aid-community-info.component";
 
 @NgModule({
   declarations: [
+    ContactInformationComponent,
     DetailsPage,
     HeroComponent,
     ProfessionalInfoComponent,
     RelatedAccountsComponent,
     VolunteerPreferenceInfoComponent,
+    ProfileComponent,
+    MutualAidCommunityInfoComponent,
   ],
   imports: [
     CommonModule,

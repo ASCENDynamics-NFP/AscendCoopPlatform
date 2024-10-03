@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// src/app/components/hero/hero.component.ts
+// src/app/modules/account/pages/details/components/hero/hero.component.ts
 
 import {Component, Input} from "@angular/core";
 import {ModalController} from "@ionic/angular";
@@ -30,18 +30,20 @@ import {ImageUploadModalComponent} from "../../../../../../shared/components/ima
   styleUrls: ["./hero.component.scss"],
 })
 export class HeroComponent {
-  @Input() account?: Partial<Account>;
+  @Input() account!: Account; // Changed from Partial<Account> to Account to ensure properties are defined
   @Input() isProfileOwner: boolean = false;
 
   constructor(private modalController: ModalController) {}
 
-  get hasDonationURL() {
-    return this.account?.webLinks?.some(
-      (webLink) => webLink?.category?.toLowerCase() === "donation",
+  get hasDonationURL(): boolean {
+    return (
+      this.account.webLinks?.some(
+        (webLink) => webLink?.category?.toLowerCase() === "donation",
+      ) || false
     );
   }
 
-  get getLocation() {
+  get getLocation(): string {
     if (this.account?.contactInformation?.addresses?.length) {
       const address = this.account.contactInformation.addresses[0];
       return `${address?.city} / ${address?.country}`;
@@ -49,14 +51,14 @@ export class HeroComponent {
     return "";
   }
 
-  async openImageUploadModal() {
-    if (!this.account?.id || !this.isProfileOwner) return;
+  async openImageUploadModal(): Promise<void> {
+    if (!this.account.id || !this.isProfileOwner) return;
     const modal = await this.modalController.create({
       component: ImageUploadModalComponent,
       componentProps: {
         collectionName: "accounts",
-        docId: this.account?.id,
-        firestoreLocation: `accounts/${this.account?.id}/profile`,
+        docId: this.account.id,
+        firestoreLocation: `accounts/${this.account.id}/profile`,
         maxHeight: 300,
         maxWidth: 900,
         fieldName: "heroImage",
@@ -66,8 +68,8 @@ export class HeroComponent {
     await modal.present();
   }
 
-  onLink(category: string) {
-    const webLink = this.account?.webLinks?.find(
+  onLink(category: string): void {
+    const webLink = this.account.webLinks?.find(
       (link) => link.category?.toLowerCase() === category.toLowerCase(),
     );
     if (webLink?.url) {

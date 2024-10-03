@@ -53,7 +53,7 @@ export class DetailsPage implements OnInit {
     this.accountId = this.route.snapshot.paramMap.get("accountId");
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     // Initialize authUser$ observable
     this.authUser$ = this.store.select(selectAuthUser);
 

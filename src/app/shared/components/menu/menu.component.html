@@ -17,6 +17,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
+<!-- src/app/shared/components/menu/menu.component.html -->
+
 <ion-split-pane contentId="main-content">
   <ion-menu side="start" contentId="main-content" type="overlay">
     <ion-header>
@@ -27,71 +29,72 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ion-content>
       <ion-list>
         <ion-menu-toggle auto-hide="false">
-          <ng-container *ngFor="let p of menuPages">
+          <!-- Iterate over menuPages -->
+          <ng-container *ngFor="let item of menuPages">
             <ion-item
-              *ngIf="p.isVisible"
-              [routerLink]="[p.url]"
+              [routerLink]="!item.hasButton ? item.url : null"
               lines="none"
               detail="false"
               routerLinkActive="selected"
+              *ngIf="item.title"
+              (click)="
+                item.hasButton ? handleButtonClick(item.buttonLink!) : null
+              "
             >
               <ion-icon
                 aria-hidden="true"
                 slot="start"
-                [ios]="p.icon + '-outline'"
-                [md]="p.icon + '-sharp'"
+                [name]="item.icon"
               ></ion-icon>
-              <ion-label>{{ p.title }}</ion-label>
+              <ion-label>{{ item.title }}</ion-label>
+              <!-- If the menu item has a button -->
               <ion-button
-                *ngIf="p.hasButton"
+                *ngIf="item.hasButton"
                 fill="outline"
                 slot="end"
-                (click)="handleButtonClick(p.buttonLink)"
+                (click)="
+                  handleButtonClick(item.buttonLink!); $event.stopPropagation()
+                "
               >
-                {{ p.buttonText }}
+                {{ item.buttonText }}
                 <ion-icon
                   aria-hidden="true"
                   slot="start"
-                  [ios]="p.buttonIcon"
-                  [md]="p.buttonIcon"
+                  [name]="item.buttonIcon"
                 ></ion-icon>
               </ion-button>
             </ion-item>
           </ng-container>
+          <!-- Feedback Item for Authenticated Users -->
           <ion-item
-            *ngIf="isAuthenticated$ | async"
+            *ngIf="user"
             style="cursor: pointer"
             lines="none"
             detail="false"
-            routerLinkActive="selected"
             (click)="showFeedbackModal()"
           >
             <ion-icon
               aria-hidden="true"
               slot="start"
-              ios="ear-outline"
-              md="ear-outline"
+              name="ear-outline"
             ></ion-icon>
             <ion-label>Give Feedback</ion-label>
           </ion-item>
         </ion-menu-toggle>
       </ion-list>
+      <!-- Project Links Section -->
       <ion-list>
-        <ion-list-header
-          ><strong>ASCENDynamics NFP Information</strong></ion-list-header
-        >
+        <ion-list-header>
+          <strong>ASCENDynamics NFP Information</strong>
+        </ion-list-header>
         <ion-item
           *ngFor="let p of project"
           lines="none"
           [href]="p.url"
           target="_blank"
+          class="project-item"
         >
-          <ion-icon
-            aria-hidden="true"
-            slot="start"
-            [ios]="p.icon"
-            [md]="p.icon"
-          ></ion-icon>
+          <ion-icon aria-hidden="true" slot="start" [name]="p.icon"></ion-icon>
           <ion-label>{{ p.title }}</ion-label>
         </ion-item>
       </ion-list>

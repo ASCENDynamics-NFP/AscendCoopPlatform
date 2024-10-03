@@ -19,10 +19,7 @@
 ***********************************************************************************************/
 import {Component, Input, OnInit} from "@angular/core";
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
-import {CommonModule} from "@angular/common";
-import {ReactiveFormsModule} from "@angular/forms";
-import {StoreService} from "../../../../../../core/services/store.service";
+import {Store} from "@ngrx/store";
 import {
   Account,
   MutualAidCommunityEngagement,
@@ -32,16 +29,15 @@ import {
   communityAffiliationsOptions,
   groupsOrForumsOptions,
 } from "../../../../../../core/data/options";
+import * as AccountActions from "../../../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-mutual-aid-community-engagement",
   templateUrl: "./mutual-aid-community-engagement.component.html",
   styleUrls: ["./mutual-aid-community-engagement.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
 export class MutualAidCommunityEngagementComponent implements OnInit {
-  @Input() account?: Partial<Account>;
+  @Input() account!: Account;
   mutualAidForm: FormGroup;
   public servicesOptions: string[] = servicesOptions;
   public communityAffiliationsOptions: string[] = communityAffiliationsOptions;
@@ -49,7 +45,7 @@ export class MutualAidCommunityEngagementComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private storeService: StoreService,
+    private store: Store,
   ) {
     this.mutualAidForm = this.fb.group({
       servicesOffered: [[], Validators.required],
@@ -62,51 +58,43 @@ export class MutualAidCommunityEngagementComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (this.account?.mutualAidCommunityEngagement) {
+    if (this.account.mutualAidCommunityEngagement) {
       this.loadFormData();
     }
   }
 
   loadFormData() {
-    if (this.account?.mutualAidCommunityEngagement) {
-      this.mutualAidForm.patchValue({
-        servicesOffered:
-          this.account.mutualAidCommunityEngagement.servicesOffered || [],
-        servicesNeeded:
-          this.account.mutualAidCommunityEngagement.servicesNeeded || [],
-        communityAffiliations:
-          this.account.mutualAidCommunityEngagement.communityAffiliations || [],
-        willingnessToProvideMentorship:
-          this.account.mutualAidCommunityEngagement
-            .willingnessToProvideMentorship || false,
-        interestInReceivingMentorship:
-          this.account.mutualAidCommunityEngagement
-            .interestInReceivingMentorship || false,
-        groupsOrForumsParticipation:
-          this.account.mutualAidCommunityEngagement
-            .groupsOrForumsParticipation || [],
-      });
-    }
+    this.mutualAidForm.patchValue({
+      servicesOffered:
+        this.account.mutualAidCommunityEngagement?.servicesOffered || [],
+      servicesNeeded:
+        this.account.mutualAidCommunityEngagement?.servicesNeeded || [],
+      communityAffiliations:
+        this.account.mutualAidCommunityEngagement?.communityAffiliations || [],
+      willingnessToProvideMentorship:
+        this.account.mutualAidCommunityEngagement
+          ?.willingnessToProvideMentorship || false,
+      interestInReceivingMentorship:
+        this.account.mutualAidCommunityEngagement
+          ?.interestInReceivingMentorship || false,
+      groupsOrForumsParticipation:
+        this.account.mutualAidCommunityEngagement
+          ?.groupsOrForumsParticipation || [],
+    });
   }
 
   onSubmit() {
     if (this.mutualAidForm.valid) {
       const updatedMutualAidCommunityEngagement: MutualAidCommunityEngagement =
         this.mutualAidForm.value;
-      const updatedAccount: Partial<Account> = {
+      const updatedAccount: Account = {
         ...this.account,
         mutualAidCommunityEngagement: updatedMutualAidCommunityEngagement,
       };
 
-      this.storeService.updateDoc("accounts", updatedAccount);
-      // .subscribe(
-      //   () => {
-      //     console.log("Document successfully updated!");
-      //   },
-      //   (error) => {
-      //     console.error("Error updating document: ", error);
-      //   }
-      // );
+      this.store.dispatch(
+        AccountActions.updateAccount({account: updatedAccount}),
+      );
     }
   }
 }

@@ -11,6 +11,8 @@ import {VolunteerPreferenceInfoComponent} from "./components/volunteer-preferenc
 import {SharedModule} from "../../../../shared/shared.module";
 import {TranslateModule} from "@ngx-translate/core";
 import {RouterModule} from "@angular/router";
+import {LaborRightsInfoComponent} from "./components/labor-rights-info/labor-rights-info.component";
+import {MutualAidCommunityEngagementComponent} from "./components/mutual-aid-community-engagement/mutual-aid-community-engagement.component";
 
 @NgModule({
   declarations: [
@@ -20,6 +22,8 @@ import {RouterModule} from "@angular/router";
     ContactInfoComponent,
     ProfessionalInfoComponent,
     VolunteerPreferenceInfoComponent,
+    LaborRightsInfoComponent,
+    MutualAidCommunityEngagementComponent,
   ],
   imports: [
     CommonModule,

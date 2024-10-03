@@ -17,44 +17,37 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {IonicModule} from "@ionic/angular";
-import {User} from "firebase/auth";
-import {Account} from "../../../../models/account.model";
+// src/app/modules/group/pages/search/search.page.ts
+
+import {Component, OnDestroy, OnInit} from "@angular/core";
+import {AuthUser} from "../../../../models/auth-user.model";
 import {ActivatedRoute} from "@angular/router";
-import {AuthStoreService} from "../../../../core/services/auth-store.service";
-import {StoreService} from "../../../../core/services/store.service";
-import {PartnerSearchComponent} from "./component/partner-search/partner-search.component";
-import {MemberSearchComponent} from "./component/member-search/member-search.component";
 import {Subscription} from "rxjs";
+
+import {Account} from "../../../../models/account.model";
+import {Store} from "@ngrx/store";
+import {AppState} from "../../../../state/reducers";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {selectAccounts} from "../../../../state/selectors/account.selectors";
+import * as AccountActions from "../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-search",
   templateUrl: "./search.page.html",
   styleUrls: ["./search.page.scss"],
-  standalone: true,
-  imports: [
-    IonicModule,
-    CommonModule,
-    PartnerSearchComponent,
-    MemberSearchComponent,
-  ],
 })
-export class SearchPage {
-  private accountsSubscription?: Subscription;
+export class SearchPage implements OnInit, OnDestroy {
+  private subscriptions = new Subscription();
   accountId: string | null = null;
-  groups: Partial<Account>[] | null = [];
-  users: Partial<Account>[] | null = [];
-  user: User | null = null; // define your user here
-  currentGroup?: Partial<Account>;
+  groups: Account[] = [];
+  users: Account[] = [];
+  user: AuthUser | null = null;
+  currentGroup?: Account;
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private authStoreService: AuthStoreService,
-    private storeService: StoreService,
+    private store: Store<AppState>,
   ) {
-    this.user = this.authStoreService.getCurrentUser();
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
   }
 
@@ -63,31 +56,42 @@ export class SearchPage {
       return false;
     }
     return (
-      this.currentGroup?.groupDetails?.admins?.includes(this.user?.uid) ?? false
+      this.currentGroup?.groupDetails?.admins?.includes(this.user.uid) ?? false
     );
   }
 
-  ionViewWillEnter() {
-    this.accountsSubscription = this.storeService.accounts$.subscribe(
-      (accounts) => {
+  ngOnInit() {
+    // Subscribe to Auth User
+    this.subscriptions.add(
+      this.store.select(selectAuthUser).subscribe((user) => {
+        this.user = user;
+      }),
+    );
+
+    // Subscribe to Accounts
+    this.subscriptions.add(
+      this.store.select(selectAccounts).subscribe((accounts) => {
         this.currentGroup = accounts.find(
-          (group) => group["id"] === this.accountId,
+          (group) => group.id === this.accountId,
         );
-        this.groups = this.sortbyName(
-          accounts.find((account) => account["type"] === "group") as Account[],
+        this.groups = this.sortByName(
+          accounts.filter((account) => account.type === "group"),
         );
-        this.users = this.sortbyName(
-          accounts.find((account) => account["type"] === "user") as Account[],
+        this.users = this.sortByName(
+          accounts.filter((account) => account.type === "user"),
         );
-      },
+      }),
     );
+
+    // Dispatch action to load accounts
+    this.store.dispatch(AccountActions.loadAccounts());
   }
 
-  ionViewWillLeave() {
-    this.accountsSubscription?.unsubscribe();
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 
-  sortbyName(records: any[]) {
+  sortByName(records: Account[]): Account[] {
     return records.sort((a, b) => {
       if (a.name && b.name) {
         return a.name.localeCompare(b.name);

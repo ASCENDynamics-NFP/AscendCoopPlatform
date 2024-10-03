@@ -17,73 +17,51 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
-import {AlertController, IonicModule} from "@ionic/angular";
+// src/app/modules/account/pages/login/login.page.ts
+
+import {Component, OnInit} from "@angular/core";
+import {FormBuilder, Validators} from "@angular/forms";
+import {AlertController} from "@ionic/angular";
 import {Router} from "@angular/router";
-import {TranslateModule} from "@ngx-translate/core";
-import {AuthStoreService} from "../../../../core/services/auth-store.service";
-import {Subscription} from "rxjs";
-// import {StoreService} from "../../../../core/services/store.service";
-// import {Timestamp} from "firebase/firestore";
+import {Store} from "@ngrx/store";
+import {Observable} from "rxjs";
+import {
+  selectAuthLoading,
+  selectAuthError,
+} from "../../../../state/selectors/auth.selectors";
+import * as AuthActions from "../../../../state/actions/auth.actions";
 
 @Component({
   selector: "app-login",
   templateUrl: "./login.page.html",
   styleUrls: ["./login.page.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule, TranslateModule],
 })
-export class LoginPage {
-  private userSubscription?: Subscription;
+export class LoginPage implements OnInit {
   public loginForm = this.fb.nonNullable.group({
-    // Using Validators.compose() for multiple validation rules
-    email: ["", Validators.compose([Validators.required, Validators.email])],
-    password: [
-      "",
-      Validators.compose([Validators.required, Validators.minLength(6)]),
-    ],
+    email: ["", [Validators.required, Validators.email]],
+    password: ["", [Validators.required, Validators.minLength(6)]],
   });
+
+  public loading$: Observable<boolean> = this.store.select(selectAuthLoading);
+  public error$: Observable<any> = this.store.select(selectAuthError);
 
   constructor(
     private alertController: AlertController,
-    private authStoreService: AuthStoreService,
     private fb: FormBuilder,
-    private router: Router, // private storeService: StoreService,
+    private router: Router,
+    private store: Store,
   ) {}
 
-  ionViewWillEnter() {
-    this.initiateSubscribers();
+  ngOnInit() {
     this.loadFormData();
-    this.authStoreService.onSignInWithEmailLink();
-    // .then(async (uid) => this.updateUserLoginTime(uid));
-  }
-
-  ionViewWillLeave() {
-    this.userSubscription?.unsubscribe();
-  }
-
-  initiateSubscribers() {
-    // Redirect to user profile if user is logged in
-    this.userSubscription = this.authStoreService.authUser$.subscribe(
-      (authUser) => {
-        if (authUser) {
-          console.log("GOT USER ON LOGIN");
-          this.router.navigateByUrl("/registration/" + authUser.uid, {
-            replaceUrl: true,
-          });
-        }
-      },
-    );
   }
 
   login() {
-    const email = this.loginForm.value.email;
-    const password = this.loginForm.value.password;
+    const {email, password} = this.loginForm.value;
 
-    this.authStoreService.signIn(email, password);
-    //.then(async (uid) => this.updateUserLoginTime(uid));
+    if (email && password) {
+      this.store.dispatch(AuthActions.signIn({email, password}));
+    }
   }
 
   async forgotPassword() {
@@ -104,7 +82,9 @@ export class LoginPage {
         {
           text: "Reset password",
           handler: (result) => {
-            this.authStoreService.onSendPasswordResetEmail(result.email);
+            this.store.dispatch(
+              AuthActions.sendPasswordResetEmail({email: result.email}),
+            );
           },
         },
       ],
@@ -114,13 +94,14 @@ export class LoginPage {
 
   async getEmailSignInLink() {
     const alert = await this.alertController.create({
-      header: "Get an Email SignIn Link",
+      header: "Get an Email Sign-In Link",
       message: "We will send you a link to log in!",
       inputs: [
         {
           type: "email",
           name: "email",
           value: "",
+          placeholder: "Enter your email address",
         },
       ],
       buttons: [
@@ -129,9 +110,14 @@ export class LoginPage {
           role: "cancel",
         },
         {
-          text: "Get an Email SignIn Link",
-          handler: (result) => {
-            this.authStoreService.onSendSignInLinkToEmail(result.email);
+          text: "Get an Email Sign-In Link",
+          handler: (data) => {
+            const email = data.email;
+            if (email) {
+              this.store.dispatch(AuthActions.sendSignInLinkToEmail({email}));
+            } else {
+              console.error("Email is required to send sign-in link");
+            }
           },
         },
       ],
@@ -140,8 +126,7 @@ export class LoginPage {
   }
 
   signInWithGoogle() {
-    this.authStoreService.signInWithGoogle();
-    // .then(async (uid) => await this.updateUserLoginTime(uid));
+    this.store.dispatch(AuthActions.signInWithGoogle());
   }
 
   goToSignUp() {
@@ -149,20 +134,9 @@ export class LoginPage {
   }
 
   loadFormData() {
-    // Update the form with the user data
-    this.loginForm.patchValue({
-      password: "",
+    this.loginForm.reset({
       email: "",
+      password: "",
     });
   }
-
-  // async updateUserLoginTime(uid: string | void) {
-  //   if (!uid) {
-  //     return;
-  //   }
-  //   await this.storeService.updateDoc("users", {
-  //     lastLoginAt: Timestamp.now(),
-  //     id: uid,
-  //   });
-  // }
 }

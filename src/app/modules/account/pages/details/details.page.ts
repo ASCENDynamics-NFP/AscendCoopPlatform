@@ -17,78 +17,92 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit, OnDestroy} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {FormsModule} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
+// src/app/modules/account/pages/details/details.page.ts
+
+import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
-import {RelatedAccountsComponent} from "./components/related-accounts/related-accounts.component";
-import {Account} from "../../../../models/account.model";
+import {Observable, combineLatest} from "rxjs";
+import {map, tap} from "rxjs/operators";
+import {AuthUser} from "../../../../models/auth-user.model";
 import {Store} from "@ngrx/store";
-import {Observable, Subscription} from "rxjs";
-import {AuthStoreService} from "../../../../core/services/auth-store.service";
-import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
-import {ProfessionalInfoComponent} from "./components/professional-info/professional-info.component";
-import {VolunteerPreferenceInfoComponent} from "./components/volunteer-preference-info/volunteer-preference-info.component";
-import {User} from "firebase/auth";
-import {HeroComponent} from "./components/hero/hero.component";
-import {loadAccount} from "../../../../core/state/actions/account.actions";
-import {selectAccount} from "../../../../core/state/selectors/account.selectors";
+
+import {Account} from "../../../../models/account.model";
+import {AppState} from "../../../../state/reducers";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {
+  selectSelectedAccount,
+  selectRelatedAccounts,
+} from "../../../../state/selectors/account.selectors";
+import * as AccountActions from "../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-details",
   templateUrl: "./details.page.html",
   styleUrls: ["./details.page.scss"],
-  standalone: true,
-  imports: [
-    IonicModule,
-    CommonModule,
-    FormsModule,
-    HeroComponent,
-    AppHeaderComponent,
-    RelatedAccountsComponent,
-    ProfessionalInfoComponent,
-    VolunteerPreferenceInfoComponent,
-  ],
 })
-export class DetailsPage implements OnInit, OnDestroy {
+export class DetailsPage implements OnInit {
   public accountId: string | null;
-  authUser: User | null = null;
-  account$: Observable<Account | null>;
-  private subscriptions: Subscription = new Subscription();
+  authUser$!: Observable<AuthUser | null>;
+  fullAccount$!: Observable<Account | null>;
+  isProfileOwner$!: Observable<boolean>;
 
   constructor(
-    private authStoreService: AuthStoreService,
     private route: ActivatedRoute,
     private router: Router,
-    private store: Store,
+    private store: Store<AppState>,
   ) {
     this.accountId = this.route.snapshot.paramMap.get("accountId");
-    this.authUser = this.authStoreService.getCurrentUser();
-    this.account$ = this.store.select(selectAccount);
-  }
-
-  get isProfileOwner(): boolean {
-    return this.accountId === this.authStoreService.getCurrentUser()?.uid;
   }
 
   ngOnInit() {
+    // Initialize authUser$ observable
+    this.authUser$ = this.store.select(selectAuthUser);
+
     if (this.accountId) {
-      this.store.dispatch(loadAccount({accountId: this.accountId}));
-    }
+      // Dispatch loadAccount action to fetch account data
+      this.store.dispatch(
+        AccountActions.loadAccount({accountId: this.accountId}),
+      );
 
-    this.subscriptions.add(
-      this.account$.subscribe((account) => {
-        if (account) {
-          if (!account.type) {
-            this.router.navigate([`/registration/${this.accountId}`]); // Navigate to registration
+      // Select account and related accounts from the store
+      const selectedAccount$ = this.store.select(selectSelectedAccount);
+      const relatedAccounts$ = this.store.select(selectRelatedAccounts);
+
+      // Combine the account and related accounts into one observable without mutating
+      this.fullAccount$ = combineLatest([
+        selectedAccount$,
+        relatedAccounts$,
+      ]).pipe(
+        tap(([account]) => {
+          if (account && !account.type) {
+            this.router.navigate([`/registration/${this.accountId}`]);
           }
-        }
-      }),
-    );
-  }
+        }),
+        map(([account, relatedAccounts]) => {
+          if (account) {
+            return {
+              ...account, // Clone the account object
+              relatedAccounts: relatedAccounts, // Assign relatedAccounts without mutation
+            };
+          } else {
+            return null;
+          }
+        }),
+      );
 
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
+      // Determine if the current user is the profile owner
+      this.isProfileOwner$ = combineLatest([
+        this.authUser$,
+        this.fullAccount$,
+      ]).pipe(
+        map(([authUser, account]) => {
+          // Ensure account and authUser are not null
+          if (account && authUser) {
+            return account.id === authUser.uid;
+          }
+          return false; // Default to false if any are null
+        }),
+      );
+    }
   }
 }

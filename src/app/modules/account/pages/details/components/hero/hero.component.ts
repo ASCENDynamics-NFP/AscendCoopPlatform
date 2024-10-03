@@ -17,26 +17,17 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {CommonModule} from "@angular/common";
+// src/app/components/hero/hero.component.ts
+
 import {Component, Input} from "@angular/core";
-import {IonicModule, ModalController} from "@ionic/angular";
+import {ModalController} from "@ionic/angular";
 import {Account} from "../../../../../../models/account.model";
-import {FormsModule} from "@angular/forms";
 import {ImageUploadModalComponent} from "../../../../../../shared/components/image-upload-modal/image-upload-modal.component";
-import {RouterModule} from "@angular/router";
 
 @Component({
   selector: "app-hero",
   templateUrl: "./hero.component.html",
   styleUrls: ["./hero.component.scss"],
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    RouterModule,
-    ImageUploadModalComponent,
-  ],
 })
 export class HeroComponent {
   @Input() account?: Partial<Account>;
@@ -45,21 +36,17 @@ export class HeroComponent {
   constructor(private modalController: ModalController) {}
 
   get hasDonationURL() {
-    // find Donation category in account.webLinks array return boolean
     return this.account?.webLinks?.some(
       (webLink) => webLink?.category?.toLowerCase() === "donation",
     );
   }
 
   get getLocation() {
-    if (
-      this.account?.contactInformation?.addresses &&
-      this.account?.contactInformation?.addresses?.length > 0
-    ) {
-      return `${this.account.contactInformation.addresses[0]?.city} /${this.account.contactInformation.addresses[0]?.country}`;
-    } else {
-      return "";
+    if (this.account?.contactInformation?.addresses?.length) {
+      const address = this.account.contactInformation.addresses[0];
+      return `${address?.city} / ${address?.country}`;
     }
+    return "";
   }
 
   async openImageUploadModal() {
@@ -80,17 +67,13 @@ export class HeroComponent {
   }
 
   onLink(category: string) {
-    if (this.account?.webLinks) {
-      const webLink = this.account.webLinks.find(
-        (link) => link.category?.toLowerCase() === category.toLowerCase(),
-      );
-      if (webLink && webLink.url) {
-        window.open(webLink.url, "_blank");
-      } else {
-        console.error(`No URL found for category: ${category}`);
-      }
+    const webLink = this.account?.webLinks?.find(
+      (link) => link.category?.toLowerCase() === category.toLowerCase(),
+    );
+    if (webLink?.url) {
+      window.open(webLink.url, "_blank");
     } else {
-      console.error("No web links available.");
+      console.error(`No URL found for category: ${category}`);
     }
   }
 }

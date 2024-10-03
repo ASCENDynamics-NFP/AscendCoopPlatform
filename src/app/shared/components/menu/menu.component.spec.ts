@@ -17,44 +17,98 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
+import {Router} from "@angular/router";
+import {ModalController} from "@ionic/angular";
+import {
+  TranslateService,
+  TranslateModule,
+  LangChangeEvent,
+} from "@ngx-translate/core";
+import {of, Subject} from "rxjs";
 import {MenuComponent} from "./menu.component";
-import {RouterTestingModule} from "@angular/router/testing";
-import {of} from "rxjs";
-import {TranslateModule, TranslateService} from "@ngx-translate/core";
 import {AuthStoreService} from "../../../core/services/auth-store.service";
 
 describe("MenuComponent", () => {
   let component: MenuComponent;
   let fixture: ComponentFixture<MenuComponent>;
-  let service: AuthStoreService;
-  let authSpy: any;
-  let translate: TranslateService;
+  let authStoreService: jasmine.SpyObj<AuthStoreService>;
+  let modalControllerSpy: jasmine.SpyObj<ModalController>;
+  let routerSpy: jasmine.SpyObj<Router>;
+  let translateServiceSpy: jasmine.SpyObj<TranslateService>;
+  let langChangeSubject: Subject<LangChangeEvent>;
 
-  beforeEach(() => {
-    authSpy = jasmine.createSpyObj("auth", ["onSignOut"]);
-    // Mock authUser$ as an Observable that emits null
-    authSpy.authUser$ = of(null);
-    authSpy.onSignOut.and.returnValue(Promise.resolve());
+  beforeEach(waitForAsync(() => {
+    const authStoreServiceSpy = jasmine.createSpyObj("AuthStoreService", [
+      "authUser$",
+    ]);
+    const modalControllerSpyObj = jasmine.createSpyObj("ModalController", [
+      "create",
+    ]);
+    const routerSpyObj = jasmine.createSpyObj("Router", ["navigate"]);
+    const translateServiceSpyObj = jasmine.createSpyObj("TranslateService", [
+      "instant",
+    ]);
+
+    // Initialize a subject for onLangChange
+    langChangeSubject = new Subject<LangChangeEvent>();
+    translateServiceSpyObj.onLangChange = langChangeSubject.asObservable();
 
     TestBed.configureTestingModule({
-      imports: [RouterTestingModule, TranslateModule.forRoot()],
+      declarations: [MenuComponent],
+      imports: [TranslateModule.forRoot()],
       providers: [
-        {provide: AuthStoreService, useValue: authSpy},
-        TranslateService,
+        {provide: AuthStoreService, useValue: authStoreServiceSpy},
+        {provide: ModalController, useValue: modalControllerSpyObj},
+        {provide: Router, useValue: routerSpyObj},
+        {provide: TranslateService, useValue: translateServiceSpyObj},
       ],
     }).compileComponents();
 
-    service = TestBed.inject(AuthStoreService);
     fixture = TestBed.createComponent(MenuComponent);
     component = fixture.componentInstance;
-    translate = TestBed.inject(TranslateService); // inject TranslateService
-    fixture.detectChanges();
+    authStoreService = TestBed.inject(
+      AuthStoreService,
+    ) as jasmine.SpyObj<AuthStoreService>;
+    modalControllerSpy = TestBed.inject(
+      ModalController,
+    ) as jasmine.SpyObj<ModalController>;
+    routerSpy = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    translateServiceSpy = TestBed.inject(
+      TranslateService,
+    ) as jasmine.SpyObj<TranslateService>;
+
+    authStoreService.authUser$ = of(null); // Mock no authenticated user
+  }));
+
+  it("should create", () => {
+    expect(component).toBeTruthy();
   });
 
-  it("should create the app", () => {
-    const fixture = TestBed.createComponent(MenuComponent);
-    const menu = fixture.componentInstance;
-    expect(menu).toBeTruthy();
+  it("should show feedback modal when showFeedbackModal is called", async () => {
+    modalControllerSpy.create.and.returnValue({
+      present: jasmine.createSpy("present"),
+      onWillDismiss: jasmine
+        .createSpy("onWillDismiss")
+        .and.returnValue(Promise.resolve({})),
+    } as any);
+
+    await component.showFeedbackModal();
+    expect(modalControllerSpy.create).toHaveBeenCalled();
+  });
+
+  it("should call router.navigate when handleButtonClick is called with non-empty buttonLink", async () => {
+    await component.handleButtonClick("create-group");
+    expect(modalControllerSpy.create).toHaveBeenCalled();
+  });
+
+  it("should translate guest items if no user is authenticated", () => {
+    component.translateGuestItems();
+    expect(component.guestPages.user.length).toBeGreaterThan(0);
+  });
+
+  it("should handle language change events", () => {
+    const langChangeEvent: LangChangeEvent = {lang: "en", translations: {}};
+    langChangeSubject.next(langChangeEvent);
   });
 });

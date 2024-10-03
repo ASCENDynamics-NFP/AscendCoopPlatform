@@ -20,30 +20,34 @@
 import {Injectable} from "@angular/core";
 import {Router} from "@angular/router";
 import {firstValueFrom} from "rxjs";
-import {AuthStoreService} from "../services/auth-store.service";
 import {NavController} from "@ionic/angular";
+import {Store} from "@ngrx/store";
+import {
+  selectIsLoggedIn,
+  selectAuthUser,
+} from "../../state/selectors/auth.selectors";
+import {AppState} from "../../state/reducers";
 
 @Injectable({
   providedIn: "root",
 })
 export class SecureInnerPagesGuard {
   constructor(
-    public authStoreService: AuthStoreService,
+    private store: Store<AppState>,
     private navCtrl: NavController,
     private router: Router,
   ) {}
 
-  // Used to restrict pages to users when they are logged in
   async canActivate(): Promise<boolean> {
-    const isLoggedIn = await firstValueFrom(this.authStoreService.isLoggedIn$);
+    const isLoggedIn = await firstValueFrom(
+      this.store.select(selectIsLoggedIn),
+    );
     if (isLoggedIn) {
-      // window.alert("Access denied!");
+      const authUser = await firstValueFrom(this.store.select(selectAuthUser));
       if (this.router.getCurrentNavigation()?.previousNavigation) {
         this.navCtrl.back();
       } else {
-        this.navCtrl.navigateForward(
-          `/${this.authStoreService.getCurrentUser()?.uid}`,
-        );
+        this.navCtrl.navigateForward(`/${authUser?.uid}`);
       }
       return false;
     }

@@ -22,216 +22,47 @@ import {
   Firestore,
   getFirestore,
   doc,
-  getDoc,
-  setDoc,
-  addDoc,
   collection,
   query,
   where,
-  getDocs,
-  deleteDoc,
-  onSnapshot,
   DocumentData,
   and,
   or,
 } from "firebase/firestore";
-import {
-  BehaviorSubject,
-  Observable,
-  combineLatest,
-  combineLatestAll,
-  map,
-  switchMap,
-} from "rxjs";
+import {Observable, of} from "rxjs";
+import {map, catchError} from "rxjs/operators";
 import {FirebaseError} from "firebase/app";
-import {RelatedAccount} from "../../models/account.model";
+import {Account, RelatedAccount} from "../../models/account.model";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
 
 @Injectable({
   providedIn: "root",
 })
 export class FirestoreService {
-  private ignoreCollectionList: string[] = ["feedback"];
-  /**
-   * A BehaviorSubject that holds an array of objects, each representing a Firestore collection to listen to.
-   * Each object contains the name of the collection and an array of document ids to listen to in that collection.
-   *
-   * The BehaviorSubject is initialized with an empty array, but can be updated with new collections and ids to listen to.
-   *
-   * Example:
-   * [
-   *   {
-   *     collectionName: "accounts",
-   *     ids: ["account1", "account2"],
-   *   },
-   * ]
-   *
-   * @private
-   * @type {BehaviorSubject<{collectionName: string; ids: string[]}[]>}
-   */
-  private collectionIdsSubject = new BehaviorSubject<
-    {collectionName: string; ids: string[]}[]
-  >([]);
   firestore: Firestore;
 
   constructor(private afs: AngularFirestore) {
     this.firestore = getFirestore();
   }
 
-  // Obserable Logic (Start) //
-  /**
-   * Returns the BehaviorSubject that holds the collections and ids to listen to.
-   * @returns {BehaviorSubject<{collectionName: string; ids: string[]}[]>} - The BehaviorSubject that holds the collections and ids to listen to.
-   * @memberof FirestoreService
-   * @example
-   * const collectionIdsSubject = firestoreService.getCollectionsSubject();
-   * collectionIdsSubject.next([
-   *  {
-   *   collectionName: "accounts",
-   *  ids: ["account1", "account2"],
-   * },
-   * ]);
-   * // This will cause the FirestoreService to listen to the documents with ids "account1" and "account2" in the "accounts" collection.
-   * // Whenever any of these documents change, the FirestoreService will emit the new data of all the documents.
-   * // If the documents don't exist, the FirestoreService will emit null.
-   * // If the documents are deleted, the FirestoreService will emit null.
-   * // If the documents are created, the FirestoreService will emit the new data of all the documents.
-   * // If the documents are updated, the FirestoreService will emit the new data of all the documents.
-   * // If the documents are updated, but the new data is the same as the old data, the FirestoreService will not emit anything.
-   */
-  getCollectionsSubject() {
-    return this.collectionIdsSubject;
-  }
-
-  /**
-   * Listen to multiple documents in multiple Firestore collections.
-   * The documents and collections to listen to are determined by the value of collectionIdsSubject.
-   * @param {BehaviorSubject<Object[]>} collectionIdsSubject - A BehaviorSubject of an array of objects, each containing the name of the collection and the ids of the documents to listen to.
-   * @returns {Observable<DocumentData[]>} - An Observable that emits the data of the documents whenever any of them change.
-   */
-
-  // Observable Logic for Multiple Documents
-  /**
-   * Listen to multiple documents in multiple Firestore collections.
-   * The documents and collections to listen to are determined by the value of collectionIdsSubject.
-   * @param {BehaviorSubject<Object[]>} collectionIdsSubject - A BehaviorSubject of an array of objects, each containing the name of the collection and the ids of the documents to listen to.
-   * @returns {Observable<DocumentData[]>} - An Observable that emits the data of the documents whenever any of them change.
-   */
-  listenToMultipleDocumentsInMultipleCollections(): Observable<DocumentData[]> {
-    return this.collectionIdsSubject.pipe(
-      switchMap((collections) => {
-        return combineLatest(
-          collections.map((collection) => {
-            const docObservables = collection.ids.map((id) => {
-              return new Observable<DocumentData>((subscriber) => {
-                const unsubscribe = onSnapshot(
-                  doc(this.firestore, collection.collectionName, id),
-                  (docSnapshot) => {
-                    // Include the id in the emitted data
-                    const data = docSnapshot.data();
-                    if (data) {
-                      data["id"] = docSnapshot.id;
-                      subscriber.next(data);
-                    }
-                  },
-                  (error) => {
-                    subscriber.error(error);
-                  },
-                );
-
-                return unsubscribe; // This function will be called when the Observable is unsubscribed from
-              });
-            });
-
-            return combineLatest(docObservables);
-          }),
-        ).pipe(
-          map((arrays) => arrays.flat()), // Flatten the array of arrays into a single array
-        );
-      }),
-    );
-  }
-
-  /**
-   * Adds an id to the collection with the given name in the collectionIdsSubject.
-   * @param collectionName - The name of the collection to add the id to.
-   * @param id - The id to add to the collection.
-   */
-  addIdToCollection(collectionName: string, id: string): void {
-    if (this.ignoreCollectionList.includes(collectionName)) {
-      return;
-    }
-    const currentCollections = this.collectionIdsSubject.getValue();
-    const collectionIndex = currentCollections.findIndex(
-      (collection) => collection.collectionName === collectionName,
-    );
-    if (collectionIndex === -1) {
-      currentCollections.push({collectionName, ids: [id]});
-    } else {
-      // Check if id already exists in the array
-      if (!currentCollections[collectionIndex].ids.includes(id)) {
-        currentCollections[collectionIndex].ids.push(id);
-      }
-    }
-    this.collectionIdsSubject.next(currentCollections);
-  }
-
-  /**
-   * Removes an id from the collection with the given name in the collectionIdsSubject.
-   * @param collectionName - The name of the collection to remove the id from.
-   * @param id - The id to remove from the collection.
-   */
-  removeIdFromCollection(collectionName: string, id: string): void {
-    const currentCollections = this.collectionIdsSubject.getValue();
-    const collectionIndex = currentCollections.findIndex(
-      (collection) => collection.collectionName === collectionName,
-    );
-    if (collectionIndex !== -1) {
-      // Check if id exists in the array
-      if (currentCollections[collectionIndex].ids.includes(id)) {
-        currentCollections[collectionIndex].ids = currentCollections[
-          collectionIndex
-        ].ids.filter((currentId) => currentId !== id);
-        this.collectionIdsSubject.next(currentCollections);
-      }
-    }
-  }
-
-  /**
-   * Clears the data in the collectionIdsSubject.
-   * This method sets the BehaviorSubject's value to an empty array, effectively clearing its data.
-   */
-  clearCollectionIdsData() {
-    this.collectionIdsSubject.next([]);
-  }
-
-  // Obserable Logic (End) //
-
   // Firebase Query Logic (Start) //
+
   /**
-   * Retrieves a specific document from a given collection.
+   * Retrieves a specific document from a given collection in real-time.
    *
    * @param {string} collectionName - Name of the collection.
    * @param {string} documentId - ID of the document to retrieve.
-   * @returns {Promise<any | null>} - Returns the document data if found, otherwise null.
+   * @returns {Observable<T | null>} - Returns an Observable of the document data if found, otherwise null.
    */
-  async getDocument(collectionName: string, documentId: string) {
-    try {
-      const documentRef = doc(this.firestore, collectionName, documentId);
-      const documentSnap = await getDoc(documentRef);
-
-      if (documentSnap.exists()) {
-        const data = documentSnap.data();
-        data["id"] = documentSnap.id;
-        return data;
-      } else {
-        console.log("No such document!");
-        return null;
-      }
-    } catch (error) {
-      console.error("Error retrieving document: ", error);
-      return null;
-    }
+  getDocument<T>(
+    collectionName: string,
+    documentId: string,
+  ): Observable<T | null> {
+    return this.afs
+      .collection<T>(collectionName)
+      .doc<T>(documentId)
+      .valueChanges({idField: "id"})
+      .pipe(map((data) => data ?? null));
   }
 
   /**
@@ -239,18 +70,16 @@ export class FirestoreService {
    *
    * @param {string} collectionName - Name of the collection.
    * @param {any} documentData - Data of the document to add.
-   * @returns {Promise<string | null>} - Returns the ID of the added document, otherwise null.
+   * @returns {Promise<string>} - Returns the ID of the added document.
    */
-  // Document Manipulation Methods
   async addDocument(
     collectionName: string,
     documentData: any,
-  ): Promise<string | null> {
+  ): Promise<string> {
     try {
-      const documentRef = await addDoc(
-        collection(this.firestore, collectionName),
-        documentData,
-      );
+      const documentRef = await this.afs
+        .collection(collectionName)
+        .add(documentData);
       return documentRef.id;
     } catch (error) {
       throw new FirebaseError(
@@ -272,8 +101,7 @@ export class FirestoreService {
     options?: {merge: boolean},
   ): Promise<void> {
     try {
-      const documentRef = doc(this.firestore, docPath);
-      await setDoc(documentRef, documentData, options || {});
+      await this.afs.doc(docPath).set(documentData, options || {});
       console.log("Document set successfully at path:", docPath);
     } catch (error) {
       console.error("Error setting document at path:", docPath, error);
@@ -287,18 +115,18 @@ export class FirestoreService {
    * @param {string} collectionName - Name of the collection.
    * @param {string} documentId - ID of the document to update.
    * @param {any} updatedData - New data to update the document with.
+   * @returns {Promise<void>}
    */
   async updateDocument(
     collectionName: string,
     documentId: string,
     updatedData: any,
-  ) {
+  ): Promise<void> {
     try {
-      await setDoc(
-        doc(this.firestore, collectionName, documentId),
-        updatedData,
-        {merge: true},
-      );
+      await this.afs
+        .collection(collectionName)
+        .doc(documentId)
+        .update(updatedData);
     } catch (error) {
       throw new FirebaseError(
         "update-document-error",
@@ -308,14 +136,36 @@ export class FirestoreService {
   }
 
   /**
+   * Updates a document at the given path in Firestore.
+   *
+   * @param {string} docPath - The full path to the document.
+   * @param {any} updatedData - The data to update.
+   * @returns {Promise<void>}
+   */
+  async updateDocumentAtPath(docPath: string, updatedData: any): Promise<void> {
+    try {
+      await this.afs.doc(docPath).update(updatedData);
+    } catch (error) {
+      throw new FirebaseError(
+        "update-document-at-path-error",
+        `Error updating document at path ${docPath}: ${error}`,
+      );
+    }
+  }
+
+  /**
    * Deletes a specific document from a given collection.
    *
    * @param {string} collectionName - Name of the collection.
    * @param {string} documentId - ID of the document to delete.
+   * @returns {Promise<void>}
    */
-  async deleteDocument(collectionName: string, documentId: string) {
+  async deleteDocument(
+    collectionName: string,
+    documentId: string,
+  ): Promise<void> {
     try {
-      await deleteDoc(doc(this.firestore, collectionName, documentId));
+      await this.afs.collection(collectionName).doc(documentId).delete();
     } catch (error) {
       throw new FirebaseError(
         "delete-document-error",
@@ -325,167 +175,142 @@ export class FirestoreService {
   }
 
   /**
-   * Retrieves documents from a collection based on a specified condition.
+   * Deletes a document at the given path in Firestore.
+   *
+   * @param {string} docPath - The full path to the document, including its ID.
+   * @returns {Promise<void>}
+   */
+  async deleteDocumentAtPath(docPath: string): Promise<void> {
+    try {
+      await this.afs.doc(docPath).delete();
+    } catch (error) {
+      throw new FirebaseError(
+        "delete-document-at-path-error",
+        `Error deleting document at path ${docPath}: ${error}`,
+      );
+    }
+  }
+
+  /**
+   * Retrieves documents from a collection based on a specified condition in real-time.
    *
    * @param {string} collectionName - Name of the collection.
    * @param {string} field - Field name to apply the condition on.
    * @param {any} condition - Condition to apply.
    * @param {any} value - Value to match against.
-   * @returns {Promise<DocumentData[] | null>} - Returns an array of documents that match the condition, otherwise null.
+   * @returns {Observable<T[]>} - Returns an Observable of an array of documents that match the condition.
    */
-  getCollectionWithCondition(
+  getCollectionWithCondition<T>(
     collectionName: string,
     field: string,
     condition: any,
     value: any,
-  ): Promise<DocumentData[] | null> {
-    return getDocs(
-      query(
-        collection(this.firestore, collectionName),
-        where(field, condition, value),
-      ),
-    )
-      .then((querySnapshot) => {
-        const documents: DocumentData[] = [];
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          data["id"] = doc.id;
-          documents.push(data);
-        });
-        return documents;
-      })
-      .catch((error) => {
-        console.error("Error retrieving collection: ", error);
-        return null;
-      });
+  ): Observable<T[]> {
+    const collectionRef = this.afs.collection<T>(collectionName, (ref) =>
+      ref.where(field, condition, value),
+    );
+    return collectionRef.valueChanges({idField: "id"}).pipe(
+      catchError((error) => {
+        console.error("Error retrieving collection:", error);
+        return of([]);
+      }),
+    );
   }
 
   /**
-   * Searches for documents in a collection based on a name field.
+   * Searches for documents in a collection based on a name field in real-time.
    *
    * @param {string} collectionName - Name of the collection.
    * @param {string} searchTerm - Term to search for.
-   * @param {string} userId - Current user Id.
-   * @returns {Promise<DocumentData[] | null>} - Returns an array of documents that match the search term, otherwise null.
+   * @param {string} [userId] - Current user Id (optional).
+   * @returns {Observable<Account[]>} - Returns an Observable of an array of accounts that match the search term.
    */
   searchAccountByName(
     collectionName: string,
     searchTerm: string,
-    userId: string | undefined,
-  ): Promise<DocumentData[] | null> {
-    return getDocs(
-      query(
-        collection(this.firestore, collectionName),
-        and(
-          or(
-            and(
-              // query as-is:
-              where("name", ">=", searchTerm),
-              where("name", "<=", searchTerm + "\uf8ff"),
-            ),
-            and(
-              // capitalize first letter:
-              where(
-                "name",
-                ">=",
-                searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1),
-              ),
-              where(
-                "name",
-                "<=",
-                searchTerm.charAt(0).toUpperCase() +
-                  searchTerm.slice(1) +
-                  "\uf8ff",
-              ),
-            ),
-            and(
-              // lowercase:
-              where("name", ">=", searchTerm.toLowerCase()),
-              where("name", "<=", searchTerm.toLowerCase() + "\uf8ff"),
-            ),
-          ),
-          where("privacy", "==", "public"),
-          where("type", "in", ["user", "group"]),
-          //         or(
-          //           where("privacy", "==", "public"),
-          //           and(
-          //             where("privacy", "==", "friends-only"),
-          //             where("associations.accounts", "array-contains", userId),
-          //           ),
-          //           and(
-          //             where("privacy", "==", "groups-only"),
-          //             where("associations.accounts", "array-contains", userId),
-          //           ),
-          //         ),
-        ),
-      ),
-    )
-      .then((querySnapshot) => {
-        return this.processFirebaseData(querySnapshot);
-      })
-      .catch((error) => {
-        throw new FirebaseError(
-          "get-document-error",
-          `Error getting document: ${error}`,
-        );
-      });
-  }
+    userId?: string,
+  ): Observable<Account[]> {
+    const collectionRef = this.afs.collection<Account>(
+      collectionName,
+      (ref) => {
+        let queryRef = ref
+          .where("privacy", "==", "public")
+          .where("type", "in", ["user", "group"]);
 
-  getDocById(collectionName: string, docId: string): Observable<any> {
-    return this.afs.collection(collectionName).doc(docId).valueChanges();
+        // Firestore does not support OR queries directly, but we can perform multiple queries and combine the results
+        // For simplicity, we'll only handle the search term as-is
+        queryRef = queryRef
+          .orderBy("name")
+          .startAt(searchTerm)
+          .endAt(searchTerm + "\uf8ff");
+
+        return queryRef;
+      },
+    );
+
+    return collectionRef.valueChanges({idField: "id"}).pipe(
+      catchError((error) => {
+        console.error("Error searching accounts:", error);
+        return of([]);
+      }),
+    );
   }
 
   /**
-   * Deletes a document at the given path in Firestore.
+   * Retrieves a document by its ID as an Observable.
    *
-   * @param docPath The full path to the document, including its ID.
+   * @param {string} collectionName - Name of the collection.
+   * @param {string} docId - ID of the document.
+   * @returns {Observable<T | null>}
    */
-  async deleteDocumentAtPath(docPath: string): Promise<void> {
-    const documentRef = doc(this.firestore, docPath);
-    await deleteDoc(documentRef);
+  getDocById<T>(collectionName: string, docId: string): Observable<T | null> {
+    return this.afs
+      .collection<T>(collectionName)
+      .doc<T>(docId)
+      .valueChanges({idField: "id"})
+      .pipe(
+        map((data) => data ?? null), // Map undefined to null
+        catchError((error) => {
+          console.error("Error getting document by ID:", error);
+          return of(null);
+        }),
+      );
   }
 
   /**
-   * Retrieves documents from a relatedAccounts sub-collection for a given account.
+   * Retrieves documents from a relatedAccounts sub-collection for a given account in real-time.
    *
    * @param {string} accountId - ID of the account.
-   * @returns {Promise<Partial<any>[]>} - Returns an array of related accounts.
+   * @returns {Observable<RelatedAccount[]>} - Returns an Observable of an array of related accounts.
    */
-  async getRelatedAccounts(
-    accountId: string,
-  ): Promise<Partial<RelatedAccount>[]> {
-    try {
-      const relatedAccountsRef = collection(
-        this.firestore,
-        `accounts/${accountId}/relatedAccounts`,
+  getRelatedAccounts(accountId: string): Observable<RelatedAccount[]> {
+    const relatedAccountsRef = this.afs.collection<RelatedAccount>(
+      `accounts/${accountId}/relatedAccounts`,
+    );
+
+    return relatedAccountsRef.valueChanges({idField: "id"}).pipe(
+      catchError((error) => {
+        console.error("Error getting related accounts:", error);
+        return of([]);
+      }),
+    );
+  }
+
+  /**
+   * Retrieves all documents from the 'accounts' collection in real-time.
+   * @returns {Observable<Account[]>} - Returns an Observable of an array of account documents.
+   */
+  getAllAccounts(): Observable<Account[]> {
+    return this.afs
+      .collection<Account>("accounts")
+      .valueChanges({idField: "id"})
+      .pipe(
+        catchError((error) => {
+          console.error("Error getting accounts:", error);
+          return of([]);
+        }),
       );
-      const querySnapshot = await getDocs(relatedAccountsRef);
-      return this.processFirebaseData(querySnapshot);
-    } catch (error) {
-      throw new FirebaseError(
-        "get-document-error",
-        `Error getting documents: ${error}`,
-      );
-    }
   }
 
   // Firebase Query Logic (Ends) //
-
-  // Helper Functions (Start) //
-  /**
-   * Processes Firebase data and returns it in a structured format.
-   *
-   * @param {QuerySnapshot | DocumentSnapshot} querySnapshot - Snapshot of the data from Firebase.
-   * @returns {any} - Returns an array of documents if multiple documents are found, a single document if one is found, or null if none are found.
-   */
-  processFirebaseData(querySnapshot: any): any[] {
-    if (!querySnapshot.empty) {
-      return querySnapshot.docs.map((doc: any) => ({
-        ...doc.data(),
-        id: doc.id,
-      }));
-    }
-    return []; // Return an empty array if no documents found
-  }
-  // Helper Functions (End) //
 }

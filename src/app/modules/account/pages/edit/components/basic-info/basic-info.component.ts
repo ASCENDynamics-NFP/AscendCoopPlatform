@@ -17,28 +17,21 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {CommonModule} from "@angular/common";
+// basic-info.component.ts
 import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
-import {
-  FormArray,
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
-import {StoreService} from "../../../../../../core/services/store.service";
+import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {Account} from "../../../../../../models/account.model";
+import {Store} from "@ngrx/store";
+import {AppState} from "../../../../../../state/reducers";
+import * as AccountActions from "../../../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-basic-info",
   templateUrl: "./basic-info.component.html",
   styleUrls: ["./basic-info.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
 export class BasicInfoComponent implements OnChanges {
-  @Input() account: Partial<Account> | null = null;
+  @Input() account: Account | null = null;
   public maxLinks = 10;
 
   basicInfoForm = this.fb.group({
@@ -53,7 +46,7 @@ export class BasicInfoComponent implements OnChanges {
 
   constructor(
     private fb: FormBuilder,
-    private storeService: StoreService,
+    private store: Store<AppState>,
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -92,7 +85,7 @@ export class BasicInfoComponent implements OnChanges {
       const formValue = this.basicInfoForm.value;
 
       // Prepare the account object for update
-      const updatedAccount: Partial<Account> = {
+      const updatedAccount: Account = {
         ...this.account,
         ...formValue,
         name: formValue.name!,
@@ -113,7 +106,9 @@ export class BasicInfoComponent implements OnChanges {
       };
 
       // Now update the document with the updatedAccount
-      this.storeService.updateDoc("accounts", updatedAccount);
+      this.store.dispatch(
+        AccountActions.updateAccount({account: updatedAccount}),
+      );
     }
   }
 

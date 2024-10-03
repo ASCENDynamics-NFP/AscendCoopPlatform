@@ -17,68 +17,67 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {IonicModule} from "@ionic/angular";
-import {ActivatedRoute, RouterModule} from "@angular/router";
+import {Component, OnDestroy, OnInit} from "@angular/core";
 import {Account, RelatedAccount} from "../../../../../models/account.model";
-import {User} from "firebase/auth";
-import {AuthStoreService} from "../../../../../core/services/auth-store.service";
-import {StoreService} from "../../../../../core/services/store.service";
+import {AuthUser} from "../../../../../models/auth-user.model";
+import {ActivatedRoute} from "@angular/router";
+import {Store} from "@ngrx/store";
+import {AppState} from "../../../../../state/reducers";
+import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
+import {selectAccountById} from "../../../../../state/selectors/account.selectors";
+import * as AccountActions from "../../../../../state/actions/account.actions";
 import {Subscription} from "rxjs";
 
 @Component({
   selector: "app-member-list",
   templateUrl: "./member-list.page.html",
   styleUrls: ["./member-list.page.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, RouterModule],
 })
-/**
- * Represents a page where group admins can manage their group members.
- */
-export class MemberListPage {
-  private accountsSubscription?: Subscription;
+export class MemberListPage implements OnInit, OnDestroy {
+  private subscriptions = new Subscription();
   currentMembersList: Partial<RelatedAccount>[] = [];
   pendingMembersList: Partial<RelatedAccount>[] = [];
   accountId: string | null = null;
-  account?: Partial<Account>;
-  currentUser: User | null = null;
+  account?: Account;
+  currentUser: AuthUser | null = null;
 
-  /**
-   * Constructs the MemberListPage.
-   * @param {ActivatedRoute} activatedRoute - The activated route.
-   * @param {AuthStoreService} authStoreService - The authentication store service.
-   * @param {StoreService} storeService - The store service.
-   */
   constructor(
     private activatedRoute: ActivatedRoute,
-    private authStoreService: AuthStoreService,
-    private storeService: StoreService,
+    private store: Store<AppState>,
   ) {
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
-    this.currentUser = this.authStoreService.getCurrentUser();
   }
 
-  /**
-   * Lifecycle hook that is called when the page is about to enter.
-   */
-  ionViewWillEnter() {
-    this.accountsSubscription = this.storeService.accounts$.subscribe(
-      (accounts) => {
-        this.account = accounts.find((acc) => acc.id === this.accountId);
-        if (this.account) {
-          this.sortRelatedAccounts(this.account.relatedAccounts || []);
-        }
-      },
+  ngOnInit() {
+    // Subscribe to the authenticated user
+    this.subscriptions.add(
+      this.store.select(selectAuthUser).subscribe((user) => {
+        this.currentUser = user;
+      }),
     );
+
+    if (this.accountId) {
+      // Dispatch action to load the account
+      this.store.dispatch(
+        AccountActions.loadAccount({accountId: this.accountId}),
+      );
+
+      // Subscribe to the account data
+      this.subscriptions.add(
+        this.store
+          .select(selectAccountById(this.accountId))
+          .subscribe((account) => {
+            if (account) {
+              this.account = account;
+              this.sortRelatedAccounts(account.relatedAccounts || []);
+            }
+          }),
+      );
+    }
   }
 
-  /**
-   * Lifecycle hook that is called when the page is about to leave.
-   */
-  ionViewWillLeave() {
-    this.accountsSubscription?.unsubscribe();
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 
   sortRelatedAccounts(relatedAccounts: Partial<RelatedAccount>[]) {
@@ -88,13 +87,8 @@ export class MemberListPage {
     this.pendingMembersList = relatedAccounts.filter(
       (ra) => ra.type === "user" && ra.status === "pending",
     );
-    console.log(this.currentMembersList, this.pendingMembersList);
   }
 
-  /**
-   * Checks if the current user is an admin of the group.
-   * @returns {boolean} - True if the user is an admin, otherwise false.
-   */
   get isAdmin() {
     if (!this.account?.groupDetails || !this.currentUser) return false;
     return (
@@ -104,39 +98,40 @@ export class MemberListPage {
   }
 
   updateStatus(request: Partial<RelatedAccount>, status: string) {
-    const docPath = `accounts/${this.accountId}/relatedAccounts/${request.id}`;
-    const updatedData = {status: status};
-    this.storeService.updateDocAtPath(docPath, updatedData).then(() => {
-      if (!this.accountId) return;
-      this.storeService.getAndSortRelatedAccounts(this.accountId);
-    });
+    if (!this.accountId || !request.id) return;
+
+    const updatedRelatedAccount: RelatedAccount = {
+      ...request,
+      status: status,
+    };
+
+    // Dispatch action to update the related account
+    this.store.dispatch(
+      AccountActions.updateRelatedAccount({
+        accountId: this.accountId,
+        relatedAccount: updatedRelatedAccount,
+      }),
+    );
   }
 
-  /**
-   * Adds a member to the group.
-   * @param {any} request - The member request to process.
-   */
   acceptRequest(request: Partial<RelatedAccount>) {
     this.updateStatus(request, "accepted");
   }
 
-  /**
-   * Rejects a member request to join the group.
-   * @param {any} request - The member request to reject.
-   */
   rejectRequest(request: Partial<RelatedAccount>) {
     this.updateStatus(request, "rejected");
   }
 
-  /**
-   * Removes a member from the group.
-   * @param {any} request - The member request to process.
-   */
   removeRequest(request: Partial<RelatedAccount>) {
-    if (!this.accountId) return;
-    const docPath = `accounts/${this.accountId}/relatedAccounts/${request.id}`;
-    this.storeService.deleteDocAtPath(docPath);
-    this.storeService.getAndSortRelatedAccounts(this.accountId);
+    if (!this.accountId || !request.id) return;
+
+    // Dispatch action to delete the related account
+    this.store.dispatch(
+      AccountActions.deleteRelatedAccount({
+        accountId: this.accountId,
+        relatedAccountId: request.id,
+      }),
+    );
   }
 
   showAcceptRejectButtons(request: Partial<RelatedAccount>) {

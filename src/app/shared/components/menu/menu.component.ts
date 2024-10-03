@@ -17,35 +17,26 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {CommonModule} from "@angular/common";
 import {Component, OnDestroy, OnInit} from "@angular/core";
-import {Router, RouterLink, RouterLinkActive} from "@angular/router";
-import {IonicModule, ModalController} from "@ionic/angular";
-import {User} from "firebase/auth";
-import {TranslateModule} from "@ngx-translate/core";
+import {Router} from "@angular/router";
+import {ModalController} from "@ionic/angular";
+import {AuthUser} from "../../../models/auth-user.model";
 import {TranslateService, LangChangeEvent} from "@ngx-translate/core";
-import {CreateGroupModalComponent} from "../../../modules/account/components/create-group-modal/create-group-modal.component";
 import {Subscription} from "rxjs";
-import {AuthStoreService} from "../../../core/services/auth-store.service";
+import {Store} from "@ngrx/store";
+import {selectAuthUser} from "../../../state/selectors/auth.selectors";
+import {AppState} from "../../../state/reducers";
 import {FeedbackModalComponent} from "../feedback-modal/feedback-modal.component";
+import {CreateGroupModalComponent} from "../../../modules/account/components/create-group-modal/create-group-modal.component";
 
 @Component({
   selector: "app-menu",
   templateUrl: "./menu.component.html",
   styleUrls: ["./menu.component.scss"],
-  standalone: true,
-  imports: [
-    IonicModule,
-    RouterLink,
-    RouterLinkActive,
-    CommonModule,
-    TranslateModule,
-    CreateGroupModalComponent,
-  ],
 })
 export class MenuComponent implements OnInit, OnDestroy {
-  private authSubscription: Subscription;
-  user: User | null = null;
+  private authSubscription: Subscription = new Subscription();
+  user: AuthUser | null = null;
   public project: any = [];
   public guestPages: any = {user: [], group: []};
   public userPages: any = {user: [], group: []};
@@ -53,30 +44,31 @@ export class MenuComponent implements OnInit, OnDestroy {
     "This modal example uses the modalController to present and dismiss modals.";
 
   constructor(
-    private authStoreService: AuthStoreService,
+    private store: Store<AppState>,
     private translate: TranslateService,
     private modalCtrl: ModalController,
     private router: Router,
   ) {
-    this.authSubscription = this.authStoreService.authUser$.subscribe(
-      (authUser) => {
+    this.authSubscription.add(
+      this.store.select(selectAuthUser).subscribe((authUser) => {
+        this.user = authUser;
         if (authUser) {
-          console.log("GOT USER ON MENU");
-          this.user = authUser;
           this.translateUserItems();
         } else {
           this.translateGuestItems();
         }
-      },
+      }),
     );
-    this.translate.onLangChange.subscribe((event: LangChangeEvent) => {
-      // Do something with the updated translations
-      if (this.user) {
-        this.translateUserItems();
-      } else {
-        this.translateGuestItems();
-      }
-    });
+
+    this.authSubscription.add(
+      this.translate.onLangChange.subscribe((event: LangChangeEvent) => {
+        if (this.user) {
+          this.translateUserItems();
+        } else {
+          this.translateGuestItems();
+        }
+      }),
+    );
   }
 
   ngOnInit() {

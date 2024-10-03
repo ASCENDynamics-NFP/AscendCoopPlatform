@@ -17,133 +17,110 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// src/app/modules/account/pages/signup/signup.page.ts
+
 import {Component} from "@angular/core";
-import {CommonModule} from "@angular/common";
 import {
   AbstractControl,
   FormBuilder,
-  ReactiveFormsModule,
-  ValidationErrors,
   Validators,
+  ValidationErrors,
 } from "@angular/forms";
-import {IonicModule, ModalController} from "@ionic/angular";
+import {ModalController} from "@ionic/angular";
 import {Router} from "@angular/router";
+import {Store} from "@ngrx/store";
 
-import {TranslateModule} from "@ngx-translate/core";
-import {Subscription} from "rxjs";
-import {AuthStoreService} from "../../../../core/services/auth-store.service";
 import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
 
-function passwordStrengthValidator(
-  control: AbstractControl,
-): ValidationErrors | null {
-  const value = control.value;
-  if (!value) {
-    return null; // Don't validate empty value
-  }
-  const hasUpperCase = /[A-Z]/.test(value);
-  const hasLowerCase = /[a-z]/.test(value);
-  const hasNumeric = /\d/.test(value);
-  const hasSpecialChar = /\W|_/.test(value); // Matches any non-word character or underscore
-
-  const valid = hasUpperCase && hasLowerCase && hasNumeric && hasSpecialChar;
-  if (!valid) {
-    // Return an error if the password doesn't meet the requirements
-    return {passwordStrength: true};
-  }
-  return null; // Return null if there are no errors (i.e., the validation passed)
-}
-
-function matchingPasswordsValidator(
-  control: AbstractControl,
-): ValidationErrors | null {
-  const password = control.get("password")?.value;
-  const confirmPassword = control.get("confirmPassword")?.value;
-
-  // Check if the password and confirm password fields match
-  if (password !== confirmPassword) {
-    // If they don't match, return an error object
-    return {passwordMismatch: true};
-  }
-  // If they match, return null (no error)
-  return null;
-}
+import * as AuthActions from "../../../../state/actions/auth.actions";
+import {
+  selectAuthError,
+  selectAuthLoading,
+} from "../../../../state/selectors/auth.selectors";
 
 @Component({
   selector: "app-signup",
   templateUrl: "./signup.page.html",
   styleUrls: ["./signup.page.scss"],
-  standalone: true,
-  imports: [
-    IonicModule,
-    CommonModule,
-    ReactiveFormsModule,
-    TranslateModule,
-    LegalModalComponent,
-  ],
 })
 export class SignupPage {
-  private authSubscription?: Subscription;
+  // Define the signup form using FormBuilder
   signupForm = this.fb.nonNullable.group(
     {
-      email: ["", Validators.compose([Validators.required, Validators.email])],
+      email: ["", [Validators.required, Validators.email]],
       password: [
         "",
-        Validators.compose([
+        [
           Validators.required,
           Validators.minLength(8),
-          passwordStrengthValidator,
-        ]),
+          this.passwordStrengthValidator,
+        ],
       ],
-      confirmPassword: [
-        "",
-        Validators.compose([Validators.required, Validators.minLength(8)]),
-      ],
+      confirmPassword: ["", [Validators.required, Validators.minLength(8)]],
       agreedToTerms: [false, Validators.requiredTrue],
     },
-    {validators: matchingPasswordsValidator},
+    {validators: this.matchingPasswordsValidator},
   );
+
+  // Selectors for error and loading states
+  error$ = this.store.select(selectAuthError);
+  loading$ = this.store.select(selectAuthLoading);
 
   constructor(
     private fb: FormBuilder,
-    private authStoreService: AuthStoreService,
     private router: Router,
     private modalController: ModalController,
+    private store: Store,
   ) {}
 
-  ionViewWillEnter() {
-    this.authSubscription = this.authStoreService.authUser$.subscribe(
-      (authUser) => {
-        if (authUser) {
-          console.log("GOT USER ON SIGN UP");
-          this.router.navigateByUrl("/registration/" + authUser.uid, {
-            replaceUrl: true,
-          });
-        }
-      },
-    );
-  }
-
-  ionViewWillLeave() {
-    this.authSubscription?.unsubscribe();
-  }
-
+  // Dispatch the signUp action with form values
   signup() {
-    const email = this.signupForm.value.email;
-    const password = this.signupForm.value.password;
+    const {email, password} = this.signupForm.value;
 
-    this.authStoreService.signUp(email, password);
+    if (email && password) {
+      this.store.dispatch(AuthActions.signUp({email, password}));
+    }
   }
 
+  // Navigate to the login page
   goToLogin() {
     this.router.navigateByUrl("/login");
   }
 
+  // Open the legal modal (Privacy Policy or Terms of Use)
   async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {
     const modal = await this.modalController.create({
       component: LegalModalComponent,
       componentProps: {content: contentType},
     });
-    return await modal.present();
+    await modal.present();
+  }
+
+  // Custom validator to check password strength
+  private passwordStrengthValidator(
+    control: AbstractControl,
+  ): ValidationErrors | null {
+    const value = control.value;
+    if (!value) {
+      return null; // Don't validate empty value
+    }
+    const hasUpperCase = /[A-Z]/.test(value);
+    const hasLowerCase = /[a-z]/.test(value);
+    const hasNumeric = /\d/.test(value);
+    const hasSpecialChar = /\W|_/.test(value); // Matches any non-word character or underscore
+
+    const valid = hasUpperCase && hasLowerCase && hasNumeric && hasSpecialChar;
+    return !valid ? {passwordStrength: true} : null;
+  }
+
+  // Custom validator to ensure password and confirmPassword match
+  private matchingPasswordsValidator(
+    group: AbstractControl,
+  ): ValidationErrors | null {
+    const password = group.get("password")?.value;
+    const confirmPassword = group.get("confirmPassword")?.value;
+
+    // Check if the password and confirm password fields match
+    return password === confirmPassword ? null : {passwordMismatch: true};
   }
 }

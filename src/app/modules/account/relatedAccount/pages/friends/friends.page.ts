@@ -17,64 +17,67 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {FormsModule} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
-import {ActivatedRoute, RouterModule} from "@angular/router";
-import {AuthStoreService} from "../../../../../core/services/auth-store.service";
-import {StoreService} from "../../../../../core/services/store.service";
-import {Subscription} from "rxjs";
-import {AppHeaderComponent} from "../../../../../shared/components/app-header/app-header.component";
+import {Component, OnDestroy, OnInit} from "@angular/core";
 import {Account, RelatedAccount} from "../../../../../models/account.model";
+import {ActivatedRoute} from "@angular/router";
+import {Subscription} from "rxjs";
+import {Store} from "@ngrx/store";
+import {AppState} from "../../../../../state/reducers";
+import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
+import {selectAccountById} from "../../../../../state/selectors/account.selectors";
+import * as AccountActions from "../../../../../state/actions/account.actions";
+import {AuthUser} from "../../../../../models/auth-user.model";
 
 @Component({
   selector: "app-friends",
   templateUrl: "./friends.page.html",
   styleUrls: ["./friends.page.scss"],
-  standalone: true,
-  imports: [
-    IonicModule,
-    CommonModule,
-    FormsModule,
-    RouterModule,
-    AppHeaderComponent,
-  ],
 })
-export class FriendsPage implements OnInit {
-  private accountsSubscription?: Subscription;
+export class FriendsPage implements OnInit, OnDestroy {
+  private subscriptions = new Subscription();
   currentFriendsList: Partial<RelatedAccount>[] = [];
   pendingFriendsList: Partial<RelatedAccount>[] = [];
   accountId: string | null = null;
-  currentUser: any;
-  account?: Partial<Account>;
+  currentUser: AuthUser | null = null;
+  account?: Account;
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private authStoreService: AuthStoreService,
-    private storeService: StoreService,
+    private store: Store<AppState>,
   ) {
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
   }
 
   ngOnInit() {
-    this.currentUser = this.authStoreService.getCurrentUser();
-  }
-
-  ionViewWillEnter() {
-    this.accountsSubscription = this.storeService.accounts$.subscribe(
-      (accounts) => {
-        const account = accounts.find((acc) => acc.id === this.accountId);
-        if (account) {
-          this.account = account;
-          this.sortRelatedAccounts(account.relatedAccounts || []);
-        }
-      },
+    // Subscribe to the authenticated user
+    this.subscriptions.add(
+      this.store.select(selectAuthUser).subscribe((user) => {
+        this.currentUser = user;
+      }),
     );
+
+    if (this.accountId) {
+      // Dispatch action to load the account
+      this.store.dispatch(
+        AccountActions.loadAccount({accountId: this.accountId}),
+      );
+
+      // Subscribe to the account data
+      this.subscriptions.add(
+        this.store
+          .select(selectAccountById(this.accountId))
+          .subscribe((account) => {
+            if (account) {
+              this.account = account;
+              this.sortRelatedAccounts(account.relatedAccounts || []);
+            }
+          }),
+      );
+    }
   }
 
-  ionViewWillLeave() {
-    this.accountsSubscription?.unsubscribe();
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 
   sortRelatedAccounts(relatedAccounts: Partial<RelatedAccount>[]) {
@@ -87,12 +90,20 @@ export class FriendsPage implements OnInit {
   }
 
   updateStatus(request: Partial<RelatedAccount>, status: string) {
-    const docPath = `accounts/${this.accountId}/relatedAccounts/${request.id}`;
-    const updatedData = {status: status};
-    this.storeService.updateDocAtPath(docPath, updatedData).then(() => {
-      if (!this.accountId) return;
-      this.storeService.getAndSortRelatedAccounts(this.accountId);
-    });
+    if (!this.accountId || !request.id) return;
+
+    const updatedRelatedAccount: RelatedAccount = {
+      id: request.id,
+      status: status as "pending" | "accepted" | "rejected" | "blocked",
+    };
+
+    // Dispatch action to update the related account
+    this.store.dispatch(
+      AccountActions.updateRelatedAccount({
+        accountId: this.accountId,
+        relatedAccount: updatedRelatedAccount,
+      }),
+    );
   }
 
   acceptRequest(request: Partial<RelatedAccount>) {
@@ -104,10 +115,15 @@ export class FriendsPage implements OnInit {
   }
 
   removeRequest(request: Partial<RelatedAccount>) {
-    if (!this.accountId) return;
-    const docPath = `accounts/${this.accountId}/relatedAccounts/${request.id}`;
-    this.storeService.deleteDocAtPath(docPath);
-    this.storeService.getAndSortRelatedAccounts(this.accountId);
+    if (!this.accountId || !request.id) return;
+
+    // Dispatch action to delete the related account
+    this.store.dispatch(
+      AccountActions.deleteRelatedAccount({
+        accountId: this.accountId,
+        relatedAccountId: request.id,
+      }),
+    );
   }
 
   showAcceptRejectButtons(request: Partial<RelatedAccount>) {

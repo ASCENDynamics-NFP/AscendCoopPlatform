@@ -86,7 +86,7 @@ interface ContactInformation {
 }
 
 interface Accessibility {
-  preferredLanguage: string;
+  preferredLanguage?: string;
   accessibilityNeeds?: string[];
 }
 
@@ -157,7 +157,7 @@ interface Event {
 
 interface User {
   userDetails?: UserSpecific; // User-specific details
-  accessibility: Accessibility; // Accessibility and language preferences
+  accessibility?: Accessibility; // Accessibility and language preferences
   professionalInformation?: ProfessionalInformation; // Professional information and work experience
   volunteerPreferences?: VolunteerPreferences; // Volunteer preferences and experience
   mutualAidCommunityEngagement?: MutualAidCommunityEngagement; // Mutual aid, community engagement, and mentorship
@@ -195,18 +195,19 @@ export interface Account extends BaseDocument, Group, User {
   legalAgreements: LegalAgreements; // Legal agreements, such as terms of service and privacy policy
   contactInformation?: ContactInformation; // Contact information and address
   webLinks: WebLink[]; // Links to social media, personal websites, etc.
-  relatedAccounts?: Partial<RelatedAccount>[];
+  relatedAccounts?: RelatedAccount[];
   lastLoginAt: Timestamp;
 }
 
 export interface RelatedAccount extends BaseDocument {
-  name: string; // Name of the related user or group
-  iconImage: string; // URL or path to the icon image
-  tagline: string; // Tagline or short description
-  type: "user" | "group"; // Type of the related account
-  status: "pending" | "accepted" | "rejected" | "blocked"; // Relationship status
-  relationship: "admin" | "friend" | "member" | "partner"; // Details about the relationship (e.g., 'friend', 'member')
-  initiatorId: string; // ID of the account who initiated the request
-  targetId: string; // ID of the account who received the request
-  canAccessContactInfo: boolean; // Whether the related account can access the contact information
+  id: string; // Required
+  name?: string; // Name of the related user or group
+  iconImage?: string; // URL or path to the icon image
+  tagline?: string; // Tagline or short description
+  type?: "user" | "group"; // Type of the related account
+  status?: "pending" | "accepted" | "rejected" | "blocked"; // Relationship status
+  relationship?: "admin" | "friend" | "member" | "partner"; // Details about the relationship (e.g., 'friend', 'member')
+  initiatorId?: string; // ID of the account who initiated the request
+  targetId?: string; // ID of the account who received the request
+  canAccessContactInfo?: boolean; // Whether the related account can access the contact information
 }

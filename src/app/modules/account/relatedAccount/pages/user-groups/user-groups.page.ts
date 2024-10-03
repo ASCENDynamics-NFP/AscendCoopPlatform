@@ -17,54 +17,67 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {IonicModule} from "@ionic/angular";
-import {ActivatedRoute, RouterModule} from "@angular/router";
-import {AuthStoreService} from "../../../../../core/services/auth-store.service";
-import {User} from "firebase/auth";
-import {StoreService} from "../../../../../core/services/store.service";
+import {Component, OnDestroy, OnInit} from "@angular/core";
+import {AuthUser} from "../../../../../models/auth-user.model";
 import {Subscription} from "rxjs";
 import {Account, RelatedAccount} from "../../../../../models/account.model";
-import {AppHeaderComponent} from "../../../../../shared/components/app-header/app-header.component";
+import {ActivatedRoute} from "@angular/router";
+import {Store} from "@ngrx/store";
+import {AppState} from "../../../../../state/reducers";
+import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
+import {selectAccountById} from "../../../../../state/selectors/account.selectors";
+import * as AccountActions from "../../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-user-groups",
   templateUrl: "./user-groups.page.html",
   styleUrls: ["./user-groups.page.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, RouterModule, AppHeaderComponent],
 })
-export class UserGroupsPage {
-  private accountsSubscription?: Subscription;
+export class UserGroupsPage implements OnInit, OnDestroy {
+  private subscriptions = new Subscription();
   currentGroupsList: Partial<RelatedAccount>[] = [];
   pendingGroupsList: Partial<RelatedAccount>[] = [];
-  currentUser: User | null = null;
+  currentUser: AuthUser | null = null;
   accountId: string | null = null;
-  account?: Partial<Account>;
+  account?: Account;
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private authStoreService: AuthStoreService,
-    private storeService: StoreService,
+    private store: Store<AppState>,
   ) {
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
-    this.currentUser = this.authStoreService.getCurrentUser();
   }
 
-  ionViewWillEnter() {
-    this.accountsSubscription = this.storeService.accounts$.subscribe(
-      (accounts) => {
-        this.account = accounts.find((acc) => acc.id === this.accountId);
-        if (this.account) {
-          this.sortRelatedAccounts(this.account.relatedAccounts || []);
-        }
-      },
+  ngOnInit() {
+    // Subscribe to the authenticated user
+    this.subscriptions.add(
+      this.store.select(selectAuthUser).subscribe((user) => {
+        this.currentUser = user;
+      }),
     );
+
+    if (this.accountId) {
+      // Dispatch action to load the account
+      this.store.dispatch(
+        AccountActions.loadAccount({accountId: this.accountId}),
+      );
+
+      // Subscribe to the account data
+      this.subscriptions.add(
+        this.store
+          .select(selectAccountById(this.accountId))
+          .subscribe((account) => {
+            if (account) {
+              this.account = account;
+              this.sortRelatedAccounts(account.relatedAccounts || []);
+            }
+          }),
+      );
+    }
   }
 
-  ionViewWillLeave() {
-    this.accountsSubscription?.unsubscribe();
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 
   sortRelatedAccounts(relatedAccounts: Partial<RelatedAccount>[]) {
@@ -74,16 +87,23 @@ export class UserGroupsPage {
     this.pendingGroupsList = relatedAccounts.filter(
       (ra) => ra.type === "group" && ra.status === "pending",
     );
-    console.log(this.currentGroupsList, this.pendingGroupsList);
   }
 
   updateStatus(request: Partial<RelatedAccount>, status: string) {
-    const docPath = `accounts/${this.accountId}/relatedAccounts/${request.id}`;
-    const updatedData = {status: status};
-    this.storeService.updateDocAtPath(docPath, updatedData).then(() => {
-      if (!this.accountId) return;
-      this.storeService.getAndSortRelatedAccounts(this.accountId);
-    });
+    if (!this.accountId || !request.id) return;
+
+    const updatedRelatedAccount: RelatedAccount = {
+      id: request.id,
+      status: status as "pending" | "accepted" | "rejected" | "blocked",
+    };
+
+    // Dispatch action to update the related account
+    this.store.dispatch(
+      AccountActions.updateRelatedAccount({
+        accountId: this.accountId,
+        relatedAccount: updatedRelatedAccount,
+      }),
+    );
   }
 
   acceptRequest(request: Partial<RelatedAccount>) {
@@ -95,10 +115,15 @@ export class UserGroupsPage {
   }
 
   removeRequest(request: Partial<RelatedAccount>) {
-    if (!this.accountId) return;
-    const docPath = `accounts/${this.accountId}/relatedAccounts/${request.id}`;
-    this.storeService.deleteDocAtPath(docPath);
-    this.storeService.getAndSortRelatedAccounts(this.accountId);
+    if (!this.accountId || !request.id) return;
+
+    // Dispatch action to delete the related account
+    this.store.dispatch(
+      AccountActions.deleteRelatedAccount({
+        accountId: this.accountId,
+        relatedAccountId: request.id,
+      }),
+    );
   }
 
   showAcceptRejectButtons(request: Partial<RelatedAccount>) {

@@ -17,75 +17,65 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {ReactiveFormsModule} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
+// edit.page.ts
+import {Component, OnDestroy, OnInit} from "@angular/core";
 import {Account} from "../../../../models/account.model";
 import {ActivatedRoute} from "@angular/router";
-import {StoreService} from "../../../../core/services/store.service";
 import {Subscription} from "rxjs";
-import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
-import {EditMenuComponent} from "./components/edit-menu/edit-menu.component";
-import {BasicInfoComponent} from "./components/basic-info/basic-info.component";
-import {ContactInfoComponent} from "./components/contact-info/contact-info.component";
-import {ProfessionalInfoComponent} from "./components/professional-info/professional-info.component";
-import {VolunteerPreferenceInfoComponent} from "./components/volunteer-preference-info/volunteer-preference-info.component";
-import {AuthStoreService} from "../../../../core/services/auth-store.service";
-import {User} from "firebase/auth";
+import {AuthUser} from "../../../../models/auth-user.model";
+import {Store} from "@ngrx/store";
+import {AppState} from "../../../../state/reducers";
+import {selectAccountById} from "../../../../state/selectors/account.selectors";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import * as AccountActions from "../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-edit",
   templateUrl: "./edit.page.html",
   styleUrls: ["./edit.page.scss"],
-  standalone: true,
-  imports: [
-    IonicModule,
-    CommonModule,
-    ReactiveFormsModule,
-    AppHeaderComponent,
-    EditMenuComponent,
-    BasicInfoComponent,
-    ContactInfoComponent,
-    ProfessionalInfoComponent,
-    VolunteerPreferenceInfoComponent,
-  ],
 })
-export class EditPage {
+export class EditPage implements OnInit, OnDestroy {
   selectedForm: string = "basic";
-  authUser: User | null = null;
+  authUser: AuthUser | null = null;
   private accountId: string | null = null;
-  private accountsSubscription?: Subscription;
-  public account?: Partial<Account>;
+  private subscriptions = new Subscription();
+  public account?: Account;
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private authStoreService: AuthStoreService,
-    private storeService: StoreService,
+    private store: Store<AppState>,
   ) {
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
-    this.authUser = this.authStoreService.getCurrentUser();
   }
 
-  ionViewWillEnter() {
-    this.accountsSubscription = this.storeService.accounts$.subscribe(
-      (accounts) => {
-        this.account = accounts.find(
-          (account) => account.id === this.accountId,
-        );
-      },
+  ngOnInit() {
+    this.subscriptions.add(
+      this.store.select(selectAuthUser).subscribe((user) => {
+        this.authUser = user;
+      }),
     );
-    if (!this.account) {
-      this.storeService.getDocById("accounts", this.accountId);
+
+    if (this.accountId) {
+      this.store.dispatch(
+        AccountActions.loadAccount({accountId: this.accountId}),
+      );
+
+      this.subscriptions.add(
+        this.store
+          .select(selectAccountById(this.accountId))
+          .subscribe((account) => {
+            this.account = account;
+          }),
+      );
     }
   }
 
-  ionViewWillLeave() {
-    this.accountsSubscription?.unsubscribe();
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 
   get isProfileOwner(): boolean {
-    return this.accountId === this.authStoreService.getCurrentUser()?.uid;
+    return this.accountId === this.authUser?.uid;
   }
 
   onItemSelected(form: string): void {

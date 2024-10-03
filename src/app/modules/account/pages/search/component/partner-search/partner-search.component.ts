@@ -17,60 +17,68 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// partner-search.component.ts
 import {Component, Input, OnInit} from "@angular/core";
-import {StoreService} from "../../../../../../core/services/store.service";
 import {Account, RelatedAccount} from "../../../../../../models/account.model";
-import {CommonModule} from "@angular/common";
-import {FormsModule} from "@angular/forms";
-import {RouterModule} from "@angular/router";
-import {IonicModule} from "@ionic/angular";
+import {Store} from "@ngrx/store";
+import {AppState} from "../../../../../../state/reducers";
+import * as AccountActions from "../../../../../../state/actions/account.actions";
+import {selectGroupsByName} from "../../../../../../state/selectors/account.selectors";
 
 @Component({
   selector: "app-partner-search",
   templateUrl: "./partner-search.component.html",
   styleUrls: ["./partner-search.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
 export class PartnerSearchComponent implements OnInit {
   @Input() isAdmin: boolean = false;
-  @Input() currentGroup?: Partial<Account>;
-  groups: Partial<Account>[] | null = [];
-  relatedAccounts: Partial<RelatedAccount>[] = [];
+  @Input() currentGroup?: Account;
+  groups: Account[] = [];
+  relatedAccounts: RelatedAccount[] = [];
   private searchTerm: string = "";
 
-  constructor(private storeService: StoreService) {}
+  constructor(private store: Store<AppState>) {}
 
   ngOnInit() {
-    // Fetch groups
-    this.groups = this.storeService
-      .getCollection("accounts")
-      .filter((g) => g["type"] === "group");
+    // Initially load all groups
+    this.store.dispatch(AccountActions.loadAllGroups());
+
+    // Subscribe to groups
+    this.store.select(selectGroupsByName("")).subscribe((groups) => {
+      this.groups = groups;
+    });
   }
 
   get searchResults() {
-    return (
-      this.groups?.filter((group) =>
-        group.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
-      ) ?? []
+    return this.groups.filter((group) =>
+      group.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
     );
   }
 
   searchGroups(event: any) {
     this.searchTerm = event.target.value;
     if (this.searchTerm) {
-      this.storeService.searchDocsByName("accounts", this.searchTerm);
+      // Dispatch action to search groups by name
+      this.store.dispatch(
+        AccountActions.searchGroupsByName({name: this.searchTerm}),
+      );
+
+      // Update the groups list
+      this.store
+        .select(selectGroupsByName(this.searchTerm))
+        .subscribe((groups) => {
+          this.groups = groups;
+        });
     }
   }
 
-  sendPartnerGroupRequest(group: Partial<Account>) {
+  sendPartnerGroupRequest(group: Account) {
     if (!this.currentGroup?.id || !group.id) {
       console.log("No current group or group ID");
       return;
     }
 
-    // Create a related account for the partner group
-    const relatedAccount = {
+    const relatedAccount: RelatedAccount = {
       id: group.id,
       name: group.name,
       iconImage: group.iconImage,
@@ -82,19 +90,22 @@ export class PartnerSearchComponent implements OnInit {
       targetId: group.id,
     };
 
-    const docPath = `accounts/${this.currentGroup.id}/relatedAccounts/${group.id}`;
-    this.storeService.updateDocAtPath(docPath, relatedAccount);
+    // Dispatch action to add related account
+    this.store.dispatch(
+      AccountActions.addRelatedAccount({
+        accountId: this.currentGroup.id,
+        relatedAccount: relatedAccount,
+      }),
+    );
   }
 
-  canInvite(group: Partial<Account>): boolean {
+  canInvite(group: Account): boolean {
     if (group.id === this.currentGroup?.id) {
-      // Cannot invite the same group
       return false;
     }
 
-    // Check if the group is already a partner
     const isAlreadyPartner = this.relatedAccounts.some(
-      (ra) => ra.id === group.id && ra.status !== "rejected", // You may adjust the condition as needed
+      (ra) => ra.id === group.id && ra.status !== "rejected",
     );
 
     return !isAlreadyPartner;

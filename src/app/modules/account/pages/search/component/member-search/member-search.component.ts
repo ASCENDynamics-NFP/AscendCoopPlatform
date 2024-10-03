@@ -17,34 +17,28 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// member-search.component.ts
 import {Component, Input} from "@angular/core";
-import {RouterModule} from "@angular/router";
-import {User} from "firebase/auth";
-import {StoreService} from "../../../../../../core/services/store.service";
-import {CommonModule} from "@angular/common";
-import {FormsModule} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
+import {AuthUser} from "../../../../../../models/auth-user.model";
 import {Account, RelatedAccount} from "../../../../../../models/account.model";
+import {Store} from "@ngrx/store";
+import {AppState} from "../../../../../../state/reducers";
+import * as AccountActions from "../../../../../../state/actions/account.actions";
+import {selectUsersByName} from "../../../../../../state/selectors/auth.selectors";
 
 @Component({
   selector: "app-member-search",
   templateUrl: "./member-search.component.html",
   styleUrls: ["./member-search.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
 export class MemberSearchComponent {
   @Input() isAdmin: boolean = false;
-  @Input() user: User | null = null;
-  @Input() currentGroup?: Partial<Account>;
-  @Input() users: Partial<Account>[] | null = [];
+  @Input() user: AuthUser | null = null;
+  @Input() currentGroup?: Account;
+  users: Account[] = [];
   searchTerm: string = "";
 
-  constructor(private storeService: StoreService) {}
-
-  ionViewWillEnter() {}
-
-  ionViewWillLeave() {}
+  constructor(private store: Store<AppState>) {}
 
   get searchResults() {
     if (!this.users) {
@@ -61,15 +55,24 @@ export class MemberSearchComponent {
   searchUsers(event: any) {
     this.searchTerm = event.target.value;
     if (this.searchTerm) {
-      this.storeService.searchDocsByName("users", this.searchTerm);
+      // Dispatch an action to search users by name
+      this.store.dispatch(
+        AccountActions.searchUsersByName({name: this.searchTerm}),
+      );
+
+      // Subscribe to the search results
+      this.store
+        .select(selectUsersByName(this.searchTerm))
+        .subscribe((users) => {
+          this.users = users;
+        });
     }
   }
 
-  canInviteUser(user: Partial<Account>): boolean {
+  canInviteUser(user: Account): boolean {
     if (!this.currentGroup?.id || !user.id) {
       return false;
     }
-    // Check if the user is already a member or has a pending invitation
     return !this.currentGroup.relatedAccounts?.some(
       (ra) =>
         ra.id === user.id &&
@@ -77,27 +80,32 @@ export class MemberSearchComponent {
     );
   }
 
-  inviteUser(user: Partial<Account>) {
+  inviteUser(user: Account) {
     if (!this.canInviteUser(user)) {
       console.log("Cannot invite user");
       return;
     }
 
-    const newRelatedAccount: Partial<RelatedAccount> = {
-      id: user.id,
-      name: user.name,
-      iconImage: user.iconImage,
-      tagline: user.tagline,
-      type: "user",
-      status: "pending",
-      relationship: "member",
-      initiatorId: this.currentGroup?.id,
-      targetId: user.id,
-    };
+    if (this.currentGroup?.id && user.id) {
+      const newRelatedAccount: RelatedAccount = {
+        id: user.id,
+        name: user.name,
+        iconImage: user.iconImage,
+        tagline: user.tagline,
+        type: "user",
+        status: "pending",
+        relationship: "member",
+        initiatorId: this.currentGroup.id,
+        targetId: user.id,
+      };
 
-    const docPath = `accounts/${this.currentGroup?.id}/relatedAccounts/${user.id}`;
-    this.storeService.updateDocAtPath(docPath, newRelatedAccount).then(() => {
-      console.log("Invitation sent to user");
-    });
+      // Dispatch action to add related account
+      this.store.dispatch(
+        AccountActions.addRelatedAccount({
+          accountId: this.currentGroup.id,
+          relatedAccount: newRelatedAccount,
+        }),
+      );
+    }
   }
 }

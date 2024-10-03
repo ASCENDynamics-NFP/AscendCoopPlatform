@@ -17,36 +17,29 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {CommonModule} from "@angular/common";
+// group-registration.component.ts
 import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
-import {
-  FormArray,
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
+import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
+import {Router} from "@angular/router";
 import {
   Account,
   Address,
   Email,
   PhoneNumber,
 } from "../../../../../../models/account.model";
-import {StoreService} from "../../../../../../core/services/store.service";
 import {countryCodes} from "../../../../../../core/data/phone";
 import {countries, statesProvinces} from "../../../../../../core/data/country";
-import {Router} from "@angular/router";
+import {Store} from "@ngrx/store";
+import {AppState} from "../../../../../../state/reducers";
+import * as AccountActions from "../../../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-group-registration",
   templateUrl: "./group-registration.component.html",
   styleUrls: ["./group-registration.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
 export class GroupRegistrationComponent implements OnChanges {
-  @Input() account?: Partial<Account>;
+  @Input() account?: Account;
   @Input() redirectSubmit: boolean = false;
   public maxAddresses = 3; // Set maximum number of addresses
   public maxEmails = 5;
@@ -77,7 +70,7 @@ export class GroupRegistrationComponent implements OnChanges {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private storeService: StoreService,
+    private store: Store<AppState>,
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -117,26 +110,26 @@ export class GroupRegistrationComponent implements OnChanges {
       const formValue = this.editAccountForm.value;
 
       // Prepare the account object for update
-      const updatedAccount: Partial<Account> = {
+      const updatedAccount: Account = {
         ...this.account,
         ...formValue,
+        type: "group",
         name: formValue.name!,
         tagline: formValue.tagline!,
-        description: formValue.description ?? "",
-        type: "group",
+        description: formValue.description || "",
         webLinks:
-          formValue.webLinks?.map((link) => {
-            return {
-              name: link.name!,
-              url: link.url!,
-              category: link.category ?? "",
-            };
-          }) ?? [],
+          formValue.webLinks?.map((link) => ({
+            name: link.name,
+            url: link.url,
+            category: link.category || "",
+          })) || [],
         groupDetails: {
+          ...this.account.groupDetails,
           ...formValue.groupDetails,
           groupType: formValue.groupDetails?.groupType || "Nonprofit",
         },
         contactInformation: {
+          ...this.account.contactInformation,
           ...formValue.contactInformation,
           emails:
             formValue.contactInformation!.emails?.map(
@@ -176,19 +169,16 @@ export class GroupRegistrationComponent implements OnChanges {
       };
 
       // Now update the document with the updatedAccount
-      this.storeService.updateDoc("accounts", updatedAccount);
+      this.store.dispatch(
+        AccountActions.updateAccount({account: updatedAccount}),
+      );
+
       if (this.redirectSubmit) {
         // Redirect to the user profile page
         this.router.navigateByUrl(
           `/group/${this.account.id}/${this.account.id}/details`,
         );
       }
-      // .then(() => {
-      //   console.log("Group updated successfully");
-      //   this.toGroupPage(); // Navigate to the group page or show a success message
-      // }).catch(error => {
-      //   console.error("Error updating group:", error);
-      // });
     }
   }
 

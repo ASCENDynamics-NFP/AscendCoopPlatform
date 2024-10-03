@@ -17,81 +17,116 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {FormsModule} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
-import {User} from "firebase/auth";
-import {RouterModule} from "@angular/router";
-import {Account, RelatedAccount} from "../../../../models/account.model";
-import {StoreService} from "../../../../core/services/store.service";
+// src/app/modules/user/pages/users/users.page.ts
+
+import {Component, OnDestroy, OnInit} from "@angular/core";
+import {AuthUser} from "../../../../models/auth-user.model";
 import {Subscription} from "rxjs";
-import {AuthStoreService} from "../../../../core/services/auth-store.service";
-import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
+
+import {Account, RelatedAccount} from "../../../../models/account.model";
+import {Store} from "@ngrx/store";
+import {AppState} from "../../../../state/reducers";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {
+  selectAccounts,
+  selectAccountById,
+} from "../../../../state/selectors/account.selectors";
+import * as AccountActions from "../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-users",
   templateUrl: "./users.page.html",
   styleUrls: ["./users.page.scss"],
-  standalone: true,
-  imports: [
-    IonicModule,
-    CommonModule,
-    FormsModule,
-    RouterModule,
-    AppHeaderComponent,
-  ],
 })
-export class UsersPage {
-  private accountsSubscription?: Subscription;
-  authUser: User | null = null;
-  account?: Partial<Account>;
-  accountList: Partial<Account>[] | null = [];
+export class UsersPage implements OnInit, OnDestroy {
+  private subscriptions = new Subscription();
+  authUser: AuthUser | null = null;
+  account?: Account;
+  accountList: Account[] = [];
   searchedValue: string = "";
+  private relatedAccountIds = new Set<string>();
 
-  constructor(
-    private authStoreService: AuthStoreService,
-    private storeService: StoreService,
-  ) {
-    this.authUser = this.authStoreService.getCurrentUser();
-  }
+  constructor(private store: Store<AppState>) {}
 
-  ionViewWillEnter() {
-    this.accountsSubscription = this.storeService.accounts$.subscribe(
-      (accounts) => {
-        if (accounts) {
-          this.account = accounts.find((acc) => acc.id === this.authUser?.uid);
-          this.accountList = accounts
-            .filter(
-              (acc) =>
-                acc.name
-                  ?.toLowerCase()
-                  .includes(this.searchedValue.toLowerCase()) &&
-                acc.type === "user",
-            )
-            .sort((a, b) => {
-              if (a["name"] && b["name"]) {
-                return a["name"].localeCompare(b["name"]);
-              } else {
-                return 0;
-              }
-            });
-        }
-      },
+  ngOnInit() {
+    // Subscribe to Auth User
+    this.subscriptions.add(
+      this.store.select(selectAuthUser).subscribe({
+        next: (authUser) => {
+          this.authUser = authUser;
+
+          if (this.authUser?.uid) {
+            // Dispatch action to load account
+            this.store.dispatch(
+              AccountActions.loadAccount({accountId: this.authUser.uid}),
+            );
+
+            // Subscribe to Account
+            this.subscriptions.add(
+              this.store
+                .select(selectAccountById(this.authUser.uid))
+                .subscribe({
+                  next: (account) => {
+                    this.account = account;
+
+                    // Update relatedAccountIds when account changes
+                    if (this.account?.relatedAccounts) {
+                      this.relatedAccountIds = new Set(
+                        this.account.relatedAccounts
+                          .filter((ra) => ra.status !== "rejected")
+                          .map((ra) => ra.id),
+                      );
+                    }
+                  },
+                  error: (error) => {
+                    console.error("Error fetching account:", error);
+                  },
+                }),
+            );
+          }
+        },
+        error: (error) => {
+          console.error("Error fetching auth user:", error);
+        },
+      }),
     );
+
+    // Subscribe to Accounts
+    this.subscriptions.add(
+      this.store.select(selectAccounts).subscribe({
+        next: (accounts) => {
+          if (accounts) {
+            this.accountList = accounts
+              .filter(
+                (acc) =>
+                  acc.type === "user" &&
+                  acc.id !== this.authUser?.uid && // Exclude current user
+                  acc.name?.toLowerCase().includes(this.searchedValue),
+              )
+              .sort((a, b) => a.name?.localeCompare(b.name!) || 0);
+          }
+        },
+        error: (error) => {
+          console.error("Error fetching accounts:", error);
+        },
+      }),
+    );
+
+    // Dispatch action to load accounts
+    this.store.dispatch(AccountActions.loadAccounts());
   }
 
-  ionViewWillLeave() {
-    this.accountsSubscription?.unsubscribe();
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 
-  async sendFriendRequest(account: Partial<Account>) {
+  sendFriendRequest(account: Account) {
     if (!this.authUser?.uid || !account.id) {
       console.error("User ID or Account ID is missing");
       return;
     }
 
-    const newRelatedAccount: Partial<RelatedAccount> = {
+    const newRelatedAccount: RelatedAccount = {
       id: account.id,
       initiatorId: this.authUser.uid,
       targetId: account.id,
@@ -103,52 +138,28 @@ export class UsersPage {
       iconImage: account.iconImage,
     };
 
-    // Add the new related account to Firestore
-    await this.storeService.updateDocAtPath(
-      `accounts/${this.authUser.uid}/relatedAccounts/${account.id}`,
-      newRelatedAccount,
+    // Dispatch action to update related account
+    this.store.dispatch(
+      AccountActions.updateRelatedAccount({
+        accountId: this.authUser.uid,
+        relatedAccount: newRelatedAccount,
+      }),
     );
-
-    // Fetch the current user's account to update the relatedAccounts array
-    this.updateRelatedAccounts(newRelatedAccount);
-  }
-
-  private updateRelatedAccounts(relatedAccount: Partial<RelatedAccount>) {
-    if (this.account) {
-      this.account.relatedAccounts = [
-        ...(this?.account?.relatedAccounts || []),
-        relatedAccount,
-      ];
-      this.storeService.updateDocInState("accounts", this.account);
-    }
   }
 
   searchUsers(event: any) {
-    const value = event.target.value;
-    this.searchedValue = value;
+    const value = event.target.value || "";
+    this.searchedValue = value.toLowerCase();
 
-    if (value) {
-      // Perform search
-      this.storeService.searchDocsByName("accounts", value);
-    }
+    // No need to dispatch actions here; filtering is done in the subscription
   }
 
-  /**
-   * Determines whether a request button should be displayed for a given account.
-   *
-   * @param {Partial<Account>} item - The account for which to determine whether a request button should be displayed.
-   * @returns {boolean} - Returns true if the authenticated user is different from the item and there is no non-rejected related account with the same id as the item. Otherwise, it returns false.
-   */
-  showRequestButton(item: Partial<Account>): boolean {
+  showRequestButton(item: Account): boolean {
     const authUserId = this.authUser?.uid;
     if (!authUserId || authUserId === item.id) {
       return false;
     }
 
-    return this.account?.relatedAccounts?.find(
-      (ra) => ra.id === item.id && ra.status !== "rejected",
-    )
-      ? false
-      : true;
+    return !this.relatedAccountIds.has(item.id!);
   }
 }

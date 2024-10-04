@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 // src/app/modules/account/pages/details/details.page.ts
 
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, ViewChild} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, combineLatest} from "rxjs";
 import {map, tap} from "rxjs/operators";
@@ -33,6 +33,7 @@ import {
   selectRelatedAccounts,
 } from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
+import {IonContent} from "@ionic/angular";
 
 @Component({
   selector: "app-details",
@@ -40,6 +41,7 @@ import * as AccountActions from "../../../../state/actions/account.actions";
   styleUrls: ["./details.page.scss"],
 })
 export class DetailsPage implements OnInit {
+  @ViewChild(IonContent, {static: false}) content!: IonContent; // Get reference to ion-content
   public accountId: string | null;
   authUser$!: Observable<AuthUser | null>;
   fullAccount$!: Observable<Account | null>;
@@ -51,6 +53,13 @@ export class DetailsPage implements OnInit {
     private store: Store,
   ) {
     this.accountId = this.route.snapshot.paramMap.get("accountId");
+  }
+
+  scrollToSection(sectionId: string): void {
+    const yOffset = document.getElementById(sectionId)?.offsetTop;
+    if (yOffset !== undefined) {
+      this.content.scrollToPoint(0, yOffset, 500);
+    }
   }
 
   ngOnInit(): void {

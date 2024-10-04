@@ -30,31 +30,40 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     ></app-hero>
 
     <div class="tabs">
-      <a [href]="'#profile'" class="tab-link">Profile</a>
-      <a [href]="'#contact'" class="tab-link">Contact Information</a>
+      <a (click)="scrollToSection('profile')" class="tab-link">Profile</a>
+      <a (click)="scrollToSection('contact')" class="tab-link"
+        >Contact Information</a
+      >
       <a
         *ngIf="account.type === 'user'"
-        [href]="'#professional'"
+        (click)="scrollToSection('professional')"
         class="tab-link"
         >Professional Contact</a
       >
-      <a [href]="'#users'" class="tab-link">
+      <a (click)="scrollToSection('users')" class="tab-link">
         {{ account.type === 'user' ? 'Friends' : 'Members' }}
       </a>
-      <a [href]="'#groups'" class="tab-link">Organizations</a>
-      <a *ngIf="account.type === 'user'" [href]="'#volunteer'" class="tab-link"
+      <a (click)="scrollToSection('groups')" class="tab-link">Organizations</a>
+      <a
+        *ngIf="account.type === 'user'"
+        (click)="scrollToSection('volunteer')"
+        class="tab-link"
         >Volunteer Preferences</a
       >
-      <a *ngIf="account.type === 'user'" [href]="'#mutual-aid'" class="tab-link"
+      <a
+        *ngIf="account.type === 'user'"
+        (click)="scrollToSection('mutual-aid')"
+        class="tab-link"
         >Mutual Aid</a
       >
     </div>
 
     <div>
       <app-profile id="profile" [account]="account"></app-profile>
-      <app-contact-information id="contact" [account]="account">
-        Contact Info Content
-      </app-contact-information>
+      <app-contact-information
+        id="contact"
+        [account]="account"
+      ></app-contact-information>
       <app-professional-info
         id="professional"
         *ngIf="account.type === 'user'"

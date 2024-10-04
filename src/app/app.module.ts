@@ -21,7 +21,7 @@
 
 import {NgModule, isDevMode} from "@angular/core";
 import {BrowserModule} from "@angular/platform-browser";
-import {RouteReuseStrategy, RouterModule} from "@angular/router";
+import {RouteReuseStrategy} from "@angular/router";
 import {IonicModule, IonicRouteStrategy} from "@ionic/angular";
 import {defineCustomElements} from "@ionic/pwa-elements/loader";
 import {getStorage} from "firebase/storage";
@@ -29,7 +29,6 @@ import {initializeApp} from "firebase/app";
 
 import {AppComponent} from "./app.component";
 import {environment} from "../environments/environment";
-import {routes} from "./app.routes";
 
 // LANGUAGE
 import {HttpClientModule, HttpClient} from "@angular/common/http";
@@ -57,6 +56,7 @@ import {AngularFirestoreModule} from "@angular/fire/compat/firestore";
 
 import {AuthSyncService} from "./core/services/auth-sync.service";
 import {MenuComponent} from "./shared/components/menu/menu.component";
+import {AppRoutingModule} from "./app-routing.module";
 
 // Initialize Firebase
 const app = initializeApp(environment.firebaseConfig);
@@ -76,6 +76,7 @@ export function createTranslateLoader(http: HttpClient) {
   imports: [
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFirestoreModule,
+    AppRoutingModule,
     BrowserModule,
     IonicModule.forRoot({}),
     HttpClientModule,
@@ -90,7 +91,6 @@ export function createTranslateLoader(http: HttpClient) {
     StoreModule.forRoot(reducers),
     EffectsModule.forRoot([AuthEffects, AccountEffects]),
     StoreDevtoolsModule.instrument({maxAge: 25, logOnly: !isDevMode()}),
-    RouterModule.forRoot(routes),
   ],
   providers: [
     AuthSyncService,

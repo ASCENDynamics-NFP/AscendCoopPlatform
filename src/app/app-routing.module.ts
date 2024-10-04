@@ -17,7 +17,10 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Routes} from "@angular/router";
+// src/app/app-routing.module.ts
+
+import {NgModule} from "@angular/core";
+import {RouterModule, Routes, ExtraOptions} from "@angular/router";
 import {AuthGuard} from "./core/guards/auth.guard";
 import {SecureInnerPagesGuard} from "./core/guards/secure-inner-pages.guard";
 
@@ -66,14 +69,6 @@ export const routes: Routes = [
       ),
     canActivate: [AuthGuard],
   },
-  // {
-  //   path: ":accountId/groups",
-  //   loadChildren: () =>
-  //     import(
-  //       "./modules/account/relatedAccount/pages/user-groups/user-groups.module"
-  //     ).then((m) => m.UserGroupsPageModule),
-  //   canActivate: [AuthGuard],
-  // },
   {
     path: "registration/:accountId",
     loadChildren: () =>
@@ -106,3 +101,16 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
 ];
+
+// Router options
+const routerOptions: ExtraOptions = {
+  anchorScrolling: "enabled", // Enable fragment scrolling
+  scrollPositionRestoration: "enabled", // Restore scroll position on navigation
+  onSameUrlNavigation: "reload", // Allow navigation to the same URL
+};
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes, routerOptions)],
+  exports: [RouterModule],
+})
+export class AppRoutingModule {}

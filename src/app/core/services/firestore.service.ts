@@ -297,12 +297,16 @@ export class FirestoreService {
   }
 
   /**
-   * Retrieves all documents from the 'accounts' collection in real-time.
+   * Retrieves all public user or group accounts from the 'accounts' collection in real-time.
    * @returns {Observable<Account[]>} - Returns an Observable of an array of account documents.
    */
   getAllAccounts(): Observable<Account[]> {
     return this.afs
-      .collection<Account>("accounts")
+      .collection<Account>("accounts", (ref) =>
+        ref
+          .where("privacy", "==", "public")
+          .where("type", "in", ["user", "group"]),
+      )
       .valueChanges({idField: "id"})
       .pipe(
         catchError((error) => {

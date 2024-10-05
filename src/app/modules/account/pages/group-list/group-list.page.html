@@ -17,6 +17,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
+<!-- src/app/modules/account/pages/group-list/group-list.page.html -->
+
 <app-header [title]="'Search Groups'"></app-header>
 
 <ion-content [fullscreen]="true">
@@ -26,15 +28,17 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <ion-card>
           <ion-card-header>
             <ion-searchbar
-              [debounce]="1000"
+              [debounce]="300"
               (ionInput)="search($event)"
             ></ion-searchbar>
           </ion-card-header>
           <ion-list>
-            <ng-container *ngIf="accountList?.length; else noResultsTemplate">
+            <ng-container
+              *ngIf="(accountList$ | async)?.length; else noResultsTemplate"
+            >
               <ion-item
-                *ngFor="let item of accountList; let i = index"
-                routerLink="/group/{{item.id}}/{{item.id}}/details"
+                *ngFor="let item of accountList$ | async; let i = index"
+                [routerLink]="['/', item.id]"
                 button
               >
                 <ion-thumbnail slot="start">
@@ -48,13 +52,16 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   <h3>{{ item?.name }}</h3>
                   <p>{{ item?.tagline }}</p>
                 </ion-label>
-                <!-- Check if the user is not already a member or has a pending request -->
                 <ion-button
-                  *ngIf="showRequestButton(item)"
+                  *ngIf="(showRequestButton(item) | async)"
                   slot="end"
                   mode="md"
                   expand="block"
-                  (click)="$event.stopPropagation();$event.preventDefault();sendRequest(item);"
+                  (click)="
+                    $event.stopPropagation();
+                    $event.preventDefault();
+                    sendRequest(item);
+                  "
                 >
                   Send Request
                 </ion-button>

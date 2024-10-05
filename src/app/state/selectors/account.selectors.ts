@@ -36,3 +36,28 @@ export const selectAccountError = createSelector(
   selectAccountState,
   (state) => state.error,
 );
+
+// Select Filtered Accounts
+export const selectFilteredAccounts = (
+  searchTerm: string,
+  accountType: string,
+) =>
+  createSelector(selectAccounts, (accounts: Account[]) => {
+    const normalizeString = (str: string) =>
+      str
+        .toLowerCase()
+        .replace(/\s+/g, "") // Remove all whitespace
+        .replace(/[^a-z0-9]/gi, ""); // Remove non-alphanumeric characters
+
+    const normalizedSearchTerm = normalizeString(searchTerm);
+
+    return accounts
+      .filter((acc) => {
+        if (acc.type !== accountType || !acc.name) {
+          return false;
+        }
+        const normalizedAccountName = normalizeString(acc.name);
+        return normalizedAccountName.includes(normalizedSearchTerm);
+      })
+      .sort((a, b) => (a.name && b.name ? a.name.localeCompare(b.name) : 0));
+  });

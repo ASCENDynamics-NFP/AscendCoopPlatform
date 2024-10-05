@@ -78,6 +78,24 @@ export const accountReducer = createReducer(
     accounts: state.accounts.filter((a) => a.id !== accountId),
   })),
 
+  // Load Accounts
+  on(AccountActions.loadAccounts, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
+  on(AccountActions.loadAccountsSuccess, (state, {accounts}) => ({
+    ...state,
+    accounts,
+    filteredAccounts: accounts, // Initially, no filter applied
+    loading: false,
+  })),
+  on(AccountActions.loadAccountsFailure, (state, {error}) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
+
   // Search Accounts
   on(AccountActions.searchAccounts, (state) => ({
     ...state,
@@ -115,6 +133,24 @@ export const accountReducer = createReducer(
     error: error,
     loading: false,
   })),
+
+  // Handle createRelatedAccountSuccess to add the new related account to the state
+  on(AccountActions.createRelatedAccountSuccess, (state, {relatedAccount}) => {
+    const updatedAccounts = state.accounts.map((account) => {
+      if (account.id === relatedAccount.initiatorId) {
+        return {
+          ...account,
+          relatedAccounts: [...(account.relatedAccounts || []), relatedAccount],
+        };
+      }
+      return account;
+    });
+
+    return {
+      ...state,
+      accounts: updatedAccounts,
+    };
+  }),
 
   // Delete Related Account Success
   on(

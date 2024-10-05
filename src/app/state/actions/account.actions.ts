@@ -104,6 +104,22 @@ export const searchAccountsFailure = createAction(
   props<{error: any}>(),
 );
 
+// Add the createRelatedAccount action
+export const createRelatedAccount = createAction(
+  "[Account] Create Related Account",
+  props<{accountId: string; relatedAccount: RelatedAccount}>(),
+);
+
+export const createRelatedAccountSuccess = createAction(
+  "[Account] Create Related Account Success",
+  props<{relatedAccount: RelatedAccount}>(),
+);
+
+export const createRelatedAccountFailure = createAction(
+  "[Account] Create Related Account Failure",
+  props<{error: any}>(),
+);
+
 // Delete Related Account
 export const deleteRelatedAccount = createAction(
   "[Account] Delete Related Account",

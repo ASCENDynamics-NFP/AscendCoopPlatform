@@ -17,127 +17,133 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
-import {Subscription} from "rxjs";
-import {AuthUser} from "../../../../models/auth-user.model";
+// src/app/modules/account/pages/group-list/group-list.page.ts
+
+import {Component, OnInit} from "@angular/core";
+import {Subject, Observable, combineLatest} from "rxjs";
+import {
+  debounceTime,
+  startWith,
+  switchMap,
+  map,
+  take,
+  distinctUntilChanged,
+} from "rxjs/operators";
 import {Store} from "@ngrx/store";
+import {AuthUser} from "../../../../models/auth-user.model";
+import {Account, RelatedAccount} from "../../../../models/account.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {
+  selectFilteredAccounts,
   selectAccounts,
   selectAccountLoading,
 } from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
-import {AppState} from "../../../../state/reducers";
-import {Account, RelatedAccount} from "../../../../models/account.model";
 
 @Component({
   selector: "app-group-list",
   templateUrl: "./group-list.page.html",
   styleUrls: ["./group-list.page.scss"],
 })
-export class GroupListPage {
-  private subscriptions: Subscription = new Subscription();
-  authUser: AuthUser | null = null;
-  accountList: Account[] = [];
+export class GroupListPage implements OnInit {
+  private searchTerms = new Subject<string>();
+  authUser$!: Observable<AuthUser | null>;
+  accountList$!: Observable<Account[]>;
+  account$!: Observable<Account | undefined>;
   searchedValue: string = "";
-  account?: Account;
-  loading$ = this.store.select(selectAccountLoading);
+  loading$: Observable<boolean>;
 
-  constructor(private store: Store<AppState>) {}
-
-  ionViewWillEnter() {
-    this.subscriptions.add(
-      this.store.select(selectAuthUser).subscribe((authUser) => {
-        this.authUser = authUser;
-        if (this.authUser?.uid) {
-          // Dispatch action to load related accounts for the current user
-          this.store.dispatch(
-            AccountActions.loadRelatedAccounts({
-              accountId: this.authUser.uid,
-            }),
-          );
-        }
-      }),
-    );
-
-    this.subscriptions.add(
-      this.store.select(selectAccounts).subscribe((accounts) => {
-        if (accounts) {
-          this.account = accounts.find((acc) => acc.id === this.authUser?.uid);
-          this.accountList = accounts
-            .filter(
-              (acc) =>
-                acc.name
-                  ?.toLowerCase()
-                  .includes(this.searchedValue.toLowerCase()) &&
-                acc.type === "group",
-            )
-            .sort((a, b) => {
-              if (a.name && b.name) {
-                return a.name.localeCompare(b.name);
-              } else {
-                return 0;
-              }
-            });
-        }
-      }),
-    );
-
-    // Dispatch action to load accounts
-    this.store.dispatch(AccountActions.loadAccounts());
+  constructor(private store: Store) {
+    this.loading$ = this.store.select(selectAccountLoading);
   }
 
-  ionViewWillLeave() {
-    this.subscriptions.unsubscribe();
+  ngOnInit() {
+    this.authUser$ = this.store.select(selectAuthUser);
+
+    // Dispatch loadAccounts once during initialization
+    this.store.dispatch(AccountActions.loadAccounts());
+
+    // Dispatch loadRelatedAccounts when authUser becomes available
+    this.authUser$.pipe(take(1)).subscribe((authUser) => {
+      if (authUser?.uid) {
+        this.store.dispatch(
+          AccountActions.loadRelatedAccounts({
+            accountId: authUser.uid,
+          }),
+        );
+      }
+    });
+
+    this.accountList$ = this.searchTerms.pipe(
+      startWith(this.searchedValue),
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap((term) =>
+        this.store.select(selectFilteredAccounts(term, "group")),
+      ),
+    );
+
+    // Simplify account$ to avoid infinite loop issues
+    this.account$ = combineLatest([
+      this.authUser$,
+      this.store.select(selectAccounts),
+    ]).pipe(
+      map(([authUser, accounts]) => {
+        if (authUser?.uid) {
+          return accounts.find((acc) => acc.id === authUser.uid);
+        }
+        return undefined;
+      }),
+    );
   }
 
   search(event: any) {
     const value = event.target.value;
     this.searchedValue = value;
-
-    if (value) {
-      // Dispatch search action
-      this.store.dispatch(AccountActions.searchAccounts({query: value}));
-    } else {
-      // If search term is empty, reload accounts
-      this.store.dispatch(AccountActions.loadAccounts());
-    }
+    this.searchTerms.next(value);
   }
 
   sendRequest(account: Account) {
-    if (!this.authUser?.uid || !account.id) {
-      console.error("User ID or Account ID is missing");
-      return;
-    }
+    this.authUser$.pipe(take(1)).subscribe((authUser) => {
+      if (!authUser?.uid || !account.id) {
+        console.error("User ID or Account ID is missing");
+        return;
+      }
 
-    const newRelatedAccount: RelatedAccount = {
-      id: account.id,
-      initiatorId: this.authUser.uid,
-      targetId: account.id,
-      type: account.type,
-      status: "pending",
-      relationship: "member",
-      tagline: account.tagline,
-      name: account.name,
-      iconImage: account.iconImage,
-    };
+      const newRelatedAccount: RelatedAccount = {
+        id: account.id,
+        initiatorId: authUser.uid,
+        targetId: account.id,
+        type: account.type,
+        status: "pending",
+        relationship: "member",
+        tagline: account.tagline,
+        name: account.name,
+        iconImage: account.iconImage,
+      };
 
-    this.store.dispatch(
-      AccountActions.updateRelatedAccount({
-        accountId: this.authUser.uid,
-        relatedAccount: newRelatedAccount,
-      }),
-    );
+      this.store.dispatch(
+        AccountActions.createRelatedAccount({
+          accountId: authUser.uid,
+          relatedAccount: newRelatedAccount,
+        }),
+      );
+    });
   }
 
-  showRequestButton(item: Account): boolean {
-    const authUserId = this.authUser?.uid;
-    if (!authUserId || authUserId === item.id) {
-      return false;
-    }
-
-    return !this.account?.relatedAccounts?.some(
-      (ra) => ra.id === item.id && ra.status !== "rejected",
+  showRequestButton(item: Account): Observable<boolean> {
+    return combineLatest([this.authUser$, this.account$]).pipe(
+      map(([authUser, account]) => {
+        const authUserId = authUser?.uid;
+        if (!authUserId || authUserId === item.id) {
+          return false;
+        }
+        return !account?.relatedAccounts?.some(
+          (ra) =>
+            (ra.initiatorId === item.id || ra.targetId === item.id) &&
+            ra.status !== "rejected",
+        );
+      }),
     );
   }
 }

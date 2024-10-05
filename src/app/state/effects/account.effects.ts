@@ -154,6 +154,30 @@ export class AccountEffects {
     ),
   );
 
+  // Effect to handle creating a related account
+  createRelatedAccount$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AccountActions.createRelatedAccount),
+      switchMap(({accountId, relatedAccount}) =>
+        from(
+          this.firestoreService.addDocument(
+            `accounts/${accountId}/relatedAccounts`,
+            relatedAccount,
+          ),
+        ).pipe(
+          map((relatedAccountId) =>
+            AccountActions.createRelatedAccountSuccess({
+              relatedAccount: {...relatedAccount, id: relatedAccountId},
+            }),
+          ),
+          catchError((error) =>
+            of(AccountActions.createRelatedAccountFailure({error})),
+          ),
+        ),
+      ),
+    ),
+  );
+
   // Using deleteDocumentAtPath (Correct)
   deleteRelatedAccount$ = createEffect(() =>
     this.actions$.pipe(

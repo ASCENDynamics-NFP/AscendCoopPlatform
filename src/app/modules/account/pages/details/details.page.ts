@@ -22,7 +22,7 @@
 import {Component, OnInit, ViewChild} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, combineLatest} from "rxjs";
-import {map, tap} from "rxjs/operators";
+import {map, take, tap} from "rxjs/operators";
 import {AuthUser} from "../../../../models/auth-user.model";
 import {Store} from "@ngrx/store";
 
@@ -75,6 +75,10 @@ export class DetailsPage implements OnInit {
       // Dispatch setSelectedAccount action
       this.store.dispatch(
         AccountActions.setSelectedAccount({accountId: this.accountId}),
+      );
+      // Dispatch loadRelatedAccounts to ensure related accounts are available on navigation
+      this.store.dispatch(
+        AccountActions.loadRelatedAccounts({accountId: this.accountId}),
       );
 
       // Select account and related accounts from the store

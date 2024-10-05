@@ -17,6 +17,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
+<!-- src/app/modules/user/pages/users/users.page.html -->
+
 <app-header [title]="'Search Users'"></app-header>
 
 <ion-content [fullscreen]="true">
@@ -26,37 +28,53 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <ion-card>
           <ion-card-header>
             <ion-searchbar
-              [debounce]="1000"
-              (ionInput)="searchUsers($event)"
+              [debounce]="300"
+              (ionInput)="search($event)"
             ></ion-searchbar>
           </ion-card-header>
           <ion-list>
-            <ion-item
-              *ngFor="let item of accountList; let i = index"
-              routerLink="/{{item['id']}}"
-              button
+            <ng-container
+              *ngIf="(accountList$ | async)?.length; else noResultsTemplate"
             >
-              <ion-thumbnail slot="start">
-                <img
-                  *ngIf="item['iconImage']"
-                  [alt]="item['name']"
-                  [src]="item['iconImage']"
-                />
-              </ion-thumbnail>
-              <ion-label>
-                <h3>{{ item["name"] }}</h3>
-                <p>{{ item["description"] }}</p>
-              </ion-label>
-              <ion-button
-                *ngIf="showRequestButton(item)"
-                slot="end"
-                mode="md"
-                expand="block"
-                (click)="$event.stopPropagation();$event.preventDefault();sendFriendRequest(item);"
-                >Send Request</ion-button
+              <ion-item
+                *ngFor="let item of accountList$ | async; let i = index"
+                [routerLink]="['/', item.id]"
+                button
               >
-            </ion-item>
+                <ion-thumbnail slot="start">
+                  <img
+                    *ngIf="item.iconImage"
+                    [alt]="item.name"
+                    [src]="item.iconImage"
+                  />
+                </ion-thumbnail>
+                <ion-label>
+                  <h3>{{ item?.name }}</h3>
+                  <p>{{ item?.description }}</p>
+                </ion-label>
+                <ion-button
+                  *ngIf="showRequestButton(item) | async"
+                  slot="end"
+                  mode="md"
+                  expand="block"
+                  (click)="
+                    $event.stopPropagation();
+                    $event.preventDefault();
+                    sendRequest(item);
+                  "
+                >
+                  Send Request
+                </ion-button>
+              </ion-item>
+            </ng-container>
           </ion-list>
+          <ng-template #noResultsTemplate>
+            <ion-item>
+              <ion-label class="ion-text-center">
+                No users found. Try a different search term.
+              </ion-label>
+            </ion-item>
+          </ng-template>
         </ion-card>
       </ion-col>
     </ion-row>

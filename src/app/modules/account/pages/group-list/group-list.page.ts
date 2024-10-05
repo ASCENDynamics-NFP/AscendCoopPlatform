@@ -20,14 +20,14 @@
 // src/app/modules/account/pages/group-list/group-list.page.ts
 
 import {Component, OnInit} from "@angular/core";
-import {Subject, Observable, combineLatest} from "rxjs";
+import {Subject, Observable, combineLatest, of} from "rxjs";
 import {
   debounceTime,
   startWith,
   switchMap,
   map,
-  take,
   distinctUntilChanged,
+  take,
 } from "rxjs/operators";
 import {Store} from "@ngrx/store";
 import {AuthUser} from "../../../../models/auth-user.model";
@@ -35,8 +35,9 @@ import {Account, RelatedAccount} from "../../../../models/account.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {
   selectFilteredAccounts,
-  selectAccounts,
   selectAccountLoading,
+  selectSelectedAccount,
+  selectRelatedAccounts,
 } from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 
@@ -49,7 +50,7 @@ export class GroupListPage implements OnInit {
   private searchTerms = new Subject<string>();
   authUser$!: Observable<AuthUser | null>;
   accountList$!: Observable<Account[]>;
-  account$!: Observable<Account | undefined>;
+  selectedAccount$!: Observable<Account | undefined>;
   searchedValue: string = "";
   loading$: Observable<boolean>;
 
@@ -60,19 +61,16 @@ export class GroupListPage implements OnInit {
   ngOnInit() {
     this.authUser$ = this.store.select(selectAuthUser);
 
-    // Dispatch loadAccounts once during initialization
-    this.store.dispatch(AccountActions.loadAccounts());
-
-    // Dispatch loadRelatedAccounts when authUser becomes available
-    this.authUser$.pipe(take(1)).subscribe((authUser) => {
-      if (authUser?.uid) {
-        this.store.dispatch(
-          AccountActions.loadRelatedAccounts({
-            accountId: authUser.uid,
-          }),
-        );
-      }
-    });
+    this.selectedAccount$ = this.authUser$.pipe(
+      switchMap((authUser) => {
+        if (authUser?.uid) {
+          return this.store
+            .select(selectSelectedAccount)
+            .pipe(map((account) => account || undefined));
+        }
+        return of(undefined);
+      }),
+    );
 
     this.accountList$ = this.searchTerms.pipe(
       startWith(this.searchedValue),
@@ -83,23 +81,23 @@ export class GroupListPage implements OnInit {
       ),
     );
 
-    // Simplify account$ to avoid infinite loop issues
-    this.account$ = combineLatest([
-      this.authUser$,
-      this.store.select(selectAccounts),
-    ]).pipe(
-      map(([authUser, accounts]) => {
-        if (authUser?.uid) {
-          return accounts.find((acc) => acc.id === authUser.uid);
-        }
-        return undefined;
-      }),
-    );
+    this.store.dispatch(AccountActions.loadAccounts());
+
+    this.authUser$.pipe(take(1)).subscribe((authUser) => {
+      if (authUser?.uid) {
+        this.store.dispatch(
+          AccountActions.setSelectedAccount({accountId: authUser.uid}),
+        );
+
+        this.store.dispatch(
+          AccountActions.loadRelatedAccounts({accountId: authUser.uid}),
+        );
+      }
+    });
   }
 
   search(event: any) {
     const value = event.target.value;
-    this.searchedValue = value;
     this.searchTerms.next(value);
   }
 
@@ -132,17 +130,25 @@ export class GroupListPage implements OnInit {
   }
 
   showRequestButton(item: Account): Observable<boolean> {
-    return combineLatest([this.authUser$, this.account$]).pipe(
-      map(([authUser, account]) => {
+    return combineLatest([
+      this.authUser$,
+      this.store.select(selectRelatedAccounts),
+    ]).pipe(
+      map(([authUser, relatedAccounts]) => {
         const authUserId = authUser?.uid;
         if (!authUserId || authUserId === item.id) {
           return false;
         }
-        return !account?.relatedAccounts?.some(
+
+        // Check against the `relatedAccounts` from the state
+        const shouldShowButton = !relatedAccounts.some(
           (ra) =>
-            (ra.initiatorId === item.id || ra.targetId === item.id) &&
+            ((ra.initiatorId === item.id && ra.targetId === authUserId) ||
+              (ra.initiatorId === authUserId && ra.targetId === item.id)) &&
             ra.status !== "rejected",
         );
+
+        return shouldShowButton;
       }),
     );
   }

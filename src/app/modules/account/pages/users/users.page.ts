@@ -19,17 +19,25 @@
 ***********************************************************************************************/
 // src/app/modules/user/pages/users/users.page.ts
 
-import {Component, OnDestroy, OnInit} from "@angular/core";
-import {AuthUser} from "../../../../models/auth-user.model";
-import {Subscription} from "rxjs";
-
-import {Account, RelatedAccount} from "../../../../models/account.model";
+import {Component, OnInit} from "@angular/core";
+import {Subject, Observable, combineLatest, of} from "rxjs";
+import {
+  debounceTime,
+  startWith,
+  switchMap,
+  map,
+  distinctUntilChanged,
+  take,
+} from "rxjs/operators";
 import {Store} from "@ngrx/store";
-import {AppState} from "../../../../state/reducers";
+import {AuthUser} from "../../../../models/auth-user.model";
+import {Account, RelatedAccount} from "../../../../models/account.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {
-  selectAccounts,
-  selectAccountById,
+  selectFilteredAccounts,
+  selectAccountLoading,
+  selectSelectedAccount,
+  selectRelatedAccounts,
 } from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 
@@ -38,128 +46,110 @@ import * as AccountActions from "../../../../state/actions/account.actions";
   templateUrl: "./users.page.html",
   styleUrls: ["./users.page.scss"],
 })
-export class UsersPage implements OnInit, OnDestroy {
-  private subscriptions = new Subscription();
-  authUser: AuthUser | null = null;
-  account?: Account;
-  accountList: Account[] = [];
+export class UsersPage implements OnInit {
+  private searchTerms = new Subject<string>();
+  authUser$!: Observable<AuthUser | null>;
+  accountList$!: Observable<Account[]>;
+  selectedAccount$!: Observable<Account | undefined>;
   searchedValue: string = "";
-  private relatedAccountIds = new Set<string>();
+  loading$: Observable<boolean>;
 
-  constructor(private store: Store<AppState>) {}
+  constructor(private store: Store) {
+    this.loading$ = this.store.select(selectAccountLoading);
+  }
 
   ngOnInit() {
-    // Subscribe to Auth User
-    this.subscriptions.add(
-      this.store.select(selectAuthUser).subscribe({
-        next: (authUser) => {
-          this.authUser = authUser;
+    this.authUser$ = this.store.select(selectAuthUser);
 
-          if (this.authUser?.uid) {
-            // Dispatch action to load account
-            this.store.dispatch(
-              AccountActions.loadAccount({accountId: this.authUser.uid}),
-            );
-
-            // Subscribe to Account
-            this.subscriptions.add(
-              this.store
-                .select(selectAccountById(this.authUser.uid))
-                .subscribe({
-                  next: (account) => {
-                    this.account = account;
-
-                    // Update relatedAccountIds when account changes
-                    if (this.account?.relatedAccounts) {
-                      this.relatedAccountIds = new Set(
-                        this.account.relatedAccounts
-                          .filter((ra) => ra.status !== "rejected")
-                          .map((ra) => ra.id),
-                      );
-                    }
-                  },
-                  error: (error) => {
-                    console.error("Error fetching account:", error);
-                  },
-                }),
-            );
-          }
-        },
-        error: (error) => {
-          console.error("Error fetching auth user:", error);
-        },
+    this.selectedAccount$ = this.authUser$.pipe(
+      switchMap((authUser) => {
+        if (authUser?.uid) {
+          return this.store
+            .select(selectSelectedAccount)
+            .pipe(map((account) => account || undefined));
+        }
+        return of(undefined);
       }),
     );
 
-    // Subscribe to Accounts
-    this.subscriptions.add(
-      this.store.select(selectAccounts).subscribe({
-        next: (accounts) => {
-          if (accounts) {
-            this.accountList = accounts
-              .filter(
-                (acc) =>
-                  acc.type === "user" &&
-                  acc.id !== this.authUser?.uid && // Exclude current user
-                  acc.name?.toLowerCase().includes(this.searchedValue),
-              )
-              .sort((a, b) => a.name?.localeCompare(b.name!) || 0);
-          }
-        },
-        error: (error) => {
-          console.error("Error fetching accounts:", error);
-        },
-      }),
+    this.accountList$ = this.searchTerms.pipe(
+      startWith(this.searchedValue),
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap((term) =>
+        this.store.select(selectFilteredAccounts(term, "user")),
+      ),
     );
 
-    // Dispatch action to load accounts
     this.store.dispatch(AccountActions.loadAccounts());
+
+    this.authUser$.pipe(take(1)).subscribe((authUser) => {
+      if (authUser?.uid) {
+        this.store.dispatch(
+          AccountActions.setSelectedAccount({accountId: authUser.uid}),
+        );
+
+        this.store.dispatch(
+          AccountActions.loadRelatedAccounts({accountId: authUser.uid}),
+        );
+      }
+    });
   }
 
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
+  search(event: any) {
+    const value = event.target.value;
+    this.searchTerms.next(value);
   }
 
-  sendFriendRequest(account: Account) {
-    if (!this.authUser?.uid || !account.id) {
-      console.error("User ID or Account ID is missing");
-      return;
-    }
+  sendRequest(account: Account) {
+    this.authUser$.pipe(take(1)).subscribe((authUser) => {
+      if (!authUser?.uid || !account.id) {
+        console.error("User ID or Account ID is missing");
+        return;
+      }
 
-    const newRelatedAccount: RelatedAccount = {
-      id: account.id,
-      initiatorId: this.authUser.uid,
-      targetId: account.id,
-      type: account.type,
-      status: "pending",
-      relationship: "friend",
-      tagline: account.tagline,
-      name: account.name,
-      iconImage: account.iconImage,
-    };
+      const newRelatedAccount: RelatedAccount = {
+        id: account.id,
+        initiatorId: authUser.uid,
+        targetId: account.id,
+        type: account.type,
+        status: "pending",
+        relationship: "friend",
+        tagline: account.tagline,
+        name: account.name,
+        iconImage: account.iconImage,
+      };
 
-    // Dispatch action to update related account
-    this.store.dispatch(
-      AccountActions.updateRelatedAccount({
-        accountId: this.authUser.uid,
-        relatedAccount: newRelatedAccount,
+      this.store.dispatch(
+        AccountActions.createRelatedAccount({
+          accountId: authUser.uid,
+          relatedAccount: newRelatedAccount,
+        }),
+      );
+    });
+  }
+
+  showRequestButton(item: Account): Observable<boolean> {
+    return combineLatest([
+      this.authUser$,
+      this.store.select(selectRelatedAccounts),
+    ]).pipe(
+      map(([authUser, relatedAccounts]) => {
+        const authUserId = authUser?.uid;
+        if (!authUserId || authUserId === item.id) {
+          return false;
+        }
+
+        // Check against the `relatedAccounts` from the state
+        const shouldShowButton = !relatedAccounts.some(
+          (ra) =>
+            ((ra.initiatorId === item.id && ra.targetId === authUserId) ||
+              (ra.initiatorId === authUserId && ra.targetId === item.id)) &&
+            ra.status !== "rejected",
+        );
+
+        return shouldShowButton;
       }),
     );
-  }
-
-  searchUsers(event: any) {
-    const value = event.target.value || "";
-    this.searchedValue = value.toLowerCase();
-
-    // No need to dispatch actions here; filtering is done in the subscription
-  }
-
-  showRequestButton(item: Account): boolean {
-    const authUserId = this.authUser?.uid;
-    if (!authUserId || authUserId === item.id) {
-      return false;
-    }
-
-    return !this.relatedAccountIds.has(item.id!);
   }
 }

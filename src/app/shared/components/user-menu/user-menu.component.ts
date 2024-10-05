@@ -21,7 +21,6 @@ import {Component} from "@angular/core";
 import {Router} from "@angular/router";
 import {PopoverController} from "@ionic/angular";
 import {Store} from "@ngrx/store";
-import {AppState} from "../../../state/reducers";
 import {selectAuthUser} from "../../../state/selectors/auth.selectors";
 import * as AuthActions from "../../../state/actions/auth.actions";
 import {firstValueFrom} from "rxjs";
@@ -35,7 +34,7 @@ export class UserMenuComponent {
   constructor(
     private router: Router,
     private popoverCtrl: PopoverController,
-    private store: Store<AppState>,
+    private store: Store,
   ) {}
 
   async logout() {

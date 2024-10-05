@@ -6,7 +6,7 @@ import * as AccountActions from "../actions/account.actions";
 import {from, of} from "rxjs";
 import {switchMap, map, catchError, mergeMap, tap} from "rxjs/operators";
 import {FirestoreService} from "../../core/services/firestore.service";
-import {Account, RelatedAccount} from "../../models/account.model";
+import {Account} from "../../models/account.model";
 
 @Injectable()
 export class AccountEffects {

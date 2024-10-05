@@ -53,7 +53,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   <p>{{ item?.tagline }}</p>
                 </ion-label>
                 <ion-button
-                  *ngIf="(showRequestButton(item) | async)"
+                  *ngIf="showRequestButton(item) | async"
                   slot="end"
                   mode="md"
                   expand="block"

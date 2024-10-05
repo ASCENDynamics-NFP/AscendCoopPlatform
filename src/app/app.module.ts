@@ -36,7 +36,8 @@ import {TranslateModule, TranslateLoader} from "@ngx-translate/core";
 import {TranslateHttpLoader} from "@ngx-translate/http-loader";
 
 // NgRx
-import {StoreModule} from "@ngrx/store";
+import {localStorageSync} from "ngrx-store-localstorage";
+import {ActionReducer, MetaReducer, StoreModule} from "@ngrx/store";
 import {EffectsModule} from "@ngrx/effects";
 import {StoreDevtoolsModule} from "@ngrx/store-devtools";
 
@@ -67,6 +68,18 @@ getStorage(app);
 // Custom Elements
 defineCustomElements(window);
 
+// Function to sync store with localStorage
+export function localStorageSyncReducer(
+  reducer: ActionReducer<any>,
+): ActionReducer<any> {
+  return localStorageSync({
+    keys: ["auth", "account"], // Specify the state slices you want to persist
+    rehydrate: true, // Rehydrate state on application startup
+  })(reducer);
+}
+
+const metaReducers: Array<MetaReducer<any, any>> = [localStorageSyncReducer];
+
 export function createTranslateLoader(http: HttpClient) {
   return new TranslateHttpLoader(http, "./assets/i18n/", ".json");
 }
@@ -88,7 +101,7 @@ export function createTranslateLoader(http: HttpClient) {
         deps: [HttpClient],
       },
     }),
-    StoreModule.forRoot(reducers),
+    StoreModule.forRoot(reducers, {metaReducers}),
     EffectsModule.forRoot([AuthEffects, AccountEffects]),
     StoreDevtoolsModule.instrument({maxAge: 25, logOnly: !isDevMode()}),
   ],

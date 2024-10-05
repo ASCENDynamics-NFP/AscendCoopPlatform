@@ -72,6 +72,11 @@ export class DetailsPage implements OnInit {
         AccountActions.loadAccount({accountId: this.accountId}),
       );
 
+      // Dispatch setSelectedAccount action
+      this.store.dispatch(
+        AccountActions.setSelectedAccount({accountId: this.accountId}),
+      );
+
       // Select account and related accounts from the store
       const selectedAccount$ = this.store.select(selectSelectedAccount);
       const relatedAccounts$ = this.store.select(selectRelatedAccounts);

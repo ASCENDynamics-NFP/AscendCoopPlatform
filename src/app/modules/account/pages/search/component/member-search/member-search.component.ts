@@ -17,95 +17,119 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// member-search.component.ts
-import {Component, Input} from "@angular/core";
+// src/app/modules/account/pages/search/component/member-search/member-search.component.ts
+
+import {Component, Input, OnInit} from "@angular/core";
+import {Subject, Observable, combineLatest, of} from "rxjs";
+import {
+  debounceTime,
+  startWith,
+  switchMap,
+  map,
+  distinctUntilChanged,
+  take,
+} from "rxjs/operators";
 import {AuthUser} from "../../../../../../models/auth-user.model";
 import {Account, RelatedAccount} from "../../../../../../models/account.model";
 import {Store} from "@ngrx/store";
-import {AppState} from "../../../../../../state/reducers";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
-import {selectUsersByName} from "../../../../../../state/selectors/auth.selectors";
+import {
+  selectRelatedAccounts,
+  selectFilteredAccounts,
+} from "../../../../../../state/selectors/account.selectors";
 
 @Component({
   selector: "app-member-search",
   templateUrl: "./member-search.component.html",
   styleUrls: ["./member-search.component.scss"],
 })
-export class MemberSearchComponent {
+export class MemberSearchComponent implements OnInit {
   @Input() isAdmin: boolean = false;
   @Input() user: AuthUser | null = null;
   @Input() currentGroup?: Account;
-  users: Account[] = [];
+  private searchTerms = new Subject<string>();
+  userList$!: Observable<Account[]>;
   searchTerm: string = "";
 
-  constructor(private store: Store<AppState>) {}
+  constructor(private store: Store) {}
 
-  get searchResults() {
-    if (!this.users) {
-      return [];
-    }
-    if (!this.searchTerm) {
-      return this.users;
-    }
-    return this.users.filter((user) =>
-      user.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
+  ngOnInit() {
+    // Use searchTerms to filter users
+    this.userList$ = this.searchTerms.pipe(
+      startWith(this.searchTerm),
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap((term) =>
+        this.store.select(selectFilteredAccounts(term, "user")),
+      ),
     );
+
+    // Dispatch setSelectedAccount and loadRelatedAccounts actions
+    if (this.currentGroup?.id) {
+      this.store.dispatch(
+        AccountActions.setSelectedAccount({accountId: this.currentGroup.id}),
+      );
+
+      this.store.dispatch(
+        AccountActions.loadRelatedAccounts({accountId: this.currentGroup.id}),
+      );
+    }
   }
 
   searchUsers(event: any) {
-    this.searchTerm = event.target.value;
-    if (this.searchTerm) {
-      // Dispatch an action to search users by name
-      this.store.dispatch(
-        AccountActions.searchUsersByName({name: this.searchTerm}),
-      );
-
-      // Subscribe to the search results
-      this.store
-        .select(selectUsersByName(this.searchTerm))
-        .subscribe((users) => {
-          this.users = users;
-        });
-    }
+    const value = event.target.value;
+    this.searchTerms.next(value);
   }
 
-  canInviteUser(user: Account): boolean {
-    if (!this.currentGroup?.id || !user.id) {
-      return false;
-    }
-    return !this.currentGroup.relatedAccounts?.some(
-      (ra) =>
-        ra.id === user.id &&
-        (ra.status === "accepted" || ra.status === "pending"),
+  canInviteUser(user: Account): Observable<boolean> {
+    return combineLatest([
+      of(this.currentGroup),
+      this.store.select(selectRelatedAccounts),
+    ]).pipe(
+      map(([currentGroup, relatedAccounts]) => {
+        if (!currentGroup?.id || !user.id) {
+          return false;
+        }
+
+        return !relatedAccounts.some(
+          (ra) =>
+            ra.id === user.id &&
+            (ra.status === "accepted" || ra.status === "pending"),
+        );
+      }),
     );
   }
 
   inviteUser(user: Account) {
-    if (!this.canInviteUser(user)) {
-      console.log("Cannot invite user");
-      return;
-    }
+    this.canInviteUser(user)
+      .pipe(take(1))
+      .subscribe((canInvite) => {
+        if (!canInvite) {
+          console.log("Cannot invite user");
+          return;
+        }
 
-    if (this.currentGroup?.id && user.id) {
-      const newRelatedAccount: RelatedAccount = {
-        id: user.id,
-        name: user.name,
-        iconImage: user.iconImage,
-        tagline: user.tagline,
-        type: "user",
-        status: "pending",
-        relationship: "member",
-        initiatorId: this.currentGroup.id,
-        targetId: user.id,
-      };
+        if (this.currentGroup?.id && user.id) {
+          const newRelatedAccount: RelatedAccount = {
+            id: user.id,
+            name: user.name,
+            iconImage: user.iconImage,
+            tagline: user.tagline,
+            type: "user",
+            status: "pending",
+            relationship: "member",
+            initiatorId: this.currentGroup.id,
+            targetId: user.id,
+          };
 
-      // Dispatch action to add related account
-      this.store.dispatch(
-        AccountActions.addRelatedAccount({
-          accountId: this.currentGroup.id,
-          relatedAccount: newRelatedAccount,
-        }),
-      );
-    }
+          // Dispatch action to add related account
+          this.store.dispatch(
+            AccountActions.createRelatedAccount({
+              accountId: this.currentGroup.id,
+              relatedAccount: newRelatedAccount,
+            }),
+          );
+        }
+      });
   }
 }

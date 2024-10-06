@@ -22,7 +22,7 @@
 import {Component, OnInit, ViewChild} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, combineLatest} from "rxjs";
-import {map, take, tap} from "rxjs/operators";
+import {map, tap} from "rxjs/operators";
 import {AuthUser} from "../../../../models/auth-user.model";
 import {Store} from "@ngrx/store";
 
@@ -66,60 +66,66 @@ export class DetailsPage implements OnInit {
     // Initialize authUser$ observable
     this.authUser$ = this.store.select(selectAuthUser);
 
-    if (this.accountId) {
-      // Dispatch loadAccount action to fetch account data
-      this.store.dispatch(
-        AccountActions.loadAccount({accountId: this.accountId}),
-      );
+    // Subscribe to route paramMap to detect changes in accountId
+    this.route.paramMap.subscribe((params) => {
+      this.accountId = params.get("accountId");
 
-      // Dispatch setSelectedAccount action
-      this.store.dispatch(
-        AccountActions.setSelectedAccount({accountId: this.accountId}),
-      );
-      // Dispatch loadRelatedAccounts to ensure related accounts are available on navigation
-      this.store.dispatch(
-        AccountActions.loadRelatedAccounts({accountId: this.accountId}),
-      );
+      if (this.accountId) {
+        // Dispatch loadAccount action to fetch account data
+        this.store.dispatch(
+          AccountActions.loadAccount({accountId: this.accountId}),
+        );
 
-      // Select account and related accounts from the store
-      const selectedAccount$ = this.store.select(selectSelectedAccount);
-      const relatedAccounts$ = this.store.select(selectRelatedAccounts);
+        // Dispatch setSelectedAccount action
+        this.store.dispatch(
+          AccountActions.setSelectedAccount({accountId: this.accountId}),
+        );
 
-      // Combine the account and related accounts into one observable without mutating
-      this.fullAccount$ = combineLatest([
-        selectedAccount$,
-        relatedAccounts$,
-      ]).pipe(
-        tap(([account]) => {
-          if (account && !account.type) {
-            this.router.navigate([`/registration/${this.accountId}`]);
-          }
-        }),
-        map(([account, relatedAccounts]) => {
-          if (account) {
-            return {
-              ...account, // Clone the account object
-              relatedAccounts: relatedAccounts, // Assign relatedAccounts without mutation
-            };
-          } else {
-            return null;
-          }
-        }),
-      );
+        // Dispatch loadRelatedAccounts to ensure related accounts are available on navigation
+        this.store.dispatch(
+          AccountActions.loadRelatedAccounts({accountId: this.accountId}),
+        );
 
-      // Determine if the current user is the profile owner
-      this.isProfileOwner$ = combineLatest([
-        this.authUser$,
-        this.fullAccount$,
-      ]).pipe(
-        map(([authUser, account]) => {
-          // Ensure account and authUser are not null
-          if (account && authUser) {
-            return account.id === authUser.uid;
-          }
-          return false; // Default to false if any are null
-        }),
-      );
-    }
+        // Select account and related accounts from the store
+        const selectedAccount$ = this.store.select(selectSelectedAccount);
+        const relatedAccounts$ = this.store.select(selectRelatedAccounts);
+
+        // Combine the account and related accounts into one observable without mutating
+        this.fullAccount$ = combineLatest([
+          selectedAccount$,
+          relatedAccounts$,
+        ]).pipe(
+          tap(([account]) => {
+            if (account && !account.type) {
+              this.router.navigate([`/registration/${this.accountId}`]);
+            }
+          }),
+          map(([account, relatedAccounts]) => {
+            if (account) {
+              return {
+                ...account, // Clone the account object
+                relatedAccounts: relatedAccounts, // Assign relatedAccounts without mutation
+              };
+            } else {
+              return null;
+            }
+          }),
+        );
+
+        // Determine if the current user is the profile owner
+        this.isProfileOwner$ = combineLatest([
+          this.authUser$,
+          this.fullAccount$,
+        ]).pipe(
+          map(([authUser, account]) => {
+            // Ensure account and authUser are not null
+            if (account && authUser) {
+              return account.id === authUser.uid;
+            }
+            return false; // Default to false if any are null
+          }),
+        );
+      }
+    });
   }
 }

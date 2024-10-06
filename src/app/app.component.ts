@@ -17,14 +17,16 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// src/app/app.component.ts
+
 import {Component, OnInit} from "@angular/core";
 import {MenuController, Platform} from "@ionic/angular";
 import {TranslateService} from "@ngx-translate/core";
 import {Store} from "@ngrx/store";
 import {selectIsLoggedIn} from "./state/selectors/auth.selectors";
-// import {AppState} from "./state/reducers";
 import * as AuthActions from "./state/actions/auth.actions";
-import {ActivatedRoute} from "@angular/router";
+import {Observable} from "rxjs";
+import {tap} from "rxjs/operators";
 
 @Component({
   selector: "app-root",
@@ -32,16 +34,23 @@ import {ActivatedRoute} from "@angular/router";
   styleUrls: ["app.component.scss"],
 })
 export class AppComponent implements OnInit {
+  isLoggedIn$: Observable<boolean>;
+
   constructor(
     private menuCtrl: MenuController,
     private translate: TranslateService,
     private store: Store,
-    private activatedRoute: ActivatedRoute,
     private platform: Platform,
   ) {
-    // this.translate.setDefaultLang("en");
     this.translate.addLangs(["en", "fr"]);
     this.initializeApp();
+
+    // Initialize the observable
+    this.isLoggedIn$ = this.store.select(selectIsLoggedIn).pipe(
+      tap(async (isLoggedIn) => {
+        await this.updateMenu(isLoggedIn);
+      }),
+    );
   }
 
   initializeApp() {
@@ -58,15 +67,15 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     // Dispatch the initialization action
     this.store.dispatch(AuthActions.initializeAuth());
+  }
 
-    this.store.select(selectIsLoggedIn).subscribe(async (isLoggedIn) => {
-      if (isLoggedIn) {
-        await this.menuCtrl.enable(false, "guest");
-        await this.menuCtrl.enable(true, "user");
-      } else {
-        await this.menuCtrl.enable(false, "user");
-        await this.menuCtrl.enable(true, "guest");
-      }
-    });
+  private async updateMenu(isLoggedIn: boolean) {
+    if (isLoggedIn) {
+      await this.menuCtrl.enable(false, "guest");
+      await this.menuCtrl.enable(true, "user");
+    } else {
+      await this.menuCtrl.enable(false, "user");
+      await this.menuCtrl.enable(true, "guest");
+    }
   }
 }

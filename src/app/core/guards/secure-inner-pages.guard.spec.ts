@@ -21,6 +21,7 @@ import {TestBed} from "@angular/core/testing";
 
 import {SecureInnerPagesGuard} from "./secure-inner-pages.guard";
 import {AuthStoreService} from "../services/auth-store.service";
+import {provideMockStore} from "@ngrx/store/testing";
 
 describe("SecureInnerPagesGuard", () => {
   let guard: SecureInnerPagesGuard;
@@ -29,7 +30,10 @@ describe("SecureInnerPagesGuard", () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [{provide: AuthStoreService, useValue: authSpy}],
+      providers: [
+        provideMockStore(),
+        {provide: AuthStoreService, useValue: authSpy},
+      ],
     });
 
     service = TestBed.inject(AuthStoreService);

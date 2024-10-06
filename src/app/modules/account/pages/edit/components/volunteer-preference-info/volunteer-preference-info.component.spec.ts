@@ -21,6 +21,7 @@ import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
 
 import {VolunteerPreferenceInfoComponent} from "./volunteer-preference-info.component";
+import {provideMockStore} from "@ngrx/store/testing";
 
 describe("VolunteerPreferenceInfoComponent", () => {
   let component: VolunteerPreferenceInfoComponent;
@@ -30,6 +31,7 @@ describe("VolunteerPreferenceInfoComponent", () => {
     TestBed.configureTestingModule({
       declarations: [],
       imports: [IonicModule.forRoot()],
+      providers: [provideMockStore()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(VolunteerPreferenceInfoComponent);

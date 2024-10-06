@@ -19,8 +19,9 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
-
 import {FeedbackModalComponent} from "./feedback-modal.component";
+import {environment} from "../../../../environments/environment";
+import {AngularFireModule} from "@angular/fire/compat";
 
 describe("FeedbackModalComponent", () => {
   let component: FeedbackModalComponent;
@@ -29,7 +30,10 @@ describe("FeedbackModalComponent", () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [],
-      imports: [IonicModule.forRoot()],
+      imports: [
+        IonicModule.forRoot(),
+        AngularFireModule.initializeApp(environment.firebaseConfig),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FeedbackModalComponent);

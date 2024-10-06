@@ -21,6 +21,7 @@ import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
 
 import {PartnerSearchComponent} from "./partner-search.component";
+import {provideMockStore} from "@ngrx/store/testing";
 
 describe("PartnerSearchComponent", () => {
   let component: PartnerSearchComponent;
@@ -29,6 +30,7 @@ describe("PartnerSearchComponent", () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [IonicModule.forRoot()],
+      providers: [provideMockStore({})],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PartnerSearchComponent);

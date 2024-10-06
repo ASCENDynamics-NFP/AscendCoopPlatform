@@ -17,8 +17,6 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// src/app/modules/account/pages/login/login.page.ts
-
 import {Component, OnInit} from "@angular/core";
 import {FormBuilder, Validators} from "@angular/forms";
 import {AlertController} from "@ionic/angular";
@@ -37,13 +35,9 @@ import * as AuthActions from "../../../../state/actions/auth.actions";
   styleUrls: ["./login.page.scss"],
 })
 export class LoginPage implements OnInit {
-  public loginForm = this.fb.nonNullable.group({
-    email: ["", [Validators.required, Validators.email]],
-    password: ["", [Validators.required, Validators.minLength(6)]],
-  });
-
-  public loading$: Observable<boolean> = this.store.select(selectAuthLoading);
-  public error$: Observable<any> = this.store.select(selectAuthError);
+  public loginForm: any;
+  public loading$!: Observable<boolean>;
+  public error$!: Observable<any>;
 
   constructor(
     private alertController: AlertController,
@@ -53,6 +47,16 @@ export class LoginPage implements OnInit {
   ) {}
 
   ngOnInit() {
+    // Initialize the form after fb is available
+    this.loginForm = this.fb.nonNullable.group({
+      email: ["", [Validators.required, Validators.email]],
+      password: ["", [Validators.required, Validators.minLength(6)]],
+    });
+
+    // Initialize observables after store is defined
+    this.loading$ = this.store.select(selectAuthLoading);
+    this.error$ = this.store.select(selectAuthError);
+
     this.loadFormData();
   }
 

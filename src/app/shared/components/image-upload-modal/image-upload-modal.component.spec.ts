@@ -19,8 +19,9 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
-
 import {ImageUploadModalComponent} from "./image-upload-modal.component";
+import {AngularFireModule} from "@angular/fire/compat";
+import {environment} from "../../../../environments/environment";
 
 describe("ImageUploadModalComponent", () => {
   let component: ImageUploadModalComponent;
@@ -29,7 +30,10 @@ describe("ImageUploadModalComponent", () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [],
-      imports: [IonicModule.forRoot()],
+      imports: [
+        IonicModule.forRoot(),
+        AngularFireModule.initializeApp(environment.firebaseConfig),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ImageUploadModalComponent);

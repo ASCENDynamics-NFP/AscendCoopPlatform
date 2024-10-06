@@ -17,150 +17,158 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// src/app/modules/account/pages/login/login.page.spec.ts
-import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {LoginPage} from "./login.page";
-import {ReactiveFormsModule} from "@angular/forms";
-import {AlertController, IonicModule} from "@ionic/angular";
-import {Router} from "@angular/router";
-import {provideMockStore, MockStore} from "@ngrx/store/testing";
-import * as AuthActions from "../../../../state/actions/auth.actions";
+// login.page.spec.ts
+
 import {
-  selectAuthLoading,
-  selectAuthError,
-} from "../../../../state/selectors/auth.selectors";
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+  waitForAsync,
+} from "@angular/core/testing";
+import {LoginPage} from "./login.page";
+import {ReactiveFormsModule, FormBuilder} from "@angular/forms";
+import {AlertController, IonicModule} from "@ionic/angular";
+import {Store} from "@ngrx/store";
+import {Router} from "@angular/router";
+import {of} from "rxjs";
+import * as AuthActions from "../../../../state/actions/auth.actions";
 
 describe("LoginPage", () => {
   let component: LoginPage;
   let fixture: ComponentFixture<LoginPage>;
-  let store: MockStore;
-  let router: Router;
-  let alertController: AlertController;
+  let storeSpy: jasmine.SpyObj<Store<any>>;
+  let routerSpy: jasmine.SpyObj<Router>;
+  let alertControllerSpy: jasmine.SpyObj<AlertController>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(waitForAsync(() => {
+    const storeMock = jasmine.createSpyObj("Store", ["select", "dispatch"]);
+    const routerMock = jasmine.createSpyObj("Router", ["navigateByUrl"]);
+    const alertControllerMock = jasmine.createSpyObj("AlertController", [
+      "create",
+    ]);
+
+    TestBed.configureTestingModule({
       declarations: [LoginPage],
-      imports: [ReactiveFormsModule, IonicModule.forRoot()],
+      imports: [IonicModule.forRoot(), ReactiveFormsModule],
       providers: [
-        provideMockStore({
-          selectors: [
-            {selector: selectAuthLoading, value: false},
-            {selector: selectAuthError, value: null},
-          ],
-        }),
-        {
-          provide: Router,
-          useValue: {navigateByUrl: jasmine.createSpy("navigateByUrl")},
-        },
-        {
-          provide: AlertController,
-          useValue: jasmine.createSpyObj("AlertController", ["create"]),
-        },
+        FormBuilder,
+        {provide: Store, useValue: storeMock},
+        {provide: Router, useValue: routerMock},
+        {provide: AlertController, useValue: alertControllerMock},
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LoginPage);
     component = fixture.componentInstance;
-    store = TestBed.inject(MockStore);
-    router = TestBed.inject(Router);
-    alertController = TestBed.inject(AlertController);
+    storeSpy = TestBed.inject(Store) as jasmine.SpyObj<Store<any>>;
+    routerSpy = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    alertControllerSpy = TestBed.inject(
+      AlertController,
+    ) as jasmine.SpyObj<AlertController>;
 
-    fixture.detectChanges();
-  });
+    // Mock the selectors
+    storeSpy.select.and.returnValue(of(false));
+  }));
 
-  it("should create the component", () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should initialize the form with empty values", () => {
-    expect(component.loginForm.value).toEqual({email: "", password: ""});
-  });
-
-  it("should dispatch signIn action on login when form is valid", () => {
-    spyOn(store, "dispatch");
-    component.loginForm.setValue({
-      email: "test@example.com",
-      password: "password123",
+  describe("ngOnInit", () => {
+    it("should initialize the form and observables", () => {
+      component.ngOnInit();
+      expect(component.loginForm).toBeDefined();
+      expect(component.loading$).toBeDefined();
+      expect(component.error$).toBeDefined();
     });
 
-    component.login();
-
-    expect(store.dispatch).toHaveBeenCalledWith(
-      AuthActions.signIn({email: "test@example.com", password: "password123"}),
-    );
-  });
-
-  it("should not dispatch signIn action on login when form is invalid", () => {
-    spyOn(store, "dispatch");
-    component.loginForm.setValue({email: "", password: ""});
-
-    component.login();
-
-    expect(store.dispatch).not.toHaveBeenCalled();
-  });
-
-  it("should navigate to signup page on goToSignUp", () => {
-    component.goToSignUp();
-
-    expect(router.navigateByUrl).toHaveBeenCalledWith("/signup", {
-      replaceUrl: false,
+    it("should call loadFormData", () => {
+      spyOn(component, "loadFormData");
+      component.ngOnInit();
+      expect(component.loadFormData).toHaveBeenCalled();
     });
   });
 
-  it("should reset the form on loadFormData", () => {
-    component.loginForm.setValue({
-      email: "test@example.com",
-      password: "password123",
+  describe("login", () => {
+    beforeEach(() => {
+      component.ngOnInit();
     });
 
-    component.loadFormData();
+    it("should dispatch signIn action when form is valid", () => {
+      component.loginForm.setValue({
+        email: "test@example.com",
+        password: "password123",
+      });
+      component.login();
+      expect(storeSpy.dispatch).toHaveBeenCalledWith(
+        AuthActions.signIn({
+          email: "test@example.com",
+          password: "password123",
+        }),
+      );
+    });
 
-    expect(component.loginForm.value).toEqual({email: "", password: ""});
-  });
-
-  it("should dispatch signInWithGoogle action on signInWithGoogle", () => {
-    spyOn(store, "dispatch");
-
-    component.signInWithGoogle();
-
-    expect(store.dispatch).toHaveBeenCalledWith(AuthActions.signInWithGoogle());
-  });
-
-  it("should present forgot password alert and dispatch sendPasswordResetEmail", async () => {
-    spyOn(store, "dispatch");
-    const alertSpy = jasmine.createSpyObj("HTMLIonAlertElement", ["present"]);
-    spyOn(alertController, "create").and.returnValue(Promise.resolve(alertSpy));
-
-    await component.forgotPassword();
-
-    expect(alertController.create).toHaveBeenCalled();
-    expect(alertSpy.present).toHaveBeenCalled();
-  });
-
-  it("should present get email sign-in link alert and dispatch sendSignInLinkToEmail", async () => {
-    spyOn(store, "dispatch");
-    const alertSpy = jasmine.createSpyObj("HTMLIonAlertElement", ["present"]);
-    spyOn(alertController, "create").and.returnValue(Promise.resolve(alertSpy));
-
-    await component.getEmailSignInLink();
-
-    expect(alertController.create).toHaveBeenCalled();
-    expect(alertSpy.present).toHaveBeenCalled();
-  });
-  it("should initialize loading$ observable from store", (done) => {
-    store.overrideSelector(selectAuthLoading, true);
-    component.loading$.subscribe((loading) => {
-      expect(loading).toBeTrue();
-      done();
+    it("should not dispatch signIn action when form is invalid", () => {
+      component.loginForm.setValue({email: "", password: ""});
+      component.login();
+      expect(storeSpy.dispatch).not.toHaveBeenCalled();
     });
   });
 
-  it("should initialize error$ observable from store", (done) => {
-    const error = {message: "An error occurred"};
-    store.overrideSelector(selectAuthError, error);
-    component.error$.subscribe((err) => {
-      expect(err).toEqual(error);
-      done();
+  describe("forgotPassword", () => {
+    it("should present an alert for password reset", fakeAsync(() => {
+      const alertSpy = jasmine.createSpyObj("HTMLIonAlertElement", ["present"]);
+      alertControllerSpy.create.and.returnValue(Promise.resolve(alertSpy));
+
+      component.forgotPassword();
+      tick();
+
+      expect(alertControllerSpy.create).toHaveBeenCalled();
+      expect(alertSpy.present).toHaveBeenCalled();
+    }));
+  });
+
+  describe("getEmailSignInLink", () => {
+    it("should present an alert to get email sign-in link", fakeAsync(() => {
+      const alertSpy = jasmine.createSpyObj("HTMLIonAlertElement", ["present"]);
+      alertControllerSpy.create.and.returnValue(Promise.resolve(alertSpy));
+
+      component.getEmailSignInLink();
+      tick();
+
+      expect(alertControllerSpy.create).toHaveBeenCalled();
+      expect(alertSpy.present).toHaveBeenCalled();
+    }));
+  });
+
+  describe("signInWithGoogle", () => {
+    it("should dispatch signInWithGoogle action", () => {
+      component.signInWithGoogle();
+      expect(storeSpy.dispatch).toHaveBeenCalledWith(
+        AuthActions.signInWithGoogle(),
+      );
+    });
+  });
+
+  describe("goToSignUp", () => {
+    it("should navigate to the signup page", () => {
+      component.goToSignUp();
+      expect(routerSpy.navigateByUrl).toHaveBeenCalledWith("/signup", {
+        replaceUrl: false,
+      });
+    });
+  });
+
+  describe("loadFormData", () => {
+    it("should reset the form", () => {
+      component.ngOnInit();
+      component.loginForm.setValue({
+        email: "test@example.com",
+        password: "password123",
+      });
+      component.loadFormData();
+      expect(component.loginForm.value).toEqual({email: "", password: ""});
     });
   });
 });

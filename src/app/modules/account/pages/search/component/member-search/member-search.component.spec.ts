@@ -21,6 +21,7 @@ import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {FormsModule} from "@angular/forms";
 import {MemberSearchComponent} from "./member-search.component";
 import {IonicModule} from "@ionic/angular";
+import {provideMockStore} from "@ngrx/store/testing";
 
 describe("MemberSearchComponent", () => {
   let component: MemberSearchComponent;
@@ -35,7 +36,7 @@ describe("MemberSearchComponent", () => {
     TestBed.configureTestingModule({
       declarations: [MemberSearchComponent],
       imports: [IonicModule.forRoot(), FormsModule],
-      providers: [{useValue: storeSpy}],
+      providers: [provideMockStore({}), {useValue: storeSpy}],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MemberSearchComponent);

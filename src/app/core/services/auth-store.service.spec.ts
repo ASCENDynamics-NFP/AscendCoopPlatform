@@ -36,6 +36,7 @@ describe("AuthStoreService", () => {
       callback(null);
     // Mock authUser$ as an Observable that emits null
     authSpy.authUser$ = of(null);
+    window.onbeforeunload = jasmine.createSpy();
 
     TestBed.configureTestingModule({
       providers: [{provide: AuthStoreService, useValue: authSpy}],

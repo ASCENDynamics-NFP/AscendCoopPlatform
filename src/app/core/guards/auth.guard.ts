@@ -24,14 +24,13 @@ import {firstValueFrom} from "rxjs";
 import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../state/selectors/auth.selectors";
 import * as AuthActions from "../../state/actions/auth.actions";
-import {AppState} from "../../state/reducers";
 
 @Injectable({
   providedIn: "root",
 })
 export class AuthGuard {
   constructor(
-    private store: Store<AppState>,
+    private store: Store,
     private router: Router,
   ) {}
 

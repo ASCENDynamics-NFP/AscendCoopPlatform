@@ -17,90 +17,150 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// src/app/modules/account/pages/login/login.page.spec.ts
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {LoginPage} from "./login.page";
-import {FormBuilder} from "@angular/forms";
-import {of} from "rxjs";
+import {ReactiveFormsModule} from "@angular/forms";
+import {AlertController, IonicModule} from "@ionic/angular";
 import {Router} from "@angular/router";
-import {AuthStoreService} from "../../../../core/services/auth-store.service";
-import {StoreService} from "../../../../core/services/store.service";
+import {provideMockStore, MockStore} from "@ngrx/store/testing";
+import * as AuthActions from "../../../../state/actions/auth.actions";
 import {
-  TranslateModule,
-  TranslateLoader,
-  TranslateService,
-} from "@ngx-translate/core";
-
-class FakeLoader implements TranslateLoader {
-  getTranslation(lang: string) {
-    return of({KEY: "Value"});
-  }
-}
+  selectAuthLoading,
+  selectAuthError,
+} from "../../../../state/selectors/auth.selectors";
 
 describe("LoginPage", () => {
   let component: LoginPage;
   let fixture: ComponentFixture<LoginPage>;
-  let authStoreServiceMock: any;
-  let storeServiceMock: any;
-  let routerMock: any;
+  let store: MockStore;
+  let router: Router;
+  let alertController: AlertController;
 
   beforeEach(async () => {
-    authStoreServiceMock = {
-      authUser$: of(null),
-      onSignInWithEmailLink: jasmine
-        .createSpy()
-        .and.returnValue(Promise.resolve(null)),
-      signIn: jasmine.createSpy().and.returnValue(Promise.resolve(null)),
-      onSendPasswordResetEmail: jasmine.createSpy(),
-      onSendSignInLinkToEmail: jasmine.createSpy(),
-      signInWithGoogle: jasmine
-        .createSpy()
-        .and.returnValue(Promise.resolve(null)),
-    };
-
-    storeServiceMock = {
-      updateDoc: jasmine.createSpy(),
-    };
-
-    routerMock = {
-      navigateByUrl: jasmine.createSpy(),
-    };
-
     await TestBed.configureTestingModule({
-      imports: [
-        TranslateModule.forRoot({
-          loader: {provide: TranslateLoader, useClass: FakeLoader},
-        }),
-        // ... (rest of your imports)
-      ],
+      declarations: [LoginPage],
+      imports: [ReactiveFormsModule, IonicModule.forRoot()],
       providers: [
-        TranslateService,
-        FormBuilder,
-        {provide: AuthStoreService, useValue: authStoreServiceMock},
-        {provide: StoreService, useValue: storeServiceMock},
-        {provide: Router, useValue: routerMock},
+        provideMockStore({
+          selectors: [
+            {selector: selectAuthLoading, value: false},
+            {selector: selectAuthError, value: null},
+          ],
+        }),
+        {
+          provide: Router,
+          useValue: {navigateByUrl: jasmine.createSpy("navigateByUrl")},
+        },
+        {
+          provide: AlertController,
+          useValue: jasmine.createSpyObj("AlertController", ["create"]),
+        },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LoginPage);
     component = fixture.componentInstance;
+    store = TestBed.inject(MockStore);
+    router = TestBed.inject(Router);
+    alertController = TestBed.inject(AlertController);
+
     fixture.detectChanges();
   });
 
-  it("should create", () => {
+  it("should create the component", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should call signIn method of authStoreService on login", () => {
+  it("should initialize the form with empty values", () => {
+    expect(component.loginForm.value).toEqual({email: "", password: ""});
+  });
+
+  it("should dispatch signIn action on login when form is valid", () => {
+    spyOn(store, "dispatch");
     component.loginForm.setValue({
       email: "test@example.com",
       password: "password123",
     });
+
     component.login();
-    expect(authStoreServiceMock.signIn).toHaveBeenCalledWith(
-      "test@example.com",
-      "password123",
+
+    expect(store.dispatch).toHaveBeenCalledWith(
+      AuthActions.signIn({email: "test@example.com", password: "password123"}),
     );
   });
 
-  // ... Add more tests for other methods and interactions
+  it("should not dispatch signIn action on login when form is invalid", () => {
+    spyOn(store, "dispatch");
+    component.loginForm.setValue({email: "", password: ""});
+
+    component.login();
+
+    expect(store.dispatch).not.toHaveBeenCalled();
+  });
+
+  it("should navigate to signup page on goToSignUp", () => {
+    component.goToSignUp();
+
+    expect(router.navigateByUrl).toHaveBeenCalledWith("/signup", {
+      replaceUrl: false,
+    });
+  });
+
+  it("should reset the form on loadFormData", () => {
+    component.loginForm.setValue({
+      email: "test@example.com",
+      password: "password123",
+    });
+
+    component.loadFormData();
+
+    expect(component.loginForm.value).toEqual({email: "", password: ""});
+  });
+
+  it("should dispatch signInWithGoogle action on signInWithGoogle", () => {
+    spyOn(store, "dispatch");
+
+    component.signInWithGoogle();
+
+    expect(store.dispatch).toHaveBeenCalledWith(AuthActions.signInWithGoogle());
+  });
+
+  it("should present forgot password alert and dispatch sendPasswordResetEmail", async () => {
+    spyOn(store, "dispatch");
+    const alertSpy = jasmine.createSpyObj("HTMLIonAlertElement", ["present"]);
+    spyOn(alertController, "create").and.returnValue(Promise.resolve(alertSpy));
+
+    await component.forgotPassword();
+
+    expect(alertController.create).toHaveBeenCalled();
+    expect(alertSpy.present).toHaveBeenCalled();
+  });
+
+  it("should present get email sign-in link alert and dispatch sendSignInLinkToEmail", async () => {
+    spyOn(store, "dispatch");
+    const alertSpy = jasmine.createSpyObj("HTMLIonAlertElement", ["present"]);
+    spyOn(alertController, "create").and.returnValue(Promise.resolve(alertSpy));
+
+    await component.getEmailSignInLink();
+
+    expect(alertController.create).toHaveBeenCalled();
+    expect(alertSpy.present).toHaveBeenCalled();
+  });
+  it("should initialize loading$ observable from store", (done) => {
+    store.overrideSelector(selectAuthLoading, true);
+    component.loading$.subscribe((loading) => {
+      expect(loading).toBeTrue();
+      done();
+    });
+  });
+
+  it("should initialize error$ observable from store", (done) => {
+    const error = {message: "An error occurred"};
+    store.overrideSelector(selectAuthError, error);
+    component.error$.subscribe((err) => {
+      expect(err).toEqual(error);
+      done();
+    });
+  });
 });

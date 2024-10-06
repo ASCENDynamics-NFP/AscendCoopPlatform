@@ -19,16 +19,18 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <!-- src/app/modules/account/pages/edit/edit.page.html -->
 
-<app-header *ngIf="account" [title]="account.name"></app-header>
+<app-header
+  *ngIf="account$ | async as account"
+  [title]="account.name"
+></app-header>
 
 <ion-content [fullscreen]="true">
-  <ion-grid *ngIf="account">
+  <ion-grid *ngIf="account$ | async as account">
     <ion-row>
       <ion-col size="12" size-sm="12" size-md="5">
         <app-edit-menu
-          *ngIf="account"
           [account]="account"
-          [isProfileOwner]="isProfileOwner"
+          [isProfileOwner]="(isProfileOwner$ | async) ?? false"
           (itemSelected)="onItemSelected($event)"
         ></app-edit-menu>
       </ion-col>
@@ -44,8 +46,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <app-professional-info
           *ngIf="selectedForm === 'professional'"
           [account]="account"
-        >
-        </app-professional-info>
+        ></app-professional-info>
         <app-volunteer-preference-info
           *ngIf="selectedForm === 'volunteer'"
           [account]="account"
@@ -59,7 +60,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           [account]="account"
         ></app-labor-rights-info>
       </ion-col>
-      <ion-col size="12" size-sm="12" size-md="7"> </ion-col>
     </ion-row>
   </ion-grid>
 </ion-content>

@@ -19,13 +19,13 @@
 ***********************************************************************************************/
 // src/app/modules/account/pages/edit/edit.page.ts
 
-import {Component, OnDestroy, OnInit} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {Account} from "../../../../models/account.model";
-import {ActivatedRoute} from "@angular/router";
-import {Subscription} from "rxjs";
+import {ActivatedRoute, Router} from "@angular/router";
+import {Observable, combineLatest} from "rxjs";
+import {map, tap} from "rxjs/operators";
 import {AuthUser} from "../../../../models/auth-user.model";
 import {Store} from "@ngrx/store";
-import {AppState} from "../../../../state/reducers";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
@@ -35,50 +35,47 @@ import * as AccountActions from "../../../../state/actions/account.actions";
   templateUrl: "./edit.page.html",
   styleUrls: ["./edit.page.scss"],
 })
-export class EditPage implements OnInit, OnDestroy {
+export class EditPage implements OnInit {
   selectedForm: string = "basic";
-  authUser: AuthUser | null = null;
+  account$!: Observable<Account | undefined>;
+  authUser$!: Observable<AuthUser | null>;
+  isProfileOwner$!: Observable<boolean>;
   private accountId: string | null = null;
-  private subscriptions = new Subscription();
-  public account!: Account; // Changed to non-null assertion to ensure account is defined
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private store: Store<AppState>,
+    private router: Router,
+    private store: Store,
   ) {
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
   }
 
   ngOnInit(): void {
-    this.subscriptions.add(
-      this.store.select(selectAuthUser).subscribe((user) => {
-        this.authUser = user;
-      }),
-    );
+    this.authUser$ = this.store.select(selectAuthUser);
 
     if (this.accountId) {
+      // Dispatch the action to load the account
       this.store.dispatch(
         AccountActions.loadAccount({accountId: this.accountId}),
       );
 
-      this.subscriptions.add(
-        this.store
-          .select(selectAccountById(this.accountId))
-          .subscribe((account) => {
-            if (account) {
-              this.account = account;
-            }
-          }),
+      // Select the account based on the accountId
+      this.account$ = this.store.select(selectAccountById(this.accountId));
+
+      // Check if the user is the profile owner
+      this.isProfileOwner$ = combineLatest([
+        this.authUser$,
+        this.account$,
+      ]).pipe(
+        map(([authUser, account]) => authUser?.uid === account?.id),
+        tap((isOwner) => {
+          if (!isOwner) {
+            // Redirect to unauthorized page if not the profile owner
+            this.router.navigate(["/" + this.accountId]);
+          }
+        }),
       );
     }
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
-  }
-
-  get isProfileOwner(): boolean {
-    return this.accountId === this.authUser?.uid;
   }
 
   onItemSelected(form: string): void {

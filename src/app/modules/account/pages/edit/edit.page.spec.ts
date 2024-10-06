@@ -19,205 +19,143 @@
 ***********************************************************************************************/
 // src/app/modules/account/pages/edit/edit.page.spec.ts
 
-import {
-  ComponentFixture,
-  TestBed,
-  fakeAsync,
-  tick,
-  waitForAsync,
-} from "@angular/core/testing";
+import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {EditPage} from "./edit.page";
-import {ActivatedRoute} from "@angular/router";
-import {StoreModule, Store} from "@ngrx/store";
-import {authReducer} from "../../../../state/reducers/auth.reducer";
-import {accountReducer} from "../../../../state/reducers/account.reducer";
-import {TranslateModule} from "@ngx-translate/core";
-import {of} from "rxjs";
-import {By} from "@angular/platform-browser";
-import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
-import {AppEditMenuComponent} from "../../../../shared/components/app-edit-menu/app-edit-menu.component";
-import {AppBasicInfoComponent} from "../../../../shared/components/app-basic-info/app-basic-info.component";
-import {AppContactInfoComponent} from "../../../../shared/components/app-contact-info/app-contact-info.component";
-import {AppProfessionalInfoComponent} from "../../../../shared/components/app-professional-info/app-professional-info.component";
-import {AppVolunteerPreferenceInfoComponent} from "../../../../shared/components/app-volunteer-preference-info/app-volunteer-preference-info.component";
-import {AppMutualAidCommunityEngagementComponent} from "../../../../shared/components/app-mutual-aid-community-engagement/app-mutual-aid-community-engagement.component";
-import {AppLaborRightsInfoComponent} from "../../../../shared/components/app-labor-rights-info/app-labor-rights-info.component";
+import {ActivatedRoute, Router} from "@angular/router";
+import {provideMockStore, MockStore} from "@ngrx/store/testing";
+import {selectAccountById} from "../../../../state/selectors/account.selectors";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import * as AccountActions from "../../../../state/actions/account.actions";
+import {AuthUser} from "../../../../models/auth-user.model";
+import {Account} from "../../../../models/account.model";
+import {Timestamp} from "firebase/firestore";
 
 describe("EditPage", () => {
   let component: EditPage;
   let fixture: ComponentFixture<EditPage>;
-  let store: Store;
-  let activatedRoute: ActivatedRoute;
+  let store: MockStore;
+  let router: Router;
 
-  beforeEach(waitForAsync(() => {
-    const activatedRouteSpy = {
-      snapshot: {paramMap: {get: () => "account123"}},
-    };
+  const mockAccountId = "123";
 
-    TestBed.configureTestingModule({
-      declarations: [
-        EditPage,
-        AppHeaderComponent,
-        AppEditMenuComponent,
-        AppBasicInfoComponent,
-        AppContactInfoComponent,
-        AppProfessionalInfoComponent,
-        AppVolunteerPreferenceInfoComponent,
-        AppMutualAidCommunityEngagementComponent,
-        AppLaborRightsInfoComponent,
+  const mockAuthUser: AuthUser = {
+    uid: "12345",
+    email: "test@example.com",
+    displayName: null,
+    photoURL: null,
+    emailVerified: false,
+  };
+
+  const mockAccount: Account = {
+    id: "12345",
+    name: "Test Account",
+    type: "user",
+    privacy: "public",
+    relatedAccounts: [],
+    tagline: "",
+    description: "",
+    iconImage: "",
+    heroImage: "",
+    legalAgreements: {
+      termsOfService: {
+        accepted: false,
+        datetime: new Timestamp(0, 0),
+        version: "",
+      },
+      privacyPolicy: {
+        accepted: false,
+        datetime: new Timestamp(0, 0),
+        version: "",
+      },
+    },
+    webLinks: [],
+    lastLoginAt: new Timestamp(0, 0),
+    email: "",
+  };
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [EditPage],
+      providers: [
+        provideMockStore(),
+        {
+          provide: Router,
+          useValue: {navigate: jasmine.createSpy("navigate")},
+        },
+        {
+          provide: ActivatedRoute,
+          useValue: {snapshot: {paramMap: {get: () => mockAccountId}}},
+        },
       ],
-      imports: [
-        StoreModule.forRoot({auth: authReducer, account: accountReducer}),
-        TranslateModule.forRoot(),
-      ],
-      providers: [{provide: ActivatedRoute, useValue: activatedRouteSpy}],
     }).compileComponents();
-
-    store = TestBed.inject(Store);
-    activatedRoute = TestBed.inject(ActivatedRoute);
 
     fixture = TestBed.createComponent(EditPage);
     component = fixture.componentInstance;
-    fixture.detectChanges();
-  }));
+    store = TestBed.inject(MockStore);
+    router = TestBed.inject(Router);
 
-  it("should create EditPage component", () => {
+    store.overrideSelector(selectAuthUser, mockAuthUser);
+    store.overrideSelector(selectAccountById(mockAccountId), mockAccount);
+
+    fixture.detectChanges();
+  });
+  it("should create the component", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should dispatch loadAccount on initialization", () => {
+  it("should initialize accountId from the route params", () => {
+    expect(component["accountId"]).toBe(mockAccountId);
+  });
+
+  it("should dispatch loadAccount action on ngOnInit", () => {
     spyOn(store, "dispatch");
+
     component.ngOnInit();
+
     expect(store.dispatch).toHaveBeenCalledWith(
-      jasmine.objectContaining({
-        type: "[Account] Load Account",
-        accountId: "account123",
-      }),
+      AccountActions.loadAccount({accountId: mockAccountId}),
     );
   });
 
-  it("should set authUser correctly from the store", () => {
-    // Mock authUser
-    const mockAuthUser: AuthUser = {
-      uid: "account123",
-      email: "user@example.com",
-      displayName: "User Name",
-      photoURL: "http://example.com/photo.jpg",
-      emailVerified: true,
-    };
-
-    store.dispatch({
-      type: "[Auth] Sign In Success",
-      user: mockAuthUser,
+  it("should select the account based on accountId", (done) => {
+    component.account$.subscribe((account) => {
+      expect(account).toEqual(mockAccount);
+      done();
     });
-
-    fixture.detectChanges();
-
-    expect(component.authUser).toEqual(mockAuthUser);
   });
 
-  it("should set account correctly from the store", () => {
-    const mockAccount: Account = {
-      id: "account123",
-      name: "Test Account",
-      type: "user",
-      // Add other necessary properties
-    };
-
-    store.dispatch({
-      type: "[Account] Load Account Success",
-      account: mockAccount,
+  it("should select the auth user", (done) => {
+    component.authUser$.subscribe((authUser) => {
+      expect(authUser).toEqual(mockAuthUser);
+      done();
     });
-
-    fixture.detectChanges();
-
-    expect(component.account).toEqual(mockAccount);
   });
 
-  it("should determine isProfileOwner correctly", () => {
-    const mockAuthUser: AuthUser = {
-      uid: "account123",
-      email: "user@example.com",
-      displayName: "User Name",
-      photoURL: "http://example.com/photo.jpg",
-      emailVerified: true,
-    };
-
-    store.dispatch({
-      type: "[Auth] Sign In Success",
-      user: mockAuthUser,
+  it("should set isProfileOwner$ correctly", (done) => {
+    component.isProfileOwner$.subscribe((isOwner) => {
+      expect(isOwner).toBeTrue();
+      done();
     });
-
-    const mockAccount: Account = {
-      id: "account123",
-      name: "Test Account",
-      type: "user",
-      // Add other necessary properties
-    };
-
-    store.dispatch({
-      type: "[Account] Load Account Success",
-      account: mockAccount,
-    });
-
-    fixture.detectChanges();
-
-    expect(component.isProfileOwner).toBeTrue();
-
-    // Change account ID to test false case
-    const mockDifferentAccount: Account = {
-      id: "differentAccount",
-      name: "Different Account",
-      type: "user",
-      // Add other necessary properties
-    };
-
-    store.dispatch({
-      type: "[Account] Load Account Success",
-      account: mockDifferentAccount,
-    });
-
-    fixture.detectChanges();
-
-    expect(component.isProfileOwner).toBeFalse();
   });
 
-  it("should render app-profile and app-contact-information components", () => {
-    const mockAccount: Account = {
-      id: "account123",
-      name: "Test Account",
-      type: "user",
-      // Add other necessary properties
-    };
-
-    store.dispatch({
-      type: "[Account] Load Account Success",
-      account: mockAccount,
+  it("should redirect to the account page if not the profile owner", () => {
+    store.overrideSelector(selectAuthUser, {
+      uid: "different-id",
+      email: "",
+      displayName: "",
+      photoURL: "",
+      emailVerified: false,
     });
-
     fixture.detectChanges();
 
-    const profileComponent = fixture.debugElement.query(
-      By.directive(AppProfileComponent),
-    );
-    expect(profileComponent).toBeTruthy();
+    component.ngOnInit();
 
-    const contactInfoComponent = fixture.debugElement.query(
-      By.directive(AppContactInfoComponent),
-    );
-    expect(contactInfoComponent).toBeTruthy();
+    expect(router.navigate).toHaveBeenCalledWith(["/" + mockAccountId]);
   });
 
-  it("should display loading template when account data is not yet loaded", () => {
-    // Ensure account is not loaded
-    store.dispatch({
-      type: "[Account] Load Account",
-      accountId: "account123",
-    });
+  it("should set selectedForm on onItemSelected", () => {
+    component.onItemSelected("contact");
 
-    fixture.detectChanges();
-
-    const loadingElement = fixture.debugElement.query(By.css("ng-template"));
-    expect(loadingElement).toBeTruthy();
+    expect(component.selectedForm).toBe("contact");
   });
 });

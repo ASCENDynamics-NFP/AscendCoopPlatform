@@ -23,7 +23,6 @@ import {TranslateService} from "@ngx-translate/core";
 import {AuthUser} from "../../../../../../models/auth-user.model";
 import {Account} from "../../../../../../models/account.model";
 import {Store} from "@ngrx/store";
-import {AppState} from "../../../../../../state/reducers";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 
 @Component({
@@ -50,7 +49,7 @@ export class SettingsComponent implements OnChanges {
 
   constructor(
     private fb: FormBuilder,
-    private store: Store<AppState>,
+    private store: Store,
     private translateService: TranslateService,
   ) {
     this.settingsForm = this.fb.group({

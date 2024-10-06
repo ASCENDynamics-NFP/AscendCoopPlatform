@@ -18,54 +18,47 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 // src/app/modules/account/pages/settings/settings.page.ts
-import {Component, OnDestroy, OnInit} from "@angular/core";
-import {Subscription} from "rxjs";
+
+import {Component, OnInit} from "@angular/core";
+import {Observable} from "rxjs";
 import {AuthUser} from "../../../../models/auth-user.model";
 import {Account} from "../../../../models/account.model";
 import {Store} from "@ngrx/store";
-import {AppState} from "../../../../state/reducers";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
+import {switchMap, tap} from "rxjs/operators";
 
 @Component({
   selector: "app-settings",
   templateUrl: "./settings.page.html",
   styleUrls: ["./settings.page.scss"],
 })
-export class SettingsPage implements OnInit, OnDestroy {
-  private subscriptions = new Subscription();
-  authUser: AuthUser | null = null;
-  account?: Account;
+export class SettingsPage implements OnInit {
+  authUser$!: Observable<AuthUser | null>;
+  account$!: Observable<Account | undefined>;
 
-  constructor(private store: Store<AppState>) {}
+  constructor(private store: Store) {}
 
   ngOnInit() {
-    // Subscribe to Auth User
-    this.subscriptions.add(
-      this.store.select(selectAuthUser).subscribe((authUser) => {
-        this.authUser = authUser;
+    // Get the authUser observable
+    this.authUser$ = this.store.select(selectAuthUser);
 
-        if (this.authUser?.uid) {
-          // Dispatch action to load account
+    // Use switchMap to load the account and select the account observable based on authUser
+    this.account$ = this.authUser$.pipe(
+      tap((authUser) => {
+        if (authUser?.uid) {
           this.store.dispatch(
-            AccountActions.loadAccount({accountId: this.authUser.uid}),
-          );
-
-          // Subscribe to Account
-          this.subscriptions.add(
-            this.store
-              .select(selectAccountById(this.authUser.uid))
-              .subscribe((account) => {
-                this.account = account;
-              }),
+            AccountActions.loadAccount({accountId: authUser.uid}),
           );
         }
       }),
+      switchMap((authUser) => {
+        if (authUser?.uid) {
+          return this.store.select(selectAccountById(authUser.uid));
+        }
+        return [undefined];
+      }),
     );
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
   }
 }

@@ -17,98 +17,120 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {TestBed, ComponentFixture, waitForAsync} from "@angular/core/testing";
-import {IonicModule} from "@ionic/angular";
-import {ReactiveFormsModule, FormBuilder} from "@angular/forms";
-import {TranslateService} from "@ngx-translate/core";
-import {StoreService} from "../../../../core/services/store.service";
-import {SettingsComponent} from "./components/settings/settings.component";
-import {User} from "firebase/auth";
+// src/app/modules/account/pages/settings/settings.page.spec.ts
+
+import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {Store} from "@ngrx/store";
+import {SettingsPage} from "./settings.page";
+import {provideMockStore, MockStore} from "@ngrx/store/testing";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {selectAccountById} from "../../../../state/selectors/account.selectors";
+import * as AccountActions from "../../../../state/actions/account.actions";
+import {AuthUser} from "../../../../models/auth-user.model";
 import {Account} from "../../../../models/account.model";
+import {Timestamp} from "firebase/firestore";
 
-describe("SettingsComponent", () => {
-  let component: SettingsComponent;
-  let fixture: ComponentFixture<SettingsComponent>;
-  let storeService: jasmine.SpyObj<StoreService>;
-  let translateService: jasmine.SpyObj<TranslateService>;
+describe("SettingsPage", () => {
+  let component: SettingsPage;
+  let fixture: ComponentFixture<SettingsPage>;
+  let store: MockStore;
+  let dispatchSpy: jasmine.Spy;
 
-  beforeEach(waitForAsync(() => {
-    const storeServiceSpy = jasmine.createSpyObj("StoreService", ["updateDoc"]);
-    const translateServiceSpy = jasmine.createSpyObj("TranslateService", [
-      "use",
-    ]);
+  const mockAuthUser: AuthUser = {
+    uid: "12345",
+    email: "test@example.com",
+    displayName: null,
+    photoURL: null,
+    emailVerified: false,
+  };
 
-    TestBed.configureTestingModule({
-      imports: [IonicModule.forRoot(), ReactiveFormsModule],
-      declarations: [],
+  const mockAccount: Account = {
+    id: "12345",
+    name: "Test Account",
+    type: "user",
+    privacy: "public",
+    relatedAccounts: [],
+    tagline: "",
+    description: "",
+    iconImage: "",
+    heroImage: "",
+    legalAgreements: {
+      termsOfService: {
+        accepted: false,
+        datetime: new Timestamp(0, 0),
+        version: "",
+      },
+      privacyPolicy: {
+        accepted: false,
+        datetime: new Timestamp(0, 0),
+        version: "",
+      },
+    },
+    webLinks: [],
+    lastLoginAt: new Timestamp(0, 0),
+    email: "",
+  };
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [SettingsPage],
       providers: [
-        FormBuilder,
-        {provide: StoreService, useValue: storeServiceSpy},
-        {provide: TranslateService, useValue: translateServiceSpy},
+        provideMockStore({
+          selectors: [
+            {selector: selectAuthUser, value: mockAuthUser},
+            {selector: selectAccountById("12345"), value: mockAccount},
+          ],
+        }),
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(SettingsComponent);
+    store = TestBed.inject(Store) as MockStore;
+    dispatchSpy = spyOn(store, "dispatch");
+
+    fixture = TestBed.createComponent(SettingsPage);
     component = fixture.componentInstance;
-    storeService = TestBed.inject(StoreService) as jasmine.SpyObj<StoreService>;
-    translateService = TestBed.inject(
-      TranslateService,
-    ) as jasmine.SpyObj<TranslateService>;
+  });
 
-    fixture.detectChanges();
-  }));
-
-  it("should create the settings component", () => {
+  it("should create the component", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should initialize form with default values", () => {
-    expect(component.settingsForm.value).toEqual({
-      privacy: "public",
-      language: "en",
+  it("should select authUser$", (done) => {
+    component.authUser$.subscribe((authUser) => {
+      expect(authUser).toEqual(mockAuthUser);
+      done();
     });
   });
 
-  it("should update the form when account input changes", () => {
-    const account: Partial<Account> = {
-      privacy: "private",
-      accessibility: {preferredLanguage: "fr"},
-    };
-    component.account = account;
-    component.ngOnChanges();
-    expect(component.settingsForm.value).toEqual({
-      privacy: "private",
-      language: "fr",
+  it("should dispatch loadAccount action on authUser change", (done) => {
+    component.ngOnInit();
+
+    component.authUser$.subscribe(() => {
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        AccountActions.loadAccount({accountId: mockAuthUser.uid}),
+      );
+      done();
     });
   });
 
-  it("should emit language change event and call translate service on language change", () => {
-    spyOn(component.languageChange, "emit");
-    component.settingsForm.patchValue({language: "fr"});
-    component.onLanguageChange();
-    expect(translateService.use).toHaveBeenCalledWith("fr");
-    expect(component.languageChange.emit).toHaveBeenCalledWith("fr");
-  });
+  it("should select account$ based on authUser uid", (done) => {
+    component.ngOnInit();
 
-  it("should update settings in the store when updateSetting is called", () => {
-    const authUser: User = {uid: "12345"} as User;
-    component.authUser = authUser;
-    component.settingsForm.patchValue({privacy: "private", language: "fr"});
-    component.updateSetting();
-    expect(storeService.updateDoc).toHaveBeenCalledWith("accounts", {
-      id: "12345",
-      privacy: "private",
-      accessibility: {preferredLanguage: "fr"},
+    component.account$.subscribe((account) => {
+      expect(account).toEqual(mockAccount);
+      done();
     });
   });
 
-  it("should toggle dark theme", () => {
-    const event = {detail: {checked: true}} as CustomEvent;
-    component.toggleDarkTheme(event);
-    expect(document.body.classList.contains("dark")).toBe(true);
+  it("should not dispatch loadAccount if authUser is null", (done) => {
+    store.overrideSelector(selectAuthUser, null);
+    component.ngOnInit();
 
-    event.detail.checked = false;
-    component.toggleDarkTheme(event);
-    expect(document.body.classList.contains("dark")).toBe(false);
+    component.authUser$.subscribe(() => {
+      expect(dispatchSpy).not.toHaveBeenCalledWith(
+        AccountActions.loadAccount({accountId: mockAuthUser.uid}),
+      );
+      done();
+    });
   });
 });

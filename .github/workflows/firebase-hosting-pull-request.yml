@@ -74,12 +74,13 @@ jobs:
 
       # Install dependencies using npm ci
       - name: Install dependencies
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install --force
-          fi
+        run: npm install --force
+        # run: |
+        #   if [ -f package-lock.json ]; then
+        #     npm ci
+        #   else
+        #     npm install --force
+        #   fi
 
       # Build the project
       - name: Build project

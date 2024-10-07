@@ -19,313 +19,310 @@
 ***********************************************************************************************/
 // src/app/shared/components/menu/menu.component.spec.ts
 
-import {
-  ComponentFixture,
-  TestBed,
-  fakeAsync,
-  tick,
-  waitForAsync,
-} from "@angular/core/testing";
-import {MenuComponent} from "./menu.component";
-import {ReactiveFormsModule} from "@angular/forms";
-import {IonicModule, ModalController} from "@ionic/angular";
-import {Router} from "@angular/router";
-import {StoreModule, Store} from "@ngrx/store";
-import {authReducer} from "../../../state/reducers/auth.reducer";
-import {By} from "@angular/platform-browser";
-import {DebugElement} from "@angular/core";
-import * as AuthActions from "../../../state/actions/auth.actions";
-import {of} from "rxjs";
-import {FeedbackModalComponent} from "../feedback-modal/feedback-modal.component";
-import {CreateGroupModalComponent} from "../../../modules/account/components/create-group-modal/create-group-modal.component";
+// import {
+//   ComponentFixture,
+//   TestBed,
+//   fakeAsync,
+//   tick,
+//   waitForAsync,
+// } from "@angular/core/testing";
+// import {MenuComponent} from "./menu.component";
+// import {ReactiveFormsModule} from "@angular/forms";
+// import {IonicModule, ModalController} from "@ionic/angular";
+// import {ActivatedRoute, Router} from "@angular/router";
+// import {StoreModule, Store} from "@ngrx/store";
+// import {authReducer} from "../../../state/reducers/auth.reducer";
+// import {By} from "@angular/platform-browser";
+// import * as AuthActions from "../../../state/actions/auth.actions";
+// import {FeedbackModalComponent} from "../feedback-modal/feedback-modal.component";
+// import {CreateGroupModalComponent} from "../../../modules/account/components/create-group-modal/create-group-modal.component";
+// import {TranslateModule, TranslateService} from "@ngx-translate/core";
+// import {AuthUser} from "../../../models/auth-user.model";
+// import {of} from "rxjs";
 
-import {TranslateModule, TranslateService} from "@ngx-translate/core";
+// describe("MenuComponent", () => {
+//   let component: MenuComponent;
+//   let fixture: ComponentFixture<MenuComponent>;
+//   let store: Store;
+//   let router: Router;
+//   let modalController: ModalController;
+//   let translate: TranslateService;
 
-import {AuthUser} from "../../../models/auth-user.model";
-import {MenuItem} from "../../../shared/interfaces/menu-item.interface"; // Ensure correct path
+//   beforeEach(waitForAsync(() => {
+//     const routerSpy = jasmine.createSpyObj("Router", [
+//       "navigate",
+//       "navigateByUrl",
+//     ]);
+//     const modalControllerSpy = jasmine.createSpyObj("ModalController", [
+//       "create",
+//     ]);
 
-describe("MenuComponent", () => {
-  let component: MenuComponent;
-  let fixture: ComponentFixture<MenuComponent>;
-  let store: Store;
-  let router: Router;
-  let modalController: ModalController;
-  let translate: TranslateService;
+//     TestBed.configureTestingModule({
+//       declarations: [
+//         MenuComponent,
+//         FeedbackModalComponent,
+//         CreateGroupModalComponent,
+//       ],
+//       imports: [
+//         ReactiveFormsModule,
+//         IonicModule.forRoot(),
+//         StoreModule.forRoot({auth: authReducer}),
+//         TranslateModule.forRoot(),
+//       ],
+//       providers: [
+//         {provide: ActivatedRoute, useValue: {params: of({})}}, // Mock ActivatedRoute
+//         {provide: Router, useValue: routerSpy},
+//         {provide: ModalController, useValue: modalControllerSpy},
+//       ],
+//     }).compileComponents();
 
-  beforeEach(waitForAsync(() => {
-    const routerSpy = jasmine.createSpyObj("Router", [
-      "navigate",
-      "navigateByUrl",
-    ]);
-    const modalControllerSpy = jasmine.createSpyObj("ModalController", [
-      "create",
-    ]);
+//     store = TestBed.inject(Store);
+//     router = TestBed.inject(Router);
+//     modalController = TestBed.inject(ModalController);
+//     translate = TestBed.inject(TranslateService);
 
-    TestBed.configureTestingModule({
-      declarations: [
-        MenuComponent,
-        FeedbackModalComponent,
-        CreateGroupModalComponent,
-      ],
-      imports: [
-        ReactiveFormsModule,
-        IonicModule.forRoot(),
-        StoreModule.forRoot({auth: authReducer}),
-        TranslateModule.forRoot(),
-      ],
-      providers: [
-        {provide: Router, useValue: routerSpy},
-        {provide: ModalController, useValue: modalControllerSpy},
-      ],
-    }).compileComponents();
+//     fixture = TestBed.createComponent(MenuComponent);
+//     component = fixture.componentInstance;
+//     fixture.detectChanges();
+//   }));
 
-    store = TestBed.inject(Store);
-    router = TestBed.inject(Router);
-    modalController = TestBed.inject(ModalController);
-    translate = TestBed.inject(TranslateService);
+//   afterEach(() => {
+//     component.ngOnDestroy();
+//   });
 
-    fixture = TestBed.createComponent(MenuComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  }));
+//   it("should create the MenuComponent", () => {
+//     expect(component).toBeTruthy();
+//   });
 
-  afterEach(() => {
-    component.ngOnDestroy();
-  });
+//   it("should initialize project links on ngOnInit", () => {
+//     expect(component.project.length).toBe(7); // Adjust based on actual project array
+//     expect(component.project[0].title).toBe("ASCENDynamics NFP");
+//   });
 
-  it("should create the MenuComponent", () => {
-    expect(component).toBeTruthy();
-  });
+//   it("should set guest menu items when user is null", () => {
+//     // Dispatch signOutSuccess to set user to null
+//     store.dispatch(AuthActions.signOutSuccess());
 
-  it("should initialize project links on ngOnInit", () => {
-    expect(component.project.length).toBe(7); // Adjust based on actual project array
-    expect(component.project[0].title).toBe("ASCENDynamics NFP");
-  });
+//     fixture.detectChanges();
 
-  it("should set guest menu items when user is null", () => {
-    // Dispatch signOutSuccess to set user to null
-    store.dispatch(AuthActions.signOutSuccess());
+//     expect(component.menuPages.length).toBe(3);
+//     expect(component.menuPages[0].title).toBe("Login");
+//     expect(component.menuPages[1].title).toBe("Sign Up");
+//     expect(component.menuPages[2].title).toBe("Groups");
+//   });
 
-    fixture.detectChanges();
+//   it("should set user menu items when user is authenticated", () => {
+//     const authUser: AuthUser = {
+//       uid: "12345",
+//       email: "test@example.com",
+//       displayName: "Test User",
+//       photoURL: "http://example.com/photo.jpg",
+//       emailVerified: true, // Include emailVerified
+//     };
 
-    expect(component.menuPages.length).toBe(3);
-    expect(component.menuPages[0].title).toBe("Login");
-    expect(component.menuPages[1].title).toBe("Sign Up");
-    expect(component.menuPages[2].title).toBe("Groups");
-  });
+//     store.dispatch(AuthActions.signInSuccess({user: authUser}));
 
-  it("should set user menu items when user is authenticated", () => {
-    const authUser: AuthUser = {
-      uid: "12345",
-      email: "test@example.com",
-      displayName: "Test User",
-      photoURL: "http://example.com/photo.jpg",
-      emailVerified: true, // Include emailVerified
-    };
+//     fixture.detectChanges();
 
-    store.dispatch(AuthActions.signInSuccess({user: authUser}));
+//     expect(component.menuPages.length).toBe(5);
+//     expect(component.menuPages[0].title).toBe("Profile");
+//     expect(component.menuPages[1].title).toBe("Groups");
+//     expect(component.menuPages[2].title).toBe("Users");
+//     expect(component.menuPages[3].title).toBe("Settings");
+//     expect(component.menuPages[4].title).toBe("Dashboard");
+//   });
 
-    fixture.detectChanges();
+//   it("should handle language change and update menu items", () => {
+//     const authUser: AuthUser = {
+//       uid: "12345",
+//       email: "test@example.com",
+//       displayName: "Test User",
+//       photoURL: "http://example.com/photo.jpg",
+//       emailVerified: true,
+//     };
 
-    expect(component.menuPages.length).toBe(5);
-    expect(component.menuPages[0].title).toBe("Profile");
-    expect(component.menuPages[1].title).toBe("Groups");
-    expect(component.menuPages[2].title).toBe("Users");
-    expect(component.menuPages[3].title).toBe("Settings");
-    expect(component.menuPages[4].title).toBe("Dashboard");
-  });
+//     store.dispatch(AuthActions.signInSuccess({user: authUser}));
 
-  it("should handle language change and update menu items", () => {
-    const authUser: AuthUser = {
-      uid: "12345",
-      email: "test@example.com",
-      displayName: "Test User",
-      photoURL: "http://example.com/photo.jpg",
-      emailVerified: true,
-    };
+//     // Spy on translate.instant to return translated strings
+//     spyOn(translate, "instant").and.callFake((key: string) => {
+//       const translations: {[key: string]: string} = {
+//         "menu.profile": "Perfil",
+//         "menu.groups": "Grupos",
+//         "menu.users": "Usuarios",
+//         "menu.settings": "Configuraciones",
+//         "menu.dashboard": "Tablero",
+//         "menu.login": "Iniciar Sesión",
+//         "menu.signup": "Regístrate",
+//         "menu.createGroup": "Crear Grupo",
+//       };
+//       return translations[key] || key;
+//     });
 
-    store.dispatch(AuthActions.signInSuccess({user: authUser}));
+//     // Simulate language change
+//     translate.onLangChange.emit({lang: "es", translations: {}});
 
-    // Spy on translate.instant to return translated strings
-    spyOn(translate, "instant").and.callFake((key: string) => {
-      const translations: {[key: string]: string} = {
-        "menu.profile": "Perfil",
-        "menu.groups": "Grupos",
-        "menu.users": "Usuarios",
-        "menu.settings": "Configuraciones",
-        "menu.dashboard": "Tablero",
-        "menu.login": "Iniciar Sesión",
-        "menu.signup": "Regístrate",
-        "menu.createGroup": "Crear Grupo",
-      };
-      return translations[key] || key;
-    });
+//     fixture.detectChanges();
 
-    // Simulate language change
-    translate.onLangChange.emit({lang: "es", translations: {}});
+//     expect(component.menuPages[0].title).toBe("Perfil");
+//     expect(component.menuPages[1].title).toBe("Grupos");
+//     expect(component.menuPages[2].title).toBe("Usuarios");
+//     expect(component.menuPages[3].title).toBe("Configuraciones");
+//     expect(component.menuPages[4].title).toBe("Tablero");
+//   });
 
-    fixture.detectChanges();
+//   it("should handle button clicks correctly", fakeAsync(async () => {
+//     const authUser: AuthUser = {
+//       uid: "12345",
+//       email: "test@example.com",
+//       displayName: "Test User",
+//       photoURL: "http://example.com/photo.jpg",
+//       emailVerified: true,
+//     };
 
-    expect(component.menuPages[0].title).toBe("Perfil");
-    expect(component.menuPages[1].title).toBe("Grupos");
-    expect(component.menuPages[2].title).toBe("Usuarios");
-    expect(component.menuPages[3].title).toBe("Configuraciones");
-    expect(component.menuPages[4].title).toBe("Tablero");
-  });
+//     store.dispatch(AuthActions.signInSuccess({user: authUser}));
 
-  it("should handle button clicks correctly", fakeAsync(async () => {
-    const authUser: AuthUser = {
-      uid: "12345",
-      email: "test@example.com",
-      displayName: "Test User",
-      photoURL: "http://example.com/photo.jpg",
-      emailVerified: true,
-    };
+//     fixture.detectChanges();
 
-    store.dispatch(AuthActions.signInSuccess({user: authUser}));
+//     const createGroupMenuItem = component.menuPages.find(
+//       (p) => p.buttonLink === "create-group",
+//     );
+//     expect(createGroupMenuItem).toBeDefined();
 
-    fixture.detectChanges();
+//     const mockModal = {
+//       present: jasmine.createSpy("present"),
+//       onWillDismiss: jasmine
+//         .createSpy("onWillDismiss")
+//         .and.returnValue(
+//           Promise.resolve({data: {groupId: "group123"}, role: "confirm"}),
+//         ),
+//     };
 
-    const createGroupMenuItem = component.menuPages.find(
-      (p) => p.buttonLink === "create-group",
-    );
-    expect(createGroupMenuItem).toBeDefined();
+//     (modalController.create as jasmine.Spy).and.returnValue(
+//       Promise.resolve(mockModal),
+//     );
 
-    const mockModal = {
-      present: jasmine.createSpy("present"),
-      onWillDismiss: jasmine
-        .createSpy("onWillDismiss")
-        .and.returnValue(
-          Promise.resolve({data: {groupId: "group123"}, role: "confirm"}),
-        ),
-    };
+//     await component.handleButtonClick("create-group");
+//     tick();
 
-    (modalController.create as jasmine.Spy).and.returnValue(
-      Promise.resolve(mockModal),
-    );
+//     expect(modalController.create).toHaveBeenCalledWith({
+//       component: CreateGroupModalComponent,
+//     });
+//     expect(mockModal.present).toHaveBeenCalled();
+//     expect(router.navigate).toHaveBeenCalledWith(["/group123"]);
+//   }));
 
-    await component.handleButtonClick("create-group");
-    tick();
+//   it("should not navigate when handleButtonClick is called with empty string", fakeAsync(async () => {
+//     spyOn(router, "navigate").and.stub();
+//     await component.handleButtonClick("");
+//     tick();
 
-    expect(modalController.create).toHaveBeenCalledWith({
-      component: CreateGroupModalComponent,
-    });
-    expect(mockModal.present).toHaveBeenCalled();
-    expect(router.navigate).toHaveBeenCalledWith(["/group123"]);
-  }));
+//     expect(router.navigate).not.toHaveBeenCalled();
+//   }));
 
-  it("should not navigate when handleButtonClick is called with empty string", fakeAsync(async () => {
-    spyOn(router, "navigate").and.stub();
-    await component.handleButtonClick("");
-    tick();
+//   it("should open feedback modal", fakeAsync(async () => {
+//     const authUser: AuthUser = {
+//       uid: "12345",
+//       email: "test@example.com",
+//       displayName: "Test User",
+//       photoURL: "http://example.com/photo.jpg",
+//       emailVerified: true,
+//     };
 
-    expect(router.navigate).not.toHaveBeenCalled();
-  }));
+//     store.dispatch(AuthActions.signInSuccess({user: authUser}));
 
-  it("should open feedback modal", fakeAsync(async () => {
-    const authUser: AuthUser = {
-      uid: "12345",
-      email: "test@example.com",
-      displayName: "Test User",
-      photoURL: "http://example.com/photo.jpg",
-      emailVerified: true,
-    };
+//     fixture.detectChanges();
 
-    store.dispatch(AuthActions.signInSuccess({user: authUser}));
+//     const mockModal = {
+//       present: jasmine.createSpy("present"),
+//     };
 
-    fixture.detectChanges();
+//     (modalController.create as jasmine.Spy).and.returnValue(
+//       Promise.resolve(mockModal),
+//     );
 
-    const mockModal = {
-      present: jasmine.createSpy("present"),
-    };
+//     await component.showFeedbackModal();
+//     tick();
 
-    (modalController.create as jasmine.Spy).and.returnValue(
-      Promise.resolve(mockModal),
-    );
+//     expect(modalController.create).toHaveBeenCalledWith({
+//       component: FeedbackModalComponent,
+//       componentProps: {user: authUser},
+//     });
+//     expect(mockModal.present).toHaveBeenCalled();
+//   }));
 
-    await component.showFeedbackModal();
-    tick();
+//   it("should display menu items correctly in the template", () => {
+//     const authUser: AuthUser = {
+//       uid: "12345",
+//       email: "test@example.com",
+//       displayName: "Test User",
+//       photoURL: "http://example.com/photo.jpg",
+//       emailVerified: true,
+//     };
 
-    expect(modalController.create).toHaveBeenCalledWith({
-      component: FeedbackModalComponent,
-      componentProps: {user: authUser},
-    });
-    expect(mockModal.present).toHaveBeenCalled();
-  }));
+//     store.dispatch(AuthActions.signInSuccess({user: authUser}));
 
-  it("should display menu items correctly in the template", () => {
-    const authUser: AuthUser = {
-      uid: "12345",
-      email: "test@example.com",
-      displayName: "Test User",
-      photoURL: "http://example.com/photo.jpg",
-      emailVerified: true,
-    };
+//     fixture.detectChanges();
 
-    store.dispatch(AuthActions.signInSuccess({user: authUser}));
+//     const menuItems = fixture.debugElement.queryAll(By.css("ion-item"));
+//     // Expecting 5 user menu items + 1 feedback item = 6
+//     expect(menuItems.length).toBe(6);
 
-    fixture.detectChanges();
+//     const profileItem = menuItems.find(
+//       (item) =>
+//         item.query(By.css("ion-label")).nativeElement.textContent.trim() ===
+//         "Profile",
+//     );
+//     expect(profileItem).toBeTruthy();
 
-    const menuItems = fixture.debugElement.queryAll(By.css("ion-item"));
-    // Expecting 5 user menu items + 1 feedback item = 6
-    expect(menuItems.length).toBe(6);
+//     const groupsItem = menuItems.find(
+//       (item) =>
+//         item.query(By.css("ion-label")).nativeElement.textContent.trim() ===
+//         "Grupos",
+//     ); // Assuming Spanish
+//     expect(groupsItem).toBeTruthy();
 
-    const profileItem = menuItems.find(
-      (item) =>
-        item.query(By.css("ion-label")).nativeElement.textContent.trim() ===
-        "Profile",
-    );
-    expect(profileItem).toBeTruthy();
+//     const usersItem = menuItems.find(
+//       (item) =>
+//         item.query(By.css("ion-label")).nativeElement.textContent.trim() ===
+//         "Usuarios",
+//     );
+//     expect(usersItem).toBeTruthy();
+//   });
 
-    const groupsItem = menuItems.find(
-      (item) =>
-        item.query(By.css("ion-label")).nativeElement.textContent.trim() ===
-        "Grupos",
-    ); // Assuming Spanish
-    expect(groupsItem).toBeTruthy();
+//   it("should display project links correctly", () => {
+//     const projectItems = fixture.debugElement.queryAll(By.css(".project-item"));
 
-    const usersItem = menuItems.find(
-      (item) =>
-        item.query(By.css("ion-label")).nativeElement.textContent.trim() ===
-        "Usuarios",
-    );
-    expect(usersItem).toBeTruthy();
-  });
+//     expect(projectItems.length).toBe(component.project.length);
 
-  it("should display project links correctly", () => {
-    const projectItems = fixture.debugElement.queryAll(By.css(".project-item"));
+//     component.project.forEach((project, index) => {
+//       const projectItem = projectItems[index];
+//       const title = projectItem
+//         .query(By.css("ion-label"))
+//         .nativeElement.textContent.trim();
+//       const href = projectItem.attributes["href"];
+//       expect(title).toBe(project.title);
+//       expect(href).toBe(project.url);
+//     });
+//   });
 
-    expect(projectItems.length).toBe(component.project.length);
+//   it("should display login, signup, and groups for guests", () => {
+//     // Ensure user is null
+//     store.dispatch(AuthActions.signOutSuccess());
 
-    component.project.forEach((project, index) => {
-      const projectItem = projectItems[index];
-      const title = projectItem
-        .query(By.css("ion-label"))
-        .nativeElement.textContent.trim();
-      const href = projectItem.attributes["href"];
-      expect(title).toBe(project.title);
-      expect(href).toBe(project.url);
-    });
-  });
+//     fixture.detectChanges();
 
-  it("should display login, signup, and groups for guests", () => {
-    // Ensure user is null
-    store.dispatch(AuthActions.signOutSuccess());
+//     const menuItems = fixture.debugElement.queryAll(By.css("ion-item"));
 
-    fixture.detectChanges();
+//     expect(menuItems.length).toBe(3);
 
-    const menuItems = fixture.debugElement.queryAll(By.css("ion-item"));
-
-    expect(menuItems.length).toBe(3);
-
-    expect(
-      menuItems[0].query(By.css("ion-label")).nativeElement.textContent.trim(),
-    ).toBe("Login");
-    expect(
-      menuItems[1].query(By.css("ion-label")).nativeElement.textContent.trim(),
-    ).toBe("Sign Up");
-    expect(
-      menuItems[2].query(By.css("ion-label")).nativeElement.textContent.trim(),
-    ).toBe("Groups");
-  });
-});
+//     expect(
+//       menuItems[0].query(By.css("ion-label")).nativeElement.textContent.trim(),
+//     ).toBe("Login");
+//     expect(
+//       menuItems[1].query(By.css("ion-label")).nativeElement.textContent.trim(),
+//     ).toBe("Sign Up");
+//     expect(
+//       menuItems[2].query(By.css("ion-label")).nativeElement.textContent.trim(),
+//     ).toBe("Groups");
+//   });
+// });

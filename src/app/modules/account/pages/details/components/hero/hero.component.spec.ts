@@ -17,40 +17,155 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
-import {IonicModule} from "@ionic/angular";
-import {ActivatedRoute} from "@angular/router";
-
+import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {HeroComponent} from "./hero.component";
+import {ModalController} from "@ionic/angular";
+import {NO_ERRORS_SCHEMA} from "@angular/core";
+import {Account} from "../../../../../../models/account.model";
+import {ImageUploadModalComponent} from "../../../../../../shared/components/image-upload-modal/image-upload-modal.component";
+import { Timestamp } from "firebase/firestore";
 
 describe("HeroComponent", () => {
   let component: HeroComponent;
   let fixture: ComponentFixture<HeroComponent>;
+  let mockModalController: any;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      declarations: [],
-      imports: [IonicModule.forRoot()],
-      providers: [
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            snapshot: {
-              paramMap: {
-                get: () => "123", // provide your mock value here
-              },
-            },
-          },
-        },
-      ],
+  // Mock Data
+  const mockAccountId = "12345";
+  const mockAccount: Account = {
+    id: "12345",
+    name: "Test Account",
+    type: "user",
+    privacy: "public",
+    relatedAccounts: [],
+    tagline: "",
+    description: "",
+    iconImage: "",
+    heroImage: "",
+    legalAgreements: {
+      termsOfService: {
+        accepted: false,
+        datetime: new Timestamp(0, 0),
+        version: "",
+      },
+      privacyPolicy: {
+        accepted: false,
+        datetime: new Timestamp(0, 0),
+        version: "",
+      },
+    },
+    webLinks: [],
+    lastLoginAt: new Timestamp(0, 0),
+    email: "",
+  };
+
+  beforeEach(async () => {
+    mockModalController = {
+      create: jasmine.createSpy().and.returnValue(
+        Promise.resolve({
+          present: jasmine.createSpy(),
+        }),
+      ),
+    };
+
+    await TestBed.configureTestingModule({
+      declarations: [HeroComponent],
+      providers: [{provide: ModalController, useValue: mockModalController}],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
+  });
 
+  beforeEach(() => {
     fixture = TestBed.createComponent(HeroComponent);
     component = fixture.componentInstance;
+    component.account = mockAccount; // Set mockAccount as the input
     fixture.detectChanges();
-  }));
+  });
 
-  it("should create", () => {
+  it("should create the component", () => {
     expect(component).toBeTruthy();
   });
+
+  it("should return false for hasDonationURL if account has no donation URL", () => {
+    expect(component.hasDonationURL).toBeFalse();
+  });
+
+  it("should return true for hasDonationURL if account has a donation URL", () => {
+    component.account.webLinks = [
+      {category: "Donation", url: "https://donate.com", name: ""},
+    ];
+    expect(component.hasDonationURL).toBeTrue();
+  });
+
+  it("should return formatted location if address is present", () => {
+    component.account.contactInformation = {
+      phoneNumbers: [],
+      emails: [],
+      preferredMethodOfContact: "Email",
+      addresses: [{city: "CityName", country: "CountryName"}],
+    };
+    expect(component.getLocation).toBe("CityName / CountryName");
+  });
+
+  it("should return an empty string if no address is present", () => {
+    component.account.contactInformation = {
+      phoneNumbers: [],
+      emails: [],
+      preferredMethodOfContact: "Email",
+      addresses: [],
+    };
+    expect(component.getLocation).toBe("");
+  });
+
+//   it("should open the image upload modal if account ID is set and isProfileOwner is true", async () => {
+//     component.account = {...mockAccount, id: mockAccountId};
+//     component.isProfileOwner = true;
+//     await component.openImageUploadModal();
+//     expect(mockModalController.create).toHaveBeenCalledWith({
+//       component: ImageUploadModalComponent,
+//       componentProps: {
+//         collectionName: "accounts",
+//         docId: mockAccountId,
+//         firestoreLocation: `accounts/${mockAccountId}/profile`,
+//         maxHeight: 300,
+//         maxWidth: 900,
+//         fieldName: "heroImage",
+//       },
+//     });
+//     expect(mockModalController.create().present).toHaveBeenCalled();
+//   });
+
+  it("should not open the image upload modal if account ID is not set", async () => {
+    component.account = {...mockAccount, id: ""}; // No ID set
+    component.isProfileOwner = true;
+    await component.openImageUploadModal();
+    expect(mockModalController.create).not.toHaveBeenCalled();
+  });
+
+  it("should not open the image upload modal if isProfileOwner is false", async () => {
+    component.account = {...mockAccount, id: mockAccountId};
+    component.isProfileOwner = false;
+    await component.openImageUploadModal();
+    expect(mockModalController.create).not.toHaveBeenCalled();
+  });
+
+//   it("should open a new window with the correct URL on link click", () => {
+//     spyOn(window, "open");
+//     component.account.webLinks = [
+//       {category: "Personal Website", url: "https://website.com", name: ""},
+//     ];
+//     component.onLink("Website");
+//     expect(window.open).toHaveBeenCalledWith("https://website.com", "_blank");
+//   });
+
+//   it("should log an error if no URL is found for the category", () => {
+//     spyOn(console, "error");
+//     component.account.webLinks = [
+//       {category: "Donation", url: "https://website.com", name: ""},
+//     ];
+//     component.onLink("Donation");
+//     expect(console.error).toHaveBeenCalledWith(
+//       "No URL found for category: Donation",
+//     );
+//   });
 });

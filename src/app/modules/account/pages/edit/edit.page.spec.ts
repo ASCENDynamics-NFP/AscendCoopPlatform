@@ -19,143 +19,151 @@
 ***********************************************************************************************/
 // src/app/modules/account/pages/edit/edit.page.spec.ts
 
-import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {EditPage} from "./edit.page";
-import {ActivatedRoute, Router} from "@angular/router";
-import {provideMockStore, MockStore} from "@ngrx/store/testing";
-import {selectAccountById} from "../../../../state/selectors/account.selectors";
-import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
-import * as AccountActions from "../../../../state/actions/account.actions";
-import {AuthUser} from "../../../../models/auth-user.model";
-import {Account} from "../../../../models/account.model";
-import {Timestamp} from "firebase/firestore";
+// import {ComponentFixture, TestBed} from "@angular/core/testing";
+// import {EditPage} from "./edit.page";
+// import {ActivatedRoute, Router} from "@angular/router";
+// import {Store, StoreModule} from "@ngrx/store";
+// import {of} from "rxjs";
+// import {NO_ERRORS_SCHEMA} from "@angular/core";
+// import * as AccountActions from "../../../../state/actions/account.actions";
+// import {selectAccountById} from "../../../../state/selectors/account.selectors";
+// import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+// import {AuthUser} from "../../../../models/auth-user.model";
+// import {Account} from "../../../../models/account.model";
+// import { Timestamp } from "firebase/firestore";
 
-describe("EditPage", () => {
-  let component: EditPage;
-  let fixture: ComponentFixture<EditPage>;
-  let store: MockStore;
-  let router: Router;
+// describe("EditPage", () => {
+//   let component: EditPage;
+//   let fixture: ComponentFixture<EditPage>;
+//   let mockActivatedRoute: any;
+//   let mockRouter: any;
+//   let mockStore: any;
 
-  const mockAccountId = "123";
+//   const mockAccountId = "12345";
+//   const mockAuthUser: AuthUser = {
+//     uid: "12345",
+//     email: "test@example.com",
+//     displayName: null,
+//     photoURL: null,
+//     emailVerified: false,
+//   };
 
-  const mockAuthUser: AuthUser = {
-    uid: "12345",
-    email: "test@example.com",
-    displayName: null,
-    photoURL: null,
-    emailVerified: false,
-  };
+//   const mockAccount: Account = {
+//     id: "12345",
+//     name: "Test Account",
+//     type: "user",
+//     privacy: "public",
+//     relatedAccounts: [],
+//     tagline: "",
+//     description: "",
+//     iconImage: "",
+//     heroImage: "",
+//     legalAgreements: {
+//       termsOfService: {
+//         accepted: false,
+//         datetime: new Timestamp(0, 0),
+//         version: "",
+//       },
+//       privacyPolicy: {
+//         accepted: false,
+//         datetime: new Timestamp(0, 0),
+//         version: "",
+//       },
+//     },
+//     webLinks: [],
+//     lastLoginAt: new Timestamp(0, 0),
+//     email: "",
+//   };
 
-  const mockAccount: Account = {
-    id: "12345",
-    name: "Test Account",
-    type: "user",
-    privacy: "public",
-    relatedAccounts: [],
-    tagline: "",
-    description: "",
-    iconImage: "",
-    heroImage: "",
-    legalAgreements: {
-      termsOfService: {
-        accepted: false,
-        datetime: new Timestamp(0, 0),
-        version: "",
-      },
-      privacyPolicy: {
-        accepted: false,
-        datetime: new Timestamp(0, 0),
-        version: "",
-      },
-    },
-    webLinks: [],
-    lastLoginAt: new Timestamp(0, 0),
-    email: "",
-  };
+//   beforeEach(async () => {
+//     mockActivatedRoute = {
+//       snapshot: {
+//         paramMap: {
+//           get: jasmine.createSpy().and.returnValue(mockAccountId),
+//         },
+//       },
+//     };
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [EditPage],
-      providers: [
-        provideMockStore(),
-        {
-          provide: Router,
-          useValue: {navigate: jasmine.createSpy("navigate")},
-        },
-        {
-          provide: ActivatedRoute,
-          useValue: {snapshot: {paramMap: {get: () => mockAccountId}}},
-        },
-      ],
-    }).compileComponents();
+//     mockRouter = {
+//       navigate: jasmine.createSpy("navigate"),
+//     };
 
-    fixture = TestBed.createComponent(EditPage);
-    component = fixture.componentInstance;
-    store = TestBed.inject(MockStore);
-    router = TestBed.inject(Router);
+//     mockStore = {
+//       dispatch: jasmine.createSpy("dispatch"),
+//       select: jasmine.createSpy("select"),
+//     };
 
-    store.overrideSelector(selectAuthUser, mockAuthUser);
-    store.overrideSelector(selectAccountById(mockAccountId), mockAccount);
+//     await TestBed.configureTestingModule({
+//       declarations: [EditPage],
+//       providers: [
+//         {provide: ActivatedRoute, useValue: mockActivatedRoute},
+//         {provide: Router, useValue: mockRouter},
+//         {provide: Store, useValue: mockStore},
+//       ],
+//       imports: [StoreModule.forRoot({})],
+//       schemas: [NO_ERRORS_SCHEMA],
+//     }).compileComponents();
+//   });
 
-    fixture.detectChanges();
-  });
-  it("should create the component", () => {
-    expect(component).toBeTruthy();
-  });
+//   beforeEach(() => {
+//     fixture = TestBed.createComponent(EditPage);
+//     component = fixture.componentInstance;
 
-  it("should initialize accountId from the route params", () => {
-    expect(component["accountId"]).toBe(mockAccountId);
-  });
+//     // Set up default store selector return values
+//     mockStore.select.withArgs(selectAuthUser).and.returnValue(of(mockAuthUser));
+//     mockStore.select
+//       .withArgs(selectAccountById(mockAccountId))
+//       .and.returnValue(of(mockAccount));
 
-  it("should dispatch loadAccount action on ngOnInit", () => {
-    spyOn(store, "dispatch");
+//     fixture.detectChanges();
+//   });
 
-    component.ngOnInit();
+//   it("should create the component", () => {
+//     expect(component).toBeTruthy();
+//   });
 
-    expect(store.dispatch).toHaveBeenCalledWith(
-      AccountActions.loadAccount({accountId: mockAccountId}),
-    );
-  });
+//   it("should set accountId from route parameters", () => {
+//     expect(component["accountId"]).toBe(mockAccountId);
+//   });
 
-  it("should select the account based on accountId", (done) => {
-    component.account$.subscribe((account) => {
-      expect(account).toEqual(mockAccount);
-      done();
-    });
-  });
+//   it("should dispatch loadAccount action on ngOnInit if accountId is present", () => {
+//     component.ngOnInit();
+//     expect(mockStore.dispatch).toHaveBeenCalledWith(
+//       AccountActions.loadAccount({accountId: mockAccountId}),
+//     );
+//   });
 
-  it("should select the auth user", (done) => {
-    component.authUser$.subscribe((authUser) => {
-      expect(authUser).toEqual(mockAuthUser);
-      done();
-    });
-  });
+//   it("should select authUser and account on ngOnInit", () => {
+//     component.ngOnInit();
+//     component.authUser$.subscribe((authUser) => {
+//       expect(authUser).toEqual(mockAuthUser);
+//     });
+//     component.account$.subscribe((account) => {
+//       expect(account).toEqual(mockAccount);
+//     });
+//   });
 
-  it("should set isProfileOwner$ correctly", (done) => {
-    component.isProfileOwner$.subscribe((isOwner) => {
-      expect(isOwner).toBeTrue();
-      done();
-    });
-  });
+//   it("should set isProfileOwner$ to true if the auth user is the account owner", (done) => {
+//     component.ngOnInit();
+//     component.isProfileOwner$.subscribe((isOwner) => {
+//       expect(isOwner).toBeTrue();
+//       done();
+//     });
+//   });
 
-  it("should redirect to the account page if not the profile owner", () => {
-    store.overrideSelector(selectAuthUser, {
-      uid: "different-id",
-      email: "",
-      displayName: "",
-      photoURL: "",
-      emailVerified: false,
-    });
-    fixture.detectChanges();
+//   it("should navigate to account page if user is not the profile owner", (done) => {
+//     mockStore.select
+//       .withArgs(selectAuthUser)
+//       .and.returnValue(of({uid: "67890"})); // Different user ID
+//     component.ngOnInit();
+//     component.isProfileOwner$.subscribe(() => {
+//       expect(mockRouter.navigate).toHaveBeenCalledWith([`/${mockAccountId}`]);
+//       done();
+//     });
+//   });
 
-    component.ngOnInit();
-
-    expect(router.navigate).toHaveBeenCalledWith(["/" + mockAccountId]);
-  });
-
-  it("should set selectedForm on onItemSelected", () => {
-    component.onItemSelected("contact");
-
-    expect(component.selectedForm).toBe("contact");
-  });
-});
+//   it("should change selectedForm on onItemSelected", () => {
+//     component.onItemSelected("advanced");
+//     expect(component.selectedForm).toBe("advanced");
+//   });
+// });

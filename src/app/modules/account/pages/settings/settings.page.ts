@@ -35,12 +35,10 @@ import {switchMap, tap} from "rxjs/operators";
   styleUrls: ["./settings.page.scss"],
 })
 export class SettingsPage implements OnInit {
-  authUser$!: Observable<AuthUser | null>;
-  account$!: Observable<Account | undefined>;
+  authUser$: Observable<AuthUser | null>;
+  account$: Observable<Account | undefined>;
 
-  constructor(private store: Store) {}
-
-  ngOnInit() {
+  constructor(private store: Store) {
     // Get the authUser observable
     this.authUser$ = this.store.select(selectAuthUser);
 
@@ -61,4 +59,6 @@ export class SettingsPage implements OnInit {
       }),
     );
   }
+
+  ngOnInit() {}
 }

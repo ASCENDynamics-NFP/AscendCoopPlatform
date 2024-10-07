@@ -23,7 +23,6 @@ import {Subscription, combineLatest} from "rxjs";
 import {Account} from "../../../models/account.model";
 import {UserMenuComponent} from "../user-menu/user-menu.component";
 import {Store} from "@ngrx/store";
-import {AppState} from "../../../state/reducers";
 import {selectAuthUser} from "../../../state/selectors/auth.selectors";
 import {selectAccounts} from "../../../state/selectors/account.selectors";
 
@@ -40,7 +39,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
 
   constructor(
     private popoverController: PopoverController,
-    private store: Store<AppState>,
+    private store: Store,
   ) {}
 
   get image() {

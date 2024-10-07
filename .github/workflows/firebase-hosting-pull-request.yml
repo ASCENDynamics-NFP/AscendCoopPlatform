@@ -117,7 +117,8 @@ jobs:
 
       # Install dependencies using npm ci
       - name: Install dependencies
-        run: npm ci
+        run: npm install --force
+        # run: npm ci
 
       # Build the project
       - name: Build project

@@ -17,23 +17,29 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {NgModule} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {IonicModule} from "@ionic/angular";
-import {RouterModule} from "@angular/router";
-import {LoginPage} from "./login.page";
-import {ReactiveFormsModule} from "@angular/forms";
-import {TranslateModule} from "@ngx-translate/core";
+// other-id.pipe.ts
 
-@NgModule({
-  declarations: [LoginPage],
-  imports: [
-    CommonModule,
-    IonicModule,
-    RouterModule.forChild([{path: "", component: LoginPage}]),
-    ReactiveFormsModule,
-    TranslateModule,
-  ],
-  exports: [LoginPage],
+import {Pipe, PipeTransform} from "@angular/core";
+import {RelatedAccount} from "../../models/account.model";
+
+@Pipe({
+  name: "otherId",
 })
-export class LoginPageModule {}
+export class OtherIdPipe implements PipeTransform {
+  transform(
+    relatedAccount: Partial<RelatedAccount>,
+    accountId: string | null,
+  ): string | null {
+    if (!accountId) return null;
+    if (
+      relatedAccount.initiatorId &&
+      relatedAccount.initiatorId !== accountId
+    ) {
+      return relatedAccount.initiatorId;
+    }
+    if (relatedAccount.targetId && relatedAccount.targetId !== accountId) {
+      return relatedAccount.targetId;
+    }
+    return null;
+  }
+}

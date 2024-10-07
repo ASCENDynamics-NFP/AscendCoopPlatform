@@ -17,92 +17,116 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnDestroy, OnInit} from "@angular/core";
-import {Account, RelatedAccount} from "../../../../../models/account.model";
-import {ActivatedRoute} from "@angular/router";
-import {Subscription} from "rxjs";
+// list.page.ts
+
+import {Component, OnInit} from "@angular/core";
 import {Store} from "@ngrx/store";
-import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
-import {selectAccountById} from "../../../../../state/selectors/account.selectors";
-import * as AccountActions from "../../../../../state/actions/account.actions";
+import {ActivatedRoute} from "@angular/router";
+import {Observable, combineLatest, of} from "rxjs";
+import {map} from "rxjs/operators";
 import {AuthUser} from "../../../../../models/auth-user.model";
+import {Account, RelatedAccount} from "../../../../../models/account.model";
+import {
+  selectAccountById,
+  selectRelatedAccountsByAccountId,
+} from "../../../../../state/selectors/account.selectors";
+import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
+import * as AccountActions from "../../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-list",
   templateUrl: "./list.page.html",
   styleUrls: ["./list.page.scss"],
 })
-export class ListPage implements OnInit, OnDestroy {
-  private subscriptions = new Subscription();
-  currentRelatedAccountsList: Partial<RelatedAccount>[] = [];
-  pendingRelatedAccountsList: Partial<RelatedAccount>[] = [];
+export class ListPage implements OnInit {
+  // Route Parameters
   accountId: string | null = null;
-  currentUser: AuthUser | null = null;
-  account?: Account;
   listType: string | null = null;
+
+  // Observables
+  currentUser$!: Observable<AuthUser | null>;
+  account$!: Observable<Partial<Account> | undefined>;
+  relatedAccounts$!: Observable<Partial<RelatedAccount>[]>;
+  currentRelatedAccountsList$!: Observable<Partial<RelatedAccount>[]>;
+  pendingRelatedAccountsList$!: Observable<Partial<RelatedAccount>[]>;
+  isOwner$!: Observable<boolean>;
+  title$!: Observable<string>;
 
   constructor(
     private activatedRoute: ActivatedRoute,
     private store: Store,
   ) {
+    // Extract route parameters
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
     this.listType = this.activatedRoute.snapshot.paramMap.get("listType");
   }
 
-  get getTitle() {
-    if (this.listType === "user" && this.account?.type === "user") {
-      return "Friends";
-    } else if (this.listType === "user" && this.account?.type === "group") {
-      return "Members";
-    } else if (this.listType === "group" && this.account?.type === "group") {
-      return "Partners";
-    } else if (this.listType === "group" && this.account?.type === "user") {
-      return "Organizations";
-    }
-    return "";
-  }
-
   ngOnInit() {
-    // Subscribe to the authenticated user
-    this.subscriptions.add(
-      this.store.select(selectAuthUser).subscribe((user) => {
-        this.currentUser = user;
-      }),
-    );
+    // Select the authenticated user from the store
+    this.currentUser$ = this.store.select(selectAuthUser);
 
     if (this.accountId) {
-      // Dispatch action to load the account
+      // Dispatch an action to load the account details if not already loaded
       this.store.dispatch(
         AccountActions.loadAccount({accountId: this.accountId}),
       );
 
-      // Subscribe to the account data
-      this.subscriptions.add(
-        this.store
-          .select(selectAccountById(this.accountId))
-          .subscribe((account) => {
-            if (account) {
-              this.account = account;
-              this.sortRelatedAccounts(account.relatedAccounts || []);
-            }
-          }),
+      // Select the specific account by ID
+      this.account$ = this.store.select(selectAccountById(this.accountId));
+
+      // Select related accounts where initiatorId or targetId equals accountId
+      this.relatedAccounts$ = this.store.select(
+        selectRelatedAccountsByAccountId(this.accountId),
+      );
+
+      // Determine ownership based on current user and accountId
+      this.isOwner$ = combineLatest([
+        this.currentUser$,
+        of(this.accountId),
+      ]).pipe(
+        map(([currentUser, accountId]) => currentUser?.uid === accountId),
+      );
+
+      // Determine the title based on listType and account.type
+      this.title$ = this.account$.pipe(
+        map((account) => {
+          if (this.listType === "user" && account?.type === "user") {
+            return "Friends";
+          } else if (this.listType === "user" && account?.type === "group") {
+            return "Members";
+          } else if (this.listType === "group" && account?.type === "group") {
+            return "Partners";
+          } else if (this.listType === "group" && account?.type === "user") {
+            return "Organizations";
+          }
+          return "";
+        }),
+      );
+
+      // Filter related accounts into current and pending lists
+      this.currentRelatedAccountsList$ = this.relatedAccounts$.pipe(
+        map((relatedAccounts) =>
+          relatedAccounts.filter(
+            (ra) => ra.type === this.listType && ra.status === "accepted",
+          ),
+        ),
+      );
+
+      this.pendingRelatedAccountsList$ = this.relatedAccounts$.pipe(
+        map((relatedAccounts) =>
+          relatedAccounts.filter(
+            (ra) => ra.type === this.listType && ra.status === "pending",
+          ),
+        ),
       );
     }
   }
 
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
-
-  sortRelatedAccounts(relatedAccounts: Partial<RelatedAccount>[]) {
-    this.currentRelatedAccountsList = relatedAccounts.filter(
-      (ra) => ra.type === this.listType && ra.status === "accepted",
-    );
-    this.pendingRelatedAccountsList = relatedAccounts.filter(
-      (ra) => ra.type === this.listType && ra.status === "pending",
-    );
-  }
-
+  /**
+   * Updates the status of a related account.
+   * @param request The related account request to update.
+   * @param status The new status to set.
+   */
   updateStatus(request: Partial<RelatedAccount>, status: string) {
     if (!this.accountId || !request.id) return;
 
@@ -111,7 +135,7 @@ export class ListPage implements OnInit, OnDestroy {
       status: status as "pending" | "accepted" | "rejected" | "blocked",
     };
 
-    // Dispatch action to update the related account
+    // Dispatch an action to update the related account's status
     this.store.dispatch(
       AccountActions.updateRelatedAccount({
         accountId: this.accountId,
@@ -120,18 +144,30 @@ export class ListPage implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Accepts a related account request.
+   * @param request The related account request to accept.
+   */
   acceptRequest(request: Partial<RelatedAccount>) {
     this.updateStatus(request, "accepted");
   }
 
+  /**
+   * Rejects a related account request.
+   * @param request The related account request to reject.
+   */
   rejectRequest(request: Partial<RelatedAccount>) {
     this.updateStatus(request, "rejected");
   }
 
+  /**
+   * Removes a related account request.
+   * @param request The related account request to remove.
+   */
   removeRequest(request: Partial<RelatedAccount>) {
     if (!this.accountId || !request.id) return;
 
-    // Dispatch action to delete the related account
+    // Dispatch an action to delete the related account
     this.store.dispatch(
       AccountActions.deleteRelatedAccount({
         accountId: this.accountId,
@@ -140,24 +176,67 @@ export class ListPage implements OnInit, OnDestroy {
     );
   }
 
-  showAcceptRejectButtons(request: Partial<RelatedAccount>) {
-    return (
-      this.isOwner() &&
-      request.status === "pending" &&
-      request.initiatorId !== this.currentUser?.uid
+  /**
+   * Determines whether to show accept/reject buttons for a related account.
+   * @param request The related account request.
+   * @returns An observable emitting a boolean.
+   */
+  showAcceptRejectButtons(
+    request: Partial<RelatedAccount>,
+  ): Observable<boolean> {
+    return combineLatest([this.isOwner$, this.currentUser$]).pipe(
+      map(
+        ([isOwner, currentUser]) =>
+          isOwner &&
+          request.status === "pending" &&
+          request.initiatorId !== currentUser?.uid,
+      ),
     );
   }
 
-  showRemoveButton(request: Partial<RelatedAccount>) {
-    return (
-      this.isOwner() &&
-      (request.status === "accepted" ||
-        (request.status === "pending" &&
-          request.initiatorId === this.currentUser?.uid))
+  /**
+   * Determines whether to show the remove button for a related account.
+   * @param request The related account request.
+   * @returns An observable emitting a boolean.
+   */
+  showRemoveButton(request: Partial<RelatedAccount>): Observable<boolean> {
+    return combineLatest([this.isOwner$, this.currentUser$]).pipe(
+      map(
+        ([isOwner, currentUser]) =>
+          isOwner &&
+          (request.status === "accepted" ||
+            (request.status === "pending" &&
+              request.initiatorId === currentUser?.uid)),
+      ),
     );
   }
 
-  isOwner() {
-    return this.currentUser?.uid === this.accountId;
+  /**
+   * Helper method to determine the other account ID in a related account.
+   * @param relatedAccount The related account object.
+   * @returns The ID of the other account or null if not found.
+   */
+  getOtherId(relatedAccount: Partial<RelatedAccount>): string | null {
+    if (!this.accountId) return null;
+    if (
+      relatedAccount.initiatorId &&
+      relatedAccount.initiatorId !== this.accountId
+    ) {
+      return relatedAccount.initiatorId;
+    }
+    if (relatedAccount.targetId && relatedAccount.targetId !== this.accountId) {
+      return relatedAccount.targetId;
+    }
+    return null;
+  }
+
+  /**
+   * TrackBy function to optimize *ngFor rendering.
+   * @param index The index of the item.
+   * @param item The related account item.
+   * @returns The unique identifier for the item.
+   */
+  trackById(index: number, item: Partial<RelatedAccount>): string {
+    return item.id ? item.id : index.toString();
   }
 }

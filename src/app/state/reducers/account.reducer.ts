@@ -54,7 +54,6 @@ export const accountReducer = createReducer(
     error: null,
   })),
   on(AccountActions.loadAccountSuccess, (state, {account}) => {
-    console.log("Reducer: loadAccountSuccess", account);
     return {
       ...state,
       accounts: [
@@ -67,7 +66,6 @@ export const accountReducer = createReducer(
     };
   }),
   on(AccountActions.loadAccountFailure, (state, {error}) => {
-    console.error("Reducer: loadAccountFailure", error);
     return {
       ...state,
       loading: false,

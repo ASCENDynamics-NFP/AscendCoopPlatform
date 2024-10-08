@@ -102,7 +102,6 @@ export class FirestoreService {
   ): Promise<void> {
     try {
       await this.afs.doc(docPath).set(documentData, options || {});
-      console.log("Document set successfully at path:", docPath);
     } catch (error) {
       console.error("Error setting document at path:", docPath, error);
       throw error; // Propagate the error

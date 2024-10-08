@@ -58,14 +58,14 @@ export class AccountEffects {
   loadAccount$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.loadAccount),
-      tap(({accountId}) =>
-        console.log(`Effect: Loading account with ID: ${accountId}`),
-      ),
+      // tap(({accountId}) =>
+      //   console.log(`Effect: Loading account with ID: ${accountId}`),
+      // ),
       mergeMap(({accountId}) =>
         this.firestoreService.getDocument<Account>("accounts", accountId).pipe(
-          tap((account) =>
-            console.log(`Effect: Fetched account data:`, account),
-          ),
+          // tap((account) =>
+          //   console.log(`Effect: Fetched account data:`, account),
+          // ),
           map((account) => {
             if (account) {
               return AccountActions.loadAccountSuccess({account});

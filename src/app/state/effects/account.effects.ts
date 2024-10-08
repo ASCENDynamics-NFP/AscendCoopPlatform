@@ -179,14 +179,14 @@ export class AccountEffects {
       ofType(AccountActions.createRelatedAccount),
       switchMap(({accountId, relatedAccount}) =>
         from(
-          this.firestoreService.addDocument(
-            `accounts/${accountId}/relatedAccounts`,
+          this.firestoreService.setDocument(
+            `accounts/${accountId}/relatedAccounts/${relatedAccount.id}`, // Specify the document path with the relatedAccount.id
             relatedAccount,
           ),
         ).pipe(
-          map((relatedAccountId) =>
+          map(() =>
             AccountActions.createRelatedAccountSuccess({
-              relatedAccount: {...relatedAccount, id: relatedAccountId},
+              relatedAccount,
             }),
           ),
           catchError((error) =>

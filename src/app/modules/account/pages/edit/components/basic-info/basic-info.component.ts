@@ -18,13 +18,7 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 // basic-info.component.ts
-import {
-  Component,
-  Input,
-  OnChanges,
-  OnInit,
-  SimpleChanges,
-} from "@angular/core";
+import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
 import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {Account, WebLink} from "../../../../../../models/account.model";
 import {Store} from "@ngrx/store";
@@ -35,7 +29,7 @@ import * as AccountActions from "../../../../../../state/actions/account.actions
   templateUrl: "./basic-info.component.html",
   styleUrls: ["./basic-info.component.scss"],
 })
-export class BasicInfoComponent implements OnInit, OnChanges {
+export class BasicInfoComponent implements OnChanges {
   @Input() account: Account | null = null;
   public maxLinks = 10;
 
@@ -44,9 +38,7 @@ export class BasicInfoComponent implements OnInit, OnChanges {
   constructor(
     private fb: FormBuilder,
     private store: Store,
-  ) {}
-
-  ngOnInit() {
+  ) {
     // Initialize the form in ngOnInit after fb is initialized
     this.basicInfoForm = this.fb.group({
       description: [""],

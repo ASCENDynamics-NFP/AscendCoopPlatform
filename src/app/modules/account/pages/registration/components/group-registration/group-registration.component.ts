@@ -18,13 +18,7 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 // group-registration.component.ts
-import {
-  Component,
-  Input,
-  OnChanges,
-  OnInit,
-  SimpleChanges,
-} from "@angular/core";
+import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
 import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {Router} from "@angular/router";
 import {
@@ -44,7 +38,7 @@ import * as AccountActions from "../../../../../../state/actions/account.actions
   templateUrl: "./group-registration.component.html",
   styleUrls: ["./group-registration.component.scss"],
 })
-export class GroupRegistrationComponent implements OnChanges, OnInit {
+export class GroupRegistrationComponent implements OnChanges {
   @Input() account?: Account;
   @Input() redirectSubmit: boolean = false;
   public maxAddresses = 3; // Set maximum number of addresses
@@ -63,9 +57,7 @@ export class GroupRegistrationComponent implements OnChanges, OnInit {
     private fb: FormBuilder,
     private router: Router,
     private store: Store,
-  ) {}
-
-  ngOnInit() {
+  ) {
     // Initialize the form in ngOnInit after fb is initialized
     this.editAccountForm = this.fb.group({
       description: [""],

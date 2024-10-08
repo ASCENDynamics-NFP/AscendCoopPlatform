@@ -50,7 +50,6 @@ export class AuthGuard {
       }
       // Sign out the user and redirect to login
       this.store.dispatch(AuthActions.signOut());
-      this.router.navigate(["/login"]);
       return false;
     }
     return true;

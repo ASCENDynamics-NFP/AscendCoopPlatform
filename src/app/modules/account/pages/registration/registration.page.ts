@@ -21,7 +21,6 @@ import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Account} from "../../../../models/account.model";
 import {Store} from "@ngrx/store";
-import {AppState} from "../../../../state/reducers";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {Observable} from "rxjs";
@@ -40,7 +39,7 @@ export class RegistrationPage implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private store: Store<AppState>,
+    private store: Store,
   ) {
     this.accountId = this.route.snapshot.paramMap.get("accountId");
   }

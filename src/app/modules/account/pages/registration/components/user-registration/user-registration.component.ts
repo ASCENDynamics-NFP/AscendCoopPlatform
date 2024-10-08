@@ -31,7 +31,6 @@ import {countryCodes} from "../../../../../../core/data/phone";
 import {countries, statesProvinces} from "../../../../../../core/data/country";
 import {Router} from "@angular/router";
 import {Store} from "@ngrx/store";
-import {AppState} from "../../../../../../state/reducers";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 
 @Component({
@@ -55,7 +54,7 @@ export class UserRegistrationComponent implements OnChanges {
 
   constructor(
     private fb: FormBuilder,
-    private store: Store<AppState>,
+    private store: Store,
     private router: Router,
   ) {
     this.registrationForm = this.fb.group({

@@ -18,7 +18,13 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 // group-registration.component.ts
-import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+} from "@angular/core";
 import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {Router} from "@angular/router";
 import {
@@ -26,11 +32,11 @@ import {
   Address,
   Email,
   PhoneNumber,
+  WebLink,
 } from "../../../../../../models/account.model";
 import {countryCodes} from "../../../../../../core/data/phone";
 import {countries, statesProvinces} from "../../../../../../core/data/country";
 import {Store} from "@ngrx/store";
-import {AppState} from "../../../../../../state/reducers";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 
 @Component({
@@ -38,7 +44,7 @@ import * as AccountActions from "../../../../../../state/actions/account.actions
   templateUrl: "./group-registration.component.html",
   styleUrls: ["./group-registration.component.scss"],
 })
-export class GroupRegistrationComponent implements OnChanges {
+export class GroupRegistrationComponent implements OnChanges, OnInit {
   @Input() account?: Account;
   @Input() redirectSubmit: boolean = false;
   public maxAddresses = 3; // Set maximum number of addresses
@@ -51,30 +57,35 @@ export class GroupRegistrationComponent implements OnChanges {
   ); // List of country codes for phone numbers
   public statesProvinces = statesProvinces; // List of states/provinces for the selected country
 
-  editAccountForm = this.fb.group({
-    description: [""],
-    tagline: ["", Validators.required],
-    name: ["", Validators.required],
-    webLinks: this.fb.array([this.createWebLinkFormGroup()]),
-    contactInformation: this.fb.group({
-      emails: this.fb.array([this.createEmailFormGroup()]),
-      phoneNumbers: this.fb.array([this.createPhoneNumberFormGroup()]),
-      addresses: this.fb.array([this.createAddressFormGroup()]),
-      preferredMethodOfContact: ["Email"],
-    }),
-    groupDetails: this.fb.group({
-      groupType: [],
-    }),
-  });
+  editAccountForm!: FormGroup; // Declare the form but don't initialize it yet
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private store: Store<AppState>,
+    private store: Store,
   ) {}
 
+  ngOnInit() {
+    // Initialize the form in ngOnInit after fb is initialized
+    this.editAccountForm = this.fb.group({
+      description: [""],
+      tagline: ["", Validators.required],
+      name: ["", Validators.required],
+      webLinks: this.fb.array([this.createWebLinkFormGroup()]),
+      contactInformation: this.fb.group({
+        emails: this.fb.array([this.createEmailFormGroup()]),
+        phoneNumbers: this.fb.array([this.createPhoneNumberFormGroup()]),
+        addresses: this.fb.array([this.createAddressFormGroup()]),
+        preferredMethodOfContact: ["Email"],
+      }),
+      groupDetails: this.fb.group({
+        groupType: [],
+      }),
+    });
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes["account"]) {
+    if (changes["account"] && this.account) {
       this.loadFormData();
     }
   }
@@ -104,12 +115,9 @@ export class GroupRegistrationComponent implements OnChanges {
   }
 
   onSubmit() {
-    // Call the API to save changes
     if (this.account) {
-      // Prepare the account object with form values
       const formValue = this.editAccountForm.value;
 
-      // Prepare the account object for update
       const updatedAccount: Account = {
         ...this.account,
         ...formValue,
@@ -118,7 +126,7 @@ export class GroupRegistrationComponent implements OnChanges {
         tagline: formValue.tagline!,
         description: formValue.description || "",
         webLinks:
-          formValue.webLinks?.map((link) => ({
+          formValue.webLinks?.map((link: Partial<WebLink>) => ({
             name: link.name,
             url: link.url,
             category: link.category || "",
@@ -168,13 +176,11 @@ export class GroupRegistrationComponent implements OnChanges {
         },
       };
 
-      // Now update the document with the updatedAccount
       this.store.dispatch(
         AccountActions.updateAccount({account: updatedAccount}),
       );
 
       if (this.redirectSubmit) {
-        // Redirect to the user profile page
         this.router.navigateByUrl(
           `/group/${this.account.id}/${this.account.id}/details`,
         );
@@ -184,7 +190,8 @@ export class GroupRegistrationComponent implements OnChanges {
 
   loadFormData() {
     if (!this.account) return;
-    // Reset the form arrays to ensure clean state
+
+    // Reset form arrays
     while (this.webLinksFormArray.length !== 0) {
       this.webLinksFormArray.removeAt(0);
     }
@@ -198,7 +205,7 @@ export class GroupRegistrationComponent implements OnChanges {
       this.addressesFormArray.removeAt(0);
     }
 
-    // If there are webLinks, create a FormGroup for each
+    // Load data from account into form arrays and form controls
     this.account.webLinks?.forEach((webLink) => {
       this.webLinksFormArray.push(
         this.fb.group({
@@ -216,12 +223,10 @@ export class GroupRegistrationComponent implements OnChanges {
       );
     });
 
-    // If after loading there are no webLinks, add a blank one
     if (this.webLinksFormArray.length === 0) {
       this.addWebLink();
     }
 
-    // Dynamically load emails and phone numbers from the account, or add a blank one if none exist
     this.account.contactInformation?.emails?.forEach((email) => {
       this.emailsFormArray.push(
         this.fb.group({
@@ -257,7 +262,6 @@ export class GroupRegistrationComponent implements OnChanges {
           state: [address?.state],
           zipcode: [address?.zipcode, Validators.pattern("^[0-9]*$")],
           country: [address?.country],
-          // isPrimaryAddress: [address?.isPrimaryAddress || false],
         }),
       );
     });
@@ -265,7 +269,6 @@ export class GroupRegistrationComponent implements OnChanges {
       this.addAddress();
     }
 
-    // Load other form data as before
     this.editAccountForm.patchValue({
       name: this.account.name,
       description: this.account.description,
@@ -327,7 +330,6 @@ export class GroupRegistrationComponent implements OnChanges {
   }
 
   removePhoneNumber(index: number): void {
-    // Remove the phone number form group at the given index
     this.phoneNumbersFormArray.removeAt(index);
   }
 
@@ -353,7 +355,7 @@ export class GroupRegistrationComponent implements OnChanges {
   }
 
   removeWebLink(index: number): void {
-    // Remove the phone number form group at the given index
+    // Remove the link at the given index
     this.webLinksFormArray.removeAt(index);
   }
 

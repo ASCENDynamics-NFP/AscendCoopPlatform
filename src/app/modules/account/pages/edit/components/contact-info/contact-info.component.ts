@@ -27,7 +27,6 @@ import {
   Address,
 } from "../../../../../../models/account.model";
 import {Store} from "@ngrx/store";
-import {AppState} from "../../../../../../state/reducers";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 import {countryCodes} from "../../../../../../core/data/phone";
 import {countries, statesProvinces} from "../../../../../../core/data/country";
@@ -51,7 +50,7 @@ export class ContactInfoComponent implements OnChanges {
 
   constructor(
     private fb: FormBuilder,
-    private store: Store<AppState>,
+    private store: Store,
   ) {
     this.contactInfoForm = this.fb.group({
       contactInformation: this.fb.group({

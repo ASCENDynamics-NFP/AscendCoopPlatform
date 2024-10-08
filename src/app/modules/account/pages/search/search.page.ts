@@ -19,78 +19,70 @@
 ***********************************************************************************************/
 // src/app/modules/group/pages/search/search.page.ts
 
-import {Component, OnDestroy, OnInit} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {AuthUser} from "../../../../models/auth-user.model";
 import {ActivatedRoute} from "@angular/router";
-import {Subscription} from "rxjs";
-
+import {combineLatest, Observable} from "rxjs";
 import {Account} from "../../../../models/account.model";
 import {Store} from "@ngrx/store";
-import {AppState} from "../../../../state/reducers";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectAccounts} from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
+import {map} from "rxjs/operators";
 
 @Component({
   selector: "app-search",
   templateUrl: "./search.page.html",
   styleUrls: ["./search.page.scss"],
 })
-export class SearchPage implements OnInit, OnDestroy {
-  private subscriptions = new Subscription();
+export class SearchPage implements OnInit {
   accountId: string | null = null;
-  groups: Account[] = [];
-  users: Account[] = [];
-  user: AuthUser | null = null;
-  currentGroup?: Account;
+  authUser$: Observable<AuthUser | null>; // Observable for the auth user
+  accounts$: Observable<Account[]>; // Observable for accounts
+  groups$: Observable<Account[]>; // Filtered groups
+  users$: Observable<Account[]>; // Filtered users
+  currentGroup$: Observable<Account | undefined>; // The current group
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private store: Store<AppState>,
+    private store: Store,
   ) {
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
+
+    // Select the observables from the store
+    this.authUser$ = this.store.select(selectAuthUser);
+    this.accounts$ = this.store.select(selectAccounts);
+
+    // Filter the groups and users once accounts are loaded
+    this.groups$ = this.accounts$.pipe(
+      map((accounts) =>
+        this.sortByName(accounts.filter((account) => account.type === "group")),
+      ),
+    );
+    this.users$ = this.accounts$.pipe(
+      map((accounts) =>
+        this.sortByName(accounts.filter((account) => account.type === "user")),
+      ),
+    );
+    this.currentGroup$ = this.accounts$.pipe(
+      map((accounts) => accounts.find((group) => group.id === this.accountId)),
+    );
   }
 
-  get isAdmin(): boolean {
-    if (!this.user?.uid) {
-      return false;
-    }
-    return (
-      this.currentGroup?.groupDetails?.admins?.includes(this.user.uid) ?? false
+  get isAdmin$(): Observable<boolean> {
+    return combineLatest([this.authUser$, this.currentGroup$]).pipe(
+      map(([user, group]) => {
+        return group?.groupDetails?.admins?.includes(user?.uid || "") ?? false;
+      }),
     );
   }
 
   ngOnInit() {
-    // Subscribe to Auth User
-    this.subscriptions.add(
-      this.store.select(selectAuthUser).subscribe((user) => {
-        this.user = user;
-      }),
-    );
-
-    // Subscribe to Accounts
-    this.subscriptions.add(
-      this.store.select(selectAccounts).subscribe((accounts) => {
-        this.currentGroup = accounts.find(
-          (group) => group.id === this.accountId,
-        );
-        this.groups = this.sortByName(
-          accounts.filter((account) => account.type === "group"),
-        );
-        this.users = this.sortByName(
-          accounts.filter((account) => account.type === "user"),
-        );
-      }),
-    );
-
-    // Dispatch action to load accounts
+    // Dispatch action to load accounts when component initializes
     this.store.dispatch(AccountActions.loadAccounts());
   }
 
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
-
+  // Helper function to sort accounts by name
   sortByName(records: Account[]): Account[] {
     return records.sort((a, b) => {
       if (a.name && b.name) {

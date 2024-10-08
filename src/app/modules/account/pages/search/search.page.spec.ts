@@ -22,23 +22,22 @@ import {SearchPage} from "./search.page";
 import {ActivatedRoute} from "@angular/router";
 import {Store, StoreModule} from "@ngrx/store";
 import {of} from "rxjs";
-import {NO_ERRORS_SCHEMA} from "@angular/core";
-import {AuthUser} from "../../../../models/auth-user.model";
-import {Account} from "../../../../models/account.model";
-import * as AccountActions from "../../../../state/actions/account.actions";
+import {map} from "rxjs/operators";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectAccounts} from "../../../../state/selectors/account.selectors";
+import * as AccountActions from "../../../../state/actions/account.actions";
+import {AuthUser} from "../../../../models/auth-user.model";
+import {Account} from "../../../../models/account.model";
 import {Timestamp} from "firebase/firestore";
 
 describe("SearchPage", () => {
   let component: SearchPage;
   let fixture: ComponentFixture<SearchPage>;
-  let mockActivatedRoute: any;
   let mockStore: any;
+  let mockActivatedRoute: any;
 
-  const mockAccountId = "12345";
   const mockAuthUser: AuthUser = {
-    uid: "12345",
+    uid: "user123",
     email: "test@example.com",
     displayName: "Test User",
     photoURL: null,
@@ -47,12 +46,16 @@ describe("SearchPage", () => {
 
   const mockAccounts: Account[] = [
     {
-      id: "12345",
-      name: "Test Group",
+      id: "group1",
+      name: "Group 1",
       type: "group",
-      groupDetails: {
-        admins: ["12345"],
-      },
+      groupDetails: {admins: ["user123"]},
+    } as Account,
+    {id: "user2", name: "User 2", type: "user"} as Account,
+    {
+      id: "group2",
+      name: "Group 2",
+      type: "group",
       privacy: "public",
       relatedAccounts: [],
       tagline: "",
@@ -61,12 +64,12 @@ describe("SearchPage", () => {
       heroImage: "",
       legalAgreements: {
         termsOfService: {
-          accepted: true,
+          accepted: false,
           datetime: new Timestamp(0, 0),
           version: "",
         },
         privacyPolicy: {
-          accepted: true,
+          accepted: false,
           datetime: new Timestamp(0, 0),
           version: "",
         },
@@ -74,77 +77,56 @@ describe("SearchPage", () => {
       webLinks: [],
       lastLoginAt: new Timestamp(0, 0),
       email: "",
-    },
-    {
-      id: "67890",
-      name: "Test User",
-      type: "user",
-      privacy: "public",
-      relatedAccounts: [],
-      tagline: "",
-      description: "",
-      iconImage: "",
-      heroImage: "",
-      legalAgreements: {
-        termsOfService: {
-          accepted: true,
-          datetime: new Timestamp(0, 0),
-          version: "",
-        },
-        privacyPolicy: {
-          accepted: true,
-          datetime: new Timestamp(0, 0),
-          version: "",
-        },
-      },
-      webLinks: [],
-      lastLoginAt: new Timestamp(0, 0),
-      email: "user@test.com",
-    },
+      groupDetails: {admins: []},
+    } as Account,
   ];
 
   beforeEach(async () => {
+    mockStore = {
+      select: jasmine.createSpy("select").and.callFake((selector: any) => {
+        if (selector === selectAuthUser) {
+          return of(mockAuthUser);
+        } else if (selector === selectAccounts) {
+          return of(mockAccounts);
+        }
+        return of([]);
+      }),
+      dispatch: jasmine.createSpy("dispatch"),
+    };
+
     mockActivatedRoute = {
       snapshot: {
         paramMap: {
-          get: jasmine.createSpy().and.returnValue(mockAccountId),
+          get: jasmine.createSpy("get").and.returnValue("group1"),
         },
       },
-    };
-
-    mockStore = {
-      dispatch: jasmine.createSpy("dispatch"),
-      select: jasmine.createSpy("select"),
     };
 
     await TestBed.configureTestingModule({
       declarations: [SearchPage],
       providers: [
-        {provide: ActivatedRoute, useValue: mockActivatedRoute},
         {provide: Store, useValue: mockStore},
+        {provide: ActivatedRoute, useValue: mockActivatedRoute},
       ],
       imports: [StoreModule.forRoot({})],
-      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(SearchPage);
     component = fixture.componentInstance;
-
-    // Set up default store selector return values
-    mockStore.select.withArgs(selectAuthUser).and.returnValue(of(mockAuthUser));
-    mockStore.select.withArgs(selectAccounts).and.returnValue(of(mockAccounts));
-
     fixture.detectChanges();
   });
 
-  it("should create the component", () => {
+  it("should create the SearchPage component", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should set accountId from route parameters", () => {
-    expect(component.accountId).toBe(mockAccountId);
+  it("should load accountId from route parameters", () => {
+    expect(mockActivatedRoute.snapshot.paramMap.get).toHaveBeenCalledWith(
+      "accountId",
+    );
+    expect(component.accountId).toEqual("group1");
   });
 
   it("should dispatch loadAccounts action on ngOnInit", () => {
@@ -154,50 +136,58 @@ describe("SearchPage", () => {
     );
   });
 
-  it("should subscribe to auth user and set the user property", () => {
-    component.ngOnInit();
-    expect(component.user).toEqual(mockAuthUser);
+  it("should select authUser from store", (done) => {
+    component.authUser$.subscribe((user) => {
+      expect(user).toEqual(mockAuthUser);
+      done();
+    });
   });
 
-  it("should subscribe to accounts and filter groups and users", () => {
-    component.ngOnInit();
-    expect(component.groups).toEqual([mockAccounts[0]]);
-    expect(component.users).toEqual([mockAccounts[1]]);
+  it("should select accounts from store and filter groups and users correctly", (done) => {
+    component.groups$.subscribe((groups) => {
+      expect(groups.length).toBe(2);
+      expect(groups[0].name).toEqual("Group 1");
+    });
+
+    component.users$.subscribe((users) => {
+      expect(users.length).toBe(1);
+      expect(users[0].name).toEqual("User 2");
+      done();
+    });
   });
 
-  it("should set currentGroup to the account matching accountId", () => {
-    component.ngOnInit();
-    expect(component.currentGroup).toEqual(mockAccounts[0]);
+  it("should correctly compute currentGroup$", (done) => {
+    component.currentGroup$.subscribe((group) => {
+      expect(group).toBeDefined();
+      expect(group?.id).toEqual("group1");
+      done();
+    });
   });
 
-  it("should return true for isAdmin if the current user is an admin of the group", () => {
-    component.currentGroup = mockAccounts[0];
-    component.user = mockAuthUser;
-    expect(component.isAdmin).toBeTrue();
+  it("should correctly compute isAdmin$ when the user is an admin", (done) => {
+    component.isAdmin$.subscribe((isAdmin) => {
+      expect(isAdmin).toBeTrue();
+      done();
+    });
   });
 
-  it("should return false for isAdmin if the current user is not an admin of the group", () => {
-    component.currentGroup = {
-      ...mockAccounts[0],
-      groupDetails: {admins: ["67890"]},
-    };
-    component.user = mockAuthUser;
-    expect(component.isAdmin).toBeFalse();
+  it("should correctly compute isAdmin$ when the user is not an admin", (done) => {
+    // Change mockActivatedRoute to simulate a different group
+    mockActivatedRoute.snapshot.paramMap.get.and.returnValue("group2");
+    fixture = TestBed.createComponent(SearchPage);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    component.isAdmin$.subscribe((isAdmin) => {
+      expect(isAdmin).toBeFalse();
+      done();
+    });
   });
 
-  it("should unsubscribe from all subscriptions on ngOnDestroy", () => {
-    spyOn(component["subscriptions"], "unsubscribe");
-    component.ngOnDestroy();
-    expect(component["subscriptions"].unsubscribe).toHaveBeenCalled();
-  });
-
-  it("should sort accounts by name in ascending order", () => {
-    const unsortedAccounts: Account[] = [
-      {...mockAccounts[1], name: "Zebra"},
-      {...mockAccounts[0], name: "Apple"},
-    ];
-    const sortedAccounts = component.sortByName(unsortedAccounts);
-    expect(sortedAccounts[0].name).toBe("Apple");
-    expect(sortedAccounts[1].name).toBe("Zebra");
+  it("should sort accounts by name", () => {
+    const sortedAccounts = component.sortByName(mockAccounts);
+    expect(sortedAccounts[0].name).toEqual("Group 1");
+    expect(sortedAccounts[1].name).toEqual("Group 2");
+    expect(sortedAccounts[2].name).toEqual("User 2");
   });
 });

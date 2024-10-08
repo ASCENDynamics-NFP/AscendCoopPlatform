@@ -24,7 +24,6 @@ import {FormBuilder, Validators} from "@angular/forms";
 import {Timestamp} from "firebase/firestore";
 import {Account} from "../../../../models/account.model";
 import {Store} from "@ngrx/store";
-import {AppState} from "../../../../state/reducers";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {firstValueFrom} from "rxjs";
@@ -44,7 +43,7 @@ export class CreateGroupModalComponent {
   constructor(
     private modalCtrl: ModalController,
     private fb: FormBuilder,
-    private store: Store<AppState>,
+    private store: Store,
   ) {}
 
   cancel() {

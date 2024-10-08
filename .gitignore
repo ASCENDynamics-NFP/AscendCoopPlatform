@@ -33,7 +33,7 @@ log.txt
 /node_modules
 npm-debug.log
 yarn-error.log
-package-lock.json
+# package-lock.json // need this file for faster ci/cd with GitHub Actions
 
 # IDEs and editors
 .idea/

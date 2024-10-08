@@ -26,14 +26,13 @@ import {
   selectIsLoggedIn,
   selectAuthUser,
 } from "../../state/selectors/auth.selectors";
-import {AppState} from "../../state/reducers";
 
 @Injectable({
   providedIn: "root",
 })
 export class SecureInnerPagesGuard {
   constructor(
-    private store: Store<AppState>,
+    private store: Store,
     private navCtrl: NavController,
     private router: Router,
   ) {}

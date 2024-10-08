@@ -36,16 +36,7 @@ import {
   sendSignInLinkToEmail,
   isSignInWithEmailLink,
 } from "firebase/auth";
-import {
-  catchError,
-  from,
-  map,
-  switchMap,
-  of,
-  tap,
-  exhaustMap,
-  mergeMap,
-} from "rxjs";
+import {catchError, from, map, switchMap, of, tap, exhaustMap} from "rxjs";
 import {ErrorHandlerService} from "../../core/services/error-handler.service";
 import {SuccessHandlerService} from "../../core/services/success-handler.service";
 import {Router} from "@angular/router";

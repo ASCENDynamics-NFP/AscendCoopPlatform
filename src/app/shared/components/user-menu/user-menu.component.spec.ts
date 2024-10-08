@@ -18,118 +18,108 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {UserMenuComponent} from "./user-menu.component";
 import {Router} from "@angular/router";
 import {PopoverController} from "@ionic/angular";
-import {AuthStoreService} from "../../../core/services/auth-store.service";
-import {UserMenuComponent} from "./user-menu.component";
-import {provideMockStore} from "@ngrx/store/testing";
-import {User} from "@angular/fire/auth"; // Adjust the import path
+import {Store, StoreModule} from "@ngrx/store";
 import {of} from "rxjs";
+import * as AuthActions from "../../../state/actions/auth.actions";
 
 describe("UserMenuComponent", () => {
   let component: UserMenuComponent;
   let fixture: ComponentFixture<UserMenuComponent>;
-  let authStoreServiceSpy: jasmine.SpyObj<AuthStoreService>;
-  let popoverCtrlSpy: jasmine.SpyObj<PopoverController>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let mockRouter: any;
+  let mockPopoverCtrl: any;
+  let mockStore: any;
+
+  const mockAuthUser = {
+    uid: "12345",
+    email: "test@example.com",
+    displayName: "Test User",
+    photoURL: null,
+    emailVerified: true,
+  };
 
   beforeEach(async () => {
-    const authStoreSpy = jasmine.createSpyObj("AuthStoreService", [
-      "getCurrentUser",
-      "signOut",
-    ]);
-    const popoverSpy = jasmine.createSpyObj("PopoverController", ["dismiss"]);
-    const routerSpyObj = jasmine.createSpyObj("Router", ["navigate"]);
+    window.onbeforeunload = () => "Oh no!"; // Prevent page reloads during tests
+    mockRouter = {
+      navigate: jasmine.createSpy("navigate"), // Ensure navigate is mocked
+      getCurrentNavigation: jasmine
+        .createSpy("getCurrentNavigation")
+        .and.returnValue(null), // Mock current navigation to prevent reloads
+    };
+
+    mockPopoverCtrl = {
+      dismiss: jasmine.createSpy("dismiss").and.returnValue(Promise.resolve()), // Return a resolved promise
+    };
+
+    mockStore = {
+      dispatch: jasmine.createSpy("dispatch"),
+      select: jasmine.createSpy("select").and.returnValue(of(mockAuthUser)),
+    };
 
     await TestBed.configureTestingModule({
       declarations: [UserMenuComponent],
       providers: [
-        provideMockStore(),
-        {provide: AuthStoreService, useValue: authStoreSpy},
-        {provide: PopoverController, useValue: popoverSpy},
-        {provide: Router, useValue: routerSpyObj},
+        {provide: Router, useValue: mockRouter},
+        {provide: PopoverController, useValue: mockPopoverCtrl},
+        {provide: Store, useValue: mockStore},
       ],
+      imports: [StoreModule.forRoot({})],
     }).compileComponents();
+  });
 
-    authStoreServiceSpy = TestBed.inject(
-      AuthStoreService,
-    ) as jasmine.SpyObj<AuthStoreService>;
-    popoverCtrlSpy = TestBed.inject(
-      PopoverController,
-    ) as jasmine.SpyObj<PopoverController>;
-    routerSpy = TestBed.inject(Router) as jasmine.SpyObj<Router>;
-
+  beforeEach(() => {
     fixture = TestBed.createComponent(UserMenuComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it("should create", () => {
+  it("should create the component", () => {
     expect(component).toBeTruthy();
   });
 
-  // it("should call signOut and dismiss popover on logout", async () => {
-  //   // Arrange
-  //   authStoreServiceSpy.signOut.and.returnValue(Promise.resolve());
-  //   popoverCtrlSpy.dismiss.and.returnValue(Promise.resolve(true));
+  it("should dismiss the popover and dispatch signOut action on logout", async () => {
+    await component.logout();
+    expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
+    expect(mockStore.dispatch).toHaveBeenCalledWith(AuthActions.signOut());
+  });
 
-  //   // Act
-  //   await component.logout();
+  it("should dismiss the popover and navigate to the user profile on goToProfile if user exists", async () => {
+    await component.goToProfile();
+    expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
+    expect(mockRouter.navigate).toHaveBeenCalledWith([`/${mockAuthUser.uid}`]);
+  });
 
-  //   // Assert
-  //   expect(popoverCtrlSpy.dismiss).toHaveBeenCalled();
-  //   expect(authStoreServiceSpy.signOut).toHaveBeenCalled();
-  // });
+  it("should log an error if user ID is not found on goToProfile", async () => {
+    spyOn(console, "error");
+    mockStore.select.and.returnValue(of(null)); // Simulate no user in the store
+    await component.goToProfile();
+    expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
+    expect(console.error).toHaveBeenCalledWith("User ID not found.");
+    expect(mockRouter.navigate).not.toHaveBeenCalled();
+  });
 
-  // it("should navigate to profile and dismiss popover on goToProfile", async () => {
-  //   // Arrange
-  //   const userId = "test-user-id";
-  //   const mockUser: User = {
-  //     uid: userId,
-  //     displayName: null,
-  //     email: null,
-  //     emailVerified: false,
-  //     isAnonymous: false,
-  //     phoneNumber: null,
-  //     photoURL: null,
-  //     providerData: [],
-  //     providerId: "firebase",
-  //     refreshToken: "",
-  //     tenantId: null,
-  //     metadata: {
-  //       creationTime: "",
-  //       lastSignInTime: "",
-  //     },
-  //     delete: jasmine.createSpy("delete"),
-  //     getIdToken: jasmine.createSpy("getIdToken"),
-  //     getIdTokenResult: jasmine.createSpy("getIdTokenResult"),
-  //     reload: jasmine.createSpy("reload"),
-  //     toJSON: jasmine.createSpy("toJSON"),
-  //   };
+  it("should dismiss the popover and navigate to settings on goToSettings", async () => {
+    await component.goToSettings();
+    expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
+    expect(mockRouter.navigate).toHaveBeenCalledWith(["/settings"]);
+  });
 
-  //   authStoreServiceSpy.getCurrentUser.and.returnValue(mockUser); // Adjusted here
-  //   popoverCtrlSpy.dismiss.and.returnValue(Promise.resolve(true));
-  //   routerSpy.navigate.and.returnValue(Promise.resolve(true));
+  it("should log an error if fetching user profile throws an error in goToProfile", async () => {
+    spyOn(console, "error");
 
-  //   // Act
-  //   component.goToProfile(); // If the method is synchronous
-  //   // Or await component.goToProfile(); // If the method is asynchronous
+    const mockError = new Error("Error fetching user"); // Simulate an error object
 
-  //   // Assert
-  //   expect(popoverCtrlSpy.dismiss).toHaveBeenCalled();
-  //   expect(routerSpy.navigate).toHaveBeenCalledWith([`/${userId}`]);
-  // });
+    mockStore.select.and.throwError(mockError); // Simulate an error during user fetch
 
-  // it("should navigate to settings and dismiss popover on goToSettings", async () => {
-  //   // Arrange
-  //   popoverCtrlSpy.dismiss.and.returnValue(Promise.resolve(true));
-  //   routerSpy.navigate.and.returnValue(Promise.resolve(true));
+    await component.goToProfile();
 
-  //   // Act
-  //   await component.goToSettings();
-
-  //   // Assert
-  //   expect(popoverCtrlSpy.dismiss).toHaveBeenCalled();
-  //   expect(routerSpy.navigate).toHaveBeenCalledWith(["/settings"]);
-  // });
+    expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
+    expect(console.error).toHaveBeenCalledWith(
+      "Error fetching user profile:",
+      mockError,
+    ); // Expect the error object
+    expect(mockRouter.navigate).not.toHaveBeenCalled();
+  });
 });

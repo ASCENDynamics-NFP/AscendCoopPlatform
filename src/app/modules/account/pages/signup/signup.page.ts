@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 // src/app/modules/account/pages/signup/signup.page.ts
 
-import {Component} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {
   AbstractControl,
   FormBuilder,
@@ -37,43 +37,48 @@ import {
   selectAuthError,
   selectAuthLoading,
 } from "../../../../state/selectors/auth.selectors";
+import {Observable} from "rxjs";
 
 @Component({
   selector: "app-signup",
   templateUrl: "./signup.page.html",
   styleUrls: ["./signup.page.scss"],
 })
-export class SignupPage {
-  // Define the signup form using FormBuilder
-  signupForm = this.fb.nonNullable.group(
-    {
-      email: ["", [Validators.required, Validators.email]],
-      password: [
-        "",
-        [
-          Validators.required,
-          Validators.minLength(8),
-          this.passwordStrengthValidator,
-        ],
-      ],
-      confirmPassword: ["", [Validators.required, Validators.minLength(8)]],
-      agreedToTerms: [false, Validators.requiredTrue],
-    },
-    {validators: this.matchingPasswordsValidator},
-  );
-
-  // Selectors for error and loading states
-  error$ = this.store.select(selectAuthError);
-  loading$ = this.store.select(selectAuthLoading);
+export class SignupPage implements OnInit {
+  public signupForm: any;
+  public loading$: Observable<boolean>;
+  public error$!: Observable<any>;
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private modalController: ModalController,
     private store: Store,
-  ) {}
+  ) {
+    this.error$ = this.store.select(selectAuthError);
+    this.loading$ = this.store.select(selectAuthLoading);
+  }
 
-  // Dispatch the signUp action with form values
+  // Initialize form and state selectors in ngOnInit
+  ngOnInit() {
+    this.signupForm = this.fb.nonNullable.group(
+      {
+        email: ["", [Validators.required, Validators.email]],
+        password: [
+          "",
+          [
+            Validators.required,
+            Validators.minLength(8),
+            this.passwordStrengthValidator,
+          ],
+        ],
+        confirmPassword: ["", [Validators.required, Validators.minLength(8)]],
+        agreedToTerms: [false, Validators.requiredTrue],
+      },
+      {validators: this.matchingPasswordsValidator},
+    );
+  }
+
   signup() {
     const {email, password} = this.signupForm.value;
 

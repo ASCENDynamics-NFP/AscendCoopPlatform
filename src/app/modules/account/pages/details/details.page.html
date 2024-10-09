@@ -51,7 +51,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         >Volunteer Preferences</a
       >
       <a
-        *ngIf="account.type === 'user'"
+        *ngIf="account.type === 'user' && account.mutualAidCommunityEngagement"
         (click)="scrollToSection('mutual-aid')"
         class="tab-link"
         >Mutual Aid</a

@@ -63,7 +63,6 @@ yarn-error.log
 /libpeerconnection.log
 testem.log
 /typings
-.sfdx
 
 # System files
 .DS_Store
@@ -72,3 +71,9 @@ Thumbs.db
 # Environment Variable files
 .env.development
 .env.production
+
+# Firebase
+.firebase
+
+#Salesforce
+.sfdx

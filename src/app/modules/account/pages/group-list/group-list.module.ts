@@ -34,6 +34,6 @@ import {SharedModule} from "../../../../shared/shared.module";
     RouterModule.forChild([{path: "", component: GroupListPage}]),
     SharedModule,
   ],
-  exports: [GroupListPage], // Make it exportable if needed elsewhere
+  exports: [], // Make it exportable if needed elsewhere
 })
 export class GroupListPageModule {}

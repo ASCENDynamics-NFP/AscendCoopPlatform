@@ -34,6 +34,6 @@ import {RouterModule} from "@angular/router";
     TranslateModule,
     RouterModule.forChild([{path: "", component: SignupPage}]),
   ],
-  exports: [SignupPage],
+  exports: [],
 })
 export class SignupPageModule {}

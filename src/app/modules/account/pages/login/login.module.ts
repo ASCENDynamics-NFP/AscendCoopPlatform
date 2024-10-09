@@ -34,6 +34,6 @@ import {TranslateModule} from "@ngx-translate/core";
     ReactiveFormsModule,
     TranslateModule,
   ],
-  exports: [LoginPage],
+  exports: [],
 })
 export class LoginPageModule {}

@@ -37,6 +37,6 @@ import {TranslateModule} from "@ngx-translate/core";
     RouterModule.forChild([{path: "", component: UsersPage}]),
     TranslateModule,
   ],
-  exports: [UsersPage],
+  exports: [],
 })
 export class UsersPageModule {}

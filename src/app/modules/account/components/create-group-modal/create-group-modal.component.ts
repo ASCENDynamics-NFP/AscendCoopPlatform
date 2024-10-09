@@ -20,7 +20,7 @@
 // create-group-modal.component.ts
 import {Component} from "@angular/core";
 import {ModalController} from "@ionic/angular";
-import {FormBuilder, Validators} from "@angular/forms";
+import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {Timestamp} from "firebase/firestore";
 import {Account} from "../../../../models/account.model";
 import {Store} from "@ngrx/store";
@@ -34,17 +34,19 @@ import {firstValueFrom} from "rxjs";
   styleUrls: ["./create-group-modal.component.scss"],
 })
 export class CreateGroupModalComponent {
-  groupForm = this.fb.group({
-    name: ["", Validators.required],
-    description: ["", Validators.required],
-    tagline: ["", Validators.required],
-  });
+  public groupForm: FormGroup;
 
   constructor(
     private modalCtrl: ModalController,
     private fb: FormBuilder,
     private store: Store,
-  ) {}
+  ) {
+    this.groupForm = this.fb.group({
+      name: ["", Validators.required],
+      description: ["", Validators.required],
+      tagline: ["", Validators.required],
+    });
+  }
 
   cancel() {
     return this.modalCtrl.dismiss(null, "cancel");

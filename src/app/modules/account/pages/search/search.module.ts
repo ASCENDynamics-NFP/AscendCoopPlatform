@@ -28,6 +28,6 @@ import {MemberSearchComponent} from "./component/member-search/member-search.com
 @NgModule({
   declarations: [SearchPage, PartnerSearchComponent, MemberSearchComponent],
   imports: [CommonModule, IonicModule, RouterModule],
-  exports: [SearchPage],
+  exports: [],
 })
 export class SearchPageModule {}

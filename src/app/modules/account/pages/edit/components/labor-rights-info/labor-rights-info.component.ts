@@ -19,21 +19,17 @@
 ***********************************************************************************************/
 import {Component, Input, OnInit} from "@angular/core";
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
-import {CommonModule} from "@angular/common";
-import {ReactiveFormsModule} from "@angular/forms";
-import {StoreService} from "../../../../../../core/services/store.service";
+import {Store} from "@ngrx/store";
 import {Account} from "../../../../../../models/account.model";
+import * as AccountActions from "../../../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-labor-rights-info",
   templateUrl: "./labor-rights-info.component.html",
   styleUrls: ["./labor-rights-info.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
 export class LaborRightsInfoComponent implements OnInit {
-  @Input() account?: Partial<Account>;
+  @Input() account!: Account;
   laborRightsInfoForm: FormGroup;
   advocacyAreasOptions: string[] = [
     "Healthcare",
@@ -51,7 +47,7 @@ export class LaborRightsInfoComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private storeService: StoreService,
+    private store: Store,
   ) {
     this.laborRightsInfoForm = this.fb.group({
       unionMembership: [null, Validators.required],
@@ -62,33 +58,33 @@ export class LaborRightsInfoComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (this.account?.laborRights) {
+    if (this.account.laborRights) {
       this.loadFormData();
     }
   }
 
   loadFormData() {
-    if (this.account?.laborRights) {
-      this.laborRightsInfoForm.patchValue({
-        unionMembership: this.account.laborRights.unionMembership || null,
-        workplaceConcerns: this.account.laborRights.workplaceConcerns || "",
-        preferredAdvocacyAreas:
-          this.account.laborRights.preferredAdvocacyAreas || [],
-        experienceWithLaborRightsIssues:
-          this.account.laborRights.experienceWithLaborRightsIssues || null,
-      });
-    }
+    this.laborRightsInfoForm.patchValue({
+      unionMembership: this.account.laborRights?.unionMembership || null,
+      workplaceConcerns: this.account.laborRights?.workplaceConcerns || "",
+      preferredAdvocacyAreas:
+        this.account.laborRights?.preferredAdvocacyAreas || [],
+      experienceWithLaborRightsIssues:
+        this.account.laborRights?.experienceWithLaborRightsIssues || null,
+    });
   }
 
   onSubmit() {
     if (this.laborRightsInfoForm.valid) {
       const laborRightsInfo = this.laborRightsInfoForm.value;
-      const updatedAccount: Partial<Account> = {
+      const updatedAccount: Account = {
         ...this.account,
         laborRights: laborRightsInfo,
       };
 
-      this.storeService.updateDoc("accounts", updatedAccount);
+      this.store.dispatch(
+        AccountActions.updateAccount({account: updatedAccount}),
+      );
     }
   }
 }

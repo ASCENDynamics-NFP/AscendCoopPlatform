@@ -17,36 +17,29 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {CommonModule} from "@angular/common";
+// group-registration.component.ts
 import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
-import {
-  FormArray,
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
+import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
+import {Router} from "@angular/router";
 import {
   Account,
   Address,
   Email,
   PhoneNumber,
+  WebLink,
 } from "../../../../../../models/account.model";
-import {StoreService} from "../../../../../../core/services/store.service";
 import {countryCodes} from "../../../../../../core/data/phone";
 import {countries, statesProvinces} from "../../../../../../core/data/country";
-import {Router} from "@angular/router";
+import {Store} from "@ngrx/store";
+import * as AccountActions from "../../../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-group-registration",
   templateUrl: "./group-registration.component.html",
   styleUrls: ["./group-registration.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
 export class GroupRegistrationComponent implements OnChanges {
-  @Input() account?: Partial<Account>;
+  @Input() account?: Account;
   @Input() redirectSubmit: boolean = false;
   public maxAddresses = 3; // Set maximum number of addresses
   public maxEmails = 5;
@@ -58,30 +51,33 @@ export class GroupRegistrationComponent implements OnChanges {
   ); // List of country codes for phone numbers
   public statesProvinces = statesProvinces; // List of states/provinces for the selected country
 
-  editAccountForm = this.fb.group({
-    description: [""],
-    tagline: ["", Validators.required],
-    name: ["", Validators.required],
-    webLinks: this.fb.array([this.createWebLinkFormGroup()]),
-    contactInformation: this.fb.group({
-      emails: this.fb.array([this.createEmailFormGroup()]),
-      phoneNumbers: this.fb.array([this.createPhoneNumberFormGroup()]),
-      addresses: this.fb.array([this.createAddressFormGroup()]),
-      preferredMethodOfContact: ["Email"],
-    }),
-    groupDetails: this.fb.group({
-      groupType: [],
-    }),
-  });
+  editAccountForm!: FormGroup; // Declare the form but don't initialize it yet
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private storeService: StoreService,
-  ) {}
+    private store: Store,
+  ) {
+    // Initialize the form in ngOnInit after fb is initialized
+    this.editAccountForm = this.fb.group({
+      description: [""],
+      tagline: ["", Validators.required],
+      name: ["", Validators.required],
+      webLinks: this.fb.array([this.createWebLinkFormGroup()]),
+      contactInformation: this.fb.group({
+        emails: this.fb.array([this.createEmailFormGroup()]),
+        phoneNumbers: this.fb.array([this.createPhoneNumberFormGroup()]),
+        addresses: this.fb.array([this.createAddressFormGroup()]),
+        preferredMethodOfContact: ["Email"],
+      }),
+      groupDetails: this.fb.group({
+        groupType: [],
+      }),
+    });
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes["account"]) {
+    if (changes["account"] && this.account) {
       this.loadFormData();
     }
   }
@@ -111,32 +107,29 @@ export class GroupRegistrationComponent implements OnChanges {
   }
 
   onSubmit() {
-    // Call the API to save changes
     if (this.account) {
-      // Prepare the account object with form values
       const formValue = this.editAccountForm.value;
 
-      // Prepare the account object for update
-      const updatedAccount: Partial<Account> = {
+      const updatedAccount: Account = {
         ...this.account,
         ...formValue,
+        type: "group",
         name: formValue.name!,
         tagline: formValue.tagline!,
-        description: formValue.description ?? "",
-        type: "group",
+        description: formValue.description || "",
         webLinks:
-          formValue.webLinks?.map((link) => {
-            return {
-              name: link.name!,
-              url: link.url!,
-              category: link.category ?? "",
-            };
-          }) ?? [],
+          formValue.webLinks?.map((link: Partial<WebLink>) => ({
+            name: link.name,
+            url: link.url,
+            category: link.category || "",
+          })) || [],
         groupDetails: {
+          ...this.account.groupDetails,
           ...formValue.groupDetails,
           groupType: formValue.groupDetails?.groupType || "Nonprofit",
         },
         contactInformation: {
+          ...this.account.contactInformation,
           ...formValue.contactInformation,
           emails:
             formValue.contactInformation!.emails?.map(
@@ -175,26 +168,22 @@ export class GroupRegistrationComponent implements OnChanges {
         },
       };
 
-      // Now update the document with the updatedAccount
-      this.storeService.updateDoc("accounts", updatedAccount);
+      this.store.dispatch(
+        AccountActions.updateAccount({account: updatedAccount}),
+      );
+
       if (this.redirectSubmit) {
-        // Redirect to the user profile page
         this.router.navigateByUrl(
           `/group/${this.account.id}/${this.account.id}/details`,
         );
       }
-      // .then(() => {
-      //   console.log("Group updated successfully");
-      //   this.toGroupPage(); // Navigate to the group page or show a success message
-      // }).catch(error => {
-      //   console.error("Error updating group:", error);
-      // });
     }
   }
 
   loadFormData() {
     if (!this.account) return;
-    // Reset the form arrays to ensure clean state
+
+    // Reset form arrays
     while (this.webLinksFormArray.length !== 0) {
       this.webLinksFormArray.removeAt(0);
     }
@@ -208,7 +197,7 @@ export class GroupRegistrationComponent implements OnChanges {
       this.addressesFormArray.removeAt(0);
     }
 
-    // If there are webLinks, create a FormGroup for each
+    // Load data from account into form arrays and form controls
     this.account.webLinks?.forEach((webLink) => {
       this.webLinksFormArray.push(
         this.fb.group({
@@ -226,12 +215,10 @@ export class GroupRegistrationComponent implements OnChanges {
       );
     });
 
-    // If after loading there are no webLinks, add a blank one
     if (this.webLinksFormArray.length === 0) {
       this.addWebLink();
     }
 
-    // Dynamically load emails and phone numbers from the account, or add a blank one if none exist
     this.account.contactInformation?.emails?.forEach((email) => {
       this.emailsFormArray.push(
         this.fb.group({
@@ -267,7 +254,6 @@ export class GroupRegistrationComponent implements OnChanges {
           state: [address?.state],
           zipcode: [address?.zipcode, Validators.pattern("^[0-9]*$")],
           country: [address?.country],
-          // isPrimaryAddress: [address?.isPrimaryAddress || false],
         }),
       );
     });
@@ -275,7 +261,6 @@ export class GroupRegistrationComponent implements OnChanges {
       this.addAddress();
     }
 
-    // Load other form data as before
     this.editAccountForm.patchValue({
       name: this.account.name,
       description: this.account.description,
@@ -337,7 +322,6 @@ export class GroupRegistrationComponent implements OnChanges {
   }
 
   removePhoneNumber(index: number): void {
-    // Remove the phone number form group at the given index
     this.phoneNumbersFormArray.removeAt(index);
   }
 
@@ -363,7 +347,7 @@ export class GroupRegistrationComponent implements OnChanges {
   }
 
   removeWebLink(index: number): void {
-    // Remove the phone number form group at the given index
+    // Remove the link at the given index
     this.webLinksFormArray.removeAt(index);
   }
 

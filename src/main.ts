@@ -17,55 +17,16 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {enableProdMode, importProvidersFrom} from "@angular/core";
-import {bootstrapApplication} from "@angular/platform-browser";
-import {RouteReuseStrategy, provideRouter} from "@angular/router";
-import {IonicModule, IonicRouteStrategy} from "@ionic/angular";
-import {defineCustomElements} from "@ionic/pwa-elements/loader";
-import {getStorage} from "firebase/storage";
+import {enableProdMode} from "@angular/core";
+import {platformBrowserDynamic} from "@angular/platform-browser-dynamic";
 
-import {routes} from "./app/app.routes";
-import {AppComponent} from "./app/app.component";
+import {AppModule} from "./app/app.module";
 import {environment} from "./environments/environment";
-import {initializeApp} from "firebase/app";
-import {AuthStoreService} from "./app/core/services/auth-store.service";
-// LANGUAGE
-import {TranslateModule, TranslateLoader} from "@ngx-translate/core";
-import {TranslateHttpLoader} from "@ngx-translate/http-loader";
-import {HttpClient, HttpClientModule} from "@angular/common/http";
-
-// Call the element loader after the platform has been bootstrapped
-defineCustomElements(window);
-
-export function createTranslateLoader(http: HttpClient) {
-  return new TranslateHttpLoader(http, "./assets/i18n/", ".json");
-}
 
 if (environment.production) {
   enableProdMode();
 }
 
-// Initialize Firebase before the application has been bootstrapped
-const app = initializeApp(environment.firebaseConfig);
-
-// Initialize Cloud Storage and get a reference to the service
-getStorage(app);
-
-bootstrapApplication(AppComponent, {
-  providers: [
-    {provide: RouteReuseStrategy, useClass: IonicRouteStrategy},
-    importProvidersFrom(IonicModule.forRoot({})),
-    importProvidersFrom(HttpClientModule),
-    importProvidersFrom(
-      TranslateModule.forRoot({
-        loader: {
-          provide: TranslateLoader,
-          useFactory: createTranslateLoader,
-          deps: [HttpClient],
-        },
-      }),
-    ),
-    provideRouter(routes),
-    AuthStoreService,
-  ],
-});
+platformBrowserDynamic()
+  .bootstrapModule(AppModule)
+  .catch((err) => console.error(err));

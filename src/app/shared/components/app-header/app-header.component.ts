@@ -17,36 +17,32 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {CommonModule} from "@angular/common";
 import {Component, Input, OnDestroy, OnInit} from "@angular/core";
-import {IonicModule, PopoverController} from "@ionic/angular";
+import {PopoverController} from "@ionic/angular";
+import {Subscription, combineLatest} from "rxjs";
+import {Account} from "../../../models/account.model";
 import {UserMenuComponent} from "../user-menu/user-menu.component";
-import {Subscription} from "rxjs";
-import {StoreService} from "../../../core/services/store.service";
-import {Account} from "../../../models/account.model"; // Updated import
-import {AuthStoreService} from "../../../core/services/auth-store.service";
+import {Store} from "@ngrx/store";
+import {selectAuthUser} from "../../../state/selectors/auth.selectors";
+import {selectAccounts} from "../../../state/selectors/account.selectors";
 
 @Component({
   selector: "app-header",
   templateUrl: "./app-header.component.html",
   styleUrls: ["./app-header.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, UserMenuComponent],
 })
 export class AppHeaderComponent implements OnInit, OnDestroy {
   @Input() title?: string;
-  private account?: Partial<Account>; // Using Account model
-  private accountsSubscription?: Subscription;
+  private account?: Account;
+  private subscriptions = new Subscription();
   public popoverEvent: any;
 
   constructor(
-    private authStoreService: AuthStoreService,
     private popoverController: PopoverController,
-    private storeService: StoreService,
+    private store: Store,
   ) {}
 
   get image() {
-    // Assuming the Account model has a profile picture field
     return this.account?.iconImage || "assets/avatar/male2.png";
   }
 
@@ -55,25 +51,30 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.accountsSubscription?.unsubscribe();
+    this.subscriptions.unsubscribe();
   }
 
   initiateSubscribers() {
-    // Subscribe to accounts$ observable
-    this.accountsSubscription = this.storeService?.accounts$?.subscribe(
-      (accounts) => {
-        this.account = accounts.find(
-          (account) =>
-            account.id === this.authStoreService.getCurrentUser()?.uid,
-        );
-      },
+    this.subscriptions.add(
+      combineLatest([
+        this.store.select(selectAuthUser),
+        this.store.select(selectAccounts),
+      ]).subscribe(([authUser, accounts]) => {
+        if (authUser) {
+          this.account = accounts.find(
+            (account) => account.id === authUser.uid,
+          );
+        } else {
+          this.account = undefined;
+        }
+      }),
     );
   }
 
   async presentPopover(ev: any) {
     this.popoverEvent = ev;
     const popover = await this.popoverController.create({
-      component: UserMenuComponent, // Passing the component to the popover
+      component: UserMenuComponent,
       event: ev,
       translucent: true,
     });

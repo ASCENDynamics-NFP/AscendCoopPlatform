@@ -17,64 +17,102 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {TestBed} from "@angular/core/testing";
-import {RouterTestingModule} from "@angular/router/testing";
+import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {AppComponent} from "./app.component";
-import {of} from "rxjs";
+import {MenuController, Platform} from "@ionic/angular";
 import {TranslateService} from "@ngx-translate/core";
-import {TranslateModule, TranslateLoader} from "@ngx-translate/core";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {HttpClient} from "@angular/common/http";
-import {TranslateHttpLoader} from "@ngx-translate/http-loader";
-import {AuthStoreService} from "./core/services/auth-store.service";
-import {StoreService} from "./core/services/store.service";
-
-export function createTranslateLoader(http: HttpClient) {
-  return new TranslateHttpLoader(http, "./assets/i18n/", ".json");
-}
+import {Store, StoreModule} from "@ngrx/store";
+import {of} from "rxjs";
+import * as AuthActions from "./state/actions/auth.actions";
+import {selectIsLoggedIn} from "./state/selectors/auth.selectors";
+import {NO_ERRORS_SCHEMA} from "@angular/core";
 
 describe("AppComponent", () => {
-  let service: AuthStoreService;
-  let authSpy: any;
-  let storeSpy: any;
+  let component: AppComponent;
+  let fixture: ComponentFixture<AppComponent>;
+  let mockMenuController: any;
+  let mockTranslateService: any;
+  let mockStore: any;
+  let mockPlatform: any;
 
-  beforeEach(() => {
-    authSpy = jasmine.createSpyObj("auth", ["onSignOut"]);
-    // Mock authUser$ as an Observable that emits null
-    authSpy.authUser$ = of(null);
-    authSpy.onSignOut.and.returnValue(Promise.resolve());
+  beforeEach(async () => {
+    mockMenuController = {
+      enable: jasmine.createSpy().and.returnValue(Promise.resolve()),
+    };
 
-    // Create a spy for StoreService
-    storeSpy = jasmine.createSpyObj("store", ["accounts$", "currentUser$"]);
-    // Mock accounts$ and currentUser$ as Observables
-    storeSpy.accounts$ = of([]);
-    storeSpy.currentUser$ = of(null);
+    mockTranslateService = {
+      addLangs: jasmine.createSpy(),
+      setDefaultLang: jasmine.createSpy(),
+      getBrowserLang: jasmine.createSpy().and.returnValue("en"),
+      use: jasmine.createSpy(),
+    };
 
-    TestBed.configureTestingModule({
-      imports: [
-        RouterTestingModule,
-        HttpClientTestingModule,
-        TranslateModule.forRoot({
-          loader: {
-            provide: TranslateLoader,
-            useFactory: createTranslateLoader,
-            deps: [HttpClient],
-          },
-        }),
-      ],
+    mockStore = {
+      select: jasmine.createSpy().and.returnValue(of(false)),
+      dispatch: jasmine.createSpy(),
+    };
+
+    mockPlatform = {
+      ready: jasmine.createSpy().and.returnValue(Promise.resolve()),
+    };
+
+    await TestBed.configureTestingModule({
+      declarations: [AppComponent],
+      imports: [StoreModule.forRoot({})],
       providers: [
-        {provide: AuthStoreService, useValue: authSpy},
-        {provide: StoreService, useValue: storeSpy}, // Provide the mock StoreService
-        TranslateService,
+        {provide: MenuController, useValue: mockMenuController},
+        {provide: TranslateService, useValue: mockTranslateService},
+        {provide: Store, useValue: mockStore},
+        {provide: Platform, useValue: mockPlatform},
       ],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
-
-    service = TestBed.inject(AuthStoreService);
   });
 
-  it("should create the app", () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
+  beforeEach(() => {
+    fixture = TestBed.createComponent(AppComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it("should create the component", () => {
+    expect(component).toBeTruthy();
+  });
+
+  it("should initialize app on platform ready", async () => {
+    await mockPlatform.ready();
+    expect(mockTranslateService.setDefaultLang).toHaveBeenCalledWith("en");
+    expect(mockTranslateService.getBrowserLang).toHaveBeenCalled();
+    expect(mockTranslateService.use).toHaveBeenCalledWith("en");
+  });
+
+  it("should dispatch initializeAuth action on ngOnInit", () => {
+    component.ngOnInit();
+    expect(mockStore.dispatch).toHaveBeenCalledWith(
+      AuthActions.initializeAuth(),
+    );
+  });
+
+  it("should update menu for logged-in user", async () => {
+    await component["updateMenu"](true);
+    expect(mockMenuController.enable).toHaveBeenCalledWith(false, "guest");
+    expect(mockMenuController.enable).toHaveBeenCalledWith(true, "user");
+  });
+
+  it("should update menu for guest user", async () => {
+    await component["updateMenu"](false);
+    expect(mockMenuController.enable).toHaveBeenCalledWith(false, "user");
+    expect(mockMenuController.enable).toHaveBeenCalledWith(true, "guest");
+  });
+
+  it("should set up language on construction", () => {
+    expect(mockTranslateService.addLangs).toHaveBeenCalledWith(["en", "fr"]);
+  });
+
+  it("should select isLoggedIn$ from the store", () => {
+    component.isLoggedIn$.subscribe((isLoggedIn) => {
+      expect(isLoggedIn).toBeFalse();
+    });
+    expect(mockStore.select).toHaveBeenCalledWith(selectIsLoggedIn);
   });
 });

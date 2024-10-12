@@ -18,25 +18,34 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
-import {IonicModule} from "@ionic/angular";
-
+import {FormsModule} from "@angular/forms";
 import {MemberSearchComponent} from "./member-search.component";
+import {IonicModule} from "@ionic/angular";
+import {provideMockStore} from "@ngrx/store/testing";
 
 describe("MemberSearchComponent", () => {
   let component: MemberSearchComponent;
   let fixture: ComponentFixture<MemberSearchComponent>;
 
   beforeEach(waitForAsync(() => {
+    const storeSpy = jasmine.createSpyObj("StoreService", [
+      "searchDocsByName",
+      "updateDocAtPath",
+    ]);
+
     TestBed.configureTestingModule({
-      imports: [IonicModule.forRoot()],
+      declarations: [MemberSearchComponent],
+      imports: [IonicModule.forRoot(), FormsModule],
+      providers: [provideMockStore({}), {useValue: storeSpy}],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MemberSearchComponent);
     component = fixture.componentInstance;
+
     fixture.detectChanges();
   }));
 
-  it("should create", () => {
+  it("should create the component", () => {
     expect(component).toBeTruthy();
   });
 });

@@ -17,68 +17,49 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {FormsModule} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
-import {GroupRegistrationComponent} from "./components/group-registration/group-registration.component";
-import {UserRegistrationComponent} from "./components/user-registration/user-registration.component";
-import {Subscription} from "rxjs";
+import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
-import {StoreService} from "../../../../core/services/store.service";
 import {Account} from "../../../../models/account.model";
-import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
+import {Store} from "@ngrx/store";
+import {selectAccountById} from "../../../../state/selectors/account.selectors";
+import * as AccountActions from "../../../../state/actions/account.actions";
+import {Observable} from "rxjs";
+import {tap} from "rxjs/operators";
 
 @Component({
   selector: "app-registration",
   templateUrl: "./registration.page.html",
   styleUrls: ["./registration.page.scss"],
-  standalone: true,
-  imports: [
-    IonicModule,
-    CommonModule,
-    FormsModule,
-    AppHeaderComponent,
-    GroupRegistrationComponent,
-    UserRegistrationComponent,
-  ],
 })
-export class RegistrationPage {
-  private accountsSubscription?: Subscription;
+export class RegistrationPage implements OnInit {
   public accountId: string | null = null;
-  account?: Partial<Account>;
   public selectedType: string = "";
+  public account$?: Observable<Account | undefined>;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private storeService: StoreService,
+    private store: Store,
   ) {
     this.accountId = this.route.snapshot.paramMap.get("accountId");
   }
 
-  ionViewWillEnter() {
-    this.initiateSubscribers();
-  }
+  ngOnInit() {
+    if (this.accountId) {
+      // Dispatch an action to load the account
+      this.store.dispatch(
+        AccountActions.loadAccount({accountId: this.accountId}),
+      );
 
-  ionViewWillLeave() {
-    this.accountsSubscription?.unsubscribe();
-  }
-
-  initiateSubscribers() {
-    this.accountsSubscription = this.storeService.accounts$.subscribe(
-      (accounts) => {
-        if (!this.accountId) return;
-        this.account = accounts.find(
-          (account) => account.id === this.accountId,
-        );
-        if (!this.account) {
-          this.storeService.getDocById("accounts", this.accountId); // get and add doc to store
-        } else if (this.account?.type) {
-          this.router.navigate([`/${this.accountId}`]);
-        }
-      },
-    );
+      // Use the async pipe in the template
+      this.account$ = this.store.select(selectAccountById(this.accountId)).pipe(
+        tap((account) => {
+          if (account?.type) {
+            this.router.navigate([`/${this.accountId}`]);
+          }
+        }),
+      );
+    }
   }
 
   selectType(type: string) {

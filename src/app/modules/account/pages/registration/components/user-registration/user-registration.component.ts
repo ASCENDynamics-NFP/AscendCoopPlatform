@@ -17,17 +17,9 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {CommonModule} from "@angular/common";
+// user-registration.component.ts
 import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
-import {
-  FormArray,
-  FormBuilder,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
+import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {
   Account,
   Address,
@@ -35,20 +27,19 @@ import {
   PhoneNumber,
   WebLink,
 } from "../../../../../../models/account.model";
-import {StoreService} from "../../../../../../core/services/store.service";
 import {countryCodes} from "../../../../../../core/data/phone";
 import {countries, statesProvinces} from "../../../../../../core/data/country";
 import {Router} from "@angular/router";
+import {Store} from "@ngrx/store";
+import * as AccountActions from "../../../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-user-registration",
   templateUrl: "./user-registration.component.html",
   styleUrls: ["./user-registration.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, ReactiveFormsModule],
 })
 export class UserRegistrationComponent implements OnChanges {
-  @Input() account?: Partial<Account>;
+  @Input() account?: Account;
   @Input() redirectSubmit: boolean = false;
   public maxAddresses = 3; // Set maximum number of addresses
   public maxEmails = 5;
@@ -60,9 +51,10 @@ export class UserRegistrationComponent implements OnChanges {
     Number(a.value) > Number(b.value) ? 1 : -1,
   ); // List of country codes for phone numbers
   public statesProvinces = statesProvinces; // List of states/provinces for the selected country
+
   constructor(
     private fb: FormBuilder,
-    private storeService: StoreService,
+    private store: Store,
     private router: Router,
   ) {
     this.registrationForm = this.fb.group({
@@ -116,67 +108,59 @@ export class UserRegistrationComponent implements OnChanges {
       const formValue = this.registrationForm.value;
 
       // Prepare the account object for update
-      const updatedAccount: Partial<Account> = {
+      const updatedAccount: Account = {
         ...this.account,
         ...formValue,
-        name: formValue.name!,
-        tagline: formValue.tagline!,
-        description: formValue.description ?? "",
         type: "user",
+        name: formValue.name,
+        tagline: formValue.tagline,
+        description: formValue.description || "",
         webLinks:
-          formValue.webLinks?.map((link: Partial<WebLink>) => {
-            return {
-              name: link.name!,
-              url: link.url!,
-              category: link.category ?? "",
-            };
-          }) ?? [],
+          formValue.webLinks?.map((link: WebLink) => ({
+            name: link.name,
+            url: link.url,
+            category: link.category || "",
+          })) || [],
         contactInformation: {
+          ...this.account.contactInformation,
           ...formValue.contactInformation,
           emails:
-            formValue.contactInformation!.emails?.map(
-              (email: Partial<Email>) => ({
-                name: email.name ?? null,
-                email: email.email!,
-              }),
-            ) ?? [],
+            formValue.contactInformation.emails?.map((email: Email) => ({
+              name: email.name || null,
+              email: email.email,
+            })) || [],
           phoneNumbers:
-            formValue.contactInformation!.phoneNumbers?.map(
-              (phone: Partial<PhoneNumber>) => ({
-                countryCode: phone.countryCode ?? null,
-                number: phone.number ?? null,
-                type: phone.type ?? null,
+            formValue.contactInformation.phoneNumbers?.map(
+              (phone: PhoneNumber) => ({
+                countryCode: phone.countryCode || null,
+                number: phone.number || null,
+                type: phone.type || null,
                 isEmergencyNumber: phone.isEmergencyNumber || false,
               }),
-            ) ?? [],
+            ) || [],
           addresses:
-            formValue.contactInformation!.addresses?.map(
-              (address: Partial<Address>) => ({
-                name: address?.name ?? null,
-                street: address?.street ?? null,
-                city: address?.city ?? null,
-                state: address?.state ?? null,
-                zipcode: address?.zipcode ?? null,
-                country: address?.country ?? null,
-              }),
-            ) ?? [],
-          preferredMethodOfContact: "Email",
+            formValue.contactInformation.addresses?.map((address: Address) => ({
+              name: address.name || null,
+              street: address.street || null,
+              city: address.city || null,
+              state: address.state || null,
+              zipcode: address.zipcode || null,
+              country: address.country || null,
+            })) || [],
+          preferredMethodOfContact:
+            formValue.contactInformation.preferredMethodOfContact,
         },
       };
 
       // Now update the document with the updatedAccount
-      this.storeService.updateDoc("accounts", updatedAccount);
+      this.store.dispatch(
+        AccountActions.updateAccount({account: updatedAccount}),
+      );
+
       if (this.redirectSubmit) {
         // Redirect to the user profile page
-        this.router.navigate([`/${this.account?.id}`]);
+        this.router.navigate([`/${this.account.id}`]);
       }
-
-      // .then(() => {
-      //   console.log("Group updated successfully");
-      //   this.toGroupPage(); // Navigate to the group page or show a success message
-      // }).catch(error => {
-      //   console.error("Error updating group:", error);
-      // });
     }
   }
 

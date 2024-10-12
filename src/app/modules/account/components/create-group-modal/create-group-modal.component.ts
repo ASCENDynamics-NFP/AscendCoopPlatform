@@ -17,39 +17,36 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// create-group-modal.component.ts
 import {Component} from "@angular/core";
-import {IonicModule, ModalController} from "@ionic/angular";
-import {CommonModule} from "@angular/common";
-import {
-  FormBuilder,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from "@angular/forms";
+import {ModalController} from "@ionic/angular";
+import {FormBuilder, FormGroup, Validators} from "@angular/forms";
+import {Timestamp} from "firebase/firestore";
 import {Account} from "../../../../models/account.model";
-import {StoreService} from "../../../../core/services/store.service";
-import {Timestamp} from "firebase/firestore"; // Import Timestamp if needed
+import {Store} from "@ngrx/store";
+import * as AccountActions from "../../../../state/actions/account.actions";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {firstValueFrom} from "rxjs";
 
 @Component({
   selector: "app-create-group-modal",
   templateUrl: "./create-group-modal.component.html",
   styleUrls: ["./create-group-modal.component.scss"],
-  standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, ReactiveFormsModule],
 })
 export class CreateGroupModalComponent {
-  groupForm = this.fb.group({
-    name: ["", Validators.required],
-    description: ["", Validators.required],
-    tagline: ["", Validators.required],
-    // You might want to add additional fields relevant to groups
-  });
+  public groupForm: FormGroup;
 
   constructor(
     private modalCtrl: ModalController,
     private fb: FormBuilder,
-    private storeService: StoreService,
-  ) {}
+    private store: Store,
+  ) {
+    this.groupForm = this.fb.group({
+      name: ["", Validators.required],
+      description: ["", Validators.required],
+      tagline: ["", Validators.required],
+    });
+  }
 
   cancel() {
     return this.modalCtrl.dismiss(null, "cancel");
@@ -59,29 +56,39 @@ export class CreateGroupModalComponent {
     return this.modalCtrl.dismiss(null, "confirm");
   }
 
-  onSubmit() {
+  async onSubmit() {
     const groupData = this.groupForm.value;
-    const newGroup: Partial<Account> = {
-      ...groupData,
-      name: groupData.name || undefined,
-      description: groupData.description || undefined,
-      tagline: groupData.tagline || undefined,
-      type: "group", // Specify that this account is a group
-      // Include other necessary fields like address, language, etc.
-      // Default images or placeholder values
-      iconImage: "assets/icon/favicon.png",
-      heroImage: "assets/image/orghero.png",
-      // Initialize other group-specific properties if needed
-      groupDetails: {
-        admins: ["user-id"], // Set the user ID of the creator as an admin
-        dateFounded: Timestamp.now(), // Set the founding date
-        supportedLanguages: ["en"], // Example value
-        // Other group-specific fields
-      },
-    };
+    const authUser = await firstValueFrom(this.store.select(selectAuthUser));
 
-    this.storeService.createDoc("accounts", newGroup).then((accountId) => {
-      this.modalCtrl.dismiss({accountId: accountId}, "confirm");
-    });
+    if (authUser) {
+      const newGroup: Partial<Account> = {
+        ...groupData,
+        name: groupData.name || undefined,
+        description: groupData.description || undefined,
+        tagline: groupData.tagline || undefined,
+        type: "group", // Specify that this account is a group
+        // Include other necessary fields like address, language, etc.
+        // Default images or placeholder values
+        iconImage: "assets/icon/favicon.png",
+        heroImage: "assets/image/orghero.png",
+        // Initialize other group-specific properties if needed
+        groupDetails: {
+          admins: [authUser.uid], // Set the user ID of the creator as an admin
+          dateFounded: Timestamp.now(), // Set the founding date
+          supportedLanguages: ["en"], // Example value
+        },
+      };
+
+      // Dispatch action to create group
+      this.store.dispatch(
+        AccountActions.createAccount({account: newGroup as Account}),
+      );
+
+      // Close the modal after dispatching the action
+      this.modalCtrl.dismiss({accountId: newGroup.id}, "confirm");
+    } else {
+      // Handle error if user is not authenticated
+      this.modalCtrl.dismiss(null, "cancel");
+    }
   }
 }

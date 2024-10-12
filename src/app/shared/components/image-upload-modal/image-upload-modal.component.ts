@@ -18,18 +18,14 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Component, Input} from "@angular/core";
-import {ModalController, IonicModule} from "@ionic/angular";
-import {ImageUploadService} from "../../../core/services/image-upload.service"; // Adjust the path to your service
-import {CommonModule} from "@angular/common";
-import {FormsModule} from "@angular/forms";
+import {ModalController} from "@ionic/angular";
+import {ImageUploadService} from "../../../core/services/image-upload.service";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 
 @Component({
   selector: "app-image-upload-modal",
   templateUrl: "./image-upload-modal.component.html",
   styleUrls: ["./image-upload-modal.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
 })
 export class ImageUploadModalComponent {
   @Input() collectionName!: string;

@@ -17,33 +17,31 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// volunteer-preference-info.component.ts
+
 import {Component, Input, OnInit} from "@angular/core";
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
-import {CommonModule} from "@angular/common";
-import {ReactiveFormsModule} from "@angular/forms";
 import {
   Account,
   VolunteerPreferences,
 } from "../../../../../../models/account.model";
-import {StoreService} from "../../../../../../core/services/store.service";
+import {Store} from "@ngrx/store";
+import * as AccountActions from "../../../../../../state/actions/account.actions";
 import {areasOfInterestOptions} from "../../../../../../core/data/options";
 
 @Component({
   selector: "app-volunteer-preference-info",
   templateUrl: "./volunteer-preference-info.component.html",
   styleUrls: ["./volunteer-preference-info.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
 export class VolunteerPreferenceInfoComponent implements OnInit {
-  @Input() account?: Partial<Account>;
+  @Input() account?: Account;
   volunteerPreferencesForm: FormGroup;
   areasOfInterestOptions: string[] = areasOfInterestOptions;
 
   constructor(
     private fb: FormBuilder,
-    private storeService: StoreService,
+    private store: Store,
   ) {
     this.volunteerPreferencesForm = this.fb.group({
       areasOfInterest: [[], Validators.required],
@@ -81,20 +79,17 @@ export class VolunteerPreferenceInfoComponent implements OnInit {
   }
 
   onSubmit() {
-    if (this.volunteerPreferencesForm.valid) {
-      const formValue = this.volunteerPreferencesForm.value;
-      const updatedVolunteerPreferences: VolunteerPreferences = {
-        ...formValue,
-        preferredVolunteerRoles: formValue.preferredVolunteerRoles
-          .split(",")
-          .map((role: string) => role.trim()),
-      };
-      const updatedAccount: Partial<Account> = {
+    if (this.volunteerPreferencesForm.valid && this.account) {
+      const updatedVolunteerPreferences: VolunteerPreferences =
+        this.volunteerPreferencesForm.value;
+      const updatedAccount: Account = {
         ...this.account,
         volunteerPreferences: updatedVolunteerPreferences,
       };
 
-      this.storeService.updateDoc("accounts", updatedAccount);
+      this.store.dispatch(
+        AccountActions.updateAccount({account: updatedAccount}),
+      );
     }
   }
 }

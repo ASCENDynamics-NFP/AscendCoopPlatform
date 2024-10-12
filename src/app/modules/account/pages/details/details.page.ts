@@ -17,90 +17,115 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {FormsModule} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
+// src/app/modules/account/pages/details/details.page.ts
+
+import {Component, OnInit, ViewChild} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
-import {RelatedAccountsComponent} from "./components/related-accounts/related-accounts.component";
+import {Observable, combineLatest} from "rxjs";
+import {map, tap} from "rxjs/operators";
+import {AuthUser} from "../../../../models/auth-user.model";
+import {Store} from "@ngrx/store";
+
 import {Account} from "../../../../models/account.model";
-import {Subscription} from "rxjs";
-import {StoreService} from "../../../../core/services/store.service";
-import {AuthStoreService} from "../../../../core/services/auth-store.service";
-import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
-import {ProfessionalInfoComponent} from "./components/professional-info/professional-info.component";
-import {VolunteerPreferenceInfoComponent} from "./components/volunteer-preference-info/volunteer-preference-info.component";
-import {MutualAidCommunityInfoComponent} from "./components/mutual-aid-community-info/mutual-aid-community-info.component";
-import {ProfileComponent} from "./components/profile/profile.component";
-import {ContactInformationModule} from "./components/contact-information/contact-information.module";
-import {User} from "firebase/auth";
-import {HeroComponent} from "./components/hero/hero.component";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {
+  selectSelectedAccount,
+  selectRelatedAccounts,
+} from "../../../../state/selectors/account.selectors";
+import * as AccountActions from "../../../../state/actions/account.actions";
+import {IonContent} from "@ionic/angular";
 
 @Component({
   selector: "app-details",
   templateUrl: "./details.page.html",
   styleUrls: ["./details.page.scss"],
-  standalone: true,
-  imports: [
-    IonicModule,
-    CommonModule,
-    FormsModule,
-    HeroComponent,
-    AppHeaderComponent,
-    RelatedAccountsComponent,
-    ProfessionalInfoComponent,
-    VolunteerPreferenceInfoComponent,
-    MutualAidCommunityInfoComponent,
-    ProfileComponent,
-    ContactInformationModule,
-  ],
 })
-export class DetailsPage {
+export class DetailsPage implements OnInit {
+  @ViewChild(IonContent, {static: false}) content!: IonContent; // Get reference to ion-content
   public accountId: string | null;
-  private accountsSubscription?: Subscription;
-  authUser: User | null = null;
-  account?: Partial<Account>;
+  authUser$!: Observable<AuthUser | null>;
+  fullAccount$!: Observable<Account | null>;
+  isProfileOwner$!: Observable<boolean>;
 
   constructor(
-    private authStoreService: AuthStoreService,
     private route: ActivatedRoute,
     private router: Router,
-    private storeService: StoreService,
+    private store: Store,
   ) {
     this.accountId = this.route.snapshot.paramMap.get("accountId");
-    this.authUser = this.authStoreService.getCurrentUser();
   }
 
-  get isProfileOwner(): boolean {
-    return this.accountId === this.authStoreService.getCurrentUser()?.uid;
+  scrollToSection(sectionId: string): void {
+    const yOffset = document.getElementById(sectionId)?.offsetTop;
+    if (yOffset !== undefined) {
+      this.content.scrollToPoint(0, yOffset, 500);
+    }
   }
 
-  ionViewWillEnter() {
-    this.initiateSubscribers();
-  }
+  ngOnInit(): void {
+    // Initialize authUser$ observable
+    this.authUser$ = this.store.select(selectAuthUser);
 
-  ionViewWillLeave() {
-    this.accountsSubscription?.unsubscribe();
-  }
+    // Subscribe to route paramMap to detect changes in accountId
+    this.route.paramMap.subscribe((params) => {
+      this.accountId = params.get("accountId");
 
-  initiateSubscribers() {
-    this.accountsSubscription = this.storeService.accounts$.subscribe(
-      (accounts) => {
-        if (!this.accountId) return;
-        this.account = accounts.find(
-          (account) => account.id === this.accountId,
+      if (this.accountId) {
+        // Dispatch loadAccount action to fetch account data
+        this.store.dispatch(
+          AccountActions.loadAccount({accountId: this.accountId}),
         );
-        if (!this.account) {
-          this.storeService.getDocById("accounts", this.accountId); // get and add doc to store
-        } else {
-          if (!this.account?.type) {
-            this.router.navigate([`/registration/${this.accountId}`]); // Navigate to registration
-          }
-          if (!this.account?.relatedAccounts) {
-            this.storeService.getAndSortRelatedAccounts(this.accountId);
-          }
-        }
-      },
-    );
+
+        // Dispatch setSelectedAccount action
+        this.store.dispatch(
+          AccountActions.setSelectedAccount({accountId: this.accountId}),
+        );
+
+        // Dispatch loadRelatedAccounts to ensure related accounts are available on navigation
+        this.store.dispatch(
+          AccountActions.loadRelatedAccounts({accountId: this.accountId}),
+        );
+
+        // Select account and related accounts from the store
+        const selectedAccount$ = this.store.select(selectSelectedAccount);
+        const relatedAccounts$ = this.store.select(selectRelatedAccounts);
+
+        // Combine the account and related accounts into one observable without mutating
+        this.fullAccount$ = combineLatest([
+          selectedAccount$,
+          relatedAccounts$,
+        ]).pipe(
+          tap(([account]) => {
+            if (account && !account.type) {
+              this.router.navigate([`/registration/${this.accountId}`]);
+            }
+          }),
+          map(([account, relatedAccounts]) => {
+            if (account) {
+              return {
+                ...account, // Clone the account object
+                relatedAccounts: relatedAccounts, // Assign relatedAccounts without mutation
+              };
+            } else {
+              return null;
+            }
+          }),
+        );
+
+        // Determine if the current user is the profile owner
+        this.isProfileOwner$ = combineLatest([
+          this.authUser$,
+          this.fullAccount$,
+        ]).pipe(
+          map(([authUser, account]) => {
+            // Ensure account and authUser are not null
+            if (account && authUser) {
+              return account.id === authUser.uid;
+            }
+            return false; // Default to false if any are null
+          }),
+        );
+      }
+    });
   }
 }

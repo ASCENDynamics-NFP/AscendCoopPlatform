@@ -17,60 +17,80 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// src/app/modules/account/pages/search/component/partner-search/partner-search.component.ts
+
 import {Component, Input, OnInit} from "@angular/core";
-import {StoreService} from "../../../../../../core/services/store.service";
+import {Subject, Observable, combineLatest, of} from "rxjs";
+import {
+  debounceTime,
+  startWith,
+  switchMap,
+  map,
+  distinctUntilChanged,
+} from "rxjs/operators";
+import {Store} from "@ngrx/store";
 import {Account, RelatedAccount} from "../../../../../../models/account.model";
-import {CommonModule} from "@angular/common";
-import {FormsModule} from "@angular/forms";
-import {RouterModule} from "@angular/router";
-import {IonicModule} from "@ionic/angular";
+import {
+  selectFilteredAccounts,
+  selectRelatedAccounts,
+  selectAccountLoading,
+} from "../../../../../../state/selectors/account.selectors";
+import * as AccountActions from "../../../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-partner-search",
   templateUrl: "./partner-search.component.html",
   styleUrls: ["./partner-search.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
 export class PartnerSearchComponent implements OnInit {
   @Input() isAdmin: boolean = false;
-  @Input() currentGroup?: Partial<Account>;
-  groups: Partial<Account>[] | null = [];
-  relatedAccounts: Partial<RelatedAccount>[] = [];
-  private searchTerm: string = "";
+  @Input() currentGroup?: Account;
+  private searchTerms = new Subject<string>();
+  accountList$!: Observable<Account[]>;
+  loading$: Observable<boolean>;
 
-  constructor(private storeService: StoreService) {}
+  constructor(private store: Store) {
+    this.loading$ = this.store.select(selectAccountLoading);
+  }
 
   ngOnInit() {
-    // Fetch groups
-    this.groups = this.storeService
-      .getCollection("accounts")
-      .filter((g) => g["type"] === "group");
-  }
-
-  get searchResults() {
-    return (
-      this.groups?.filter((group) =>
-        group.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
-      ) ?? []
+    // Set up search with filtering
+    this.accountList$ = this.searchTerms.pipe(
+      startWith(""),
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap((term) =>
+        this.store.select(selectFilteredAccounts(term, "group")),
+      ),
     );
-  }
 
-  searchGroups(event: any) {
-    this.searchTerm = event.target.value;
-    if (this.searchTerm) {
-      this.storeService.searchDocsByName("accounts", this.searchTerm);
+    // Dispatch loadAccounts on init
+    this.store.dispatch(AccountActions.loadAccounts());
+
+    // Set the selected account and load related accounts
+    if (this.currentGroup?.id) {
+      this.store.dispatch(
+        AccountActions.setSelectedAccount({accountId: this.currentGroup.id}),
+      );
+
+      this.store.dispatch(
+        AccountActions.loadRelatedAccounts({accountId: this.currentGroup.id}),
+      );
     }
   }
 
-  sendPartnerGroupRequest(group: Partial<Account>) {
+  search(event: any) {
+    const value = event.target.value;
+    this.searchTerms.next(value);
+  }
+
+  sendPartnerGroupRequest(group: Account) {
     if (!this.currentGroup?.id || !group.id) {
       console.log("No current group or group ID");
       return;
     }
 
-    // Create a related account for the partner group
-    const relatedAccount = {
+    const relatedAccount: RelatedAccount = {
       id: group.id,
       name: group.name,
       iconImage: group.iconImage,
@@ -82,21 +102,31 @@ export class PartnerSearchComponent implements OnInit {
       targetId: group.id,
     };
 
-    const docPath = `accounts/${this.currentGroup.id}/relatedAccounts/${group.id}`;
-    this.storeService.updateDocAtPath(docPath, relatedAccount);
+    this.store.dispatch(
+      AccountActions.createRelatedAccount({
+        accountId: this.currentGroup.id,
+        relatedAccount: relatedAccount,
+      }),
+    );
   }
 
-  canInvite(group: Partial<Account>): boolean {
-    if (group.id === this.currentGroup?.id) {
-      // Cannot invite the same group
-      return false;
-    }
+  canInvite(group: Account): Observable<boolean> {
+    return combineLatest([
+      of(this.currentGroup),
+      this.store.select(selectRelatedAccounts),
+    ]).pipe(
+      map(([currentGroup, relatedAccounts]) => {
+        if (group.id === currentGroup?.id) {
+          return false;
+        }
 
-    // Check if the group is already a partner
-    const isAlreadyPartner = this.relatedAccounts.some(
-      (ra) => ra.id === group.id && ra.status !== "rejected", // You may adjust the condition as needed
+        // Check against the `relatedAccounts` from the store
+        const isAlreadyPartner = relatedAccounts.some(
+          (ra) => ra.id === group.id && ra.status !== "rejected",
+        );
+
+        return !isAlreadyPartner;
+      }),
     );
-
-    return !isAlreadyPartner;
   }
 }

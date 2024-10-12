@@ -18,8 +18,6 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Component, Input} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {IonicModule} from "@ionic/angular";
 import {Router} from "@angular/router";
 import {Account} from "../../../../../../models/account.model";
 
@@ -27,34 +25,33 @@ import {Account} from "../../../../../../models/account.model";
   selector: "app-related-accounts",
   templateUrl: "./related-accounts.component.html",
   styleUrls: ["./related-accounts.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule],
 })
 export class RelatedAccountsComponent {
-  @Input() account?: Partial<Account>;
-  @Input() type?: "user" | "group";
+  @Input() account: Partial<Account> = {relatedAccounts: []}; // Initialize with a default object
+  @Input() type: "user" | "group" = "user"; // Default type to 'user'
 
   constructor(private router: Router) {}
 
   get title() {
-    return this.type === "user" && this.account?.type === "user"
-      ? "Friends"
-      : this.type === "user" && this.account?.type === "group"
-        ? "Members"
-        : "Organizations";
+    if (this.type === "user") {
+      return this.account?.type === "user" ? "Friends" : "Members";
+    }
+    return "Organizations";
   }
 
   get relatedAccounts() {
     return (
       this.account?.relatedAccounts?.filter(
-        (ra) => ra.type === this.type && ra.status === "accepted", // only show accepted friends
-      ) ?? []
+        (ra) => ra.type === this.type && ra.status === "accepted",
+      ) || []
     );
   }
 
   goToRelatedAccount(id: string | undefined) {
     if (id) {
       this.router.navigate([`/${id}`]);
+    } else {
+      console.error("Invalid ID provided for navigation.");
     }
   }
 

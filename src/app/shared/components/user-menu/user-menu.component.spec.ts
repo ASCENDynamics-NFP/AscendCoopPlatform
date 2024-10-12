@@ -17,27 +17,109 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
-import {IonicModule} from "@ionic/angular";
-
+import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {UserMenuComponent} from "./user-menu.component";
+import {Router} from "@angular/router";
+import {PopoverController} from "@ionic/angular";
+import {Store, StoreModule} from "@ngrx/store";
+import {of} from "rxjs";
+import * as AuthActions from "../../../state/actions/auth.actions";
 
 describe("UserMenuComponent", () => {
   let component: UserMenuComponent;
   let fixture: ComponentFixture<UserMenuComponent>;
+  let mockRouter: any;
+  let mockPopoverCtrl: any;
+  let mockStore: any;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      declarations: [],
-      imports: [IonicModule.forRoot()],
+  const mockAuthUser = {
+    uid: "12345",
+    email: "test@example.com",
+    displayName: "Test User",
+    photoURL: null,
+    emailVerified: true,
+  };
+
+  beforeEach(async () => {
+    window.onbeforeunload = () => "Oh no!"; // Prevent page reloads during tests
+    mockRouter = {
+      navigate: jasmine.createSpy("navigate"), // Ensure navigate is mocked
+      getCurrentNavigation: jasmine
+        .createSpy("getCurrentNavigation")
+        .and.returnValue(null), // Mock current navigation to prevent reloads
+    };
+
+    mockPopoverCtrl = {
+      dismiss: jasmine.createSpy("dismiss").and.returnValue(Promise.resolve()), // Return a resolved promise
+    };
+
+    mockStore = {
+      dispatch: jasmine.createSpy("dispatch"),
+      select: jasmine.createSpy("select").and.returnValue(of(mockAuthUser)),
+    };
+
+    await TestBed.configureTestingModule({
+      declarations: [UserMenuComponent],
+      providers: [
+        {provide: Router, useValue: mockRouter},
+        {provide: PopoverController, useValue: mockPopoverCtrl},
+        {provide: Store, useValue: mockStore},
+      ],
+      imports: [StoreModule.forRoot({})],
     }).compileComponents();
+  });
 
+  beforeEach(() => {
     fixture = TestBed.createComponent(UserMenuComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
-  it("should create", () => {
+  it("should create the component", () => {
     expect(component).toBeTruthy();
+  });
+
+  it("should dismiss the popover and dispatch signOut action on logout", async () => {
+    await component.logout();
+    expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
+    expect(mockStore.dispatch).toHaveBeenCalledWith(AuthActions.signOut());
+  });
+
+  it("should dismiss the popover and navigate to the user profile on goToProfile if user exists", async () => {
+    await component.goToProfile();
+    expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
+    expect(mockRouter.navigate).toHaveBeenCalledWith([`/${mockAuthUser.uid}`]);
+  });
+
+  it("should log an error if user ID is not found on goToProfile", async () => {
+    spyOn(console, "error");
+    mockStore.select.and.returnValue(of(null)); // Simulate no user in the store
+    await component.goToProfile();
+    expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
+    expect(console.error).toHaveBeenCalledWith("User ID not found.");
+    expect(mockRouter.navigate).not.toHaveBeenCalled();
+  });
+
+  it("should dismiss the popover and navigate to settings on goToSettings", async () => {
+    await component.goToSettings();
+    expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
+    expect(mockRouter.navigate).toHaveBeenCalledWith(["/settings"]);
+  });
+
+  it("should log an error if fetching user profile throws an error in goToProfile", async () => {
+    spyOn(console, "error");
+
+    const mockError = new Error("Error fetching user"); // Simulate an error object
+
+    mockStore.select.and.throwError(mockError); // Simulate an error during user fetch
+
+    await component.goToProfile();
+
+    expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
+    expect(console.error).toHaveBeenCalledWith(
+      "Error fetching user profile:",
+      mockError,
+    ); // Expect the error object
+    expect(mockRouter.navigate).not.toHaveBeenCalled();
   });
 });

@@ -17,6 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// image-upload.service.ts
 import {Injectable} from "@angular/core";
 import {LoadingController, ToastController} from "@ionic/angular";
 import {
@@ -24,18 +25,20 @@ import {
   ref,
   uploadBytesResumable,
   getDownloadURL,
+  UploadTask,
+  UploadTaskSnapshot,
 } from "firebase/storage";
-import {StoreService} from "./store.service";
+import {FirestoreService} from "./firestore.service";
 
 @Injectable({
   providedIn: "root",
 })
 export class ImageUploadService {
-  storage = getStorage();
+  private storage = getStorage();
 
   constructor(
     private loadingController: LoadingController,
-    private storeService: StoreService,
+    private firestoreService: FirestoreService,
     private toastController: ToastController,
   ) {}
 
@@ -53,41 +56,58 @@ export class ImageUploadService {
     });
     await loading.present();
 
-    const resizedImageBlob = await this.resizeImage(file, maxWidth, maxHeight);
-    const filePath = `${firestoreLocation}/${new Date() + file.name}`;
-    const storageRef = ref(this.storage, filePath);
-    const uploadTask = uploadBytesResumable(storageRef, resizedImageBlob);
+    try {
+      const resizedImageBlob = await this.resizeImage(
+        file,
+        maxWidth,
+        maxHeight,
+      );
+      const filePath = `${firestoreLocation}/${new Date().toISOString()}_${
+        file.name
+      }`;
+      const storageRef = ref(this.storage, filePath);
+      const uploadTask = uploadBytesResumable(storageRef, resizedImageBlob);
 
+      const downloadURL = await this.monitorUploadTask(uploadTask, loading);
+      await this.saveImageToFirestore(
+        collectionName,
+        docId,
+        downloadURL,
+        fieldName,
+      );
+
+      return downloadURL;
+    } catch (error: any) {
+      await loading.dismiss();
+      await this.showErrorToast(`Upload failed: ${error.message || error}`);
+      throw error;
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
+  private monitorUploadTask(
+    uploadTask: UploadTask,
+    loading: HTMLIonLoadingElement,
+  ): Promise<string> {
     return new Promise((resolve, reject) => {
       uploadTask.on(
         "state_changed",
-        (snapshot) => {
+        (snapshot: UploadTaskSnapshot) => {
           const progress =
             (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          switch (snapshot.state) {
-            case "paused":
-              loading.message = `Upload is paused`;
-              break;
-            case "running":
-              loading.message = `Uploading file... ${progress.toFixed(0)}%`;
-              break;
-          }
+          loading.message = `Uploading file... ${progress.toFixed(0)}%`;
         },
-        async (error) => {
-          loading.dismiss();
-          this.showErrorToast(`Upload failed: ${error.message}`);
-          reject(error.message);
+        (error) => {
+          reject(error);
         },
         async () => {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          await this.saveImageToFirestore(
-            collectionName,
-            docId,
-            downloadURL,
-            fieldName,
-          );
-          loading.dismiss();
-          resolve(downloadURL);
+          try {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            resolve(downloadURL);
+          } catch (error) {
+            reject(error);
+          }
         },
       );
     });
@@ -98,7 +118,7 @@ export class ImageUploadService {
     docId: string,
     downloadURL: string,
     fieldName: string,
-  ) {
+  ): Promise<void> {
     if (!docId) {
       throw new Error("Missing document ID");
     }
@@ -111,18 +131,17 @@ export class ImageUploadService {
     if (!collectionName) {
       throw new Error("Missing collection name");
     }
-    const doc = {id: docId} as any;
-    doc[fieldName] = downloadURL;
-    await this.storeService.updateDoc(collectionName, doc);
+    const docData = {[fieldName]: downloadURL};
+    await this.firestoreService.updateDocument(collectionName, docId, docData);
   }
 
-  private async showErrorToast(message: string) {
+  private async showErrorToast(message: string): Promise<void> {
     const toast = await this.toastController.create({
       message: message,
       duration: 2000,
       color: "danger",
     });
-    toast.present();
+    await toast.present();
   }
 
   private resizeImage(
@@ -132,12 +151,14 @@ export class ImageUploadService {
   ): Promise<Blob> {
     return new Promise((resolve, reject) => {
       const image = new Image();
-      image.src = URL.createObjectURL(file);
+      const url = URL.createObjectURL(file);
+      image.src = url;
+
       image.onload = () => {
+        URL.revokeObjectURL(url);
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
-        let width = image.width;
-        let height = image.height;
+        let {width, height} = image;
 
         if (width > height) {
           if (width > maxWidth) {
@@ -150,20 +171,28 @@ export class ImageUploadService {
             height = maxHeight;
           }
         }
+
         canvas.width = width;
         canvas.height = height;
-        ctx!.drawImage(image, 0, 0, width, height);
+        ctx?.drawImage(image, 0, 0, width, height);
 
         canvas.toBlob(
           (blob) => {
-            resolve(blob!);
+            if (blob) {
+              resolve(blob);
+            } else {
+              reject(new Error("Canvas is empty"));
+            }
           },
           "image/jpeg",
           0.95,
         );
       };
-      image.onerror = (error) =>
+
+      image.onerror = (error) => {
+        URL.revokeObjectURL(url);
         reject(new Error(`Image load error: ${error}`));
+      };
     });
   }
 }

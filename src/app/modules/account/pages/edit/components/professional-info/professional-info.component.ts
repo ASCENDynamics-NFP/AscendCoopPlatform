@@ -17,37 +17,31 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// professional-info.component.ts
+
 import {Component, Input, OnInit} from "@angular/core";
 import {
   Account,
   ProfessionalInformation,
 } from "../../../../../../models/account.model";
-import {CommonModule} from "@angular/common";
-import {
-  ReactiveFormsModule,
-  FormGroup,
-  FormBuilder,
-  Validators,
-} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
-import {StoreService} from "../../../../../../core/services/store.service";
+import {FormGroup, FormBuilder, Validators} from "@angular/forms";
+import {Store} from "@ngrx/store";
+import * as AccountActions from "../../../../../../state/actions/account.actions";
 import {skillsOptions} from "../../../../../../core/data/options";
 
 @Component({
   selector: "app-professional-info",
   templateUrl: "./professional-info.component.html",
   styleUrls: ["./professional-info.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
 export class ProfessionalInfoComponent implements OnInit {
-  @Input() account?: Partial<Account>;
+  @Input() account?: Account;
   professionalInformationForm: FormGroup;
   public skillsOptions: string[] = skillsOptions;
 
   constructor(
     private fb: FormBuilder,
-    private storeService: StoreService,
+    private store: Store,
   ) {
     this.professionalInformationForm = this.fb.group({
       occupation: ["", Validators.required],
@@ -86,15 +80,18 @@ export class ProfessionalInfoComponent implements OnInit {
   }
 
   onSubmit() {
-    if (this.professionalInformationForm.valid) {
+    if (this.professionalInformationForm.valid && this.account) {
       const updatedProfessionalInformation: ProfessionalInformation =
         this.professionalInformationForm.value;
-      const updatedAccount: Partial<Account> = {
+
+      const updatedAccount: Account = {
         ...this.account,
         professionalInformation: updatedProfessionalInformation,
       };
 
-      this.storeService.updateDoc("accounts", updatedAccount);
+      this.store.dispatch(
+        AccountActions.updateAccount({account: updatedAccount}),
+      );
     }
   }
 }

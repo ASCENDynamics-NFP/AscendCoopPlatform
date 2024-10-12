@@ -20,12 +20,16 @@
 import {TestBed} from "@angular/core/testing";
 
 import {ImageUploadService} from "./image-upload.service";
+import {AngularFireModule} from "@angular/fire/compat";
+import {environment} from "../../../environments/environment";
 
 describe("ImageUploadService", () => {
   let service: ImageUploadService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      imports: [AngularFireModule.initializeApp(environment.firebaseConfig)],
+    });
     service = TestBed.inject(ImageUploadService);
   });
 

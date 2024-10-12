@@ -26,6 +26,7 @@ on:
       - main  # Trigger workflow on pull requests targeting the main branch
 
 jobs:
+  # Linting job
   # lint:
   #   runs-on: ubuntu-latest  # Use the latest Ubuntu runner
 
@@ -48,6 +49,7 @@ jobs:
   #     - name: Run lint
   #       run: npm run lint
 
+  # Build and test job
   build-and-test:
     runs-on: ubuntu-latest  # Use the latest Ubuntu runner
     # needs: lint  # This job depends on the successful completion of the lint job

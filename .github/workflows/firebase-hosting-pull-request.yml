@@ -156,11 +156,3 @@ jobs:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}"
           projectId: ascendcoopplatform-dev
-
-      # Add the preview domain to authorized domains
-      - name: Add Preview Domain to Authorized Domains
-        run: |
-          npm install firebase-admin
-          node addAuthorizedDomain.js ${{ steps.deploy.outputs.preview_url }}
-        env:
-          FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT }}

@@ -150,7 +150,7 @@ jobs:
 
       # Deploy to Firebase Preview
       - name: Deploy to Firebase Preview
-        id: deploy
+        id: deploy  # Assign an ID to reference outputs
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
@@ -161,6 +161,6 @@ jobs:
       - name: Add Preview Domain to Authorized Domains
         run: |
           npm install firebase-admin
-          node addAuthorizedDomain.js ${{ steps.deploy.outputs.firebaseHostingUrl }}
+          node addAuthorizedDomain.js ${{ steps.deploy.outputs.preview_url }}
         env:
           FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT }}

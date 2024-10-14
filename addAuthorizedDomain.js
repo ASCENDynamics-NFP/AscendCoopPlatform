@@ -35,6 +35,8 @@ async function addAuthorizedDomain(previewUrl) {
     // Extract the domain from the preview URL
     const domain = new URL(previewUrl).hostname;
 
+    console.log(`Adding domain: ${domain} to authorized domains.`);
+
     // Get the existing list of authorized domains
     const authSettings = await admin.auth().getSettings();
     const authorizedDomains = authSettings.authorizedDomains || [];
@@ -47,7 +49,7 @@ async function addAuthorizedDomain(previewUrl) {
       // Update the authorized domains in Firebase Authentication
       await admin.auth().updateSettings({ authorizedDomains });
 
-      console.log(`Added ${domain} to authorized domains.`);
+      console.log(`Successfully added ${domain} to authorized domains.`);
     } else {
       console.log(`${domain} is already in authorized domains.`);
     }
@@ -61,6 +63,7 @@ async function addAuthorizedDomain(previewUrl) {
 const previewUrl = process.argv[2];
 
 if (previewUrl) {
+  console.log(`Received preview URL: ${previewUrl}`);
   addAuthorizedDomain(previewUrl);
 } else {
   console.error('Please provide the preview URL as an argument.');

@@ -48,7 +48,7 @@ jobs:
   # Build and test job
   build-and-test:
     runs-on: ubuntu-latest
-    needs: lint  # This job depends on the successful completion of the lint job
+    # needs: lint  # This job depends on the successful completion of the lint job
 
     steps:
       # Checkout the repository

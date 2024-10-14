@@ -3,17 +3,21 @@
   "version": "1.0.1",
   "author": "ASCENDynamics NFP",
   "homepage": "https://ASCENDynamics.org/",
-  "scripts": {
-    "prebuild": "ts-node scripts/setEnv.ts",
-    "build": "ng build --configuration production",
-    "format": "prettier --write .",
-    "ng": "ng",
-    "start": "ng serve",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "lint": "ng lint",
-    "clean": "rm -rf node_modules package-lock.json"
-  },
+"scripts": {
+  "generate-env:dev": "NODE_ENV=development node generate-env.js",
+  "generate-env:prod": "NODE_ENV=production node generate-env.js",
+  "build": "npm run build:dev",
+  "build:dev": "npm run generate-env:dev && ng build --configuration development",
+  "build:prod": "npm run generate-env:prod && ng build --configuration production",
+  "start": "npm run generate-env:dev && ng serve",
+  "start:prod": "npm run generate-env:prod && ng serve --configuration production",
+  "format": "prettier --write .",
+  "ng": "ng",
+  "watch": "ng build --watch --configuration development",
+  "test": "ng test",
+  "lint": "ng lint",
+  "clean": "rm -rf node_modules package-lock.json"
+},
   "private": true,
   "dependencies": {
     "@angular/animations": "^17.0.2",

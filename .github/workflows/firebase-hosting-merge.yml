@@ -24,12 +24,11 @@ on:
 
 jobs:
   build_and_deploy:
-    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
+    runs-on: ubuntu-latest
 
     steps:
       # Checkout the repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Cache node modules to speed up installation
       - name: Cache node modules
@@ -54,7 +53,7 @@ jobs:
       - name: Build project
         run: npm run build
 
-      # Deploy to Firebase Hosting
+      # Deploy to Firebase Hosting (Live Channel)
       - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:

@@ -28,7 +28,7 @@ export interface AccountState {
   relatedAccounts: RelatedAccount[];
   selectedAccount: Account | null;
   loading: boolean;
-  error: any;
+  error: string | null;
 }
 
 export const initialState: AccountState = {

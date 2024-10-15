@@ -41,6 +41,12 @@
             "prefix": "app",
             "style": "camelCase"
           }
+        ],
+        "prettier/prettier": [
+          "error",
+          {
+            "endOfLine": "auto"
+          }
         ]
       }
     },

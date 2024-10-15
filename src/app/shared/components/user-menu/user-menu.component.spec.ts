@@ -28,9 +28,15 @@ import * as AuthActions from "../../../state/actions/auth.actions";
 describe("UserMenuComponent", () => {
   let component: UserMenuComponent;
   let fixture: ComponentFixture<UserMenuComponent>;
-  let mockRouter: any;
-  let mockPopoverCtrl: any;
-  let mockStore: any;
+  let mockRouter: {
+    navigate: jasmine.Spy<jasmine.Func>;
+    getCurrentNavigation: jasmine.Spy<jasmine.Func>;
+  };
+  let mockPopoverCtrl: {dismiss: jasmine.Spy<jasmine.Func>};
+  let mockStore: {
+    dispatch: jasmine.Spy<jasmine.Func>;
+    select: jasmine.Spy<jasmine.Func>;
+  };
 
   const mockAuthUser = {
     uid: "12345",

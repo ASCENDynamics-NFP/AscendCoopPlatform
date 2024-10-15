@@ -95,7 +95,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     const langChange$ = this.translate.onLangChange;
 
     const menuPages$ = combineLatest([authUser$, langChange$]).subscribe(
-      ([authUser, langChange]) => {
+      ([authUser]) => {
         this.user = authUser;
         if (authUser) {
           this.setUserMenuItems();

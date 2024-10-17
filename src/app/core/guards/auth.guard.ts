@@ -17,34 +17,39 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// src/app/guards/auth.guard.ts
 import {Injectable} from "@angular/core";
 import {Router} from "@angular/router";
-import {AuthStoreService} from "../services/auth-store.service";
 import {firstValueFrom} from "rxjs";
+import {Store} from "@ngrx/store";
+import {selectAuthUser} from "../../state/selectors/auth.selectors";
+import * as AuthActions from "../../state/actions/auth.actions";
 
 @Injectable({
   providedIn: "root",
 })
 export class AuthGuard {
   constructor(
-    private authStoreService: AuthStoreService,
+    private store: Store,
     private router: Router,
   ) {}
 
   async canActivate(): Promise<boolean> {
-    const authUser = await firstValueFrom(this.authStoreService.authUser$);
+    const authUser = await firstValueFrom(this.store.select(selectAuthUser));
+
     if (!authUser) {
       // Redirect to login if not authenticated
-      this.router.navigate(["login"]);
+      this.router.navigate(["/login"]);
       return false;
     } else if (authUser && !authUser.emailVerified) {
       // Send verification email if the user is not verified
       if (authUser.email) {
-        await this.authStoreService.sendVerificationMail(authUser.email);
+        this.store.dispatch(
+          AuthActions.sendVerificationMail({email: authUser.email}),
+        );
       }
       // Sign out the user and redirect to login
-      await this.authStoreService.signOut();
-      this.router.navigate(["login"]);
+      this.store.dispatch(AuthActions.signOut());
       return false;
     }
     return true;

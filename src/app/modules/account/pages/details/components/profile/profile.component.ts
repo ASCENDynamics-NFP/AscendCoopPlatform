@@ -17,17 +17,13 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {CommonModule} from "@angular/common";
 import {Component, Input} from "@angular/core";
-import {IonicModule} from "@ionic/angular";
 import {Account, WebLink} from "../../../../../../models/account.model";
 
 @Component({
   selector: "app-profile",
   templateUrl: "./profile.component.html",
   styleUrls: ["./profile.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule],
 })
 export class ProfileComponent {
   @Input() account: Partial<Account> = {

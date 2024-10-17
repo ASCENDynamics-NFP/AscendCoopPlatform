@@ -17,79 +17,65 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {ReactiveFormsModule} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
+// src/app/modules/account/pages/edit/edit.page.ts
+
+import {Component, OnInit} from "@angular/core";
 import {Account} from "../../../../models/account.model";
-import {ActivatedRoute} from "@angular/router";
-import {StoreService} from "../../../../core/services/store.service";
-import {Subscription} from "rxjs";
-import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
-import {EditMenuComponent} from "./components/edit-menu/edit-menu.component";
-import {BasicInfoComponent} from "./components/basic-info/basic-info.component";
-import {ContactInfoComponent} from "./components/contact-info/contact-info.component";
-import {ProfessionalInfoComponent} from "./components/professional-info/professional-info.component";
-import {VolunteerPreferenceInfoComponent} from "./components/volunteer-preference-info/volunteer-preference-info.component";
-import {LaborRightsInfoComponent} from "./components/labor-rights-info/labor-rights-info.component";
-import {MutualAidCommunityEngagementComponent} from "./components/mutual-aid-community-engagement/mutual-aid-community-engagement.component";
-import {AuthStoreService} from "../../../../core/services/auth-store.service";
-import {User} from "firebase/auth";
+import {ActivatedRoute, Router} from "@angular/router";
+import {Observable, combineLatest} from "rxjs";
+import {map, tap} from "rxjs/operators";
+import {AuthUser} from "../../../../models/auth-user.model";
+import {Store} from "@ngrx/store";
+import {selectAccountById} from "../../../../state/selectors/account.selectors";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import * as AccountActions from "../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-edit",
   templateUrl: "./edit.page.html",
   styleUrls: ["./edit.page.scss"],
-  standalone: true,
-  imports: [
-    IonicModule,
-    CommonModule,
-    ReactiveFormsModule,
-    AppHeaderComponent,
-    EditMenuComponent,
-    BasicInfoComponent,
-    ContactInfoComponent,
-    ProfessionalInfoComponent,
-    VolunteerPreferenceInfoComponent,
-    LaborRightsInfoComponent,
-    MutualAidCommunityEngagementComponent,
-  ],
 })
-export class EditPage {
+export class EditPage implements OnInit {
   selectedForm: string = "basic";
-  authUser: User | null = null;
+  account$!: Observable<Account | undefined>;
+  authUser$!: Observable<AuthUser | null>;
+  isProfileOwner$!: Observable<boolean>;
   private accountId: string | null = null;
-  private accountsSubscription?: Subscription;
-  public account?: Partial<Account>;
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private authStoreService: AuthStoreService,
-    private storeService: StoreService,
+    private router: Router,
+    private store: Store,
   ) {
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
-    this.authUser = this.authStoreService.getCurrentUser();
   }
 
-  ionViewWillEnter() {
-    this.accountsSubscription = this.storeService.accounts$.subscribe(
-      (accounts) => {
-        this.account = accounts.find(
-          (account) => account.id === this.accountId,
-        );
-      },
-    );
-    if (!this.account) {
-      this.storeService.getDocById("accounts", this.accountId);
+  ngOnInit(): void {
+    this.authUser$ = this.store.select(selectAuthUser);
+
+    if (this.accountId) {
+      // Dispatch the action to load the account
+      this.store.dispatch(
+        AccountActions.loadAccount({accountId: this.accountId}),
+      );
+
+      // Select the account based on the accountId
+      this.account$ = this.store.select(selectAccountById(this.accountId));
+
+      // Check if the user is the profile owner
+      this.isProfileOwner$ = combineLatest([
+        this.authUser$,
+        this.account$,
+      ]).pipe(
+        map(([authUser, account]) => authUser?.uid === account?.id),
+        tap((isOwner) => {
+          if (!isOwner) {
+            // Redirect to unauthorized page if not the profile owner
+            this.router.navigate(["/" + this.accountId]);
+          }
+        }),
+      );
     }
-  }
-
-  ionViewWillLeave() {
-    this.accountsSubscription?.unsubscribe();
-  }
-
-  get isProfileOwner(): boolean {
-    return this.accountId === this.authStoreService.getCurrentUser()?.uid;
   }
 
   onItemSelected(form: string): void {

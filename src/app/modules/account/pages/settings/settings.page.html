@@ -20,9 +20,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <app-header [title]="'Settings'"></app-header>
 
 <ion-content [fullscreen]="true">
-  <app-settings-form
-    *ngIf="account"
-    [authUser]="authUser"
-    [account]="account"
-  ></app-settings-form>
+  <ng-container *ngIf="(authUser$ | async) as authUser">
+    <app-settings-form
+      *ngIf="(account$ | async) as account"
+      [authUser]="authUser"
+      [account]="account"
+    ></app-settings-form>
+  </ng-container>
 </ion-content>

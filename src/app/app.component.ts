@@ -17,40 +17,65 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// src/app/app.component.ts
+
 import {Component, OnInit} from "@angular/core";
-import {IonicModule, MenuController} from "@ionic/angular";
-import {CommonModule} from "@angular/common";
-import {MenuComponent} from "./shared/components/menu/menu.component";
+import {MenuController, Platform} from "@ionic/angular";
 import {TranslateService} from "@ngx-translate/core";
-import {AuthStoreService} from "./core/services/auth-store.service";
+import {Store} from "@ngrx/store";
+import {selectIsLoggedIn} from "./state/selectors/auth.selectors";
+import * as AuthActions from "./state/actions/auth.actions";
+import {Observable} from "rxjs";
+import {tap} from "rxjs/operators";
 
 @Component({
   selector: "app-root",
   templateUrl: "app.component.html",
   styleUrls: ["app.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, MenuComponent],
 })
 export class AppComponent implements OnInit {
+  isLoggedIn$: Observable<boolean>;
+
   constructor(
-    private authStoreService: AuthStoreService,
     private menuCtrl: MenuController,
     private translate: TranslateService,
+    private store: Store,
+    private platform: Platform,
   ) {
-    this.translate.setDefaultLang("en");
     this.translate.addLangs(["en", "fr"]);
-    // You can use your AuthStoreService here
+    this.initializeApp();
+
+    // Initialize the observable
+    this.isLoggedIn$ = this.store.select(selectIsLoggedIn).pipe(
+      tap(async (isLoggedIn) => {
+        await this.updateMenu(isLoggedIn);
+      }),
+    );
+  }
+
+  initializeApp() {
+    this.platform.ready().then(() => {
+      // Set the default language
+      this.translate.setDefaultLang("en");
+
+      // Optionally, get the user's preferred language
+      const browserLang = this.translate.getBrowserLang();
+      this.translate.use(browserLang?.match(/en|fr|es/) ? browserLang : "en");
+    });
   }
 
   ngOnInit() {
-    this.authStoreService.isLoggedIn$.subscribe(async (isLoggedIn) => {
-      if (isLoggedIn) {
-        await this.menuCtrl.enable(false, "guest");
-        await this.menuCtrl.enable(true, "user");
-      } else {
-        await this.menuCtrl.enable(false, "user");
-        await this.menuCtrl.enable(true, "guest");
-      }
-    });
+    // Dispatch the initialization action
+    this.store.dispatch(AuthActions.initializeAuth());
+  }
+
+  private async updateMenu(isLoggedIn: boolean) {
+    if (isLoggedIn) {
+      await this.menuCtrl.enable(false, "guest");
+      await this.menuCtrl.enable(true, "user");
+    } else {
+      await this.menuCtrl.enable(false, "user");
+      await this.menuCtrl.enable(true, "guest");
+    }
   }
 }

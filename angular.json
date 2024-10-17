@@ -73,12 +73,13 @@
               "progress": false
             }
           },
-          "defaultConfiguration": "production"
+          "defaultConfiguration": "development"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
+              "browserTarget": "app:build:production",
               "buildTarget": "app:build:production"
             },
             "development": {
@@ -136,7 +137,7 @@
     }
   },
   "cli": {
-    "schematicCollections": ["@ionic/angular-toolkit"],
+    "schematicCollections": ["@ionic/angular-toolkit", "@ngrx/schematics"],
     "analytics": false
   },
   "schematics": {

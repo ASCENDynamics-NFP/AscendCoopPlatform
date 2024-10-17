@@ -21,6 +21,7 @@ import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
 
 import {BasicInfoComponent} from "./basic-info.component";
+import {provideMockStore} from "@ngrx/store/testing";
 
 describe("BasicInfoComponent", () => {
   let component: BasicInfoComponent;
@@ -30,6 +31,7 @@ describe("BasicInfoComponent", () => {
     TestBed.configureTestingModule({
       declarations: [],
       imports: [IonicModule.forRoot()],
+      providers: [provideMockStore({})],
     }).compileComponents();
 
     fixture = TestBed.createComponent(BasicInfoComponent);

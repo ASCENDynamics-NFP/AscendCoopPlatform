@@ -17,87 +17,119 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, Input} from "@angular/core";
-import {RouterModule} from "@angular/router";
-import {User} from "firebase/auth";
-import {StoreService} from "../../../../../../core/services/store.service";
-import {CommonModule} from "@angular/common";
-import {FormsModule} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
+// src/app/modules/account/pages/search/component/member-search/member-search.component.ts
+
+import {Component, Input, OnInit} from "@angular/core";
+import {Subject, Observable, combineLatest, of} from "rxjs";
+import {
+  debounceTime,
+  startWith,
+  switchMap,
+  map,
+  distinctUntilChanged,
+  take,
+} from "rxjs/operators";
+import {AuthUser} from "../../../../../../models/auth-user.model";
 import {Account, RelatedAccount} from "../../../../../../models/account.model";
+import {Store} from "@ngrx/store";
+import * as AccountActions from "../../../../../../state/actions/account.actions";
+import {
+  selectRelatedAccounts,
+  selectFilteredAccounts,
+} from "../../../../../../state/selectors/account.selectors";
 
 @Component({
   selector: "app-member-search",
   templateUrl: "./member-search.component.html",
   styleUrls: ["./member-search.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
 })
-export class MemberSearchComponent {
+export class MemberSearchComponent implements OnInit {
   @Input() isAdmin: boolean = false;
-  @Input() user: User | null = null;
-  @Input() currentGroup?: Partial<Account>;
-  @Input() users: Partial<Account>[] | null = [];
+  @Input() user: AuthUser | null = null;
+  @Input() currentGroup?: Account;
+  private searchTerms = new Subject<string>();
+  userList$!: Observable<Account[]>;
   searchTerm: string = "";
 
-  constructor(private storeService: StoreService) {}
+  constructor(private store: Store) {}
 
-  ionViewWillEnter() {}
-
-  ionViewWillLeave() {}
-
-  get searchResults() {
-    if (!this.users) {
-      return [];
-    }
-    if (!this.searchTerm) {
-      return this.users;
-    }
-    return this.users.filter((user) =>
-      user.name?.toLowerCase().includes(this.searchTerm.toLowerCase()),
+  ngOnInit() {
+    // Use searchTerms to filter users
+    this.userList$ = this.searchTerms.pipe(
+      startWith(this.searchTerm),
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap((term) =>
+        this.store.select(selectFilteredAccounts(term, "user")),
+      ),
     );
+
+    // Dispatch setSelectedAccount and loadRelatedAccounts actions
+    if (this.currentGroup?.id) {
+      this.store.dispatch(
+        AccountActions.setSelectedAccount({accountId: this.currentGroup.id}),
+      );
+
+      this.store.dispatch(
+        AccountActions.loadRelatedAccounts({accountId: this.currentGroup.id}),
+      );
+    }
   }
 
   searchUsers(event: any) {
-    this.searchTerm = event.target.value;
-    if (this.searchTerm) {
-      this.storeService.searchDocsByName("users", this.searchTerm);
-    }
+    const value = event.target.value;
+    this.searchTerms.next(value);
   }
 
-  canInviteUser(user: Partial<Account>): boolean {
-    if (!this.currentGroup?.id || !user.id) {
-      return false;
-    }
-    // Check if the user is already a member or has a pending invitation
-    return !this.currentGroup.relatedAccounts?.some(
-      (ra) =>
-        ra.id === user.id &&
-        (ra.status === "accepted" || ra.status === "pending"),
+  canInviteUser(user: Account): Observable<boolean> {
+    return combineLatest([
+      of(this.currentGroup),
+      this.store.select(selectRelatedAccounts),
+    ]).pipe(
+      map(([currentGroup, relatedAccounts]) => {
+        if (!currentGroup?.id || !user.id) {
+          return false;
+        }
+
+        return !relatedAccounts.some(
+          (ra) =>
+            ra.id === user.id &&
+            (ra.status === "accepted" || ra.status === "pending"),
+        );
+      }),
     );
   }
 
-  inviteUser(user: Partial<Account>) {
-    if (!this.canInviteUser(user)) {
-      console.log("Cannot invite user");
-      return;
-    }
+  inviteUser(user: Account) {
+    this.canInviteUser(user)
+      .pipe(take(1))
+      .subscribe((canInvite) => {
+        if (!canInvite) {
+          console.log("Cannot invite user");
+          return;
+        }
 
-    const newRelatedAccount: Partial<RelatedAccount> = {
-      id: user.id,
-      name: user.name,
-      iconImage: user.iconImage,
-      tagline: user.tagline,
-      type: "user",
-      status: "pending",
-      relationship: "member",
-      initiatorId: this.currentGroup?.id,
-      targetId: user.id,
-    };
+        if (this.currentGroup?.id && user.id) {
+          const newRelatedAccount: RelatedAccount = {
+            id: user.id,
+            name: user.name,
+            iconImage: user.iconImage,
+            tagline: user.tagline,
+            type: "user",
+            status: "pending",
+            relationship: "member",
+            initiatorId: this.currentGroup.id,
+            targetId: user.id,
+          };
 
-    const docPath = `accounts/${this.currentGroup?.id}/relatedAccounts/${user.id}`;
-    this.storeService.updateDocAtPath(docPath, newRelatedAccount).then(() => {
-      console.log("Invitation sent to user");
-    });
+          // Dispatch action to add related account
+          this.store.dispatch(
+            AccountActions.createRelatedAccount({
+              accountId: this.currentGroup.id,
+              relatedAccount: newRelatedAccount,
+            }),
+          );
+        }
+      });
   }
 }

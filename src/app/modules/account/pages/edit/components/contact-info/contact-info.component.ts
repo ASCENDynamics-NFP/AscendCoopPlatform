@@ -17,23 +17,17 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// contact-info.component.ts
 import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
-import {
-  FormBuilder,
-  FormGroup,
-  FormArray,
-  Validators,
-  ReactiveFormsModule,
-} from "@angular/forms";
-import {CommonModule} from "@angular/common";
-import {IonicModule} from "@ionic/angular";
+import {FormBuilder, FormGroup, FormArray, Validators} from "@angular/forms";
 import {
   Account,
   Email,
   PhoneNumber,
   Address,
 } from "../../../../../../models/account.model";
-import {StoreService} from "../../../../../../core/services/store.service";
+import {Store} from "@ngrx/store";
+import * as AccountActions from "../../../../../../state/actions/account.actions";
 import {countryCodes} from "../../../../../../core/data/phone";
 import {countries, statesProvinces} from "../../../../../../core/data/country";
 
@@ -41,8 +35,6 @@ import {countries, statesProvinces} from "../../../../../../core/data/country";
   selector: "app-contact-info",
   templateUrl: "./contact-info.component.html",
   styleUrls: ["./contact-info.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
 export class ContactInfoComponent implements OnChanges {
   public countries = countries;
@@ -53,13 +45,12 @@ export class ContactInfoComponent implements OnChanges {
   public maxAddresses = 3; // Set maximum number of addresses
   public maxEmails = 5;
   public maxPhoneNumbers = 5;
-  @Input() account: Partial<Account> | null = null;
-
+  @Input() account: Account | null = null;
   contactInfoForm: FormGroup;
 
   constructor(
     private fb: FormBuilder,
-    private storeService: StoreService,
+    private store: Store,
   ) {
     this.contactInfoForm = this.fb.group({
       contactInformation: this.fb.group({
@@ -97,7 +88,7 @@ export class ContactInfoComponent implements OnChanges {
     if (this.contactInfoForm.valid && this.account) {
       const formValue = this.contactInfoForm.value.contactInformation;
 
-      const updatedAccount: Partial<Account> = {
+      const updatedAccount: Account = {
         ...this.account,
         contactInformation: {
           ...formValue,
@@ -125,7 +116,9 @@ export class ContactInfoComponent implements OnChanges {
         },
       };
 
-      this.storeService.updateDoc("accounts", updatedAccount);
+      this.store.dispatch(
+        AccountActions.updateAccount({account: updatedAccount}),
+      );
     }
   }
 

@@ -20,6 +20,7 @@
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
 import {GroupRegistrationComponent} from "./group-registration.component";
+import {provideMockStore} from "@ngrx/store/testing";
 
 describe("GroupRegistrationComponent", () => {
   let component: GroupRegistrationComponent;
@@ -27,10 +28,8 @@ describe("GroupRegistrationComponent", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [
-        IonicModule.forRoot(),
-        GroupRegistrationComponent, // Add the standalone component here in imports
-      ],
+      imports: [IonicModule.forRoot()],
+      providers: [provideMockStore()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(GroupRegistrationComponent);

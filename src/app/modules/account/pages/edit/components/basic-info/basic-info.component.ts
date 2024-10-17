@@ -17,47 +17,42 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {CommonModule} from "@angular/common";
+// basic-info.component.ts
 import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
-import {
-  FormArray,
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
-import {StoreService} from "../../../../../../core/services/store.service";
-import {Account} from "../../../../../../models/account.model";
+import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
+import {Account, WebLink} from "../../../../../../models/account.model";
+import {Store} from "@ngrx/store";
+import * as AccountActions from "../../../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-basic-info",
   templateUrl: "./basic-info.component.html",
   styleUrls: ["./basic-info.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
 export class BasicInfoComponent implements OnChanges {
-  @Input() account: Partial<Account> | null = null;
+  @Input() account: Account | null = null;
   public maxLinks = 10;
 
-  basicInfoForm = this.fb.group({
-    description: [""],
-    tagline: ["", Validators.required],
-    name: ["", Validators.required],
-    webLinks: this.fb.array([this.createWebLinkFormGroup()]),
-    groupDetails: this.fb.group({
-      groupType: [""],
-    }),
-  });
+  basicInfoForm!: FormGroup; // Declare the form but do not initialize it here
 
   constructor(
     private fb: FormBuilder,
-    private storeService: StoreService,
-  ) {}
+    private store: Store,
+  ) {
+    // Initialize the form in ngOnInit after fb is initialized
+    this.basicInfoForm = this.fb.group({
+      description: [""],
+      tagline: ["", Validators.required],
+      name: ["", Validators.required],
+      webLinks: this.fb.array([this.createWebLinkFormGroup()]),
+      groupDetails: this.fb.group({
+        groupType: [""],
+      }),
+    });
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes["account"]) {
+    if (changes["account"] && this.account) {
       this.loadFormData();
     }
   }
@@ -86,20 +81,17 @@ export class BasicInfoComponent implements OnChanges {
   }
 
   onSubmit() {
-    // Call the API to save changes
     if (this.account) {
-      // Prepare the account object with form values
       const formValue = this.basicInfoForm.value;
 
-      // Prepare the account object for update
-      const updatedAccount: Partial<Account> = {
+      const updatedAccount: Account = {
         ...this.account,
         ...formValue,
         name: formValue.name!,
         tagline: formValue.tagline!,
         description: formValue.description ?? "",
         webLinks:
-          formValue.webLinks?.map((link) => {
+          formValue.webLinks?.map((link: Partial<WebLink>) => {
             return {
               name: link.name!,
               url: link.url!,
@@ -112,19 +104,19 @@ export class BasicInfoComponent implements OnChanges {
         },
       };
 
-      // Now update the document with the updatedAccount
-      this.storeService.updateDoc("accounts", updatedAccount);
+      this.store.dispatch(
+        AccountActions.updateAccount({account: updatedAccount}),
+      );
     }
   }
 
   loadFormData() {
     if (!this.account) return;
-    // Reset the form arrays to ensure clean state
+
     while (this.webLinksFormArray.length !== 0) {
       this.webLinksFormArray.removeAt(0);
     }
 
-    // If there are webLinks, create a FormGroup for each
     this.account.webLinks?.forEach((webLink) => {
       this.webLinksFormArray.push(
         this.fb.group({
@@ -142,12 +134,10 @@ export class BasicInfoComponent implements OnChanges {
       );
     });
 
-    // If after loading there are no webLinks, add a blank one
     if (this.webLinksFormArray.length === 0) {
       this.addWebLink();
     }
 
-    // Load other form data as before
     this.basicInfoForm.patchValue({
       name: this.account.name,
       description: this.account.description,
@@ -171,7 +161,6 @@ export class BasicInfoComponent implements OnChanges {
   }
 
   removeWebLink(index: number): void {
-    // Remove the phone number form group at the given index
     this.webLinksFormArray.removeAt(index);
   }
 }

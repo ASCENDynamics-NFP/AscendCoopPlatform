@@ -18,19 +18,15 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Component, Input} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {IonicModule} from "@ionic/angular";
 import {MutualAidCommunityEngagement} from "../../../../../../models/account.model";
 
 @Component({
   selector: "app-mutual-aid-community-info",
   templateUrl: "./mutual-aid-community-info.component.html",
   styleUrls: ["./mutual-aid-community-info.component.scss"],
-  standalone: true,
-  imports: [CommonModule, IonicModule],
 })
 export class MutualAidCommunityInfoComponent {
-  @Input() mutualAidCommunityEngagement?: MutualAidCommunityEngagement;
+  @Input() mutualAidCommunityEngagement!: MutualAidCommunityEngagement;
 
   constructor() {}
 }

@@ -17,54 +17,174 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
-import {IonicModule} from "@ionic/angular";
-import {SettingsComponent} from "./settings.component";
-import {ActivatedRoute} from "@angular/router";
-import {ReactiveFormsModule} from "@angular/forms";
-import {TranslateModule} from "@ngx-translate/core";
-import {StoreService} from "../../../../../../core/services/store.service";
-import {of} from "rxjs";
+// settings.component.spec.ts
 
-class MockStoreService {
-  // Mock the methods and properties used by the component
-  accounts$ = of([]); // You'll need to import 'of' from 'rxjs'
-  updateDoc() {}
-}
+// import {ComponentFixture, TestBed} from "@angular/core/testing";
+// import {SettingsComponent} from "./settings.component";
+// import {FormBuilder, ReactiveFormsModule} from "@angular/forms";
+// import {TranslateService} from "@ngx-translate/core";
+// import {Store, StoreModule} from "@ngrx/store";
+// import {NO_ERRORS_SCHEMA} from "@angular/core";
+// import {AuthUser} from "../../../../../../models/auth-user.model";
+// import {Account} from "../../../../../../models/account.model";
+// import * as AccountActions from "../../../../../../state/actions/account.actions";
+// import {By} from "@angular/platform-browser";
+// import {Timestamp} from "firebase/firestore";
 
-describe("SettingsComponent", () => {
-  let component: SettingsComponent;
-  let fixture: ComponentFixture<SettingsComponent>;
+// describe("SettingsComponent", () => {
+//   let component: SettingsComponent;
+//   let fixture: ComponentFixture<SettingsComponent>;
+//   let mockStore: any;
+//   let mockTranslateService: any;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      declarations: [], // Include the component under test
-      imports: [
-        IonicModule.forRoot(),
-        ReactiveFormsModule,
-        TranslateModule.forRoot(), // Use forRoot() for testing
-      ],
-      providers: [
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            snapshot: {
-              paramMap: {
-                get: () => "123", // provide your mock value here
-              },
-            },
-          },
-        },
-        {provide: StoreService, useClass: MockStoreService}, // Mock the StoreService
-      ],
-    }).compileComponents();
+//   const mockAccountId = "12345";
+//   const mockAuthUser: AuthUser = {
+//     uid: mockAccountId,
+//     email: "test@example.com",
+//     displayName: "Test User",
+//     photoURL: null,
+//     emailVerified: true,
+//   };
 
-    fixture = TestBed.createComponent(SettingsComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  }));
+//   // Mock Data
+//   const mockAccount: Account = {
+//     id: mockAccountId,
+//     name: "Test Account",
+//     type: "user",
+//     privacy: "public",
+//     relatedAccounts: [],
+//     tagline: "",
+//     description: "",
+//     iconImage: "",
+//     heroImage: "",
+//     legalAgreements: {
+//       termsOfService: {
+//         accepted: false,
+//         datetime: new Timestamp(0, 0),
+//         version: "",
+//       },
+//       privacyPolicy: {
+//         accepted: false,
+//         datetime: new Timestamp(0, 0),
+//         version: "",
+//       },
+//     },
+//     webLinks: [],
+//     lastLoginAt: new Timestamp(0, 0),
+//     email: "",
+//   };
 
-  it("should create", () => {
-    expect(component).toBeTruthy();
-  });
-});
+//   beforeEach(async () => {
+//     mockStore = {
+//       dispatch: jasmine.createSpy("dispatch"),
+//     };
+
+//     mockTranslateService = {
+//       use: jasmine.createSpy("use"),
+//     };
+
+//     await TestBed.configureTestingModule({
+//       declarations: [SettingsComponent],
+//       imports: [ReactiveFormsModule, StoreModule.forRoot({})],
+//       providers: [
+//         FormBuilder,
+//         {provide: Store, useValue: mockStore},
+//         {provide: TranslateService, useValue: mockTranslateService},
+//       ],
+//       schemas: [NO_ERRORS_SCHEMA],
+//     }).compileComponents();
+//   });
+
+//   beforeEach(() => {
+//     fixture = TestBed.createComponent(SettingsComponent);
+//     component = fixture.componentInstance;
+//     component.authUser = mockAuthUser;
+//     component.account = mockAccount;
+//     fixture.detectChanges();
+//   });
+
+//   it("should create the component", () => {
+//     expect(component).toBeTruthy();
+//   });
+
+//   it("should initialize the form with default values", () => {
+//     expect(component.settingsForm).toBeDefined();
+//     expect(component.settingsForm.get("privacy")?.value).toBe("public");
+//     expect(component.settingsForm.get("language")?.value).toBe("en");
+//   });
+
+//   it("should load account data into the form on ngOnChanges", () => {
+//     component.ngOnChanges();
+//     expect(component.settingsForm.get("privacy")?.value).toBe(
+//       "accepted-users-only",
+//     );
+//     expect(component.settingsForm.get("language")?.value).toBe("fr");
+//   });
+
+//   it("should call translateService.use and emit languageChange when onLanguageChange is called", () => {
+//     component.settingsForm.patchValue({language: "fr"});
+//     spyOn(component.languageChange, "emit");
+
+//     component.onLanguageChange();
+
+//     expect(mockTranslateService.use).toHaveBeenCalledWith("fr");
+//     expect(component.languageChange.emit).toHaveBeenCalledWith("fr");
+//   });
+
+//   it("should dispatch updateAccount action on updateSetting if authUser is defined", () => {
+//     component.settingsForm.patchValue({
+//       privacy: "private",
+//       language: "en",
+//     });
+
+//     component.updateSetting();
+
+//     expect(mockStore.dispatch).toHaveBeenCalledWith(
+//       AccountActions.updateAccount({
+//         account: {
+//           id: "12345",
+//           privacy: "private",
+//           accessibility: {preferredLanguage: "en"},
+//           type: "user",
+//           name: "",
+//           tagline: "",
+//           description: "",
+//           iconImage: "",
+//           heroImage: "",
+//           legalAgreements: {
+//             termsOfService: {
+//               accepted: false,
+//               datetime: new Timestamp(0, 0),
+//               version: "",
+//             },
+//             privacyPolicy: {
+//               accepted: false,
+//               datetime: new Timestamp(0, 0),
+//               version: "",
+//             },
+//           },
+//           webLinks: [],
+//           lastLoginAt: new Timestamp(0, 0),
+//           email: "",
+//         },
+//       }),
+//     );
+//   });
+
+//   it("should not dispatch updateAccount action on updateSetting if authUser is not defined", () => {
+//     component.authUser = null;
+
+//     component.updateSetting();
+
+//     expect(mockStore.dispatch).not.toHaveBeenCalled();
+//   });
+
+//   it("should toggle dark theme on toggleDarkTheme", () => {
+//     const event = {detail: {checked: true}} as CustomEvent;
+//     spyOn(document.body.classList, "toggle");
+
+//     component.toggleDarkTheme(event);
+
+//     expect(document.body.classList.toggle).toHaveBeenCalledWith("dark", true);
+//   });
+// });

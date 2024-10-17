@@ -9,5 +9,6 @@
     "ascendcoopplatform-dev": {
       "extensionInstances": {}
     }
-  }
+  },
+  "dataconnectEmulatorConfig": {}
 }

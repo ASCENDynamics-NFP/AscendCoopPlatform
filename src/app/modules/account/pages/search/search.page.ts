@@ -17,77 +17,73 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {IonicModule} from "@ionic/angular";
-import {User} from "firebase/auth";
-import {Account} from "../../../../models/account.model";
+// src/app/modules/group/pages/search/search.page.ts
+
+import {Component, OnInit} from "@angular/core";
+import {AuthUser} from "../../../../models/auth-user.model";
 import {ActivatedRoute} from "@angular/router";
-import {AuthStoreService} from "../../../../core/services/auth-store.service";
-import {StoreService} from "../../../../core/services/store.service";
-import {PartnerSearchComponent} from "./component/partner-search/partner-search.component";
-import {MemberSearchComponent} from "./component/member-search/member-search.component";
-import {Subscription} from "rxjs";
+import {combineLatest, Observable} from "rxjs";
+import {Account} from "../../../../models/account.model";
+import {Store} from "@ngrx/store";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {selectAccounts} from "../../../../state/selectors/account.selectors";
+import * as AccountActions from "../../../../state/actions/account.actions";
+import {map} from "rxjs/operators";
 
 @Component({
   selector: "app-search",
   templateUrl: "./search.page.html",
   styleUrls: ["./search.page.scss"],
-  standalone: true,
-  imports: [
-    IonicModule,
-    CommonModule,
-    PartnerSearchComponent,
-    MemberSearchComponent,
-  ],
 })
-export class SearchPage {
-  private accountsSubscription?: Subscription;
+export class SearchPage implements OnInit {
   accountId: string | null = null;
-  groups: Partial<Account>[] | null = [];
-  users: Partial<Account>[] | null = [];
-  user: User | null = null; // define your user here
-  currentGroup?: Partial<Account>;
+  authUser$: Observable<AuthUser | null>; // Observable for the auth user
+  accounts$: Observable<Account[]>; // Observable for accounts
+  groups$: Observable<Account[]>; // Filtered groups
+  users$: Observable<Account[]>; // Filtered users
+  currentGroup$: Observable<Account | undefined>; // The current group
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private authStoreService: AuthStoreService,
-    private storeService: StoreService,
+    private store: Store,
   ) {
-    this.user = this.authStoreService.getCurrentUser();
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
-  }
 
-  get isAdmin(): boolean {
-    if (!this.user?.uid) {
-      return false;
-    }
-    return (
-      this.currentGroup?.groupDetails?.admins?.includes(this.user?.uid) ?? false
+    // Select the observables from the store
+    this.authUser$ = this.store.select(selectAuthUser);
+    this.accounts$ = this.store.select(selectAccounts);
+
+    // Filter the groups and users once accounts are loaded
+    this.groups$ = this.accounts$.pipe(
+      map((accounts) =>
+        this.sortByName(accounts.filter((account) => account.type === "group")),
+      ),
+    );
+    this.users$ = this.accounts$.pipe(
+      map((accounts) =>
+        this.sortByName(accounts.filter((account) => account.type === "user")),
+      ),
+    );
+    this.currentGroup$ = this.accounts$.pipe(
+      map((accounts) => accounts.find((group) => group.id === this.accountId)),
     );
   }
 
-  ionViewWillEnter() {
-    this.accountsSubscription = this.storeService.accounts$.subscribe(
-      (accounts) => {
-        this.currentGroup = accounts.find(
-          (group) => group["id"] === this.accountId,
-        );
-        this.groups = this.sortbyName(
-          accounts.find((account) => account["type"] === "group") as Account[],
-        );
-        this.users = this.sortbyName(
-          accounts.find((account) => account["type"] === "user") as Account[],
-        );
-      },
+  get isAdmin$(): Observable<boolean> {
+    return combineLatest([this.authUser$, this.currentGroup$]).pipe(
+      map(([user, group]) => {
+        return group?.groupDetails?.admins?.includes(user?.uid || "") ?? false;
+      }),
     );
   }
 
-  ionViewWillLeave() {
-    this.accountsSubscription?.unsubscribe();
+  ngOnInit() {
+    // Dispatch action to load accounts when component initializes
+    this.store.dispatch(AccountActions.loadAccounts());
   }
 
-  sortbyName(records: any[]) {
+  // Helper function to sort accounts by name
+  sortByName(records: Account[]): Account[] {
     return records.sort((a, b) => {
       if (a.name && b.name) {
         return a.name.localeCompare(b.name);

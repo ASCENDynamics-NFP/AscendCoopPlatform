@@ -17,138 +17,139 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {FormsModule} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
-import {User} from "firebase/auth";
-import {RouterModule} from "@angular/router";
+// src/app/modules/user/pages/users/users.page.ts
+
+import {Component, OnInit} from "@angular/core";
+import {Subject, Observable, combineLatest, of} from "rxjs";
+import {
+  debounceTime,
+  startWith,
+  switchMap,
+  map,
+  distinctUntilChanged,
+  take,
+} from "rxjs/operators";
+import {Store} from "@ngrx/store";
+import {AuthUser} from "../../../../models/auth-user.model";
 import {Account, RelatedAccount} from "../../../../models/account.model";
-import {StoreService} from "../../../../core/services/store.service";
-import {Subscription} from "rxjs";
-import {AuthStoreService} from "../../../../core/services/auth-store.service";
-import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {
+  selectFilteredAccounts,
+  selectAccountLoading,
+  selectSelectedAccount,
+  selectRelatedAccounts,
+} from "../../../../state/selectors/account.selectors";
+import * as AccountActions from "../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-users",
   templateUrl: "./users.page.html",
   styleUrls: ["./users.page.scss"],
-  standalone: true,
-  imports: [
-    IonicModule,
-    CommonModule,
-    FormsModule,
-    RouterModule,
-    AppHeaderComponent,
-  ],
 })
-export class UsersPage {
-  private accountsSubscription?: Subscription;
-  authUser: User | null = null;
-  account?: Partial<Account>;
-  accountList: Partial<Account>[] | null = [];
+export class UsersPage implements OnInit {
+  private searchTerms = new Subject<string>();
+  authUser$!: Observable<AuthUser | null>;
+  accountList$!: Observable<Account[]>;
+  selectedAccount$!: Observable<Account | undefined>;
   searchedValue: string = "";
+  loading$: Observable<boolean>;
 
-  constructor(
-    private authStoreService: AuthStoreService,
-    private storeService: StoreService,
-  ) {
-    this.authUser = this.authStoreService.getCurrentUser();
+  constructor(private store: Store) {
+    this.loading$ = this.store.select(selectAccountLoading);
   }
 
-  ionViewWillEnter() {
-    this.accountsSubscription = this.storeService.accounts$.subscribe(
-      (accounts) => {
-        if (accounts) {
-          this.account = accounts.find((acc) => acc.id === this.authUser?.uid);
-          this.accountList = accounts
-            .filter(
-              (acc) =>
-                acc.name
-                  ?.toLowerCase()
-                  .includes(this.searchedValue.toLowerCase()) &&
-                acc.type === "user",
-            )
-            .sort((a, b) => {
-              if (a["name"] && b["name"]) {
-                return a["name"].localeCompare(b["name"]);
-              } else {
-                return 0;
-              }
-            });
+  ngOnInit() {
+    this.authUser$ = this.store.select(selectAuthUser);
+
+    this.selectedAccount$ = this.authUser$.pipe(
+      switchMap((authUser) => {
+        if (authUser?.uid) {
+          return this.store
+            .select(selectSelectedAccount)
+            .pipe(map((account) => account || undefined));
         }
-      },
-    );
-  }
-
-  ionViewWillLeave() {
-    this.accountsSubscription?.unsubscribe();
-  }
-
-  async sendFriendRequest(account: Partial<Account>) {
-    if (!this.authUser?.uid || !account.id) {
-      console.error("User ID or Account ID is missing");
-      return;
-    }
-
-    const newRelatedAccount: Partial<RelatedAccount> = {
-      id: account.id,
-      initiatorId: this.authUser.uid,
-      targetId: account.id,
-      type: account.type,
-      status: "pending",
-      relationship: "friend",
-      tagline: account.tagline,
-      name: account.name,
-      iconImage: account.iconImage,
-    };
-
-    // Add the new related account to Firestore
-    await this.storeService.updateDocAtPath(
-      `accounts/${this.authUser.uid}/relatedAccounts/${account.id}`,
-      newRelatedAccount,
+        return of(undefined);
+      }),
     );
 
-    // Fetch the current user's account to update the relatedAccounts array
-    this.updateRelatedAccounts(newRelatedAccount);
+    this.accountList$ = this.searchTerms.pipe(
+      startWith(this.searchedValue),
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap((term) =>
+        this.store.select(selectFilteredAccounts(term, "user")),
+      ),
+    );
+
+    this.store.dispatch(AccountActions.loadAccounts());
+
+    this.authUser$.pipe(take(1)).subscribe((authUser) => {
+      if (authUser?.uid) {
+        this.store.dispatch(
+          AccountActions.setSelectedAccount({accountId: authUser.uid}),
+        );
+
+        this.store.dispatch(
+          AccountActions.loadRelatedAccounts({accountId: authUser.uid}),
+        );
+      }
+    });
   }
 
-  private updateRelatedAccounts(relatedAccount: Partial<RelatedAccount>) {
-    if (this.account) {
-      this.account.relatedAccounts = [
-        ...(this?.account?.relatedAccounts || []),
-        relatedAccount,
-      ];
-      this.storeService.updateDocInState("accounts", this.account);
-    }
-  }
-
-  searchUsers(event: any) {
+  search(event: any) {
     const value = event.target.value;
-    this.searchedValue = value;
-
-    if (value) {
-      // Perform search
-      this.storeService.searchDocsByName("accounts", value);
-    }
+    this.searchTerms.next(value);
   }
 
-  /**
-   * Determines whether a request button should be displayed for a given account.
-   *
-   * @param {Partial<Account>} item - The account for which to determine whether a request button should be displayed.
-   * @returns {boolean} - Returns true if the authenticated user is different from the item and there is no non-rejected related account with the same id as the item. Otherwise, it returns false.
-   */
-  showRequestButton(item: Partial<Account>): boolean {
-    const authUserId = this.authUser?.uid;
-    if (!authUserId || authUserId === item.id) {
-      return false;
-    }
+  sendRequest(account: Account) {
+    this.authUser$.pipe(take(1)).subscribe((authUser) => {
+      if (!authUser?.uid || !account.id) {
+        console.error("User ID or Account ID is missing");
+        return;
+      }
 
-    return this.account?.relatedAccounts?.find(
-      (ra) => ra.id === item.id && ra.status !== "rejected",
-    )
-      ? false
-      : true;
+      const newRelatedAccount: RelatedAccount = {
+        id: account.id,
+        initiatorId: authUser.uid,
+        targetId: account.id,
+        type: account.type,
+        status: "pending",
+        relationship: "friend",
+        tagline: account.tagline,
+        name: account.name,
+        iconImage: account.iconImage,
+      };
+
+      this.store.dispatch(
+        AccountActions.createRelatedAccount({
+          accountId: authUser.uid,
+          relatedAccount: newRelatedAccount,
+        }),
+      );
+    });
+  }
+
+  showRequestButton(item: Account): Observable<boolean> {
+    return combineLatest([
+      this.authUser$,
+      this.store.select(selectRelatedAccounts),
+    ]).pipe(
+      map(([authUser, relatedAccounts]) => {
+        const authUserId = authUser?.uid;
+        if (!authUserId || authUserId === item.id) {
+          return false;
+        }
+
+        // Check against the `relatedAccounts` from the state
+        const shouldShowButton = !relatedAccounts.some(
+          (ra) =>
+            ((ra.initiatorId === item.id && ra.targetId === authUserId) ||
+              (ra.initiatorId === authUserId && ra.targetId === item.id)) &&
+            ra.status !== "rejected",
+        );
+
+        return shouldShowButton;
+      }),
+    );
   }
 }

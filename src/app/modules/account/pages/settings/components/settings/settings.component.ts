@@ -18,30 +18,29 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Component, EventEmitter, Input, OnChanges, Output} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
-import {TranslateModule, TranslateService} from "@ngx-translate/core";
-import {StoreService} from "../../../../../../core/services/store.service";
-import {User} from "firebase/auth";
+import {FormBuilder, FormGroup, FormControl, Validators} from "@angular/forms";
+import {TranslateService} from "@ngx-translate/core";
+import {AuthUser} from "../../../../../../models/auth-user.model";
 import {Account} from "../../../../../../models/account.model";
+import {Store} from "@ngrx/store";
+import * as AccountActions from "../../../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-settings-form",
   templateUrl: "./settings.component.html",
   styleUrls: ["./settings.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule, TranslateModule],
 })
 export class SettingsComponent implements OnChanges {
-  @Input() authUser?: User | null;
+  @Input() authUser?: AuthUser | null;
   @Input() account?: Partial<Account>;
   @Output() languageChange = new EventEmitter<string>();
 
-  settingsForm = this.fb.group({
-    privacy: ["public", Validators.required],
-    language: ["en"],
-  });
+  settingsForm: FormGroup<{
+    privacy: FormControl<
+      "public" | "accepted-users-only" | "accepted-groups-only" | "private"
+    >;
+    language: FormControl<string>;
+  }>;
 
   languageList = [
     {code: "en", name: "english", text: "English"},
@@ -50,9 +49,19 @@ export class SettingsComponent implements OnChanges {
 
   constructor(
     private fb: FormBuilder,
-    private storeService: StoreService,
+    private store: Store,
     private translateService: TranslateService,
-  ) {}
+  ) {
+    this.settingsForm = this.fb.group({
+      privacy: ["public", Validators.required],
+      language: ["en"],
+    }) as FormGroup<{
+      privacy: FormControl<
+        "public" | "accepted-users-only" | "accepted-groups-only" | "private"
+      >;
+      language: FormControl<string>;
+    }>;
+  }
 
   ngOnChanges() {
     this.loadFormData();
@@ -66,11 +75,18 @@ export class SettingsComponent implements OnChanges {
 
   updateSetting() {
     if (this.authUser?.uid) {
-      this.storeService.updateDoc("accounts", {
-        id: this.authUser?.uid,
-        privacy: this.settingsForm.value.privacy,
-        accessibility: {preferredLanguage: this.settingsForm.value.language},
-      });
+      const formValue = this.settingsForm.value;
+
+      const updatedAccount: Partial<Account> = {
+        id: this.authUser.uid,
+        privacy: formValue.privacy,
+        accessibility: {preferredLanguage: formValue.language},
+      };
+
+      // Dispatch action to update the account
+      this.store.dispatch(
+        AccountActions.updateAccount({account: updatedAccount as Account}),
+      );
     }
   }
 
@@ -78,7 +94,7 @@ export class SettingsComponent implements OnChanges {
     if (!this.account) return;
     // Update the form with the account data
     this.settingsForm.patchValue({
-      privacy: this.account.privacy,
+      privacy: this.account.privacy || "public",
       language: this.account.accessibility?.preferredLanguage ?? "en",
     });
   }

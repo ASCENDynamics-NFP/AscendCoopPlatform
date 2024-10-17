@@ -17,7 +17,10 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Routes} from "@angular/router";
+// src/app/app-routing.module.ts
+
+import {NgModule} from "@angular/core";
+import {RouterModule, Routes, ExtraOptions} from "@angular/router";
 import {AuthGuard} from "./core/guards/auth.guard";
 import {SecureInnerPagesGuard} from "./core/guards/secure-inner-pages.guard";
 
@@ -29,71 +32,85 @@ export const routes: Routes = [
   },
   {
     path: "group-list",
-    loadComponent: () =>
-      import("./modules/account/pages/group-list/group-list.page").then(
-        (m) => m.GroupListPage,
+    loadChildren: () =>
+      import("./modules/account/pages/group-list/group-list.module").then(
+        (m) => m.GroupListPageModule,
       ),
-    canActivate: [AuthGuard],
   },
   {
     path: "signup",
-    loadComponent: () =>
-      import("./modules/account/pages/signup/signup.page").then(
-        (m) => m.SignupPage,
+    loadChildren: () =>
+      import("./modules/account/pages/signup/signup.module").then(
+        (m) => m.SignupPageModule,
       ),
     canActivate: [SecureInnerPagesGuard],
   },
   {
     path: "login",
-    loadComponent: () =>
-      import("./modules/account/pages/login/login.page").then(
-        (m) => m.LoginPage,
+    loadChildren: () =>
+      import("./modules/account/pages/login/login.module").then(
+        (m) => m.LoginPageModule,
       ),
     canActivate: [SecureInnerPagesGuard],
   },
   {
     path: "settings",
-    loadComponent: () =>
-      import("./modules/account/pages/settings/settings.page").then(
-        (m) => m.SettingsPage,
+    loadChildren: () =>
+      import("./modules/account/pages/settings/settings.module").then(
+        (m) => m.SettingsPageModule,
       ),
     canActivate: [AuthGuard],
   },
   {
     path: "users",
-    loadComponent: () =>
-      import("./modules/account/pages/users/users.page").then(
-        (m) => m.UsersPage,
+    loadChildren: () =>
+      import("./modules/account/pages/users/users.module").then(
+        (m) => m.UsersPageModule,
       ),
     canActivate: [AuthGuard],
   },
   {
     path: "registration/:accountId",
-    loadComponent: () =>
-      import("./modules/account/pages/registration/registration.page").then(
-        (m) => m.RegistrationPage,
+    loadChildren: () =>
+      import("./modules/account/pages/registration/registration.module").then(
+        (m) => m.RegistrationPageModule,
       ),
   },
   {
     path: ":accountId",
-    loadComponent: () =>
-      import("./modules/account/pages/details/details.page").then(
-        (m) => m.DetailsPage,
+    loadChildren: () =>
+      import("./modules/account/pages/details/details.module").then(
+        (m) => m.DetailsPageModule,
       ),
     canActivate: [AuthGuard],
   },
   {
     path: ":accountId/edit",
-    loadComponent: () =>
-      import("./modules/account/pages/edit/edit.page").then((m) => m.EditPage),
+    loadChildren: () =>
+      import("./modules/account/pages/edit/edit.module").then(
+        (m) => m.EditPageModule,
+      ),
     canActivate: [AuthGuard],
   },
   {
     path: ":accountId/related/:listType",
-    loadComponent: () =>
-      import("./modules/account/relatedAccount/pages/list/list.page").then(
-        (m) => m.ListPage,
+    loadChildren: () =>
+      import("./modules/account/relatedAccount/pages/list/list.module").then(
+        (m) => m.ListPageModule,
       ),
     canActivate: [AuthGuard],
   },
 ];
+
+// Router options
+const routerOptions: ExtraOptions = {
+  anchorScrolling: "enabled", // Enable fragment scrolling
+  scrollPositionRestoration: "enabled", // Restore scroll position on navigation
+  onSameUrlNavigation: "reload", // Allow navigation to the same URL
+};
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes, routerOptions)],
+  exports: [RouterModule],
+})
+export class AppRoutingModule {}

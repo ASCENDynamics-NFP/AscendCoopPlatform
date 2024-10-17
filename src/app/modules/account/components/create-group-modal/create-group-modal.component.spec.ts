@@ -21,6 +21,7 @@ import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
 
 import {CreateGroupModalComponent} from "./create-group-modal.component";
+import {provideMockStore} from "@ngrx/store/testing";
 
 describe("CreateGroupModalComponent", () => {
   let component: CreateGroupModalComponent;
@@ -29,6 +30,7 @@ describe("CreateGroupModalComponent", () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [IonicModule.forRoot()],
+      providers: [provideMockStore({})],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CreateGroupModalComponent);

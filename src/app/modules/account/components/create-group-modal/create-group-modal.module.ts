@@ -17,19 +17,15 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {TestBed} from "@angular/core/testing";
+import {NgModule} from "@angular/core";
+import {CommonModule} from "@angular/common";
+import {IonicModule} from "@ionic/angular";
+import {ReactiveFormsModule, FormsModule} from "@angular/forms";
+import {CreateGroupModalComponent} from "./create-group-modal.component";
 
-import {StoreService} from "./store.service";
-
-describe("StoreService", () => {
-  let service: StoreService;
-
-  beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(StoreService);
-  });
-
-  it("should be created", () => {
-    expect(service).toBeTruthy();
-  });
-});
+@NgModule({
+  declarations: [CreateGroupModalComponent],
+  imports: [CommonModule, IonicModule, ReactiveFormsModule, FormsModule],
+  exports: [CreateGroupModalComponent], // Export to be used elsewhere
+})
+export class CreateGroupModalModule {}

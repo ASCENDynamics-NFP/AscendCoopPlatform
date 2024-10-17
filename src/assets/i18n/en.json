@@ -11,7 +11,15 @@
   "Settings": "Settings",
   "Dashboard": "Dashboard",
   "menu": {
-    "title": "ASCENDynamics NFP"
+    "title": "ASCENDynamics NFP",
+    "login": "Login",
+    "signup": "Sign Up",
+    "groups": "Groups",
+    "createGroup": "Create Group",
+    "profile": "Profile",
+    "users": "Users",
+    "settings": "Settings",
+    "dashboard": "Dashboard"
   },
   "user": {
     "login": {

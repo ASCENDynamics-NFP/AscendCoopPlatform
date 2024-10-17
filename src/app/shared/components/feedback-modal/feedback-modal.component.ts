@@ -18,18 +18,16 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Component, Input, OnInit} from "@angular/core";
-import {CommonModule} from "@angular/common";
 import {
   AbstractControl,
   FormBuilder,
   FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
   Validators,
+  ValidationErrors,
 } from "@angular/forms";
-import {IonicModule, LoadingController, ModalController} from "@ionic/angular";
-import {User} from "firebase/auth";
-import {StoreService} from "../../../core/services/store.service";
+import {LoadingController, ModalController} from "@ionic/angular";
+import {AuthUser} from "../../../models/auth-user.model";
+import {FirestoreService} from "../../../core/services/firestore.service";
 import {AppFeedback} from "../../../models/feedback.model";
 import {
   ref,
@@ -40,9 +38,7 @@ import {
 import {ErrorHandlerService} from "../../../core/services/error-handler.service";
 
 // Custom validator to check if the file is an image
-function imageFileValidator(
-  control: AbstractControl,
-): {[key: string]: any} | null {
+function imageFileValidator(control: AbstractControl): ValidationErrors | null {
   const file = control.value;
   if (file) {
     const validTypes = ["image/jpeg", "image/png", "image/gif"];
@@ -54,9 +50,7 @@ function imageFileValidator(
 }
 
 // Custom validator to check if the file size is <= 5MB
-function fileSizeValidator(
-  control: AbstractControl,
-): {[key: string]: any} | null {
+function fileSizeValidator(control: AbstractControl): ValidationErrors | null {
   const file = control.value;
   if (file && file.size > 5 * 1024 * 1024) {
     // 5MB in bytes
@@ -69,17 +63,10 @@ function fileSizeValidator(
   selector: "app-feedback-modal",
   templateUrl: "./feedback-modal.component.html",
   styleUrls: ["./feedback-modal.component.scss"],
-  standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, ReactiveFormsModule],
 })
 export class FeedbackModalComponent implements OnInit {
-  @Input() user?: User; // You can replace 'any' with your user type if you have one
-  feedbackForm: FormGroup = this.fb.group({
-    category: ["Bug Report", Validators.required],
-    feedback: ["", Validators.required],
-    attachment: [null, [imageFileValidator, fileSizeValidator]],
-    rating: [3, [Validators.min(1), Validators.max(5)]],
-  });
+  @Input() user?: AuthUser;
+  feedbackForm: FormGroup;
   categories: string[] = ["Bug Report", "Feature Request", "General Feedback"];
   isUploading: boolean = false;
   uploadedFileURL: string | null = null; // Add a new class property to store the download URL of the uploaded file
@@ -89,19 +76,26 @@ export class FeedbackModalComponent implements OnInit {
     private errorHandler: ErrorHandlerService,
     private loadingController: LoadingController,
     private modalCtrl: ModalController,
-    private storeService: StoreService,
+    private firestoreService: FirestoreService,
     private fb: FormBuilder,
-  ) {}
+  ) {
+    this.feedbackForm = this.fb.group({
+      category: ["Bug Report", Validators.required],
+      feedback: ["", Validators.required],
+      attachment: [null, [imageFileValidator, fileSizeValidator]],
+      rating: [3, [Validators.min(1), Validators.max(5)]],
+    });
+  }
 
   ngOnInit() {
     if (this.user) {
       this.feedbackForm.addControl(
         "name",
-        this.fb.control(this.user?.displayName, Validators.required),
+        this.fb.control(this.user.displayName, Validators.required),
       );
       this.feedbackForm.addControl(
         "email",
-        this.fb.control(this.user?.email, [
+        this.fb.control(this.user.email, [
           Validators.required,
           Validators.email,
         ]),
@@ -195,18 +189,24 @@ export class FeedbackModalComponent implements OnInit {
   submitFeedback() {
     if (this.feedbackForm.valid) {
       const formData = this.feedbackForm.value;
-      this.storeService.createDoc("feedback", {
-        email: this.user?.email,
-        name: this.user?.displayName,
-        emailVerified: this.user?.emailVerified,
-        feedback: formData.feedback,
-        rating: formData.rating,
-        category: formData.category,
-        attachment: this.uploadedFileURL,
-        isRead: false,
-        isResolved: false,
-      } as Partial<AppFeedback>);
-      this.modalCtrl.dismiss();
+      this.firestoreService
+        .addDocument("feedback", {
+          email: this.user?.email,
+          name: this.user?.displayName,
+          emailVerified: this.user?.emailVerified,
+          feedback: formData.feedback,
+          rating: formData.rating,
+          category: formData.category,
+          attachment: this.uploadedFileURL,
+          isRead: false,
+          isResolved: false,
+        } as Partial<AppFeedback>)
+        .then(() => {
+          this.modalCtrl.dismiss();
+        })
+        .catch((error) => {
+          this.errorHandler.handleFirebaseAuthError(error);
+        });
     }
   }
 

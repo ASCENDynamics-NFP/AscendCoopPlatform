@@ -34,17 +34,17 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ion-row>
       <ion-col>
         <app-partner-search
-          *ngIf="user && currentGroup"
-          [currentGroup]="currentGroup"
-          [isAdmin]="isAdmin"
+          *ngIf="(authUser$ | async) && (currentGroup$ | async)"
+          [currentGroup]="currentGroup$ | async"
+          [isAdmin]="isAdmin$ | async"
         ></app-partner-search>
       </ion-col>
       <ion-col>
         <app-member-search
-          *ngIf="user && currentGroup"
-          [currentGroup]="currentGroup"
-          [isAdmin]="isAdmin"
-          [users]="users"
+          *ngIf="(authUser$ | async) && (currentGroup$ | async)"
+          [currentGroup]="currentGroup$ | async"
+          [isAdmin]="isAdmin$ | async"
+          [users]="users$ | async"
         ></app-member-search>
       </ion-col>
     </ion-row>

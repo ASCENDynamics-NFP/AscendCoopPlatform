@@ -18,25 +18,94 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {TestBed} from "@angular/core/testing";
-
 import {SecureInnerPagesGuard} from "./secure-inner-pages.guard";
-import {AuthStoreService} from "../services/auth-store.service";
+import {Store, StoreModule} from "@ngrx/store";
+import {Router} from "@angular/router";
+import {NavController} from "@ionic/angular";
+import {of} from "rxjs";
+import {
+  selectIsLoggedIn,
+  selectAuthUser,
+} from "../../state/selectors/auth.selectors";
 
 describe("SecureInnerPagesGuard", () => {
   let guard: SecureInnerPagesGuard;
-  let service: AuthStoreService;
-  let authSpy: any;
+  let mockStore: any;
+  let mockRouter: any;
+  let mockNavController: any;
+
+  const mockAuthUser = {
+    uid: "12345",
+    email: "test@example.com",
+    displayName: "Test User",
+    photoURL: null,
+    emailVerified: true,
+  };
 
   beforeEach(() => {
+    mockStore = {
+      select: jasmine.createSpy("select"),
+    };
+
+    mockRouter = {
+      getCurrentNavigation: jasmine
+        .createSpy("getCurrentNavigation")
+        .and.returnValue({
+          previousNavigation: null, // Mock to check whether there was a previous navigation
+        }),
+    };
+
+    mockNavController = {
+      navigateForward: jasmine.createSpy("navigateForward"),
+      back: jasmine.createSpy("back"),
+    };
+
     TestBed.configureTestingModule({
-      providers: [{provide: AuthStoreService, useValue: authSpy}],
+      imports: [StoreModule.forRoot({})],
+      providers: [
+        SecureInnerPagesGuard,
+        {provide: Store, useValue: mockStore},
+        {provide: Router, useValue: mockRouter},
+        {provide: NavController, useValue: mockNavController},
+      ],
     });
 
-    service = TestBed.inject(AuthStoreService);
     guard = TestBed.inject(SecureInnerPagesGuard);
   });
 
-  it("should be created", () => {
+  it("should create the guard", () => {
     expect(guard).toBeTruthy();
+  });
+
+  it("should return true if user is not logged in", async () => {
+    mockStore.select.withArgs(selectIsLoggedIn).and.returnValue(of(false));
+
+    const canActivate = await guard.canActivate();
+    expect(canActivate).toBeTrue();
+  });
+
+  it("should return false and navigate to user page if user is logged in and there is no previous navigation", async () => {
+    mockStore.select.withArgs(selectIsLoggedIn).and.returnValue(of(true));
+    mockStore.select.withArgs(selectAuthUser).and.returnValue(of(mockAuthUser));
+
+    const canActivate = await guard.canActivate();
+    expect(canActivate).toBeFalse();
+    expect(mockNavController.navigateForward).toHaveBeenCalledWith(
+      `/${mockAuthUser.uid}`,
+    );
+  });
+
+  it("should return false and navigate back if there is a previous navigation", async () => {
+    // Set up mock for previous navigation
+    mockRouter.getCurrentNavigation.and.returnValue({
+      previousNavigation: {},
+    });
+
+    mockStore.select.withArgs(selectIsLoggedIn).and.returnValue(of(true));
+    mockStore.select.withArgs(selectAuthUser).and.returnValue(of(mockAuthUser));
+
+    const canActivate = await guard.canActivate();
+    expect(canActivate).toBeFalse();
+    expect(mockNavController.back).toHaveBeenCalled();
   });
 });

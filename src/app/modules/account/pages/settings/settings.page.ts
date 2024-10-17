@@ -17,60 +17,48 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {FormsModule} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
+// src/app/modules/account/pages/settings/settings.page.ts
 
-import {SettingsComponent} from "./components/settings/settings.component";
-import {AuthStoreService} from "../../../../core/services/auth-store.service";
-import {Subscription} from "rxjs";
-import {StoreService} from "../../../../core/services/store.service";
-import {AppHeaderComponent} from "../../../../shared/components/app-header/app-header.component";
+import {Component, OnInit} from "@angular/core";
+import {Observable} from "rxjs";
+import {AuthUser} from "../../../../models/auth-user.model";
 import {Account} from "../../../../models/account.model";
+import {Store} from "@ngrx/store";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {selectAccountById} from "../../../../state/selectors/account.selectors";
+import * as AccountActions from "../../../../state/actions/account.actions";
+import {switchMap, tap} from "rxjs/operators";
 
 @Component({
   selector: "app-settings",
   templateUrl: "./settings.page.html",
   styleUrls: ["./settings.page.scss"],
-  standalone: true,
-  imports: [
-    IonicModule,
-    CommonModule,
-    FormsModule,
-    SettingsComponent,
-    AppHeaderComponent,
-  ],
 })
-export class SettingsPage {
-  private accountSubscription?: Subscription;
-  authUser = this.authStoreService.getCurrentUser();
-  account?: Partial<Account>;
+export class SettingsPage implements OnInit {
+  authUser$: Observable<AuthUser | null>;
+  account$: Observable<Account | undefined>;
 
-  constructor(
-    private authStoreService: AuthStoreService,
-    private storeService: StoreService,
-  ) {
-    this.authUser = this.authStoreService.getCurrentUser();
-  }
+  constructor(private store: Store) {
+    // Get the authUser observable
+    this.authUser$ = this.store.select(selectAuthUser);
 
-  ionViewWillEnter() {
-    this.accountSubscription = this.storeService.accounts$.subscribe(
-      (accounts) => {
-        this.account = accounts.find(
-          (account) => account.id === this.authUser?.uid,
-        );
-      },
+    // Use switchMap to load the account and select the account observable based on authUser
+    this.account$ = this.authUser$.pipe(
+      tap((authUser) => {
+        if (authUser?.uid) {
+          this.store.dispatch(
+            AccountActions.loadAccount({accountId: authUser.uid}),
+          );
+        }
+      }),
+      switchMap((authUser) => {
+        if (authUser?.uid) {
+          return this.store.select(selectAccountById(authUser.uid));
+        }
+        return [undefined];
+      }),
     );
-
-    if (!this.account) {
-      this.account = this.storeService
-        .getCollection("accounts")
-        .find((account) => account["id"] === this.authUser?.uid);
-    }
   }
 
-  ionViewWillLeave() {
-    this.accountSubscription?.unsubscribe();
-  }
+  ngOnInit() {}
 }

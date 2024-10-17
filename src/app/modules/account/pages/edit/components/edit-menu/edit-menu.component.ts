@@ -17,9 +17,8 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {CommonModule} from "@angular/common";
 import {Component, EventEmitter, Input, Output} from "@angular/core";
-import {IonicModule, ModalController} from "@ionic/angular";
+import {ModalController} from "@ionic/angular";
 import {Account} from "../../../../../../models/account.model";
 import {ImageUploadModalComponent} from "../../../../../../shared/components/image-upload-modal/image-upload-modal.component";
 
@@ -27,12 +26,10 @@ import {ImageUploadModalComponent} from "../../../../../../shared/components/ima
   selector: "app-edit-menu",
   templateUrl: "./edit-menu.component.html",
   styleUrls: ["./edit-menu.component.scss"],
-  standalone: true,
-  imports: [IonicModule, CommonModule, ImageUploadModalComponent],
 })
 export class EditMenuComponent {
   @Input() account?: Partial<Account>;
-  @Input() isProfileOwner: boolean = true; // define if the user is the current user (for edit profile button
+  @Input() isProfileOwner: boolean = true;
   @Output() itemSelected = new EventEmitter<string>();
   selectedItem: string | null = "basic";
 

@@ -38,7 +38,7 @@ export const onCreateRelatedAccount = functions.firestore
   .onCreate(handleRelatedAccountCreate);
 
 /**
- * Handles the creation of a new related account document, ensuring corresponding reciprocal documents are created in both accounts.
+ * Handles the creation of a new related account document, ensuring a reciprocal document is created in the target account.
  *
  * @param {QueryDocumentSnapshot} _snapshot - The snapshot of the newly created document.
  * @param {EventContext} context - The context of the event, providing parameters and identifiers.
@@ -49,23 +49,52 @@ async function handleRelatedAccountCreate(
 ) {
   const accountId = context.params.accountId;
   const relatedAccountId = context.params.relatedAccountId;
+
   try {
-    // Query the related account's details
+    // Query the related account document in the sub-collection
+    const relatedAccountDoc = await db
+      .collection("accounts")
+      .doc(accountId)
+      .collection("relatedAccounts")
+      .doc(relatedAccountId)
+      .get();
+
+    if (!relatedAccountDoc.exists) {
+      logger.error(
+        `Related account with ID ${relatedAccountId} does not exist.`,
+      );
+      return;
+    }
+
+    const relatedAccountData = relatedAccountDoc.data();
+
+    // Ensure the related account data has a targetId
+    if (!relatedAccountData?.targetId) {
+      logger.error(
+        `Related Account Data does not contain targetId ${relatedAccountData?.targetId}.`,
+      );
+      return;
+    }
+
+    // Fetch the target account data based on the targetId
+    const targetAccountDoc = await db
+      .collection("accounts")
+      .doc(relatedAccountData.targetId)
+      .get();
+
+    if (!targetAccountDoc.exists) {
+      logger.error(
+        `Targeted account with ID ${relatedAccountData.targetId} does not exist.`,
+      );
+      return;
+    }
+
     const initiatorAccountDoc = await db
       .collection("accounts")
       .doc(accountId)
       .get();
-    const targetAccountDoc = await db
-      .collection("accounts")
-      .doc(relatedAccountId)
-      .get();
-
-    if (!initiatorAccountDoc.exists || !targetAccountDoc.exists) {
-      logger.error(`Related account with ID ${accountId} does not exist.`);
-      return;
-    }
-
     const initiatorAccountData = initiatorAccountDoc.data();
+
     const targetAccountData = targetAccountDoc.data();
 
     const relationship =
@@ -77,24 +106,26 @@ async function handleRelatedAccountCreate(
           ? "member"
           : "friend";
 
-    // Create a relatedAccount document for the target
+    // -------------------------
+    // Create reciprocal relatedAccount for the target
+    // -------------------------
     const targetRelatedAccountRef = db
       .collection("accounts")
-      .doc(relatedAccountId)
+      .doc(relatedAccountData.targetId)
       .collection("relatedAccounts")
-      .doc(accountId);
+      .doc(accountId); // Reciprocal relationship using accountId
 
-    // Check if the related account document already exists
+    // Check if the reciprocal relatedAccount already exists
     const targetRelatedAccountDoc = await targetRelatedAccountRef.get();
     if (targetRelatedAccountDoc.exists) {
       logger.info(
-        "Related account document already exists, skipping creation.",
+        "Reciprocal related account document already exists, skipping creation.",
       );
       return;
     }
 
     const targetRelatedAccount = {
-      id: accountId,
+      id: accountId, // The ID of the initiator account
       name: initiatorAccountData?.name,
       iconImage: initiatorAccountData?.iconImage,
       tagline: initiatorAccountData?.tagline,
@@ -106,12 +137,15 @@ async function handleRelatedAccountCreate(
       lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
       lastModifiedBy: accountId,
       initiatorId: accountId,
-      targetId: relatedAccountId,
+      targetId: relatedAccountData.targetId,
     };
+
     await targetRelatedAccountRef.set(targetRelatedAccount);
 
-    logger.info("Related account documents created successfully.");
+    logger.info(
+      `Reciprocal related account document created for target ${relatedAccountData.targetId}.`,
+    );
   } catch (error) {
-    logger.error("Error creating related account documents: ", error);
+    logger.error("Error creating reciprocal related account document: ", error);
   }
 }

@@ -18,17 +18,6 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Injectable} from "@angular/core";
-import {
-  Firestore,
-  getFirestore,
-  doc,
-  collection,
-  query,
-  where,
-  DocumentData,
-  and,
-  or,
-} from "firebase/firestore";
 import {Observable, of} from "rxjs";
 import {map, catchError} from "rxjs/operators";
 import {FirebaseError} from "firebase/app";
@@ -39,11 +28,7 @@ import {AngularFirestore} from "@angular/fire/compat/firestore";
   providedIn: "root",
 })
 export class FirestoreService {
-  firestore: Firestore;
-
-  constructor(private afs: AngularFirestore) {
-    this.firestore = getFirestore();
-  }
+  constructor(private afs: AngularFirestore) {}
 
   // Firebase Query Logic (Start) //
 
@@ -227,7 +212,6 @@ export class FirestoreService {
   searchAccountByName(
     collectionName: string,
     searchTerm: string,
-    userId?: string,
   ): Observable<Account[]> {
     const collectionRef = this.afs.collection<Account>(
       collectionName,

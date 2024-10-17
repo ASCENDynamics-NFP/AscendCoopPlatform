@@ -24,23 +24,23 @@ const fs = require("fs");
 const path = require("path");
 
 // Determine the environment
-const env = process.env.NODE_ENV || 'development';
+const env = process.env.NODE_ENV || "development";
 
 // Load environment variables from the appropriate .env file (only in local development)
-if (process.env.CI !== 'true') {
+if (process.env.CI !== "true") {
   const envFilePath = path.resolve(process.cwd(), `.env.${env}`);
-  dotenv.config({ path: envFilePath });
+  dotenv.config({path: envFilePath});
 }
 
 // Verify that required environment variables are set
 const requiredEnvVars = [
-  'FIREBASE_API_KEY',
-  'FIREBASE_AUTH_DOMAIN',
-  'FIREBASE_PROJECT_ID',
-  'FIREBASE_STORAGE_BUCKET',
-  'FIREBASE_MESSAGING_SENDER_ID',
-  'FIREBASE_APP_ID',
-  'FIREBASE_MEASUREMENT_ID'
+  "FIREBASE_API_KEY",
+  "FIREBASE_AUTH_DOMAIN",
+  "FIREBASE_PROJECT_ID",
+  "FIREBASE_STORAGE_BUCKET",
+  "FIREBASE_MESSAGING_SENDER_ID",
+  "FIREBASE_APP_ID",
+  "FIREBASE_MEASUREMENT_ID",
 ];
 
 requiredEnvVars.forEach((varName) => {
@@ -50,14 +50,15 @@ requiredEnvVars.forEach((varName) => {
 });
 
 // Set the target path based on the environment
-const targetPath = env === 'production'
-  ? './src/environments/environment.prod.ts'
-  : './src/environments/environment.ts';
+const targetPath =
+  env === "production"
+    ? "./src/environments/environment.prod.ts"
+    : "./src/environments/environment.ts";
 
 // Generate the environment configuration file content
 const envConfigFile = `
 export const environment = {
-  production: ${env === 'production'},
+  production: ${env === "production"},
   firebaseConfig: {
     apiKey: '${process.env.FIREBASE_API_KEY}',
     authDomain: '${process.env.FIREBASE_AUTH_DOMAIN}',

@@ -150,13 +150,7 @@ export class AccountEffects {
     this.actions$.pipe(
       ofType(AccountActions.searchAccounts),
       switchMap(({query}) =>
-        from(
-          this.firestoreService.searchAccountByName(
-            "accounts",
-            query,
-            undefined,
-          ),
-        ).pipe(
+        from(this.firestoreService.searchAccountByName("accounts", query)).pipe(
           map((accountsData) => {
             const accounts: Account[] = (accountsData || []).map(
               (accountData) => ({

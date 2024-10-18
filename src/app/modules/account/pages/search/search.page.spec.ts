@@ -22,7 +22,6 @@ import {SearchPage} from "./search.page";
 import {ActivatedRoute} from "@angular/router";
 import {Store, StoreModule} from "@ngrx/store";
 import {of} from "rxjs";
-import {map} from "rxjs/operators";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectAccounts} from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";

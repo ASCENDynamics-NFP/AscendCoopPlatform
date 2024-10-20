@@ -156,6 +156,12 @@ jobs:
       - name: Build project
         run: npm run build
 
+      # 6. Authenticate with Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.DEV_GOOGLE_APPLICATION_CREDENTIALS }}
+
       # 7. Install Firebase CLI
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
@@ -174,5 +180,3 @@ jobs:
           fi
           echo "Deploying to Firebase channel: $CHANNEL"
           firebase hosting:channel:deploy $CHANNEL --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

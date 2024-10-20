@@ -167,7 +167,7 @@ jobs:
       # Step 9: Extract Preview URL from deployment output
       - name: Extract Preview URL
         run: |
-          URL=$(jq -r '.result' firebase_output.json)
+          URL=$(jq -r '.result[0]["url"]' firebase_output.json)
           if [ -z "$URL" ]; then
             echo "Failed to extract the preview URL."
             exit 1

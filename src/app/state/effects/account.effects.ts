@@ -23,7 +23,7 @@ import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
 import * as AccountActions from "../actions/account.actions";
 import {from, of} from "rxjs";
-import {switchMap, map, catchError, mergeMap, tap} from "rxjs/operators";
+import {switchMap, map, catchError, mergeMap} from "rxjs/operators";
 import {FirestoreService} from "../../core/services/firestore.service";
 import {Account} from "../../models/account.model";
 

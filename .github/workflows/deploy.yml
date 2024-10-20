@@ -69,7 +69,7 @@ jobs:
       - name: Generate environment file
         run: node generate-env.js
 
-      # 7. Build the project for production
+      # 7. Build the project (Production)
       - name: Build
         run: npm run build:prod
 

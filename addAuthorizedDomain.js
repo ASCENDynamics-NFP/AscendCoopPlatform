@@ -1,66 +1,35 @@
 // addAuthorizedDomain.js
 
-/**
- * This script adds a specified domain to Firebase Authentication's authorized domains.
- * Usage: node addAuthorizedDomain.js your-preview-domain.web.app
- */
-
-// Import the Firebase Admin SDK
 const admin = require("firebase-admin");
+const serviceAccount = JSON.parse(
+  process.env.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT,
+);
 
-// Parse the service account JSON from environment variable
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
-
-// Initialize Firebase Admin SDK
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-/**
- * Adds a domain to the list of authorized domains in Firebase Authentication.
- * @param {string} domain - The domain to add.
- */
-async function addAuthorizedDomain(domain) {
-  try {
-    // Retrieve current authentication settings
-    const authSettings = await admin.auth().getAuthSettings();
+async function addAuthorizedDomain(previewUrl) {
+  const domain = new URL(previewUrl).hostname;
 
-    // Extract existing authorized domains or initialize an empty array
-    const authorizedDomains =
-      authSettings?.authDomainSettings?.allowedDomains || [];
+  const auth = admin.auth();
+  const config = await auth.getSettings();
+  const domains = config.authorizedDomains || [];
 
-    // Check if the domain is already authorized
-    if (authorizedDomains.includes(domain)) {
-      console.log(`✅ Domain "${domain}" is already authorized.`);
-      return;
-    }
-
-    // Add the new domain to the list
-    authorizedDomains.push(domain);
-
-    // Update Firebase Authentication settings with the new list of authorized domains
-    await admin.auth().updateAuthSettings({
-      authDomainSettings: {
-        allowedDomains: authorizedDomains,
-      },
-    });
-
-    console.log(`✅ Successfully added "${domain}" to authorized domains.`);
-  } catch (error) {
-    console.error(`❌ Error adding domain "${domain}":`, error);
-    process.exit(1); // Exit with failure
+  if (!domains.includes(domain)) {
+    domains.push(domain);
+    await auth.updateSettings({authorizedDomains: domains});
+    console.log(`Added ${domain} to authorized domains.`);
+  } else {
+    console.log(`${domain} is already in authorized domains.`);
   }
 }
 
-// Retrieve the domain from command-line arguments
-const domain = process.argv[2];
+const previewUrl = process.argv[2]; // Pass the preview URL as an argument
 
-if (!domain) {
-  console.error(
-    "❌ No domain provided. Usage: node addAuthorizedDomain.js your-preview-domain.web.app",
-  );
-  process.exit(1); // Exit with failure
+if (previewUrl) {
+  addAuthorizedDomain(previewUrl).catch(console.error);
+} else {
+  console.error("Please provide the preview URL to add.");
+  process.exit(1);
 }
-
-// Execute the function
-addAuthorizedDomain(domain);

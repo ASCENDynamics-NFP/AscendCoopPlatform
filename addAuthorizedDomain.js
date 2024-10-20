@@ -1,74 +1,54 @@
 // addAuthorizedDomain.js
 
-const {google} = require("googleapis");
+const admin = require("firebase-admin");
+const {URL} = require("url");
 
-// Parse the service account JSON from environment variables
+// Parse the service account JSON from the environment variable
 const serviceAccount = JSON.parse(
   process.env.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT,
 );
 
-/**
- * Adds an authorized domain to Firebase Authentication using the Firebase Management API.
- * @param {string} previewUrl - The full preview URL (e.g., https://pr-286--your-app.web.app)
- */
+// Initialize the Firebase Admin SDK
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
 async function addAuthorizedDomain(previewUrl) {
   try {
+    // Extract the domain from the preview URL
     const domain = new URL(previewUrl).hostname;
 
-    // Initialize the Google Auth client
-    const authClient = new google.auth.GoogleAuth({
-      credentials: serviceAccount,
-      scopes: [
-        "https://www.googleapis.com/auth/firebase",
-        "https://www.googleapis.com/auth/cloud-platform",
-      ],
-    });
+    console.log(`Adding domain: ${domain} to authorized domains.`);
 
-    const auth = await authClient.getClient();
+    // Get the existing list of authorized domains
+    const authSettings = await admin.auth().getSettings();
+    const authorizedDomains = authSettings.authorizedDomains || [];
 
-    // Initialize the Firebase Management API client
-    const firebaseManagement = google.firebase({
-      version: "v1beta1",
-      auth: auth,
-    });
+    // Check if the domain is already in the list
+    if (!authorizedDomains.includes(domain)) {
+      // Add the new domain to the list
+      authorizedDomains.push(domain);
 
-    const projectId = serviceAccount.project_id;
+      // Update the authorized domains in Firebase Authentication
+      await admin.auth().updateSettings({authorizedDomains});
 
-    // Get current Firebase project config
-    const res = await firebaseManagement.projects.getConfig({
-      name: `projects/${projectId}/config`,
-    });
-
-    const currentDomains = res.data.authorizedDomains || [];
-
-    if (currentDomains.includes(domain)) {
-      console.log(`✅ Domain "${domain}" is already authorized.`);
-      return;
+      console.log(`Successfully added ${domain} to authorized domains.`);
+    } else {
+      console.log(`${domain} is already in authorized domains.`);
     }
-
-    // Add the new domain
-    const updatedDomains = [...currentDomains, domain];
-
-    // Update the project config with the new authorized domains
-    await firebaseManagement.projects.updateConfig({
-      name: `projects/${projectId}/config`,
-      requestBody: {
-        authorizedDomains: updatedDomains,
-      },
-    });
-
-    console.log(`✅ Successfully added "${domain}" to authorized domains.`);
   } catch (error) {
-    console.error(`❌ Error adding domain "${previewUrl}":`, error.message);
+    console.error("Error adding authorized domain:", error);
     process.exit(1);
   }
 }
 
-const previewUrl = process.argv[2]; // Pass the full preview URL as an argument
+// Get the preview URL from the command line arguments
+const previewUrl = process.argv[2];
 
 if (previewUrl) {
-  addAuthorizedDomain(previewUrl).catch(console.error);
+  console.log(`Received preview URL: ${previewUrl}`);
+  addAuthorizedDomain(previewUrl);
 } else {
-  console.error("❌ Please provide the full preview URL to add.");
+  console.error("Please provide the preview URL as an argument.");
   process.exit(1);
 }

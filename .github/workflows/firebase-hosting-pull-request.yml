@@ -126,11 +126,12 @@ jobs:
       # Checkout the repository
       - uses: actions/checkout@v4
 
+      # Download Build Artifact
       - name: Download Build Artifact
         uses: actions/download-artifact@v3
         with:
           name: www
-          path: www/  
+          path: www/
 
       # Set up Node.js environment
       - name: Set up Node.js
@@ -138,6 +139,7 @@ jobs:
         with:
           node-version: '20'
 
+      # Install Firebase CLI
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
@@ -145,9 +147,28 @@ jobs:
       - name: Install Dependencies for add-authorized-domain.js
         run: npm install googleapis
 
-      # Set the PREVIEW_DOMAIN environment variable
+      # Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}'
+        env:
+          CLOUDSDK_CORE_PROJECT: ${{ secrets.DEV_FIREBASE_PROJECT_ID }}
+
+      # Deploy to Firebase Preview and Capture URL
+      - name: Deploy to Firebase Preview
+        id: firebase_deploy
+        run: firebase hosting:channel:deploy pr-${{ github.event.number }} --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} --expires 10d --json > firebase_output.json
+
+      # Extract Preview URL
+      - name: Extract Preview URL
+        run: |
+          URL=$(cat firebase_output.json | jq -r '.result[0].url')
+          echo "PREVIEW_URL=$URL" >> $GITHUB_ENV
+
+      # Set Preview Domain
       - name: Set Preview Domain
-        run: echo "PREVIEW_DOMAIN=pr-${{ github.event.number }}--${{ secrets.DEV_FIREBASE_PROJECT_ID }}.web.app" >> $GITHUB_ENV
+        run: echo "PREVIEW_DOMAIN=$(echo $PREVIEW_URL | sed 's|^https://||; s|/$||')" >> $GITHUB_ENV
 
       # Add Preview Domain to Authorized Domains
       - name: Add Preview Domain to Authorized Domains
@@ -155,12 +176,6 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v1
-        with:
-          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}'
-
-      - name: Deploy to Firebase Preview
-        run: firebase hosting:channel:deploy pr-${{ github.event.number }} --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} --expires 10d
-
-      
+      # Optionally, Output the Preview URL
+      - name: Output Preview URL
+        run: echo "Preview URL is: $PREVIEW_URL"

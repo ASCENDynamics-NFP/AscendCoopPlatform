@@ -155,13 +155,23 @@ jobs:
 
       # Step 8: Deploy to Firebase Preview and capture output
       - name: Deploy to Firebase Preview
-        id: firebase_deploy  # Assign an ID to reference outputs later
-        run: firebase hosting:channel:deploy pr-${{ github.event.number }} --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} --expires 10d --json > firebase_output.json
+        id: firebase_deploy
+        run: |
+          set -e
+          firebase hosting:channel:deploy pr-${{ github.event.number }} --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} --expires 10d --json > firebase_output.json
 
+      # Debug: Output firebase_output.json
+      - name: "Debug: Output firebase_output.json"
+        run: cat firebase_output.json
+        
       # Step 9: Extract Preview URL from deployment output
       - name: Extract Preview URL
         run: |
-          URL=$(cat firebase_output.json | jq -r '.result[0].url')
+          URL=$(jq -r '.result[0].url' firebase_output.json)
+          if [ -z "$URL" ]; then
+            echo "Failed to extract the preview URL."
+            exit 1
+          fi
           echo "PREVIEW_URL=$URL" >> $GITHUB_ENV
 
       # Step 10: Set Preview Domain by stripping protocol and trailing slash

@@ -116,14 +116,17 @@ jobs:
     needs: build-and-test
 
     steps:
+      # 1. Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
+      # 3. Cache Node.js modules
       - name: Cache Node.js modules
         uses: actions/cache@v3
         with:
@@ -132,12 +135,23 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
+      # 4. Install dependencies
       - name: Install dependencies
         run: npm install
 
+      # 5. Build the project
       - name: Build project
         run: npm run build
 
+      # 6. Install Firebase CLI
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      # 7. Verify Firebase CLI Installation
+      - name: Verify Firebase CLI
+        run: firebase --version
+
+      # 8. Deploy to Firebase Preview
       - name: Deploy to Firebase Preview
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
@@ -145,6 +159,7 @@ jobs:
           else
             CHANNEL="main-preview"
           fi
-          firebase hosting:channel:deploy $CHANNEL --project ${{ secrets.FIREBASE_PROJECT_ID }}
+          echo "Deploying to Firebase channel: $CHANNEL"
+          firebase hosting:channel:deploy $CHANNEL --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

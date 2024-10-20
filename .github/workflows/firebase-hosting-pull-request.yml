@@ -158,7 +158,7 @@ jobs:
         id: firebase_deploy
         run: |
           set -e
-          firebase hosting:channel:deploy pr-${{ github.event.number }} --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} --expires 10d --json > firebase_output.json
+          firebase hosting:channel:deploy pr-${{ github.event.number }} --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} --expires 10d --json --debug > firebase_output.json 2>&1
 
       # Debug: Output firebase_output.json
       - name: "Debug: Output firebase_output.json"

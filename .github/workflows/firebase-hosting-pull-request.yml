@@ -139,7 +139,7 @@ jobs:
 
       # Step 5: Install Dependencies for addAuthorizedDomain.js
       - name: Install Dependencies for addAuthorizedDomain.js
-        run: npm install googleapis  # Install googleapis package
+        run: npm install googleapis firebase-admin  # Install required packages
 
       # Step 6: Authenticate to Google Cloud
       - name: Authenticate to Google Cloud
@@ -177,7 +177,7 @@ jobs:
 
       # Step 9: Add Preview Domain to Authorized Domains
       - name: Add Preview Domain to Authorized Domains
-        run: node addAuthorizedDomain.js ${{ env.PREVIEW_DOMAIN }}  # Pass the domain as an argument
+        run: node addAuthorizedDomain.js ${{ env.PREVIEW_URL }}  # Pass the full preview URL as an argument
         env:
           FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}  # Provide service account JSON
 

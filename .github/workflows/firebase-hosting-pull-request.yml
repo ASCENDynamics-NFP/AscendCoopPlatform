@@ -139,19 +139,32 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # 5. Build the project
+      # Step 5: Set environment variables
+      - name: Set environment variables
+        run: |
+          echo "CI=true" >> $GITHUB_ENV
+          echo "NODE_ENV=development" >> $GITHUB_ENV
+          echo "FIREBASE_API_KEY=${{ secrets.DEV_FIREBASE_API_KEY }}" >> $GITHUB_ENV
+          echo "FIREBASE_AUTH_DOMAIN=${{ secrets.DEV_FIREBASE_AUTH_DOMAIN }}" >> $GITHUB_ENV
+          echo "FIREBASE_PROJECT_ID=${{ secrets.DEV_FIREBASE_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "FIREBASE_STORAGE_BUCKET=${{ secrets.DEV_FIREBASE_STORAGE_BUCKET }}" >> $GITHUB_ENV
+          echo "FIREBASE_MESSAGING_SENDER_ID=${{ secrets.DEV_FIREBASE_MESSAGING_SENDER_ID }}" >> $GITHUB_ENV
+          echo "FIREBASE_APP_ID=${{ secrets.DEV_FIREBASE_APP_ID }}" >> $GITHUB_ENV
+          echo "FIREBASE_MEASUREMENT_ID=${{ secrets.DEV_FIREBASE_MEASUREMENT_ID }}" >> $GITHUB_ENV
+
+      # 6. Build the project
       - name: Build project
         run: npm run build
 
-      # 6. Install Firebase CLI
+      # 7. Install Firebase CLI
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
-      # 7. Verify Firebase CLI Installation
+      # 8. Verify Firebase CLI Installation
       - name: Verify Firebase CLI
         run: firebase --version
 
-      # 8. Deploy to Firebase Preview
+      # 9. Deploy to Firebase Preview
       - name: Deploy to Firebase Preview
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then

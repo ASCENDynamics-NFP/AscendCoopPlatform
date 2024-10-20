@@ -110,22 +110,78 @@ jobs:
           name: www
           path: www/  # Adjust to include all files in the build directory
 
-      # After the deployment step
-      - name: Deploy to Firebase Preview
-        id: deploy
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: "${{ secrets.GITHUB_TOKEN }}"
-          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}"
-          projectId: ascendcoopplatform-dev
-        env:
-          FIREBASE_API_KEY: ${{ secrets.DEV_FIREBASE_API_KEY }}
-          # Other environment variables
+  # Deploy to Firebase Preview
+  build_and_preview:
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}  # Only run for PRs from the same repo
+    runs-on: ubuntu-latest
+    needs: build-and-test  # This job depends on the successful completion of the build-and-test job
 
-      # Add the preview domain to authorized domains
-      - name: Add Preview Domain to Authorized Domains
-        run: |
-          npm install firebase-admin
-          node addAuthorizedDomain.js ${{ steps.deploy.outputs.details_url }}
+    steps:
+      # Step 1: Checkout the repository
+      - uses: actions/checkout@v4
+
+      # Step 2: Download Build Artifact
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: www
+          path: www/
+
+      # Step 3: Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'  # Specify Node.js version
+
+      # Step 4: Install Firebase CLI
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools  # Install Firebase CLI globally
+
+      # Step 5: Install Dependencies for addAuthorizedDomain.js
+      - name: Install Dependencies for addAuthorizedDomain.js
+        run: npm install googleapis  # Install googleapis package
+
+      # Step 6: Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}'  # Service account JSON
         env:
-          FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT }}
+          CLOUDSDK_CORE_PROJECT: ${{ secrets.DEV_FIREBASE_PROJECT_ID }}  # Set the project ID for Google Cloud SDK
+
+      # Step 7: Deploy to Firebase Preview and Capture Output
+      - name: Deploy to Firebase Preview
+        id: firebase_deploy  # Assign an ID to reference outputs later
+        run: |
+          set -e  # Exit immediately if a command exits with a non-zero status
+          OUTPUT=$(firebase hosting:channel:deploy pr-${{ github.event.number }} --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} --expires 10d)
+          echo "$OUTPUT"
+
+          # Extract the Channel URL from the deployment output
+          PREVIEW_URL=$(echo "$OUTPUT" | grep 'Channel URL' | awk '{print $4}')
+          
+          if [ -z "$PREVIEW_URL" ]; then
+            echo "❌ Failed to extract the preview URL."
+            exit 1
+          fi
+
+          echo "PREVIEW_URL=$PREVIEW_URL" >> $GITHUB_ENV  # Export PREVIEW_URL for subsequent steps
+
+      # Step 8: Set Preview Domain
+      - name: Set Preview Domain
+        run: |
+          # Remove 'https://' prefix and any trailing slash
+          DOMAIN=${PREVIEW_URL#https://}
+          DOMAIN=${DOMAIN%/}
+          echo "PREVIEW_DOMAIN=${DOMAIN}" >> $GITHUB_ENV
+
+      # Step 9: Add Preview Domain to Authorized Domains
+      - name: Add Preview Domain to Authorized Domains
+        run: node addAuthorizedDomain.js ${{ env.PREVIEW_DOMAIN }}  # Pass the domain as an argument
+        env:
+          FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}  # Provide service account JSON
+
+      # Step 10: Output the Preview URL
+      - name: Output Preview URL
+        run: |
+          echo "✅ Preview URL is: ${{ env.PREVIEW_URL }}"  # Display the preview URL

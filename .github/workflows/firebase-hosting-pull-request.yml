@@ -148,3 +148,13 @@ jobs:
 
       - name: Deploy to Firebase Preview
         run: firebase hosting:channel:deploy pr-${{ github.event.number }} --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} --expires 10d
+
+      - name: Set Preview Domain
+        run: echo "PREVIEW_DOMAIN=pr-${{ github.event.number }}--${{ secrets.DEV_FIREBASE_PROJECT_ID }}.web.app" >> $GITHUB_ENV
+        
+      - name: Add Preview Domain to Authorized Domains
+        run: node add-authorized-domain.js
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}
+
+      

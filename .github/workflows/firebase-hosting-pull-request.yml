@@ -111,79 +111,61 @@ jobs:
           path: www/  # Adjust to include all files in the build directory
 
   # Deploy to Firebase Preview
-  build-and-deploy:
+  build_and_preview:
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
+    needs: build-and-test
 
     steps:
-      # 1. Checkout the repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      # 2. Setup Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20' # Specify your Node.js version
-
-      # 3. Cache Node.js modules
-      - name: Cache Node.js modules
+      - name: Cache node modules
         uses: actions/cache@v3
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
-      # 4. Install dependencies
-      - name: Install dependencies
-        run: npm install
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
 
-      # 5. Build the project
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set environment variables
+        run: |
+          echo "CI=true" >> $GITHUB_ENV
+          echo "NODE_ENV=development" >> $GITHUB_ENV
+          echo "FIREBASE_API_KEY=${{ secrets.DEV_FIREBASE_API_KEY }}" >> $GITHUB_ENV
+          echo "FIREBASE_AUTH_DOMAIN=${{ secrets.DEV_FIREBASE_AUTH_DOMAIN }}" >> $GITHUB_ENV
+          echo "FIREBASE_PROJECT_ID=${{ secrets.DEV_FIREBASE_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "FIREBASE_STORAGE_BUCKET=${{ secrets.DEV_FIREBASE_STORAGE_BUCKET }}" >> $GITHUB_ENV
+          echo "FIREBASE_MESSAGING_SENDER_ID=${{ secrets.DEV_FIREBASE_MESSAGING_SENDER_ID }}" >> $GITHUB_ENV
+          echo "FIREBASE_APP_ID=${{ secrets.DEV_FIREBASE_APP_ID }}" >> $GITHUB_ENV
+          echo "FIREBASE_MEASUREMENT_ID=${{ secrets.DEV_FIREBASE_MEASUREMENT_ID }}" >> $GITHUB_ENV
+
+      - name: Generate environment file
+        run: node generate-env.js
+
       - name: Build project
         run: npm run build
 
-      # 6. Install Firebase CLI
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
-
-      # 7. Setup Google Cloud SDK and Authenticate
-      - name: Setup Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v4
-        with:
-          project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
-          credentials: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-          export_default_credentials: true
-
-      # 8. Verify Firebase CLI Installation
-      - name: Verify Firebase CLI
-        run: firebase --version
-
-      # 9. Deploy to Firebase Preview
+      # Deploy to Firebase Preview
       - name: Deploy to Firebase Preview
-        id: deploy
-        run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            CHANNEL="pr-${{ github.event.number }}"
-          else
-            CHANNEL="main-preview"
-          fi
-          echo "Deploying to Firebase channel: $CHANNEL"
-          DEPLOY_OUTPUT=$(firebase hosting:channel:deploy $CHANNEL --project ${{ secrets.FIREBASE_PROJECT_ID }} --json)
-          echo "$DEPLOY_OUTPUT"
-          PREVIEW_URL=$(echo "$DEPLOY_OUTPUT" | jq -r '.hostingChannel.url')
-          echo "PREVIEW_URL=$PREVIEW_URL" >> $GITHUB_ENV
-          echo "PREVIEW_DOMAIN=$(echo "$PREVIEW_URL" | sed 's|https://||')" >> $GITHUB_ENV
+        id: deploy  # Assign an ID to reference outputs
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}"
+          projectId: ascendcoopplatform-dev
 
-      # 10. Install Dependencies for Domain Authorization
-      - name: Install Dependencies for Domain Authorization
+      # Add the preview domain to authorized domains
+      - name: Add Preview Domain to Authorized Domains
         run: |
-          npm install firebase-admin googleapis@latest
-
-      # 11. Add Authorized Domain to Firebase Auth
-      - name: Add Authorized Domain to Firebase Auth
-        run: |
-          node .github/scripts/addAuthorizedDomain.js
+          npm install firebase-admin googleapis
+          node .firebase/scripts/addAuthorizedDomain.js ${{ steps.deploy.outputs.preview_url }}
         env:
-          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-          PREVIEW_DOMAIN: ${{ env.PREVIEW_DOMAIN }}
+          FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT }}

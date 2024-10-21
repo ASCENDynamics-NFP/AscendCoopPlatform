@@ -89,6 +89,6 @@ jobs:
         with:
           credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}'
 
-      # Deploy to Firebase Hosting and Functions
-      - name: Deploy to Firebase Hosting and Functions
-        run: firebase deploy --only hosting,functions --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}
+      # Deploy to Firebase Hosting, Functions, Firestore rules, Realtime Database rules, Cloud Storage, etc.
+      - name: Deploy to Firebase
+        run: firebase deploy --force --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}

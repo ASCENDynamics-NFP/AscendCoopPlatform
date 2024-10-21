@@ -104,11 +104,11 @@ jobs:
         run: npm run test
 
       # Step 9: Upload Build Artifact
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: www
-          path: www/  # Adjust to include all files in the build directory
+      # - name: Upload Build Artifact
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: www
+      #     path: www/  # Adjust to include all files in the build directory
 
   # Deploy to Firebase Preview
   build_and_preview:

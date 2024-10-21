@@ -180,3 +180,14 @@ jobs:
           fi
           echo "Deploying to Firebase channel: $CHANNEL"
           firebase hosting:channel:deploy $CHANNEL --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}
+
+      - name: Authorize Preview Domain in Firebase Auth
+        run: |
+          PREVIEW_DOMAIN=$(firebase hosting:channel:deploy $CHANNEL --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} --json | jq -r '.hostingChannel.url' | sed 's|https://||')
+          curl -X POST \
+            -H "Authorization: Bearer $(gcloud auth application-default print-access-token)" \
+            -H "Content-Type: application/json" \
+            https://identitytoolkit.googleapis.com/v1/projects/${{ secrets.DEV_FIREBASE_PROJECT_ID }}/config \
+            -d '{"authorizedDomains":["'$PREVIEW_DOMAIN'"]}'
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.DEV_GOOGLE_APPLICATION_CREDENTIALS }}

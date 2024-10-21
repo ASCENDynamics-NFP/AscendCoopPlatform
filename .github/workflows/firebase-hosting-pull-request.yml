@@ -181,13 +181,16 @@ jobs:
           echo "Deploying to Firebase channel: $CHANNEL"
           firebase hosting:channel:deploy $CHANNEL --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}
 
-      - name: Authorize Preview Domain in Firebase Auth
+      # 10. Install Dependencies for Domain Authorization
+      - name: Install Dependencies for Domain Authorization
         run: |
-          PREVIEW_DOMAIN=$(firebase hosting:channel:deploy $CHANNEL --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} --json | jq -r '.hostingChannel.url' | sed 's|https://||')
-          curl -X POST \
-            -H "Authorization: Bearer $(gcloud auth application-default print-access-token)" \
-            -H "Content-Type: application/json" \
-            https://identitytoolkit.googleapis.com/v1/projects/${{ secrets.DEV_FIREBASE_PROJECT_ID }}/config \
-            -d '{"authorizedDomains":["'$PREVIEW_DOMAIN'"]}'
+          npm install firebase-admin googleapis
+
+      # 11. Add Authorized Domain to Firebase Auth
+      - name: Add Authorized Domain to Firebase Auth
+        run: |
+          node .github/scripts/addAuthorizedDomain.js
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.DEV_GOOGLE_APPLICATION_CREDENTIALS }}
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.DEV_GOOGLE_APPLICATION_CREDENTIALS }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          PREVIEW_DOMAIN: ${{ env.PREVIEW_DOMAIN }}

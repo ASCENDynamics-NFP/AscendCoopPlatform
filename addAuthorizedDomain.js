@@ -1,40 +1,42 @@
-// addAuthorizedDomain.js
-
 const admin = require("firebase-admin");
-const {URL} = require("url");
+const {google} = require("googleapis");
 
-// Parse the service account JSON from the environment variable
 const serviceAccount = JSON.parse(
-  process.env.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT,
+  process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON,
 );
+const projectId = process.env.FIREBASE_PROJECT_ID;
+const previewDomain = process.env.PREVIEW_DOMAIN;
 
-// Initialize the Firebase Admin SDK
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-async function addAuthorizedDomain(previewUrl) {
+async function addAuthorizedDomain() {
   try {
-    // Extract the domain from the preview URL
-    const domain = new URL(previewUrl).hostname;
+    const identityToolkit = google.identitytoolkit({
+      version: "v1",
+      auth: admin.credential.applicationDefault(),
+    });
 
-    console.log(`Adding domain: ${domain} to authorized domains.`);
+    // Retrieve current config
+    const configRes = await identityToolkit.projects.getConfig({
+      name: `projects/${projectId}/config`,
+    });
 
-    // Get the existing list of authorized domains
-    const authSettings = await admin.auth().getSettings();
-    const authorizedDomains = authSettings.authorizedDomains || [];
+    const currentDomains = configRes.data.authorizedDomains || [];
 
-    // Check if the domain is already in the list
-    if (!authorizedDomains.includes(domain)) {
-      // Add the new domain to the list
-      authorizedDomains.push(domain);
-
-      // Update the authorized domains in Firebase Authentication
-      await admin.auth().updateSettings({authorizedDomains});
-
-      console.log(`Successfully added ${domain} to authorized domains.`);
+    if (!currentDomains.includes(previewDomain)) {
+      currentDomains.push(previewDomain);
+      await identityToolkit.projects.updateConfig({
+        name: `projects/${projectId}/config`,
+        updateMask: "authorizedDomains",
+        requestBody: {
+          authorizedDomains: currentDomains,
+        },
+      });
+      console.log(`Added ${previewDomain} to authorized domains.`);
     } else {
-      console.log(`${domain} is already in authorized domains.`);
+      console.log(`${previewDomain} is already authorized.`);
     }
   } catch (error) {
     console.error("Error adding authorized domain:", error);
@@ -42,13 +44,4 @@ async function addAuthorizedDomain(previewUrl) {
   }
 }
 
-// Get the preview URL from the command line arguments
-const previewUrl = process.argv[2];
-
-if (previewUrl) {
-  console.log(`Received preview URL: ${previewUrl}`);
-  addAuthorizedDomain(previewUrl);
-} else {
-  console.error("Please provide the preview URL as an argument.");
-  process.exit(1);
-}
+addAuthorizedDomain();

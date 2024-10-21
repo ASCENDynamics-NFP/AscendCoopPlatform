@@ -166,6 +166,6 @@ jobs:
       - name: Add Preview Domain to Authorized Domains
         run: |
           npm install firebase-admin googleapis
-          node .firebase/scripts/addAuthorizedDomain.js ${{ steps.deploy.outputs.preview_url }}
+          node .github/scripts/addAuthorizedDomain.js ${{ steps.deploy.outputs.preview_url }}
         env:
           FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT }}

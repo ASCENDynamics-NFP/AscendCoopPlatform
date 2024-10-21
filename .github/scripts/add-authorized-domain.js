@@ -1,3 +1,4 @@
+// NOT BEING USED //
 const {google} = require("googleapis");
 const PROJECT_ID = process.env.DEV_FIREBASE_PROJECT_ID; // Replace with your project ID
 const DOMAIN = process.env.PREVIEW_DOMAIN; // Set this environment variable in your workflow

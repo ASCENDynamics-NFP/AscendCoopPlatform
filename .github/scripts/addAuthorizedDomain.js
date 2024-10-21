@@ -1,3 +1,4 @@
+// NOT BEING USED //
 const { google } = require('googleapis');
 
 const serviceAccount = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);

@@ -162,10 +162,16 @@ jobs:
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}"
           projectId: ascendcoopplatform-dev
 
-      # Add the preview domain to authorized domains
-      - name: Add Preview Domain to Authorized Domains
+      # 10. Install Dependencies for Domain Authorization
+      - name: Install Dependencies for Domain Authorization
         run: |
           npm install firebase-admin googleapis
-          node .github/scripts/addAuthorizedDomain.js ${{ steps.deploy.outputs.preview_url }}
+
+      # 11. Add Authorized Domain to Firebase Auth
+      - name: Add Authorized Domain to Firebase Auth
+        run: |
+          node .github/scripts/addAuthorizedDomain.js
         env:
-          FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT }}
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          PREVIEW_DOMAIN: ${{ env.PREVIEW_DOMAIN }}

@@ -17,15 +17,98 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
+// landing.page.ts
+import {Component} from "@angular/core";
+import {ModalController} from "@ionic/angular";
+import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
 
 @Component({
   selector: "app-landing",
   templateUrl: "./landing.page.html",
   styleUrls: ["./landing.page.scss"],
 })
-export class LandingPage implements OnInit {
-  constructor() {}
+export class LandingPage {
+  currentYear: number = new Date().getFullYear();
 
-  ngOnInit() {}
+  constructor(private modalController: ModalController) {}
+
+  // Open the legal modal (Privacy Policy or Terms of Use)
+  async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {
+    const modal = await this.modalController.create({
+      component: LegalModalComponent,
+      componentProps: {content: contentType},
+    });
+    await modal.present();
+  }
+
+  features = [
+    {
+      icon: "people-outline",
+      title: "User Profiles",
+      description:
+        "Create personalized profiles to showcase your skills and volunteer history.",
+    },
+    {
+      icon: "briefcase-outline",
+      title: "Volunteer Opportunities",
+      description:
+        "Discover and apply for volunteer positions that match your interests and skills.",
+    },
+    {
+      icon: "analytics-outline",
+      title: "Analytics & Tracking",
+      description:
+        "Track your volunteer hours and impact with our analytics tools.",
+    },
+    // Add more features as needed
+  ];
+
+  roadmap = [
+    {
+      id: "phase1",
+      title: "Phase 1: Platform Development",
+      subtitle: "User Sign-Up, Profiles, Volunteer Listings",
+      status: "Active",
+      statusColor: "success",
+      items: [
+        {
+          name: "User Sign-Up and Authentication",
+          status: "Finished",
+          statusColor: "success",
+        },
+        {
+          name: "User Profile Pages",
+          status: "Finished",
+          statusColor: "success",
+        },
+        {
+          name: "Nonprofit Profile Pages",
+          status: "Finished",
+          statusColor: "success",
+        },
+        {
+          name: "Volunteer Position Listings",
+          status: "New",
+          statusColor: "primary",
+        },
+        // Add more items as needed
+      ],
+    },
+    // Add more phases as needed
+  ];
+
+  testimonials = [
+    {
+      message: "This platform has connected me with amazing opportunities!",
+      author: "Jane Doe",
+    },
+    // Add more testimonials as needed
+  ];
+
+  testimonialOptions = {
+    autoplay: {
+      delay: 5000,
+    },
+    loop: true,
+  };
 }

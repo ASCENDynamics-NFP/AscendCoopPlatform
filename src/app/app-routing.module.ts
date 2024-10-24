@@ -27,8 +27,15 @@ import {SecureInnerPagesGuard} from "./core/guards/secure-inner-pages.guard";
 export const routes: Routes = [
   {
     path: "",
-    redirectTo: "signup",
+    redirectTo: "",
     pathMatch: "full",
+  },
+  {
+    path: "",
+    loadChildren: () =>
+      import("./modules/account/pages/landing/landing.module").then(
+        (m) => m.LandingPageModule,
+      ),
   },
   {
     path: "group-list",

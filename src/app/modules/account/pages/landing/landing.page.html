@@ -1,0 +1,127 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>ASCENDynamics NFP</ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/login">Login</ion-button>
+      <ion-button routerLink="/signup">Sign Up</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen>
+  <!-- Hero Section with Dynamic Content -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Empowering Worker-Owned Cooperatives to Succeed</h1>
+      <p>
+        Join us in transforming the future of work. Connect with nonprofits,
+        volunteer, and make an impact.
+      </p>
+      <ion-button routerLink="/signup">Sign Up</ion-button>
+      <ion-button
+        href="https://buy.stripe.com/bIY5mC9sY1ob4TufYY"
+        target="_blank"
+        >Donate</ion-button
+      >
+    </div>
+    <div class="hero-slider">
+      <swiper-container [slidesPerView]="1" [loop]="true">
+        <swiper-slide>
+          <img
+            src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
+            alt="Volunteer Image 1"
+        /></swiper-slide>
+        <swiper-slide>
+          <img
+            src="assets/image/Humans_and_Technology.png"
+            alt="Volunteer Image 2"
+        /></swiper-slide>
+      </swiper-container>
+    </div>
+  </section>
+
+  <!-- Feature Highlights -->
+  <section class="features">
+    <h2>Platform Features</h2>
+    <ion-grid>
+      <ion-row>
+        <ion-col size="12" size-md="6">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Volunteer Listings</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              NGOs and nonprofits can post detailed volunteer positions, helping
+              volunteers find the right match.
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+        <ion-col size="12" size-md="6">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Volunteer Analytics</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              Track your volunteer hours, engagement, and impact with our
+              analytics tools.
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </section>
+
+  <!-- Roadmap Section -->
+  <section class="roadmap">
+    <h2>Platform Development Roadmap</h2>
+    <ion-list>
+      <ion-item>
+        <ion-label>
+          <h3>Phase 1: Platform Development (Ongoing)</h3>
+          <p>User Sign-Up, Authentication, Profile Pages, Volunteer Listings</p>
+        </ion-label>
+        <ion-badge slot="end" color="success">Active</ion-badge>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>
+          <h3>Phase 2: Testing and Iteration</h3>
+          <p>Beta testing and user feedback</p>
+        </ion-label>
+        <ion-badge slot="end" color="medium">Upcoming</ion-badge>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>
+          <h3>Phase 3: Launch and Marketing</h3>
+          <p>Platform launch and marketing campaigns</p>
+        </ion-label>
+        <ion-badge slot="end" color="tertiary">Planned</ion-badge>
+      </ion-item>
+    </ion-list>
+  </section>
+
+  <!-- Footer Section with Links -->
+  <ion-footer>
+    <ion-toolbar>
+      <ion-title>Follow Us</ion-title>
+      <ion-buttons slot="start">
+        <ion-button href="https://github.com/ASCENDynamics-NFP" target="_blank">
+          <ion-icon slot="icon-only" name="logo-github"></ion-icon>
+        </ion-button>
+        <ion-button
+          href="https://www.facebook.com/ASCENDynamicsNFP"
+          target="_blank"
+        >
+          <ion-icon slot="icon-only" name="logo-facebook"></ion-icon>
+        </ion-button>
+        <ion-button
+          href="https://www.linkedin.com/company/ascendynamics-nfp"
+          target="_blank"
+        >
+          <ion-icon slot="icon-only" name="logo-linkedin"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-footer>
+</ion-content>

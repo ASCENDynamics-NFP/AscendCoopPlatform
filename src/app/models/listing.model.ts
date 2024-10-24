@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Address} from "cluster";
+import {Address} from "./account.model";
 import {Timestamp} from "firebase/firestore";
 import {BaseDocument} from "./base-document";
 import {ContactInformation} from "./account.model";

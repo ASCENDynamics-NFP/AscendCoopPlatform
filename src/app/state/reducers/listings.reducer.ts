@@ -17,36 +17,49 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// src/app/state/firestore/firestore.reducer.ts
+// src/app/state/listings/listings.reducer.ts
 import {createReducer, on} from "@ngrx/store";
-import * as FirestoreActions from "../actions/firestore.actions";
-import {DocumentData} from "firebase/firestore";
+import * as ListingsActions from "./../actions/listings.actions";
+import {Listing} from "../../models/listing.model";
 
-export interface FirestoreState {
-  documents: {[id: string]: DocumentData};
+export interface ListingsState {
+  listings: Listing[];
+  selectedListing: Listing | null; // Allowing selectedListing to be null
   loading: boolean;
-  error: any;
+  error: string | null;
 }
 
-export const initialState: FirestoreState = {
-  documents: {},
+const initialState: ListingsState = {
+  listings: [],
+  selectedListing: null,
   loading: false,
   error: null,
 };
 
-export const firestoreReducer = createReducer(
+export const listingsReducer = createReducer(
   initialState,
-  on(FirestoreActions.loadDocument, (state) => ({...state, loading: true})),
-  on(FirestoreActions.loadDocumentSuccess, (state, {document}) => ({
+  on(ListingsActions.loadListings, (state) => ({
     ...state,
-    documents: {...state.documents, [document["id"]]: document},
-    loading: false,
+    loading: true,
     error: null,
   })),
-  on(FirestoreActions.loadDocumentFailure, (state, {error}) => ({
+  on(ListingsActions.loadListingsSuccess, (state, {listings}) => ({
+    ...state,
+    loading: false,
+    listings,
+  })),
+  on(ListingsActions.loadListingsFailure, (state, {error}) => ({
     ...state,
     loading: false,
     error,
   })),
-  // ...handle other actions similarly
+  on(ListingsActions.loadListingByIdSuccess, (state, {listing}) => ({
+    ...state,
+    selectedListing: listing ? listing : null, // Handling potential null values
+  })),
+
+  on(ListingsActions.loadListingByIdFailure, (state, {error}) => ({
+    ...state,
+    error,
+  })),
 );

@@ -17,34 +17,29 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
-import {Store} from "@ngrx/store";
-import {Observable} from "rxjs";
-import {Listing} from "../../../../models/listing.model";
-import {loadListings} from "../../../../state/actions/listings.actions";
-import {
-  selectAllListings,
-  selectLoading,
-  selectError,
-} from "../../../../state/selectors/listings.selectors";
+// src/app/state/listings/listings.selectors.ts
+import {createFeatureSelector, createSelector} from "@ngrx/store";
+import {ListingsState} from "../reducers/listings.reducer";
 
-@Component({
-  selector: "app-listings",
-  templateUrl: "./listings.page.html",
-  styleUrls: ["./listings.page.scss"],
-})
-export class ListingsPage implements OnInit {
-  listings$: Observable<Listing[]>;
-  loading$: Observable<boolean>;
-  error$: Observable<string | null>;
+export const selectListingsState =
+  createFeatureSelector<ListingsState>("listings");
 
-  constructor(private store: Store) {
-    this.listings$ = this.store.select(selectAllListings);
-    this.loading$ = this.store.select(selectLoading);
-    this.error$ = this.store.select(selectError);
-  }
+export const selectAllListings = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state.listings,
+);
 
-  ngOnInit(): void {
-    this.store.dispatch(loadListings());
-  }
-}
+export const selectListingById = (listingId: string) =>
+  createSelector(selectListingsState, (state: ListingsState) =>
+    state.listings.find((listing) => listing.id === listingId),
+  );
+
+export const selectLoading = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state.loading,
+);
+
+export const selectError = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state.error,
+);

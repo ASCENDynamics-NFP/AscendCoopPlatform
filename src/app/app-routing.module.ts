@@ -110,11 +110,6 @@ export const routes: Routes = [
   {
     path: "listings",
     loadChildren: () =>
-      import("./listings/listings.module").then((m) => m.ListingsPageModule),
-  },
-  {
-    path: "listings",
-    loadChildren: () =>
       import("./modules/listing/pages/listings/listings.module").then(
         (m) => m.ListingsPageModule,
       ),

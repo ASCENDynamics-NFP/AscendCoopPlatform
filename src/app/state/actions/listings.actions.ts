@@ -17,34 +17,30 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
-import {Store} from "@ngrx/store";
-import {Observable} from "rxjs";
-import {Listing} from "../../../../models/listing.model";
-import {loadListings} from "../../../../state/actions/listings.actions";
-import {
-  selectAllListings,
-  selectLoading,
-  selectError,
-} from "../../../../state/selectors/listings.selectors";
+// src/app/state/listings/listings.actions.ts
+import {createAction, props} from "@ngrx/store";
+import {Listing} from "../../models/listing.model";
 
-@Component({
-  selector: "app-listings",
-  templateUrl: "./listings.page.html",
-  styleUrls: ["./listings.page.scss"],
-})
-export class ListingsPage implements OnInit {
-  listings$: Observable<Listing[]>;
-  loading$: Observable<boolean>;
-  error$: Observable<string | null>;
+export const loadListings = createAction("[Listings Page] Load Listings");
+export const loadListingsSuccess = createAction(
+  "[Listings API] Load Listings Success",
+  props<{listings: Listing[]}>(),
+);
+export const loadListingsFailure = createAction(
+  "[Listings API] Load Listings Failure",
+  props<{error: string}>(),
+);
 
-  constructor(private store: Store) {
-    this.listings$ = this.store.select(selectAllListings);
-    this.loading$ = this.store.select(selectLoading);
-    this.error$ = this.store.select(selectError);
-  }
+export const loadListingById = createAction(
+  "[Listing Detail Page] Load Listing By Id",
+  props<{id: string}>(),
+);
+export const loadListingByIdSuccess = createAction(
+  "[Listings API] Load Listing By Id Success",
+  props<{listing: Listing | null}>(), // Allowing the action to accept null listings
+);
 
-  ngOnInit(): void {
-    this.store.dispatch(loadListings());
-  }
-}
+export const loadListingByIdFailure = createAction(
+  "[Listings API] Load Listing By Id Failure",
+  props<{error: string}>(),
+);

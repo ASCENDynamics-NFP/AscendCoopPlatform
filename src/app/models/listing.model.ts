@@ -17,13 +17,21 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// src/app/state/app.state.ts
-import {AuthState} from "./reducers/auth.reducer";
-import {FirestoreState} from "./reducers/firestore.reducer";
-import {ListingsState} from "./reducers/listings.reducer";
+import {Address} from "./account.model";
+import {Timestamp} from "firebase/firestore";
+import {BaseDocument} from "./base-document";
+import {ContactInformation} from "./account.model";
 
-export interface AppState {
-  auth: AuthState;
-  firestore: FirestoreState;
-  listings: ListingsState;
+// Listing Object
+export interface Listing extends BaseDocument {
+  title: string;
+  description: string;
+  type: "volunteer" | "job" | "internship" | "gig";
+  location: Address;
+  startDate: Timestamp;
+  endDate: Timestamp;
+  requirements: string[];
+  iconImage?: string;
+  heroImage?: string;
+  contactInformation?: ContactInformation;
 }

@@ -17,13 +17,34 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// src/app/state/app.state.ts
-import {AuthState} from "./reducers/auth.reducer";
-import {FirestoreState} from "./reducers/firestore.reducer";
-import {ListingsState} from "./reducers/listings.reducer";
+import {Component, OnInit} from "@angular/core";
+import {Store} from "@ngrx/store";
+import {Observable} from "rxjs";
+import {Listing} from "../../../../models/listing.model";
+import {loadListings} from "../../../../state/actions/listings.actions";
+import {
+  selectAllListings,
+  selectLoading,
+  selectError,
+} from "../../../../state/selectors/listings.selectors";
 
-export interface AppState {
-  auth: AuthState;
-  firestore: FirestoreState;
-  listings: ListingsState;
+@Component({
+  selector: "app-listings",
+  templateUrl: "./listings.page.html",
+  styleUrls: ["./listings.page.scss"],
+})
+export class ListingsPage implements OnInit {
+  listings$: Observable<Listing[]>;
+  loading$: Observable<boolean>;
+  error$: Observable<string | null>;
+
+  constructor(private store: Store) {
+    this.listings$ = this.store.select(selectAllListings);
+    this.loading$ = this.store.select(selectLoading);
+    this.error$ = this.store.select(selectError);
+  }
+
+  ngOnInit(): void {
+    this.store.dispatch(loadListings());
+  }
 }

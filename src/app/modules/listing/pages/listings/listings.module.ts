@@ -17,13 +17,29 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// src/app/state/app.state.ts
-import {AuthState} from "./reducers/auth.reducer";
-import {FirestoreState} from "./reducers/firestore.reducer";
-import {ListingsState} from "./reducers/listings.reducer";
+import {NgModule} from "@angular/core";
+import {CommonModule} from "@angular/common";
+import {FormsModule} from "@angular/forms";
 
-export interface AppState {
-  auth: AuthState;
-  firestore: FirestoreState;
-  listings: ListingsState;
-}
+import {IonicModule} from "@ionic/angular";
+
+import {ListingsPageRoutingModule} from "./listings-routing.module";
+
+import {ListingsPage} from "./listings.page";
+import {EffectsModule} from "@ngrx/effects";
+import {StoreModule} from "@ngrx/store";
+import {ListingsEffects} from "../../../../state/effects/listings.effects";
+import {listingsReducer} from "../../../../state/reducers/listings.reducer";
+
+@NgModule({
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    ListingsPageRoutingModule,
+    StoreModule.forFeature("listings", listingsReducer),
+    EffectsModule.forFeature([ListingsEffects]),
+  ],
+  declarations: [ListingsPage],
+})
+export class ListingsPageModule {}

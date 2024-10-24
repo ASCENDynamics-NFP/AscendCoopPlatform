@@ -78,7 +78,7 @@ export interface Email {
   email: Nullable<string>;
 }
 
-interface ContactInformation {
+export interface ContactInformation {
   privacy?: "public" | "private" | "specific-users"; // Privacy setting
   addresses?: Nullable<Address>[];
   phoneNumbers: PhoneNumber[];

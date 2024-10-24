@@ -17,13 +17,29 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// src/app/state/app.state.ts
-import {AuthState} from "./reducers/auth.reducer";
-import {FirestoreState} from "./reducers/firestore.reducer";
-import {ListingsState} from "./reducers/listings.reducer";
+// src/app/state/listings/listings.selectors.ts
+import {createFeatureSelector, createSelector} from "@ngrx/store";
+import {ListingsState} from "../reducers/listings.reducer";
 
-export interface AppState {
-  auth: AuthState;
-  firestore: FirestoreState;
-  listings: ListingsState;
-}
+export const selectListingsState =
+  createFeatureSelector<ListingsState>("listings");
+
+export const selectAllListings = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state.listings,
+);
+
+export const selectListingById = (listingId: string) =>
+  createSelector(selectListingsState, (state: ListingsState) =>
+    state.listings.find((listing) => listing.id === listingId),
+  );
+
+export const selectLoading = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state.loading,
+);
+
+export const selectError = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state.error,
+);

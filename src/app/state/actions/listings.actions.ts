@@ -17,13 +17,30 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// src/app/state/app.state.ts
-import {AuthState} from "./reducers/auth.reducer";
-import {FirestoreState} from "./reducers/firestore.reducer";
-import {ListingsState} from "./reducers/listings.reducer";
+// src/app/state/listings/listings.actions.ts
+import {createAction, props} from "@ngrx/store";
+import {Listing} from "../../models/listing.model";
 
-export interface AppState {
-  auth: AuthState;
-  firestore: FirestoreState;
-  listings: ListingsState;
-}
+export const loadListings = createAction("[Listings Page] Load Listings");
+export const loadListingsSuccess = createAction(
+  "[Listings API] Load Listings Success",
+  props<{listings: Listing[]}>(),
+);
+export const loadListingsFailure = createAction(
+  "[Listings API] Load Listings Failure",
+  props<{error: string}>(),
+);
+
+export const loadListingById = createAction(
+  "[Listing Detail Page] Load Listing By Id",
+  props<{id: string}>(),
+);
+export const loadListingByIdSuccess = createAction(
+  "[Listings API] Load Listing By Id Success",
+  props<{listing: Listing | null}>(), // Allowing the action to accept null listings
+);
+
+export const loadListingByIdFailure = createAction(
+  "[Listings API] Load Listing By Id Failure",
+  props<{error: string}>(),
+);

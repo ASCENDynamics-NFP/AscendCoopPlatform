@@ -91,6 +91,7 @@ ion-header {
 
   h2 {
     margin-bottom: 50px;
+    padding: 0 2rem;
     font-size: 2.5rem;
     color: var(--ion-text-color);
   }
@@ -365,6 +366,9 @@ ion-header {
 }
 
 @media (max-width: 767px) {
+  .features h2 {
+    padding: 0;
+  }
   .footer-nav ul {
     align-items: center;
   }

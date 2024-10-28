@@ -1,70 +1,94 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<!-- landing.page.html -->
+
 <ion-header>
-  <ion-toolbar>
-    <ion-title>ASCENDynamics NFP</ion-title>
+  <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      <img
+        src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
+        alt="ASCENDynamics Logo"
+        style="height: 40px; margin-right: 0px"
+      />
+      <ion-title class="header-title">ASCENDynamics NFP</ion-title>
+    </ion-buttons>
     <ion-buttons slot="end">
-      <ion-button routerLink="/login">Login</ion-button>
-      <ion-button routerLink="/signup">Sign Up</ion-button>
+      <ion-button routerLink="/login" color="primary" fill="outline"
+        >Login</ion-button
+      >
+      <ion-button routerLink="/signup" color="primary" fill="solid"
+        >Sign Up</ion-button
+      >
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content fullscreen>
-  <!-- Hero Section with Dynamic Content -->
+  <!-- Hero Section -->
   <section class="hero">
-    <div class="hero-content">
-      <h1>Empowering Worker-Owned Cooperatives to Succeed</h1>
-      <p>
-        Join us in transforming the future of work. Connect with nonprofits,
-        volunteer, and make an impact.
-      </p>
-      <ion-button routerLink="/signup">Sign Up</ion-button>
-      <ion-button
-        href="https://buy.stripe.com/bIY5mC9sY1ob4TufYY"
-        target="_blank"
-        >Donate</ion-button
-      >
-    </div>
-    <div class="hero-slider">
-      <swiper-container [slidesPerView]="1" [loop]="true">
-        <swiper-slide>
-          <img
-            src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
-            alt="Volunteer Image 1"
-        /></swiper-slide>
-        <swiper-slide>
-          <img
-            src="assets/image/Humans_and_Technology.png"
-            alt="Volunteer Image 2"
-        /></swiper-slide>
-      </swiper-container>
-    </div>
+    <ion-grid>
+      <ion-row class="ion-align-items-center">
+        <ion-col size="12" size-md="6" class="hero-text">
+          <h1>
+            <span style="color: #808080">Empowering</span> Worker-Owned
+            Cooperatives to Succeed
+          </h1>
+          <p>
+            Join us in transforming the future of work. Connect with nonprofits,
+            volunteer, and make an impact.
+          </p>
+          <ion-button routerLink="/signup" color="primary">Try Now</ion-button>
+        </ion-col>
+        <ion-col size="12" size-md="6" class="hero-image">
+          <swiper-container [slidesPerView]="1" [loop]="true" autoplay="true">
+            <swiper-slide>
+              <img
+                src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
+                alt="ASCENDynamics Logo"
+              />
+            </swiper-slide>
+            <swiper-slide>
+              <img
+                src="assets/image/Humans_and_Technology.png"
+                alt="Humans and Technology"
+              />
+            </swiper-slide>
+          </swiper-container>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
   </section>
 
-  <!-- Feature Highlights -->
+  <!-- Features Section -->
   <section class="features">
-    <h2>Platform Features</h2>
+    <h2>ASCENDynamics NFP Cooperative Platform Features</h2>
     <ion-grid>
       <ion-row>
-        <ion-col size="12" size-md="6">
+        <!-- Feature Card -->
+        <ion-col size="12" size-md="4" *ngFor="let feature of features">
           <ion-card>
             <ion-card-header>
-              <ion-card-title>Volunteer Listings</ion-card-title>
+              <ion-icon [name]="feature.icon" size="large"></ion-icon>
+              <ion-card-title>{{ feature.title }}</ion-card-title>
             </ion-card-header>
-            <ion-card-content>
-              NGOs and nonprofits can post detailed volunteer positions, helping
-              volunteers find the right match.
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-        <ion-col size="12" size-md="6">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-title>Volunteer Analytics</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              Track your volunteer hours, engagement, and impact with our
-              analytics tools.
-            </ion-card-content>
+            <ion-card-content> {{ feature.description }} </ion-card-content>
           </ion-card>
         </ion-col>
       </ion-row>
@@ -74,54 +98,132 @@
   <!-- Roadmap Section -->
   <section class="roadmap">
     <h2>Platform Development Roadmap</h2>
-    <ion-list>
-      <ion-item>
-        <ion-label>
-          <h3>Phase 1: Platform Development (Ongoing)</h3>
-          <p>User Sign-Up, Authentication, Profile Pages, Volunteer Listings</p>
-        </ion-label>
-        <ion-badge slot="end" color="success">Active</ion-badge>
-      </ion-item>
-
-      <ion-item>
-        <ion-label>
-          <h3>Phase 2: Testing and Iteration</h3>
-          <p>Beta testing and user feedback</p>
-        </ion-label>
-        <ion-badge slot="end" color="medium">Upcoming</ion-badge>
-      </ion-item>
-
-      <ion-item>
-        <ion-label>
-          <h3>Phase 3: Launch and Marketing</h3>
-          <p>Platform launch and marketing campaigns</p>
-        </ion-label>
-        <ion-badge slot="end" color="tertiary">Planned</ion-badge>
-      </ion-item>
-    </ion-list>
+    <ion-accordion-group>
+      <!-- Phases -->
+      <ion-accordion *ngFor="let phase of roadmap" value="{{ phase.id }}">
+        <ion-item slot="header">
+          <ion-label>
+            <h3>{{ phase.title }}</h3>
+            <p>{{ phase.subtitle }}</p>
+          </ion-label>
+          <ion-badge slot="end" [color]="phase.statusColor"
+            >{{ phase.status }}</ion-badge
+          >
+        </ion-item>
+        <div class="ion-padding" slot="content">
+          <ul>
+            <li *ngFor="let item of phase.items">
+              {{ item.name }}
+              <ion-badge [color]="item.statusColor"
+                >{{ item.status }}</ion-badge
+              >
+            </li>
+          </ul>
+        </div>
+      </ion-accordion>
+    </ion-accordion-group>
   </section>
 
-  <!-- Footer Section with Links -->
+  <!-- Testimonials Section -->
+  <!-- <section class="testimonials">
+    <h2>What Our Volunteers Say</h2>
+    <ion-slides [options]="testimonialOptions">
+      <ion-slide *ngFor="let testimonial of testimonials">
+        <ion-card>
+          <ion-card-content>
+            <p>"{{ testimonial.message }}"</p>
+            <h4>- {{ testimonial.author }}</h4>
+          </ion-card-content>
+        </ion-card>
+      </ion-slide>
+    </ion-slides>
+  </section> -->
+
+  <!-- Call to Action -->
+  <section class="cta">
+    <ion-card>
+      <ion-card-content>
+        <h2>Ready to Make a Difference?</h2>
+        <p>Join our community of volunteers and nonprofits today.</p>
+        <ion-button routerLink="/signup" color="primary"
+          >Sign Up Now</ion-button
+        >
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <!-- Footer Section -->
   <ion-footer>
-    <ion-toolbar>
-      <ion-title>Follow Us</ion-title>
-      <ion-buttons slot="start">
-        <ion-button href="https://github.com/ASCENDynamics-NFP" target="_blank">
-          <ion-icon slot="icon-only" name="logo-github"></ion-icon>
-        </ion-button>
-        <ion-button
-          href="https://www.facebook.com/ASCENDynamicsNFP"
-          target="_blank"
-        >
-          <ion-icon slot="icon-only" name="logo-facebook"></ion-icon>
-        </ion-button>
-        <ion-button
-          href="https://www.linkedin.com/company/ascendynamics-nfp"
-          target="_blank"
-        >
-          <ion-icon slot="icon-only" name="logo-linkedin"></ion-icon>
-        </ion-button>
-      </ion-buttons>
-    </ion-toolbar>
+    <div class="footer">
+      <ion-grid>
+        <ion-row>
+          <!-- Logo and Description -->
+          <ion-col size="12" size-md="4" class="footer-logo">
+            <img
+              src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
+              alt="ASCENDynamics Logo"
+            />
+            <p>
+              Connecting volunteers with nonprofits to create meaningful change.
+            </p>
+          </ion-col>
+
+          <!-- Navigation Links -->
+          <ion-col size="12" size-md="4" class="footer-nav">
+            <h3>Quick Links</h3>
+            <ul>
+              <li>
+                <a
+                  href="https://ascendynamics.org/page/about-us"
+                  target="_blank"
+                  >About Us</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://ascendynamics.org/page/contact-us"
+                  target="_blank"
+                  >Contact</a
+                >
+              </li>
+              <li>
+                <a (click)="openLegalModal('privacyPolicy')">Privacy Policy</a>
+              </li>
+              <li>
+                <a (click)="openLegalModal('termsOfUse')">Terms of Service</a>
+              </li>
+            </ul>
+          </ion-col>
+
+          <!-- Social Media Links -->
+          <ion-col size="12" size-md="4" class="footer-social">
+            <h3>Follow Us</h3>
+            <ion-buttons class="social-buttons">
+              <ion-button
+                href="https://github.com/ASCENDynamics-NFP"
+                target="_blank"
+              >
+                <ion-icon slot="icon-only" name="logo-github"></ion-icon>
+              </ion-button>
+              <ion-button
+                href="https://www.facebook.com/ASCENDynamicsNFP"
+                target="_blank"
+              >
+                <ion-icon slot="icon-only" name="logo-facebook"></ion-icon>
+              </ion-button>
+              <ion-button
+                href="https://www.linkedin.com/company/ascendynamics-nfp"
+                target="_blank"
+              >
+                <ion-icon slot="icon-only" name="logo-linkedin"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+      <div class="footer-bottom">
+        <p>&copy; {{ currentYear }} ASCENDynamics NFP. All rights reserved.</p>
+      </div>
+    </div>
   </ion-footer>
 </ion-content>

@@ -1,13 +1,31 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>listing-edit</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Edit Listing</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">listing-edit</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <form [formGroup]="listingForm" (ngSubmit)="onSubmit()">
+    <ion-item>
+      <ion-label position="floating">Title</ion-label>
+      <ion-input formControlName="title" type="text"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Description</ion-label>
+      <ion-textarea formControlName="description"></ion-textarea>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Price</ion-label>
+      <ion-input formControlName="price" type="number"></ion-input>
+    </ion-item>
+
+    <ion-button expand="block" type="submit" [disabled]="!listingForm.valid">
+      Save Changes
+    </ion-button>
+  </form>
 </ion-content>

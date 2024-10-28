@@ -18,28 +18,28 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {NgModule} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {FormsModule} from "@angular/forms";
+import {RouterModule, Routes} from "@angular/router";
+import {ListingsPage} from "./pages/listings/listings.page";
+import {ListingDetailPage} from "./pages/listing-detail/listing-detail.page";
+import {ListingEditPage} from "./pages/listing-edit/listing-edit.page";
 
-import {IonicModule} from "@ionic/angular";
-
-import {ListingsPageRoutingModule} from "./listings-routing.module";
-
-import {ListingsPage} from "./listings.page";
-import {EffectsModule} from "@ngrx/effects";
-import {StoreModule} from "@ngrx/store";
-import {ListingsEffects} from "../../../../state/effects/listings.effects";
-import {listingsReducer} from "../../../../state/reducers/listings.reducer";
+const routes: Routes = [
+  {
+    path: "",
+    component: ListingsPage,
+  },
+  {
+    path: ":id",
+    component: ListingDetailPage,
+  },
+  {
+    path: ":id/edit",
+    component: ListingEditPage,
+  },
+];
 
 @NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    ListingsPageRoutingModule,
-    StoreModule.forFeature("listings", listingsReducer),
-    EffectsModule.forFeature([ListingsEffects]),
-  ],
-  declarations: [ListingsPage],
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class ListingsPageModule {}
+export class ListingRoutingModule {}

@@ -44,3 +44,18 @@ export const loadListingByIdFailure = createAction(
   "[Listings API] Load Listing By Id Failure",
   props<{error: string}>(),
 );
+
+export const updateListing = createAction(
+  "[Listing] Update",
+  props<{listing: Listing}>(),
+);
+
+export const updateListingSuccess = createAction(
+  "[Listing] Update Success",
+  props<{listing: Listing}>(),
+);
+
+export const updateListingFailure = createAction(
+  "[Listing] Update Failure",
+  props<{error: string}>(),
+);

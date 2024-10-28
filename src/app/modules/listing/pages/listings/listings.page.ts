@@ -21,12 +21,8 @@ import {Component, OnInit} from "@angular/core";
 import {Store} from "@ngrx/store";
 import {Observable} from "rxjs";
 import {Listing} from "../../../../models/listing.model";
-import {loadListings} from "../../../../state/actions/listings.actions";
-import {
-  selectAllListings,
-  selectLoading,
-  selectError,
-} from "../../../../state/selectors/listings.selectors";
+import * as ListingsActions from "../../../../state/actions/listings.actions";
+import {ListingsState} from "../../../../state/reducers/listings.reducer";
 
 @Component({
   selector: "app-listings",
@@ -36,15 +32,26 @@ import {
 export class ListingsPage implements OnInit {
   listings$: Observable<Listing[]>;
   loading$: Observable<boolean>;
-  error$: Observable<string | null>;
+  error$: Observable<any>;
 
-  constructor(private store: Store) {
-    this.listings$ = this.store.select(selectAllListings);
-    this.loading$ = this.store.select(selectLoading);
-    this.error$ = this.store.select(selectError);
+  constructor(private store: Store<{listings: ListingsState}>) {
+    this.listings$ = this.store.select((state) => state.listings.listings);
+    this.loading$ = this.store.select((state) => state.listings.loading);
+    this.error$ = this.store.select((state) => state.listings.error);
   }
 
-  ngOnInit(): void {
-    this.store.dispatch(loadListings());
+  ngOnInit() {
+    this.loadListings();
+  }
+
+  loadListings() {
+    this.store.dispatch(ListingsActions.loadListings());
+  }
+
+  doRefresh(event: any) {
+    this.loadListings();
+    setTimeout(() => {
+      event.target.complete();
+    }, 1000);
   }
 }

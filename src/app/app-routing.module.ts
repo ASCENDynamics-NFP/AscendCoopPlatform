@@ -110,24 +110,7 @@ export const routes: Routes = [
   {
     path: "listings",
     loadChildren: () =>
-      import("./modules/listing/pages/listings/listings.module").then(
-        (m) => m.ListingsPageModule,
-      ),
-  },
-  {
-    path: "listings/:listingId",
-    loadChildren: () =>
-      import(
-        "./modules/listing/pages/listing-detail/listing-detail.module"
-      ).then((m) => m.ListingDetailPageModule),
-  },
-  {
-    path: "listings/:listingId/edit",
-    loadChildren: () =>
-      import("./modules/listing/pages/listing-edit/listing-edit.module").then(
-        (m) => m.ListingEditPageModule,
-      ),
-    canActivate: [AuthGuard],
+      import("./modules/listing/listing.module").then((m) => m.ListingModule),
   },
 ];
 

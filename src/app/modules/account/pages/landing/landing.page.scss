@@ -19,52 +19,66 @@
 ***********************************************************************************************/
 /* landing.page.scss */
 
+/* General Styles */
+// :host {
+//   --background-color-light: #f8f8f8;
+//   --background-color-dark: #222;
+//   --text-color-light: #333;
+//   --text-color-dark: #f8f8f8;
+// }
+
+/* Header */
+ion-header {
+  ion-toolbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 1rem;
+
+    .header-title {
+      padding: 0 0.25rem;
+      color: var(--ion-color-primary);
+    }
+
+    ion-button {
+      --border-radius: 20px;
+    }
+  }
+}
+
 /* Hero Section */
 .hero {
   background: var(--ion-background-color);
   color: var(--ion-text-color);
-  padding: 80px 0;
-  text-align: left;
+  padding: 60px 0;
 
   .hero-text {
+    text-align: center;
+
     h1 {
-      font-size: 3rem;
-      font-weight: bold;
-      margin-bottom: 20px;
+      font-size: 2.5rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
     }
 
     p {
-      font-size: 1.2rem;
-      margin-bottom: 30px;
-      line-height: 1.5;
+      font-size: 1.1rem;
+      margin-bottom: 20px;
     }
 
     ion-button {
-      margin-right: 15px;
-      margin-top: 10px;
+      --background: var(--ion-color-primary);
       --border-radius: 20px;
-
-      &.donate-button {
-        --background: transparent;
-        --border-color: var(--ion-color-primary);
-        --border-width: 2px;
-        color: var(--ion-color-primary);
-      }
+      margin-right: 10px;
     }
   }
 
   .hero-image {
     text-align: center;
 
-    swiper-container {
-      width: 100%;
-      height: auto;
-    }
-
     img {
       max-width: 100%;
       border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
   }
 }
@@ -318,6 +332,11 @@
         font-size: 1.5rem;
         margin: 0 5px;
       }
+    }
+    .social-buttons {
+      display: flex;
+      justify-content: center;
+      width: 100%;
     }
   }
 

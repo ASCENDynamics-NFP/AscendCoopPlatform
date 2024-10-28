@@ -30,9 +30,15 @@ import {ReactiveFormsModule} from "@angular/forms";
 import {RouterModule} from "@angular/router";
 import {ListingDetailPage} from "./pages/listing-detail/listing-detail.page";
 import {ListingEditPage} from "./pages/listing-edit/listing-edit.page";
+import {ListingCreatePage} from "./pages/listing-create/listing-create.page";
 
 @NgModule({
-  declarations: [ListingsPage, ListingDetailPage, ListingEditPage],
+  declarations: [
+    ListingsPage,
+    ListingCreatePage,
+    ListingDetailPage,
+    ListingEditPage,
+  ],
   imports: [
     CommonModule,
     IonicModule,

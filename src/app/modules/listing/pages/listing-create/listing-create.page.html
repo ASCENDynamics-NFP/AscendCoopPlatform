@@ -22,27 +22,29 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
     </ion-buttons>
-    <ion-title>Listing Details</ion-title>
-    <ion-buttons slot="end">
-      <ion-button [routerLink]="['../edit']">
-        <ion-icon name="create-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
+    <ion-title>Create New Listing</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ng-container *ngIf="listing$ | async as listing">
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>{{ listing.title }}</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <p>{{ listing.description }}</p>
-        <ion-text color="primary">
-          <h2>{{ listing.price | currency }}</h2>
-        </ion-text>
-      </ion-card-content>
-    </ion-card>
-  </ng-container>
+  <form [formGroup]="listingForm" (ngSubmit)="onSubmit()">
+    <ion-item>
+      <ion-label position="floating">Title</ion-label>
+      <ion-input formControlName="title" type="text"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Description</ion-label>
+      <ion-textarea formControlName="description"></ion-textarea>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Price</ion-label>
+      <ion-input formControlName="price" type="number"></ion-input>
+    </ion-item>
+
+    <ion-button expand="block" type="submit" [disabled]="!listingForm.valid">
+      Create Listing
+    </ion-button>
+  </form>
 </ion-content>

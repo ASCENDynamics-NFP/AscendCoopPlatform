@@ -17,3 +17,40 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+import {Component} from "@angular/core";
+import {FormBuilder, FormGroup, Validators} from "@angular/forms";
+import {Store} from "@ngrx/store";
+import {Router} from "@angular/router";
+import * as ListingActions from "../../../../state/actions/listings.actions";
+
+@Component({
+  selector: "app-listing-create",
+  templateUrl: "./listing-create.page.html",
+  styleUrls: ["./listing-create.page.scss"],
+})
+export class ListingCreatePage {
+  listingForm: FormGroup;
+
+  constructor(
+    private fb: FormBuilder,
+    private store: Store,
+    private router: Router,
+  ) {
+    this.listingForm = this.fb.group({
+      title: ["", Validators.required],
+      description: ["", Validators.required],
+      price: ["", Validators.required],
+    });
+  }
+
+  onSubmit() {
+    if (this.listingForm.valid) {
+      this.store.dispatch(
+        ListingActions.createListing({
+          listing: this.listingForm.value,
+        }),
+      );
+      this.router.navigate(["/listings"]);
+    }
+  }
+}

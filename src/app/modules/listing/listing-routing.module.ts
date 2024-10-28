@@ -22,11 +22,16 @@ import {RouterModule, Routes} from "@angular/router";
 import {ListingsPage} from "./pages/listings/listings.page";
 import {ListingDetailPage} from "./pages/listing-detail/listing-detail.page";
 import {ListingEditPage} from "./pages/listing-edit/listing-edit.page";
+import {ListingCreatePage} from "./pages/listing-create/listing-create.page";
 
 const routes: Routes = [
   {
     path: "",
     component: ListingsPage,
+  },
+  {
+    path: "create",
+    component: ListingCreatePage,
   },
   {
     path: ":id",

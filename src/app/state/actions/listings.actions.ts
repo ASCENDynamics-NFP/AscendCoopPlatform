@@ -59,3 +59,18 @@ export const updateListingFailure = createAction(
   "[Listing] Update Failure",
   props<{error: string}>(),
 );
+
+export const createListing = createAction(
+  "[Listing] Create",
+  props<{listing: Listing}>(),
+);
+
+export const createListingSuccess = createAction(
+  "[Listing] Create Success",
+  props<{listing: Listing}>(),
+);
+
+export const createListingFailure = createAction(
+  "[Listing] Create Failure",
+  props<{listing: Listing}>(),
+);

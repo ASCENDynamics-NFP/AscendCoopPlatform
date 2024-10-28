@@ -17,3 +17,20 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {ListingCreatePage} from "./listing-create.page";
+
+describe("ListingCreatePage", () => {
+  let component: ListingCreatePage;
+  let fixture: ComponentFixture<ListingCreatePage>;
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(ListingCreatePage);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

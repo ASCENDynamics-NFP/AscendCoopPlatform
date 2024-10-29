@@ -31,6 +31,7 @@ import {RouterModule} from "@angular/router";
 import {ListingDetailPage} from "./pages/listing-detail/listing-detail.page";
 import {ListingEditPage} from "./pages/listing-edit/listing-edit.page";
 import {ListingCreatePage} from "./pages/listing-create/listing-create.page";
+import {TimestampPipe} from "../../shared/pipes/timestamp.pipe";
 
 @NgModule({
   declarations: [
@@ -38,6 +39,7 @@ import {ListingCreatePage} from "./pages/listing-create/listing-create.page";
     ListingCreatePage,
     ListingDetailPage,
     ListingEditPage,
+    TimestampPipe,
   ],
   imports: [
     CommonModule,

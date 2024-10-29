@@ -17,22 +17,41 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Address} from "./account.model";
+import {Address, ContactInformation} from "./account.model";
 import {Timestamp} from "firebase/firestore";
 import {BaseDocument} from "./base-document";
-import {ContactInformation} from "./account.model";
 
-// Listing Object
+export type ListingType = "volunteer" | "job" | "internship" | "gig";
+
+export interface SkillRequirement {
+  name: string;
+  level: "beginner" | "intermediate" | "advanced";
+  required: boolean;
+}
+
+export interface TimeCommitment {
+  hoursPerWeek: number;
+  duration: string;
+  schedule: string;
+  startDate: Timestamp;
+  endDate: Timestamp;
+  isFlexible: boolean;
+}
+
 export interface Listing extends BaseDocument {
   title: string;
   description: string;
-  type: "volunteer" | "job" | "internship" | "gig";
+  type: ListingType;
+  organization: string;
   location: Address;
-  startDate: Timestamp;
-  endDate: Timestamp;
+  remote: boolean;
+  skills: SkillRequirement[];
+  timeCommitment: TimeCommitment;
   requirements: string[];
+  responsibilities: string[];
+  benefits: string[];
   iconImage?: string;
   heroImage?: string;
-  contactInformation?: ContactInformation;
-  price: number;
+  contactInformation: ContactInformation;
+  status: "active" | "filled" | "expired";
 }

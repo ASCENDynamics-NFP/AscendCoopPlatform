@@ -39,11 +39,28 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </ng-container>
 
   <ion-list>
-    <ion-item *ngFor="let listing of listings$ | async">
+    <ion-item
+      *ngFor="let listing of listings$ | async"
+      [routerLink]="['/listings', listing.id]"
+    >
+      <ion-thumbnail slot="start">
+        <ion-img
+          [src]="listing.iconImage || 'assets/image/logo/ASCENDynamics NFP-logos_transparent.png'"
+        ></ion-img>
+      </ion-thumbnail>
       <ion-label>
         <h2>{{ listing.title }}</h2>
-        <p>{{ listing.description }}</p>
+        <h3>{{ listing.organization }}</h3>
+        <p>{{ listing.description | slice:0:100 }}...</p>
+        <ion-badge color="primary">{{ listing.type | titlecase }}</ion-badge>
+        <ion-badge *ngIf="listing.remote" color="success">Remote</ion-badge>
       </ion-label>
     </ion-item>
   </ion-list>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button routerLink="/listings/create">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

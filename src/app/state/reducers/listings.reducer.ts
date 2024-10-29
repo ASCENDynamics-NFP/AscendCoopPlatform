@@ -24,7 +24,7 @@ import {Listing} from "../../models/listing.model";
 
 export interface ListingsState {
   listings: Listing[];
-  selectedListing: Listing | null; // Allowing selectedListing to be null
+  selectedListing: Listing | null;
   loading: boolean;
   error: string | null;
 }
@@ -45,21 +45,37 @@ export const listingsReducer = createReducer(
   })),
   on(ListingsActions.loadListingsSuccess, (state, {listings}) => ({
     ...state,
-    loading: false,
     listings,
-  })),
-  on(ListingsActions.loadListingsFailure, (state, {error}) => ({
-    ...state,
     loading: false,
-    error,
   })),
   on(ListingsActions.loadListingByIdSuccess, (state, {listing}) => ({
     ...state,
-    selectedListing: listing ? listing : null, // Handling potential null values
+    selectedListing: listing,
+    loading: false,
   })),
-
-  on(ListingsActions.loadListingByIdFailure, (state, {error}) => ({
+  on(ListingsActions.createListingSuccess, (state, {listing}) => ({
     ...state,
-    error,
+    listings: [...state.listings, listing],
+    selectedListing: listing,
+    loading: false,
   })),
+  on(ListingsActions.updateListingSuccess, (state, {listing}) => ({
+    ...state,
+    listings: state.listings.map((item) =>
+      item.id === listing.id ? listing : item,
+    ),
+    selectedListing: listing,
+    loading: false,
+  })),
+  on(
+    ListingsActions.loadListingsFailure,
+    ListingsActions.loadListingByIdFailure,
+    ListingsActions.createListingFailure,
+    ListingsActions.updateListingFailure,
+    (state, {error}) => ({
+      ...state,
+      error,
+      loading: false,
+    }),
+  ),
 );

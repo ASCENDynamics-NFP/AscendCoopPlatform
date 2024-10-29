@@ -20,13 +20,31 @@
 // src/app/state/listings/listings.effects.ts
 import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
-import {catchError, map, mergeMap, of} from "rxjs";
+import {catchError, from, map, mergeMap, of} from "rxjs";
 import {FirestoreService} from "../../core/services/firestore.service";
 import * as ListingsActions from "./../actions/listings.actions";
 import {Listing} from "../../models/listing.model";
 
 @Injectable()
 export class ListingsEffects {
+  createListing$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ListingsActions.createListing),
+      mergeMap(({listing}) =>
+        from(this.firestoreService.addDocument("listings", listing)).pipe(
+          map((docId) =>
+            ListingsActions.createListingSuccess({
+              listing: {...listing, id: docId},
+            }),
+          ),
+          catchError((error) =>
+            of(ListingsActions.createListingFailure({error: error.message})),
+          ),
+        ),
+      ),
+    ),
+  );
+
   loadListings$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.loadListings),

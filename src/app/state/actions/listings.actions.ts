@@ -46,31 +46,31 @@ export const loadListingByIdFailure = createAction(
 );
 
 export const updateListing = createAction(
-  "[Listing] Update",
+  "[Listings API] Update",
   props<{listing: Listing}>(),
 );
 
 export const updateListingSuccess = createAction(
-  "[Listing] Update Success",
+  "[Listings API] Update Success",
   props<{listing: Listing}>(),
 );
 
 export const updateListingFailure = createAction(
-  "[Listing] Update Failure",
+  "[Listings API] Update Failure",
   props<{error: string}>(),
 );
 
 export const createListing = createAction(
-  "[Listing] Create",
+  "[Listings API] Create",
   props<{listing: Listing}>(),
 );
 
 export const createListingSuccess = createAction(
-  "[Listing] Create Success",
+  "[Listings API] Create Success",
   props<{listing: Listing}>(),
 );
 
 export const createListingFailure = createAction(
-  "[Listing] Create Failure",
-  props<{listing: Listing}>(),
+  "[Listings API] Create Failure",
+  props<{error: string}>(),
 );

@@ -18,12 +18,15 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Component, OnInit} from "@angular/core";
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
+import {FormBuilder, FormGroup, Validators, FormArray} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
-import {Observable} from "rxjs";
+import {Observable, take} from "rxjs";
 import {Listing} from "../../../../models/listing.model";
 import * as ListingActions from "../../../../state/actions/listings.actions";
+import {Timestamp} from "firebase/firestore";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {AuthUser} from "../../../../models/auth-user.model";
 
 @Component({
   selector: "app-listing-edit",
@@ -31,8 +34,11 @@ import * as ListingActions from "../../../../state/actions/listings.actions";
   styleUrls: ["./listing-edit.page.scss"],
 })
 export class ListingEditPage implements OnInit {
+  authUser$!: Observable<AuthUser | null>;
   listingForm: FormGroup;
   listing$!: Observable<Listing | null>;
+  listingTypes = ["volunteer", "job", "internship", "gig"];
+  skillLevels = ["beginner", "intermediate", "advanced"];
 
   constructor(
     private fb: FormBuilder,
@@ -40,10 +46,38 @@ export class ListingEditPage implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
   ) {
+    this.authUser$ = this.store.select(selectAuthUser);
     this.listingForm = this.fb.group({
       title: ["", Validators.required],
       description: ["", Validators.required],
-      price: ["", Validators.required],
+      type: ["volunteer", Validators.required],
+      organization: ["", Validators.required],
+      remote: [false],
+      location: this.fb.group({
+        street: [""],
+        city: [""],
+        state: [""],
+        country: [""],
+        postalCode: [""],
+      }),
+      skills: this.fb.array([]),
+      timeCommitment: this.fb.group({
+        hoursPerWeek: ["", Validators.required],
+        duration: [""],
+        schedule: [""],
+        startDate: ["", Validators.required],
+        endDate: [""],
+        isFlexible: [false],
+      }),
+      requirements: this.fb.array([]),
+      responsibilities: this.fb.array([]),
+      benefits: this.fb.array([]),
+      contactInformation: this.fb.group({
+        email: ["", Validators.email],
+        phone: [""],
+        website: [""],
+      }),
+      status: ["active"],
     });
     this.listing$ = this.store.select(
       (state) => state.listings.selectedListing,
@@ -54,16 +88,60 @@ export class ListingEditPage implements OnInit {
     const id = this.route.snapshot.paramMap.get("id");
     if (id) {
       this.store.dispatch(ListingActions.loadListingById({id}));
+      this.listing$.subscribe((listing) => {
+        if (listing) {
+          this.listingForm.patchValue(listing);
+        }
+      });
     }
+  }
+
+  addSkill() {
+    const skillForm = this.fb.group({
+      name: ["", Validators.required],
+      level: ["beginner"],
+      required: [true],
+    });
+    (this.listingForm.get("skills") as FormArray).push(skillForm);
+  }
+
+  addArrayItem(arrayName: string) {
+    const control = this.fb.control("", Validators.required);
+    (this.listingForm.get(arrayName) as FormArray).push(control);
+  }
+
+  removeArrayItem(arrayName: string, index: number) {
+    (this.listingForm.get(arrayName) as FormArray).removeAt(index);
+  }
+
+  getFormArray(arrayName: string) {
+    return this.listingForm.get(arrayName) as FormArray;
   }
 
   onSubmit() {
     if (this.listingForm.valid) {
-      this.store.dispatch(
-        ListingActions.updateListing({
-          listing: this.listingForm.value,
-        }),
-      );
+      this.authUser$.pipe(take(1)).subscribe((user) => {
+        const formValue = this.listingForm.value;
+        const listing = {
+          ...formValue,
+          createdAt: Timestamp.now(),
+          createdBy: user?.uid,
+          lastModifiedAt: Timestamp.now(),
+          lastModifiedBy: user?.uid,
+          timeCommitment: {
+            ...formValue.timeCommitment,
+            startDate: Timestamp.fromDate(
+              new Date(formValue.timeCommitment.startDate),
+            ),
+            endDate: Timestamp.fromDate(
+              new Date(formValue.timeCommitment.endDate),
+            ),
+          },
+        };
+
+        this.store.dispatch(ListingActions.createListing({listing}));
+        this.router.navigate(["/listings"]);
+      });
     }
   }
 }

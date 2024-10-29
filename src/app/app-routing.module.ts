@@ -84,6 +84,11 @@ export const routes: Routes = [
       ),
   },
   {
+    path: "listings",
+    loadChildren: () =>
+      import("./modules/listing/listing.module").then((m) => m.ListingModule),
+  },
+  {
     path: ":accountId",
     loadChildren: () =>
       import("./modules/account/pages/details/details.module").then(
@@ -106,11 +111,6 @@ export const routes: Routes = [
         (m) => m.ListPageModule,
       ),
     canActivate: [AuthGuard],
-  },
-  {
-    path: "listings",
-    loadChildren: () =>
-      import("./modules/listing/listing.module").then((m) => m.ListingModule),
   },
 ];
 

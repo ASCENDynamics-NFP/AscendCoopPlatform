@@ -1,6 +1,17 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    match /listings {
+      allow list: if true;  // Allow listing collection queries, essential for features like filtering and pagination.
+    }
+
+    // Listings collection rules
+    match /listings/{listingId} {
+      allow read: if true; // Anyone can view listings
+      allow create: if request.auth != null; // Must be logged in to create
+      allow update, delete: if request.auth != null && 
+        request.auth.uid == resource.data.createdBy; // Only creator can modify
+    }
 
     match /accounts {
       allow list: if isPublicUser() || isPublicGroup();

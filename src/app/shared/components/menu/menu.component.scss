@@ -17,3 +17,16 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+
+ion-item {
+  cursor: pointer;
+  &:hover {
+    --background: var(--ion-color-light);
+    z-index: 1;
+  }
+
+  ion-button {
+    z-index: 2;
+    pointer-events: auto;
+  }
+}

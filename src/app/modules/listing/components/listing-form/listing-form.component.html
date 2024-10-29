@@ -1,0 +1,448 @@
+<form [formGroup]="listingForm" (ngSubmit)="onSubmit()">
+  <ion-accordion-group
+    [multiple]="true"
+    [value]="['basicInformation', 'timeCommitment']"
+  >
+    <!-- Basic Information Section -->
+    <ion-accordion
+      value="basicInformation"
+      toggleIcon="caret-down-circle"
+      toggleIconSlot="start"
+    >
+      <ion-item slot="header" color="primary">
+        <ion-label>Basic Information</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-grid>
+          <ion-row>
+            <ion-col>
+              <ion-row>
+                <ion-col>
+                  <ion-input
+                    label="Title"
+                    label-placement="floating"
+                    fill="outline"
+                    type="text"
+                    formControlName="title"
+                    minlength="1"
+                    maxlength="255"
+                    placeholder="Enter Title"
+                  >
+                  </ion-input>
+                </ion-col>
+              </ion-row>
+              <ion-row>
+                <ion-col>
+                  <ion-input
+                    label="Organization"
+                    label-placement="floating"
+                    fill="outline"
+                    formControlName="organization"
+                    minlength="1"
+                    maxlength="255"
+                    placeholder="Enter Organization"
+                  >
+                  </ion-input>
+                </ion-col>
+              </ion-row>
+              <ion-row>
+                <ion-col>
+                  <ion-select
+                    label="Listing Type"
+                    label-placement="stacked"
+                    formControlName="type"
+                    interface="popover"
+                    placeholder="Select One"
+                    fill="outline"
+                  >
+                    <ion-select-option
+                      *ngFor="let type of listingTypes"
+                      [value]="type"
+                    >
+                      {{ type | titlecase }}
+                    </ion-select-option>
+                  </ion-select>
+                </ion-col>
+              </ion-row>
+            </ion-col>
+            <ion-col>
+              <ion-row>
+                <ion-col>
+                  <ion-textarea
+                    label="Description"
+                    label-placement="floating"
+                    fill="outline"
+                    placeholder="Enter Description"
+                    formControlName="description"
+                    rows="8"
+                    minlength="0"
+                    maxlength="1000"
+                    [counter]="true"
+                  >
+                  </ion-textarea>
+                </ion-col>
+              </ion-row>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </div>
+    </ion-accordion>
+
+    <!-- Location Section -->
+    <ion-accordion
+      value="location"
+      toggleIcon="caret-down-circle"
+      toggleIconSlot="start"
+    >
+      <ion-item slot="header" color="primary">
+        <ion-label>Location</ion-label>
+      </ion-item>
+      <div slot="content" formGroupName="location">
+        <ion-grid>
+          <ion-row>
+            <ion-col>
+              <ion-input
+                label="Street Address"
+                label-placement="floating"
+                fill="outline"
+                formControlName="street"
+                type="text"
+              >
+              </ion-input>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-input
+                label="City"
+                label-placement="floating"
+                fill="outline"
+                formControlName="city"
+                type="text"
+              >
+              </ion-input>
+            </ion-col>
+            <ion-col>
+              <ion-input
+                label="State"
+                label-placement="floating"
+                fill="outline"
+                formControlName="state"
+                type="text"
+              >
+              </ion-input>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-input
+                label="Country"
+                label-placement="floating"
+                fill="outline"
+                formControlName="country"
+                type="text"
+              >
+              </ion-input>
+            </ion-col>
+            <ion-col>
+              <ion-input
+                label="Postal Code"
+                label-placement="floating"
+                fill="outline"
+                formControlName="zipcode"
+                type="text"
+              >
+              </ion-input>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-item lines="none">
+                <ion-label>Remote Position Available</ion-label>
+                <ion-toggle formControlName="remote"></ion-toggle>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </div>
+    </ion-accordion>
+
+    <!-- Time Commitment Section -->
+    <ion-accordion
+      value="timeCommitment"
+      toggleIcon="caret-down-circle"
+      toggleIconSlot="start"
+    >
+      <ion-item slot="header" color="primary">
+        <ion-label>Time Commitment</ion-label>
+      </ion-item>
+      <div slot="content" formGroupName="timeCommitment">
+        <ion-grid>
+          <ion-row>
+            <ion-col>
+              <ion-input
+                label="Hours per Week"
+                label-placement="floating"
+                fill="outline"
+                type="number"
+                formControlName="hoursPerWeek"
+              >
+              </ion-input>
+            </ion-col>
+            <ion-col>
+              <ion-input
+                label="Duration"
+                label-placement="floating"
+                fill="outline"
+                formControlName="duration"
+              >
+              </ion-input>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-input
+                label="Schedule"
+                label-placement="floating"
+                fill="outline"
+                formControlName="schedule"
+              >
+              </ion-input>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-datetime
+                label="Start Date"
+                label-placement="floating"
+                fill="outline"
+                formControlName="startDate"
+                presentation="date"
+                [preferWheel]="true"
+              >
+              </ion-datetime>
+            </ion-col>
+            <ion-col>
+              <ion-datetime
+                label="End Date"
+                label-placement="floating"
+                fill="outline"
+                formControlName="endDate"
+                presentation="date"
+                [preferWheel]="true"
+              >
+              </ion-datetime>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-item lines="none">
+                <ion-label>Flexible Schedule</ion-label>
+                <ion-toggle formControlName="isFlexible"></ion-toggle>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </div>
+    </ion-accordion>
+
+    <!-- Skills Section -->
+    <ion-accordion
+      value="skills"
+      toggleIcon="caret-down-circle"
+      toggleIconSlot="start"
+    >
+      <ion-item slot="header" color="primary">
+        <ion-label>Required Skills</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-grid formArrayName="skills">
+          <ion-row
+            *ngFor="let skill of getFormArray('skills').controls; let i = index"
+            [formGroupName]="i"
+          >
+            <ion-col>
+              <ion-input
+                label="Skill Name"
+                label-placement="floating"
+                fill="outline"
+                formControlName="name"
+              >
+              </ion-input>
+            </ion-col>
+            <ion-col>
+              <ion-select
+                label="Skill Level"
+                label-placement="stacked"
+                formControlName="level"
+                fill="outline"
+              >
+                <ion-select-option
+                  *ngFor="let level of skillLevels"
+                  [value]="level"
+                >
+                  {{ level | titlecase }}
+                </ion-select-option>
+              </ion-select>
+            </ion-col>
+            <ion-col size="auto">
+              <ion-item lines="none">
+                <ion-checkbox formControlName="required"></ion-checkbox>
+                <ion-label>Required</ion-label>
+              </ion-item>
+            </ion-col>
+            <ion-col size="auto">
+              <ion-button fill="clear" (click)="removeArrayItem('skills', i)">
+                <ion-icon name="trash-outline"></ion-icon>
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+        <ion-button fill="clear" (click)="addSkill()">
+          <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+          Add Skill
+        </ion-button>
+      </div>
+    </ion-accordion>
+
+    <!-- Contact Information Section -->
+    <ion-accordion
+      value="contactInformation"
+      toggleIcon="caret-down-circle"
+      toggleIconSlot="start"
+    >
+      <ion-item slot="header" color="primary">
+        <ion-label>Contact Information</ion-label>
+      </ion-item>
+      <div slot="content" formGroupName="contactInformation">
+        <ion-grid>
+          <ion-row formArrayName="emails">
+            <ion-col>
+              <ion-item-divider>
+                <ion-label color="tertiary">Emails</ion-label>
+              </ion-item-divider>
+              <div
+                *ngFor="
+                  let email of getFormArray('contactInformation.emails')
+                    .controls;
+                  let i = index
+                "
+                [formGroupName]="i"
+              >
+                <ion-row>
+                  <ion-col>
+                    <ion-input
+                      label="Name"
+                      label-placement="floating"
+                      fill="outline"
+                      formControlName="name"
+                      type="text"
+                    >
+                    </ion-input>
+                  </ion-col>
+                  <ion-col>
+                    <ion-input
+                      label="Email"
+                      label-placement="floating"
+                      fill="outline"
+                      formControlName="email"
+                      type="email"
+                    >
+                    </ion-input>
+                  </ion-col>
+                  <ion-col size="auto">
+                    <ion-button
+                      fill="clear"
+                      (click)="removeArrayItem('contactInformation.emails', i)"
+                    >
+                      <ion-icon name="trash-outline"></ion-icon>
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+              </div>
+              <ion-button fill="clear" (click)="addEmail()">
+                <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+                Add Email
+              </ion-button>
+            </ion-col>
+          </ion-row>
+
+          <ion-row formArrayName="phoneNumbers">
+            <ion-col>
+              <ion-item-divider>
+                <ion-label color="tertiary">Phone Numbers</ion-label>
+              </ion-item-divider>
+              <div
+                *ngFor="
+                  let phone of getFormArray('contactInformation.phoneNumbers')
+                    .controls;
+                  let i = index
+                "
+                [formGroupName]="i"
+              >
+                <ion-row>
+                  <ion-col size="2">
+                    <ion-select
+                      label="Type"
+                      label-placement="stacked"
+                      formControlName="type"
+                      fill="outline"
+                    >
+                      <ion-select-option value="Mobile"
+                        >Mobile</ion-select-option
+                      >
+                      <ion-select-option value="Work">Work</ion-select-option>
+                      <ion-select-option value="Home">Home</ion-select-option>
+                    </ion-select>
+                  </ion-col>
+                  <ion-col size="2">
+                    <ion-input
+                      label="Country Code"
+                      label-placement="floating"
+                      fill="outline"
+                      formControlName="countryCode"
+                      type="text"
+                    >
+                    </ion-input>
+                  </ion-col>
+                  <ion-col>
+                    <ion-input
+                      label="Number"
+                      label-placement="floating"
+                      fill="outline"
+                      formControlName="number"
+                      type="tel"
+                    >
+                    </ion-input>
+                  </ion-col>
+                  <ion-col size="auto">
+                    <ion-button
+                      fill="clear"
+                      (click)="
+                        removeArrayItem('contactInformation.phoneNumbers', i)
+                      "
+                    >
+                      <ion-icon name="trash-outline"></ion-icon>
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+              </div>
+              <ion-button fill="clear" (click)="addPhoneNumber()">
+                <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+                Add Phone Number
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
+
+  <ion-row>
+    <ion-col>
+      <ion-button expand="block" type="submit" [disabled]="!listingForm.valid">
+        Save Listing
+      </ion-button>
+    </ion-col>
+  </ion-row>
+</form>

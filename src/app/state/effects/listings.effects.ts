@@ -80,6 +80,22 @@ export class ListingsEffects {
     ),
   );
 
+  updateListing$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ListingsActions.updateListing),
+      mergeMap(({listing}) =>
+        from(
+          this.firestoreService.updateDocument("listings", listing.id, listing),
+        ).pipe(
+          map(() => ListingsActions.updateListingSuccess({listing})),
+          catchError((error) =>
+            of(ListingsActions.updateListingFailure({error})),
+          ),
+        ),
+      ),
+    ),
+  );
+
   constructor(
     private actions$: Actions,
     private firestoreService: FirestoreService,

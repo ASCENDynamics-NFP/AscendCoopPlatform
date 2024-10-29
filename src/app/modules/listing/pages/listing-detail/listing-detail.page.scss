@@ -17,3 +17,48 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+ion-card {
+  border: 1px solid var(--ion-color-primary);
+}
+
+ion-card ion-card-title {
+  font-size: 1.5em;
+  margin-bottom: 16px;
+}
+
+.info-block {
+  margin-bottom: 16px;
+}
+
+.info-block h2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #000;
+  margin: 0;
+
+  ion-button {
+    margin-right: auto;
+    font-size: 0.8em;
+    padding: 0.2em 0.5em;
+    --padding-start: 0;
+    --padding-end: 0;
+  }
+}
+
+.info-block p {
+  font-size: 1em;
+  margin: 4px 0 0 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .info-block h2 {
+    color: #fff;
+  }
+
+  .info-block p {
+    color: #aaa;
+  }
+}

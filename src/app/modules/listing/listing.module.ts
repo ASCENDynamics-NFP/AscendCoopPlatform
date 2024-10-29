@@ -32,6 +32,8 @@ import {ListingDetailPage} from "./pages/listing-detail/listing-detail.page";
 import {ListingEditPage} from "./pages/listing-edit/listing-edit.page";
 import {ListingCreatePage} from "./pages/listing-create/listing-create.page";
 import {TimestampPipe} from "../../shared/pipes/timestamp.pipe";
+import {ListingFormComponent} from "./components/listing-form/listing-form.component";
+import {FormatAddressPipe} from "../../shared/pipes/format-address.pipe";
 
 @NgModule({
   declarations: [
@@ -40,6 +42,8 @@ import {TimestampPipe} from "../../shared/pipes/timestamp.pipe";
     ListingDetailPage,
     ListingEditPage,
     TimestampPipe,
+    ListingFormComponent,
+    FormatAddressPipe,
   ],
   imports: [
     CommonModule,

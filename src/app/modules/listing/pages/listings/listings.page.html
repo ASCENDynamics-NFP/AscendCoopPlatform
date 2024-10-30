@@ -20,6 +20,21 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <ion-header>
   <ion-toolbar>
     <ion-title>Listings</ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/listings/create">
+        <ion-icon name="add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar (ionInput)="searchListings($event)"></ion-searchbar>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment (ionChange)="filterListings($event)">
+      <ion-segment-button *ngFor="let type of listingTypes" [value]="type">
+        <ion-label>{{type | titlecase}}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
   </ion-toolbar>
 </ion-header>
 
@@ -53,7 +68,13 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <h3>{{ listing.organization }}</h3>
         <p>{{ listing.description | slice:0:100 }}...</p>
         <ion-badge color="primary">{{ listing.type | titlecase }}</ion-badge>
-        <ion-badge *ngIf="listing.remote" color="success">Remote</ion-badge>
+        <ion-badge *ngIf="listing.location?.remote" color="success"
+          >Remote</ion-badge
+        >
+        <ion-note>
+          <ion-icon name="time-outline"></ion-icon>
+          {{ listing.timeCommitment?.hoursPerWeek }} hrs/week
+        </ion-note>
       </ion-label>
     </ion-item>
   </ion-list>

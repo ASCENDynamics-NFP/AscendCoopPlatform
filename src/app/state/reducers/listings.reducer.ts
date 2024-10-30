@@ -25,6 +25,7 @@ import {Listing} from "../../models/listing.model";
 export interface ListingsState {
   listings: Listing[];
   selectedListing: Listing | null;
+  filteredListings: Listing[];
   loading: boolean;
   error: string | null;
 }
@@ -32,6 +33,7 @@ export interface ListingsState {
 const initialState: ListingsState = {
   listings: [],
   selectedListing: null,
+  filteredListings: [],
   loading: false,
   error: null,
 };
@@ -78,4 +80,27 @@ export const listingsReducer = createReducer(
       loading: false,
     }),
   ),
+  on(ListingsActions.filterListings, (state, {listingType}) => ({
+    ...state,
+    filteredListings: state.listings.filter(
+      (listing) => listing.type === listingType,
+    ),
+  })),
+
+  on(ListingsActions.filterListings, (state, {listingType}) => ({
+    ...state,
+    filteredListings:
+      listingType === "all"
+        ? state.listings
+        : state.listings.filter((listing) => listing.type === listingType),
+  })),
+
+  on(ListingsActions.searchListings, (state, {query}) => ({
+    ...state,
+    filteredListings: state.listings.filter(
+      (listing) =>
+        listing.title.toLowerCase().includes(query.toLowerCase()) ||
+        listing.description.toLowerCase().includes(query.toLowerCase()),
+    ),
+  })),
 );

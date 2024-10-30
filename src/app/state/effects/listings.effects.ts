@@ -20,10 +20,12 @@
 // src/app/state/listings/listings.effects.ts
 import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
-import {catchError, from, map, mergeMap, of} from "rxjs";
+import {catchError, from, map, mergeMap, of, withLatestFrom} from "rxjs";
 import {FirestoreService} from "../../core/services/firestore.service";
 import * as ListingsActions from "./../actions/listings.actions";
 import {Listing} from "../../models/listing.model";
+import {Store} from "@ngrx/store";
+import {ListingsState} from "../reducers/listings.reducer";
 
 @Injectable()
 export class ListingsEffects {
@@ -96,8 +98,26 @@ export class ListingsEffects {
     ),
   );
 
+  searchListings$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ListingsActions.searchListings),
+      withLatestFrom(this.store.select((state) => state.listings.listings)),
+      map(([action, listings]) => ({
+        type: "[Listings] Set Filtered Listings",
+        listings: listings.filter(
+          (listing) =>
+            listing.title.toLowerCase().includes(action.query.toLowerCase()) ||
+            listing.description
+              .toLowerCase()
+              .includes(action.query.toLowerCase()),
+        ),
+      })),
+    ),
+  );
+
   constructor(
     private actions$: Actions,
+    private store: Store<{listings: ListingsState}>,
     private firestoreService: FirestoreService,
   ) {}
 }

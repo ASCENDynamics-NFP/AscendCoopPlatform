@@ -74,3 +74,13 @@ export const createListingFailure = createAction(
   "[Listings API] Create Failure",
   props<{error: string}>(),
 );
+
+export const filterListings = createAction(
+  "[Listings] Filter Listings",
+  props<{listingType: string}>(),
+);
+
+export const searchListings = createAction(
+  "[Listings] Search Listings",
+  props<{query: string}>(),
+);

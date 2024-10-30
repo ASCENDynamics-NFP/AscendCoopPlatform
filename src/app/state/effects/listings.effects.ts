@@ -52,9 +52,9 @@ export class ListingsEffects {
         this.firestoreService
           .getCollectionWithCondition<Listing>(
             "listings",
-            "type",
+            "status",
             "==",
-            "volunteer",
+            "active",
           )
           .pipe(
             map((listings) => ListingsActions.loadListingsSuccess({listings})),

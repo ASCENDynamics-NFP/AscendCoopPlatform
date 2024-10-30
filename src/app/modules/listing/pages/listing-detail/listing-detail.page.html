@@ -35,120 +35,138 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
 <ion-content>
   <ng-container *ngIf="listing$ | async as listing">
-    <!-- Basic Information Card -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Basic Information</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="info-block">
-          <h2>Title</h2>
-          <p>{{ listing.title }}</p>
-        </div>
-        <div class="info-block">
-          <h2>Organization</h2>
-          <p>{{ listing.organization }}</p>
-        </div>
-        <div class="info-block">
-          <h2>Type</h2>
-          <p>{{ listing.type | titlecase }}</p>
-        </div>
-        <div class="info-block">
-          <h2>Description</h2>
-          <p>{{ listing.description }}</p>
-        </div>
-      </ion-card-content>
-    </ion-card>
+    <ion-grid>
+      <ion-row>
+        <!-- Left Column -->
+        <ion-col size="12" size-md="6">
+          <!-- Basic Information Card -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Basic Information</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="info-block">
+                <h2>Title</h2>
+                <p>{{ listing.title }}</p>
+              </div>
+              <div class="info-block">
+                <h2>Organization</h2>
+                <p>{{ listing.organization }}</p>
+              </div>
+              <div class="info-block">
+                <h2>Type</h2>
+                <p>{{ listing.type | titlecase }}</p>
+              </div>
+              <div class="info-block">
+                <h2>Description</h2>
+                <p>{{ listing.description }}</p>
+              </div>
+            </ion-card-content>
+          </ion-card>
 
-    <!-- Location Card -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Location</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="info-block">
-          <p>{{ listing.location?.street }}</p>
-          <p>{{ listing.location?.city }}, {{ listing.location?.state }}</p>
-          <p>{{ listing.location?.country }} {{ listing.location?.zipcode }}</p>
-          <ion-badge *ngIf="listing.remote" color="success"
-            >Remote Available</ion-badge
-          >
-        </div>
-      </ion-card-content>
-    </ion-card>
+          <!-- Location Card -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Location</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="info-block">
+                <p>{{ listing.location.street }}</p>
+                <p>{{ listing.location.city }}, {{ listing.location.state }}</p>
+                <p>
+                  {{ listing.location.country }} {{ listing.location.zipcode }}
+                </p>
+                <ion-badge *ngIf="listing.remote" color="success"
+                  >Remote Available</ion-badge
+                >
+              </div>
+            </ion-card-content>
+          </ion-card>
 
-    <!-- Time Commitment Card -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Time Commitment</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="info-block">
-          <p>Hours per Week: {{ listing.timeCommitment.hoursPerWeek }}</p>
-          <p>Duration: {{ listing.timeCommitment.duration }}</p>
-          <p>Schedule: {{ listing.timeCommitment.schedule }}</p>
-          <p>
-            Start Date: {{ listing.timeCommitment.startDate | timestamp | date
-            }}
-          </p>
-          <p>
-            End Date: {{ listing.timeCommitment.endDate | timestamp | date }}
-          </p>
-          <ion-badge *ngIf="listing.timeCommitment.isFlexible" color="success">
-            Flexible Schedule
-          </ion-badge>
-        </div>
-      </ion-card-content>
-    </ion-card>
+          <!-- Contact Information Card -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Contact Information</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="info-block">
+                <p *ngFor="let email of listing.contactInformation?.emails">
+                  {{ email.email }}
+                </p>
+                <p
+                  *ngFor="let phone of listing.contactInformation?.phoneNumbers"
+                >
+                  {{ phone.number }}
+                </p>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
 
-    <!-- Skills Card -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Required Skills</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="info-block">
-          <p *ngFor="let skill of listing.skills">
-            {{ skill.name }} - {{ skill.level | titlecase }}
-            <ion-badge *ngIf="skill.required" color="primary"
-              >Required</ion-badge
-            >
-          </p>
-        </div>
-      </ion-card-content>
-    </ion-card>
+        <!-- Right Column -->
+        <ion-col size="12" size-md="6">
+          <!-- Time Commitment Card -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Time Commitment</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="info-block">
+                <p>Hours per Week: {{ listing.timeCommitment.hoursPerWeek }}</p>
+                <p>Duration: {{ listing.timeCommitment.duration }}</p>
+                <p>Schedule: {{ listing.timeCommitment.schedule }}</p>
+                <p>
+                  Start Date: {{ listing.timeCommitment.startDate | timestamp |
+                  date }}
+                </p>
+                <p>
+                  End Date: {{ listing.timeCommitment.endDate | timestamp | date
+                  }}
+                </p>
+                <ion-badge
+                  *ngIf="listing.timeCommitment.isFlexible"
+                  color="success"
+                >
+                  Flexible Schedule
+                </ion-badge>
+              </div>
+            </ion-card-content>
+          </ion-card>
 
-    <!-- Contact Information Card -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Contact Information</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="info-block">
-          <p *ngFor="let email of listing.contactInformation?.emails">
-            {{ email.email }}
-          </p>
-          <p *ngFor="let phone of listing.contactInformation?.phoneNumbers">
-            {{ phone.number }}
-          </p>
-        </div>
-      </ion-card-content>
-    </ion-card>
+          <!-- Skills Card -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Required Skills</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="info-block">
+                <p *ngFor="let skill of listing.skills">
+                  {{ skill.name }} - {{ skill.level | titlecase }}
+                  <ion-badge *ngIf="skill.required" color="primary"
+                    >Required</ion-badge
+                  >
+                </p>
+              </div>
+            </ion-card-content>
+          </ion-card>
 
-    <!-- Status Card -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Status</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="info-block">
-          <ion-badge
-            [color]="listing.status === 'active' ? 'success' : 'medium'"
-          >
-            {{ listing.status | titlecase }}
-          </ion-badge>
-        </div>
-      </ion-card-content>
-    </ion-card>
+          <!-- Status Card -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Status</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="info-block">
+                <ion-badge
+                  [color]="listing.status === 'active' ? 'success' : 'medium'"
+                >
+                  {{ listing.status | titlecase }}
+                </ion-badge>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
   </ng-container>
 </ion-content>

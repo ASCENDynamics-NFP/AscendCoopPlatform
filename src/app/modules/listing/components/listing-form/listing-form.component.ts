@@ -12,49 +12,101 @@ export class ListingFormComponent implements OnInit {
   @Input() listing: Listing | null = null;
   @Output() formSubmit = new EventEmitter<any>();
 
-  listingForm: FormGroup;
+  listingForm!: FormGroup;
   listingTypes = ["volunteer", "job", "internship", "gig"];
   skillLevels = ["beginner", "intermediate", "advanced"];
 
   constructor(private fb: FormBuilder) {
+    this.initForm();
+  }
+
+  private initForm() {
     this.listingForm = this.fb.group({
-      title: ["", Validators.required],
-      description: ["", Validators.required],
+      title: [
+        "",
+        [
+          Validators.required,
+          Validators.minLength(3),
+          Validators.maxLength(100),
+        ],
+      ],
+      description: [
+        "",
+        [
+          Validators.required,
+          Validators.minLength(10),
+          Validators.maxLength(1000),
+        ],
+      ],
       type: ["volunteer", Validators.required],
-      organization: ["", Validators.required],
+      organization: ["", [Validators.required, Validators.minLength(2)]],
       location: this.fb.group({
-        street: [""],
-        city: [""],
-        state: [""],
-        country: [""],
-        zipcode: [""],
+        street: ["", Validators.required],
+        city: ["", Validators.required],
+        state: ["", Validators.required],
+        country: ["", Validators.required],
+        zipcode: [
+          "",
+          [Validators.required, Validators.pattern("^[0-9]{5}(?:-[0-9]{4})?$")],
+        ],
         remote: [false],
       }),
+      timeCommitment: this.fb.group(
+        {
+          hoursPerWeek: [
+            "",
+            [Validators.required, Validators.min(1), Validators.max(168)],
+          ],
+          duration: ["", Validators.required],
+          schedule: ["", Validators.required],
+          startDate: [null, Validators.required],
+          endDate: [null],
+          isFlexible: [false],
+        },
+        {validator: this.dateRangeValidator},
+      ),
       skills: this.fb.array([]),
-      timeCommitment: this.fb.group({
-        hoursPerWeek: [0, Validators.required],
-        duration: [""],
-        schedule: [""],
-        startDate: [null, Validators.required],
-        endDate: [null],
-        isFlexible: [false],
-      }),
-      requirements: this.fb.array([]),
-      responsibilities: this.fb.array([]),
-      benefits: this.fb.array([]),
       contactInformation: this.fb.group({
         emails: this.fb.array([]),
         phoneNumbers: this.fb.array([]),
       }),
-      status: ["active"],
     });
+  }
+
+  dateRangeValidator(group: FormGroup) {
+    const start = group.get("startDate")?.value;
+    const end = group.get("endDate")?.value;
+    if (start && end && new Date(start) > new Date(end)) {
+      return {dateRange: true};
+    }
+    return null;
   }
 
   ngOnInit() {
     if (this.listing) {
+      // Convert Timestamp to ISO string for datetime inputs
+      const formValue = {
+        ...this.listing,
+        timeCommitment: {
+          ...this.listing.timeCommitment,
+          startDate: this.listing.timeCommitment.startDate
+            ?.toDate()
+            .toISOString(),
+          endDate: this.listing.timeCommitment.endDate?.toDate().toISOString(),
+        },
+      };
+      this.listingForm.patchValue(formValue);
       this.initializeFormArrays(this.listing);
-      this.listingForm.patchValue(this.listing);
     }
+  }
+
+  private markFormGroupTouched(formGroup: FormGroup) {
+    Object.values(formGroup.controls).forEach((control) => {
+      control.markAsTouched();
+      if (control instanceof FormGroup) {
+        this.markFormGroupTouched(control);
+      }
+    });
   }
 
   private initializeFormArrays(listing: Listing) {
@@ -75,6 +127,30 @@ export class ListingFormComponent implements OnInit {
       listing.benefits.forEach((benefit) =>
         this.addArrayItem("benefits", benefit),
       );
+    }
+    if (listing.contactInformation?.emails?.length) {
+      listing.contactInformation.emails.forEach((email) => {
+        const emailForm = this.fb.group({
+          name: [email.name],
+          email: [email.email, [Validators.required, Validators.email]],
+        });
+        (this.listingForm.get("contactInformation.emails") as FormArray).push(
+          emailForm,
+        );
+      });
+    }
+
+    if (listing.contactInformation?.phoneNumbers?.length) {
+      listing.contactInformation.phoneNumbers.forEach((phone) => {
+        const phoneForm = this.fb.group({
+          type: [phone.type],
+          countryCode: [phone.countryCode],
+          number: [phone.number, Validators.required],
+        });
+        (
+          this.listingForm.get("contactInformation.phoneNumbers") as FormArray
+        ).push(phoneForm);
+      });
     }
   }
 
@@ -135,8 +211,11 @@ export class ListingFormComponent implements OnInit {
             ? Timestamp.fromDate(new Date(formValue.timeCommitment.endDate))
             : null,
         },
+        status: "active",
       };
       this.formSubmit.emit(listing);
+    } else {
+      this.markFormGroupTouched(this.listingForm);
     }
   }
 }

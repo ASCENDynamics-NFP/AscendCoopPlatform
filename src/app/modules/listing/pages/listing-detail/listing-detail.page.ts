@@ -20,9 +20,12 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {Store} from "@ngrx/store";
-import {Observable} from "rxjs";
+import {Observable, combineLatest} from "rxjs";
+import {map} from "rxjs/operators";
 import {Listing} from "../../../../models/listing.model";
 import * as ListingActions from "../../../../state/actions/listings.actions";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {ListingsState} from "../../../../state/reducers/listings.reducer";
 
 @Component({
   selector: "app-listing-detail",
@@ -31,13 +34,24 @@ import * as ListingActions from "../../../../state/actions/listings.actions";
 })
 export class ListingDetailPage implements OnInit {
   listing$: Observable<Listing | null>;
+  isOwner$: Observable<boolean>;
 
   constructor(
-    private store: Store<{listings: {selectedListing: Listing | null}}>,
+    private store: Store<{listings: ListingsState}>,
     private route: ActivatedRoute,
   ) {
     this.listing$ = this.store.select(
       (state) => state.listings.selectedListing,
+    );
+
+    // Determine if current user is the listing creator
+    this.isOwner$ = combineLatest([
+      this.store.select(selectAuthUser),
+      this.listing$,
+    ]).pipe(
+      map(([user, listing]) => {
+        return !!(user && listing && listing.createdBy === user.uid);
+      }),
     );
   }
 

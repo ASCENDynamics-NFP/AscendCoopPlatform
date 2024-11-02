@@ -17,38 +17,36 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
-import {Store} from "@ngrx/store";
-import {Router} from "@angular/router";
-import {first} from "rxjs/operators";
-import * as ListingActions from "../../../../state/actions/listings.actions";
-import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+// import {NgModule} from "@angular/core";
+// import {RouterModule, Routes} from "@angular/router";
+// import {AuthGuard} from "../../core/guards/auth.guard";
+// import {DetailsPage} from "./pages/details/details.page";
+// import {EditPage} from "./pages/edit/edit.page";
+// import {RegistrationPage} from "./pages/registration/registration.page";
 
-@Component({
-  selector: "app-listing-create",
-  templateUrl: "./listing-create.page.html",
-  styleUrls: ["./listing-create.page.scss"],
-})
-export class ListingCreatePage {
-  constructor(
-    private store: Store,
-    private router: Router,
-  ) {}
+// const routes: Routes = [
+//   // {
+//   //   path: "",
+//   //   component: ListingsPage,
+//   // },
+//   {
+//     path: "registration/:accountId",
+//     component: RegistrationPage,
+//   },
+//   {
+//     path: ":accountId",
+//     component: DetailsPage,
+//     canActivate: [AuthGuard],
+//   },
+//   {
+//     path: ":accountId/edit",
+//     component: EditPage,
+//     canActivate: [AuthGuard],
+//   },
+// ];
 
-  onSubmit(formValue: any) {
-    this.store
-      .select(selectAuthUser)
-      .pipe(first())
-      .subscribe((user) => {
-        if (user) {
-          const listing = {
-            ...formValue,
-            createdBy: user.uid,
-            status: "active",
-          };
-          this.store.dispatch(ListingActions.createListing({listing}));
-          this.router.navigate(["/listings"]);
-        }
-      });
-  }
-}
+// @NgModule({
+//   imports: [RouterModule.forChild(routes)],
+//   exports: [RouterModule],
+// })
+// export class AccountRoutingModule {}

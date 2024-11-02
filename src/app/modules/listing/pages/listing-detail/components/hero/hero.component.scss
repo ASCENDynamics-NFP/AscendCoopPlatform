@@ -17,38 +17,69 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
-import {Store} from "@ngrx/store";
-import {Router} from "@angular/router";
-import {first} from "rxjs/operators";
-import * as ListingActions from "../../../../state/actions/listings.actions";
-import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+.header-image {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
 
-@Component({
-  selector: "app-listing-create",
-  templateUrl: "./listing-create.page.html",
-  styleUrls: ["./listing-create.page.scss"],
-})
-export class ListingCreatePage {
-  constructor(
-    private store: Store,
-    private router: Router,
-  ) {}
-
-  onSubmit(formValue: any) {
-    this.store
-      .select(selectAuthUser)
-      .pipe(first())
-      .subscribe((user) => {
-        if (user) {
-          const listing = {
-            ...formValue,
-            createdBy: user.uid,
-            status: "active",
-          };
-          this.store.dispatch(ListingActions.createListing({listing}));
-          this.router.navigate(["/listings"]);
-        }
-      });
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
+}
+
+.listing-header {
+  padding: 20px;
+  margin-top: -50px;
+  background: var(--ion-background-color);
+  border-radius: 20px 20px 0 0;
+  position: relative;
+}
+
+.listing-info {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.listing-details {
+  .title-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+
+    h2 {
+      margin: 0;
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+  }
+
+  .organization {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--ion-color-medium);
+    margin-bottom: 10px;
+  }
+
+  .badges {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+  }
+
+  .description {
+    margin: 15px 0;
+    line-height: 1.6;
+    color: var(--ion-color-dark);
+  }
+}
+
+.listing-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
 }

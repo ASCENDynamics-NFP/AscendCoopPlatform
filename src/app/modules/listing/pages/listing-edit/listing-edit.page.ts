@@ -20,9 +20,10 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
-import {Observable} from "rxjs";
+import {combineLatest, map, Observable, tap} from "rxjs";
 import {Listing} from "../../../../models/listing.model";
 import * as ListingActions from "../../../../state/actions/listings.actions";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 
 @Component({
   selector: "app-listing-edit",
@@ -32,6 +33,7 @@ import * as ListingActions from "../../../../state/actions/listings.actions";
 export class ListingEditPage implements OnInit {
   listing$: Observable<Listing | null>;
   id: string | null = null;
+  isOwner$: Observable<boolean>;
 
   constructor(
     private store: Store<{listings: {selectedListing: Listing | null}}>,
@@ -40,6 +42,21 @@ export class ListingEditPage implements OnInit {
   ) {
     this.listing$ = this.store.select(
       (state) => state.listings.selectedListing,
+    );
+
+    this.isOwner$ = combineLatest([
+      this.store.select(selectAuthUser),
+      this.listing$,
+    ]).pipe(
+      map(
+        ([user, listing]) =>
+          !!(user && listing && listing.createdBy === user.uid),
+      ),
+      tap((isOwner) => {
+        if (!isOwner) {
+          this.router.navigate(["/listings"]);
+        }
+      }),
     );
   }
 

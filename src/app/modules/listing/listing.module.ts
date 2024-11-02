@@ -34,6 +34,7 @@ import {ListingCreatePage} from "./pages/listing-create/listing-create.page";
 import {TimestampPipe} from "../../shared/pipes/timestamp.pipe";
 import {ListingFormComponent} from "./components/listing-form/listing-form.component";
 import {FormatAddressPipe} from "../../shared/pipes/format-address.pipe";
+import {HeroComponent} from "./pages/listing-detail/components/hero/hero.component";
 
 @NgModule({
   declarations: [
@@ -44,6 +45,7 @@ import {FormatAddressPipe} from "../../shared/pipes/format-address.pipe";
     TimestampPipe,
     ListingFormComponent,
     FormatAddressPipe,
+    HeroComponent,
   ],
   imports: [
     CommonModule,

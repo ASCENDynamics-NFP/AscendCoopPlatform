@@ -17,38 +17,27 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
-import {Store} from "@ngrx/store";
-import {Router} from "@angular/router";
-import {first} from "rxjs/operators";
-import * as ListingActions from "../../../../state/actions/listings.actions";
-import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
+import {IonicModule} from "@ionic/angular";
 
-@Component({
-  selector: "app-listing-create",
-  templateUrl: "./listing-create.page.html",
-  styleUrls: ["./listing-create.page.scss"],
-})
-export class ListingCreatePage {
-  constructor(
-    private store: Store,
-    private router: Router,
-  ) {}
+import {HeroComponent} from "./hero.component";
 
-  onSubmit(formValue: any) {
-    this.store
-      .select(selectAuthUser)
-      .pipe(first())
-      .subscribe((user) => {
-        if (user) {
-          const listing = {
-            ...formValue,
-            createdBy: user.uid,
-            status: "active",
-          };
-          this.store.dispatch(ListingActions.createListing({listing}));
-          this.router.navigate(["/listings"]);
-        }
-      });
-  }
-}
+describe("HeroComponent", () => {
+  let component: HeroComponent;
+  let fixture: ComponentFixture<HeroComponent>;
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [HeroComponent],
+      imports: [IonicModule.forRoot()],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(HeroComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
+
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

@@ -21,6 +21,12 @@ import {Component, Input, Output, EventEmitter, OnInit} from "@angular/core";
 import {FormBuilder, FormGroup, Validators, FormArray} from "@angular/forms";
 import {Listing, SkillRequirement} from "../../../../models/listing.model";
 import {Timestamp} from "firebase/firestore";
+import {Store} from "@ngrx/store";
+import {filter, first, map, switchMap, tap} from "rxjs";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import * as AccountActions from "../../../../state/actions/account.actions";
+import {Account} from "../../../../models/account.model";
+import {selectSelectedAccount} from "../../../../state/selectors/account.selectors";
 
 @Component({
   selector: "app-listing-form",
@@ -35,7 +41,10 @@ export class ListingFormComponent implements OnInit {
   listingTypes = ["volunteer", "job", "internship", "gig"];
   skillLevels = ["beginner", "intermediate", "advanced"];
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private store: Store,
+  ) {
     this.initForm();
   }
 
@@ -116,6 +125,29 @@ export class ListingFormComponent implements OnInit {
       };
       this.listingForm.patchValue(formValue);
       this.initializeFormArrays(this.listing);
+    } else {
+      // New listing - populate from account
+      this.store
+        .select(selectAuthUser)
+        .pipe(
+          first(),
+          tap((user) => {
+            if (user?.uid) {
+              this.store.dispatch(
+                AccountActions.loadAccount({accountId: user.uid}),
+              );
+            }
+          }),
+          switchMap(() => this.store.select(selectSelectedAccount)),
+          filter((account): account is Account => !!account),
+          map((account: Account) => account),
+        )
+        .subscribe((account) => {
+          this.listingForm.patchValue({
+            organization: account.name,
+            contactInformation: account.contactInformation,
+          });
+        });
     }
   }
 

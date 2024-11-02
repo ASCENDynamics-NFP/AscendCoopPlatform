@@ -36,6 +36,7 @@ export const routes: Routes = [
       import("./modules/account/pages/landing/landing.module").then(
         (m) => m.LandingPageModule,
       ),
+    canActivate: [SecureInnerPagesGuard],
   },
   {
     path: "group-list",

@@ -81,4 +81,12 @@ export class ListingsPage implements OnInit {
       event.target.complete();
     }, 1000);
   }
+
+  getListingLocation(listing: Listing): string {
+    const primaryAddress = listing.contactInformation?.addresses?.[0];
+    if (primaryAddress) {
+      return `${primaryAddress.city}, ${primaryAddress.country}`;
+    }
+    return "Location not specified";
+  }
 }

@@ -22,7 +22,7 @@ import {FormBuilder, FormGroup, Validators, FormArray} from "@angular/forms";
 import {Listing, SkillRequirement} from "../../../../models/listing.model";
 import {Timestamp} from "firebase/firestore";
 import {Store} from "@ngrx/store";
-import {filter, first, map, switchMap, tap} from "rxjs";
+import {filter, first, switchMap, take, tap} from "rxjs";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {Account} from "../../../../models/account.model";
@@ -68,17 +68,7 @@ export class ListingFormComponent implements OnInit {
       ],
       type: ["volunteer", Validators.required],
       organization: ["", [Validators.required, Validators.minLength(2)]],
-      location: this.fb.group({
-        street: ["", Validators.required],
-        city: ["", Validators.required],
-        state: ["", Validators.required],
-        country: ["", Validators.required],
-        zipcode: [
-          "",
-          [Validators.required, Validators.pattern("^[0-9]{5}(?:-[0-9]{4})?$")],
-        ],
-        remote: [false],
-      }),
+      remote: [false],
       timeCommitment: this.fb.group(
         {
           hoursPerWeek: [
@@ -94,9 +84,13 @@ export class ListingFormComponent implements OnInit {
         {validator: this.dateRangeValidator},
       ),
       skills: this.fb.array([]),
+      requirements: this.fb.array([]),
+      responsibilities: this.fb.array([]),
+      benefits: this.fb.array([]),
       contactInformation: this.fb.group({
         emails: this.fb.array([]),
         phoneNumbers: this.fb.array([]),
+        addresses: this.fb.array([]),
       }),
     });
   }
@@ -112,7 +106,6 @@ export class ListingFormComponent implements OnInit {
 
   ngOnInit() {
     if (this.listing) {
-      // Convert Timestamp to ISO string for datetime inputs
       const formValue = {
         ...this.listing,
         timeCommitment: {
@@ -139,16 +132,57 @@ export class ListingFormComponent implements OnInit {
             }
           }),
           switchMap(() => this.store.select(selectSelectedAccount)),
-          filter((account): account is Account => !!account),
-          map((account: Account) => account),
+          filter((account): account is Account => account !== null),
+          take(1),
         )
         .subscribe((account) => {
-          this.listingForm.patchValue({
-            organization: account.name,
-            contactInformation: account.contactInformation,
-          });
+          // Only call one initialization method
+          this.initializeFormFromAccount(account);
         });
     }
+  }
+
+  private initializeFormFromAccount(account: Account) {
+    this.listingForm.patchValue({
+      organization: account.name,
+    });
+
+    // Initialize contact information arrays
+    account.contactInformation?.emails?.forEach((email) => {
+      const emailForm = this.fb.group({
+        name: [email.name],
+        email: [email.email],
+      });
+      (this.listingForm.get("contactInformation.emails") as FormArray).push(
+        emailForm,
+      );
+    });
+
+    account.contactInformation?.phoneNumbers?.forEach((phone) => {
+      const phoneForm = this.fb.group({
+        type: [phone.type],
+        countryCode: [phone.countryCode],
+        number: [phone.number],
+      });
+      (
+        this.listingForm.get("contactInformation.phoneNumbers") as FormArray
+      ).push(phoneForm);
+    });
+
+    account.contactInformation?.addresses?.forEach((address) => {
+      const addressForm = this.fb.group({
+        name: [address?.name],
+        street: [address?.street],
+        city: [address?.city],
+        state: [address?.state],
+        country: [address?.country],
+        zipcode: [address?.zipcode],
+        isPrimaryAddress: [address?.isPrimaryAddress],
+      });
+      (this.listingForm.get("contactInformation.addresses") as FormArray).push(
+        addressForm,
+      );
+    });
   }
 
   private markFormGroupTouched(formGroup: FormGroup) {
@@ -161,48 +195,82 @@ export class ListingFormComponent implements OnInit {
   }
 
   private initializeFormArrays(listing: Listing) {
-    if (listing.skills?.length) {
-      listing.skills.forEach((skill) => this.addSkill(skill));
-    }
-    if (listing.requirements?.length) {
-      listing.requirements.forEach((req) =>
-        this.addArrayItem("requirements", req),
-      );
-    }
-    if (listing.responsibilities?.length) {
-      listing.responsibilities.forEach((resp) =>
-        this.addArrayItem("responsibilities", resp),
-      );
-    }
-    if (listing.benefits?.length) {
-      listing.benefits.forEach((benefit) =>
-        this.addArrayItem("benefits", benefit),
-      );
-    }
-    if (listing.contactInformation?.emails?.length) {
-      listing.contactInformation.emails.forEach((email) => {
-        const emailForm = this.fb.group({
-          name: [email.name],
-          email: [email.email, [Validators.required, Validators.email]],
-        });
-        (this.listingForm.get("contactInformation.emails") as FormArray).push(
-          emailForm,
-        );
-      });
-    }
+    // Clear existing arrays
+    (this.listingForm.get("skills") as FormArray).clear();
+    (this.listingForm.get("requirements") as FormArray).clear();
+    (this.listingForm.get("responsibilities") as FormArray).clear();
+    (this.listingForm.get("benefits") as FormArray).clear();
+    (this.listingForm.get("contactInformation.emails") as FormArray).clear();
+    (
+      this.listingForm.get("contactInformation.phoneNumbers") as FormArray
+    ).clear();
+    (this.listingForm.get("contactInformation.addresses") as FormArray).clear();
 
-    if (listing.contactInformation?.phoneNumbers?.length) {
-      listing.contactInformation.phoneNumbers.forEach((phone) => {
-        const phoneForm = this.fb.group({
-          type: [phone.type],
-          countryCode: [phone.countryCode],
-          number: [phone.number, Validators.required],
-        });
-        (
-          this.listingForm.get("contactInformation.phoneNumbers") as FormArray
-        ).push(phoneForm);
+    // Initialize skills
+    listing.skills?.forEach((skill) => {
+      const skillForm = this.fb.group({
+        name: [skill.name, Validators.required],
+        level: [skill.level],
+        required: [skill.required],
       });
-    }
+      (this.listingForm.get("skills") as FormArray).push(skillForm);
+    });
+
+    // Initialize requirements
+    listing.requirements?.forEach((req) => {
+      const control = this.fb.control(req, Validators.required);
+      (this.listingForm.get("requirements") as FormArray).push(control);
+    });
+
+    // Initialize responsibilities
+    listing.responsibilities?.forEach((resp) => {
+      const control = this.fb.control(resp, Validators.required);
+      (this.listingForm.get("responsibilities") as FormArray).push(control);
+    });
+
+    // Initialize benefits
+    listing.benefits?.forEach((benefit) => {
+      const control = this.fb.control(benefit, Validators.required);
+      (this.listingForm.get("benefits") as FormArray).push(control);
+    });
+
+    // Initialize contact information
+    listing.contactInformation?.emails?.forEach((email) => {
+      const emailForm = this.fb.group({
+        name: [email.name],
+        email: [email.email, [Validators.required, Validators.email]],
+      });
+      (this.listingForm.get("contactInformation.emails") as FormArray).push(
+        emailForm,
+      );
+    });
+
+    listing.contactInformation?.phoneNumbers?.forEach((phone) => {
+      const phoneForm = this.fb.group({
+        type: [phone.type],
+        countryCode: [phone.countryCode],
+        number: [phone.number, Validators.required],
+        isEmergencyNumber: [phone.isEmergencyNumber],
+      });
+      (
+        this.listingForm.get("contactInformation.phoneNumbers") as FormArray
+      ).push(phoneForm);
+    });
+
+    listing.contactInformation?.addresses?.forEach((address) => {
+      const addressForm = this.fb.group({
+        name: [address?.name],
+        street: [address?.street],
+        city: [address?.city],
+        state: [address?.state],
+        country: [address?.country],
+        zipcode: [address?.zipcode],
+        isPrimaryAddress: [address?.isPrimaryAddress],
+      });
+      (this.listingForm.get("contactInformation.addresses") as FormArray).push(
+        addressForm,
+      );
+    });
   }
 
   addSkill(skill?: SkillRequirement) {
@@ -268,5 +336,23 @@ export class ListingFormComponent implements OnInit {
     } else {
       this.markFormGroupTouched(this.listingForm);
     }
+  }
+
+  addAddress() {
+    const addressForm = this.fb.group({
+      name: [""],
+      street: ["", Validators.required],
+      city: ["", Validators.required],
+      state: ["", Validators.required],
+      country: ["", Validators.required],
+      zipcode: [
+        "",
+        [Validators.required, Validators.pattern("^[0-9]{5}(?:-[0-9]{4})?$")],
+      ],
+      isPrimaryAddress: [false],
+    });
+    (this.listingForm.get("contactInformation.addresses") as FormArray).push(
+      addressForm,
+    );
   }
 }

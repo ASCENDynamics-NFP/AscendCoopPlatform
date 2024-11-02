@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Address, ContactInformation} from "./account.model";
+import {ContactInformation} from "./account.model";
 import {Timestamp} from "firebase/firestore";
 import {BaseDocument} from "./base-document";
 
@@ -43,7 +43,6 @@ export interface Listing extends BaseDocument {
   description: string;
   type: ListingType;
   organization: string;
-  location: Address;
   remote: boolean;
   skills: SkillRequirement[];
   timeCommitment: TimeCommitment;

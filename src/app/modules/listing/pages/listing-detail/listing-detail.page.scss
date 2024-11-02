@@ -18,47 +18,144 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 ion-card {
+  margin: 16px;
+  border-radius: 12px;
   border: 1px solid var(--ion-color-primary);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+  color: #000;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
 }
 
-ion-card ion-card-title {
-  font-size: 1.5em;
-  margin-bottom: 16px;
+ion-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  // background: var(--ion-color-light);
+  border-bottom: 1px solid var(--ion-color-light-shade);
+
+  ion-icon {
+    font-size: 24px;
+    color: var(--ion-color-primary);
+  }
+
+  ion-card-title {
+    font-size: 1.5em;
+    font-weight: 600;
+  }
 }
 
 .info-block {
-  margin-bottom: 16px;
+  padding: 16px 0;
 }
 
-.info-block h2 {
+.contact-item,
+.time-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-size: 1.2em;
-  font-weight: bold;
-  color: #000;
-  margin: 0;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--ion-color-light);
 
-  ion-button {
-    margin-right: auto;
-    font-size: 0.8em;
-    padding: 0.2em 0.5em;
-    --padding-start: 0;
-    --padding-end: 0;
+  span {
+    color: #000;
+  }
+
+  ion-icon {
+    font-size: 20px;
+    color: var(--ion-color-primary);
   }
 }
 
-.info-block p {
-  font-size: 1em;
-  margin: 4px 0 0 0;
+.skill-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--ion-color-light);
+
+  span {
+    color: #000;
+  }
+
+  .skill-name {
+    font-weight: 500;
+    flex: 1;
+  }
+}
+
+.location-item {
+  margin-bottom: 20px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--ion-color-light);
+
+  p {
+    margin: 6px 0;
+    line-height: 1.4;
+    color: #000;
+  }
+}
+
+.time-dates {
+  margin: 16px 0;
+
+  p {
+    margin: 6px 0;
+    color: var(--ion-color-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+ion-badge {
+  margin-right: 6px;
+  padding: 6px 12px;
+  border-radius: 12px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--ion-color-light);
+
+  ion-icon {
+    font-size: 20px;
+    color: var(--ion-color-primary);
+  }
+
+  span {
+    color: #000;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
-  .info-block h2 {
-    color: #fff;
+  .contact-item,
+  .time-item,
+  .skill-item,
+  .location-item,
+  .list-item {
+    background: var(--ion-color-dark-shade);
   }
 
-  .info-block p {
-    color: #aaa;
+  ion-card,
+  .contact-item span,
+  .location-item p {
+    color: #000;
   }
+}
+
+@media (prefers-color-scheme: light) {
 }

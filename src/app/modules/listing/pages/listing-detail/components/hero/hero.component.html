@@ -50,9 +50,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <ion-badge [color]="listing.status === 'active' ? 'success' : 'medium'">
           {{ listing.status | titlecase }}
         </ion-badge>
-        <ion-badge *ngIf="listing.location?.remote" color="tertiary"
-          >Remote</ion-badge
-        >
+        <ion-badge *ngIf="listing.remote" color="tertiary">Remote</ion-badge>
       </div>
 
       <p class="description">{{ listing.description }}</p>

@@ -68,9 +68,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <h3>{{ listing.organization }}</h3>
         <p>{{ listing.description | slice:0:100 }}...</p>
         <ion-badge color="primary">{{ listing.type | titlecase }}</ion-badge>
-        <ion-badge *ngIf="listing.location?.remote" color="success"
-          >Remote</ion-badge
-        >
+        <ion-badge *ngIf="listing.remote" color="success">Remote</ion-badge>
+        <p *ngIf="!listing.remote">{{ getListingLocation(listing) }}</p>
         <ion-note>
           <ion-icon name="time-outline"></ion-icon>
           {{ listing.timeCommitment.hoursPerWeek }} hrs/week

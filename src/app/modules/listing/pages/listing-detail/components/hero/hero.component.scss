@@ -83,3 +83,9 @@
   justify-content: flex-end;
   margin-top: 20px;
 }
+
+@media (prefers-color-scheme: light) {
+  .listing-header {
+    background: #fff;
+  }
+}

@@ -23,7 +23,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     [value]="[
       'basicInformation',
       'timeCommitment',
-      'skills',
+      'requirements',
       'contactInformation',
     ]"
   >
@@ -315,7 +315,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 fill="outline"
                 formControlName="startDate"
                 presentation="date"
-                [preferWheel]="true"
+                [preferWheel]="false"
                 [class.ion-invalid]="
                   listingForm.get('timeCommitment.startDate')?.invalid &&
                   listingForm.get('timeCommitment.startDate')?.touched
@@ -339,7 +339,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 fill="outline"
                 formControlName="endDate"
                 presentation="date"
-                [preferWheel]="true"
+                [preferWheel]="false"
               >
               </ion-datetime>
               <ion-note
@@ -362,7 +362,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </div>
     </ion-accordion>
 
-    <ion-accordion value="requirements">
+    <ion-accordion
+      value="requirements"
+      toggleIcon="caret-down-circle"
+      toggleIconSlot="start"
+    >
       <ion-item slot="header" color="primary">
         <ion-label>Skills, Requirements & Benefits</ion-label>
       </ion-item>

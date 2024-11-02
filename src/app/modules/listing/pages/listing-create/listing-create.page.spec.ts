@@ -23,15 +23,24 @@ import {IonicModule, NavController} from "@ionic/angular";
 import {Store} from "@ngrx/store";
 import {Router} from "@angular/router";
 import * as ListingActions from "../../../../state/actions/listings.actions";
-import {Listing} from "../../../../models/listing.model";
+import {MockStore, provideMockStore} from "@ngrx/store/testing";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {Timestamp} from "firebase/firestore";
 import {BehaviorSubject} from "rxjs";
 
 describe("ListingCreatePage", () => {
   let component: ListingCreatePage;
   let fixture: ComponentFixture<ListingCreatePage>;
-  let store: jasmine.SpyObj<Store>;
+  let store: MockStore;
   let router: jasmine.SpyObj<Router>;
+
+  const mockUser = {
+    uid: "test-user-id",
+    email: "test@example.com",
+    displayName: "Test User",
+    photoURL: "https://example.com/photo.jpg",
+    emailVerified: true,
+  };
 
   const navCtrlMock = {
     navigateForward: jasmine.createSpy("navigateForward"),
@@ -40,21 +49,24 @@ describe("ListingCreatePage", () => {
   };
 
   beforeEach(async () => {
-    const storeSpy = jasmine.createSpyObj("Store", ["dispatch"]);
     const routerSpy = jasmine.createSpyObj("Router", ["navigate"]);
 
     await TestBed.configureTestingModule({
       declarations: [ListingCreatePage],
       imports: [IonicModule.forRoot()],
       providers: [
-        {provide: Store, useValue: storeSpy},
+        provideMockStore(),
         {provide: Router, useValue: routerSpy},
         {provide: NavController, useValue: navCtrlMock},
       ],
     }).compileComponents();
 
-    store = TestBed.inject(Store) as jasmine.SpyObj<Store>;
+    store = TestBed.inject(MockStore);
     router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+
+    spyOn(store, "dispatch");
+    store.overrideSelector(selectAuthUser, mockUser);
+
     fixture = TestBed.createComponent(ListingCreatePage);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -64,20 +76,15 @@ describe("ListingCreatePage", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should dispatch create listing action on form submit", () => {
-    const mockFormValue: Listing = {
-      id: "123",
+  it("should create listing with user ID and navigate to listings", () => {
+    const mockFormValue = {
+      id: "",
       title: "Test Listing",
       description: "Test Description",
       type: "volunteer",
-      organization: "Test Org",
-      location: {
-        street: "123 Test St",
-        city: "Test City",
-        state: "Test State",
-        country: "Test Country",
-        zipcode: "12345",
-      },
+      organization: "",
+      remote: false,
+      skills: [],
       timeCommitment: {
         hoursPerWeek: 10,
         duration: "3 months",
@@ -86,33 +93,34 @@ describe("ListingCreatePage", () => {
         endDate: Timestamp.fromDate(new Date()),
         isFlexible: true,
       },
-      skills: [{name: "Test Skill", level: "beginner", required: true}],
-      requirements: ["Requirement 1"],
-      responsibilities: ["Responsibility 1"],
-      benefits: ["Benefit 1"],
-      status: "active",
+      requirements: [],
+      responsibilities: [],
+      benefits: [],
       contactInformation: {
-        emails: [{name: "Test Contact", email: "test@test.com"}],
-        phoneNumbers: [
-          {
-            type: "Mobile",
-            countryCode: "+1",
-            number: "1234567890",
-            isEmergencyNumber: false,
-          },
-        ],
+        emails: [],
+        phoneNumbers: [],
+        addresses: [],
         preferredMethodOfContact: "Email",
       },
-      remote: false,
     };
+
     component.onSubmit(mockFormValue);
 
     expect(store.dispatch).toHaveBeenCalledWith(
-      ListingActions.createListing({listing: mockFormValue}),
+      ListingActions.createListing({
+        listing: {
+          ...mockFormValue,
+          createdBy: mockUser.uid,
+          status: "active",
+        } as any,
+      }),
     );
+    expect(router.navigate).toHaveBeenCalledWith(["/listings"]);
   });
 
-  it("should navigate to listings page after form submission", () => {
+  it("should not create listing when user is not authenticated", () => {
+    store.overrideSelector(selectAuthUser, null);
+
     const mockFormValue = {
       title: "Test Listing",
       description: "Test Description",
@@ -120,6 +128,7 @@ describe("ListingCreatePage", () => {
 
     component.onSubmit(mockFormValue);
 
-    expect(router.navigate).toHaveBeenCalledWith(["/listings"]);
+    expect(store.dispatch).not.toHaveBeenCalled();
+    expect(router.navigate).not.toHaveBeenCalled();
   });
 });

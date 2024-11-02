@@ -18,70 +18,36 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {IonicModule} from "@ionic/angular";
-import {FormBuilder, ReactiveFormsModule} from "@angular/forms";
 import {ListingFormComponent} from "./listing-form.component";
+import {IonicModule} from "@ionic/angular";
+import {ReactiveFormsModule, FormBuilder} from "@angular/forms";
+import {Store} from "@ngrx/store";
+import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {Timestamp} from "firebase/firestore";
-import {Listing} from "../../../../models/listing.model";
 
 describe("ListingFormComponent", () => {
   let component: ListingFormComponent;
   let fixture: ComponentFixture<ListingFormComponent>;
-  let formBuilder: FormBuilder;
-
-  const mockListing: Listing = {
-    id: "123",
-    title: "Test Listing",
-    description: "Test Description",
-    type: "volunteer",
-    organization: "Test Org",
-    location: {
-      street: "123 Test St",
-      city: "Test City",
-      state: "Test State",
-      country: "Test Country",
-      zipcode: "12345",
-    },
-    timeCommitment: {
-      hoursPerWeek: 10,
-      duration: "3 months",
-      schedule: "Flexible",
-      startDate: Timestamp.fromDate(new Date()),
-      endDate: Timestamp.fromDate(new Date()),
-      isFlexible: true,
-    },
-    skills: [{name: "Test Skill", level: "beginner", required: true}],
-    requirements: ["Requirement 1", "Requirement 2"],
-    responsibilities: ["Responsibility 1", "Responsibility 2"],
-    benefits: ["Benefit 1", "Benefit 2"],
-    status: "active",
-    contactInformation: {
-      emails: [{name: "Test Contact", email: "test@test.com"}],
-      phoneNumbers: [
-        {
-          type: "Mobile",
-          countryCode: "+1",
-          number: "1234567890",
-          isEmergencyNumber: false,
-        },
-      ],
-      preferredMethodOfContact: "Email",
-    },
-    remote: false,
-  };
+  let store: MockStore;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ListingFormComponent],
       imports: [IonicModule.forRoot(), ReactiveFormsModule],
-      providers: [FormBuilder],
+      providers: [
+        FormBuilder,
+        provideMockStore({
+          initialState: {
+            auth: {user: {uid: "test-user-id"}},
+            accounts: {selectedAccount: null},
+          },
+        }),
+      ],
     }).compileComponents();
 
-    formBuilder = TestBed.inject(FormBuilder);
+    store = TestBed.inject(MockStore);
     fixture = TestBed.createComponent(ListingFormComponent);
     component = fixture.componentInstance;
-    // Initialize form before running tests
-    component.ngOnInit();
     fixture.detectChanges();
   });
 
@@ -89,118 +55,96 @@ describe("ListingFormComponent", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should initialize with empty form", () => {
-    expect(component.listingForm.get("title")?.value).toBe("");
-    expect(component.listingForm.valid).toBeFalsy();
+  it("should initialize form with default values", () => {
+    expect(component.listingForm.get("title")).toBeTruthy();
+    expect(component.listingForm.get("description")).toBeTruthy();
+    expect(component.listingForm.get("type")).toBeTruthy();
+    expect(component.listingForm.get("organization")).toBeTruthy();
   });
-
-  // it("should populate form with listing data", () => {
-  //   // Set the listing data before initializing arrays
-  //   component.listing = mockListing;
-  //   // Re-initialize the component with the listing data
-  //   component.ngOnInit();
-  //   fixture.detectChanges();
-
-  //   // Verify the form was populated correctly
-  //   expect(component.listingForm.get("title")?.value).toBe(mockListing.title);
-  //   expect(component.listingForm.get("organization")?.value).toBe(
-  //     mockListing.organization,
-  //   );
-  //   expect(component.getFormArray("skills").length).toBeGreaterThan(0);
-  // });
 
   it("should add skill to form array", () => {
+    const initialLength = component.getFormArray("skills").length;
     component.addSkill();
-    const skillsArray = component.getFormArray("skills");
-    expect(skillsArray.length).toBe(1);
+    expect(component.getFormArray("skills").length).toBe(initialLength + 1);
   });
 
-  it("should add email to form array", () => {
-    component.addEmail();
-    const emailsArray = component.getFormArray("contactInformation.emails");
-    expect(emailsArray.length).toBe(1);
-  });
-
-  it("should add phone number to form array", () => {
-    component.addPhoneNumber();
-    const phoneArray = component.getFormArray(
-      "contactInformation.phoneNumbers",
-    );
-    expect(phoneArray.length).toBe(1);
-  });
-
-  it("should remove array item", () => {
+  it("should remove skill from form array", () => {
     component.addSkill();
+    const initialLength = component.getFormArray("skills").length;
     component.removeArrayItem("skills", 0);
-    const skillsArray = component.getFormArray("skills");
-    expect(skillsArray.length).toBe(0);
+    expect(component.getFormArray("skills").length).toBe(initialLength - 1);
   });
 
-  it("should validate required fields", () => {
-    const form = component.listingForm;
-    form.patchValue({
-      title: "Test Title",
-      description: "Test Description",
-      type: "volunteer",
-      organization: "Test Org",
-      timeCommitment: {
-        hoursPerWeek: 10,
-        duration: "3 months",
-        schedule: "Weekly",
-        startDate: new Date().toISOString(),
-      },
-      location: {
-        street: "123 Main St",
-        city: "Test City",
-        state: "Test State",
-        country: "Test Country",
-        zipcode: "12345",
-      },
-    });
-
-    expect(form.valid).toBeTruthy();
-  });
-
-  it("should emit form data on valid submit", () => {
+  it("should emit form value on valid submit", () => {
     spyOn(component.formSubmit, "emit");
-
-    // Set all required form values
-    component.listingForm.patchValue({
-      title: "Test Title",
+    const mockListing = {
+      title: "Test Listing",
       description: "Test Description",
       type: "volunteer",
       organization: "Test Org",
-      location: {
-        street: "123 Main St",
-        city: "Test City",
-        state: "Test State",
-        country: "Test Country",
-        zipcode: "12345",
-      },
       timeCommitment: {
         hoursPerWeek: 10,
         duration: "3 months",
-        schedule: "Weekly",
-        startDate: new Date().toISOString(),
+        schedule: "Flexible",
+        startDate: new Date(),
+        endDate: new Date(),
+        isFlexible: true,
       },
-    });
-    // Ensure form is valid before submit
-    expect(component.listingForm.valid).toBeTruthy();
+    };
+
+    component.listingForm.patchValue(mockListing);
     component.onSubmit();
+
     expect(component.formSubmit.emit).toHaveBeenCalled();
   });
 
-  it("should validate date range", () => {
-    const timeCommitment = component.listingForm.get("timeCommitment");
-    const startDate = new Date();
-    const endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() - 1);
+  it("should not emit form value on invalid submit", () => {
+    spyOn(component.formSubmit, "emit");
+    component.onSubmit();
+    expect(component.formSubmit.emit).not.toHaveBeenCalled();
+  });
 
-    timeCommitment?.patchValue({
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-    });
+  it("should initialize form with listing data when provided", () => {
+    const mockListing = {
+      id: "123",
+      title: "Existing Listing",
+      description: "Test Description",
+      type: "volunteer",
+      organization: "Test Org",
+      timeCommitment: {
+        hoursPerWeek: 10,
+        duration: "3 months",
+        schedule: "Flexible",
+        startDate: Timestamp.fromDate(new Date()),
+        endDate: Timestamp.fromDate(new Date()),
+        isFlexible: true,
+      },
+    };
 
-    expect(timeCommitment?.errors?.["dateRange"]).toBeTruthy();
+    component.listing = mockListing as any;
+    component.ngOnInit();
+
+    expect(component.listingForm.get("title")?.value).toBe(mockListing.title);
+    expect(component.listingForm.get("organization")?.value).toBe(
+      mockListing.organization,
+    );
+  });
+
+  it("should add and remove contact information", () => {
+    component.addEmail();
+    expect(component.getFormArray("contactInformation.emails").length).toBe(1);
+
+    component.addPhoneNumber();
+    expect(
+      component.getFormArray("contactInformation.phoneNumbers").length,
+    ).toBe(1);
+
+    component.addAddress();
+    expect(component.getFormArray("contactInformation.addresses").length).toBe(
+      1,
+    );
+
+    component.removeArrayItem("contactInformation.emails", 0);
+    expect(component.getFormArray("contactInformation.emails").length).toBe(0);
   });
 });

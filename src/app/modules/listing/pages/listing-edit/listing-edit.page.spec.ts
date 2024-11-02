@@ -39,12 +39,28 @@ describe("ListingEditPage", () => {
     description: "Test Description",
     type: "volunteer",
     organization: "Test Org",
-    location: {
-      street: "123 Test St",
-      city: "Test City",
-      state: "Test State",
-      country: "Test Country",
-      zipcode: "12345",
+    remote: false,
+    contactInformation: {
+      emails: [{name: "Test Contact", email: "test@test.com"}],
+      phoneNumbers: [
+        {
+          type: "Mobile",
+          countryCode: "+1",
+          number: "1234567890",
+          isEmergencyNumber: false,
+        },
+      ],
+      addresses: [
+        {
+          street: "123 Test St",
+          city: "Test City",
+          state: "Test State",
+          country: "Test Country",
+          zipcode: "12345",
+          isPrimaryAddress: true,
+        },
+      ],
+      preferredMethodOfContact: "Email",
     },
     timeCommitment: {
       hoursPerWeek: 10,
@@ -59,19 +75,6 @@ describe("ListingEditPage", () => {
     responsibilities: ["Responsibility 1"],
     benefits: ["Benefit 1"],
     status: "active",
-    contactInformation: {
-      emails: [{name: "Test Contact", email: "test@test.com"}],
-      phoneNumbers: [
-        {
-          type: "Mobile",
-          countryCode: "+1",
-          number: "1234567890",
-          isEmergencyNumber: false,
-        },
-      ],
-      preferredMethodOfContact: "Email",
-    },
-    remote: false,
   };
 
   beforeEach(async () => {

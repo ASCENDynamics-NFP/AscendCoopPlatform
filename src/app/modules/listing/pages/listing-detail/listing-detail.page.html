@@ -43,6 +43,82 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-row>
         <!-- Left Column -->
         <ion-col size="12" size-md="6">
+          <!-- Responsibilities Card -->
+          <ion-card *ngIf="listing.responsibilities?.length">
+            <ion-card-header>
+              <ion-icon name="briefcase-outline" slot="start"></ion-icon>
+              <ion-card-title>Responsibilities</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="info-block">
+                <div
+                  *ngFor="let responsibility of listing.responsibilities"
+                  class="list-item"
+                >
+                  <ion-icon name="arrow-forward-circle-outline"></ion-icon>
+                  <span>{{ responsibility }}</span>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Skills Card -->
+          <ion-card *ngIf="listing.skills?.length">
+            <ion-card-header>
+              <ion-icon name="ribbon-outline" slot="start"></ion-icon>
+              <ion-card-title>Required Skills</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="info-block">
+                <div *ngFor="let skill of listing.skills" class="skill-item">
+                  <span class="skill-name">{{ skill.name }}</span>
+                  <ion-badge color="tertiary"
+                    >{{ skill.level | titlecase }}</ion-badge
+                  >
+                  <ion-badge *ngIf="skill.required" color="primary"
+                    >Required</ion-badge
+                  >
+                </div>
+              </div>
+            </ion-card-content> </ion-card
+          ><!-- Requirements Card -->
+          <ion-card *ngIf="listing.requirements?.length">
+            <ion-card-header>
+              <ion-icon name="list-outline" slot="start"></ion-icon>
+              <ion-card-title>Requirements</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="info-block">
+                <div
+                  *ngFor="let requirement of listing.requirements"
+                  class="list-item"
+                >
+                  <ion-icon name="checkmark-circle-outline"></ion-icon>
+                  <span>{{ requirement }}</span>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Benefits Card -->
+          <ion-card *ngIf="listing.benefits?.length">
+            <ion-card-header>
+              <ion-icon name="gift-outline" slot="start"></ion-icon>
+              <ion-card-title>Benefits</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="info-block">
+                <div *ngFor="let benefit of listing.benefits" class="list-item">
+                  <ion-icon name="star-outline"></ion-icon>
+                  <span>{{ benefit }}</span>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Right Column -->
+        <ion-col size="12" size-md="6">
           <!-- Time Commitment Card -->
           <ion-card>
             <ion-card-header>
@@ -84,7 +160,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             </ion-card-content>
           </ion-card>
           <!-- Location Card -->
-          <ion-card>
+          <ion-card
+            *ngIf="listing.contactInformation?.addresses?.length || listing.remote"
+          >
             <ion-card-header>
               <ion-icon name="location-outline" slot="start"></ion-icon>
               <ion-card-title>Locations</ion-card-title>
@@ -109,7 +187,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             </ion-card-content>
           </ion-card>
           <!-- Contact Information Card -->
-          <ion-card>
+          <ion-card
+            *ngIf="listing.contactInformation?.emails?.length || listing.contactInformation?.phoneNumbers?.length"
+          >
             <ion-card-header>
               <ion-icon name="call-outline" slot="start"></ion-icon>
               <ion-card-title>Contact Information</ion-card-title>
@@ -130,82 +210,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   <ion-icon name="call-outline"></ion-icon>
                   <span>{{ phone.countryCode }} {{ phone.number }}</span>
                   <ion-badge color="medium">{{ phone.type }}</ion-badge>
-                </div>
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-
-        <!-- Right Column -->
-        <ion-col size="12" size-md="6">
-          <!-- Responsibilities Card -->
-          <ion-card>
-            <ion-card-header>
-              <ion-icon name="briefcase-outline" slot="start"></ion-icon>
-              <ion-card-title>Responsibilities</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="info-block">
-                <div
-                  *ngFor="let responsibility of listing.responsibilities"
-                  class="list-item"
-                >
-                  <ion-icon name="arrow-forward-circle-outline"></ion-icon>
-                  <span>{{ responsibility }}</span>
-                </div>
-              </div>
-            </ion-card-content>
-          </ion-card>
-
-          <!-- Skills Card -->
-          <ion-card>
-            <ion-card-header>
-              <ion-icon name="ribbon-outline" slot="start"></ion-icon>
-              <ion-card-title>Required Skills</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="info-block">
-                <div *ngFor="let skill of listing.skills" class="skill-item">
-                  <span class="skill-name">{{ skill.name }}</span>
-                  <ion-badge color="tertiary"
-                    >{{ skill.level | titlecase }}</ion-badge
-                  >
-                  <ion-badge *ngIf="skill.required" color="primary"
-                    >Required</ion-badge
-                  >
-                </div>
-              </div>
-            </ion-card-content> </ion-card
-          ><!-- Requirements Card -->
-          <ion-card>
-            <ion-card-header>
-              <ion-icon name="list-outline" slot="start"></ion-icon>
-              <ion-card-title>Requirements</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="info-block">
-                <div
-                  *ngFor="let requirement of listing.requirements"
-                  class="list-item"
-                >
-                  <ion-icon name="checkmark-circle-outline"></ion-icon>
-                  <span>{{ requirement }}</span>
-                </div>
-              </div>
-            </ion-card-content>
-          </ion-card>
-
-          <!-- Benefits Card -->
-          <ion-card>
-            <ion-card-header>
-              <ion-icon name="gift-outline" slot="start"></ion-icon>
-              <ion-card-title>Benefits</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="info-block">
-                <div *ngFor="let benefit of listing.benefits" class="list-item">
-                  <ion-icon name="star-outline"></ion-icon>
-                  <span>{{ benefit }}</span>
                 </div>
               </div>
             </ion-card-content>

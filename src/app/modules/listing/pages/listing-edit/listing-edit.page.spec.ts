@@ -26,6 +26,7 @@ import {BehaviorSubject, of} from "rxjs";
 import {Listing} from "../../../../models/listing.model";
 import * as ListingActions from "../../../../state/actions/listings.actions";
 import {Timestamp} from "firebase/firestore";
+import {NO_ERRORS_SCHEMA} from "@angular/core";
 
 describe("ListingEditPage", () => {
   let component: ListingEditPage;
@@ -106,6 +107,7 @@ describe("ListingEditPage", () => {
           },
         },
       ],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     store = TestBed.inject(Store) as jasmine.SpyObj<Store>;

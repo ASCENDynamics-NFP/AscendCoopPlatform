@@ -20,13 +20,12 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {RelatedAccountsComponent} from "./related-accounts.component";
 import {Router} from "@angular/router";
-import {Account} from "../../../../../../models/account.model";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
 
 describe("RelatedAccountsComponent", () => {
   let component: RelatedAccountsComponent;
   let fixture: ComponentFixture<RelatedAccountsComponent>;
-  let mockRouter: any;
+  let mockRouter: Partial<Router>;
 
   beforeEach(async () => {
     mockRouter = {

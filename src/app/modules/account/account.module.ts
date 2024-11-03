@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {NgModule} from "@angular/core";
+import {CUSTOM_ELEMENTS_SCHEMA, NgModule} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
@@ -100,5 +100,6 @@ import {ListPage} from "./relatedAccount/pages/list/list.page";
     StoreModule.forFeature("account", accountReducer),
     EffectsModule.forFeature([AccountEffects]),
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AccountModule {}

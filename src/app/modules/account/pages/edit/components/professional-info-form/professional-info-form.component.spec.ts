@@ -22,6 +22,7 @@ import {IonicModule} from "@ionic/angular";
 
 import {ProfessionalInfoFormComponent} from "./professional-info-form.component";
 import {provideMockStore} from "@ngrx/store/testing";
+import {NO_ERRORS_SCHEMA} from "@angular/core";
 
 describe("ProfessionalInfoComponent", () => {
   let component: ProfessionalInfoFormComponent;
@@ -32,6 +33,7 @@ describe("ProfessionalInfoComponent", () => {
       declarations: [],
       imports: [IonicModule.forRoot()],
       providers: [provideMockStore({})],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProfessionalInfoFormComponent);

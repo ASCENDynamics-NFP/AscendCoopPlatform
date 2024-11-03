@@ -22,6 +22,7 @@ import {IonicModule} from "@ionic/angular";
 
 import {ContactInfoFormComponent} from "./contact-info-form.component";
 import {provideMockStore} from "@ngrx/store/testing";
+import {NO_ERRORS_SCHEMA} from "@angular/core";
 
 describe("ContactInfoComponent", () => {
   let component: ContactInfoFormComponent;
@@ -32,6 +33,7 @@ describe("ContactInfoComponent", () => {
       declarations: [],
       imports: [IonicModule.forRoot()],
       providers: [provideMockStore({})],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ContactInfoFormComponent);

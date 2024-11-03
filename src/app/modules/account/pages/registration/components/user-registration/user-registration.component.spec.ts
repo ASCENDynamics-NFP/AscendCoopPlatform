@@ -21,6 +21,7 @@ import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
 import {UserRegistrationComponent} from "./user-registration.component";
 import {provideMockStore} from "@ngrx/store/testing";
+import {NO_ERRORS_SCHEMA} from "@angular/core";
 
 describe("UserRegistrationComponent", () => {
   let component: UserRegistrationComponent;
@@ -30,6 +31,7 @@ describe("UserRegistrationComponent", () => {
     TestBed.configureTestingModule({
       imports: [IonicModule.forRoot()],
       providers: [provideMockStore()],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(UserRegistrationComponent);

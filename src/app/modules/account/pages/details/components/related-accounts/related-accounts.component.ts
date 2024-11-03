@@ -57,7 +57,9 @@ export class RelatedAccountsComponent {
 
   viewAll() {
     if (this.account?.id) {
-      this.router.navigate([`/${this.account.id}/related/${this.type}`]);
+      this.router.navigate([
+        `/account/${this.account.id}/related/${this.type}`,
+      ]);
     }
   }
 }

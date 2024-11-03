@@ -30,10 +30,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-title class="header-title">ASCENDynamics NFP</ion-title>
     </ion-buttons>
     <ion-buttons slot="end">
-      <ion-button routerLink="/login" color="primary" fill="outline"
+      <ion-button routerLink="/auth/login" color="primary" fill="outline"
         >Login</ion-button
       >
-      <ion-button routerLink="/signup" color="primary" fill="solid"
+      <ion-button routerLink="/auth/signup" color="primary" fill="solid"
         >Sign Up</ion-button
       >
     </ion-buttons>
@@ -54,7 +54,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             Join us in transforming the future of work. Connect with nonprofits,
             volunteer, and make an impact.
           </p>
-          <ion-button routerLink="/signup" color="primary">Try Now</ion-button>
+          <ion-button routerLink="/auth/signup" color="primary"
+            >Try Now</ion-button
+          >
         </ion-col>
         <ion-col size="12" size-md="6" class="hero-image">
           <swiper-container [slidesPerView]="1" [loop]="true" autoplay="true">
@@ -145,7 +147,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-card-content>
         <h2>Ready to Make a Difference?</h2>
         <p>Join our community of volunteers and nonprofits today.</p>
-        <ion-button routerLink="/signup" color="primary"
+        <ion-button routerLink="/auth/signup" color="primary"
           >Sign Up Now</ion-button
         >
       </ion-card-content>

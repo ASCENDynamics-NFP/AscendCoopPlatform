@@ -134,7 +134,7 @@ export class LoginPage implements OnInit {
   }
 
   goToSignUp() {
-    this.router.navigateByUrl("/signup", {replaceUrl: false});
+    this.router.navigateByUrl("/auth/signup", {replaceUrl: false});
   }
 
   loadFormData() {

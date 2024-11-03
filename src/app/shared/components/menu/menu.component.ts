@@ -116,12 +116,12 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.menuPages = [
       {
         title: this.translate.instant("menu.login"),
-        url: "/login",
+        url: "/auth/login",
         icon: "log-in",
       },
       {
         title: this.translate.instant("menu.signup"),
-        url: "/signup",
+        url: "/auth/signup",
         icon: "person-add",
       },
       {

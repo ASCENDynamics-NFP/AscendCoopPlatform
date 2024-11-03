@@ -21,7 +21,7 @@ import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {LandingPage} from "./landing.page";
 import {IonicModule, ModalController} from "@ionic/angular";
 import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
-import {LegalModalComponent} from "src/app/shared/components/legal-modal/legal-modal.component";
+import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
 
 describe("LandingPage", () => {
   let component: LandingPage;

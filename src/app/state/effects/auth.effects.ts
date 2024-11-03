@@ -47,7 +47,7 @@ import {AuthUser} from "../../models/auth-user.model";
 export class AuthEffects {
   private auth: Auth;
   private actionCodeSettings = {
-    url: `${window.location.origin}/login`,
+    url: `${window.location.origin}/auth/login`,
     handleCodeInApp: true,
   };
 

@@ -172,7 +172,7 @@ describe("SignupPage", () => {
 
   it("should navigate to login page when goToLogin is called", () => {
     component.goToLogin();
-    expect(router.navigateByUrl).toHaveBeenCalledWith("/login");
+    expect(router.navigateByUrl).toHaveBeenCalledWith("/auth/login");
   });
 
   it("should open legal modal with correct content type", async () => {

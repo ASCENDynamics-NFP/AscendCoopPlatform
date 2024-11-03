@@ -17,23 +17,34 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {NgModule} from "@angular/core";
+import {CUSTOM_ELEMENTS_SCHEMA, NgModule} from "@angular/core";
 import {CommonModule} from "@angular/common";
-import {IonicModule} from "@ionic/angular";
-import {RouterModule} from "@angular/router";
-import {LoginPage} from "./login.page";
+import {AuthRoutingModule} from "./auth-routing.module";
 import {ReactiveFormsModule} from "@angular/forms";
+import {RouterModule} from "@angular/router";
+import {IonicModule} from "@ionic/angular";
 import {TranslateModule} from "@ngx-translate/core";
+import {SignupPage} from "./pages/signup/signup.page";
+import {LoginPage} from "./pages/login/login.page";
+import {EffectsModule} from "@ngrx/effects";
+import {StoreModule} from "@ngrx/store";
+import {authReducer} from "../../state/reducers/auth.reducer";
+import {AuthEffects} from "../../state/effects/auth.effects";
+import {LandingPage} from "./pages/landing/landing.page";
 
 @NgModule({
-  declarations: [LoginPage],
+  declarations: [LoginPage, SignupPage, LandingPage],
   imports: [
+    AuthRoutingModule,
     CommonModule,
     IonicModule,
-    RouterModule.forChild([{path: "", component: LoginPage}]),
+    RouterModule,
     ReactiveFormsModule,
     TranslateModule,
+    StoreModule.forFeature("auth", authReducer),
+    EffectsModule.forFeature([AuthEffects]),
   ],
-  exports: [],
+  // exports: [],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class LoginPageModule {}
+export class AuthModule {}

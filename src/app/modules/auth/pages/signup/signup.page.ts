@@ -89,7 +89,7 @@ export class SignupPage implements OnInit {
 
   // Navigate to the login page
   goToLogin() {
-    this.router.navigateByUrl("/login");
+    this.router.navigateByUrl("/auth/login");
   }
 
   // Open the legal modal (Privacy Policy or Terms of Use)

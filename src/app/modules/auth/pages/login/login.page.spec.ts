@@ -154,7 +154,7 @@ describe("LoginPage", () => {
   describe("goToSignUp", () => {
     it("should navigate to the signup page", () => {
       component.goToSignUp();
-      expect(routerSpy.navigateByUrl).toHaveBeenCalledWith("/signup", {
+      expect(routerSpy.navigateByUrl).toHaveBeenCalledWith("/auth/signup", {
         replaceUrl: false,
       });
     });

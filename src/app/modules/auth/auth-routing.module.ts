@@ -17,24 +17,33 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {CUSTOM_ELEMENTS_SCHEMA, NgModule} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {IonicModule} from "@ionic/angular";
-import {RouterModule} from "@angular/router";
-import {LandingPage} from "./landing.page";
-import {ReactiveFormsModule} from "@angular/forms";
-import {TranslateModule} from "@ngx-translate/core";
+import {NgModule} from "@angular/core";
+import {RouterModule, Routes} from "@angular/router";
+import {LoginPage} from "./pages/login/login.page";
+import {SignupPage} from "./pages/signup/signup.page";
+import {SecureInnerPagesGuard} from "../../core/guards/secure-inner-pages.guard";
+import {LandingPage} from "./pages/landing/landing.page";
+
+const routes: Routes = [
+  {
+    path: "",
+    component: LandingPage,
+    canActivate: [SecureInnerPagesGuard],
+  },
+  {
+    path: "login",
+    component: LoginPage,
+    canActivate: [SecureInnerPagesGuard],
+  },
+  {
+    path: "signup",
+    component: SignupPage,
+    canActivate: [SecureInnerPagesGuard],
+  },
+];
 
 @NgModule({
-  declarations: [LandingPage],
-  imports: [
-    CommonModule,
-    IonicModule,
-    RouterModule.forChild([{path: "", component: LandingPage}]),
-    ReactiveFormsModule,
-    TranslateModule,
-  ],
-  exports: [],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class LandingPageModule {}
+export class AuthRoutingModule {}

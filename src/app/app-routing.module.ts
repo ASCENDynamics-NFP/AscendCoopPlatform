@@ -22,7 +22,6 @@
 import {NgModule} from "@angular/core";
 import {RouterModule, Routes, ExtraOptions} from "@angular/router";
 import {AuthGuard} from "./core/guards/auth.guard";
-import {SecureInnerPagesGuard} from "./core/guards/secure-inner-pages.guard";
 
 export const routes: Routes = [
   {
@@ -31,12 +30,19 @@ export const routes: Routes = [
     pathMatch: "full",
   },
   {
-    path: "",
+    path: "", // Used to remove "/auth" from landing page.
     loadChildren: () =>
-      import("./modules/account/pages/landing/landing.module").then(
-        (m) => m.LandingPageModule,
-      ),
-    canActivate: [SecureInnerPagesGuard],
+      import("./modules/auth/auth.module").then((m) => m.AuthModule),
+  },
+  {
+    path: "auth", // Used to organize routes in "/auth" folder.
+    loadChildren: () =>
+      import("./modules/auth/auth.module").then((m) => m.AuthModule),
+  },
+  {
+    path: "listings", // Used to organize routes in "/listings" folder.
+    loadChildren: () =>
+      import("./modules/listing/listing.module").then((m) => m.ListingModule),
   },
   {
     path: "group-list",
@@ -44,22 +50,6 @@ export const routes: Routes = [
       import("./modules/account/pages/group-list/group-list.module").then(
         (m) => m.GroupListPageModule,
       ),
-  },
-  {
-    path: "signup",
-    loadChildren: () =>
-      import("./modules/account/pages/signup/signup.module").then(
-        (m) => m.SignupPageModule,
-      ),
-    canActivate: [SecureInnerPagesGuard],
-  },
-  {
-    path: "login",
-    loadChildren: () =>
-      import("./modules/account/pages/login/login.module").then(
-        (m) => m.LoginPageModule,
-      ),
-    canActivate: [SecureInnerPagesGuard],
   },
   {
     path: "settings",
@@ -83,11 +73,6 @@ export const routes: Routes = [
       import("./modules/account/pages/registration/registration.module").then(
         (m) => m.RegistrationPageModule,
       ),
-  },
-  {
-    path: "listings",
-    loadChildren: () =>
-      import("./modules/listing/listing.module").then((m) => m.ListingModule),
   },
   {
     path: ":accountId",

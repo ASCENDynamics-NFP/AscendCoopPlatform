@@ -156,7 +156,7 @@ export class AuthEffects {
               "Successfully signed in with email link!",
             );
             // Navigate to "/{uid}"
-            this.router.navigateByUrl(`/${result.user.uid}`, {
+            this.router.navigateByUrl(`/account/${result.user.uid}`, {
               replaceUrl: true,
             });
           }),
@@ -188,9 +188,12 @@ export class AuthEffects {
           tap((result) => {
             this.successHandler.handleSuccess("Successfully signed up!");
             // Navigate to "/registration/:uid"
-            this.router.navigateByUrl(`/registration/${result.user.uid}`, {
-              replaceUrl: true,
-            });
+            this.router.navigateByUrl(
+              `/account/registration/${result.user.uid}`,
+              {
+                replaceUrl: true,
+              },
+            );
           }),
           map((result) => {
             const authUser: AuthUser = {
@@ -267,7 +270,7 @@ export class AuthEffects {
               "Successfully signed in with Google!",
             );
             // Navigate to "/{uid}"
-            this.router.navigateByUrl(`/${result.user.uid}`, {
+            this.router.navigateByUrl(`/account/${result.user.uid}`, {
               replaceUrl: true,
             });
           }),

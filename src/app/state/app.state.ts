@@ -20,8 +20,10 @@
 // src/app/state/app.state.ts
 import {AuthState} from "./reducers/auth.reducer";
 import {FirestoreState} from "./reducers/firestore.reducer";
+import {ListingsState} from "./reducers/listings.reducer";
 
 export interface AppState {
   auth: AuthState;
   firestore: FirestoreState;
+  listings: ListingsState;
 }

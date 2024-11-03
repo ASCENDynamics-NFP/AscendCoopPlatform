@@ -1,0 +1,86 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Listings</ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/listings/create">
+        <ion-icon name="add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar (ionInput)="searchListings($event)"></ion-searchbar>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment (ionChange)="filterListings($event)">
+      <ion-segment-button *ngFor="let type of listingTypes" [value]="type">
+        <ion-label>{{type | titlecase}}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ng-container *ngIf="loading$ | async">
+    <ion-skeleton-text animated></ion-skeleton-text>
+  </ng-container>
+
+  <ng-container *ngIf="error$ | async as error">
+    <ion-text color="danger">
+      <p>{{ error }}</p>
+    </ion-text>
+  </ng-container>
+
+  <ion-list>
+    <ion-item
+      *ngFor="let listing of listings$ | async"
+      [routerLink]="['/listings', listing.id]"
+    >
+      <ion-thumbnail slot="start">
+        <ion-img
+          [src]="listing.iconImage || 'assets/image/logo/ASCENDynamics NFP-logos_transparent.png'"
+        ></ion-img>
+      </ion-thumbnail>
+      <ion-label>
+        <h2>{{ listing.title }}</h2>
+        <h3>{{ listing.organization }}</h3>
+        <p>{{ listing.description | slice:0:100 }}...</p>
+        <ion-badge color="primary">{{ listing.type | titlecase }}</ion-badge>
+        <ion-badge *ngIf="listing.remote" color="success">Remote</ion-badge>
+        <p *ngIf="!listing.remote">{{ getListingLocation(listing) }}</p>
+        <ion-note>
+          <ion-icon name="time-outline"></ion-icon>
+          {{ listing.timeCommitment.hoursPerWeek }} hrs/week
+        </ion-note>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button routerLink="/listings/create">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

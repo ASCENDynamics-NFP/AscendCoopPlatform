@@ -12,6 +12,8 @@
   "Dashboard": "Dashboard",
   "menu": {
     "title": "ASCENDynamics NFP",
+    "listings": "Listings",
+    "create": "Create",
     "login": "Login",
     "signup": "Sign Up",
     "groups": "Groups",

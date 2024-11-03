@@ -1,0 +1,161 @@
+/***********************************************************************************************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+*
+* This file is part of Nonprofit Social Networking Platform.
+*
+* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+
+* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+
+* You should have received a copy of the GNU Affero General Public License
+* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+***********************************************************************************************/
+ion-card {
+  margin: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--ion-color-primary);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+  color: #000;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+ion-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  // background: var(--ion-color-light);
+  border-bottom: 1px solid var(--ion-color-light-shade);
+
+  ion-icon {
+    font-size: 24px;
+    color: var(--ion-color-primary);
+  }
+
+  ion-card-title {
+    font-size: 1.5em;
+    font-weight: 600;
+  }
+}
+
+.info-block {
+  padding: 16px 0;
+}
+
+.contact-item,
+.time-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--ion-color-light);
+
+  span {
+    color: #000;
+  }
+
+  ion-icon {
+    font-size: 20px;
+    color: var(--ion-color-primary);
+  }
+}
+
+.skill-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--ion-color-light);
+
+  span {
+    color: #000;
+  }
+
+  .skill-name {
+    font-weight: 500;
+    flex: 1;
+  }
+}
+
+.location-item {
+  margin-bottom: 20px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--ion-color-light);
+
+  p {
+    margin: 6px 0;
+    line-height: 1.4;
+    color: #000;
+  }
+}
+
+.time-dates {
+  margin: 16px 0;
+
+  p {
+    margin: 6px 0;
+    color: var(--ion-color-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+ion-badge {
+  margin-right: 6px;
+  padding: 6px 12px;
+  border-radius: 12px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--ion-color-light);
+
+  ion-icon {
+    font-size: 20px;
+    color: var(--ion-color-primary);
+  }
+
+  span {
+    color: #000;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .contact-item,
+  .time-item,
+  .skill-item,
+  .location-item,
+  .list-item {
+    background: var(--ion-color-dark-shade);
+  }
+
+  ion-card,
+  .contact-item span,
+  .location-item p {
+    color: #000;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+}

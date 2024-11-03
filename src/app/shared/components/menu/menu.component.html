@@ -32,14 +32,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <!-- Iterate over menuPages -->
           <ng-container *ngFor="let item of menuPages">
             <ion-item
-              [routerLink]="!item.hasButton ? item.url : null"
+              [routerLink]="item.url"
               lines="none"
               detail="false"
               routerLinkActive="selected"
               *ngIf="item.title"
-              (click)="
-                item.hasButton ? handleButtonClick(item.buttonLink!) : null
-              "
             >
               <ion-icon
                 aria-hidden="true"
@@ -52,9 +49,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 *ngIf="item.hasButton"
                 fill="outline"
                 slot="end"
-                (click)="
-                  handleButtonClick(item.buttonLink!); $event.stopPropagation()
-                "
+                [routerLink]="item.buttonLink"
+                (click)="$event.stopPropagation()"
               >
                 {{ item.buttonText }}
                 <ion-icon

@@ -17,24 +17,26 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// src/app/state/reducers/index.ts
+import {Pipe, PipeTransform} from "@angular/core";
+import {Timestamp} from "firebase/firestore";
 
-import {ActionReducerMap} from "@ngrx/store";
-import {AuthState, authReducer} from "./auth.reducer";
-import {AccountState, accountReducer} from "./account.reducer";
-import {ListingsState, listingsReducer} from "./listings.reducer";
-// Other imports...
+@Pipe({
+  name: "timestamp",
+})
+export class TimestampPipe implements PipeTransform {
+  transform(value: Timestamp | any): Date | null {
+    if (!value) return null;
 
-export interface AppState {
-  auth: AuthState;
-  account: AccountState;
-  listings: ListingsState;
-  // Other states...
+    // Handle Firestore Timestamp
+    if (value instanceof Timestamp) {
+      return value.toDate();
+    }
+
+    // Handle server timestamp
+    if (value.seconds) {
+      return new Timestamp(value.seconds, value.nanoseconds).toDate();
+    }
+
+    return null;
+  }
 }
-
-export const reducers: ActionReducerMap<AppState> = {
-  auth: authReducer,
-  account: accountReducer,
-  listings: listingsReducer,
-  // Other reducers...
-};

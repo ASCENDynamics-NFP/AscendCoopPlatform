@@ -73,7 +73,7 @@ export function localStorageSyncReducer(
   reducer: ActionReducer<any>,
 ): ActionReducer<any> {
   return localStorageSync({
-    keys: ["auth", "account"], // Specify the state slices you want to persist
+    keys: ["auth", "account", "listings"], // Specify the state slices you want to persist
     rehydrate: true, // Rehydrate state on application startup
   })(reducer);
 }

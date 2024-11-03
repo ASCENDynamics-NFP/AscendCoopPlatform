@@ -34,6 +34,7 @@ export interface Address {
   formatted?: Nullable<string>;
   geopoint?: Nullable<GeoPoint>; // Use Firebase GeoPoint
   isPrimaryAddress?: Nullable<boolean>;
+  remote?: Nullable<boolean>;
 }
 
 // PhoneNumber interface with nullable fields
@@ -78,7 +79,7 @@ export interface Email {
   email: Nullable<string>;
 }
 
-interface ContactInformation {
+export interface ContactInformation {
   privacy?: "public" | "private" | "specific-users"; // Privacy setting
   addresses?: Nullable<Address>[];
   phoneNumbers: PhoneNumber[];

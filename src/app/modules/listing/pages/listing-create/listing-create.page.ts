@@ -17,24 +17,37 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// src/app/state/reducers/index.ts
+import {Component} from "@angular/core";
+import {Store} from "@ngrx/store";
+import {Router} from "@angular/router";
+import {first} from "rxjs/operators";
+import * as ListingActions from "../../../../state/actions/listings.actions";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 
-import {ActionReducerMap} from "@ngrx/store";
-import {AuthState, authReducer} from "./auth.reducer";
-import {AccountState, accountReducer} from "./account.reducer";
-import {ListingsState, listingsReducer} from "./listings.reducer";
-// Other imports...
+@Component({
+  selector: "app-listing-create",
+  templateUrl: "./listing-create.page.html",
+  styleUrls: ["./listing-create.page.scss"],
+})
+export class ListingCreatePage {
+  constructor(
+    private store: Store,
+    private router: Router,
+  ) {}
 
-export interface AppState {
-  auth: AuthState;
-  account: AccountState;
-  listings: ListingsState;
-  // Other states...
+  onSubmit(formValue: any) {
+    this.store
+      .select(selectAuthUser)
+      .pipe(first())
+      .subscribe((user) => {
+        if (user) {
+          const listing = {
+            ...formValue,
+            createdBy: user.uid,
+          };
+          this.store.dispatch(ListingActions.createListing({listing}));
+          this.router.navigate(["/listings"]);
+        }
+      });
+  }
 }
-
-export const reducers: ActionReducerMap<AppState> = {
-  auth: authReducer,
-  account: accountReducer,
-  listings: listingsReducer,
-  // Other reducers...
-};

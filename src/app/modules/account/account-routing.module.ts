@@ -17,24 +17,36 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// src/app/state/reducers/index.ts
+// import {NgModule} from "@angular/core";
+// import {RouterModule, Routes} from "@angular/router";
+// import {AuthGuard} from "../../core/guards/auth.guard";
+// import {DetailsPage} from "./pages/details/details.page";
+// import {EditPage} from "./pages/edit/edit.page";
+// import {RegistrationPage} from "./pages/registration/registration.page";
 
-import {ActionReducerMap} from "@ngrx/store";
-import {AuthState, authReducer} from "./auth.reducer";
-import {AccountState, accountReducer} from "./account.reducer";
-import {ListingsState, listingsReducer} from "./listings.reducer";
-// Other imports...
+// const routes: Routes = [
+//   // {
+//   //   path: "",
+//   //   component: ListingsPage,
+//   // },
+//   {
+//     path: "registration/:accountId",
+//     component: RegistrationPage,
+//   },
+//   {
+//     path: ":accountId",
+//     component: DetailsPage,
+//     canActivate: [AuthGuard],
+//   },
+//   {
+//     path: ":accountId/edit",
+//     component: EditPage,
+//     canActivate: [AuthGuard],
+//   },
+// ];
 
-export interface AppState {
-  auth: AuthState;
-  account: AccountState;
-  listings: ListingsState;
-  // Other states...
-}
-
-export const reducers: ActionReducerMap<AppState> = {
-  auth: authReducer,
-  account: accountReducer,
-  listings: listingsReducer,
-  // Other reducers...
-};
+// @NgModule({
+//   imports: [RouterModule.forChild(routes)],
+//   exports: [RouterModule],
+// })
+// export class AccountRoutingModule {}

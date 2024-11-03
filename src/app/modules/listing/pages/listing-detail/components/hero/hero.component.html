@@ -1,0 +1,68 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<div class="header-image">
+  <img
+    [src]="listing.heroImage || 'assets/image/orghero.png'"
+    alt="Header Background"
+  />
+</div>
+
+<div class="listing-header">
+  <div class="listing-info">
+    <div class="listing-details">
+      <div class="title-section">
+        <h2>{{ listing.title }}</h2>
+        <ion-button
+          *ngIf="isOwner"
+          fill="outline"
+          class="edit-button"
+          size="small"
+          [routerLink]="['/listings', listing.id, 'edit']"
+        >
+          <ion-icon name="pencil-outline"></ion-icon> Edit
+        </ion-button>
+      </div>
+
+      <div class="organization">
+        <ion-icon name="business-outline"></ion-icon>
+        <span>{{ listing.organization }}</span>
+      </div>
+
+      <div class="badges">
+        <ion-badge color="primary">{{ listing.type | titlecase }}</ion-badge>
+        <ion-badge [color]="listing.status === 'active' ? 'success' : 'medium'">
+          {{ listing.status | titlecase }}
+        </ion-badge>
+        <ion-badge *ngIf="listing.remote" color="tertiary">Remote</ion-badge>
+      </div>
+
+      <p class="description">{{ listing.description }}</p>
+    </div>
+  </div>
+  <!-- <div class="listing-actions">
+    <ion-button
+      fill="outline"
+      [disabled]="listing.status !== 'active'"
+      (click)="onApply()"
+    >
+      Apply Now
+    </ion-button>
+  </div> -->
+</div>

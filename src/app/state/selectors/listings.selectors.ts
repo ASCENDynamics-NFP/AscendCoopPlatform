@@ -17,24 +17,29 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// src/app/state/reducers/index.ts
+// src/app/state/listings/listings.selectors.ts
+import {createFeatureSelector, createSelector} from "@ngrx/store";
+import {ListingsState} from "../reducers/listings.reducer";
 
-import {ActionReducerMap} from "@ngrx/store";
-import {AuthState, authReducer} from "./auth.reducer";
-import {AccountState, accountReducer} from "./account.reducer";
-import {ListingsState, listingsReducer} from "./listings.reducer";
-// Other imports...
+export const selectListingsState =
+  createFeatureSelector<ListingsState>("listings");
 
-export interface AppState {
-  auth: AuthState;
-  account: AccountState;
-  listings: ListingsState;
-  // Other states...
-}
+export const selectAllListings = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state.listings,
+);
 
-export const reducers: ActionReducerMap<AppState> = {
-  auth: authReducer,
-  account: accountReducer,
-  listings: listingsReducer,
-  // Other reducers...
-};
+export const selectListingById = (listingId: string) =>
+  createSelector(selectListingsState, (state: ListingsState) =>
+    state.listings.find((listing) => listing.id === listingId),
+  );
+
+export const selectLoading = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state.loading,
+);
+
+export const selectError = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state.error,
+);

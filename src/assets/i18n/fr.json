@@ -13,6 +13,8 @@
   "menu": {
     "title": "ASCENDynamics NFP",
     "login": "Connexion",
+    "listings": "Annonces",
+    "create": "Créer",
     "signup": "Inscription",
     "groups": "Groupes",
     "createGroup": "Créer un groupe",

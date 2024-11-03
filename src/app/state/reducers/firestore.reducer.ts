@@ -39,7 +39,7 @@ export const firestoreReducer = createReducer(
   on(FirestoreActions.loadDocument, (state) => ({...state, loading: true})),
   on(FirestoreActions.loadDocumentSuccess, (state, {document}) => ({
     ...state,
-    documents: {...state.documents, [document.id]: document},
+    documents: {...state.documents, [document["id"]]: document},
     loading: false,
     error: null,
   })),

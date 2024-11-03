@@ -221,7 +221,7 @@ export class AuthEffects {
           tap((result) => {
             this.successHandler.handleSuccess("Successfully signed in!");
             // Navigate to "/{uid}"
-            this.router.navigateByUrl(`/${result.user.uid}`, {
+            this.router.navigateByUrl(`/account/${result.user.uid}`, {
               replaceUrl: true,
             });
           }),
@@ -310,7 +310,7 @@ export class AuthEffects {
         from(signOut(this.auth)).pipe(
           map(() => {
             this.successHandler.handleSuccess("You have been signed out!");
-            this.router.navigate(["login"]);
+            this.router.navigate(["auth/login"]);
             return AuthActions.signOutSuccess();
           }),
           catchError((error) => {

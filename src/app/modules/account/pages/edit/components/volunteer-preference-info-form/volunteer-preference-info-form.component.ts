@@ -30,11 +30,11 @@ import * as AccountActions from "../../../../../../state/actions/account.actions
 import {areasOfInterestOptions} from "../../../../../../core/data/options";
 
 @Component({
-  selector: "app-volunteer-preference-info",
-  templateUrl: "./volunteer-preference-info.component.html",
-  styleUrls: ["./volunteer-preference-info.component.scss"],
+  selector: "app-volunteer-preference-info-form",
+  templateUrl: "./volunteer-preference-info-form.component.html",
+  styleUrls: ["./volunteer-preference-info-form.component.scss"],
 })
-export class VolunteerPreferenceInfoComponent implements OnInit {
+export class VolunteerPreferenceInfoFormComponent implements OnInit {
   @Input() account?: Account;
   volunteerPreferencesForm: FormGroup;
   areasOfInterestOptions: string[] = areasOfInterestOptions;

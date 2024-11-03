@@ -32,11 +32,11 @@ import {
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 
 @Component({
-  selector: "app-mutual-aid-community-engagement",
-  templateUrl: "./mutual-aid-community-engagement.component.html",
-  styleUrls: ["./mutual-aid-community-engagement.component.scss"],
+  selector: "app-mutual-aid-community-engagement-form",
+  templateUrl: "./mutual-aid-community-engagement-form.component.html",
+  styleUrls: ["./mutual-aid-community-engagement-form.component.scss"],
 })
-export class MutualAidCommunityEngagementComponent implements OnInit {
+export class MutualAidCommunityEngagementFormComponent implements OnInit {
   @Input() account!: Account;
   mutualAidForm: FormGroup;
   public servicesOptions: string[] = servicesOptions;

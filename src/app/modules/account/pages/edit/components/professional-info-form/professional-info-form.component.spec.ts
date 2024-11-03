@@ -20,21 +20,21 @@
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
 
-import {VolunteerPreferenceInfoComponent} from "./volunteer-preference-info.component";
+import {ProfessionalInfoFormComponent} from "./professional-info-form.component";
 import {provideMockStore} from "@ngrx/store/testing";
 
-describe("VolunteerPreferenceInfoComponent", () => {
-  let component: VolunteerPreferenceInfoComponent;
-  let fixture: ComponentFixture<VolunteerPreferenceInfoComponent>;
+describe("ProfessionalInfoComponent", () => {
+  let component: ProfessionalInfoFormComponent;
+  let fixture: ComponentFixture<ProfessionalInfoFormComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [],
       imports: [IonicModule.forRoot()],
-      providers: [provideMockStore()],
+      providers: [provideMockStore({})],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(VolunteerPreferenceInfoComponent);
+    fixture = TestBed.createComponent(ProfessionalInfoFormComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

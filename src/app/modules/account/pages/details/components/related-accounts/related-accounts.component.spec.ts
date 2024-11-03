@@ -94,7 +94,7 @@ describe("RelatedAccountsComponent", () => {
 
   it("should navigate to the correct related account when goToRelatedAccount is called with a valid ID", () => {
     component.goToRelatedAccount("123");
-    expect(mockRouter.navigate).toHaveBeenCalledWith(["/123"]);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(["/account/123"]);
   });
 
   it("should log an error if goToRelatedAccount is called with an undefined ID", () => {

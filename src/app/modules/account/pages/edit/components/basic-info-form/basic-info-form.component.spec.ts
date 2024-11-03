@@ -20,12 +20,12 @@
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
 
-import {ProfessionalInfoComponent} from "./professional-info.component";
+import {BasicInfoFormComponent} from "./basic-info-form.component";
 import {provideMockStore} from "@ngrx/store/testing";
 
-describe("ProfessionalInfoComponent", () => {
-  let component: ProfessionalInfoComponent;
-  let fixture: ComponentFixture<ProfessionalInfoComponent>;
+describe("BasicInfoComponent", () => {
+  let component: BasicInfoFormComponent;
+  let fixture: ComponentFixture<BasicInfoFormComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
@@ -34,7 +34,7 @@ describe("ProfessionalInfoComponent", () => {
       providers: [provideMockStore({})],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ProfessionalInfoComponent);
+    fixture = TestBed.createComponent(BasicInfoFormComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

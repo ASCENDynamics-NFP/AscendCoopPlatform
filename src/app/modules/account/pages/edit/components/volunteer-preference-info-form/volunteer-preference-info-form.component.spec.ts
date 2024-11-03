@@ -17,28 +17,29 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {NgModule} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {FormsModule} from "@angular/forms";
+import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
-import {RouterModule} from "@angular/router";
 
-import {ListPage} from "./list.page";
-import {SharedModule} from "../../../../../shared/shared.module";
+import {VolunteerPreferenceInfoFormComponent} from "./volunteer-preference-info-form.component";
+import {provideMockStore} from "@ngrx/store/testing";
 
-@NgModule({
-  declarations: [ListPage],
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    RouterModule.forChild([
-      {
-        path: "",
-        component: ListPage,
-      },
-    ]),
-    SharedModule,
-  ],
-})
-export class ListPageModule {}
+describe("VolunteerPreferenceInfoComponent", () => {
+  let component: VolunteerPreferenceInfoFormComponent;
+  let fixture: ComponentFixture<VolunteerPreferenceInfoFormComponent>;
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [],
+      imports: [IonicModule.forRoot()],
+      providers: [provideMockStore()],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(VolunteerPreferenceInfoFormComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
+
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

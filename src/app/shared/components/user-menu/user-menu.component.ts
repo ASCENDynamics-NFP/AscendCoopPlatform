@@ -48,7 +48,7 @@ export class UserMenuComponent {
       const user = await firstValueFrom(this.store.select(selectAuthUser));
       const userId = user?.uid;
       if (userId) {
-        this.router.navigate([`/${userId}`]);
+        this.router.navigate([`/account/${userId}`]);
       } else {
         console.error("User ID not found.");
       }
@@ -59,6 +59,6 @@ export class UserMenuComponent {
 
   async goToSettings() {
     await this.popoverCtrl.dismiss(); // Await the popover dismissal
-    this.router.navigate(["/settings"]);
+    this.router.navigate(["/account/settings"]);
   }
 }

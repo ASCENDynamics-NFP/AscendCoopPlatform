@@ -71,7 +71,7 @@ export class EditPage implements OnInit {
         tap((isOwner) => {
           if (!isOwner) {
             // Redirect to unauthorized page if not the profile owner
-            this.router.navigate(["/" + this.accountId]);
+            this.router.navigate(["/account/" + this.accountId]);
           }
         }),
       );

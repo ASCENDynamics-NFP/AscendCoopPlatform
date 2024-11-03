@@ -25,11 +25,11 @@ import {Store} from "@ngrx/store";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 
 @Component({
-  selector: "app-basic-info",
-  templateUrl: "./basic-info.component.html",
-  styleUrls: ["./basic-info.component.scss"],
+  selector: "app-basic-info-form",
+  templateUrl: "./basic-info-form.component.html",
+  styleUrls: ["./basic-info-form.component.scss"],
 })
-export class BasicInfoComponent implements OnChanges {
+export class BasicInfoFormComponent implements OnChanges {
   @Input() account: Account | null = null;
   public maxLinks = 10;
 

@@ -91,7 +91,7 @@ describe("SecureInnerPagesGuard", () => {
     const canActivate = await guard.canActivate();
     expect(canActivate).toBeFalse();
     expect(mockNavController.navigateForward).toHaveBeenCalledWith(
-      `/${mockAuthUser.uid}`,
+      `/account/${mockAuthUser.uid}`,
     );
   });
 

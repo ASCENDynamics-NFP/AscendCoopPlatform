@@ -32,11 +32,11 @@ import {countryCodes} from "../../../../../../core/data/phone";
 import {countries, statesProvinces} from "../../../../../../core/data/country";
 
 @Component({
-  selector: "app-contact-info",
-  templateUrl: "./contact-info.component.html",
-  styleUrls: ["./contact-info.component.scss"],
+  selector: "app-contact-info-form",
+  templateUrl: "./contact-info-form.component.html",
+  styleUrls: ["./contact-info-form.component.scss"],
 })
-export class ContactInfoComponent implements OnChanges {
+export class ContactInfoFormComponent implements OnChanges {
   public countries = countries;
   public countryCodes = countryCodes.sort((a, b) =>
     Number(a.value) > Number(b.value) ? 1 : -1,

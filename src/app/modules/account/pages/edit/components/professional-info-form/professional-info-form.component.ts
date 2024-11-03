@@ -30,11 +30,11 @@ import * as AccountActions from "../../../../../../state/actions/account.actions
 import {skillsOptions} from "../../../../../../core/data/options";
 
 @Component({
-  selector: "app-professional-info",
-  templateUrl: "./professional-info.component.html",
-  styleUrls: ["./professional-info.component.scss"],
+  selector: "app-professional-info-form",
+  templateUrl: "./professional-info-form.component.html",
+  styleUrls: ["./professional-info-form.component.scss"],
 })
-export class ProfessionalInfoComponent implements OnInit {
+export class ProfessionalInfoFormComponent implements OnInit {
   @Input() account?: Account;
   professionalInformationForm: FormGroup;
   public skillsOptions: string[] = skillsOptions;

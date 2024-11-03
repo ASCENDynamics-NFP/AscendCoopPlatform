@@ -24,11 +24,11 @@ import {Account} from "../../../../../../models/account.model";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 
 @Component({
-  selector: "app-labor-rights-info",
-  templateUrl: "./labor-rights-info.component.html",
-  styleUrls: ["./labor-rights-info.component.scss"],
+  selector: "app-labor-rights-info-form",
+  templateUrl: "./labor-rights-info-form.component.html",
+  styleUrls: ["./labor-rights-info-form.component.scss"],
 })
-export class LaborRightsInfoComponent implements OnInit {
+export class LaborRightsInfoFormComponent implements OnInit {
   @Input() account!: Account;
   laborRightsInfoForm: FormGroup;
   advocacyAreasOptions: string[] = [

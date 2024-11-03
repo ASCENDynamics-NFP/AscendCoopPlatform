@@ -17,26 +17,29 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {CommonModule} from "@angular/common";
-import {NgModule} from "@angular/core";
-import {FormsModule} from "@angular/forms";
-import {RouterModule} from "@angular/router";
+import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
-import {UsersPage} from "./users.page";
-import {SharedModule} from "../../../../shared/shared.module";
-import {TranslateModule} from "@ngx-translate/core";
 
-// NgModule for UsersPage
-@NgModule({
-  declarations: [UsersPage],
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    SharedModule,
-    RouterModule.forChild([{path: "", component: UsersPage}]),
-    TranslateModule,
-  ],
-  exports: [],
-})
-export class UsersPageModule {}
+import {ContactInfoFormComponent} from "./contact-info-form.component";
+import {provideMockStore} from "@ngrx/store/testing";
+
+describe("ContactInfoComponent", () => {
+  let component: ContactInfoFormComponent;
+  let fixture: ComponentFixture<ContactInfoFormComponent>;
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [],
+      imports: [IonicModule.forRoot()],
+      providers: [provideMockStore({})],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(ContactInfoFormComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
+
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

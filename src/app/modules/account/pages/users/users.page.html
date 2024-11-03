@@ -38,7 +38,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             >
               <ion-item
                 *ngFor="let item of accountList$ | async; let i = index"
-                [routerLink]="['/', item.id]"
+                [routerLink]="['/account/', item.id]"
                 button
               >
                 <ion-thumbnail slot="start">

@@ -18,7 +18,7 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {MutualAidCommunityEngagementComponent} from "./mutual-aid-community-engagement.component";
+import {MutualAidCommunityEngagementFormComponent} from "./mutual-aid-community-engagement-form.component";
 import {ReactiveFormsModule, FormsModule} from "@angular/forms";
 import {IonicModule, IonSelect, IonSelectOption} from "@ionic/angular";
 import {provideMockStore} from "@ngrx/store/testing";
@@ -26,14 +26,14 @@ import {Account} from "../../../../../../models/account.model";
 import {CommonModule} from "@angular/common";
 
 describe("MutualAidCommunityEngagementComponent", () => {
-  let component: MutualAidCommunityEngagementComponent;
-  let fixture: ComponentFixture<MutualAidCommunityEngagementComponent>;
+  let component: MutualAidCommunityEngagementFormComponent;
+  let fixture: ComponentFixture<MutualAidCommunityEngagementFormComponent>;
   let mockAccount: Account;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [
-        MutualAidCommunityEngagementComponent,
+        MutualAidCommunityEngagementFormComponent,
         IonSelect,
         IonSelectOption,
       ],
@@ -48,7 +48,9 @@ describe("MutualAidCommunityEngagementComponent", () => {
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(MutualAidCommunityEngagementComponent);
+    fixture = TestBed.createComponent(
+      MutualAidCommunityEngagementFormComponent,
+    );
     component = fixture.componentInstance;
 
     // Create a mock account object

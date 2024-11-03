@@ -108,7 +108,9 @@ describe("RelatedAccountsComponent", () => {
     component.account = {id: "12345"};
     component.type = "user";
     component.viewAll();
-    expect(mockRouter.navigate).toHaveBeenCalledWith(["/12345/related/user"]);
+    expect(mockRouter.navigate).toHaveBeenCalledWith([
+      "/account/12345/related/user",
+    ]);
   });
 
   it("should not attempt navigation in viewAll if account ID is not set", () => {

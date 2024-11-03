@@ -23,8 +23,6 @@ import {ModalController} from "@ionic/angular";
 import {ImageUploadModalComponent} from "../../../../../../shared/components/image-upload-modal/image-upload-modal.component";
 import {IonicModule} from "@ionic/angular";
 import {CommonModule} from "@angular/common";
-import {By} from "@angular/platform-browser";
-import {EventEmitter} from "@angular/core";
 
 describe("EditMenuComponent", () => {
   let component: EditMenuComponent;

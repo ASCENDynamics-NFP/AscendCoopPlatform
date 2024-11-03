@@ -17,39 +17,31 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Injectable} from "@angular/core";
-import {Router} from "@angular/router";
-import {firstValueFrom} from "rxjs";
-import {NavController} from "@ionic/angular";
-import {Store} from "@ngrx/store";
-import {
-  selectIsLoggedIn,
-  selectAuthUser,
-} from "../../state/selectors/auth.selectors";
+import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
+import {IonicModule} from "@ionic/angular";
 
-@Injectable({
-  providedIn: "root",
-})
-export class SecureInnerPagesGuard {
-  constructor(
-    private store: Store,
-    private navCtrl: NavController,
-    private router: Router,
-  ) {}
+import {ProfessionalInfoFormComponent} from "./professional-info-form.component";
+import {provideMockStore} from "@ngrx/store/testing";
+import {NO_ERRORS_SCHEMA} from "@angular/core";
 
-  async canActivate(): Promise<boolean> {
-    const isLoggedIn = await firstValueFrom(
-      this.store.select(selectIsLoggedIn),
-    );
-    if (isLoggedIn) {
-      const authUser = await firstValueFrom(this.store.select(selectAuthUser));
-      if (this.router.getCurrentNavigation()?.previousNavigation) {
-        this.navCtrl.back();
-      } else {
-        this.navCtrl.navigateForward(`/account/${authUser?.uid}`);
-      }
-      return false;
-    }
-    return true;
-  }
-}
+describe("ProfessionalInfoComponent", () => {
+  let component: ProfessionalInfoFormComponent;
+  let fixture: ComponentFixture<ProfessionalInfoFormComponent>;
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [],
+      imports: [IonicModule.forRoot()],
+      providers: [provideMockStore({})],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(ProfessionalInfoFormComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
+
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

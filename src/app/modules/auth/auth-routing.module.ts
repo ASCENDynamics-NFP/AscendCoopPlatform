@@ -17,39 +17,33 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Injectable} from "@angular/core";
-import {Router} from "@angular/router";
-import {firstValueFrom} from "rxjs";
-import {NavController} from "@ionic/angular";
-import {Store} from "@ngrx/store";
-import {
-  selectIsLoggedIn,
-  selectAuthUser,
-} from "../../state/selectors/auth.selectors";
+import {NgModule} from "@angular/core";
+import {RouterModule, Routes} from "@angular/router";
+import {LoginPage} from "./pages/login/login.page";
+import {SignupPage} from "./pages/signup/signup.page";
+import {SecureInnerPagesGuard} from "../../core/guards/secure-inner-pages.guard";
+import {LandingPage} from "./pages/landing/landing.page";
 
-@Injectable({
-  providedIn: "root",
+const routes: Routes = [
+  {
+    path: "",
+    component: LandingPage,
+    canActivate: [SecureInnerPagesGuard],
+  },
+  {
+    path: "login",
+    component: LoginPage,
+    canActivate: [SecureInnerPagesGuard],
+  },
+  {
+    path: "signup",
+    component: SignupPage,
+    canActivate: [SecureInnerPagesGuard],
+  },
+];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class SecureInnerPagesGuard {
-  constructor(
-    private store: Store,
-    private navCtrl: NavController,
-    private router: Router,
-  ) {}
-
-  async canActivate(): Promise<boolean> {
-    const isLoggedIn = await firstValueFrom(
-      this.store.select(selectIsLoggedIn),
-    );
-    if (isLoggedIn) {
-      const authUser = await firstValueFrom(this.store.select(selectAuthUser));
-      if (this.router.getCurrentNavigation()?.previousNavigation) {
-        this.navCtrl.back();
-      } else {
-        this.navCtrl.navigateForward(`/account/${authUser?.uid}`);
-      }
-      return false;
-    }
-    return true;
-  }
-}
+export class AuthRoutingModule {}

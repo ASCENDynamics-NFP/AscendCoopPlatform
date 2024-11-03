@@ -59,7 +59,7 @@ describe("AuthGuard", () => {
     const result = await guard.canActivate();
 
     expect(result).toBeFalse();
-    expect(router.navigate).toHaveBeenCalledWith(["/login"]);
+    expect(router.navigate).toHaveBeenCalledWith(["/auth/login"]);
   });
 
   it("should send verification email and redirect to login if user is not verified", async () => {
@@ -72,7 +72,7 @@ describe("AuthGuard", () => {
       AuthActions.sendVerificationMail({email: mockAuthUser.email!}),
     );
     expect(store.dispatch).toHaveBeenCalledWith(AuthActions.signOut());
-    // expect(router.navigate).toHaveBeenCalledWith(["/login"]);
+    // expect(router.navigate).toHaveBeenCalledWith(["/auth/login"]);
   });
   it("should allow navigation if user is authenticated and verified", async () => {
     // Set emailVerified to true to test the successful navigation

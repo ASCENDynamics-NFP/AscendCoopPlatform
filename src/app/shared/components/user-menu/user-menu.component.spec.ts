@@ -88,7 +88,9 @@ describe("UserMenuComponent", () => {
   it("should dismiss the popover and navigate to the user profile on goToProfile if user exists", async () => {
     await component.goToProfile();
     expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
-    expect(mockRouter.navigate).toHaveBeenCalledWith([`/${mockAuthUser.uid}`]);
+    expect(mockRouter.navigate).toHaveBeenCalledWith([
+      `/account/${mockAuthUser.uid}`,
+    ]);
   });
 
   it("should log an error if user ID is not found on goToProfile", async () => {
@@ -103,7 +105,7 @@ describe("UserMenuComponent", () => {
   it("should dismiss the popover and navigate to settings on goToSettings", async () => {
     await component.goToSettings();
     expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
-    expect(mockRouter.navigate).toHaveBeenCalledWith(["/settings"]);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(["/account/settings"]);
   });
 
   it("should log an error if fetching user profile throws an error in goToProfile", async () => {

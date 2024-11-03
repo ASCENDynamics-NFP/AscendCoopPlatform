@@ -116,17 +116,17 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.menuPages = [
       {
         title: this.translate.instant("menu.login"),
-        url: "/login",
+        url: "/auth/login",
         icon: "log-in",
       },
       {
         title: this.translate.instant("menu.signup"),
-        url: "/signup",
+        url: "/auth/signup",
         icon: "person-add",
       },
       {
         title: this.translate.instant("menu.groups"),
-        url: "/group-list",
+        url: "/account/group-list",
         icon: "business",
       },
     ];
@@ -136,7 +136,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.menuPages = [
       {
         title: this.translate.instant("menu.profile"),
-        url: `/${this.user?.uid}`,
+        url: `/account/${this.user?.uid}`,
         icon: "person",
       },
       {
@@ -150,7 +150,7 @@ export class MenuComponent implements OnInit, OnDestroy {
       },
       {
         title: this.translate.instant("menu.groups"),
-        url: "group-list",
+        url: "/account/group-list",
         icon: "business",
         // hasButton: true,
         // buttonLink: "create-group",
@@ -159,12 +159,12 @@ export class MenuComponent implements OnInit, OnDestroy {
       },
       {
         title: this.translate.instant("menu.users"),
-        url: "users",
+        url: "/account/users",
         icon: "people",
       },
       {
         title: this.translate.instant("menu.settings"),
-        url: "settings",
+        url: "/account/settings",
         icon: "settings",
       },
       // {

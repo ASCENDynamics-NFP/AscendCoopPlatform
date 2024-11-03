@@ -17,39 +17,29 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Injectable} from "@angular/core";
-import {Router} from "@angular/router";
-import {firstValueFrom} from "rxjs";
-import {NavController} from "@ionic/angular";
-import {Store} from "@ngrx/store";
-import {
-  selectIsLoggedIn,
-  selectAuthUser,
-} from "../../state/selectors/auth.selectors";
+import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
+import {IonicModule} from "@ionic/angular";
 
-@Injectable({
-  providedIn: "root",
-})
-export class SecureInnerPagesGuard {
-  constructor(
-    private store: Store,
-    private navCtrl: NavController,
-    private router: Router,
-  ) {}
+import {VolunteerPreferenceInfoFormComponent} from "./volunteer-preference-info-form.component";
+import {provideMockStore} from "@ngrx/store/testing";
 
-  async canActivate(): Promise<boolean> {
-    const isLoggedIn = await firstValueFrom(
-      this.store.select(selectIsLoggedIn),
-    );
-    if (isLoggedIn) {
-      const authUser = await firstValueFrom(this.store.select(selectAuthUser));
-      if (this.router.getCurrentNavigation()?.previousNavigation) {
-        this.navCtrl.back();
-      } else {
-        this.navCtrl.navigateForward(`/account/${authUser?.uid}`);
-      }
-      return false;
-    }
-    return true;
-  }
-}
+describe("VolunteerPreferenceInfoComponent", () => {
+  let component: VolunteerPreferenceInfoFormComponent;
+  let fixture: ComponentFixture<VolunteerPreferenceInfoFormComponent>;
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [],
+      imports: [IonicModule.forRoot()],
+      providers: [provideMockStore()],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(VolunteerPreferenceInfoFormComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
+
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

@@ -39,7 +39,7 @@ export class AuthGuard {
 
     if (!authUser) {
       // Redirect to login if not authenticated
-      this.router.navigate(["/login"]);
+      this.router.navigate(["/auth/login"]);
       return false;
     } else if (authUser && !authUser.emailVerified) {
       // Send verification email if the user is not verified

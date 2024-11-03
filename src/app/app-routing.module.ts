@@ -21,8 +21,6 @@
 
 import {NgModule} from "@angular/core";
 import {RouterModule, Routes, ExtraOptions} from "@angular/router";
-import {AuthGuard} from "./core/guards/auth.guard";
-import {SecureInnerPagesGuard} from "./core/guards/secure-inner-pages.guard";
 
 export const routes: Routes = [
   {
@@ -31,87 +29,24 @@ export const routes: Routes = [
     pathMatch: "full",
   },
   {
-    path: "",
+    path: "", // Used to remove "/auth" from landing page.
     loadChildren: () =>
-      import("./modules/account/pages/landing/landing.module").then(
-        (m) => m.LandingPageModule,
-      ),
-    canActivate: [SecureInnerPagesGuard],
+      import("./modules/auth/auth.module").then((m) => m.AuthModule),
   },
   {
-    path: "group-list",
+    path: "account", // Used to organize routes in "/account" folder.
     loadChildren: () =>
-      import("./modules/account/pages/group-list/group-list.module").then(
-        (m) => m.GroupListPageModule,
-      ),
+      import("./modules/account/account.module").then((m) => m.AccountModule),
   },
   {
-    path: "signup",
+    path: "auth", // Used to organize routes in "/auth" folder.
     loadChildren: () =>
-      import("./modules/account/pages/signup/signup.module").then(
-        (m) => m.SignupPageModule,
-      ),
-    canActivate: [SecureInnerPagesGuard],
+      import("./modules/auth/auth.module").then((m) => m.AuthModule),
   },
   {
-    path: "login",
-    loadChildren: () =>
-      import("./modules/account/pages/login/login.module").then(
-        (m) => m.LoginPageModule,
-      ),
-    canActivate: [SecureInnerPagesGuard],
-  },
-  {
-    path: "settings",
-    loadChildren: () =>
-      import("./modules/account/pages/settings/settings.module").then(
-        (m) => m.SettingsPageModule,
-      ),
-    canActivate: [AuthGuard],
-  },
-  {
-    path: "users",
-    loadChildren: () =>
-      import("./modules/account/pages/users/users.module").then(
-        (m) => m.UsersPageModule,
-      ),
-    canActivate: [AuthGuard],
-  },
-  {
-    path: "registration/:accountId",
-    loadChildren: () =>
-      import("./modules/account/pages/registration/registration.module").then(
-        (m) => m.RegistrationPageModule,
-      ),
-  },
-  {
-    path: "listings",
+    path: "listings", // Used to organize routes in "/listings" folder.
     loadChildren: () =>
       import("./modules/listing/listing.module").then((m) => m.ListingModule),
-  },
-  {
-    path: ":accountId",
-    loadChildren: () =>
-      import("./modules/account/pages/details/details.module").then(
-        (m) => m.DetailsPageModule,
-      ),
-    canActivate: [AuthGuard],
-  },
-  {
-    path: ":accountId/edit",
-    loadChildren: () =>
-      import("./modules/account/pages/edit/edit.module").then(
-        (m) => m.EditPageModule,
-      ),
-    canActivate: [AuthGuard],
-  },
-  {
-    path: ":accountId/related/:listType",
-    loadChildren: () =>
-      import("./modules/account/relatedAccount/pages/list/list.module").then(
-        (m) => m.ListPageModule,
-      ),
-    canActivate: [AuthGuard],
   },
 ];
 

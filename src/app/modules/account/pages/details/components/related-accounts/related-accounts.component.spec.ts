@@ -20,13 +20,12 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {RelatedAccountsComponent} from "./related-accounts.component";
 import {Router} from "@angular/router";
-import {Account} from "../../../../../../models/account.model";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
 
 describe("RelatedAccountsComponent", () => {
   let component: RelatedAccountsComponent;
   let fixture: ComponentFixture<RelatedAccountsComponent>;
-  let mockRouter: any;
+  let mockRouter: Partial<Router>;
 
   beforeEach(async () => {
     mockRouter = {
@@ -94,7 +93,7 @@ describe("RelatedAccountsComponent", () => {
 
   it("should navigate to the correct related account when goToRelatedAccount is called with a valid ID", () => {
     component.goToRelatedAccount("123");
-    expect(mockRouter.navigate).toHaveBeenCalledWith(["/123"]);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(["/account/123"]);
   });
 
   it("should log an error if goToRelatedAccount is called with an undefined ID", () => {
@@ -109,7 +108,9 @@ describe("RelatedAccountsComponent", () => {
     component.account = {id: "12345"};
     component.type = "user";
     component.viewAll();
-    expect(mockRouter.navigate).toHaveBeenCalledWith(["/12345/related/user"]);
+    expect(mockRouter.navigate).toHaveBeenCalledWith([
+      "/account/12345/related/user",
+    ]);
   });
 
   it("should not attempt navigation in viewAll if account ID is not set", () => {

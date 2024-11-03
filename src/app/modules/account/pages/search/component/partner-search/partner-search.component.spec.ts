@@ -22,6 +22,7 @@ import {IonicModule} from "@ionic/angular";
 
 import {PartnerSearchComponent} from "./partner-search.component";
 import {provideMockStore} from "@ngrx/store/testing";
+import {NO_ERRORS_SCHEMA} from "@angular/core";
 
 describe("PartnerSearchComponent", () => {
   let component: PartnerSearchComponent;
@@ -31,6 +32,7 @@ describe("PartnerSearchComponent", () => {
     TestBed.configureTestingModule({
       imports: [IonicModule.forRoot()],
       providers: [provideMockStore({})],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PartnerSearchComponent);

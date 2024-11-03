@@ -17,39 +17,53 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Injectable} from "@angular/core";
-import {Router} from "@angular/router";
-import {firstValueFrom} from "rxjs";
-import {NavController} from "@ionic/angular";
-import {Store} from "@ngrx/store";
-import {
-  selectIsLoggedIn,
-  selectAuthUser,
-} from "../../state/selectors/auth.selectors";
+a {
+  cursor: pointer;
+}
 
-@Injectable({
-  providedIn: "root",
-})
-export class SecureInnerPagesGuard {
-  constructor(
-    private store: Store,
-    private navCtrl: NavController,
-    private router: Router,
-  ) {}
+.logo {
+  width: 500px;
+  max-width: 100%;
+}
 
-  async canActivate(): Promise<boolean> {
-    const isLoggedIn = await firstValueFrom(
-      this.store.select(selectIsLoggedIn),
-    );
-    if (isLoggedIn) {
-      const authUser = await firstValueFrom(this.store.select(selectAuthUser));
-      if (this.router.getCurrentNavigation()?.previousNavigation) {
-        this.navCtrl.back();
-      } else {
-        this.navCtrl.navigateForward(`/account/${authUser?.uid}`);
-      }
-      return false;
-    }
-    return true;
+h2 {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.content-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%; /* This ensures that the ion-card-content takes full available height */
+}
+
+ion-card {
+  height: 100%; /* Make the ion-card take full available height of ion-content */
+}
+
+ion-content {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+
+  ion-text {
+    font-size: small;
   }
+}
+
+.col-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%; /* Ensure the container takes full height to center its content */
+}
+
+ion-note {
+  display: block;
 }

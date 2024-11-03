@@ -23,6 +23,7 @@ import {HeroComponent} from "./hero.component";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {Timestamp} from "firebase/firestore";
 import {Listing} from "../../../../../../models/listing.model";
+import {NO_ERRORS_SCHEMA} from "@angular/core";
 
 describe("HeroComponent", () => {
   let component: HeroComponent;
@@ -83,6 +84,7 @@ describe("HeroComponent", () => {
           initialState: {listings: {selectedListing: null}},
         }),
       ],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     store = TestBed.inject(MockStore);

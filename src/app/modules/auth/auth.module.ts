@@ -17,29 +17,34 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
+import {CUSTOM_ELEMENTS_SCHEMA, NgModule} from "@angular/core";
+import {CommonModule} from "@angular/common";
+import {AuthRoutingModule} from "./auth-routing.module";
+import {ReactiveFormsModule} from "@angular/forms";
+import {RouterModule} from "@angular/router";
 import {IonicModule} from "@ionic/angular";
-import {GroupRegistrationComponent} from "./group-registration.component";
-import {provideMockStore} from "@ngrx/store/testing";
-import {NO_ERRORS_SCHEMA} from "@angular/core";
+import {TranslateModule} from "@ngx-translate/core";
+import {SignupPage} from "./pages/signup/signup.page";
+import {LoginPage} from "./pages/login/login.page";
+import {EffectsModule} from "@ngrx/effects";
+import {StoreModule} from "@ngrx/store";
+import {authReducer} from "../../state/reducers/auth.reducer";
+import {AuthEffects} from "../../state/effects/auth.effects";
+import {LandingPage} from "./pages/landing/landing.page";
 
-describe("GroupRegistrationComponent", () => {
-  let component: GroupRegistrationComponent;
-  let fixture: ComponentFixture<GroupRegistrationComponent>;
-
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      imports: [IonicModule.forRoot()],
-      providers: [provideMockStore()],
-      schemas: [NO_ERRORS_SCHEMA],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(GroupRegistrationComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  }));
-
-  it("should create", () => {
-    expect(component).toBeTruthy();
-  });
-});
+@NgModule({
+  declarations: [LoginPage, SignupPage, LandingPage],
+  imports: [
+    AuthRoutingModule,
+    CommonModule,
+    IonicModule,
+    RouterModule,
+    ReactiveFormsModule,
+    TranslateModule,
+    StoreModule.forFeature("auth", authReducer),
+    EffectsModule.forFeature([AuthEffects]),
+  ],
+  // exports: [],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+})
+export class AuthModule {}

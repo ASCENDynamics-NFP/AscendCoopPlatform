@@ -81,7 +81,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     return popover.present();
   }
 
-  onPopoverDismiss(event: any) {
+  onPopoverDismiss(_event: any) {
     // Handle popover dismiss if needed
   }
 }

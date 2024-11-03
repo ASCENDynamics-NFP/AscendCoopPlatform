@@ -17,7 +17,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<form [formGroup]="listingForm" (ngSubmit)="onSubmit()">
+<form [formGroup]="listingForm" (ngSubmit)="saveAsActive()">
   <ion-accordion-group
     [multiple]="true"
     [value]="[
@@ -806,8 +806,18 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
   <ion-row>
     <ion-col>
-      <ion-button expand="block" type="submit" [disabled]="!listingForm.valid">
-        Save Listing
+      <ion-button expand="block" (click)="saveAsDraft()">
+        Save as Draft
+      </ion-button>
+    </ion-col>
+    <ion-col>
+      <ion-button expand="block" color="primary" (click)="saveAsActive()">
+        Publish Listing
+      </ion-button>
+    </ion-col>
+    <ion-col>
+      <ion-button expand="block" color="danger" (click)="saveAsInactive()">
+        Deactivate
       </ion-button>
     </ion-col>
   </ion-row>

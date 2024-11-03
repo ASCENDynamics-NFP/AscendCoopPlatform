@@ -27,6 +27,7 @@ import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {Timestamp} from "firebase/firestore";
 import {BehaviorSubject} from "rxjs";
+import {Listing} from "../../../../models/listing.model";
 
 describe("ListingCreatePage", () => {
   let component: ListingCreatePage;
@@ -84,7 +85,6 @@ describe("ListingCreatePage", () => {
       type: "volunteer",
       organization: "",
       remote: false,
-      skills: [],
       timeCommitment: {
         hoursPerWeek: 10,
         duration: "3 months",
@@ -93,6 +93,7 @@ describe("ListingCreatePage", () => {
         endDate: Timestamp.fromDate(new Date()),
         isFlexible: true,
       },
+      skills: [],
       requirements: [],
       responsibilities: [],
       benefits: [],
@@ -102,6 +103,7 @@ describe("ListingCreatePage", () => {
         addresses: [],
         preferredMethodOfContact: "Email",
       },
+      status: "active",
     };
 
     component.onSubmit(mockFormValue);
@@ -111,8 +113,7 @@ describe("ListingCreatePage", () => {
         listing: {
           ...mockFormValue,
           createdBy: mockUser.uid,
-          status: "active",
-        } as any,
+        } as Listing,
       }),
     );
     expect(router.navigate).toHaveBeenCalledWith(["/listings"]);

@@ -28,6 +28,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <ion-button [routerLink]="['/listings', listing.id, 'edit']">
           <ion-icon name="create-outline"></ion-icon>
         </ion-button>
+        <ion-button (click)="deleteListing()">
+          <ion-icon name="trash-outline"></ion-icon>
+        </ion-button>
       </ion-buttons>
     </ng-container>
   </ion-toolbar>

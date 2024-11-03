@@ -18,8 +18,9 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Component, OnInit} from "@angular/core";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
+import {AlertController} from "@ionic/angular";
 import {Observable, combineLatest} from "rxjs";
 import {map} from "rxjs/operators";
 import {Listing} from "../../../../models/listing.model";
@@ -38,7 +39,9 @@ export class ListingDetailPage implements OnInit {
 
   constructor(
     private store: Store<{listings: ListingsState}>,
+    private router: Router,
     private route: ActivatedRoute,
+    private alertController: AlertController,
   ) {
     this.listing$ = this.store.select(
       (state) => state.listings.selectedListing,
@@ -60,5 +63,31 @@ export class ListingDetailPage implements OnInit {
     if (id) {
       this.store.dispatch(ListingActions.loadListingById({id}));
     }
+  }
+
+  async deleteListing() {
+    const alert = await this.alertController.create({
+      header: "Confirm Deletion",
+      message: "Are you sure you want to delete this listing?",
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "Delete",
+          role: "destructive",
+          handler: () => {
+            const id = this.route.snapshot.paramMap.get("id");
+            if (id) {
+              this.store.dispatch(ListingActions.deleteListing({id}));
+              this.router.navigate(["/listings"]);
+            }
+          },
+        },
+      ],
+    });
+
+    await alert.present();
   }
 }

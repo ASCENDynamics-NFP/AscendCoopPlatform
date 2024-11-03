@@ -103,4 +103,14 @@ export const listingsReducer = createReducer(
         listing.description.toLowerCase().includes(query.toLowerCase()),
     ),
   })),
+
+  on(ListingsActions.deleteListingSuccess, (state, {id}) => ({
+    ...state,
+    listings: state.listings.filter((listing) => listing.id !== id),
+    filteredListings: state.filteredListings.filter(
+      (listing) => listing.id !== id,
+    ),
+    selectedListing:
+      state.selectedListing?.id === id ? null : state.selectedListing,
+  })),
 );

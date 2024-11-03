@@ -115,6 +115,20 @@ export class ListingsEffects {
     ),
   );
 
+  deleteListing$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ListingsActions.deleteListing),
+      mergeMap(({id}) =>
+        from(this.firestoreService.deleteDocument("listings", id)).pipe(
+          map(() => ListingsActions.deleteListingSuccess({id})),
+          catchError((error) =>
+            of(ListingsActions.deleteListingFailure({error: error.message})),
+          ),
+        ),
+      ),
+    ),
+  );
+
   constructor(
     private actions$: Actions,
     private store: Store<{listings: ListingsState}>,

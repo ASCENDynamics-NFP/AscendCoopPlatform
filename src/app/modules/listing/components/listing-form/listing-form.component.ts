@@ -316,7 +316,7 @@ export class ListingFormComponent implements OnInit {
     return this.listingForm.get(arrayName) as FormArray;
   }
 
-  onSubmit() {
+  private submitForm(status: "draft" | "active" | "inactive") {
     if (this.listingForm.valid) {
       const formValue = this.listingForm.value;
       const listing = {
@@ -330,12 +330,24 @@ export class ListingFormComponent implements OnInit {
             ? Timestamp.fromDate(new Date(formValue.timeCommitment.endDate))
             : null,
         },
-        status: "active",
+        status,
       };
       this.formSubmit.emit(listing);
     } else {
       this.markFormGroupTouched(this.listingForm);
     }
+  }
+
+  saveAsDraft() {
+    this.submitForm("draft");
+  }
+
+  saveAsActive() {
+    this.submitForm("active");
+  }
+
+  saveAsInactive() {
+    this.submitForm("inactive");
   }
 
   addAddress() {

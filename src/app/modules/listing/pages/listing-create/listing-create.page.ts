@@ -44,7 +44,6 @@ export class ListingCreatePage {
           const listing = {
             ...formValue,
             createdBy: user.uid,
-            status: "active",
           };
           this.store.dispatch(ListingActions.createListing({listing}));
           this.router.navigate(["/listings"]);

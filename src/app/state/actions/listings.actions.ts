@@ -84,3 +84,18 @@ export const searchListings = createAction(
   "[Listings] Search Listings",
   props<{query: string}>(),
 );
+
+export const deleteListing = createAction(
+  "[Listings API] Delete",
+  props<{id: string}>(),
+);
+
+export const deleteListingSuccess = createAction(
+  "[Listings API] Delete Success",
+  props<{id: string}>(),
+);
+
+export const deleteListingFailure = createAction(
+  "[Listings API] Delete Failure",
+  props<{error: string}>(),
+);

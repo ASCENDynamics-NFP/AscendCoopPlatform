@@ -21,6 +21,7 @@
 
 import {createAction, props} from "@ngrx/store";
 import {Account, RelatedAccount} from "../../models/account.model";
+import {RelatedListing} from "../../models/related-listing.model";
 
 export const clearAccounts = createAction("[Account] Clear Accounts");
 
@@ -45,7 +46,11 @@ export const loadAccount = createAction(
 
 export const loadAccountSuccess = createAction(
   "[Account] Load Account Success",
-  props<{account: Account}>(),
+  props<{
+    account: Account;
+    relatedAccounts: RelatedAccount[];
+    relatedListings: RelatedListing[];
+  }>(),
 );
 
 export const loadAccountFailure = createAction(
@@ -184,5 +189,20 @@ export const updateRelatedAccountSuccess = createAction(
 
 export const updateRelatedAccountFailure = createAction(
   "[Account] Update Related Account Failure",
+  props<{error: any}>(),
+);
+
+export const loadRelatedListings = createAction(
+  "[Account] Load Related Listings",
+  props<{accountId: string}>(),
+);
+
+export const loadRelatedListingsSuccess = createAction(
+  "[Account] Load Related Listings Success",
+  props<{relatedListings: RelatedListing[]}>(),
+);
+
+export const loadRelatedListingsFailure = createAction(
+  "[Account] Load Related Listings Failure",
   props<{error: any}>(),
 );

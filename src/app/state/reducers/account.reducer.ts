@@ -22,10 +22,12 @@
 import {createReducer, on} from "@ngrx/store";
 import * as AccountActions from "../actions/account.actions";
 import {Account, RelatedAccount} from "../../models/account.model";
+import {RelatedListing} from "../../models/related-listing.model";
 
 export interface AccountState {
   accounts: Account[];
   relatedAccounts: RelatedAccount[];
+  relatedListings: RelatedListing[];
   selectedAccount: Account | null;
   loading: boolean;
   error: any;
@@ -34,6 +36,7 @@ export interface AccountState {
 export const initialState: AccountState = {
   accounts: [],
   relatedAccounts: [],
+  relatedListings: [],
   selectedAccount: null,
   loading: false,
   error: null,
@@ -53,18 +56,21 @@ export const accountReducer = createReducer(
     loading: true,
     error: null,
   })),
-  on(AccountActions.loadAccountSuccess, (state, {account}) => {
-    return {
+  on(
+    AccountActions.loadAccountSuccess,
+    (state, {account, relatedAccounts, relatedListings}) => ({
       ...state,
       accounts: [
         ...state.accounts.filter((acc) => acc.id !== account.id),
         account,
       ],
+      relatedAccounts,
+      relatedListings,
       selectedAccount: account,
       loading: false,
       error: null,
-    };
-  }),
+    }),
+  ),
   on(AccountActions.loadAccountFailure, (state, {error}) => {
     return {
       ...state,
@@ -217,4 +223,22 @@ export const accountReducer = createReducer(
       accounts: updatedAccounts,
     };
   }),
+
+  // Add new cases for related listings
+  on(AccountActions.loadRelatedListings, (state) => ({
+    ...state,
+    loading: true,
+  })),
+
+  on(AccountActions.loadRelatedListingsSuccess, (state, {relatedListings}) => ({
+    ...state,
+    relatedListings,
+    loading: false,
+  })),
+
+  on(AccountActions.loadRelatedListingsFailure, (state, {error}) => ({
+    ...state,
+    error,
+    loading: false,
+  })),
 );

@@ -19,11 +19,12 @@
 ***********************************************************************************************/
 // src/app/core/services/firestore.service.ts
 import {Injectable} from "@angular/core";
-import {Observable, of} from "rxjs";
+import {combineLatest, Observable, of} from "rxjs";
 import {map, catchError} from "rxjs/operators";
 import {FirebaseError} from "firebase/app";
 import {Account, RelatedAccount} from "../../models/account.model";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
+import {RelatedListing} from "../../models/related-listing.model";
 
 @Injectable({
   providedIn: "root",
@@ -298,6 +299,40 @@ export class FirestoreService {
           return of([]);
         }),
       );
+  }
+
+  getAccountWithRelated(accountId: string): Observable<{
+    account: Account | null;
+    relatedAccounts: RelatedAccount[];
+    relatedListings: RelatedListing[];
+  }> {
+    return combineLatest([
+      this.getDocument<Account>("accounts", accountId),
+      this.getCollectionWithCondition<RelatedAccount>(
+        `accounts/${accountId}/relatedAccounts`,
+        "status",
+        "!=",
+        "rejected",
+      ),
+      this.afs
+        .collection<RelatedListing>(`accounts/${accountId}/relatedListings`)
+        .valueChanges({idField: "id"})
+        .pipe(catchError(() => of([]))),
+    ]).pipe(
+      map(([account, relatedAccounts, relatedListings]) => ({
+        account,
+        relatedAccounts,
+        relatedListings,
+      })),
+      catchError((error) => {
+        console.error("Error getting account with related data:", error);
+        return of({
+          account: null,
+          relatedAccounts: [],
+          relatedListings: [],
+        });
+      }),
+    );
   }
 
   // Firebase Query Logic (Ends) //

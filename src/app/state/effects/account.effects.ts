@@ -26,6 +26,7 @@ import {from, of} from "rxjs";
 import {switchMap, map, catchError, mergeMap} from "rxjs/operators";
 import {FirestoreService} from "../../core/services/firestore.service";
 import {Account} from "../../models/account.model";
+import {RelatedListing} from "../../models/related-listing.model";
 
 @Injectable()
 export class AccountEffects {
@@ -58,17 +59,15 @@ export class AccountEffects {
   loadAccount$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.loadAccount),
-      // tap(({accountId}) =>
-      //   console.log(`Effect: Loading account with ID: ${accountId}`),
-      // ),
       mergeMap(({accountId}) =>
-        this.firestoreService.getDocument<Account>("accounts", accountId).pipe(
-          // tap((account) =>
-          //   console.log(`Effect: Fetched account data:`, account),
-          // ),
-          map((account) => {
+        this.firestoreService.getAccountWithRelated(accountId).pipe(
+          map(({account, relatedAccounts, relatedListings}) => {
             if (account) {
-              return AccountActions.loadAccountSuccess({account});
+              return AccountActions.loadAccountSuccess({
+                account,
+                relatedAccounts,
+                relatedListings,
+              });
             } else {
               return AccountActions.loadAccountFailure({
                 error: "Account not found",
@@ -251,6 +250,29 @@ export class AccountEffects {
             of(AccountActions.updateRelatedAccountFailure({error})),
           ),
         ),
+      ),
+    ),
+  );
+
+  loadRelatedListings$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AccountActions.loadRelatedListings),
+      mergeMap(({accountId}) =>
+        this.firestoreService
+          .getCollectionWithCondition<RelatedListing>(
+            `accounts/${accountId}/relatedListings`,
+            "status",
+            "in",
+            ["active", "filled"],
+          )
+          .pipe(
+            map((relatedListings) =>
+              AccountActions.loadRelatedListingsSuccess({relatedListings}),
+            ),
+            catchError((error) =>
+              of(AccountActions.loadRelatedListingsFailure({error})),
+            ),
+          ),
       ),
     ),
   );

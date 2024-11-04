@@ -22,6 +22,7 @@
 import {createFeatureSelector, createSelector} from "@ngrx/store";
 import {AccountState} from "../reducers/account.reducer";
 import {Account, RelatedAccount} from "../../models/account.model";
+import {ListingType} from "../../models/listing.model";
 
 export const selectAccountState =
   createFeatureSelector<AccountState>("account");
@@ -94,3 +95,29 @@ export const selectFilteredAccounts = (
       })
       .sort((a, b) => (a.name && b.name ? a.name.localeCompare(b.name) : 0));
   });
+
+export const selectRelatedListings = createSelector(
+  selectAccountState,
+  (state) => state.relatedListings,
+);
+
+export const selectRelatedListingsByType = (type: ListingType) =>
+  createSelector(selectRelatedListings, (listings) =>
+    listings.filter((listing) => listing.type === type),
+  );
+
+export const selectActiveRelatedListings = createSelector(
+  selectRelatedListings,
+  (listings) => listings.filter((listing) => listing.status === "active"),
+);
+
+export const selectAccountWithRelated = createSelector(
+  selectSelectedAccount,
+  selectRelatedAccounts,
+  selectRelatedListings,
+  (account, relatedAccounts, relatedListings) => ({
+    account,
+    relatedAccounts,
+    relatedListings,
+  }),
+);

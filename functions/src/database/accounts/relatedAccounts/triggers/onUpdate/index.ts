@@ -65,6 +65,7 @@ async function handleRelatedAccountUpdate(
         .doc(accountId);
 
       await reciprocalRelatedAccountRef.update({
+        accountId: accountId,
         relationship: after.relationship,
         status: after.status,
         lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),

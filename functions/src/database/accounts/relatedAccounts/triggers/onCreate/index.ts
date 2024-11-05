@@ -126,6 +126,7 @@ async function handleRelatedAccountCreate(
 
     const targetRelatedAccount = {
       id: accountId, // The ID of the initiator account
+      accountId: relatedAccountData.targetId,
       name: initiatorAccountData?.name,
       iconImage: initiatorAccountData?.iconImage,
       tagline: initiatorAccountData?.tagline,

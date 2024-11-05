@@ -112,6 +112,7 @@ export class MemberSearchComponent implements OnInit {
         if (this.currentGroup?.id && user.id) {
           const newRelatedAccount: RelatedAccount = {
             id: user.id,
+            accountId: this.currentGroup.id,
             name: user.name,
             iconImage: user.iconImage,
             tagline: user.tagline,

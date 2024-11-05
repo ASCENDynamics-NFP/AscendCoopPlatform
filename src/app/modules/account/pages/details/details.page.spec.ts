@@ -28,6 +28,7 @@ import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {
   selectSelectedAccount,
+  selectRelatedAccountsByAccountId,
   selectRelatedAccounts,
 } from "../../../../state/selectors/account.selectors";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors"; // Corrected import path
@@ -35,7 +36,6 @@ import {Timestamp} from "firebase/firestore";
 import {Account, RelatedAccount} from "../../../../models/account.model";
 import {AuthUser} from "../../../../models/auth-user.model";
 import {of} from "rxjs";
-
 describe("DetailsPage", () => {
   let component: DetailsPage;
   let fixture: ComponentFixture<DetailsPage>;
@@ -56,7 +56,6 @@ describe("DetailsPage", () => {
     name: "Test Account",
     type: "user",
     privacy: "public",
-    relatedAccounts: [],
     tagline: "",
     description: "",
     iconImage: "",
@@ -76,17 +75,30 @@ describe("DetailsPage", () => {
     webLinks: [],
     lastLoginAt: new Timestamp(0, 0),
     email: "",
+    relatedAccountIds: ["ra1", "ra2"],
+    relatedListingIds: ["rl1", "rl2"],
   };
 
-  // Explicitly type `mockRelatedAccounts`
-  const mockRelatedAccounts: RelatedAccount[] = [];
+  const mockRelatedAccounts: RelatedAccount[] = [
+    {id: "ra1", type: "user", status: "accepted", accountId: mockAccountId},
+    {id: "ra2", type: "group", status: "accepted", accountId: mockAccountId},
+  ];
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [DetailsPage],
-      imports: [IonicModule.forRoot()], // Import IonicModule to handle Ionic components
+      imports: [IonicModule.forRoot()],
       providers: [
         provideMockStore({
+          initialState: {
+            account: {
+              accounts: [mockAccount],
+              relatedAccounts: mockRelatedAccounts,
+              selectedAccount: mockAccount,
+              loading: false,
+              error: null,
+            },
+          },
           selectors: [
             {selector: selectAuthUser, value: mockAuthUser},
             {selector: selectSelectedAccount, value: mockAccount},
@@ -97,12 +109,12 @@ describe("DetailsPage", () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            paramMap: of({get: () => mockAccountId}), // Mock paramMap as an observable
+            paramMap: of({get: () => mockAccountId}),
             snapshot: {paramMap: {get: () => mockAccountId}},
           },
         },
       ],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA], // Allow custom elements like ion-content
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DetailsPage);
@@ -117,45 +129,30 @@ describe("DetailsPage", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should dispatch loadAccount, setSelectedAccount, and loadRelatedAccounts on ngOnInit", () => {
+  it("should dispatch loadAccount and setSelectedAccount on ngOnInit", () => {
     spyOn(store, "dispatch");
-
     component.ngOnInit();
-
     expect(store.dispatch).toHaveBeenCalledWith(
       AccountActions.loadAccount({accountId: mockAccountId}),
     );
     expect(store.dispatch).toHaveBeenCalledWith(
       AccountActions.setSelectedAccount({accountId: mockAccountId}),
     );
-    expect(store.dispatch).toHaveBeenCalledWith(
-      AccountActions.loadRelatedAccounts({accountId: mockAccountId}),
-    );
   });
 
-  it("should select the account based on accountId", (done) => {
-    component.fullAccount$.subscribe((account) => {
-      expect(account).toEqual({
-        ...mockAccount,
-        relatedAccounts: mockRelatedAccounts,
-      });
+  it("should select related accounts for the current account", (done) => {
+    component.ngOnInit();
+
+    component.relatedAccounts$.subscribe((relatedAccounts) => {
+      expect(relatedAccounts).toEqual(mockRelatedAccounts);
       done();
     });
   });
 
-  // it("should navigate to registration if account type is not defined", () => {
-  //   // Override the store selector to return an account with no 'type'
-  //   store.overrideSelector(selectSelectedAccount, {
-  //     ...mockAccount,
-  //     type: undefined,
-  //   });
-
-  //   // Explicitly call ngOnInit to re-evaluate logic after changing the mock store value
-  //   component.ngOnInit();
-
-  //   // Check if the router's navigate method was called with the correct route
-  //   expect(router.navigate).toHaveBeenCalledWith([
-  //     `/registration/${mockAccountId}`,
-  //   ]);
-  // });
+  it("should combine account and auth user to determine profile ownership", (done) => {
+    component.isProfileOwner$.subscribe((isOwner) => {
+      expect(isOwner).toBeTrue();
+      done();
+    });
+  });
 });

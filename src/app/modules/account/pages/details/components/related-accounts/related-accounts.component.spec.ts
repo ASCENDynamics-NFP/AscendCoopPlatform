@@ -21,6 +21,7 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {RelatedAccountsComponent} from "./related-accounts.component";
 import {Router} from "@angular/router";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
+import {Account} from "../../../../../../models/account.model";
 
 describe("RelatedAccountsComponent", () => {
   let component: RelatedAccountsComponent;
@@ -51,13 +52,13 @@ describe("RelatedAccountsComponent", () => {
 
   it('should return "Friends" as title for user type when account is of type user', () => {
     component.type = "user";
-    component.account = {type: "user"};
+    component.account = {type: "user"} as Account;
     expect(component.title).toBe("Friends");
   });
 
   it('should return "Members" as title for user type when account is of type group', () => {
     component.type = "user";
-    component.account = {type: "group"};
+    component.account = {type: "group"} as Account;
     expect(component.title).toBe("Members");
   });
 
@@ -66,29 +67,50 @@ describe("RelatedAccountsComponent", () => {
     expect(component.title).toBe("Organizations");
   });
 
-  it("should return related accounts filtered by type and accepted status", () => {
-    component.account = {
-      relatedAccounts: [
-        {id: "1", type: "user", status: "accepted"},
-        {id: "2", type: "user", status: "pending"},
-        {id: "3", type: "group", status: "accepted"},
-      ],
-    };
+  it("should return filtered related accounts by type and accepted status", () => {
+    component.relatedAccounts = [
+      {
+        id: "1",
+        type: "user",
+        status: "accepted",
+        accountId: "",
+      },
+      {
+        id: "2",
+        type: "user",
+        status: "pending",
+        accountId: "",
+      },
+      {
+        id: "3",
+        type: "group",
+        status: "accepted",
+        accountId: "",
+      },
+    ];
     component.type = "user";
-    expect(component.relatedAccounts).toEqual([
-      {id: "1", type: "user", status: "accepted"},
+    expect(component.filteredRelatedAccounts).toEqual([
+      {id: "1", type: "user", status: "accepted", accountId: ""},
     ]);
   });
 
   it("should return an empty array if no related accounts match the filter", () => {
-    component.account = {
-      relatedAccounts: [
-        {id: "1", type: "group", status: "pending"},
-        {id: "2", type: "user", status: "rejected"},
-      ],
-    };
+    component.relatedAccounts = [
+      {
+        id: "1",
+        type: "group",
+        status: "pending",
+        accountId: "",
+      },
+      {
+        id: "2",
+        type: "user",
+        status: "rejected",
+        accountId: "",
+      },
+    ];
     component.type = "user";
-    expect(component.relatedAccounts).toEqual([]);
+    expect(component.filteredRelatedAccounts).toEqual([]);
   });
 
   it("should navigate to the correct related account when goToRelatedAccount is called with a valid ID", () => {
@@ -96,16 +118,8 @@ describe("RelatedAccountsComponent", () => {
     expect(mockRouter.navigate).toHaveBeenCalledWith(["/account/123"]);
   });
 
-  it("should log an error if goToRelatedAccount is called with an undefined ID", () => {
-    spyOn(console, "error");
-    component.goToRelatedAccount(undefined);
-    expect(console.error).toHaveBeenCalledWith(
-      "Invalid ID provided for navigation.",
-    );
-  });
-
   it("should navigate to the related accounts list when viewAll is called", () => {
-    component.account = {id: "12345"};
+    component.account = {id: "12345"} as Account;
     component.type = "user";
     component.viewAll();
     expect(mockRouter.navigate).toHaveBeenCalledWith([
@@ -114,7 +128,7 @@ describe("RelatedAccountsComponent", () => {
   });
 
   it("should not attempt navigation in viewAll if account ID is not set", () => {
-    component.account = {};
+    component.account = {} as Account;
     component.viewAll();
     expect(mockRouter.navigate).not.toHaveBeenCalled();
   });

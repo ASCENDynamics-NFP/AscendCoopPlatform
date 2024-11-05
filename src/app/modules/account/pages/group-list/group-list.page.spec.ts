@@ -54,7 +54,6 @@ describe("GroupListPage", () => {
     name: "Test Account",
     type: "user",
     privacy: "public",
-    relatedAccounts: [],
     tagline: "",
     description: "",
     iconImage: "",
@@ -136,7 +135,6 @@ describe("GroupListPage", () => {
 
     expect(component["searchTerms"].next).toHaveBeenCalledWith("test");
   });
-
   it("should call store.dispatch with createRelatedAccount when sendRequest is called", () => {
     spyOn(store, "dispatch");
     const mockAccount = {
@@ -147,17 +145,21 @@ describe("GroupListPage", () => {
       iconImage: "icon.png",
     } as Account;
 
-    store.overrideSelector(selectAuthUser, mockAuthUser); // Ensure mockAuthUser is used
+    store.overrideSelector(selectAuthUser, mockAuthUser);
     component.ngOnInit();
+
+    // Reset the dispatch spy after initialization
+    (store.dispatch as jasmine.Spy).calls.reset();
 
     component.sendRequest(mockAccount);
 
     expect(store.dispatch).toHaveBeenCalledWith(
       AccountActions.createRelatedAccount({
-        accountId: mockAuthUser.uid, // Use mockAuthUser.uid here
+        accountId: mockAuthUser.uid,
         relatedAccount: {
           id: "accountId",
-          initiatorId: mockAuthUser.uid, // Use mockAuthUser.uid here
+          accountId: mockAuthUser.uid,
+          initiatorId: mockAuthUser.uid,
           targetId: "accountId",
           type: "group",
           status: "pending",
@@ -169,7 +171,6 @@ describe("GroupListPage", () => {
       }),
     );
   });
-
   it("should return false from showRequestButton if authUser is not set or matches item.id", (done) => {
     store.overrideSelector(selectAuthUser, null);
     component.ngOnInit();

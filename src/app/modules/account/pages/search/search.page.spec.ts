@@ -56,7 +56,6 @@ describe("SearchPage", () => {
       name: "Group 2",
       type: "group",
       privacy: "public",
-      relatedAccounts: [],
       tagline: "",
       description: "",
       iconImage: "",

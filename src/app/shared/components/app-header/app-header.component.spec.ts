@@ -49,7 +49,6 @@ describe("AppHeaderComponent", () => {
     name: "Test Account",
     type: "user",
     privacy: "public",
-    relatedAccounts: [],
     tagline: "",
     description: "",
     iconImage: "assets/custom-image.png",

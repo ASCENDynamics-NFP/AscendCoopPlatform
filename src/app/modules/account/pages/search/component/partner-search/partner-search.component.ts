@@ -92,6 +92,7 @@ export class PartnerSearchComponent implements OnInit {
 
     const relatedAccount: RelatedAccount = {
       id: group.id,
+      accountId: this.currentGroup.id,
       name: group.name,
       iconImage: group.iconImage,
       tagline: group.tagline,

@@ -53,7 +53,6 @@ describe("UsersPage", () => {
     name: "Test Account",
     type: "user",
     privacy: "public",
-    relatedAccounts: [],
     tagline: "Sample tagline",
     description: "",
     iconImage: "",
@@ -78,6 +77,7 @@ describe("UsersPage", () => {
   const mockRelatedAccounts: RelatedAccount[] = [
     {
       id: "67890",
+      accountId: "12345",
       initiatorId: "12345",
       targetId: "67890",
       type: "user",
@@ -173,6 +173,7 @@ describe("UsersPage", () => {
         accountId: mockAuthUser.uid,
         relatedAccount: {
           id: mockAccount.id,
+          accountId: mockAuthUser.uid,
           initiatorId: mockAuthUser.uid,
           targetId: mockAccount.id,
           type: mockAccount.type,

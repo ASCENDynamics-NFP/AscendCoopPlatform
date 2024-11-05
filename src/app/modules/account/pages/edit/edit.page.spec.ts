@@ -53,7 +53,6 @@
 //     name: "Test Account",
 //     type: "user",
 //     privacy: "public",
-//     relatedAccounts: [],
 //     tagline: "",
 //     description: "",
 //     iconImage: "",

@@ -157,13 +157,16 @@ export const accountReducer = createReducer(
     loading: false,
   })),
 
-  // Handle createRelatedAccountSuccess to add the new related account to the state
+  // Handle createRelatedAccountSuccess to add the new related account ID
   on(AccountActions.createRelatedAccountSuccess, (state, {relatedAccount}) => {
     const updatedAccounts = state.accounts.map((account) => {
-      if (account.id === relatedAccount.initiatorId) {
+      if (account.id === relatedAccount.accountId) {
         return {
           ...account,
-          relatedAccounts: [...(account.relatedAccounts || []), relatedAccount],
+          relatedAccountIds: [
+            ...(account.relatedAccountIds || []),
+            relatedAccount.id,
+          ],
         };
       }
       return account;
@@ -172,6 +175,7 @@ export const accountReducer = createReducer(
     return {
       ...state,
       accounts: updatedAccounts,
+      relatedAccounts: [...state.relatedAccounts, relatedAccount],
     };
   }),
 
@@ -184,35 +188,26 @@ export const accountReducer = createReducer(
         if (account.id === accountId) {
           return {
             ...account,
-            relatedAccounts: (account.relatedAccounts || []).filter(
-              (ra) => ra.id !== relatedAccountId,
+            relatedAccountIds: (account.relatedAccountIds || []).filter(
+              (id) => id !== relatedAccountId,
             ),
           };
         }
         return account;
       }),
+      relatedAccounts: state.relatedAccounts.filter(
+        (ra) => ra.id !== relatedAccountId,
+      ),
     }),
   ),
 
   // Update Related Account Success
   on(AccountActions.updateRelatedAccountSuccess, (state, {relatedAccount}) => {
     const updatedAccounts = state.accounts.map((account) => {
-      if (account.id === relatedAccount.initiatorId) {
-        const relatedAccounts = account.relatedAccounts || [];
-
-        const exists = relatedAccounts.some(
-          (ra) => ra.id === relatedAccount.id,
-        );
-
-        const updatedRelatedAccounts = exists
-          ? relatedAccounts.map((ra) =>
-              ra.id === relatedAccount.id ? {...relatedAccount} : ra,
-            )
-          : [...relatedAccounts, relatedAccount];
-
+      if (account.id === relatedAccount.accountId) {
         return {
           ...account,
-          relatedAccounts: updatedRelatedAccounts,
+          relatedAccountIds: account.relatedAccountIds || [relatedAccount.id],
         };
       }
       return account;
@@ -221,6 +216,9 @@ export const accountReducer = createReducer(
     return {
       ...state,
       accounts: updatedAccounts,
+      relatedAccounts: state.relatedAccounts.map((ra) =>
+        ra.id === relatedAccount.id ? relatedAccount : ra,
+      ),
     };
   }),
 

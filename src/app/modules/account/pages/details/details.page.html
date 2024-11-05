@@ -19,7 +19,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <!-- src/app/modules/account/pages/details/details.page.html -->
 
-<ng-container *ngIf="fullAccount$ | async as account; else loading">
+<ng-container *ngIf="account$ | async as account; else loading">
   <app-header [title]="account.name"></app-header>
 
   <ion-content [fullscreen]="true">
@@ -69,16 +69,21 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         *ngIf="account.type === 'user'"
         [professionalInfo]="account.professionalInformation"
       ></app-professional-info>
+
       <app-related-accounts
         id="users"
         [account]="account"
+        [relatedAccounts]="(relatedAccounts$ | async) ?? []"
         type="user"
       ></app-related-accounts>
+
       <app-related-accounts
         id="groups"
         [account]="account"
+        [relatedAccounts]="(relatedAccounts$ | async) ?? []"
         type="group"
       ></app-related-accounts>
+
       <app-volunteer-preference-info
         id="volunteer"
         *ngIf="account.type === 'user'"

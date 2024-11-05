@@ -25,12 +25,11 @@ import {Observable, combineLatest} from "rxjs";
 import {map, tap} from "rxjs/operators";
 import {AuthUser} from "../../../../models/auth-user.model";
 import {Store} from "@ngrx/store";
-
-import {Account} from "../../../../models/account.model";
+import {Account, RelatedAccount} from "../../../../models/account.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {
   selectSelectedAccount,
-  selectRelatedAccounts,
+  selectRelatedAccountsByAccountId,
 } from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {IonContent} from "@ionic/angular";
@@ -44,7 +43,8 @@ export class DetailsPage implements OnInit {
   @ViewChild(IonContent, {static: false}) content!: IonContent; // Get reference to ion-content
   public accountId: string | null;
   authUser$!: Observable<AuthUser | null>;
-  fullAccount$!: Observable<Account | null>;
+  account$!: Observable<Account | null>;
+  relatedAccounts$!: Observable<RelatedAccount[]>;
   isProfileOwner$!: Observable<boolean>;
 
   constructor(
@@ -87,35 +87,25 @@ export class DetailsPage implements OnInit {
         );
 
         // Select account and related accounts from the store
-        const selectedAccount$ = this.store.select(selectSelectedAccount);
-        const relatedAccounts$ = this.store.select(selectRelatedAccounts);
-
-        // Combine the account and related accounts into one observable without mutating
-        this.fullAccount$ = combineLatest([
-          selectedAccount$,
-          relatedAccounts$,
-        ]).pipe(
-          tap(([account]) => {
-            if (account && !account.type) {
-              this.router.navigate([`/registration/${this.accountId}`]);
-            }
-          }),
-          map(([account, relatedAccounts]) => {
-            if (account) {
-              return {
-                ...account, // Clone the account object
-                relatedAccounts: relatedAccounts, // Assign relatedAccounts without mutation
-              };
-            } else {
-              return null;
-            }
-          }),
+        this.account$ = this.store.select(selectSelectedAccount);
+        this.relatedAccounts$ = this.store.select(
+          selectRelatedAccountsByAccountId(this.accountId),
         );
+
+        this.account$
+          .pipe(
+            tap((account) => {
+              if (account && !account.type) {
+                this.router.navigate([`/registration/${this.accountId}`]);
+              }
+            }),
+          )
+          .subscribe();
 
         // Determine if the current user is the profile owner
         this.isProfileOwner$ = combineLatest([
           this.authUser$,
-          this.fullAccount$,
+          this.account$,
         ]).pipe(
           map(([authUser, account]) => {
             // Ensure account and authUser are not null

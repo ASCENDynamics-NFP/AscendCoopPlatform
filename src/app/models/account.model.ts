@@ -197,13 +197,15 @@ export interface Account extends BaseDocument, Group, User {
   legalAgreements: LegalAgreements; // Legal agreements, such as terms of service and privacy policy
   contactInformation?: ContactInformation; // Contact information and address
   webLinks: WebLink[]; // Links to social media, personal websites, etc.
-  relatedAccounts?: RelatedAccount[];
   lastLoginAt: Timestamp;
   email: string;
+  relatedAccountIds?: string[];
+  relatedListingIds?: string[];
 }
 
 export interface RelatedAccount extends BaseDocument {
   id: string; // Required
+  accountId: string; // Reference to the parent account
   name?: string; // Name of the related user or group
   iconImage?: string; // URL or path to the icon image
   tagline?: string; // Tagline or short description

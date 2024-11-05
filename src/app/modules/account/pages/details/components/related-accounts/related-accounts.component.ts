@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 import {Component, Input} from "@angular/core";
 import {Router} from "@angular/router";
-import {Account} from "../../../../../../models/account.model";
+import {Account, RelatedAccount} from "../../../../../../models/account.model";
 
 @Component({
   selector: "app-related-accounts",
@@ -27,8 +27,9 @@ import {Account} from "../../../../../../models/account.model";
   styleUrls: ["./related-accounts.component.scss"],
 })
 export class RelatedAccountsComponent {
-  @Input() account: Partial<Account> = {relatedAccounts: []}; // Initialize with a default object
-  @Input() type: "user" | "group" = "user"; // Default type to 'user'
+  @Input() account: Account = {} as Account;
+  @Input() relatedAccounts: RelatedAccount[] = [];
+  @Input() type: "user" | "group" = "user";
 
   constructor(private router: Router) {}
 
@@ -39,11 +40,9 @@ export class RelatedAccountsComponent {
     return "Organizations";
   }
 
-  get relatedAccounts() {
-    return (
-      this.account?.relatedAccounts?.filter(
-        (ra) => ra.type === this.type && ra.status === "accepted",
-      ) || []
+  get filteredRelatedAccounts() {
+    return this.relatedAccounts.filter(
+      (ra) => ra.type === this.type && ra.status === "accepted",
     );
   }
 

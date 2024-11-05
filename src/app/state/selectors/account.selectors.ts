@@ -32,18 +32,16 @@ export const selectAccounts = createSelector(
   (state) => state.accounts,
 );
 
-// Selector to get all related accounts from the state
-// export const selectAllRelatedAccounts = (state: AppState) =>
-//   state.accounts.relatedAccounts;
+export const selectRelatedListingsByAccountId = (accountId: string) =>
+  createSelector(selectRelatedListings, (listings) =>
+    listings.filter((listing) => listing.accountId === accountId),
+  );
 
-// Selector to get related accounts by accountId (initiatorId or targetId matches accountId)
 export const selectRelatedAccountsByAccountId = (accountId: string) =>
   createSelector(
     selectRelatedAccounts,
-    (relatedAccounts: Partial<RelatedAccount>[]) =>
-      relatedAccounts.filter(
-        (ra) => ra.initiatorId === accountId || ra.targetId === accountId,
-      ),
+
+    (accounts) => accounts.filter((account) => account.accountId === accountId),
   );
 
 export const selectAccountById = (accountId: string) =>
@@ -117,7 +115,11 @@ export const selectAccountWithRelated = createSelector(
   selectRelatedListings,
   (account, relatedAccounts, relatedListings) => ({
     account,
-    relatedAccounts,
-    relatedListings,
+    relatedAccounts: relatedAccounts.filter((ra) =>
+      account?.relatedAccountIds?.includes(ra.id),
+    ),
+    relatedListings: relatedListings.filter((rl) =>
+      account?.relatedListingIds?.includes(rl.id),
+    ),
   }),
 );

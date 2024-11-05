@@ -110,6 +110,7 @@ export class GroupListPage implements OnInit {
 
       const newRelatedAccount: RelatedAccount = {
         id: account.id,
+        accountId: authUser.uid,
         initiatorId: authUser.uid,
         targetId: account.id,
         type: account.type,

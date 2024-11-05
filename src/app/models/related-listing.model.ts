@@ -30,4 +30,5 @@ export interface RelatedListing extends BaseDocument {
   relationship: "owner" | "applicant" | "participant" | "saved";
   applicationDate?: Timestamp;
   notes?: string;
+  accountId: string; // Reference to the parent account
 }

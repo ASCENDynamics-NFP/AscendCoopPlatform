@@ -63,24 +63,20 @@ export class AccountEffects {
         this.firestoreService.getAccountWithRelated(accountId).pipe(
           map(({account, relatedAccounts, relatedListings}) => {
             if (account) {
+              const enhancedAccount: Account = {
+                ...account,
+                relatedAccountIds: relatedAccounts.map((ra) => ra.id),
+                relatedListingIds: relatedListings.map((rl) => rl.id),
+              };
               return AccountActions.loadAccountSuccess({
-                account,
+                account: enhancedAccount,
                 relatedAccounts,
                 relatedListings,
               });
-            } else {
-              return AccountActions.loadAccountFailure({
-                error: "Account not found",
-              });
             }
-          }),
-          catchError((error) => {
-            console.error("Effect: Error loading account:", error);
-            return of(
-              AccountActions.loadAccountFailure({
-                error: error.message || error,
-              }),
-            );
+            return AccountActions.loadAccountFailure({
+              error: "Account not found",
+            });
           }),
         ),
       ),

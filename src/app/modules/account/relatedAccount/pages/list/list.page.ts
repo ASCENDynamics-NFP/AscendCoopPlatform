@@ -132,6 +132,7 @@ export class ListPage implements OnInit {
 
     const updatedRelatedAccount: RelatedAccount = {
       id: request.id,
+      accountId: request.accountId || this.accountId,
       status: status as "pending" | "accepted" | "rejected" | "blocked",
     };
 

@@ -35,8 +35,19 @@ describe("AuthGuard", () => {
     uid: "12345",
     email: "test@example.com",
     displayName: null,
-    photoURL: null,
+    iconImage: null,
     emailVerified: false,
+    heroImage: null,
+    tagline: null,
+    type: null,
+    createdAt: null,
+    lastLoginAt: null,
+    phoneNumber: null,
+    providerData: [],
+    settings: {
+      language: "en",
+      theme: "light",
+    },
   };
 
   beforeEach(() => {

@@ -96,7 +96,9 @@ export class DetailsPage implements OnInit {
           .pipe(
             tap((account) => {
               if (account && !account.type) {
-                this.router.navigate([`/registration/${this.accountId}`]);
+                this.router.navigate([
+                  `/account/registration/${this.accountId}`,
+                ]);
               }
             }),
           )

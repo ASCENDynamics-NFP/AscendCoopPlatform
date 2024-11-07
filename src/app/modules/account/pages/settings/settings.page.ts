@@ -26,8 +26,7 @@ import {Account} from "../../../../models/account.model";
 import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
-import * as AccountActions from "../../../../state/actions/account.actions";
-import {switchMap, tap} from "rxjs/operators";
+import {switchMap} from "rxjs/operators";
 
 @Component({
   selector: "app-settings",
@@ -44,13 +43,6 @@ export class SettingsPage implements OnInit {
 
     // Use switchMap to load the account and select the account observable based on authUser
     this.account$ = this.authUser$.pipe(
-      tap((authUser) => {
-        if (authUser?.uid) {
-          this.store.dispatch(
-            AccountActions.loadAccount({accountId: authUser.uid}),
-          );
-        }
-      }),
       switchMap((authUser) => {
         if (authUser?.uid) {
           return this.store.select(selectAccountById(authUser.uid));

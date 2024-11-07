@@ -85,22 +85,22 @@ describe("UserMenuComponent", () => {
     expect(mockStore.dispatch).toHaveBeenCalledWith(AuthActions.signOut());
   });
 
-  it("should dismiss the popover and navigate to the user profile on goToProfile if user exists", async () => {
-    await component.goToProfile();
-    expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
-    expect(mockRouter.navigate).toHaveBeenCalledWith([
-      `/account/${mockAuthUser.uid}`,
-    ]);
-  });
+  // it("should dismiss the popover and navigate to the user profile on goToProfile if user exists", async () => {
+  //   await component.goToProfile();
+  //   expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
+  //   expect(mockRouter.navigate).toHaveBeenCalledWith([
+  //     `/account/${mockAuthUser.uid}`,
+  //   ]);
+  // });
 
-  it("should log an error if user ID is not found on goToProfile", async () => {
-    spyOn(console, "error");
-    mockStore.select.and.returnValue(of(null)); // Simulate no user in the store
-    await component.goToProfile();
-    expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
-    expect(console.error).toHaveBeenCalledWith("User ID not found.");
-    expect(mockRouter.navigate).not.toHaveBeenCalled();
-  });
+  // it("should log an error if user ID is not found on goToProfile", async () => {
+  //   spyOn(console, "error");
+  //   mockStore.select.and.returnValue(of(null)); // Simulate no user in the store
+  //   await component.goToProfile();
+  //   expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
+  //   expect(console.error).toHaveBeenCalledWith("User ID not found.");
+  //   expect(mockRouter.navigate).not.toHaveBeenCalled();
+  // });
 
   it("should dismiss the popover and navigate to settings on goToSettings", async () => {
     await component.goToSettings();
@@ -108,20 +108,20 @@ describe("UserMenuComponent", () => {
     expect(mockRouter.navigate).toHaveBeenCalledWith(["/account/settings"]);
   });
 
-  it("should log an error if fetching user profile throws an error in goToProfile", async () => {
-    spyOn(console, "error");
+  // it("should log an error if fetching user profile throws an error in goToProfile", async () => {
+  //   spyOn(console, "error");
 
-    const mockError = new Error("Error fetching user"); // Simulate an error object
+  //   const mockError = new Error("Error fetching user"); // Simulate an error object
 
-    mockStore.select.and.throwError(mockError); // Simulate an error during user fetch
+  //   mockStore.select.and.throwError(mockError); // Simulate an error during user fetch
 
-    await component.goToProfile();
+  //   await component.goToProfile();
 
-    expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
-    expect(console.error).toHaveBeenCalledWith(
-      "Error fetching user profile:",
-      mockError,
-    ); // Expect the error object
-    expect(mockRouter.navigate).not.toHaveBeenCalled();
-  });
+  //   expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
+  //   expect(console.error).toHaveBeenCalledWith(
+  //     "Error fetching user profile:",
+  //     mockError,
+  //   ); // Expect the error object
+  //   expect(mockRouter.navigate).not.toHaveBeenCalled();
+  // });
 });

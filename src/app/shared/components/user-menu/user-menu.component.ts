@@ -17,13 +17,13 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
+import {Component, Input} from "@angular/core";
 import {Router} from "@angular/router";
 import {PopoverController} from "@ionic/angular";
 import {Store} from "@ngrx/store";
-import {selectAuthUser} from "../../../state/selectors/auth.selectors";
 import * as AuthActions from "../../../state/actions/auth.actions";
-import {firstValueFrom} from "rxjs";
+import {firstValueFrom, Observable} from "rxjs";
+import {AuthUser} from "../../../models/auth-user.model";
 
 @Component({
   selector: "app-user-menu",
@@ -31,6 +31,8 @@ import {firstValueFrom} from "rxjs";
   styleUrls: ["./user-menu.component.scss"],
 })
 export class UserMenuComponent {
+  @Input() authUser$!: Observable<AuthUser | null>;
+
   constructor(
     private router: Router,
     private popoverCtrl: PopoverController,
@@ -44,16 +46,13 @@ export class UserMenuComponent {
 
   async goToProfile() {
     try {
-      await this.popoverCtrl.dismiss(); // Await the popover dismissal
-      const user = await firstValueFrom(this.store.select(selectAuthUser));
-      const userId = user?.uid;
-      if (userId) {
-        this.router.navigate([`/account/${userId}`]);
-      } else {
-        console.error("User ID not found.");
+      await this.popoverCtrl.dismiss();
+      const user = await firstValueFrom(this.authUser$);
+      if (user?.uid) {
+        this.router.navigate([`/account/${user.uid}`]);
       }
     } catch (error) {
-      console.error("Error fetching user profile:", error);
+      console.error("Error navigating to profile:", error);
     }
   }
 

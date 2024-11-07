@@ -40,7 +40,18 @@ describe("FeedbackModalComponent", () => {
     email: "test@example.com",
     displayName: "Test User",
     emailVerified: true,
-    photoURL: null,
+    iconImage: null,
+    heroImage: null,
+    tagline: null,
+    type: null,
+    createdAt: null,
+    lastLoginAt: null,
+    phoneNumber: null,
+    providerData: [],
+    settings: {
+      language: "en",
+      theme: "light",
+    },
   };
 
   beforeEach(waitForAsync(() => {

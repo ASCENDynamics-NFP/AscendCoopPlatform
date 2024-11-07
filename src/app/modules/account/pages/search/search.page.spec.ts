@@ -39,8 +39,16 @@ describe("SearchPage", () => {
     uid: "user123",
     email: "test@example.com",
     displayName: "Test User",
-    photoURL: null,
+    iconImage: null,
     emailVerified: true,
+    heroImage: null,
+    tagline: null,
+    type: null,
+    createdAt: null,
+    lastLoginAt: null,
+    phoneNumber: null,
+    providerData: [],
+    settings: {language: "en", theme: "light"},
   };
 
   const mockAccounts: Account[] = [

@@ -36,12 +36,24 @@ import {
   sendSignInLinkToEmail,
   isSignInWithEmailLink,
 } from "firebase/auth";
-import {catchError, from, map, switchMap, of, tap, exhaustMap} from "rxjs";
+import {
+  catchError,
+  from,
+  map,
+  switchMap,
+  of,
+  tap,
+  exhaustMap,
+  withLatestFrom,
+} from "rxjs";
 import {ErrorHandlerService} from "../../core/services/error-handler.service";
 import {SuccessHandlerService} from "../../core/services/success-handler.service";
 import {Router} from "@angular/router";
 import {AlertController, LoadingController} from "@ionic/angular";
 import {AuthUser} from "../../models/auth-user.model";
+import {selectAuthUser} from "../selectors/auth.selectors";
+import {Store} from "@ngrx/store";
+import {AuthState} from "../reducers/auth.reducer";
 
 @Injectable()
 export class AuthEffects {
@@ -58,6 +70,7 @@ export class AuthEffects {
     private router: Router,
     private alertController: AlertController,
     private loadingController: LoadingController,
+    private store: Store<{auth: AuthState}>,
   ) {
     this.auth = getAuth();
   }
@@ -155,21 +168,15 @@ export class AuthEffects {
             this.successHandler.handleSuccess(
               "Successfully signed in with email link!",
             );
-            // Navigate to "/{uid}"
             this.router.navigateByUrl(`/account/${result.user.uid}`, {
               replaceUrl: true,
             });
           }),
-          map((result) => {
-            const authUser: AuthUser = {
-              uid: result.user.uid,
-              email: result.user.email,
-              displayName: result.user.displayName,
-              photoURL: result.user.photoURL,
-              emailVerified: result.user.emailVerified,
-            };
-            return AuthActions.processSignInLinkSuccess({user: authUser});
-          }),
+          map((result) =>
+            AuthActions.processSignInLinkSuccess({
+              user: this.mapFirebaseUserToAuthUser(result.user),
+            }),
+          ),
           catchError((error) => {
             this.errorHandler.handleFirebaseAuthError(error);
             return of(AuthActions.processSignInLinkFailure({error}));
@@ -187,25 +194,16 @@ export class AuthEffects {
         from(createUserWithEmailAndPassword(this.auth, email, password)).pipe(
           tap((result) => {
             this.successHandler.handleSuccess("Successfully signed up!");
-            // Navigate to "/registration/:uid"
             this.router.navigateByUrl(
               `/account/registration/${result.user.uid}`,
-              {
-                replaceUrl: true,
-              },
+              {replaceUrl: true},
             );
           }),
-          map((result) => {
-            const authUser: AuthUser = {
-              uid: result.user.uid,
-              email: result.user.email,
-              displayName: result.user.displayName,
-              photoURL: result.user.photoURL,
-              emailVerified: result.user.emailVerified,
-              // Add other properties as needed
-            };
-            return AuthActions.signUpSuccess({user: authUser});
-          }),
+          map((result) =>
+            AuthActions.signUpSuccess({
+              user: this.mapFirebaseUserToAuthUser(result.user),
+            }),
+          ),
           catchError((error) => {
             this.errorHandler.handleFirebaseAuthError(error);
             return of(AuthActions.signUpFailure({error}));
@@ -223,22 +221,15 @@ export class AuthEffects {
         from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
           tap((result) => {
             this.successHandler.handleSuccess("Successfully signed in!");
-            // Navigate to "/{uid}"
             this.router.navigateByUrl(`/account/${result.user.uid}`, {
               replaceUrl: true,
             });
           }),
-          map((result) => {
-            const authUser: AuthUser = {
-              uid: result.user.uid,
-              email: result.user.email,
-              displayName: result.user.displayName,
-              photoURL: result.user.photoURL,
-              emailVerified: result.user.emailVerified,
-              // Add other properties as needed
-            };
-            return AuthActions.signInSuccess({user: authUser});
-          }),
+          map((result) =>
+            AuthActions.signInSuccess({
+              user: this.mapFirebaseUserToAuthUser(result.user),
+            }),
+          ),
           catchError((error) => {
             this.errorHandler.handleFirebaseAuthError(error);
             return of(AuthActions.signInFailure({error}));
@@ -269,22 +260,15 @@ export class AuthEffects {
             this.successHandler.handleSuccess(
               "Successfully signed in with Google!",
             );
-            // Navigate to "/{uid}"
             this.router.navigateByUrl(`/account/${result.user.uid}`, {
               replaceUrl: true,
             });
           }),
-          map((result) => {
-            const authUser: AuthUser = {
-              uid: result.user.uid,
-              email: result.user.email,
-              displayName: result.user.displayName,
-              photoURL: result.user.photoURL,
-              emailVerified: result.user.emailVerified,
-              // Add other properties as needed
-            };
-            return AuthActions.signInWithGoogleSuccess({user: authUser});
-          }),
+          map((result) =>
+            AuthActions.signInWithGoogleSuccess({
+              user: this.mapFirebaseUserToAuthUser(result.user),
+            }),
+          ),
           catchError((error) => {
             this.errorHandler.handleFirebaseAuthError(error);
             return of(AuthActions.signInWithGoogleFailure({error}));
@@ -431,5 +415,43 @@ export class AuthEffects {
         }),
       ),
     {dispatch: false},
+  );
+
+  // Effect to Handle Google Sign-In Success and Load Account
+  private mapFirebaseUserToAuthUser(firebaseUser: any): AuthUser {
+    return {
+      uid: firebaseUser.uid,
+      displayName: firebaseUser.displayName,
+      email: firebaseUser.email,
+      emailVerified: firebaseUser.emailVerified,
+      heroImage: "src/assets/image/orghero.png",
+      iconImage: firebaseUser.photoURL || "src/assets/avatar/male1.png",
+      tagline: null,
+      type: null,
+      createdAt: firebaseUser.metadata.creationTime
+        ? new Date(firebaseUser.metadata.creationTime)
+        : new Date(),
+      lastLoginAt: firebaseUser.metadata.lastSignInTime
+        ? new Date(firebaseUser.metadata.lastSignInTime)
+        : new Date(),
+      phoneNumber: null,
+      providerData: [],
+      settings: {
+        language: "en",
+        theme: "system",
+      },
+    };
+  }
+
+  updateAuthUser$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.updateAuthUser),
+      withLatestFrom(this.store.select(selectAuthUser)),
+      map(([{user}, currentUser]) => ({
+        user: {...currentUser, ...user} as AuthUser,
+      })),
+      map(({user}) => AuthActions.updateAuthUserSuccess({user})),
+      catchError((error) => of(AuthActions.updateAuthUserFailure({error}))),
+    ),
   );
 }

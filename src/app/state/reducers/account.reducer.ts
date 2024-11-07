@@ -160,12 +160,23 @@ export const accountReducer = createReducer(
   // Handle createRelatedAccountSuccess to add the new related account ID
   on(AccountActions.createRelatedAccountSuccess, (state, {relatedAccount}) => {
     const updatedAccounts = state.accounts.map((account) => {
+      // Update initiator's account
       if (account.id === relatedAccount.accountId) {
         return {
           ...account,
           relatedAccountIds: [
             ...(account.relatedAccountIds || []),
             relatedAccount.id,
+          ],
+        };
+      }
+      // Update target's account
+      if (account.id === relatedAccount.id) {
+        return {
+          ...account,
+          relatedAccountIds: [
+            ...(account.relatedAccountIds || []),
+            relatedAccount.accountId,
           ],
         };
       }

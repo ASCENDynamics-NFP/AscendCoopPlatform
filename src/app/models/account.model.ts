@@ -201,6 +201,7 @@ export interface Account extends BaseDocument, Group, User {
   email: string;
   relatedAccountIds?: string[];
   relatedListingIds?: string[];
+  settings?: Settings; // User-specific settings
 }
 
 export interface RelatedAccount extends BaseDocument {
@@ -215,4 +216,22 @@ export interface RelatedAccount extends BaseDocument {
   initiatorId?: string; // ID of the account who initiated the request
   targetId?: string; // ID of the account who received the request
   canAccessContactInfo?: boolean; // Whether the related account can access the contact information
+}
+
+export interface Settings {
+  // Settings for the account
+  notifications?: {
+    // Notification settings
+    email?: boolean;
+    push?: boolean;
+    sms?: boolean;
+  };
+  privacy?: {
+    // Privacy settings
+    profileVisibility?: "public" | "private" | "accepted-users-only";
+    contactInformation?: "public" | "private" | "accepted-users-only";
+    // Add more privacy settings as needed
+  };
+  language: string;
+  theme: "light" | "dark" | "system";
 }

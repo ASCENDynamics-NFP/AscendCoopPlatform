@@ -23,16 +23,26 @@ import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
 import * as AccountActions from "../actions/account.actions";
 import {from, of} from "rxjs";
-import {switchMap, map, catchError, mergeMap} from "rxjs/operators";
+import {
+  switchMap,
+  map,
+  catchError,
+  mergeMap,
+  withLatestFrom,
+} from "rxjs/operators";
 import {FirestoreService} from "../../core/services/firestore.service";
 import {Account} from "../../models/account.model";
 import {RelatedListing} from "../../models/related-listing.model";
+import {selectAuthUser} from "../selectors/auth.selectors";
+import {Store} from "@ngrx/store";
+import * as AuthActions from "../actions/auth.actions";
 
 @Injectable()
 export class AccountEffects {
   constructor(
     private actions$: Actions,
     private firestoreService: FirestoreService,
+    private store: Store,
   ) {}
 
   // Load Accounts
@@ -270,6 +280,28 @@ export class AccountEffects {
             ),
           ),
       ),
+    ),
+  );
+
+  syncAuthUserWithAccount$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AccountActions.loadAccountSuccess),
+      withLatestFrom(this.store.select(selectAuthUser)),
+      map(([{account}, authUser]) => {
+        if (authUser?.uid && account.id && authUser.uid === account.id) {
+          return AuthActions.updateAuthUser({
+            user: {
+              displayName: account.name,
+              heroImage: account.heroImage,
+              iconImage: account.iconImage,
+              tagline: account.tagline,
+              type: account.type,
+              settings: account.settings,
+            },
+          });
+        }
+        return {type: "NO_ACTION"};
+      }),
     ),
   );
 }

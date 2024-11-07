@@ -147,3 +147,18 @@ export const processSignInLinkFailure = createAction(
   "[Auth] Process Sign-In Link Failure",
   props<{error: any}>(),
 );
+
+export const updateAuthUser = createAction(
+  "[Auth] Update Auth User",
+  props<{user: Partial<AuthUser>}>(),
+);
+
+export const updateAuthUserSuccess = createAction(
+  "[Auth] Update Auth User Success",
+  props<{user: AuthUser}>(),
+);
+
+export const updateAuthUserFailure = createAction(
+  "[Auth] Update Auth User Failure",
+  props<{error: any}>(),
+);

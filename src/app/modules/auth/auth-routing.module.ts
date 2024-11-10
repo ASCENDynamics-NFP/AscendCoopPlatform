@@ -28,7 +28,6 @@ const routes: Routes = [
   {
     path: "",
     component: LandingPage,
-    canActivate: [SecureInnerPagesGuard],
   },
   {
     path: "login",

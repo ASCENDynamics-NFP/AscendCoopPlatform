@@ -19,11 +19,13 @@
 ***********************************************************************************************/
 // src/app/models/auth-user.model.ts
 
+import {ParsedToken} from "firebase/auth";
 import {Settings} from "./account.model";
 
 export interface AuthUser {
   uid: string;
   displayName: string | null;
+  name?: string | null;
   email: string | null;
   emailVerified: boolean;
   heroImage: string | null;
@@ -32,7 +34,8 @@ export interface AuthUser {
   type: string | null;
   createdAt: Date | null;
   lastLoginAt: Date | null;
-  phoneNumber: string | null;
+  phoneNumber?: string | null;
   providerData: any[];
-  settings: Settings;
+  settings?: Settings;
+  claims?: ParsedToken;
 }

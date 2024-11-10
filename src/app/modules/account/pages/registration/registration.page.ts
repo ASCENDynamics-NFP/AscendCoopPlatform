@@ -55,7 +55,7 @@ export class RegistrationPage implements OnInit {
       this.account$ = this.store.select(selectAccountById(this.accountId)).pipe(
         tap((account) => {
           if (account?.type) {
-            this.router.navigate([`/${this.accountId}`]);
+            this.router.navigate([`/account/${this.accountId}`]);
           }
         }),
       );

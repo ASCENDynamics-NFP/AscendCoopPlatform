@@ -60,7 +60,7 @@ export const signIn = createAction(
 
 export const signInSuccess = createAction(
   "[Auth] Sign In Success",
-  props<{user: AuthUser}>(),
+  props<{uid: string}>(),
 );
 
 export const signInFailure = createAction(

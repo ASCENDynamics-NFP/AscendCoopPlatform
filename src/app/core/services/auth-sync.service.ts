@@ -22,7 +22,6 @@ import {Injectable} from "@angular/core";
 import {Store} from "@ngrx/store";
 import {getAuth, onAuthStateChanged, User} from "firebase/auth";
 import * as AuthActions from "../../state/actions/auth.actions";
-import {AuthUser} from "../../models/auth-user.model";
 
 @Injectable({providedIn: "root"})
 export class AuthSyncService {
@@ -31,29 +30,7 @@ export class AuthSyncService {
   constructor(private store: Store) {
     onAuthStateChanged(this.auth, (user: User | null) => {
       if (user) {
-        const authUser: AuthUser = {
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          heroImage: "src/assets/image/orghero.png",
-          iconImage: user.photoURL || "src/assets/avatar/male1.png",
-          tagline: "",
-          type: "",
-          emailVerified: false,
-          createdAt: user.metadata.creationTime
-            ? new Date(user.metadata.creationTime)
-            : new Date(),
-          lastLoginAt: user.metadata.lastSignInTime
-            ? new Date(user.metadata.lastSignInTime)
-            : new Date(),
-          phoneNumber: null,
-          providerData: [],
-          settings: {
-            language: "en",
-            theme: "system",
-          },
-        };
-        this.store.dispatch(AuthActions.signInSuccess({user: authUser}));
+        this.store.dispatch(AuthActions.signInSuccess({uid: user.uid}));
       } else {
         this.store.dispatch(AuthActions.signOutSuccess());
       }

@@ -69,6 +69,10 @@ service cloud.firestore {
     match /accounts/{accountId}/relatedAccounts/{relatedAccountId} {
       allow create, read, write, delete: if request.auth.uid != null; // Only the user can write to their own data
     }
+
+    match /accounts/{accountId}/relatedListings/{listingId} {
+      allow create, read, write, delete: if request.auth.uid != null; // Only the user can write to their own data
+    }
     
     // Rules for AppFeedback
     match /feedback/{accountId} {

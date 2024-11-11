@@ -17,7 +17,14 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {ComponentFixture, TestBed} from "@angular/core/testing";
+// src/app/modules/account/pages/group-list/group-list.page.spec.ts
+
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from "@angular/core/testing";
 import {GroupListPage} from "./group-list.page";
 import {provideMockStore, MockStore} from "@ngrx/store/testing";
 import {FormsModule} from "@angular/forms";
@@ -32,6 +39,7 @@ import {
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {Timestamp} from "firebase/firestore";
 import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
+import {of} from "rxjs";
 
 describe("GroupListPage", () => {
   let component: GroupListPage;
@@ -91,8 +99,12 @@ describe("GroupListPage", () => {
     store = TestBed.inject(MockStore);
     store.overrideSelector(selectAuthUser, null);
     store.overrideSelector(selectAccountLoading, false);
-    store.overrideSelector(selectFilteredAccounts("", "group"), []);
-    store.overrideSelector(selectRelatedAccountsByAccountId("12345"), []);
+
+    const filteredAccountsSelector = selectFilteredAccounts("", "group");
+    store.overrideSelector(filteredAccountsSelector, []);
+
+    const relatedAccountsSelector = selectRelatedAccountsByAccountId("12345");
+    store.overrideSelector(relatedAccountsSelector, []);
 
     fixture = TestBed.createComponent(GroupListPage);
     component = fixture.componentInstance;
@@ -112,6 +124,7 @@ describe("GroupListPage", () => {
   it("should load related accounts in ionViewWillEnter when auth user exists", () => {
     spyOn(store, "dispatch");
     store.overrideSelector(selectAuthUser, mockAuthUser);
+    store.refreshState();
     component.ionViewWillEnter();
     expect(store.dispatch).toHaveBeenCalledWith(
       AccountActions.loadRelatedAccounts({accountId: mockAuthUser.uid}),
@@ -128,6 +141,7 @@ describe("GroupListPage", () => {
   it("should dispatch createRelatedAccount with correct payload", () => {
     spyOn(store, "dispatch");
     store.overrideSelector(selectAuthUser, mockAuthUser);
+    store.refreshState();
     component.ngOnInit();
 
     component.sendRequest(mockGroup);
@@ -168,9 +182,11 @@ describe("GroupListPage", () => {
   //   };
 
   //   store.overrideSelector(selectAuthUser, mockAuthUser);
-  //   store.overrideSelector(selectRelatedAccountsByAccountId(mockAuthUser.uid), [
-  //     mockRelatedAccount,
-  //   ]);
+  //   const relatedAccountsSelector = selectRelatedAccountsByAccountId(
+  //     mockAuthUser.uid,
+  //   );
+  //   store.overrideSelector(relatedAccountsSelector, [mockRelatedAccount]);
+  //   store.refreshState();
 
   //   component.showRequestButton(mockGroup).subscribe((result) => {
   //     expect(result).toBeFalse();
@@ -178,16 +194,20 @@ describe("GroupListPage", () => {
   //   });
   // });
 
-  // it("should return true from showRequestButton when no matching relationship exists", (done) => {
-  //   store.overrideSelector(selectAuthUser, mockAuthUser);
+  // it("should return true from showRequestButton when no matching relationship exists", fakeAsync(() => {
   //   store.overrideSelector(
   //     selectRelatedAccountsByAccountId(mockAuthUser.uid),
   //     [],
   //   );
+  //   store.refreshState();
 
-  //   component.showRequestButton(mockGroup).subscribe((result) => {
-  //     expect(result).toBeTrue();
-  //     done();
+  //   let result: boolean | undefined;
+  //   component.showRequestButton(mockGroup).subscribe((value) => {
+  //     result = value;
   //   });
-  // });
+
+  //   tick();
+
+  //   expect(result).toBeTrue();
+  // }));
 });

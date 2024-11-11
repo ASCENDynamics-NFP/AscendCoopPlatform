@@ -22,7 +22,7 @@
 import {Component, OnInit, ViewChild} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, combineLatest} from "rxjs";
-import {map, tap} from "rxjs/operators";
+import {filter, map, take, tap} from "rxjs/operators";
 import {AuthUser} from "../../../../models/auth-user.model";
 import {Store} from "@ngrx/store";
 import {Account, RelatedAccount} from "../../../../models/account.model";
@@ -32,16 +32,16 @@ import {
   selectRelatedAccountsByAccountId,
 } from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
-import {IonContent} from "@ionic/angular";
+import {IonContent, ViewWillEnter} from "@ionic/angular";
 
 @Component({
   selector: "app-details",
   templateUrl: "./details.page.html",
   styleUrls: ["./details.page.scss"],
 })
-export class DetailsPage implements OnInit {
-  @ViewChild(IonContent, {static: false}) content!: IonContent; // Get reference to ion-content
-  public accountId: string | null;
+export class DetailsPage implements OnInit, ViewWillEnter {
+  @ViewChild(IonContent, {static: false}) content!: IonContent;
+  public accountId: string | null = null;
   authUser$!: Observable<AuthUser | null>;
   account$!: Observable<Account | null>;
   relatedAccounts$!: Observable<RelatedAccount[]>;
@@ -51,9 +51,7 @@ export class DetailsPage implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private store: Store,
-  ) {
-    this.accountId = this.route.snapshot.paramMap.get("accountId");
-  }
+  ) {}
 
   scrollToSection(sectionId: string): void {
     const yOffset = document.getElementById(sectionId)?.offsetTop;
@@ -62,7 +60,7 @@ export class DetailsPage implements OnInit {
     }
   }
 
-  ngOnInit(): void {
+  ionViewWillEnter() {
     // Initialize authUser$ observable
     this.authUser$ = this.store.select(selectAuthUser);
 
@@ -81,28 +79,11 @@ export class DetailsPage implements OnInit {
           AccountActions.setSelectedAccount({accountId: this.accountId}),
         );
 
-        // Dispatch loadRelatedAccounts to ensure related accounts are available on navigation
-        this.store.dispatch(
-          AccountActions.loadRelatedAccounts({accountId: this.accountId}),
-        );
-
         // Select account and related accounts from the store
         this.account$ = this.store.select(selectSelectedAccount);
         this.relatedAccounts$ = this.store.select(
           selectRelatedAccountsByAccountId(this.accountId),
         );
-
-        this.account$
-          .pipe(
-            tap((account) => {
-              if (account && !account.type) {
-                this.router.navigate([
-                  `/account/registration/${this.accountId}`,
-                ]);
-              }
-            }),
-          )
-          .subscribe();
 
         // Determine if the current user is the profile owner
         this.isProfileOwner$ = combineLatest([
@@ -110,14 +91,29 @@ export class DetailsPage implements OnInit {
           this.account$,
         ]).pipe(
           map(([authUser, account]) => {
-            // Ensure account and authUser are not null
             if (account && authUser) {
               return account.id === authUser.uid;
             }
-            return false; // Default to false if any are null
+            return false;
           }),
         );
       }
     });
+  }
+
+  ngOnInit(): void {
+    this.authUser$ = this.store.select(selectAuthUser);
+
+    this.authUser$
+      .pipe(
+        filter((user): user is AuthUser => user !== null),
+        take(1),
+        tap((user) => {
+          if (!user.type) {
+            this.router.navigate([`/account/registration/${user.uid}`]);
+          }
+        }),
+      )
+      .subscribe();
   }
 }

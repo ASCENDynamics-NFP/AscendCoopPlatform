@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// src/app/core/store/auth/auth.effects.ts
+// src/app/state/effects/auth.effects.ts
 
 import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
@@ -63,7 +63,7 @@ import {selectAccountById} from "../selectors/account.selectors";
 
 @Injectable()
 export class AuthEffects {
-  private auth: Auth;
+  private auth: Auth = getAuth();
   private actionCodeSettings = {
     url: `${window.location.origin}/auth/login`,
     handleCodeInApp: true,
@@ -77,24 +77,19 @@ export class AuthEffects {
     private alertController: AlertController,
     private loadingController: LoadingController,
     private store: Store<{auth: AuthState}>,
-  ) {
-    this.auth = getAuth();
-  }
+  ) {}
 
-  // Effect to Initialize Auth and Process Sign-In Link
+  // Initialize Auth and Process Sign-In Link
   initializeAuth$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.initializeAuth),
       switchMap(() => {
         const url = window.location.href;
         if (isSignInWithEmailLink(this.auth, url)) {
-          // Retrieve the email from local storage
           const email = window.localStorage.getItem("emailForSignIn");
           if (email) {
-            // Dispatch action to process the sign-in link
             return of(AuthActions.processSignInLink({email, link: url}));
           } else {
-            // Email not found, prompt the user to enter it
             return from(this.promptForEmail()).pipe(
               switchMap((email) => {
                 if (email) {
@@ -113,7 +108,6 @@ export class AuthEffects {
             );
           }
         } else {
-          // Not a sign-in link, do nothing or handle accordingly
           return of({type: "NO_ACTION"});
         }
       }),
@@ -170,28 +164,28 @@ export class AuthEffects {
       ofType(AuthActions.processSignInLink),
       switchMap(({email, link}) =>
         from(signInWithEmailLink(this.auth, email, link)).pipe(
-          tap((result) => {
-            this.store.dispatch(
-              AccountActions.loadAccount({accountId: result.user.uid}),
-            );
-            this.store.dispatch(
-              AccountActions.setSelectedAccount({accountId: result.user.uid}),
-            );
+          tap(() => {
             this.successHandler.handleSuccess(
               "Successfully signed in with email link!",
             );
           }),
           switchMap(async (result) => {
             const idTokenResult = await result.user.getIdTokenResult();
-            return {result, claims: idTokenResult.claims};
+            return {user: result.user, claims: idTokenResult.claims};
           }),
-          switchMap(({result, claims}) =>
-            this.createAuthUserFromClaims(result.user, claims).pipe(
+          switchMap(({user, claims}) =>
+            this.createAuthUserFromClaims(user, claims).pipe(
               map((authUser) => {
                 this.store.dispatch(
                   AuthActions.updateAuthUser({user: authUser}),
                 );
-                return AuthActions.processSignInLinkSuccess({user: authUser});
+                // this.store.dispatch(
+                //   AccountActions.loadAccount({accountId: user.uid}),
+                // );
+                // this.store.dispatch(
+                //   AccountActions.setSelectedAccount({accountId: user.uid}),
+                // );
+                return AuthActions.signInSuccess({uid: authUser.uid});
               }),
             ),
           ),
@@ -217,10 +211,19 @@ export class AuthEffects {
               {replaceUrl: true},
             );
           }),
-          map((result) =>
-            AuthActions.signUpSuccess({
-              user: this.mapFirebaseUserToAuthUser(result.user),
-            }),
+          switchMap(async (result) => {
+            const idTokenResult = await result.user.getIdTokenResult();
+            return {user: result.user, claims: idTokenResult.claims};
+          }),
+          switchMap(({user, claims}) =>
+            this.createAuthUserFromClaims(user, claims).pipe(
+              map((authUser) => {
+                this.store.dispatch(
+                  AuthActions.updateAuthUser({user: authUser}),
+                );
+                return AuthActions.signUpSuccess({user: authUser});
+              }),
+            ),
           ),
           catchError((error) => {
             this.errorHandler.handleFirebaseAuthError(error);
@@ -237,25 +240,25 @@ export class AuthEffects {
       ofType(AuthActions.signIn),
       switchMap(({email, password}) =>
         from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
-          tap((result) => {
-            this.store.dispatch(
-              AccountActions.loadAccount({accountId: result.user.uid}),
-            );
-            this.store.dispatch(
-              AccountActions.setSelectedAccount({accountId: result.user.uid}),
-            );
+          tap(() => {
             this.successHandler.handleSuccess("Successfully signed in!");
           }),
           switchMap(async (result) => {
             const idTokenResult = await result.user.getIdTokenResult();
-            return {result, claims: idTokenResult.claims};
+            return {user: result.user, claims: idTokenResult.claims};
           }),
-          switchMap(({result, claims}) =>
-            this.createAuthUserFromClaims(result.user, claims).pipe(
+          switchMap(({user, claims}) =>
+            this.createAuthUserFromClaims(user, claims).pipe(
               map((authUser) => {
                 this.store.dispatch(
                   AuthActions.updateAuthUser({user: authUser}),
                 );
+                // this.store.dispatch(
+                //   AccountActions.loadAccount({accountId: user.uid}),
+                // );
+                // this.store.dispatch(
+                //   AccountActions.setSelectedAccount({accountId: user.uid}),
+                // );
                 return AuthActions.signInSuccess({uid: authUser.uid});
               }),
             ),
@@ -275,27 +278,27 @@ export class AuthEffects {
       ofType(AuthActions.signInWithGoogle),
       switchMap(() =>
         from(signInWithPopup(this.auth, new GoogleAuthProvider())).pipe(
-          tap((result) => {
-            this.store.dispatch(
-              AccountActions.loadAccount({accountId: result.user.uid}),
-            );
-            this.store.dispatch(
-              AccountActions.setSelectedAccount({accountId: result.user.uid}),
-            );
+          tap(() => {
             this.successHandler.handleSuccess(
               "Successfully signed in with Google!",
             );
           }),
           switchMap(async (result) => {
             const idTokenResult = await result.user.getIdTokenResult();
-            return {result, claims: idTokenResult.claims};
+            return {user: result.user, claims: idTokenResult.claims};
           }),
-          switchMap(({result, claims}) =>
-            this.createAuthUserFromClaims(result.user, claims).pipe(
+          switchMap(({user, claims}) =>
+            this.createAuthUserFromClaims(user, claims).pipe(
               map((authUser) => {
                 this.store.dispatch(
                   AuthActions.updateAuthUser({user: authUser}),
                 );
+                // this.store.dispatch(
+                //   AccountActions.loadAccount({accountId: user.uid}),
+                // );
+                // this.store.dispatch(
+                //   AccountActions.setSelectedAccount({accountId: user.uid}),
+                // );
                 return AuthActions.signInSuccess({uid: authUser.uid});
               }),
             ),
@@ -315,9 +318,7 @@ export class AuthEffects {
       this.actions$.pipe(
         ofType(AuthActions.signInSuccess),
         tap(({uid}) => {
-          this.router.navigateByUrl(`/account/${uid}`, {
-            replaceUrl: true,
-          });
+          this.router.navigateByUrl(`/account/${uid}`, {replaceUrl: true});
         }),
       ),
     {dispatch: false},
@@ -329,11 +330,11 @@ export class AuthEffects {
       ofType(AuthActions.signOut),
       switchMap(() =>
         from(signOut(this.auth)).pipe(
-          map(() => {
+          tap(() => {
             this.successHandler.handleSuccess("You have been signed out!");
             this.router.navigate(["auth/login"]);
-            return AuthActions.signOutSuccess();
           }),
+          map(() => AuthActions.signOutSuccess()),
           catchError((error) => {
             this.errorHandler.handleFirebaseAuthError(error);
             return of(AuthActions.signOutFailure({error}));
@@ -349,12 +350,12 @@ export class AuthEffects {
       ofType(AuthActions.sendPasswordResetEmail),
       switchMap(({email}) =>
         from(sendPasswordResetEmail(this.auth, email)).pipe(
-          map(() => {
+          tap(() => {
             this.successHandler.handleSuccess(
               "Please check your email for further instructions!",
             );
-            return AuthActions.sendPasswordResetEmailSuccess();
           }),
+          map(() => AuthActions.sendPasswordResetEmailSuccess()),
           catchError((error) => {
             this.errorHandler.handleFirebaseAuthError(error);
             return of(AuthActions.sendPasswordResetEmailFailure({error}));
@@ -372,15 +373,13 @@ export class AuthEffects {
         from(
           sendSignInLinkToEmail(this.auth, email, this.actionCodeSettings),
         ).pipe(
-          map(() => {
+          tap(() => {
             this.successHandler.handleSuccess(
-              "Verification email sent to " +
-                email +
-                "! Please check your inbox.",
+              `Verification email sent to ${email}! Please check your inbox.`,
               30000,
             );
-            return AuthActions.sendVerificationMailSuccess();
           }),
+          map(() => AuthActions.sendVerificationMailSuccess()),
           catchError((error) => {
             this.errorHandler.handleFirebaseAuthError(error);
             return of(AuthActions.sendVerificationMailFailure({error}));
@@ -401,13 +400,16 @@ export class AuthEffects {
             from(
               sendSignInLinkToEmail(this.auth, email, this.actionCodeSettings),
             ).pipe(
+              tap(() => {
+                window.localStorage.setItem("emailForSignIn", email);
+              }),
               map(() => {
                 loading.dismiss();
-                window.localStorage.setItem("emailForSignIn", email);
                 return AuthActions.sendSignInLinkToEmailSuccess();
               }),
               catchError((error) => {
                 loading.dismiss();
+                this.errorHandler.handleFirebaseAuthError(error);
                 return of(AuthActions.sendSignInLinkToEmailFailure({error}));
               }),
             ),
@@ -451,32 +453,7 @@ export class AuthEffects {
     {dispatch: false},
   );
 
-  // Effect to Handle Google Sign-In Success and Load Account
-  private mapFirebaseUserToAuthUser(firebaseUser: any): AuthUser {
-    return {
-      uid: firebaseUser.uid,
-      displayName: firebaseUser.displayName,
-      email: firebaseUser.email,
-      emailVerified: firebaseUser.emailVerified,
-      heroImage: "src/assets/image/orghero.png",
-      iconImage: firebaseUser.photoURL || "src/assets/avatar/male1.png",
-      tagline: null,
-      type: null,
-      createdAt: firebaseUser.metadata.creationTime
-        ? new Date(firebaseUser.metadata.creationTime)
-        : new Date(),
-      lastLoginAt: firebaseUser.metadata.lastSignInTime
-        ? new Date(firebaseUser.metadata.lastSignInTime)
-        : new Date(),
-      phoneNumber: null,
-      providerData: [],
-      settings: {
-        language: "en",
-        theme: "system",
-      },
-    };
-  }
-
+  // Update Auth User Effect
   updateAuthUser$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.updateAuthUser),
@@ -489,49 +466,58 @@ export class AuthEffects {
     ),
   );
 
+  // Helper method to create AuthUser from claims and account data
   private createAuthUserFromClaims(
     user: User,
     claims: any,
   ): Observable<AuthUser> {
     return this.store.select(selectAccountById(user.uid)).pipe(
-      filter((account) => !!account),
       take(1),
-      map((account) => ({
-        uid: user.uid,
-        email: user.email,
-        emailVerified: user.emailVerified,
-        displayName:
-          (claims["displayName"] as string) ||
-          account?.name ||
-          user.displayName,
-        iconImage:
-          (claims["iconImage"] as string) ||
-          account?.iconImage ||
-          user.photoURL ||
-          "src/assets/avatar/male1.png",
-        heroImage:
-          (claims["heroImage"] as string) ||
-          account?.heroImage ||
-          "src/assets/image/orghero.png",
-        tagline:
-          (claims["tagline"] as string) ||
-          "Helping others at ASCENDynamics NFP.",
-        type: (claims["type"] as string) || account?.type || "",
-        createdAt: user.metadata.creationTime
-          ? new Date(user.metadata.creationTime)
-          : new Date(),
-        lastLoginAt: user.metadata.lastSignInTime
-          ? new Date(user.metadata.lastSignInTime)
-          : new Date(),
-        phoneNumber:
-          user.phoneNumber ||
-          account?.contactInformation?.phoneNumbers[0]?.number,
-        providerData: user.providerData,
-        settings: (claims["settings"] as Settings) || {
+      map((account) => {
+        // Handle undefined account
+        const defaultIconImage = user.photoURL || "src/assets/avatar/male1.png";
+        const defaultHeroImage = "src/assets/image/orghero.png";
+        const defaultTagline = "Helping others at ASCENDynamics NFP.";
+        const defaultSettings: Settings = {
           language: "en",
           theme: "system",
-        },
-      })),
+        };
+        return {
+          uid: user.uid,
+          email: user.email,
+          emailVerified: user.emailVerified,
+          displayName:
+            (claims["displayName"] as string) ||
+            account?.name ||
+            user.displayName,
+          iconImage:
+            (claims["iconImage"] as string) ||
+            account?.iconImage ||
+            defaultIconImage,
+          heroImage:
+            (claims["heroImage"] as string) ||
+            account?.heroImage ||
+            defaultHeroImage,
+          tagline:
+            (claims["tagline"] as string) || account?.tagline || defaultTagline,
+          type: (claims["type"] as string) || account?.type || "",
+          createdAt: user.metadata.creationTime
+            ? new Date(user.metadata.creationTime)
+            : new Date(),
+          lastLoginAt: user.metadata.lastSignInTime
+            ? new Date(user.metadata.lastSignInTime)
+            : new Date(),
+          phoneNumber:
+            user.phoneNumber ||
+            account?.contactInformation?.phoneNumbers?.[0]?.number ||
+            null,
+          providerData: user.providerData,
+          settings:
+            (claims["settings"] as Settings) ||
+            account?.settings ||
+            defaultSettings,
+        };
+      }),
     );
   }
 }

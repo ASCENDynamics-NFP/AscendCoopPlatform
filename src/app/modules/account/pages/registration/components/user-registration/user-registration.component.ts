@@ -159,7 +159,7 @@ export class UserRegistrationComponent implements OnChanges {
 
       if (this.redirectSubmit) {
         // Redirect to the user profile page
-        this.router.navigate([`/${this.account.id}`]);
+        this.router.navigate([`/account/${this.account.id}`]);
       }
     }
   }

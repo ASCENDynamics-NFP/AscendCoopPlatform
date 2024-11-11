@@ -20,7 +20,7 @@
 // src/app/modules/account/pages/group-list/group-list.page.ts
 
 import {Component, OnInit} from "@angular/core";
-import {Subject, Observable, combineLatest, of} from "rxjs";
+import {Subject, Observable} from "rxjs";
 import {
   debounceTime,
   startWith,
@@ -128,12 +128,14 @@ export class GroupListPage implements OnInit, ViewWillEnter {
     return this.authUser$.pipe(
       filter((authUser): authUser is AuthUser => authUser !== null),
       switchMap((authUser) =>
-        combineLatest([
-          of(authUser),
-          this.store.select(selectRelatedAccountsByAccountId(authUser.uid)),
-        ]),
+        this.store.select(selectRelatedAccountsByAccountId(authUser.uid)).pipe(
+          map((relatedAccounts) => ({
+            authUser,
+            relatedAccounts,
+          })),
+        ),
       ),
-      map(([authUser, relatedAccounts]) => {
+      map(({authUser, relatedAccounts}) => {
         if (authUser.uid === item.id) {
           return false;
         }

@@ -17,6 +17,8 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// src/app/modules/account/pages/registration/registration.page.ts
+
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Account} from "../../../../models/account.model";
@@ -24,7 +26,7 @@ import {Store} from "@ngrx/store";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {Observable} from "rxjs";
-import {tap} from "rxjs/operators";
+import {tap, switchMap, filter, map, shareReplay} from "rxjs/operators";
 
 @Component({
   selector: "app-registration",
@@ -32,34 +34,38 @@ import {tap} from "rxjs/operators";
   styleUrls: ["./registration.page.scss"],
 })
 export class RegistrationPage implements OnInit {
-  public accountId: string | null = null;
   public selectedType: string = "";
-  public account$?: Observable<Account | undefined>;
+  public account$!: Observable<Account | undefined>;
+  private accountId$!: Observable<string>;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private store: Store,
-  ) {
-    this.accountId = this.route.snapshot.paramMap.get("accountId");
-  }
+  ) {}
 
   ngOnInit() {
-    if (this.accountId) {
-      // Dispatch an action to load the account
-      this.store.dispatch(
-        AccountActions.loadAccount({accountId: this.accountId}),
-      );
+    // Get accountId as an observable
+    this.accountId$ = this.route.paramMap.pipe(
+      map((params) => params.get("accountId")),
+      filter((accountId): accountId is string => accountId !== null),
+      shareReplay(1),
+    );
 
-      // Use the async pipe in the template
-      this.account$ = this.store.select(selectAccountById(this.accountId)).pipe(
-        tap((account) => {
-          if (account?.type) {
-            this.router.navigate([`/account/${this.accountId}`]);
-          }
-        }),
-      );
-    }
+    // Dispatch action to load the account when accountId is available
+    this.accountId$.subscribe((accountId) => {
+      this.store.dispatch(AccountActions.loadAccount({accountId}));
+    });
+
+    // Select the account from the store
+    this.account$ = this.accountId$.pipe(
+      switchMap((accountId) => this.store.select(selectAccountById(accountId))),
+      tap((account) => {
+        if (account?.type) {
+          this.router.navigate([`/account/${account.id}`]);
+        }
+      }),
+    );
   }
 
   selectType(type: string) {

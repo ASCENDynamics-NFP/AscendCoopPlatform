@@ -128,7 +128,7 @@ export const searchAccountsFailure = createAction(
   props<{error: any}>(),
 );
 
-// Add the createRelatedAccount action
+// Create Related Account
 export const createRelatedAccount = createAction(
   "[Account] Create Related Account",
   props<{accountId: string; relatedAccount: RelatedAccount}>(),
@@ -136,7 +136,7 @@ export const createRelatedAccount = createAction(
 
 export const createRelatedAccountSuccess = createAction(
   "[Account] Create Related Account Success",
-  props<{relatedAccount: RelatedAccount}>(),
+  props<{accountId: string; relatedAccount: RelatedAccount}>(),
 );
 
 export const createRelatedAccountFailure = createAction(
@@ -168,7 +168,7 @@ export const loadRelatedAccounts = createAction(
 
 export const loadRelatedAccountsSuccess = createAction(
   "[Account] Load Related Accounts Success",
-  props<{relatedAccounts: RelatedAccount[]}>(),
+  props<{accountId: string; relatedAccounts: RelatedAccount[]}>(),
 );
 
 export const loadRelatedAccountsFailure = createAction(
@@ -184,7 +184,7 @@ export const updateRelatedAccount = createAction(
 
 export const updateRelatedAccountSuccess = createAction(
   "[Account] Update Related Account Success",
-  props<{relatedAccount: RelatedAccount}>(),
+  props<{accountId: string; relatedAccount: RelatedAccount}>(),
 );
 
 export const updateRelatedAccountFailure = createAction(
@@ -192,6 +192,7 @@ export const updateRelatedAccountFailure = createAction(
   props<{error: any}>(),
 );
 
+// Load Related Listings
 export const loadRelatedListings = createAction(
   "[Account] Load Related Listings",
   props<{accountId: string}>(),
@@ -199,7 +200,7 @@ export const loadRelatedListings = createAction(
 
 export const loadRelatedListingsSuccess = createAction(
   "[Account] Load Related Listings Success",
-  props<{relatedListings: RelatedListing[]}>(),
+  props<{accountId: string; relatedListings: RelatedListing[]}>(),
 );
 
 export const loadRelatedListingsFailure = createAction(

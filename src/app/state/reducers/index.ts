@@ -27,14 +27,14 @@ import {ListingsState, listingsReducer} from "./listings.reducer";
 
 export interface AppState {
   auth: AuthState;
-  account: AccountState;
+  accounts: AccountState;
   listings: ListingsState;
   // Other states...
 }
 
 export const reducers: ActionReducerMap<AppState> = {
   auth: authReducer,
-  account: accountReducer,
+  accounts: accountReducer,
   listings: listingsReducer,
   // Other reducers...
 };

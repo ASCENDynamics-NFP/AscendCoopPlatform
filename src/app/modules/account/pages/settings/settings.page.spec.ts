@@ -31,7 +31,6 @@ import {Account} from "../../../../models/account.model";
 import {Timestamp} from "firebase/firestore";
 import {SharedModule} from "../../../../shared/shared.module";
 import {AngularDelegate, IonicModule, PopoverController} from "@ionic/angular";
-import {of} from "rxjs";
 
 describe("SettingsPage", () => {
   let component: SettingsPage;

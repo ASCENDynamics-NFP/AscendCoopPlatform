@@ -29,7 +29,7 @@ import {
   selectFilteredAccounts,
   selectAccountLoading,
   selectSelectedAccount,
-  selectRelatedAccounts,
+  selectRelatedAccountsByAccountId,
 } from "../../../../state/selectors/account.selectors";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {Timestamp} from "firebase/firestore";
@@ -128,7 +128,7 @@ describe("UsersPage", () => {
       .withArgs(selectSelectedAccount)
       .and.returnValue(of(mockAccount));
     mockStore.select
-      .withArgs(selectRelatedAccounts)
+      .withArgs(selectRelatedAccountsByAccountId("12345"))
       .and.returnValue(of(mockRelatedAccounts));
 
     fixture.detectChanges();
@@ -206,7 +206,7 @@ describe("UsersPage", () => {
   // });
 
   // it("should return true for showRequestButton if no related account exists", (done) => {
-  //   mockStore.select.withArgs(selectRelatedAccounts).and.returnValue(of([]));
+  //   mockStore.select.withArgs(selectRelatedAccountsByAccountId("12345")).and.returnValue(of([]));
   //   component.showRequestButton(mockAccount).subscribe((show) => {
   //     expect(show).toBeTrue();
   //     done();

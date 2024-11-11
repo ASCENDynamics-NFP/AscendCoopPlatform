@@ -23,7 +23,7 @@ import {Component, OnInit} from "@angular/core";
 import {Account} from "../../../../models/account.model";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, combineLatest} from "rxjs";
-import {map, tap} from "rxjs/operators";
+import {map, tap, filter, switchMap, shareReplay, take} from "rxjs/operators";
 import {AuthUser} from "../../../../models/auth-user.model";
 import {Store} from "@ngrx/store";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
@@ -40,42 +40,48 @@ export class EditPage implements OnInit {
   account$!: Observable<Account | undefined>;
   authUser$!: Observable<AuthUser | null>;
   isProfileOwner$!: Observable<boolean>;
-  private accountId: string | null = null;
 
   constructor(
     private activatedRoute: ActivatedRoute,
     private router: Router,
     private store: Store,
-  ) {
-    this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
-  }
+  ) {}
 
   ngOnInit(): void {
     this.authUser$ = this.store.select(selectAuthUser);
 
-    if (this.accountId) {
-      // Dispatch the action to load the account
-      this.store.dispatch(
-        AccountActions.loadAccount({accountId: this.accountId}),
-      );
+    const accountId$ = this.activatedRoute.paramMap.pipe(
+      map((params) => params.get("accountId")),
+      filter((accountId): accountId is string => accountId !== null),
+      tap((accountId) => {
+        // Dispatch actions to load and select the account
+        this.store.dispatch(AccountActions.loadAccount({accountId}));
+        this.store.dispatch(AccountActions.setSelectedAccount({accountId}));
+      }),
+      shareReplay(1),
+    );
 
-      // Select the account based on the accountId
-      this.account$ = this.store.select(selectAccountById(this.accountId));
+    this.account$ = accountId$.pipe(
+      switchMap((accountId) => this.store.select(selectAccountById(accountId))),
+    );
 
-      // Check if the user is the profile owner
-      this.isProfileOwner$ = combineLatest([
-        this.authUser$,
-        this.account$,
-      ]).pipe(
-        map(([authUser, account]) => authUser?.uid === account?.id),
-        tap((isOwner) => {
-          if (!isOwner) {
+    // Check if the user is the profile owner
+    combineLatest([this.authUser$, this.account$])
+      .pipe(
+        take(1),
+        tap(([authUser, account]) => {
+          if (authUser && account && authUser.uid !== account.id) {
             // Redirect to unauthorized page if not the profile owner
-            this.router.navigate(["/account/" + this.accountId]);
+            this.router.navigate(["/account/" + account.id]);
           }
         }),
-      );
-    }
+      )
+      .subscribe();
+
+    // Observable to determine if the current user is the profile owner
+    this.isProfileOwner$ = combineLatest([this.authUser$, this.account$]).pipe(
+      map(([authUser, account]) => authUser?.uid === account?.id),
+    );
   }
 
   onItemSelected(form: string): void {

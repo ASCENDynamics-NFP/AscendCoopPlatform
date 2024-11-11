@@ -17,10 +17,12 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// src/app/state/account.state.ts
+
 import {Account, RelatedAccount} from "../models/account.model";
 import {RelatedListing} from "../models/related-listing.model";
 
-interface AccountState {
+export interface AccountState {
   entities: {[id: string]: Account};
   relatedAccounts: {[accountId: string]: RelatedAccount[]};
   relatedListings: {[accountId: string]: RelatedListing[]};

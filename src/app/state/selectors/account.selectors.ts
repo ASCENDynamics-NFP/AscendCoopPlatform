@@ -21,43 +21,47 @@
 
 import {createFeatureSelector, createSelector} from "@ngrx/store";
 import {AccountState} from "../reducers/account.reducer";
-import {Account, RelatedAccount} from "../../models/account.model";
-import {ListingType} from "../../models/listing.model";
+import {Account} from "../../models/account.model";
 
 export const selectAccountState =
-  createFeatureSelector<AccountState>("account");
+  createFeatureSelector<AccountState>("accounts");
 
-export const selectAccounts = createSelector(
+export const selectAccountEntities = createSelector(
   selectAccountState,
-  (state) => state.accounts,
+  (state) => state.entities,
 );
 
-export const selectRelatedListingsByAccountId = (accountId: string) =>
-  createSelector(selectRelatedListings, (listings) =>
-    listings.filter((listing) => listing.accountId === accountId),
-  );
+export const selectAllAccounts = createSelector(
+  selectAccountEntities,
+  (entities) => Object.values(entities),
+);
+
+export const selectAccountById = (accountId: string) =>
+  createSelector(selectAccountEntities, (entities) => entities[accountId]);
+
+export const selectSelectedAccountId = createSelector(
+  selectAccountState,
+  (state) => state.selectedAccountId,
+);
+
+export const selectSelectedAccount = createSelector(
+  selectAccountEntities,
+  selectSelectedAccountId,
+  (entities, selectedAccountId) =>
+    selectedAccountId ? entities[selectedAccountId] : null,
+);
 
 export const selectRelatedAccountsByAccountId = (accountId: string) =>
   createSelector(
-    selectRelatedAccounts,
-
-    (accounts) => accounts.filter((account) => account.accountId === accountId),
+    selectAccountState,
+    (state) => state.relatedAccounts[accountId] || [],
   );
 
-export const selectAccountById = (accountId: string) =>
-  createSelector(selectAccounts, (accounts: Account[]): Account | undefined =>
-    accounts.find((account) => account.id === accountId),
+export const selectRelatedListingsByAccountId = (accountId: string) =>
+  createSelector(
+    selectAccountState,
+    (state) => state.relatedListings[accountId] || [],
   );
-
-export const selectSelectedAccount = createSelector(
-  selectAccountState,
-  (state) => state.selectedAccount,
-);
-
-export const selectRelatedAccounts = createSelector(
-  selectAccountState,
-  (state) => state.relatedAccounts,
-);
 
 export const selectAccountLoading = createSelector(
   selectAccountState,
@@ -74,12 +78,12 @@ export const selectFilteredAccounts = (
   searchTerm: string,
   accountType: string,
 ) =>
-  createSelector(selectAccounts, (accounts: Account[]) => {
+  createSelector(selectAllAccounts, (accounts: Account[]) => {
     const normalizeString = (str: string) =>
       str
         .toLowerCase()
-        .replace(/\s+/g, "") // Remove all whitespace
-        .replace(/[^a-z0-9]/gi, ""); // Remove non-alphanumeric characters
+        .replace(/\s+/g, "")
+        .replace(/[^a-z0-9]/gi, "");
 
     const normalizedSearchTerm = normalizeString(searchTerm);
 
@@ -93,33 +97,3 @@ export const selectFilteredAccounts = (
       })
       .sort((a, b) => (a.name && b.name ? a.name.localeCompare(b.name) : 0));
   });
-
-export const selectRelatedListings = createSelector(
-  selectAccountState,
-  (state) => state.relatedListings,
-);
-
-export const selectRelatedListingsByType = (type: ListingType) =>
-  createSelector(selectRelatedListings, (listings) =>
-    listings.filter((listing) => listing.type === type),
-  );
-
-export const selectActiveRelatedListings = createSelector(
-  selectRelatedListings,
-  (listings) => listings.filter((listing) => listing.status === "active"),
-);
-
-export const selectAccountWithRelated = createSelector(
-  selectSelectedAccount,
-  selectRelatedAccounts,
-  selectRelatedListings,
-  (account, relatedAccounts, relatedListings) => ({
-    account,
-    relatedAccounts: relatedAccounts.filter((ra) =>
-      account?.relatedAccountIds?.includes(ra.id),
-    ),
-    relatedListings: relatedListings.filter((rl) =>
-      account?.relatedListingIds?.includes(rl.id),
-    ),
-  }),
-);

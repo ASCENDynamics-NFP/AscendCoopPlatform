@@ -87,8 +87,6 @@ describe("DetailsPage", () => {
     webLinks: [],
     lastLoginAt: new Timestamp(0, 0),
     email: "",
-    relatedAccountIds: ["ra1", "ra2"],
-    relatedListingIds: ["rl1", "rl2"],
   };
 
   const mockRelatedAccounts: RelatedAccount[] = [

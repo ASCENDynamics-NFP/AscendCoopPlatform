@@ -74,11 +74,6 @@ export class DetailsPage implements OnInit, ViewWillEnter {
           AccountActions.loadAccount({accountId: this.accountId}),
         );
 
-        // Dispatch setSelectedAccount action
-        this.store.dispatch(
-          AccountActions.setSelectedAccount({accountId: this.accountId}),
-        );
-
         // Select account and related accounts from the store
         this.account$ = this.store.select(selectAccountById(this.accountId));
         this.relatedAccounts$ = this.store.select(

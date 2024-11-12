@@ -28,8 +28,8 @@ import {Store} from "@ngrx/store";
 import {Account, RelatedAccount} from "../../../../models/account.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {
-  selectSelectedAccount,
   selectRelatedAccountsByAccountId,
+  selectAccountById,
 } from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {IonContent, ViewWillEnter} from "@ionic/angular";
@@ -80,7 +80,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         );
 
         // Select account and related accounts from the store
-        this.account$ = this.store.select(selectSelectedAccount);
+        this.account$ = this.store.select(selectAccountById(this.accountId));
         this.relatedAccounts$ = this.store.select(
           selectRelatedAccountsByAccountId(this.accountId),
         );

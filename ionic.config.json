@@ -1,7 +1,7 @@
 {
-  "name": "ascendcoopplatform",
+  "name": "app",
   "integrations": {
     "capacitor": {}
   },
-  "type": "angular-standalone"
+  "type": "angular"
 }

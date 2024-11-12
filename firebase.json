@@ -23,7 +23,7 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
-    "public": "www",
+    "public": "public",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {

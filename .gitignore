@@ -20,6 +20,7 @@ log.txt
 # Ionic
 /.ionic
 /www
+/public 
 /platforms
 /plugins
 
@@ -33,7 +34,7 @@ log.txt
 /node_modules
 npm-debug.log
 yarn-error.log
-package-lock.json // need this file for faster ci/cd with GitHub Actions
+# package-lock.json // need this file for faster ci/cd with GitHub Actions
 
 # IDEs and editors
 .idea/

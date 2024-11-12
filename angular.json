@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "app": {
+    "ascendcoopplatform": {
       "projectType": "application",
       "schematics": {
         "@ionic/angular-toolkit:page": {
@@ -19,7 +19,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "www",
+            "outputPath": "public",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -80,11 +80,11 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "app:build:production",
-              "buildTarget": "app:build:production"
+              "browserTarget": "ascendcoopplatform:build:production",
+              "buildTarget": "ascendcoopplatform:build:production"
             },
             "development": {
-              "buildTarget": "app:build:development"
+              "buildTarget": "ascendcoopplatform:build:development"
             },
             "ci": {
               "progress": false
@@ -95,7 +95,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "buildTarget": "app:build"
+            "buildTarget": "ascendcoopplatform:build"
           }
         },
         "test": {

@@ -18,6 +18,7 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 // src/app/state/listings/listings.selectors.ts
+
 import {createFeatureSelector, createSelector} from "@ngrx/store";
 import {ListingsState} from "../reducers/listings.reducer";
 
@@ -26,13 +27,22 @@ export const selectListingsState =
 
 export const selectAllListings = createSelector(
   selectListingsState,
-  (state: ListingsState) => state.listings,
+  (state: ListingsState) => Object.values(state.entities),
 );
 
 export const selectListingById = (listingId: string) =>
-  createSelector(selectListingsState, (state: ListingsState) =>
-    state.listings.find((listing) => listing.id === listingId),
+  createSelector(
+    selectListingsState,
+    (state: ListingsState) => state.entities[listingId],
   );
+
+export const selectSelectedListing = createSelector(
+  selectListingsState,
+  (state: ListingsState) =>
+    state.selectedListingId
+      ? state.entities[state.selectedListingId]
+      : undefined,
+);
 
 export const selectLoading = createSelector(
   selectListingsState,
@@ -42,4 +52,40 @@ export const selectLoading = createSelector(
 export const selectError = createSelector(
   selectListingsState,
   (state: ListingsState) => state.error,
+);
+
+export const selectFilterType = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state.filterType,
+);
+
+export const selectSearchQuery = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state.searchQuery,
+);
+
+export const selectFilteredListings = createSelector(
+  selectAllListings,
+  selectFilterType,
+  selectSearchQuery,
+  (listings, filterType, searchQuery) => {
+    let filteredListings = listings;
+
+    if (filterType && filterType !== "all") {
+      filteredListings = filteredListings.filter(
+        (listing) => listing.type === filterType,
+      );
+    }
+
+    if (searchQuery) {
+      const queryLower = searchQuery.toLowerCase();
+      filteredListings = filteredListings.filter(
+        (listing) =>
+          listing.title.toLowerCase().includes(queryLower) ||
+          listing.description.toLowerCase().includes(queryLower),
+      );
+    }
+
+    return filteredListings;
+  },
 );

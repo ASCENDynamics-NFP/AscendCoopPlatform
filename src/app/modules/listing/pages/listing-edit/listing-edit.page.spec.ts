@@ -17,22 +17,37 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {ComponentFixture, TestBed} from "@angular/core/testing";
+// src/app/modules/listings/pages/listing-edit/listing-edit.page.spec.ts
+
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from "@angular/core/testing";
 import {ListingEditPage} from "./listing-edit.page";
-import {IonicModule, NavController} from "@ionic/angular";
+import {IonicModule, NavController, Platform} from "@ionic/angular";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
-import {BehaviorSubject, of} from "rxjs";
+import {provideMockStore, MockStore} from "@ngrx/store/testing";
 import {Listing} from "../../../../models/listing.model";
-import * as ListingActions from "../../../../state/actions/listings.actions";
+import * as ListingsActions from "../../../../state/actions/listings.actions";
+import {AppState} from "../../../../state/app.state";
+import {AuthUser} from "../../../../models/auth-user.model";
+import {selectListingById} from "../../../../state/selectors/listings.selectors";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
+import {Location} from "@angular/common";
 import {Timestamp} from "firebase/firestore";
-import {NO_ERRORS_SCHEMA} from "@angular/core";
 
 describe("ListingEditPage", () => {
   let component: ListingEditPage;
   let fixture: ComponentFixture<ListingEditPage>;
-  let store: jasmine.SpyObj<Store>;
+  let store: MockStore<AppState>;
   let router: jasmine.SpyObj<Router>;
+  let navControllerSpy: jasmine.SpyObj<NavController>;
+  let platformMock: any;
+  let locationMock: any;
 
   const mockListing: Listing = {
     id: "123",
@@ -76,26 +91,55 @@ describe("ListingEditPage", () => {
     responsibilities: ["Responsibility 1"],
     benefits: ["Benefit 1"],
     status: "active",
+    createdBy: "user-123",
+  };
+
+  const mockAuthUser: AuthUser = {
+    uid: "user-123",
+    email: "test@test.com",
+    displayName: "Test User",
+    iconImage: null,
+    emailVerified: true,
+    heroImage: null,
+    tagline: null,
+    type: "user",
+    createdAt: new Date(),
+    lastLoginAt: new Date(),
+    phoneNumber: null,
+    providerData: [],
+    settings: {language: "en", theme: "light"},
   };
 
   beforeEach(async () => {
-    const navCtrlMock = {
-      navigateForward: jasmine.createSpy("navigateForward"),
-      navigateRoot: jasmine.createSpy("navigateRoot"),
-      // Add a mock for the missing subscribe functionality
-      subscribe: new BehaviorSubject(null),
-    };
-    const storeSpy = jasmine.createSpyObj("Store", ["dispatch", "select"]);
     const routerSpy = jasmine.createSpyObj("Router", ["navigate"]);
-    storeSpy.select.and.returnValue(of(mockListing));
+    navControllerSpy = jasmine.createSpyObj("NavController", [
+      "navigateBack",
+      "navigateForward",
+      "navigateRoot",
+      "back",
+    ]);
+
+    platformMock = {
+      ready: jasmine.createSpy("ready").and.returnValue(Promise.resolve()),
+      backButton: {
+        subscribeWithPriority: jasmine.createSpy("subscribeWithPriority"),
+      },
+      is: jasmine.createSpy("is").and.returnValue(false),
+    };
+
+    locationMock = {
+      back: jasmine.createSpy("back"),
+    };
 
     await TestBed.configureTestingModule({
       declarations: [ListingEditPage],
       imports: [IonicModule.forRoot()],
       providers: [
-        {provide: Store, useValue: storeSpy},
+        provideMockStore(),
         {provide: Router, useValue: routerSpy},
-        {provide: NavController, useValue: navCtrlMock},
+        {provide: NavController, useValue: navControllerSpy},
+        {provide: Platform, useValue: platformMock},
+        {provide: Location, useValue: locationMock},
         {
           provide: ActivatedRoute,
           useValue: {
@@ -107,13 +151,18 @@ describe("ListingEditPage", () => {
           },
         },
       ],
-      schemas: [NO_ERRORS_SCHEMA],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
 
-    store = TestBed.inject(Store) as jasmine.SpyObj<Store>;
+    store = TestBed.inject(Store) as MockStore<AppState>;
     router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
     fixture = TestBed.createComponent(ListingEditPage);
     component = fixture.componentInstance;
+
+    // Override selectors
+    store.overrideSelector(selectListingById("123"), mockListing);
+    store.overrideSelector(selectAuthUser, mockAuthUser);
+
     fixture.detectChanges();
   });
 
@@ -121,17 +170,50 @@ describe("ListingEditPage", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should load listing on init", () => {
+  it("should dispatch loadListingById on init", () => {
+    spyOn(store, "dispatch");
+    component.ngOnInit();
     expect(store.dispatch).toHaveBeenCalledWith(
-      ListingActions.loadListingById({id: "123"}),
+      ListingsActions.loadListingById({id: "123"}),
     );
   });
 
+  // it("should display listing details", (done) => {
+  //   component.listing$.subscribe((listing) => {
+  //     expect(listing).toEqual(mockListing);
+  //     done();
+  //   });
+  // });
+
+  // it("should determine if user is owner", (done) => {
+  //   component.isOwner$.subscribe((isOwner) => {
+  //     expect(isOwner).toBeTrue();
+  //     done();
+  //   });
+  // });
+
+  // it("should navigate to listings page if user is not owner", fakeAsync(() => {
+  //   // Override selectors to simulate user not being the owner
+  //   store.overrideSelector(selectListingById("123"), {
+  //     ...mockListing,
+  //     createdBy: "other-user",
+  //   });
+  //   store.overrideSelector(selectAuthUser, {
+  //     ...mockAuthUser,
+  //     uid: "another-user",
+  //   });
+  //   store.refreshState();
+  //   fixture.detectChanges();
+  //   tick();
+  //   expect(router.navigate).toHaveBeenCalledWith(["/listings"]);
+  // }));
+
   it("should update listing on form submit", () => {
+    spyOn(store, "dispatch");
     const updatedListing = {...mockListing, title: "Updated Title"};
     component.onSubmit(updatedListing);
     expect(store.dispatch).toHaveBeenCalledWith(
-      ListingActions.updateListing({listing: updatedListing}),
+      ListingsActions.updateListing({listing: updatedListing}),
     );
     expect(router.navigate).toHaveBeenCalledWith(["/listings", "123"]);
   });

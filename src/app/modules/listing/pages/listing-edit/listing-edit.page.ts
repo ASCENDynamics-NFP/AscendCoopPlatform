@@ -17,13 +17,17 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// src/app/modules/listings/pages/listing-edit/listing-edit.page.ts
+
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
 import {combineLatest, map, Observable, tap} from "rxjs";
 import {Listing} from "../../../../models/listing.model";
-import * as ListingActions from "../../../../state/actions/listings.actions";
+import * as ListingsActions from "../../../../state/actions/listings.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {AppState} from "../../../../state/app.state";
+import {selectListingById} from "../../../../state/selectors/listings.selectors";
 
 @Component({
   selector: "app-listing-edit",
@@ -32,17 +36,18 @@ import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 })
 export class ListingEditPage implements OnInit {
   listing$: Observable<Listing | null>;
-  id: string | null = null;
   isOwner$: Observable<boolean>;
+  private listingId: string;
 
   constructor(
-    private store: Store<{listings: {selectedListing: Listing | null}}>,
+    private store: Store<AppState>,
     private route: ActivatedRoute,
     private router: Router,
   ) {
-    this.listing$ = this.store.select(
-      (state) => state.listings.selectedListing,
-    );
+    this.listingId = this.route.snapshot.paramMap.get("id") || "";
+    this.listing$ = this.store
+      .select(selectListingById(this.listingId))
+      .pipe(map((listing) => listing || null)); // Map undefined to null
 
     this.isOwner$ = combineLatest([
       this.store.select(selectAuthUser),
@@ -61,19 +66,20 @@ export class ListingEditPage implements OnInit {
   }
 
   ngOnInit() {
-    this.id = this.route.snapshot.paramMap.get("id");
-    if (this.id) {
-      this.store.dispatch(ListingActions.loadListingById({id: this.id}));
+    if (this.listingId) {
+      this.store.dispatch(
+        ListingsActions.loadListingById({id: this.listingId}),
+      );
     }
   }
 
   onSubmit(listing: Listing) {
-    if (this.id) {
-      const updatedListing = {...listing, id: this.id};
+    if (this.listingId) {
+      const updatedListing = {...listing, id: this.listingId};
       this.store.dispatch(
-        ListingActions.updateListing({listing: updatedListing}),
+        ListingsActions.updateListing({listing: updatedListing}),
       );
-      this.router.navigate(["/listings", this.id]);
+      this.router.navigate(["/listings", this.listingId]);
     }
   }
 }

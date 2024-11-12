@@ -18,14 +18,17 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 // src/app/state/listings/listings.actions.ts
+
 import {createAction, props} from "@ngrx/store";
 import {Listing} from "../../models/listing.model";
 
 export const loadListings = createAction("[Listings Page] Load Listings");
+
 export const loadListingsSuccess = createAction(
   "[Listings API] Load Listings Success",
   props<{listings: Listing[]}>(),
 );
+
 export const loadListingsFailure = createAction(
   "[Listings API] Load Listings Failure",
   props<{error: string}>(),
@@ -35,9 +38,10 @@ export const loadListingById = createAction(
   "[Listing Detail Page] Load Listing By Id",
   props<{id: string}>(),
 );
+
 export const loadListingByIdSuccess = createAction(
   "[Listings API] Load Listing By Id Success",
-  props<{listing: Listing | null}>(), // Allowing the action to accept null listings
+  props<{listing: Listing | null}>(), // Accept Listing or null
 );
 
 export const loadListingByIdFailure = createAction(
@@ -46,56 +50,56 @@ export const loadListingByIdFailure = createAction(
 );
 
 export const updateListing = createAction(
-  "[Listings API] Update",
+  "[Listings API] Update Listing",
   props<{listing: Listing}>(),
 );
 
 export const updateListingSuccess = createAction(
-  "[Listings API] Update Success",
+  "[Listings API] Update Listing Success",
   props<{listing: Listing}>(),
 );
 
 export const updateListingFailure = createAction(
-  "[Listings API] Update Failure",
+  "[Listings API] Update Listing Failure",
   props<{error: string}>(),
 );
 
 export const createListing = createAction(
-  "[Listings API] Create",
+  "[Listings API] Create Listing",
   props<{listing: Listing}>(),
 );
 
 export const createListingSuccess = createAction(
-  "[Listings API] Create Success",
+  "[Listings API] Create Listing Success",
   props<{listing: Listing}>(),
 );
 
 export const createListingFailure = createAction(
-  "[Listings API] Create Failure",
+  "[Listings API] Create Listing Failure",
   props<{error: string}>(),
 );
 
-export const filterListings = createAction(
-  "[Listings] Filter Listings",
-  props<{listingType: string}>(),
-);
-
-export const searchListings = createAction(
-  "[Listings] Search Listings",
-  props<{query: string}>(),
-);
-
 export const deleteListing = createAction(
-  "[Listings API] Delete",
+  "[Listings API] Delete Listing",
   props<{id: string}>(),
 );
 
 export const deleteListingSuccess = createAction(
-  "[Listings API] Delete Success",
+  "[Listings API] Delete Listing Success",
   props<{id: string}>(),
 );
 
 export const deleteListingFailure = createAction(
-  "[Listings API] Delete Failure",
+  "[Listings API] Delete Listing Failure",
   props<{error: string}>(),
+);
+
+export const filterListings = createAction(
+  "[Listings Page] Filter Listings",
+  props<{listingType: string}>(),
+);
+
+export const searchListings = createAction(
+  "[Listings Page] Search Listings",
+  props<{query: string}>(),
 );

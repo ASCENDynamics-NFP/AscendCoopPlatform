@@ -39,8 +39,19 @@ describe("ListingCreatePage", () => {
     uid: "test-user-id",
     email: "test@example.com",
     displayName: "Test User",
-    photoURL: "https://example.com/photo.jpg",
+    iconImage: "https://example.com/photo.jpg",
     emailVerified: true,
+    heroImage: null,
+    tagline: null,
+    type: null,
+    createdAt: null,
+    lastLoginAt: null,
+    phoneNumber: null,
+    providerData: [],
+    settings: {
+      language: "en",
+      theme: "light" as const,
+    },
   };
 
   const navCtrlMock = {

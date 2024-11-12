@@ -17,30 +17,13 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
-import {IonicModule} from "@ionic/angular";
+// src/app/state/listing.state.ts
 
-import {PartnerSearchComponent} from "./partner-search.component";
-import {provideMockStore} from "@ngrx/store/testing";
-import {NO_ERRORS_SCHEMA} from "@angular/core";
+import {Listing} from "../models/listing.model";
 
-describe("PartnerSearchComponent", () => {
-  let component: PartnerSearchComponent;
-  let fixture: ComponentFixture<PartnerSearchComponent>;
-
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      imports: [IonicModule.forRoot()],
-      providers: [provideMockStore({})],
-      schemas: [NO_ERRORS_SCHEMA],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(PartnerSearchComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  }));
-
-  it("should create", () => {
-    expect(component).toBeTruthy();
-  });
-});
+interface ListingState {
+  entities: {[id: string]: Listing};
+  selectedListingId: string | null;
+  loading: boolean;
+  error: string | null;
+}

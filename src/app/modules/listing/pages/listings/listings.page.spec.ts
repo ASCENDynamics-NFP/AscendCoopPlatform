@@ -17,19 +17,27 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// src/app/modules/listing/pages/listings/listings.page.spec.ts
+
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {ListingsPage} from "./listings.page";
 import {IonicModule, NavController} from "@ionic/angular";
 import {Store} from "@ngrx/store";
-import {of} from "rxjs";
 import {Listing} from "../../../../models/listing.model";
-import * as ListingActions from "../../../../state/actions/listings.actions";
+import * as ListingsActions from "../../../../state/actions/listings.actions";
 import {Timestamp} from "firebase/firestore";
+import {provideMockStore, MockStore} from "@ngrx/store/testing";
+import {
+  selectFilteredListings,
+  selectLoading,
+  selectError,
+} from "../../../../state/selectors/listings.selectors";
+import {AppState} from "../../../../state/app.state";
 
 describe("ListingsPage", () => {
   let component: ListingsPage;
   let fixture: ComponentFixture<ListingsPage>;
-  let store: jasmine.SpyObj<Store>;
+  let store: MockStore<AppState>;
   let navCtrl: jasmine.SpyObj<NavController>;
 
   const mockListings: Listing[] = [
@@ -79,26 +87,28 @@ describe("ListingsPage", () => {
   ];
 
   beforeEach(async () => {
-    const storeSpy = jasmine.createSpyObj("Store", ["dispatch", "select"]);
     const navCtrlSpy = jasmine.createSpyObj("NavController", [
       "navigateForward",
     ]);
-
-    storeSpy.select.and.returnValue(of(mockListings));
 
     await TestBed.configureTestingModule({
       declarations: [ListingsPage],
       imports: [IonicModule.forRoot()],
       providers: [
-        {provide: Store, useValue: storeSpy},
+        provideMockStore(),
         {provide: NavController, useValue: navCtrlSpy},
       ],
     }).compileComponents();
 
-    store = TestBed.inject(Store) as jasmine.SpyObj<Store>;
+    store = TestBed.inject(Store) as MockStore<AppState>;
     navCtrl = TestBed.inject(NavController) as jasmine.SpyObj<NavController>;
     fixture = TestBed.createComponent(ListingsPage);
     component = fixture.componentInstance;
+
+    store.overrideSelector(selectFilteredListings, mockListings);
+    store.overrideSelector(selectLoading, false);
+    store.overrideSelector(selectError, null);
+
     fixture.detectChanges();
   });
 
@@ -107,12 +117,15 @@ describe("ListingsPage", () => {
   });
 
   it("should load listings on init", () => {
-    expect(store.dispatch).toHaveBeenCalledWith(ListingActions.loadListings());
+    spyOn(store, "dispatch");
+    component.ngOnInit();
+    expect(store.dispatch).toHaveBeenCalledWith(ListingsActions.loadListings());
   });
 
-  it("should display listings from store", () => {
+  it("should display listings from store", (done) => {
     component.listings$.subscribe((listings) => {
       expect(listings).toEqual(mockListings);
+      done();
     });
   });
 
@@ -127,18 +140,20 @@ describe("ListingsPage", () => {
   });
 
   it("should filter listings by listingType", () => {
+    spyOn(store, "dispatch");
     const event = {detail: {value: "volunteer"}};
     component.filterListings(event);
     expect(store.dispatch).toHaveBeenCalledWith(
-      ListingActions.filterListings({listingType: "volunteer"}),
+      ListingsActions.filterListings({listingType: "volunteer"}),
     );
   });
 
   it("should search listings", () => {
+    spyOn(store, "dispatch");
     const event = {detail: {value: "test"}};
     component.searchListings(event);
     expect(store.dispatch).toHaveBeenCalledWith(
-      ListingActions.searchListings({query: "test"}),
+      ListingsActions.searchListings({query: "test"}),
     );
   });
 });

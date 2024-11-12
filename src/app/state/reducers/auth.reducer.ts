@@ -49,6 +49,7 @@ export const authReducer = createReducer(
     AuthActions.confirmSignInWithEmailLink,
     AuthActions.processSignInLink,
     AuthActions.initializeAuth,
+    AuthActions.updateAuthUser,
     (state) => ({
       ...state,
       loading: true,
@@ -59,10 +60,10 @@ export const authReducer = createReducer(
   // Success Actions
   on(
     AuthActions.signUpSuccess,
-    AuthActions.signInSuccess,
     AuthActions.signInWithGoogleSuccess,
     AuthActions.confirmSignInWithEmailLinkSuccess,
     AuthActions.processSignInLinkSuccess,
+    AuthActions.updateAuthUserSuccess,
     (state, {user}) => ({
       ...state,
       user,
@@ -70,6 +71,13 @@ export const authReducer = createReducer(
       error: null,
     }),
   ),
+
+  on(AuthActions.signInSuccess, (state, {uid}) => ({
+    ...state,
+    uid: uid,
+    error: null,
+    loading: false,
+  })),
 
   on(AuthActions.signOutSuccess, () => ({
     ...initialState,
@@ -95,6 +103,7 @@ export const authReducer = createReducer(
     AuthActions.sendSignInLinkToEmailFailure,
     AuthActions.confirmSignInWithEmailLinkFailure,
     AuthActions.processSignInLinkFailure,
+    AuthActions.updateAuthUserFailure,
     (state, {error}) => ({
       ...state,
       loading: false,

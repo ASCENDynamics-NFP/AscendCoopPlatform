@@ -22,16 +22,28 @@
 import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
 import * as AccountActions from "../actions/account.actions";
-import {from, of} from "rxjs";
-import {switchMap, map, catchError, mergeMap} from "rxjs/operators";
+import {EMPTY, from, of} from "rxjs";
+import {
+  switchMap,
+  map,
+  catchError,
+  mergeMap,
+  withLatestFrom,
+} from "rxjs/operators";
 import {FirestoreService} from "../../core/services/firestore.service";
 import {Account} from "../../models/account.model";
+import {RelatedListing} from "../../models/related-listing.model";
+import {selectAuthUser} from "../selectors/auth.selectors";
+import {Store} from "@ngrx/store";
+import * as AuthActions from "../actions/auth.actions";
+import {selectAccountEntities} from "../selectors/account.selectors";
 
 @Injectable()
 export class AccountEffects {
   constructor(
     private actions$: Actions,
     private firestoreService: FirestoreService,
+    private store: Store,
   ) {}
 
   // Load Accounts
@@ -42,9 +54,9 @@ export class AccountEffects {
         this.firestoreService.getAllAccounts().pipe(
           map((accounts) => AccountActions.loadAccountsSuccess({accounts})),
           catchError((error) => {
-            console.error("Effect: Error loading account:", error);
+            console.error("Effect: Error loading accounts:", error);
             return of(
-              AccountActions.loadAccountFailure({
+              AccountActions.loadAccountsFailure({
                 error: error.message || error,
               }),
             );
@@ -58,31 +70,21 @@ export class AccountEffects {
   loadAccount$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.loadAccount),
-      // tap(({accountId}) =>
-      //   console.log(`Effect: Loading account with ID: ${accountId}`),
-      // ),
       mergeMap(({accountId}) =>
-        this.firestoreService.getDocument<Account>("accounts", accountId).pipe(
-          // tap((account) =>
-          //   console.log(`Effect: Fetched account data:`, account),
-          // ),
-          map((account) => {
+        this.firestoreService.getAccountWithRelated(accountId).pipe(
+          map(({account, relatedAccounts, relatedListings}) => {
             if (account) {
-              return AccountActions.loadAccountSuccess({account});
-            } else {
-              return AccountActions.loadAccountFailure({
-                error: "Account not found",
+              return AccountActions.loadAccountSuccess({
+                account,
+                relatedAccounts,
+                relatedListings,
               });
             }
+            return AccountActions.loadAccountFailure({
+              error: "Account not found",
+            });
           }),
-          catchError((error) => {
-            console.error("Effect: Error loading account:", error);
-            return of(
-              AccountActions.loadAccountFailure({
-                error: error.message || error,
-              }),
-            );
-          }),
+          catchError((error) => of(AccountActions.loadAccountFailure({error}))),
         ),
       ),
     ),
@@ -167,19 +169,20 @@ export class AccountEffects {
     ),
   );
 
-  // Effect to handle creating a related account
+  // Create Related Account
   createRelatedAccount$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.createRelatedAccount),
       switchMap(({accountId, relatedAccount}) =>
         from(
           this.firestoreService.setDocument(
-            `accounts/${accountId}/relatedAccounts/${relatedAccount.id}`, // Specify the document path with the relatedAccount.id
+            `accounts/${accountId}/relatedAccounts/${relatedAccount.id}`,
             relatedAccount,
           ),
         ).pipe(
           map(() =>
             AccountActions.createRelatedAccountSuccess({
+              accountId,
               relatedAccount,
             }),
           ),
@@ -191,7 +194,7 @@ export class AccountEffects {
     ),
   );
 
-  // Using deleteDocumentAtPath (Correct)
+  // Delete Related Account
   deleteRelatedAccount$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.deleteRelatedAccount),
@@ -222,7 +225,10 @@ export class AccountEffects {
       switchMap(({accountId}) =>
         this.firestoreService.getRelatedAccounts(accountId).pipe(
           map((relatedAccounts) =>
-            AccountActions.loadRelatedAccountsSuccess({relatedAccounts}),
+            AccountActions.loadRelatedAccountsSuccess({
+              accountId,
+              relatedAccounts,
+            }),
           ),
           catchError((error) =>
             of(AccountActions.loadRelatedAccountsFailure({error})),
@@ -245,13 +251,83 @@ export class AccountEffects {
           ),
         ).pipe(
           map(() =>
-            AccountActions.updateRelatedAccountSuccess({relatedAccount}),
+            AccountActions.updateRelatedAccountSuccess({
+              accountId,
+              relatedAccount,
+            }),
           ),
           catchError((error) =>
             of(AccountActions.updateRelatedAccountFailure({error})),
           ),
         ),
       ),
+    ),
+  );
+
+  // Load Related Listings
+  loadRelatedListings$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AccountActions.loadRelatedListings),
+      mergeMap(({accountId}) =>
+        this.firestoreService
+          .getCollectionWithCondition<RelatedListing>(
+            `accounts/${accountId}/relatedListings`,
+            "status",
+            "in",
+            ["active", "filled"],
+          )
+          .pipe(
+            map((relatedListings) =>
+              AccountActions.loadRelatedListingsSuccess({
+                accountId,
+                relatedListings,
+              }),
+            ),
+            catchError((error) =>
+              of(AccountActions.loadRelatedListingsFailure({error})),
+            ),
+          ),
+      ),
+    ),
+  );
+
+  // Sync Auth User with Account
+  syncAuthUserWithAccount$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AccountActions.loadAccountSuccess),
+      withLatestFrom(this.store.select(selectAuthUser)),
+      map(([{account}, authUser]) => {
+        if (authUser?.uid && account.id && authUser.uid === account.id) {
+          return AuthActions.updateAuthUser({
+            user: {
+              displayName: account.name,
+              heroImage: account.heroImage,
+              iconImage: account.iconImage,
+              tagline: account.tagline,
+              type: account.type,
+              settings: account.settings,
+            },
+          });
+        }
+        return {type: "NO_ACTION"};
+      }),
+    ),
+  );
+
+  // Set Selected Account
+  setSelectedAccount$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AccountActions.setSelectedAccount),
+      withLatestFrom(this.store.select(selectAccountEntities)),
+      mergeMap(([action, entities]) => {
+        const accountExists = !!entities[action.accountId];
+
+        if (!accountExists) {
+          return of(AccountActions.loadAccount({accountId: action.accountId}));
+        }
+
+        return EMPTY;
+      }),
     ),
   );
 }

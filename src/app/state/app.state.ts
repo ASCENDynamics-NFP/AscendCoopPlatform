@@ -18,11 +18,14 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 // src/app/state/app.state.ts
+
+import {AccountState} from "./reducers/account.reducer";
 import {AuthState} from "./reducers/auth.reducer";
 import {FirestoreState} from "./reducers/firestore.reducer";
 import {ListingsState} from "./reducers/listings.reducer";
 
 export interface AppState {
+  accounts: AccountState;
   auth: AuthState;
   firestore: FirestoreState;
   listings: ListingsState;

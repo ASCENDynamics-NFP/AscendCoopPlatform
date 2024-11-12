@@ -22,19 +22,22 @@
 import {createReducer, on} from "@ngrx/store";
 import * as AccountActions from "../actions/account.actions";
 import {Account, RelatedAccount} from "../../models/account.model";
+import {RelatedListing} from "../../models/related-listing.model";
 
 export interface AccountState {
-  accounts: Account[];
-  relatedAccounts: RelatedAccount[];
-  selectedAccount: Account | null;
+  entities: {[id: string]: Account};
+  relatedAccounts: {[accountId: string]: RelatedAccount[]};
+  relatedListings: {[accountId: string]: RelatedListing[]};
+  selectedAccountId: string | null;
   loading: boolean;
   error: any;
 }
 
 export const initialState: AccountState = {
-  accounts: [],
-  relatedAccounts: [],
-  selectedAccount: null,
+  entities: {},
+  relatedAccounts: {},
+  relatedListings: {},
+  selectedAccountId: null,
   loading: false,
   error: null,
 };
@@ -47,54 +50,6 @@ export const accountReducer = createReducer(
     ...initialState,
   })),
 
-  // Load Account
-  on(AccountActions.loadAccount, (state) => ({
-    ...state,
-    loading: true,
-    error: null,
-  })),
-  on(AccountActions.loadAccountSuccess, (state, {account}) => {
-    return {
-      ...state,
-      accounts: [
-        ...state.accounts.filter((acc) => acc.id !== account.id),
-        account,
-      ],
-      selectedAccount: account,
-      loading: false,
-      error: null,
-    };
-  }),
-  on(AccountActions.loadAccountFailure, (state, {error}) => {
-    return {
-      ...state,
-      loading: false,
-      error,
-    };
-  }),
-
-  // Create Account
-  on(AccountActions.createAccountSuccess, (state, {account}) => ({
-    ...state,
-    accounts: [...state.accounts, account],
-  })),
-
-  // Update Account
-  on(AccountActions.updateAccountSuccess, (state, {account}) => ({
-    ...state,
-    accounts: state.accounts.map((a) => (a.id === account.id ? account : a)),
-    selectedAccount:
-      account.id === state.selectedAccount?.id
-        ? account
-        : state.selectedAccount,
-  })),
-
-  // Delete Account
-  on(AccountActions.deleteAccountSuccess, (state, {accountId}) => ({
-    ...state,
-    accounts: state.accounts.filter((a) => a.id !== accountId),
-  })),
-
   // Load Accounts
   on(AccountActions.loadAccounts, (state) => ({
     ...state,
@@ -103,8 +58,13 @@ export const accountReducer = createReducer(
   })),
   on(AccountActions.loadAccountsSuccess, (state, {accounts}) => ({
     ...state,
-    accounts,
-    filteredAccounts: accounts, // Initially, no filter applied
+    entities: accounts.reduce(
+      (entities: {[id: string]: Account}, account) => {
+        entities[account.id] = account;
+        return entities;
+      },
+      {} as {[id: string]: Account},
+    ),
     loading: false,
   })),
   on(AccountActions.loadAccountsFailure, (state, {error}) => ({
@@ -113,26 +73,77 @@ export const accountReducer = createReducer(
     error,
   })),
 
-  // Search Accounts
-  on(AccountActions.searchAccounts, (state) => ({
+  // Load Account
+  on(AccountActions.loadAccount, (state) => ({
     ...state,
     loading: true,
+    error: null,
   })),
-  on(AccountActions.searchAccountsSuccess, (state, {accounts}) => ({
+  on(
+    AccountActions.loadAccountSuccess,
+    (state, {account, relatedAccounts, relatedListings}) => ({
+      ...state,
+      entities: {
+        ...state.entities,
+        [account.id]: account,
+      },
+      relatedAccounts: {
+        ...state.relatedAccounts,
+        [account.id]: relatedAccounts,
+      },
+      relatedListings: {
+        ...state.relatedListings,
+        [account.id]: relatedListings,
+      },
+      selectedAccountId: account.id,
+      loading: false,
+      error: null,
+    }),
+  ),
+  on(AccountActions.loadAccountFailure, (state, {error}) => ({
     ...state,
-    accounts: accounts,
     loading: false,
+    error,
   })),
-  on(AccountActions.searchAccountsFailure, (state, {error}) => ({
+
+  // Create Account
+  on(AccountActions.createAccountSuccess, (state, {account}) => ({
     ...state,
-    error: error,
-    loading: false,
+    entities: {
+      ...state.entities,
+      [account.id]: account,
+    },
   })),
+
+  // Update Account
+  on(AccountActions.updateAccountSuccess, (state, {account}) => ({
+    ...state,
+    entities: {
+      ...state.entities,
+      [account.id]: account,
+    },
+  })),
+
+  // Delete Account
+  on(AccountActions.deleteAccountSuccess, (state, {accountId}) => {
+    const {[accountId]: removedAccount, ...entities} = state.entities;
+    const {[accountId]: removedRelatedAccounts, ...relatedAccounts} =
+      state.relatedAccounts;
+    const {[accountId]: removedRelatedListings, ...relatedListings} =
+      state.relatedListings;
+
+    return {
+      ...state,
+      entities,
+      relatedAccounts,
+      relatedListings,
+    };
+  }),
 
   // Set Selected Account
   on(AccountActions.setSelectedAccount, (state, {accountId}) => ({
     ...state,
-    selectedAccount: state.accounts.find((acc) => acc.id === accountId) || null,
+    selectedAccountId: accountId,
   })),
 
   // Load Related Accounts
@@ -140,81 +151,85 @@ export const accountReducer = createReducer(
     ...state,
     loading: true,
   })),
-  on(AccountActions.loadRelatedAccountsSuccess, (state, {relatedAccounts}) => ({
-    ...state,
-    relatedAccounts: relatedAccounts,
-    loading: false,
-  })),
+  on(
+    AccountActions.loadRelatedAccountsSuccess,
+    (state, {accountId, relatedAccounts}) => ({
+      ...state,
+      relatedAccounts: {
+        ...state.relatedAccounts,
+        [accountId]: relatedAccounts,
+      },
+      loading: false,
+    }),
+  ),
   on(AccountActions.loadRelatedAccountsFailure, (state, {error}) => ({
     ...state,
-    error: error,
+    error,
     loading: false,
   })),
 
-  // Handle createRelatedAccountSuccess to add the new related account to the state
-  on(AccountActions.createRelatedAccountSuccess, (state, {relatedAccount}) => {
-    const updatedAccounts = state.accounts.map((account) => {
-      if (account.id === relatedAccount.initiatorId) {
-        return {
-          ...account,
-          relatedAccounts: [...(account.relatedAccounts || []), relatedAccount],
-        };
-      }
-      return account;
-    });
-
-    return {
+  // Create Related Account
+  on(
+    AccountActions.createRelatedAccountSuccess,
+    (state, {accountId, relatedAccount}) => ({
       ...state,
-      accounts: updatedAccounts,
-    };
-  }),
+      relatedAccounts: {
+        ...state.relatedAccounts,
+        [accountId]: [
+          ...(state.relatedAccounts[accountId] || []),
+          relatedAccount,
+        ],
+      },
+    }),
+  ),
 
-  // Delete Related Account Success
+  // Update Related Account
+  on(
+    AccountActions.updateRelatedAccountSuccess,
+    (state, {accountId, relatedAccount}) => ({
+      ...state,
+      relatedAccounts: {
+        ...state.relatedAccounts,
+        [accountId]: state.relatedAccounts[accountId].map((ra) =>
+          ra.id === relatedAccount.id ? relatedAccount : ra,
+        ),
+      },
+    }),
+  ),
+
+  // Delete Related Account
   on(
     AccountActions.deleteRelatedAccountSuccess,
     (state, {accountId, relatedAccountId}) => ({
       ...state,
-      accounts: state.accounts.map((account) => {
-        if (account.id === accountId) {
-          return {
-            ...account,
-            relatedAccounts: (account.relatedAccounts || []).filter(
-              (ra) => ra.id !== relatedAccountId,
-            ),
-          };
-        }
-        return account;
-      }),
+      relatedAccounts: {
+        ...state.relatedAccounts,
+        [accountId]: state.relatedAccounts[accountId].filter(
+          (ra) => ra.id !== relatedAccountId,
+        ),
+      },
     }),
   ),
 
-  // Update Related Account Success
-  on(AccountActions.updateRelatedAccountSuccess, (state, {relatedAccount}) => {
-    const updatedAccounts = state.accounts.map((account) => {
-      if (account.id === relatedAccount.initiatorId) {
-        const relatedAccounts = account.relatedAccounts || [];
-
-        const exists = relatedAccounts.some(
-          (ra) => ra.id === relatedAccount.id,
-        );
-
-        const updatedRelatedAccounts = exists
-          ? relatedAccounts.map((ra) =>
-              ra.id === relatedAccount.id ? {...relatedAccount} : ra,
-            )
-          : [...relatedAccounts, relatedAccount];
-
-        return {
-          ...account,
-          relatedAccounts: updatedRelatedAccounts,
-        };
-      }
-      return account;
-    });
-
-    return {
+  // Load Related Listings
+  on(AccountActions.loadRelatedListings, (state) => ({
+    ...state,
+    loading: true,
+  })),
+  on(
+    AccountActions.loadRelatedListingsSuccess,
+    (state, {accountId, relatedListings}) => ({
       ...state,
-      accounts: updatedAccounts,
-    };
-  }),
+      relatedListings: {
+        ...state.relatedListings,
+        [accountId]: relatedListings,
+      },
+      loading: false,
+    }),
+  ),
+  on(AccountActions.loadRelatedListingsFailure, (state, {error}) => ({
+    ...state,
+    error,
+    loading: false,
+  })),
 );

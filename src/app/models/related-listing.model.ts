@@ -17,3 +17,18 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+import {BaseDocument} from "./base-document";
+import {ListingType} from "./listing.model";
+import {Timestamp} from "firebase/firestore";
+
+export interface RelatedListing extends BaseDocument {
+  title: string;
+  type: ListingType;
+  remote: boolean;
+  iconImage?: string;
+  status: "active" | "filled" | "expired";
+  relationship: "owner" | "applicant" | "participant" | "saved";
+  applicationDate?: Timestamp;
+  notes?: string;
+  accountId: string; // Reference to the parent account
+}

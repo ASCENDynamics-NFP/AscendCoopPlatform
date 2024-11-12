@@ -17,64 +17,61 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
-import {Change, EventContext} from "firebase-functions";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
 
 // Initialize the Firebase admin SDK
 if (!admin.apps.length) {
   admin.initializeApp();
 }
+
 // Reference to the Firestore database
-const db = admin.firestore();
+// const db = admin.firestore();
 
 /**
- * Cloud Function triggered when a document in the `relatedAccounts` sub-collection of an `accounts` document is updated.
+ * Cloud Function triggered when a document in the `accounts` collection is updated.
  */
-export const onUpdateRelatedAccount = functions.firestore
-  .document("accounts/{accountId}/relatedAccounts/{relatedAccountId}")
-  .onUpdate(handleRelatedAccountUpdate);
+export const onUpdateAccount = functions.firestore
+  .document("accounts/{accountId}")
+  .onUpdate(handleAccountUpdate);
 
 /**
- * Handles the update of a related account document, ensuring the corresponding reciprocal document is also updated.
+ * Handles the update of an account document, ensuring the auth user custom claims are updated.
  *
  * @param {Change<QueryDocumentSnapshot>} change - The change object representing the before and after state of the document.
  * @param {EventContext} context - The context of the event, providing parameters and identifiers.
  */
-async function handleRelatedAccountUpdate(
-  change: Change<QueryDocumentSnapshot>,
-  context: EventContext,
+async function handleAccountUpdate(
+  change: functions.Change<QueryDocumentSnapshot>,
+  context: functions.EventContext,
 ) {
-  const accountId = context.params.accountId;
-  const relatedAccountId = context.params.relatedAccountId;
   const after = change.after.data();
   const before = change.before.data();
+  const uid = context.params.accountId;
 
   try {
     if (
-      // If the status or relationship has changed, update the reciprocal related account document (prevents infinite loop on lastModifiedAt update)
-      before.status !== after.status ||
-      before.relationship !== after.relationship
+      before.type !== after.type ||
+      before.name !== after.name ||
+      before.heroImage !== after.heroImage ||
+      before.iconImage !== after.iconImage ||
+      before.tagline !== after.tagline ||
+      before.settings !== after.settings
     ) {
-      const reciprocalRelatedAccountRef = db
-        .collection("accounts")
-        .doc(relatedAccountId)
-        .collection("relatedAccounts")
-        .doc(accountId);
-
-      await reciprocalRelatedAccountRef.update({
-        accountId: relatedAccountId, // Parent collection account ID
-        relationship: after.relationship,
-        status: after.status,
-        lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
-        lastModifiedBy: accountId,
+      await admin.auth().setCustomUserClaims(uid, {
+        type: after.type,
+        displayName: after.name,
+        heroImage: after.heroImage,
+        iconImage: after.iconImage,
+        tagline: after.tagline,
+        settings: after.settings,
       });
-
-      logger.info("Related accounts updated successfully.");
+      logger.info("User type custom claim updated successfully.");
     }
   } catch (error) {
-    logger.error("Error updating related accounts: ", error);
+    logger.error("Error updating user type custom claim: ", error);
   }
 }

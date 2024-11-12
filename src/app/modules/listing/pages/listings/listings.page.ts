@@ -17,13 +17,20 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// src/app/modules/listing/pages/listings/listings.page.ts
+
 import {Component, OnInit} from "@angular/core";
 import {Store} from "@ngrx/store";
 import {Observable} from "rxjs";
 import {NavController} from "@ionic/angular";
 import {Listing} from "../../../../models/listing.model";
 import * as ListingsActions from "../../../../state/actions/listings.actions";
-import {ListingsState} from "../../../../state/reducers/listings.reducer";
+import {AppState} from "../../../../state/app.state";
+import {
+  selectFilteredListings,
+  selectLoading,
+  selectError,
+} from "../../../../state/selectors/listings.selectors";
 
 @Component({
   selector: "app-listings",
@@ -33,20 +40,16 @@ import {ListingsState} from "../../../../state/reducers/listings.reducer";
 export class ListingsPage implements OnInit {
   listings$: Observable<Listing[]>;
   loading$: Observable<boolean>;
-  error$: Observable<any>;
+  error$: Observable<string | null>;
   listingTypes = ["all", "volunteer", "job", "internship", "gig"];
 
   constructor(
-    private store: Store<{listings: ListingsState}>,
+    private store: Store<AppState>,
     private navCtrl: NavController,
   ) {
-    this.listings$ = this.store.select((state) =>
-      state.listings.filteredListings.length > 0
-        ? state.listings.filteredListings
-        : state.listings.listings,
-    );
-    this.loading$ = this.store.select((state) => state.listings.loading);
-    this.error$ = this.store.select((state) => state.listings.error);
+    this.listings$ = this.store.select(selectFilteredListings);
+    this.loading$ = this.store.select(selectLoading);
+    this.error$ = this.store.select(selectError);
   }
 
   ngOnInit() {

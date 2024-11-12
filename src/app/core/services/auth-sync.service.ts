@@ -30,7 +30,7 @@ export class AuthSyncService {
   constructor(private store: Store) {
     onAuthStateChanged(this.auth, (user: User | null) => {
       if (user) {
-        this.store.dispatch(AuthActions.signInSuccess({user}));
+        this.store.dispatch(AuthActions.signInSuccess({uid: user.uid}));
       } else {
         this.store.dispatch(AuthActions.signOutSuccess());
       }

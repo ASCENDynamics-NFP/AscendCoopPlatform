@@ -21,44 +21,47 @@
 
 import {createFeatureSelector, createSelector} from "@ngrx/store";
 import {AccountState} from "../reducers/account.reducer";
-import {Account, RelatedAccount} from "../../models/account.model";
+import {Account} from "../../models/account.model";
 
 export const selectAccountState =
-  createFeatureSelector<AccountState>("account");
+  createFeatureSelector<AccountState>("accounts");
 
-export const selectAccounts = createSelector(
+export const selectAccountEntities = createSelector(
   selectAccountState,
-  (state) => state.accounts,
+  (state) => state.entities,
 );
 
-// Selector to get all related accounts from the state
-// export const selectAllRelatedAccounts = (state: AppState) =>
-//   state.accounts.relatedAccounts;
-
-// Selector to get related accounts by accountId (initiatorId or targetId matches accountId)
-export const selectRelatedAccountsByAccountId = (accountId: string) =>
-  createSelector(
-    selectRelatedAccounts,
-    (relatedAccounts: Partial<RelatedAccount>[]) =>
-      relatedAccounts.filter(
-        (ra) => ra.initiatorId === accountId || ra.targetId === accountId,
-      ),
-  );
+export const selectAllAccounts = createSelector(
+  selectAccountEntities,
+  (entities) => Object.values(entities),
+);
 
 export const selectAccountById = (accountId: string) =>
-  createSelector(selectAccounts, (accounts: Account[]): Account | undefined =>
-    accounts.find((account) => account.id === accountId),
-  );
+  createSelector(selectAccountEntities, (entities) => entities[accountId]);
+
+export const selectSelectedAccountId = createSelector(
+  selectAccountState,
+  (state) => state.selectedAccountId,
+);
 
 export const selectSelectedAccount = createSelector(
-  selectAccountState,
-  (state) => state.selectedAccount,
+  selectAccountEntities,
+  selectSelectedAccountId,
+  (entities, selectedAccountId) =>
+    selectedAccountId ? entities[selectedAccountId] : null,
 );
 
-export const selectRelatedAccounts = createSelector(
-  selectAccountState,
-  (state) => state.relatedAccounts,
-);
+export const selectRelatedAccountsByAccountId = (accountId: string) =>
+  createSelector(
+    selectAccountState,
+    (state) => state.relatedAccounts[accountId] || [],
+  );
+
+export const selectRelatedListingsByAccountId = (accountId: string) =>
+  createSelector(
+    selectAccountState,
+    (state) => state.relatedListings[accountId] || [],
+  );
 
 export const selectAccountLoading = createSelector(
   selectAccountState,
@@ -75,12 +78,12 @@ export const selectFilteredAccounts = (
   searchTerm: string,
   accountType: string,
 ) =>
-  createSelector(selectAccounts, (accounts: Account[]) => {
+  createSelector(selectAllAccounts, (accounts: Account[]) => {
     const normalizeString = (str: string) =>
       str
         .toLowerCase()
-        .replace(/\s+/g, "") // Remove all whitespace
-        .replace(/[^a-z0-9]/gi, ""); // Remove non-alphanumeric characters
+        .replace(/\s+/g, "")
+        .replace(/[^a-z0-9]/gi, "");
 
     const normalizedSearchTerm = normalizeString(searchTerm);
 

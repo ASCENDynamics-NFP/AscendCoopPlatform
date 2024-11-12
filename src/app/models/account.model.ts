@@ -197,13 +197,14 @@ export interface Account extends BaseDocument, Group, User {
   legalAgreements: LegalAgreements; // Legal agreements, such as terms of service and privacy policy
   contactInformation?: ContactInformation; // Contact information and address
   webLinks: WebLink[]; // Links to social media, personal websites, etc.
-  relatedAccounts?: RelatedAccount[];
   lastLoginAt: Timestamp;
   email: string;
+  settings?: Settings; // User-specific settings
 }
 
 export interface RelatedAccount extends BaseDocument {
   id: string; // Required
+  accountId: string; // Reference to the parent account
   name?: string; // Name of the related user or group
   iconImage?: string; // URL or path to the icon image
   tagline?: string; // Tagline or short description
@@ -213,4 +214,22 @@ export interface RelatedAccount extends BaseDocument {
   initiatorId?: string; // ID of the account who initiated the request
   targetId?: string; // ID of the account who received the request
   canAccessContactInfo?: boolean; // Whether the related account can access the contact information
+}
+
+export interface Settings {
+  // Settings for the account
+  notifications?: {
+    // Notification settings
+    email?: boolean;
+    push?: boolean;
+    sms?: boolean;
+  };
+  privacy?: {
+    // Privacy settings
+    profileVisibility?: "public" | "private" | "accepted-users-only";
+    contactInformation?: "public" | "private" | "accepted-users-only";
+    // Add more privacy settings as needed
+  };
+  language: string;
+  theme: "light" | "dark" | "system";
 }

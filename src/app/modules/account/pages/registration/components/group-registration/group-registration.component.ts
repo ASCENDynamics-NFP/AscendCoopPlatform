@@ -173,9 +173,7 @@ export class GroupRegistrationComponent implements OnChanges {
       );
 
       if (this.redirectSubmit) {
-        this.router.navigateByUrl(
-          `/group/${this.account.id}/${this.account.id}/details`,
-        );
+        this.router.navigateByUrl(`/account/${this.account.id}/details`);
       }
     }
   }

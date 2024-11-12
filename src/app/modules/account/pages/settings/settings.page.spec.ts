@@ -31,7 +31,6 @@ import {Account} from "../../../../models/account.model";
 import {Timestamp} from "firebase/firestore";
 import {SharedModule} from "../../../../shared/shared.module";
 import {AngularDelegate, IonicModule, PopoverController} from "@ionic/angular";
-import {of} from "rxjs";
 
 describe("SettingsPage", () => {
   let component: SettingsPage;
@@ -43,8 +42,16 @@ describe("SettingsPage", () => {
     uid: "12345",
     email: "test@example.com",
     displayName: null,
-    photoURL: null,
+    iconImage: null,
     emailVerified: true,
+    heroImage: null,
+    tagline: null,
+    type: null,
+    createdAt: null,
+    lastLoginAt: null,
+    phoneNumber: null,
+    providerData: [],
+    settings: {language: "en", theme: "light"},
   };
 
   const mockAccount: Account = {
@@ -52,7 +59,6 @@ describe("SettingsPage", () => {
     name: "Test Account",
     type: "user",
     privacy: "public",
-    relatedAccounts: [],
     tagline: "",
     description: "",
     iconImage: "",

@@ -18,17 +18,21 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 // src/app/state/listings/listings.effects.ts
+
 import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
-import {catchError, from, map, mergeMap, of, withLatestFrom} from "rxjs";
+import {catchError, from, map, mergeMap, of} from "rxjs";
 import {FirestoreService} from "../../core/services/firestore.service";
 import * as ListingsActions from "./../actions/listings.actions";
 import {Listing} from "../../models/listing.model";
-import {Store} from "@ngrx/store";
-import {ListingsState} from "../reducers/listings.reducer";
 
 @Injectable()
 export class ListingsEffects {
+  constructor(
+    private actions$: Actions,
+    private firestoreService: FirestoreService,
+  ) {}
+
   createListing$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.createListing),
@@ -71,8 +75,8 @@ export class ListingsEffects {
   loadListingById$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.loadListingById),
-      mergeMap((action) =>
-        this.firestoreService.getDocument<Listing>("listings", action.id).pipe(
+      mergeMap(({id}) =>
+        this.firestoreService.getDocument<Listing>("listings", id).pipe(
           map((listing) => ListingsActions.loadListingByIdSuccess({listing})),
           catchError((error) =>
             of(ListingsActions.loadListingByIdFailure({error: error.message})),
@@ -91,27 +95,10 @@ export class ListingsEffects {
         ).pipe(
           map(() => ListingsActions.updateListingSuccess({listing})),
           catchError((error) =>
-            of(ListingsActions.updateListingFailure({error})),
+            of(ListingsActions.updateListingFailure({error: error.message})),
           ),
         ),
       ),
-    ),
-  );
-
-  searchListings$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(ListingsActions.searchListings),
-      withLatestFrom(this.store.select((state) => state.listings.listings)),
-      map(([action, listings]) => ({
-        type: "[Listings] Set Filtered Listings",
-        listings: listings.filter(
-          (listing) =>
-            listing.title.toLowerCase().includes(action.query.toLowerCase()) ||
-            listing.description
-              .toLowerCase()
-              .includes(action.query.toLowerCase()),
-        ),
-      })),
     ),
   );
 
@@ -128,10 +115,4 @@ export class ListingsEffects {
       ),
     ),
   );
-
-  constructor(
-    private actions$: Actions,
-    private store: Store<{listings: ListingsState}>,
-    private firestoreService: FirestoreService,
-  ) {}
 }

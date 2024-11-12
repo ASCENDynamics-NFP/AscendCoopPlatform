@@ -20,7 +20,7 @@
 // src/app/modules/account/pages/group-list/group-list.page.ts
 
 import {Component, OnInit} from "@angular/core";
-import {Subject, Observable, combineLatest, of} from "rxjs";
+import {Subject, Observable} from "rxjs";
 import {
   debounceTime,
   startWith,
@@ -28,6 +28,7 @@ import {
   map,
   distinctUntilChanged,
   take,
+  filter,
 } from "rxjs/operators";
 import {Store} from "@ngrx/store";
 import {AuthUser} from "../../../../models/auth-user.model";
@@ -36,21 +37,20 @@ import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {
   selectFilteredAccounts,
   selectAccountLoading,
-  selectSelectedAccount,
-  selectRelatedAccounts,
+  selectRelatedAccountsByAccountId,
 } from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
+import {ViewWillEnter} from "@ionic/angular";
 
 @Component({
   selector: "app-group-list",
   templateUrl: "./group-list.page.html",
   styleUrls: ["./group-list.page.scss"],
 })
-export class GroupListPage implements OnInit {
+export class GroupListPage implements OnInit, ViewWillEnter {
   private searchTerms = new Subject<string>();
   authUser$!: Observable<AuthUser | null>;
   accountList$!: Observable<Account[]>;
-  selectedAccount$!: Observable<Account | undefined>;
   searchedValue: string = "";
   loading$: Observable<boolean>;
 
@@ -58,19 +58,27 @@ export class GroupListPage implements OnInit {
     this.loading$ = this.store.select(selectAccountLoading);
   }
 
+  ionViewWillEnter() {
+    this.loadRelatedAccountsForAuthUser();
+  }
+
+  private loadRelatedAccountsForAuthUser() {
+    this.authUser$
+      .pipe(
+        filter((authUser): authUser is AuthUser => authUser !== null),
+        take(1),
+      )
+      .subscribe((authUser) => {
+        this.store.dispatch(
+          AccountActions.loadRelatedAccounts({accountId: authUser.uid}),
+        );
+      });
+  }
+
   ngOnInit() {
     this.authUser$ = this.store.select(selectAuthUser);
 
-    this.selectedAccount$ = this.authUser$.pipe(
-      switchMap((authUser) => {
-        if (authUser?.uid) {
-          return this.store
-            .select(selectSelectedAccount)
-            .pipe(map((account) => account || undefined));
-        }
-        return of(undefined);
-      }),
-    );
+    this.store.dispatch(AccountActions.loadAccounts());
 
     this.accountList$ = this.searchTerms.pipe(
       startWith(this.searchedValue),
@@ -80,20 +88,6 @@ export class GroupListPage implements OnInit {
         this.store.select(selectFilteredAccounts(term, "group")),
       ),
     );
-
-    this.store.dispatch(AccountActions.loadAccounts());
-
-    this.authUser$.pipe(take(1)).subscribe((authUser) => {
-      if (authUser?.uid) {
-        this.store.dispatch(
-          AccountActions.setSelectedAccount({accountId: authUser.uid}),
-        );
-
-        this.store.dispatch(
-          AccountActions.loadRelatedAccounts({accountId: authUser.uid}),
-        );
-      }
-    });
   }
 
   search(event: any) {
@@ -110,6 +104,7 @@ export class GroupListPage implements OnInit {
 
       const newRelatedAccount: RelatedAccount = {
         id: account.id,
+        accountId: authUser.uid,
         initiatorId: authUser.uid,
         targetId: account.id,
         type: account.type,
@@ -130,21 +125,25 @@ export class GroupListPage implements OnInit {
   }
 
   showRequestButton(item: Account): Observable<boolean> {
-    return combineLatest([
-      this.authUser$,
-      this.store.select(selectRelatedAccounts),
-    ]).pipe(
-      map(([authUser, relatedAccounts]) => {
-        const authUserId = authUser?.uid;
-        if (!authUserId || authUserId === item.id) {
+    return this.authUser$.pipe(
+      filter((authUser): authUser is AuthUser => authUser !== null),
+      switchMap((authUser) =>
+        this.store.select(selectRelatedAccountsByAccountId(authUser.uid)).pipe(
+          map((relatedAccounts) => ({
+            authUser,
+            relatedAccounts,
+          })),
+        ),
+      ),
+      map(({authUser, relatedAccounts}) => {
+        if (authUser.uid === item.id) {
           return false;
         }
 
-        // Check against the `relatedAccounts` from the state
         const shouldShowButton = !relatedAccounts.some(
           (ra) =>
-            ((ra.initiatorId === item.id && ra.targetId === authUserId) ||
-              (ra.initiatorId === authUserId && ra.targetId === item.id)) &&
+            ((ra.initiatorId === item.id && ra.targetId === authUser.uid) ||
+              (ra.initiatorId === authUser.uid && ra.targetId === item.id)) &&
             ra.status !== "rejected",
         );
 

@@ -32,7 +32,7 @@ import * as AccountActions from "../../../../../../state/actions/account.actions
 })
 export class SettingsComponent implements OnChanges {
   @Input() authUser?: AuthUser | null;
-  @Input() account?: Partial<Account>;
+  @Input() account?: Account;
   @Output() languageChange = new EventEmitter<string>();
 
   settingsForm: FormGroup<{
@@ -74,18 +74,22 @@ export class SettingsComponent implements OnChanges {
   }
 
   updateSetting() {
-    if (this.authUser?.uid) {
+    if (this.authUser?.uid && this.account) {
       const formValue = this.settingsForm.value;
 
-      const updatedAccount: Partial<Account> = {
-        id: this.authUser.uid,
-        privacy: formValue.privacy,
+      const updatedAccount: Account = {
+        ...this.account,
+        privacy: formValue.privacy || "public",
         accessibility: {preferredLanguage: formValue.language},
+        settings: {
+          theme: this.account.settings?.theme || "light",
+          language: formValue.language || "en",
+        },
       };
 
       // Dispatch action to update the account
       this.store.dispatch(
-        AccountActions.updateAccount({account: updatedAccount as Account}),
+        AccountActions.updateAccount({account: updatedAccount}),
       );
     }
   }

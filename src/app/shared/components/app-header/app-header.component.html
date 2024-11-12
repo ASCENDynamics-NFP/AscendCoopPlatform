@@ -29,7 +29,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         class="padded-avatar"
         (click)="presentPopover($event)"
       >
-        <img [src]="image" />
+        <img [src]="image | async" alt="User Avatar" />
       </ion-avatar>
     </ion-buttons>
   </ion-toolbar>
@@ -45,7 +45,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           class="padded-avatar"
           (click)="presentPopover($event)"
         >
-          <img [src]="image" />
+          <img [src]="image | async" alt="User Avatar" />
         </ion-avatar>
       </ion-buttons>
     </ion-toolbar>

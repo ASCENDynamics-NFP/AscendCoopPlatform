@@ -17,6 +17,8 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// src/app/modules/listings/pages/listing-detail/listing-detail.page.ts
+
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
@@ -24,9 +26,10 @@ import {AlertController} from "@ionic/angular";
 import {Observable, combineLatest} from "rxjs";
 import {map} from "rxjs/operators";
 import {Listing} from "../../../../models/listing.model";
-import * as ListingActions from "../../../../state/actions/listings.actions";
+import * as ListingsActions from "../../../../state/actions/listings.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
-import {ListingsState} from "../../../../state/reducers/listings.reducer";
+import {AppState} from "../../../../state/app.state";
+import {selectListingById} from "../../../../state/selectors/listings.selectors";
 
 @Component({
   selector: "app-listing-detail",
@@ -34,34 +37,36 @@ import {ListingsState} from "../../../../state/reducers/listings.reducer";
   styleUrls: ["./listing-detail.page.scss"],
 })
 export class ListingDetailPage implements OnInit {
-  listing$: Observable<Listing | null>;
+  listing$: Observable<Listing | undefined>;
   isOwner$: Observable<boolean>;
+  private listingId: string;
 
   constructor(
-    private store: Store<{listings: ListingsState}>,
+    private store: Store<AppState>,
     private router: Router,
     private route: ActivatedRoute,
     private alertController: AlertController,
   ) {
-    this.listing$ = this.store.select(
-      (state) => state.listings.selectedListing,
-    );
+    this.listingId = this.route.snapshot.paramMap.get("id") || "";
+    this.listing$ = this.store.select(selectListingById(this.listingId));
 
     // Determine if current user is the listing creator
     this.isOwner$ = combineLatest([
       this.store.select(selectAuthUser),
       this.listing$,
     ]).pipe(
-      map(([user, listing]) => {
-        return !!(user && listing && listing.createdBy === user.uid);
-      }),
+      map(
+        ([user, listing]) =>
+          !!(user && listing && listing.createdBy === user.uid),
+      ),
     );
   }
 
   ngOnInit() {
-    const id = this.route.snapshot.paramMap.get("id");
-    if (id) {
-      this.store.dispatch(ListingActions.loadListingById({id}));
+    if (this.listingId) {
+      this.store.dispatch(
+        ListingsActions.loadListingById({id: this.listingId}),
+      );
     }
   }
 
@@ -78,9 +83,10 @@ export class ListingDetailPage implements OnInit {
           text: "Delete",
           role: "destructive",
           handler: () => {
-            const id = this.route.snapshot.paramMap.get("id");
-            if (id) {
-              this.store.dispatch(ListingActions.deleteListing({id}));
+            if (this.listingId) {
+              this.store.dispatch(
+                ListingsActions.deleteListing({id: this.listingId}),
+              );
               this.router.navigate(["/listings"]);
             }
           },

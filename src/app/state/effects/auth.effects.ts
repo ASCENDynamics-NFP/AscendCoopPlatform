@@ -22,7 +22,6 @@
 import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
 import * as AuthActions from "../actions/auth.actions";
-import * as AccountActions from "../actions/account.actions";
 import {
   Auth,
   getAuth,
@@ -46,7 +45,6 @@ import {
   tap,
   exhaustMap,
   withLatestFrom,
-  filter,
   Observable,
   take,
 } from "rxjs";
@@ -179,12 +177,6 @@ export class AuthEffects {
                 this.store.dispatch(
                   AuthActions.updateAuthUser({user: authUser}),
                 );
-                // this.store.dispatch(
-                //   AccountActions.loadAccount({accountId: user.uid}),
-                // );
-                // this.store.dispatch(
-                //   AccountActions.setSelectedAccount({accountId: user.uid}),
-                // );
                 return AuthActions.signInSuccess({uid: authUser.uid});
               }),
             ),
@@ -253,12 +245,6 @@ export class AuthEffects {
                 this.store.dispatch(
                   AuthActions.updateAuthUser({user: authUser}),
                 );
-                // this.store.dispatch(
-                //   AccountActions.loadAccount({accountId: user.uid}),
-                // );
-                // this.store.dispatch(
-                //   AccountActions.setSelectedAccount({accountId: user.uid}),
-                // );
                 return AuthActions.signInSuccess({uid: authUser.uid});
               }),
             ),
@@ -293,12 +279,6 @@ export class AuthEffects {
                 this.store.dispatch(
                   AuthActions.updateAuthUser({user: authUser}),
                 );
-                // this.store.dispatch(
-                //   AccountActions.loadAccount({accountId: user.uid}),
-                // );
-                // this.store.dispatch(
-                //   AccountActions.setSelectedAccount({accountId: user.uid}),
-                // );
                 return AuthActions.signInSuccess({uid: authUser.uid});
               }),
             ),

@@ -56,7 +56,6 @@ export class EditPage implements OnInit {
       tap((accountId) => {
         // Dispatch actions to load and select the account
         this.store.dispatch(AccountActions.loadAccount({accountId}));
-        this.store.dispatch(AccountActions.setSelectedAccount({accountId}));
       }),
       shareReplay(1),
     );

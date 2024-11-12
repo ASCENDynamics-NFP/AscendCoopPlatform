@@ -28,7 +28,6 @@ import * as AccountActions from "../../../../state/actions/account.actions";
 import {
   selectFilteredAccounts,
   selectAccountLoading,
-  selectSelectedAccount,
   selectRelatedAccountsByAccountId,
 } from "../../../../state/selectors/account.selectors";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
@@ -124,9 +123,6 @@ describe("UsersPage", () => {
       .withArgs(selectFilteredAccounts("", "user"))
       .and.returnValue(of([mockAccount]));
     mockStore.select.withArgs(selectAccountLoading).and.returnValue(of(false));
-    mockStore.select
-      .withArgs(selectSelectedAccount)
-      .and.returnValue(of(mockAccount));
     mockStore.select
       .withArgs(selectRelatedAccountsByAccountId("12345"))
       .and.returnValue(of(mockRelatedAccounts));

@@ -143,9 +143,6 @@ describe("DetailsPage", () => {
     expect(store.dispatch).toHaveBeenCalledWith(
       AccountActions.loadAccount({accountId: mockAccountId}),
     );
-    expect(store.dispatch).toHaveBeenCalledWith(
-      AccountActions.setSelectedAccount({accountId: mockAccountId}),
-    );
   });
 
   // it("should select related accounts for the current account", (done) => {

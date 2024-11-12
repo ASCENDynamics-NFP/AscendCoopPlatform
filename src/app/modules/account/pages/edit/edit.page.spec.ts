@@ -91,9 +91,6 @@ describe("EditPage", () => {
     expect(store.dispatch).toHaveBeenCalledWith(
       AccountActions.loadAccount({accountId: "test-account-id"}),
     );
-    expect(store.dispatch).toHaveBeenCalledWith(
-      AccountActions.setSelectedAccount({accountId: "test-account-id"}),
-    );
   });
 
   //   it("should redirect if user is not profile owner", fakeAsync(() => {

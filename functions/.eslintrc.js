@@ -26,7 +26,7 @@ module.exports = {
     "quotes": ["error", "double"],
     "import/no-unresolved": 0,
     "indent": ["warn", 2],
-    "max-len": ["warn", { "code": 120 }],
+    "max-len": ["warn", { "code": 150 }],
     "operator-linebreak": "off"
   },
 };

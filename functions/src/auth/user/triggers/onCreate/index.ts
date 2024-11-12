@@ -17,23 +17,23 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1/auth";
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import {Timestamp} from "firebase-admin/firestore";
 
-// Initialize the Firebase admin SDK
+// Initialize Firebase Admin SDK if not already initialized
 if (!admin.apps.length) {
   admin.initializeApp();
 }
 
-// Reference to the Firestore database
+// Firestore database reference
 const db = admin.firestore();
 
 // Triggered when a new user is created in Firebase Authentication
-export const createUserProfile = functions.auth
+export const createUserProfile = functions
   .user()
-  .onCreate(async (user) => {
+  .onCreate(async (user: admin.auth.UserRecord) => {
     try {
       await saveAccountToFirestore(user);
       logger.info(`User profile for ${user.uid} saved successfully.`);
@@ -44,10 +44,9 @@ export const createUserProfile = functions.auth
   });
 
 /**
- * Saves an account to Firestore in the 'accounts' collection.
- * @param {admin.auth.UserRecord} user - The user record from Firebase Authentication.
- * @param {string} type - The type of the account ('user' or 'group').
- * @return {Promise<void>} - A promise that resolves when the operation is complete.
+ * Saves a new user account document to Firestore in the 'accounts' collection.
+ * @param {admin.auth.UserRecord} user - User record from Firebase Authentication.
+ * @return {Promise<void>} - Resolves when the document is created.
  */
 async function saveAccountToFirestore(
   user: admin.auth.UserRecord,

@@ -92,4 +92,4 @@ jobs:
 
       # Deploy to Firebase Hosting, Functions, Firestore rules, Realtime Database rules, Cloud Storage, etc.
       - name: Deploy to Firebase
-        run: firebase deploy --force --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}
+        run: firebase deploy --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}

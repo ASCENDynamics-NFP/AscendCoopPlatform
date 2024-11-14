@@ -64,15 +64,25 @@ async function handleRelatedAccountUpdate(
         .collection("relatedAccounts")
         .doc(accountId);
 
-      await reciprocalRelatedAccountRef.update({
-        accountId: relatedAccountId, // Parent collection account ID
-        relationship: after.relationship,
-        status: after.status,
-        lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
-        lastModifiedBy: accountId,
-      });
+      const reciprocalDoc = await reciprocalRelatedAccountRef.get();
+      const reciprocalData = reciprocalDoc.data();
 
-      logger.info("Related accounts updated successfully.");
+      if (
+        reciprocalData &&
+        (reciprocalData.status !== after.status ||
+          reciprocalData.relationship !== after.relationship)
+      ) {
+        await reciprocalRelatedAccountRef.update({
+          id: accountId,
+          accountId: relatedAccountId,
+          relationship: after.relationship,
+          status: after.status,
+          lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+          lastModifiedBy: accountId,
+        });
+
+        logger.info("Related accounts updated successfully.");
+      }
     }
   } catch (error) {
     logger.error("Error updating related accounts: ", error);

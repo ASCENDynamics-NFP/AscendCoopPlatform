@@ -210,6 +210,35 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               >
             </ion-card-content>
           </ion-card>
+
+          <!-- Contact Information Card -->
+          <ion-card
+            *ngIf="listing.contactInformation?.emails?.length || listing.contactInformation?.phoneNumbers?.length"
+          >
+            <ion-card-header>
+              <ion-icon name="call-outline" slot="start"></ion-icon>
+              <ion-card-title>Contact Information</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="info-block">
+                <div
+                  *ngFor="let email of listing.contactInformation?.emails"
+                  class="contact-item"
+                >
+                  <ion-icon name="mail-outline"></ion-icon>
+                  <span>{{ email.email }}</span>
+                </div>
+                <div
+                  *ngFor="let phone of listing.contactInformation?.phoneNumbers"
+                  class="contact-item"
+                >
+                  <ion-icon name="call-outline"></ion-icon>
+                  <span>{{ phone.countryCode }} {{ phone.number }}</span>
+                  <ion-badge color="medium">{{ phone.type }}</ion-badge>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
         </ion-col>
       </ion-row>
     </ion-grid>

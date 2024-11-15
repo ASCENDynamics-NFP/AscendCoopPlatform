@@ -37,6 +37,7 @@ import {selectAuthUser} from "../selectors/auth.selectors";
 import {Store} from "@ngrx/store";
 import * as AuthActions from "../actions/auth.actions";
 import {selectAccountEntities} from "../selectors/account.selectors";
+import {serverTimestamp} from "@angular/fire/firestore";
 
 @Injectable()
 export class AccountEffects {
@@ -94,12 +95,19 @@ export class AccountEffects {
   createAccount$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.createAccount),
-      switchMap(({account}) =>
-        from(this.firestoreService.addDocument("accounts", account)).pipe(
+      switchMap(({account}) => {
+        const newAccount = {
+          ...account,
+          createdAt: serverTimestamp(),
+          lastModifiedAt: serverTimestamp(),
+        };
+        return from(
+          this.firestoreService.addDocument("accounts", newAccount),
+        ).pipe(
           map((accountId) => {
             if (accountId) {
               return AccountActions.createAccountSuccess({
-                account: {...account, id: accountId},
+                account: {...newAccount, id: accountId},
               });
             } else {
               return AccountActions.createAccountFailure({
@@ -110,8 +118,8 @@ export class AccountEffects {
           catchError((error) =>
             of(AccountActions.createAccountFailure({error})),
           ),
-        ),
-      ),
+        );
+      }),
     ),
   );
 
@@ -119,16 +127,26 @@ export class AccountEffects {
   updateAccount$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.updateAccount),
-      switchMap(({account}) =>
-        from(
-          this.firestoreService.updateDocument("accounts", account.id, account),
+      switchMap(({account}) => {
+        const updatedAccount = {
+          ...account,
+          lastModifiedAt: serverTimestamp(), // Always update
+        };
+        return from(
+          this.firestoreService.updateDocument(
+            "accounts",
+            account.id,
+            updatedAccount,
+          ),
         ).pipe(
-          map(() => AccountActions.updateAccountSuccess({account})),
+          map(() =>
+            AccountActions.updateAccountSuccess({account: updatedAccount}),
+          ),
           catchError((error) =>
             of(AccountActions.updateAccountFailure({error})),
           ),
-        ),
-      ),
+        );
+      }),
     ),
   );
 
@@ -173,24 +191,29 @@ export class AccountEffects {
   createRelatedAccount$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.createRelatedAccount),
-      switchMap(({accountId, relatedAccount}) =>
-        from(
+      switchMap(({accountId, relatedAccount}) => {
+        const newRelatedAccount = {
+          ...relatedAccount,
+          createdAt: serverTimestamp(),
+          lastModifiedAt: serverTimestamp(),
+        };
+        return from(
           this.firestoreService.setDocument(
             `accounts/${accountId}/relatedAccounts/${relatedAccount.id}`,
-            relatedAccount,
+            newRelatedAccount,
           ),
         ).pipe(
           map(() =>
             AccountActions.createRelatedAccountSuccess({
               accountId,
-              relatedAccount,
+              relatedAccount: newRelatedAccount,
             }),
           ),
           catchError((error) =>
             of(AccountActions.createRelatedAccountFailure({error})),
           ),
-        ),
-      ),
+        );
+      }),
     ),
   );
 
@@ -242,25 +265,29 @@ export class AccountEffects {
   updateRelatedAccount$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.updateRelatedAccount),
-      switchMap(({accountId, relatedAccount}) =>
-        from(
+      switchMap(({accountId, relatedAccount}) => {
+        const updatedRelatedAccount = {
+          ...relatedAccount,
+          lastModifiedAt: serverTimestamp(), // Always update
+        };
+        return from(
           this.firestoreService.updateDocument(
             `accounts/${accountId}/relatedAccounts`,
             relatedAccount.id,
-            relatedAccount,
+            updatedRelatedAccount,
           ),
         ).pipe(
           map(() =>
             AccountActions.updateRelatedAccountSuccess({
               accountId,
-              relatedAccount,
+              relatedAccount: updatedRelatedAccount,
             }),
           ),
           catchError((error) =>
             of(AccountActions.updateRelatedAccountFailure({error})),
           ),
-        ),
-      ),
+        );
+      }),
     ),
   );
 

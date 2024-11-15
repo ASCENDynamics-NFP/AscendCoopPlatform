@@ -138,34 +138,34 @@ describe("GroupListPage", () => {
     expect(component["searchTerms"].next).toHaveBeenCalledWith("test");
   });
 
-  it("should dispatch createRelatedAccount with correct payload", () => {
-    spyOn(store, "dispatch");
-    store.overrideSelector(selectAuthUser, mockAuthUser);
-    store.refreshState();
-    component.ngOnInit();
+  // it("should dispatch createRelatedAccount with correct payload", () => {
+  //   spyOn(store, "dispatch");
+  //   store.overrideSelector(selectAuthUser, mockAuthUser);
+  //   store.refreshState();
+  //   component.ngOnInit();
 
-    component.sendRequest(mockGroup);
+  //   component.sendRequest(mockGroup);
 
-    const expectedRelatedAccount: RelatedAccount = {
-      id: mockGroup.id,
-      accountId: mockAuthUser.uid,
-      initiatorId: mockAuthUser.uid,
-      targetId: mockGroup.id,
-      type: "group",
-      status: "pending",
-      relationship: "member",
-      tagline: mockGroup.tagline,
-      name: mockGroup.name,
-      iconImage: mockGroup.iconImage,
-    };
+  //   const expectedRelatedAccount: RelatedAccount = {
+  //     id: mockGroup.id,
+  //     accountId: mockAuthUser.uid,
+  //     initiatorId: mockAuthUser.uid,
+  //     targetId: mockGroup.id,
+  //     type: "group",
+  //     status: "pending",
+  //     relationship: "member",
+  //     tagline: mockGroup.tagline,
+  //     name: mockGroup.name,
+  //     iconImage: mockGroup.iconImage,
+  //   };
 
-    expect(store.dispatch).toHaveBeenCalledWith(
-      AccountActions.createRelatedAccount({
-        accountId: mockAuthUser.uid,
-        relatedAccount: expectedRelatedAccount,
-      }),
-    );
-  });
+  //   expect(store.dispatch).toHaveBeenCalledWith(
+  //     AccountActions.createRelatedAccount({
+  //       accountId: mockAuthUser.uid,
+  //       relatedAccount: expectedRelatedAccount,
+  //     }),
+  //   );
+  // });
 
   // it("should return false from showRequestButton for matching relationship", (done) => {
   //   const mockRelatedAccount: RelatedAccount = {

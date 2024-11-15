@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 import {BaseDocument} from "./base-document";
 import {ListingType} from "./listing.model";
-import {Timestamp} from "firebase/firestore";
+import {Timestamp, FieldValue} from "firebase/firestore";
 
 export interface RelatedListing extends BaseDocument {
   title: string;
@@ -28,7 +28,7 @@ export interface RelatedListing extends BaseDocument {
   iconImage?: string;
   status: "active" | "filled" | "expired";
   relationship: "owner" | "applicant" | "participant" | "saved";
-  applicationDate?: Timestamp;
+  applicationDate?: Timestamp | FieldValue;
   notes?: string;
   accountId: string; // Reference to the parent account
 }

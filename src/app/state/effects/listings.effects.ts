@@ -25,6 +25,7 @@ import {catchError, from, map, mergeMap, of} from "rxjs";
 import {FirestoreService} from "../../core/services/firestore.service";
 import * as ListingsActions from "./../actions/listings.actions";
 import {Listing} from "../../models/listing.model";
+import {serverTimestamp} from "@angular/fire/firestore";
 
 @Injectable()
 export class ListingsEffects {
@@ -36,18 +37,25 @@ export class ListingsEffects {
   createListing$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.createListing),
-      mergeMap(({listing}) =>
-        from(this.firestoreService.addDocument("listings", listing)).pipe(
+      mergeMap(({listing}) => {
+        const newListing = {
+          ...listing,
+          createdAt: serverTimestamp(), // Firestore server timestamp
+          lastModifiedAt: serverTimestamp(),
+        };
+        return from(
+          this.firestoreService.addDocument("listings", newListing),
+        ).pipe(
           map((docId) =>
             ListingsActions.createListingSuccess({
-              listing: {...listing, id: docId},
+              listing: {...newListing, id: docId},
             }),
           ),
           catchError((error) =>
             of(ListingsActions.createListingFailure({error: error.message})),
           ),
-        ),
-      ),
+        );
+      }),
     ),
   );
 
@@ -89,16 +97,28 @@ export class ListingsEffects {
   updateListing$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.updateListing),
-      mergeMap(({listing}) =>
-        from(
-          this.firestoreService.updateDocument("listings", listing.id, listing),
+      mergeMap(({listing}) => {
+        const updatedListing = {
+          ...listing,
+          lastModifiedAt: serverTimestamp(), // Always updated
+        };
+        return from(
+          this.firestoreService.updateDocument(
+            "listings",
+            listing.id,
+            updatedListing,
+          ),
         ).pipe(
-          map(() => ListingsActions.updateListingSuccess({listing})),
+          map(() =>
+            ListingsActions.updateListingSuccess({
+              listing: updatedListing,
+            }),
+          ),
           catchError((error) =>
             of(ListingsActions.updateListingFailure({error: error.message})),
           ),
-        ),
-      ),
+        );
+      }),
     ),
   );
 

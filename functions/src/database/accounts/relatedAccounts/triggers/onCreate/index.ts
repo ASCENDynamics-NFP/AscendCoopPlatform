@@ -35,118 +35,95 @@ const db = admin.firestore();
  */
 export const onCreateRelatedAccount = functions.firestore
   .document("accounts/{accountId}/relatedAccounts/{relatedAccountId}")
-  .onCreate(handleRelatedAccountCreate);
+  .onCreate(async (_snapshot: QueryDocumentSnapshot, context: EventContext) => {
+    const accountId = context.params.accountId;
+    const relatedAccountId = context.params.relatedAccountId;
+
+    // Early exit if IDs match to prevent self-referential relationships
+    if (accountId === relatedAccountId) {
+      logger.error(
+        `Prevented self-referential relationship for account ${accountId}`,
+      );
+      return;
+    }
+
+    try {
+      // Check if reciprocal relationship already exists
+      const reciprocalDoc = await db
+        .collection("accounts")
+        .doc(relatedAccountId)
+        .collection("relatedAccounts")
+        .doc(accountId)
+        .get();
+
+      if (reciprocalDoc.exists) {
+        logger.info(
+          `Reciprocal relationship already exists between ${accountId} and ${relatedAccountId}`,
+        );
+        return;
+      }
+
+      const [initiatorDoc, targetDoc] = await Promise.all([
+        db.collection("accounts").doc(accountId).get(),
+        db.collection("accounts").doc(relatedAccountId).get(),
+      ]);
+
+      if (!initiatorDoc.exists || !targetDoc.exists) {
+        logger.error(
+          `One or both accounts do not exist: ${accountId}, ${relatedAccountId}`,
+        );
+        return;
+      }
+
+      const initiatorData = initiatorDoc.data();
+      const targetData = targetDoc.data();
+
+      const relationship = determineRelationshipType(
+        initiatorData?.type,
+        targetData?.type,
+      );
+
+      await db
+        .collection("accounts")
+        .doc(relatedAccountId)
+        .collection("relatedAccounts")
+        .doc(accountId)
+        .set({
+          id: accountId,
+          accountId: relatedAccountId,
+          name: initiatorData?.name,
+          iconImage: initiatorData?.iconImage,
+          tagline: initiatorData?.tagline,
+          type: initiatorData?.type,
+          status: "pending",
+          relationship,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          createdBy: accountId,
+          lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+          lastModifiedBy: accountId,
+          initiatorId: accountId,
+          targetId: relatedAccountId,
+        });
+
+      logger.info(
+        `Successfully created reciprocal relationship between ${accountId} and ${relatedAccountId}`,
+      );
+    } catch (error) {
+      logger.error(`Error creating reciprocal relationship: ${error}`);
+    }
+  });
 
 /**
- * Handles the creation of a new related account document, ensuring a reciprocal document is created in the target account.
- *
- * @param {QueryDocumentSnapshot} _snapshot - The snapshot of the newly created document.
- * @param {EventContext} context - The context of the event, providing parameters and identifiers.
+ * Determines the relationship type based on the account types of both parties
+ * @param {string} initiatorType The account type of the initiator
+ * @param {string} targetType The account type of the target
+ * @return {string} The determined relationship type: "partner", "member", or "friend"
  */
-async function handleRelatedAccountCreate(
-  _snapshot: QueryDocumentSnapshot,
-  context: EventContext,
-) {
-  const accountId = context.params.accountId;
-  const relatedAccountId = context.params.relatedAccountId;
-
-  try {
-    // Query the related account document in the sub-collection
-    const relatedAccountDoc = await db
-      .collection("accounts")
-      .doc(accountId)
-      .collection("relatedAccounts")
-      .doc(relatedAccountId)
-      .get();
-
-    if (!relatedAccountDoc.exists) {
-      logger.error(
-        `Related account with ID ${relatedAccountId} does not exist.`,
-      );
-      return;
-    }
-
-    const relatedAccountData = relatedAccountDoc.data();
-
-    // Ensure the related account data has a targetId
-    if (!relatedAccountData?.targetId) {
-      logger.error(
-        `Related Account Data does not contain targetId ${relatedAccountData?.targetId}.`,
-      );
-      return;
-    }
-
-    // Fetch the target account data based on the targetId
-    const targetAccountDoc = await db
-      .collection("accounts")
-      .doc(relatedAccountData.targetId)
-      .get();
-
-    if (!targetAccountDoc.exists) {
-      logger.error(
-        `Targeted account with ID ${relatedAccountData.targetId} does not exist.`,
-      );
-      return;
-    }
-
-    const initiatorAccountDoc = await db
-      .collection("accounts")
-      .doc(accountId)
-      .get();
-    const initiatorAccountData = initiatorAccountDoc.data();
-
-    const targetAccountData = targetAccountDoc.data();
-
-    const relationship =
-      initiatorAccountData?.type === "group" &&
-      targetAccountData?.type === "group"
-        ? "partner"
-        : initiatorAccountData?.type === "group" ||
-            targetAccountData?.type === "group"
-          ? "member"
-          : "friend";
-
-    // -------------------------
-    // Create reciprocal relatedAccount for the target
-    // -------------------------
-    const targetRelatedAccountRef = db
-      .collection("accounts")
-      .doc(relatedAccountData.targetId)
-      .collection("relatedAccounts")
-      .doc(accountId); // Reciprocal relationship using accountId
-
-    // Check if the reciprocal relatedAccount already exists
-    const targetRelatedAccountDoc = await targetRelatedAccountRef.get();
-    if (targetRelatedAccountDoc.exists) {
-      logger.info(
-        "Reciprocal related account document already exists, skipping creation.",
-      );
-      return;
-    }
-
-    const targetRelatedAccount = {
-      id: accountId, // The ID of the initiator account
-      accountId: relatedAccountData.targetId,
-      name: initiatorAccountData?.name,
-      iconImage: initiatorAccountData?.iconImage,
-      tagline: initiatorAccountData?.tagline,
-      type: initiatorAccountData?.type,
-      status: "pending", // default status is pending
-      relationship: relationship,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      createdBy: accountId,
-      lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
-      lastModifiedBy: accountId,
-      initiatorId: accountId,
-      targetId: relatedAccountData.targetId,
-    };
-
-    await targetRelatedAccountRef.set(targetRelatedAccount);
-
-    logger.info(
-      `Reciprocal related account document created for target ${relatedAccountData.targetId}.`,
-    );
-  } catch (error) {
-    logger.error("Error creating reciprocal related account document: ", error);
-  }
+function determineRelationshipType(
+  initiatorType?: string,
+  targetType?: string,
+): string {
+  if (initiatorType === "group" && targetType === "group") return "partner";
+  if (initiatorType === "group" || targetType === "group") return "member";
+  return "friend";
 }

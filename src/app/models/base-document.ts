@@ -17,13 +17,13 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Timestamp} from "firebase/firestore";
+import {Timestamp, FieldValue} from "firebase/firestore";
 
 // Base type for common fields
 export interface BaseDocument {
   id: string; // Firestore document ID
-  createdAt?: Timestamp;
+  createdAt?: Timestamp | FieldValue;
   createdBy?: string;
-  lastModifiedAt?: Timestamp;
+  lastModifiedAt?: Timestamp | FieldValue;
   lastModifiedBy?: string;
 }

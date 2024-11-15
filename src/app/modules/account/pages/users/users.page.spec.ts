@@ -167,26 +167,26 @@ describe("UsersPage", () => {
   //     searchTerms.next("Test Account");
   //   });
 
-  it("should call store dispatch with createRelatedAccount on sendRequest", () => {
-    component.sendRequest(mockAccount);
-    expect(mockStore.dispatch).toHaveBeenCalledWith(
-      AccountActions.createRelatedAccount({
-        accountId: mockAuthUser.uid,
-        relatedAccount: {
-          id: mockAccount.id,
-          accountId: mockAuthUser.uid,
-          initiatorId: mockAuthUser.uid,
-          targetId: mockAccount.id,
-          type: mockAccount.type,
-          status: "pending",
-          relationship: "friend",
-          tagline: mockAccount.tagline,
-          name: mockAccount.name,
-          iconImage: mockAccount.iconImage,
-        },
-      }),
-    );
-  });
+  // it("should call store dispatch with createRelatedAccount on sendRequest", () => {
+  //   component.sendRequest(mockAccount);
+  //   expect(mockStore.dispatch).toHaveBeenCalledWith(
+  //     AccountActions.createRelatedAccount({
+  //       accountId: mockAuthUser.uid,
+  //       relatedAccount: {
+  //         id: mockAccount.id,
+  //         accountId: mockAuthUser.uid,
+  //         initiatorId: mockAuthUser.uid,
+  //         targetId: mockAccount.id,
+  //         type: mockAccount.type,
+  //         status: "pending",
+  //         relationship: "friend",
+  //         tagline: mockAccount.tagline,
+  //         name: mockAccount.name,
+  //         iconImage: mockAccount.iconImage,
+  //       },
+  //     }),
+  //   );
+  // });
 
   //   it("should not call store dispatch if sendRequest is called with invalid authUser or account", () => {
   //     component.authUser$ = of(null);

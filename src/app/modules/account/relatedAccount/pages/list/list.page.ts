@@ -32,6 +32,7 @@ import {
 } from "../../../../../state/selectors/account.selectors";
 import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../../state/actions/account.actions";
+import {take} from "rxjs/operators";
 
 @Component({
   selector: "app-list",
@@ -128,21 +129,29 @@ export class ListPage implements OnInit {
    * @param status The new status to set.
    */
   updateStatus(request: Partial<RelatedAccount>, status: string) {
-    if (!this.accountId || !request.id) return;
+    this.currentUser$.pipe(take(1)).subscribe((authUser) => {
+      if (!authUser?.uid || !request.id) {
+        console.error("User ID or Account ID is missing");
+        return;
+      }
 
-    const updatedRelatedAccount: RelatedAccount = {
-      id: request.id,
-      accountId: request.accountId || this.accountId,
-      status: status as "pending" | "accepted" | "rejected" | "blocked",
-    };
+      if (!this.accountId || !request.id) return;
 
-    // Dispatch an action to update the related account's status
-    this.store.dispatch(
-      AccountActions.updateRelatedAccount({
-        accountId: this.accountId,
-        relatedAccount: updatedRelatedAccount,
-      }),
-    );
+      const updatedRelatedAccount: RelatedAccount = {
+        id: request.id,
+        accountId: request.accountId || this.accountId,
+        status: status as "pending" | "accepted" | "rejected" | "blocked",
+        lastModifiedBy: authUser.uid,
+      };
+
+      // Dispatch an action to update the related account's status
+      this.store.dispatch(
+        AccountActions.updateRelatedAccount({
+          accountId: this.accountId,
+          relatedAccount: updatedRelatedAccount,
+        }),
+      );
+    });
   }
 
   /**

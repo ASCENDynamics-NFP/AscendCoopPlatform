@@ -113,6 +113,8 @@ export class UsersPage implements OnInit, ViewWillEnter {
         tagline: account.tagline,
         name: account.name,
         iconImage: account.iconImage,
+        createdBy: authUser.uid,
+        lastModifiedBy: authUser.uid,
       };
 
       this.store.dispatch(

@@ -123,7 +123,9 @@ describe("ListingCreatePage", () => {
       ListingActions.createListing({
         listing: {
           ...mockFormValue,
+          accountId: mockUser.uid,
           createdBy: mockUser.uid,
+          lastModifiedBy: mockUser.uid,
         } as Listing,
       }),
     );

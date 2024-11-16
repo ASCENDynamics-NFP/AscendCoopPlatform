@@ -210,7 +210,11 @@ describe("ListingEditPage", () => {
 
   it("should update listing on form submit", () => {
     spyOn(store, "dispatch");
-    const updatedListing = {...mockListing, title: "Updated Title"};
+    const updatedListing = {
+      ...mockListing,
+      title: "Updated Title",
+      lastModifiedBy: "user-123",
+    };
     component.onSubmit(updatedListing);
     expect(store.dispatch).toHaveBeenCalledWith(
       ListingsActions.updateListing({listing: updatedListing}),

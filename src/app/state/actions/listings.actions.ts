@@ -21,6 +21,7 @@
 
 import {createAction, props} from "@ngrx/store";
 import {Listing} from "../../models/listing.model";
+import {Applicant} from "../../models/applicant.model";
 
 export const loadListings = createAction("[Listings Page] Load Listings");
 
@@ -102,4 +103,18 @@ export const filterListings = createAction(
 export const searchListings = createAction(
   "[Listings Page] Search Listings",
   props<{query: string}>(),
+);
+
+export const applyToListing = createAction(
+  "[Listing Detail] Apply To Listing",
+  props<{listingId: string; applicant: Applicant}>(),
+);
+
+export const applyToListingSuccess = createAction(
+  "[Listing API] Apply To Listing Success",
+);
+
+export const applyToListingFailure = createAction(
+  "[Listing API] Apply To Listing Failure",
+  props<{error: any}>(),
 );

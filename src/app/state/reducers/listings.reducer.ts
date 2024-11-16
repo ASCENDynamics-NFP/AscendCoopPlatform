@@ -20,16 +20,16 @@
 // src/app/state/listings/listings.reducer.ts
 
 import {createReducer, on} from "@ngrx/store";
-import * as ListingsActions from "./../actions/listings.actions";
+import * as ListingsActions from "../actions/listings.actions";
 import {Listing} from "../../models/listing.model";
 
 export interface ListingsState {
-  entities: {[id: string]: Listing};
-  selectedListingId: string | null;
-  loading: boolean;
-  error: string | null;
-  filterType: string;
-  searchQuery: string;
+  entities: {[id: string]: Listing}; // Dictionary of listings by ID
+  selectedListingId: string | null; // Currently selected listing
+  loading: boolean; // Indicates if a request is in progress
+  error: string | null; // Stores any errors
+  filterType: string; // Type of listing to filter (e.g., 'all', 'active')
+  searchQuery: string; // Search query for filtering listings
 }
 
 const initialState: ListingsState = {
@@ -43,6 +43,8 @@ const initialState: ListingsState = {
 
 export const listingsReducer = createReducer(
   initialState,
+
+  // Loading listings
   on(ListingsActions.loadListings, (state) => ({
     ...state,
     loading: true,
@@ -51,10 +53,17 @@ export const listingsReducer = createReducer(
   on(ListingsActions.loadListingsSuccess, (state, {listings}) => ({
     ...state,
     entities: listings.reduce((entities, listing) => {
-      return {...entities, [listing.id]: listing};
+      return {...entities, [listing.id]: listing}; // Add listings to the dictionary
     }, {}),
     loading: false,
   })),
+  on(ListingsActions.loadListingsFailure, (state, {error}) => ({
+    ...state,
+    error,
+    loading: false,
+  })),
+
+  // Loading a single listing by ID
   on(ListingsActions.loadListingByIdSuccess, (state, {listing}) => {
     if (listing) {
       return {
@@ -74,6 +83,13 @@ export const listingsReducer = createReducer(
       };
     }
   }),
+  on(ListingsActions.loadListingByIdFailure, (state, {error}) => ({
+    ...state,
+    error,
+    loading: false,
+  })),
+
+  // Creating a listing
   on(ListingsActions.createListingSuccess, (state, {listing}) => ({
     ...state,
     entities: {
@@ -83,6 +99,13 @@ export const listingsReducer = createReducer(
     selectedListingId: listing.id,
     loading: false,
   })),
+  on(ListingsActions.createListingFailure, (state, {error}) => ({
+    ...state,
+    error,
+    loading: false,
+  })),
+
+  // Updating a listing
   on(ListingsActions.updateListingSuccess, (state, {listing}) => ({
     ...state,
     entities: {
@@ -92,33 +115,49 @@ export const listingsReducer = createReducer(
     selectedListingId: listing.id,
     loading: false,
   })),
-  on(
-    ListingsActions.loadListingsFailure,
-    ListingsActions.loadListingByIdFailure,
-    ListingsActions.createListingFailure,
-    ListingsActions.updateListingFailure,
-    (state, {error}) => ({
-      ...state,
-      error,
-      loading: false,
-    }),
-  ),
+  on(ListingsActions.updateListingFailure, (state, {error}) => ({
+    ...state,
+    error,
+    loading: false,
+  })),
+
+  // Deleting a listing
   on(ListingsActions.deleteListingSuccess, (state, {id}) => {
-    const {[id]: removed, ...entities} = state.entities;
+    const {[id]: removed, ...entities} = state.entities; // Remove deleted listing
     const selectedListingId =
-      state.selectedListingId === id ? null : state.selectedListingId;
+      state.selectedListingId === id ? null : state.selectedListingId; // Deselect if deleted
     return {
       ...state,
       entities,
       selectedListingId,
     };
   }),
+
+  // Filtering listings
   on(ListingsActions.filterListings, (state, {listingType}) => ({
     ...state,
     filterType: listingType,
   })),
+
+  // Searching listings
   on(ListingsActions.searchListings, (state, {query}) => ({
     ...state,
     searchQuery: query,
+  })),
+
+  // Applying to a listing
+  on(ListingsActions.applyToListing, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
+  on(ListingsActions.applyToListingSuccess, (state) => ({
+    ...state,
+    loading: false,
+  })),
+  on(ListingsActions.applyToListingFailure, (state, {error}) => ({
+    ...state,
+    loading: false,
+    error,
   })),
 );

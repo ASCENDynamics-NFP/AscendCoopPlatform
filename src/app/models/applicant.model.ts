@@ -17,13 +17,17 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// models/applicant-account.model.ts
+// models/applicant.model.ts
 
 import {BaseDocument} from "./base-document";
 import {Timestamp, FieldValue} from "firebase/firestore";
 
-export interface ApplicantAccount extends BaseDocument {
+export interface Applicant extends BaseDocument {
   accountId: string; // ID of the applicant's account
+  iconImage?: string;
+  name: string;
+  email: string;
+  phone?: string;
   listingId: string; // ID of the listing
   status: "applied" | "accepted" | "rejected" | "withdrawn";
   applicationDate: Timestamp | FieldValue;

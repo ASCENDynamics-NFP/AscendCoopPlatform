@@ -13,12 +13,9 @@ service cloud.firestore {
         request.auth.uid == resource.data.createdBy; // Only creator can modify
     }
 
-    // Listings collection rules
-    match /listings/{listingId}/applicants/{applicantId} {
-      allow read: if true; // Anyone can view listings
-      allow create: if request.auth != null; // Must be logged in to create
-      allow update, delete: if request.auth != null && 
-        request.auth.uid == resource.data.createdBy; // Only creator can modify
+    // Allow authenticated users to apply for listings
+    match /listings/{listingId}/relatedAccounts/{relatedAccountId} {
+      allow create, read, write, delete: if request.auth.uid != null; // Only the user can write to their own data
     }
 
     match /accounts {

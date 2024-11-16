@@ -31,23 +31,21 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-// Existing triggers...
-
-// New trigger for applicantAccounts onCreate
-export const onCreateApplicantAccount = functions.firestore
-  .document("listings/{listingId}/applicantAccounts/{accountId}")
-  .onCreate(handleApplicantAccountCreate);
+// New trigger for relatedAccounts onCreate
+export const onCreateListingsRelatedAccount = functions.firestore
+  .document("listings/{listingId}/relatedAccounts/{accountId}")
+  .onCreate(handleListingsRelatedAccountCreate);
 
 /**
- * Handles the creation of a new applicantAccount document in Firestore.
+ * Handles the creation of a new relatedAccount document in Firestore.
  * When a user applies to a listing, this function creates a relatedListing
  * document under the applicant's account, linking the account to the listing.
  *
- * @param {QueryDocumentSnapshot} snapshot - The snapshot of the newly created applicantAccount document.
+ * @param {QueryDocumentSnapshot} snapshot - The snapshot of the newly created relatedAccount document.
  * @param {EventContext} context - The context object containing metadata about the event, including listingId and accountId.
  * @return {Promise<void>} A promise that resolves when the relatedListing document is created, or logs an error if it fails.
  */
-async function handleApplicantAccountCreate(
+async function handleListingsRelatedAccountCreate(
   snapshot: QueryDocumentSnapshot,
   context: EventContext,
 ) {
@@ -96,6 +94,6 @@ async function handleApplicantAccountCreate(
       `Successfully created relatedListing for account ${accountId} and listing ${listingId}`,
     );
   } catch (error) {
-    logger.error("Error in handleApplicantAccountCreate:", error);
+    logger.error("Error in handleRelatedAccountCreate:", error);
   }
 }

@@ -141,7 +141,10 @@ export class ListingsEffects {
       ofType(ListingsActions.applyToListing),
       switchMap(({listingId, applicant}) =>
         this.firestoreService
-          .addDocument(`listings/${listingId}/applicants`, applicant)
+          .setDocument(
+            `listings/${listingId}/relatedAccounts/${applicant.id}`,
+            applicant,
+          )
           .then(() => ListingsActions.applyToListingSuccess())
           .catch((error) => ListingsActions.applyToListingFailure({error})),
       ),

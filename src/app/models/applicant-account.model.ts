@@ -17,19 +17,15 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// models/applicant-account.model.ts
+
 import {BaseDocument} from "./base-document";
-import {ListingType} from "./listing.model";
 import {Timestamp, FieldValue} from "firebase/firestore";
 
-export interface RelatedListing extends BaseDocument {
-  title: string;
-  type: ListingType;
-  remote: boolean;
-  heroImage?: string;
-  iconImage?: string;
-  status: "active" | "filled" | "expired";
-  relationship: "owner" | "applicant" | "participant" | "saved";
-  applicationDate?: Timestamp | FieldValue;
+export interface ApplicantAccount extends BaseDocument {
+  accountId: string; // ID of the applicant's account
+  listingId: string; // ID of the listing
+  status: "applied" | "accepted" | "rejected" | "withdrawn";
+  applicationDate: Timestamp | FieldValue;
   notes?: string;
-  accountId: string; // Reference to the parent account
 }

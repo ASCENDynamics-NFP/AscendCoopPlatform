@@ -17,6 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// functions/src/database/listings/relatedAccounts/triggers/onCreate/index.ts
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
@@ -24,61 +25,58 @@ import * as logger from "firebase-functions/logger";
 import {EventContext} from "firebase-functions";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
 
-// Initialize the Firebase admin SDK
-if (!admin.apps.length) {
-  admin.initializeApp();
-}
+admin.initializeApp();
 
-// Reference to the Firestore database
 const db = admin.firestore();
 
-export const onCreateListing = functions.firestore
-  .document("listings/{listingId}")
-  .onCreate(handleListingCreate);
+// Existing triggers...
+
+// New trigger for applicantAccounts onCreate
+export const onCreateApplicantAccount = functions.firestore
+  .document("listings/{listingId}/applicantAccounts/{accountId}")
+  .onCreate(handleApplicantAccountCreate);
 
 /**
- * Handles the creation of a new listing document in Firestore.
- * This function is triggered when a new listing is created and creates a relatedListing
- * document in the `relatedListings` sub-collection under the associated account's document.
- * The relatedListing is linked to the listing and includes metadata such as the relationship
- * to the account (set as "owner") and the status of the listing.
+ * Handles the creation of a new applicantAccount document in Firestore.
+ * When a user applies to a listing, this function creates a relatedListing
+ * document under the applicant's account, linking the account to the listing.
  *
- * @param {QueryDocumentSnapshot} snapshot - The snapshot of the newly created listing document.
- * @param {EventContext} context - The context object containing metadata about the event, including the listing ID.
+ * @param {QueryDocumentSnapshot} snapshot - The snapshot of the newly created applicantAccount document.
+ * @param {EventContext} context - The context object containing metadata about the event, including listingId and accountId.
  * @return {Promise<void>} A promise that resolves when the relatedListing document is created, or logs an error if it fails.
  */
-async function handleListingCreate(
+async function handleApplicantAccountCreate(
   snapshot: QueryDocumentSnapshot,
   context: EventContext,
 ) {
-  const listingId = context.params.listingId;
-  const listing = snapshot.data();
-  const accountId = listing.createdBy;
-
-  if (!accountId) {
-    logger.error(`No authenticated user found for listing ${listingId}`);
-    return;
-  }
+  const {listingId, accountId} = context.params;
+  const applicantAccount = snapshot.data();
 
   try {
-    const accountDoc = await db.collection("accounts").doc(accountId).get();
+    // Fetch the listing details
+    const listingDoc = await db.collection("listings").doc(listingId).get();
 
-    if (!accountDoc.exists) {
-      logger.error(`Account ${accountId} not found`);
+    if (!listingDoc.exists) {
+      logger.error(`Listing ${listingId} not found.`);
       return;
     }
+
+    const listing = listingDoc.data();
 
     // Create the relatedListing document
     const relatedListing: any = {
       id: listingId,
       accountId: accountId,
-      title: listing.title,
-      type: listing.type,
-      remote: listing.remote ?? false,
-      heroImage: listing.heroImage ?? null,
-      iconImage: listing.iconImage ?? null,
-      status: listing.status,
-      relationship: "owner", // Set to owner
+      title: listing?.title,
+      type: listing?.type,
+      remote: listing?.remote ?? false,
+      iconImage: listing?.iconImage ?? null,
+      status: listing?.status,
+      relationship: "applicant",
+      applicationDate:
+        applicantAccount.applicationDate ??
+        admin.firestore.FieldValue.serverTimestamp(),
+      notes: applicantAccount.notes ?? null,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       createdBy: accountId,
       lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -96,6 +94,6 @@ async function handleListingCreate(
       `Successfully created relatedListing for account ${accountId} and listing ${listingId}`,
     );
   } catch (error) {
-    logger.error("Error creating relatedListing document: ", error);
+    logger.error("Error in handleApplicantAccountCreate:", error);
   }
 }

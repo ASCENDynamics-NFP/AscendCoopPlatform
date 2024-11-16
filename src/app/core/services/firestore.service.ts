@@ -32,6 +32,11 @@ import {RelatedListing} from "../../models/related-listing.model";
 export class FirestoreService {
   constructor(private afs: AngularFirestore) {}
 
+  // Helper to ensure documents have an id property
+  private populateId<T>(data: T, id: string): T {
+    return {...data, id} as T;
+  }
+
   // Firebase Query Logic (Start) //
 
   /**
@@ -48,8 +53,14 @@ export class FirestoreService {
     return this.afs
       .collection<T>(collectionName)
       .doc<T>(documentId)
-      .valueChanges({idField: "id"})
-      .pipe(map((data) => data ?? null));
+      .valueChanges()
+      .pipe(
+        map((data) => (data ? this.populateId(data, documentId) : null)), // Populate id
+        catchError((error) => {
+          console.error("Error retrieving document:", error);
+          return of(null);
+        }),
+      );
   }
 
   /**
@@ -195,9 +206,16 @@ export class FirestoreService {
     const collectionRef = this.afs.collection<T>(collectionName, (ref) =>
       ref.where(field, condition, value),
     );
-    return collectionRef.valueChanges({idField: "id"}).pipe(
+    return collectionRef.snapshotChanges().pipe(
+      map((actions) =>
+        actions.map((action) => {
+          const data = action.payload.doc.data() as T;
+          const id = action.payload.doc.id;
+          return this.populateId(data, id); // Ensure id is populated
+        }),
+      ),
       catchError((error) => {
-        console.error("Error retrieving collection:", error);
+        console.error("Error retrieving collection with condition:", error);
         return of([]);
       }),
     );
@@ -242,27 +260,6 @@ export class FirestoreService {
   }
 
   /**
-   * Retrieves a document by its ID as an Observable.
-   *
-   * @param {string} collectionName - Name of the collection.
-   * @param {string} docId - ID of the document.
-   * @returns {Observable<T | null>}
-   */
-  getDocById<T>(collectionName: string, docId: string): Observable<T | null> {
-    return this.afs
-      .collection<T>(collectionName)
-      .doc<T>(docId)
-      .valueChanges({idField: "id"})
-      .pipe(
-        map((data) => data ?? null), // Map undefined to null
-        catchError((error) => {
-          console.error("Error getting document by ID:", error);
-          return of(null);
-        }),
-      );
-  }
-
-  /**
    * Retrieves documents from a relatedAccounts sub-collection for a given account in real-time.
    *
    * @param {string} accountId - ID of the account.
@@ -273,7 +270,14 @@ export class FirestoreService {
       `accounts/${accountId}/relatedAccounts`,
     );
 
-    return relatedAccountsRef.valueChanges({idField: "id"}).pipe(
+    return relatedAccountsRef.snapshotChanges().pipe(
+      map((actions) =>
+        actions.map((action) => {
+          const data = action.payload.doc.data() as RelatedAccount;
+          const id = action.payload.doc.id;
+          return this.populateId(data, id); // Ensure id is populated
+        }),
+      ),
       catchError((error) => {
         console.error("Error getting related accounts:", error);
         return of([]);
@@ -292,8 +296,15 @@ export class FirestoreService {
           .where("privacy", "==", "public")
           .where("type", "in", ["user", "group"]),
       )
-      .valueChanges({idField: "id"})
+      .snapshotChanges()
       .pipe(
+        map((actions) =>
+          actions.map((action) => {
+            const data = action.payload.doc.data() as Account;
+            const id = action.payload.doc.id;
+            return this.populateId(data, id); // Ensure id is populated
+          }),
+        ),
         catchError((error) => {
           console.error("Error getting accounts:", error);
           return of([]);
@@ -301,6 +312,12 @@ export class FirestoreService {
       );
   }
 
+  /**
+   * Retrieves an account with its related accounts and related listings.
+   *
+   * @param {string} accountId - ID of the account.
+   * @returns {Observable<{ account: Account | null; relatedAccounts: RelatedAccount[]; relatedListings: RelatedListing[] }>}
+   */
   getAccountWithRelated(accountId: string): Observable<{
     account: Account | null;
     relatedAccounts: RelatedAccount[];
@@ -308,16 +325,20 @@ export class FirestoreService {
   }> {
     return combineLatest([
       this.getDocument<Account>("accounts", accountId),
-      this.getCollectionWithCondition<RelatedAccount>(
-        `accounts/${accountId}/relatedAccounts`,
-        "status",
-        "!=",
-        "rejected",
-      ),
+      this.getRelatedAccounts(accountId),
       this.afs
         .collection<RelatedListing>(`accounts/${accountId}/relatedListings`)
-        .valueChanges({idField: "id"})
-        .pipe(catchError(() => of([]))),
+        .snapshotChanges()
+        .pipe(
+          map((actions) =>
+            actions.map((action) => {
+              const data = action.payload.doc.data() as RelatedListing;
+              const id = action.payload.doc.id;
+              return this.populateId(data, id); // Ensure id is populated
+            }),
+          ),
+          catchError(() => of([])),
+        ),
     ]).pipe(
       map(([account, relatedAccounts, relatedListings]) => ({
         account,

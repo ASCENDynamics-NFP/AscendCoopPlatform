@@ -25,7 +25,9 @@ import * as logger from "firebase-functions/logger";
 import {EventContext} from "firebase-functions";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
 
-admin.initializeApp();
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
 
 const db = admin.firestore();
 

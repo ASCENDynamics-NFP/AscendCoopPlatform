@@ -56,13 +56,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <p class="description">{{ listing.description }}</p>
     </div>
   </div>
-  <!-- <div class="listing-actions">
+  <div class="listing-actions">
     <ion-button
+      *ngIf="!isOwner"
       fill="outline"
       [disabled]="listing.status !== 'active'"
       (click)="onApply()"
     >
       Apply Now
     </ion-button>
-  </div> -->
+  </div>
 </div>

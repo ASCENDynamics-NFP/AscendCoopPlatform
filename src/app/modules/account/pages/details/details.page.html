@@ -83,6 +83,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         [relatedAccounts]="(relatedAccounts$ | async) ?? []"
         type="group"
       ></app-related-accounts>
+      <app-related-listings
+        [account]="account"
+        [relatedListings]="(relatedListings$ | async) ?? []"
+        relationship="owner"
+      ></app-related-listings>
 
       <app-volunteer-preference-info
         id="volunteer"

@@ -66,9 +66,7 @@ export class RelatedListingsComponent {
 
   viewAll() {
     if (this.account?.id) {
-      this.router.navigate([
-        `/account/${this.account.id}/listings/${this.relationship}`,
-      ]);
+      this.router.navigate([`/account/${this.account.id}/listings`]);
     }
   }
 }

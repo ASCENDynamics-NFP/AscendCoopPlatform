@@ -54,6 +54,7 @@ import {GroupListPage} from "./pages/group-list/group-list.page";
 import {UsersPage} from "./pages/users/users.page";
 import {ListPage} from "./relatedAccount/pages/list/list.page";
 import {RelatedListingsComponent} from "./pages/details/components/related-listings/related-listings.component";
+import {ListingsListPage} from "./relatedListings/pages/listings-list/listings-list.page";
 
 @NgModule({
   declarations: [
@@ -80,6 +81,7 @@ import {RelatedListingsComponent} from "./pages/details/components/related-listi
     UserRegistrationComponent,
     GroupListPage,
     UsersPage,
+    ListingsListPage,
     ListPage,
     RelatedListingsComponent,
   ],

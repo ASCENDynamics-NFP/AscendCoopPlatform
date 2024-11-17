@@ -27,6 +27,7 @@ import {GroupListPage} from "./pages/group-list/group-list.page";
 import {SettingsPage} from "./pages/settings/settings.page";
 import {UsersPage} from "./pages/users/users.page";
 import {ListPage} from "./relatedAccount/pages/list/list.page";
+import {ListingsListPage} from "./relatedListings/pages/listings-list/listings-list.page";
 
 const routes: Routes = [
   {
@@ -56,6 +57,11 @@ const routes: Routes = [
   {
     path: ":accountId/edit",
     component: EditPage,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: ":accountId/listings",
+    component: ListingsListPage,
     canActivate: [AuthGuard],
   },
   {

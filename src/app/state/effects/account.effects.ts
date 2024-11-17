@@ -297,12 +297,7 @@ export class AccountEffects {
       ofType(AccountActions.loadRelatedListings),
       mergeMap(({accountId}) =>
         this.firestoreService
-          .getCollectionWithCondition<RelatedListing>(
-            `accounts/${accountId}/relatedListings`,
-            "status",
-            "in",
-            ["active", "filled"],
-          )
+          .getDocuments<RelatedListing>(`accounts/${accountId}/relatedListings`)
           .pipe(
             map((relatedListings) =>
               AccountActions.loadRelatedListingsSuccess({

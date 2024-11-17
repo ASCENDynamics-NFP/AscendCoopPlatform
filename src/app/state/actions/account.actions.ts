@@ -207,3 +207,18 @@ export const loadRelatedListingsFailure = createAction(
   "[Account] Load Related Listings Failure",
   props<{error: any}>(),
 );
+
+export const deleteRelatedListing = createAction(
+  "[Account] Delete Related Listing",
+  props<{accountId: string; relatedListingId: string}>(),
+);
+
+export const deleteRelatedListingSuccess = createAction(
+  "[Account] Delete Related Listing Success",
+  props<{accountId: string; relatedListingId: string}>(),
+);
+
+export const deleteRelatedListingFailure = createAction(
+  "[Account] Delete Related Listing Failure",
+  props<{accountId: string; error: any}>(),
+);

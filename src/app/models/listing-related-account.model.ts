@@ -17,19 +17,19 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Pipe, PipeTransform} from "@angular/core";
+// models/applicant.model.ts
 
-@Pipe({
-  name: "phoneFormat",
-})
-export class PhoneFormatPipe implements PipeTransform {
-  transform(phoneNumber: string): string {
-    const cleaned = ("" + phoneNumber).replace(/\D/g, "");
-    const match = cleaned.match(/^(1|)?(\d{3})(\d{3})(\d{4})$/);
-    if (match) {
-      const intlCode = match[1] ? "+1 " : "";
-      return [intlCode, "(", match[2], ") ", match[3], "-", match[4]].join("");
-    }
-    return "";
-  }
+import {BaseDocument} from "./base-document";
+import {Timestamp, FieldValue} from "firebase/firestore";
+
+export interface ListingRelatedAccount extends BaseDocument {
+  accountId: string; // ID of the applicant's account
+  iconImage?: string;
+  name: string;
+  email: string;
+  phone?: string;
+  listingId: string; // ID of the listing
+  status: "applied" | "accepted" | "rejected" | "withdrawn";
+  applicationDate: Timestamp | FieldValue;
+  notes?: string;
 }

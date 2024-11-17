@@ -23,8 +23,9 @@ import {combineLatest, Observable, of} from "rxjs";
 import {map, catchError} from "rxjs/operators";
 import {FirebaseError} from "firebase/app";
 import {Account, RelatedAccount} from "../../models/account.model";
-import {AngularFirestore} from "@angular/fire/compat/firestore";
+import {AngularFirestore, Query} from "@angular/fire/compat/firestore";
 import {RelatedListing} from "../../models/related-listing.model";
+import {DocumentData, WhereFilterOp} from "firebase/firestore";
 
 @Injectable({
   providedIn: "root",
@@ -172,19 +173,16 @@ export class FirestoreService {
   }
 
   /**
-   * Deletes a document at the given path in Firestore.
-   *
-   * @param {string} docPath - The full path to the document, including its ID.
+   * Deletes a document at a specific Firestore path.
+   * @param fullPath The full Firestore path to the document (e.g., 'listings/{listingId}/relatedAccounts/{relatedAccountId}').
    * @returns {Promise<void>}
    */
-  async deleteDocumentAtPath(docPath: string): Promise<void> {
+  async deleteDocumentAtPath(fullPath: string): Promise<void> {
     try {
-      await this.afs.doc(docPath).delete();
+      await this.afs.doc(fullPath).delete();
     } catch (error) {
-      throw new FirebaseError(
-        "delete-document-at-path-error",
-        `Error deleting document at path ${docPath}: ${error}`,
-      );
+      console.error(`Error deleting document at path: ${fullPath}`, error);
+      throw error;
     }
   }
 
@@ -357,4 +355,50 @@ export class FirestoreService {
   }
 
   // Firebase Query Logic (Ends) //
+
+  /**
+   * Retrieves documents from any collection or sub-collection.
+   * @param fullPath The full Firestore path to the collection (e.g., 'listings/{listingId}/relatedAccounts').
+   * @param conditions Optional conditions to filter documents.
+   * @returns {Observable<T[]>}
+   */
+  getDocuments<T>(
+    fullPath: string,
+    conditions?: {
+      field: string;
+      operator: WhereFilterOp;
+      value: any;
+    }[],
+  ): Observable<T[]> {
+    const collectionRef = this.afs.collection<T>(fullPath, (ref) => {
+      let query: Query<DocumentData> = ref; // Use Query type
+      if (conditions) {
+        conditions.forEach((condition) => {
+          query = query.where(
+            condition.field,
+            condition.operator,
+            condition.value,
+          );
+        });
+      }
+      return query;
+    });
+
+    return collectionRef.snapshotChanges().pipe(
+      map((actions) =>
+        actions.map((action) => {
+          const data = action.payload.doc.data() as T;
+          const id = action.payload.doc.id;
+          return {...data, id}; // Ensure id is populated
+        }),
+      ),
+      catchError((error) => {
+        console.error(
+          `Error retrieving documents from path: ${fullPath}`,
+          error,
+        );
+        return of([]);
+      }),
+    );
+  }
 }

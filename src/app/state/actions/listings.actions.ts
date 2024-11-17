@@ -21,7 +21,7 @@
 
 import {createAction, props} from "@ngrx/store";
 import {Listing} from "../../models/listing.model";
-import {Applicant} from "../../models/applicant.model";
+import {ListingRelatedAccount} from "../../models/listing-related-account.model";
 
 export const loadListings = createAction("[Listings Page] Load Listings");
 
@@ -107,7 +107,7 @@ export const searchListings = createAction(
 
 export const applyToListing = createAction(
   "[Listing Detail] Apply To Listing",
-  props<{listingId: string; applicant: Applicant}>(),
+  props<{listingId: string; applicant: ListingRelatedAccount}>(),
 );
 
 export const applyToListingSuccess = createAction(
@@ -117,4 +117,19 @@ export const applyToListingSuccess = createAction(
 export const applyToListingFailure = createAction(
   "[Listing API] Apply To Listing Failure",
   props<{error: any}>(),
+);
+
+export const loadListingRelatedAccounts = createAction(
+  "[Listing] Load Related Accounts",
+  props<{listingId: string}>(),
+);
+
+export const loadListingRelatedAccountsSuccess = createAction(
+  "[Listing] Load Related Accounts Success",
+  props<{listingId: string; relatedAccounts: ListingRelatedAccount[]}>(),
+);
+
+export const loadListingRelatedAccountsFailure = createAction(
+  "[Listing] Load Related Accounts Failure",
+  props<{listingId: string; error: any}>(),
 );

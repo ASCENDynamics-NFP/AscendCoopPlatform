@@ -53,9 +53,6 @@ import {UserRegistrationComponent} from "./pages/registration/components/user-re
 import {GroupListPage} from "./pages/group-list/group-list.page";
 import {UsersPage} from "./pages/users/users.page";
 import {ListPage} from "./relatedAccount/pages/list/list.page";
-// import {SearchPage} from "./pages/search/search.page";
-// import {MemberSearchComponent} from "./pages/search/component/member-search/member-search.component";
-// import {PartnerSearchComponent} from "./pages/search/component/partner-search/partner-search.component";
 
 @NgModule({
   declarations: [

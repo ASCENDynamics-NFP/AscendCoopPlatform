@@ -65,5 +65,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     >
       Apply Now
     </ion-button>
+
+    <ion-button
+      *ngIf="isOwner"
+      [routerLink]="['/listings', listing.id, 'applicants']"
+    >
+      View Applicants
+    </ion-button>
   </div>
 </div>

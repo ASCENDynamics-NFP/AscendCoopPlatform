@@ -22,9 +22,11 @@
 import {createReducer, on} from "@ngrx/store";
 import * as ListingsActions from "../actions/listings.actions";
 import {Listing} from "../../models/listing.model";
+import {ListingRelatedAccount} from "../../models/listing-related-account.model";
 
 export interface ListingsState {
   entities: {[id: string]: Listing}; // Dictionary of listings by ID
+  relatedAccounts: {[listingId: string]: ListingRelatedAccount[]};
   selectedListingId: string | null; // Currently selected listing
   loading: boolean; // Indicates if a request is in progress
   error: string | null; // Stores any errors
@@ -34,6 +36,7 @@ export interface ListingsState {
 
 const initialState: ListingsState = {
   entities: {},
+  relatedAccounts: {},
   selectedListingId: null,
   loading: false,
   error: null,
@@ -156,6 +159,27 @@ export const listingsReducer = createReducer(
     loading: false,
   })),
   on(ListingsActions.applyToListingFailure, (state, {error}) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
+  on(ListingsActions.loadListingRelatedAccounts, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
+  on(
+    ListingsActions.loadListingRelatedAccountsSuccess,
+    (state, {listingId, relatedAccounts}) => ({
+      ...state,
+      relatedAccounts: {
+        ...state.relatedAccounts,
+        [listingId]: relatedAccounts,
+      },
+      loading: false,
+    }),
+  ),
+  on(ListingsActions.loadListingRelatedAccountsFailure, (state, {error}) => ({
     ...state,
     loading: false,
     error,

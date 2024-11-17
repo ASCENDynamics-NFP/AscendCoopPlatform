@@ -1,0 +1,59 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<app-header title="Applicants"></app-header>
+
+<ion-content>
+  <ion-loading
+    *ngIf="loading$ | async"
+    message="Loading applicants..."
+  ></ion-loading>
+  <ion-list *ngIf="!(loading$ | async)">
+    <ion-item *ngFor="let account of relatedAccounts$ | async">
+      <ion-avatar slot="start">
+        <img [src]="account.iconImage || 'assets/avatar-placeholder.png'" />
+      </ion-avatar>
+      <ion-label>
+        <h2>{{ account.name }}</h2>
+        <h3>{{ account.email }}</h3>
+        <p *ngIf="account.phone">{{ account.phone | phoneFormat }}</p>
+        <p>Applied: {{ account.applicationDate | timestamp }}</p>
+        <p *ngIf="account.notes">Notes: {{ account.notes }}</p>
+      </ion-label>
+      <ion-badge
+        slot="end"
+        [color]="account.status === 'accepted' ? 'success' : account.status === 'rejected' ? 'danger' : 'primary'"
+      >
+        {{ account.status }}
+      </ion-badge>
+      <ion-button
+        slot="end"
+        fill="clear"
+        [routerLink]="['/account', account.accountId]"
+      >
+        <ion-icon name="person-circle-outline"></ion-icon>
+        View Profile
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
+  <ion-text color="danger" *ngIf="error$ | async as error">
+    {{ error }}
+  </ion-text>
+</ion-content>

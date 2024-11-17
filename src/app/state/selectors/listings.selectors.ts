@@ -25,6 +25,12 @@ import {ListingsState} from "../reducers/listings.reducer";
 export const selectListingsState =
   createFeatureSelector<ListingsState>("listings");
 
+export const selectRelatedAccountsByListingId = (listingId: string) =>
+  createSelector(
+    selectListingsState,
+    (state: ListingsState) => state.relatedAccounts[listingId] || [],
+  );
+
 export const selectAllListings = createSelector(
   selectListingsState,
   (state: ListingsState) => Object.values(state.entities),

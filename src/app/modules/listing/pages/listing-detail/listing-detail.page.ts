@@ -30,7 +30,7 @@ import * as ListingsActions from "../../../../state/actions/listings.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {AppState} from "../../../../state/app.state";
 import {selectListingById} from "../../../../state/selectors/listings.selectors";
-import {Applicant} from "../../../../models/applicant.model";
+import {ListingRelatedAccount} from "../../../../models/listing-related-account.model";
 import {serverTimestamp} from "firebase/firestore";
 
 @Component({
@@ -139,7 +139,7 @@ export class ListingDetailPage implements OnInit {
             }
 
             if (this.listingId) {
-              const applicant: Applicant = {
+              const applicant: ListingRelatedAccount = {
                 id: user.uid,
                 accountId: user.uid,
                 iconImage: user.iconImage || undefined,

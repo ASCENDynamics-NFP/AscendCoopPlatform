@@ -26,7 +26,7 @@ import {ListingsPage} from "./pages/listings/listings.page";
 import {ListingRoutingModule} from "./listing-routing.module";
 import {listingsReducer} from "../../state/reducers/listings.reducer";
 import {ListingsEffects} from "../../state/effects/listings.effects";
-import {ReactiveFormsModule} from "@angular/forms";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {RouterModule} from "@angular/router";
 import {ListingDetailPage} from "./pages/listing-detail/listing-detail.page";
 import {ListingEditPage} from "./pages/listing-edit/listing-edit.page";
@@ -35,9 +35,13 @@ import {TimestampPipe} from "../../shared/pipes/timestamp.pipe";
 import {ListingFormComponent} from "./components/listing-form/listing-form.component";
 import {FormatAddressPipe} from "../../shared/pipes/format-address.pipe";
 import {HeroComponent} from "./pages/listing-detail/components/hero/hero.component";
+import {ApplicantsPage} from "./pages/applicants/applicants.page";
+import {PhoneFormatPipe} from "../../shared/pipes/phone-format.pipe";
+import {SharedModule} from "../../shared/shared.module";
 
 @NgModule({
   declarations: [
+    ApplicantsPage,
     ListingsPage,
     ListingCreatePage,
     ListingDetailPage,
@@ -45,14 +49,17 @@ import {HeroComponent} from "./pages/listing-detail/components/hero/hero.compone
     TimestampPipe,
     ListingFormComponent,
     FormatAddressPipe,
+    PhoneFormatPipe,
     HeroComponent,
   ],
   imports: [
     CommonModule,
+    FormsModule,
     IonicModule,
     RouterModule,
     ReactiveFormsModule,
     ListingRoutingModule,
+    SharedModule,
     StoreModule.forFeature("listings", listingsReducer),
     EffectsModule.forFeature([ListingsEffects]),
   ],

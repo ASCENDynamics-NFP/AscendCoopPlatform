@@ -26,6 +26,7 @@ import {FirestoreService} from "../../core/services/firestore.service";
 import * as ListingsActions from "./../actions/listings.actions";
 import {Listing} from "../../models/listing.model";
 import {serverTimestamp} from "@angular/fire/firestore";
+import {ListingRelatedAccount} from "../../models/listing-related-account.model";
 
 @Injectable()
 export class ListingsEffects {
@@ -147,6 +148,34 @@ export class ListingsEffects {
           )
           .then(() => ListingsActions.applyToListingSuccess())
           .catch((error) => ListingsActions.applyToListingFailure({error})),
+      ),
+    ),
+  );
+
+  loadListingRelatedAccounts$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ListingsActions.loadListingRelatedAccounts),
+      mergeMap(({listingId}) =>
+        this.firestoreService
+          .getDocuments<ListingRelatedAccount>(
+            `listings/${listingId}/relatedAccounts`,
+          )
+          .pipe(
+            map((relatedAccounts) =>
+              ListingsActions.loadListingRelatedAccountsSuccess({
+                listingId,
+                relatedAccounts,
+              }),
+            ),
+            catchError((error) =>
+              of(
+                ListingsActions.loadListingRelatedAccountsFailure({
+                  listingId,
+                  error,
+                }),
+              ),
+            ),
+          ),
       ),
     ),
   );

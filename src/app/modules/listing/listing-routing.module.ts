@@ -23,6 +23,7 @@ import {ListingsPage} from "./pages/listings/listings.page";
 import {ListingDetailPage} from "./pages/listing-detail/listing-detail.page";
 import {ListingEditPage} from "./pages/listing-edit/listing-edit.page";
 import {ListingCreatePage} from "./pages/listing-create/listing-create.page";
+import {ApplicantsPage} from "./pages/applicants/applicants.page";
 
 const routes: Routes = [
   {
@@ -36,6 +37,10 @@ const routes: Routes = [
   {
     path: ":id",
     component: ListingDetailPage,
+  },
+  {
+    path: ":id/applicants",
+    component: ApplicantsPage,
   },
   {
     path: ":id/edit",

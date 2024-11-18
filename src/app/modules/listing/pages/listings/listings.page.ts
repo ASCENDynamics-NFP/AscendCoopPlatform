@@ -31,6 +31,8 @@ import {
   selectLoading,
   selectError,
 } from "../../../../state/selectors/listings.selectors";
+import {AuthUser} from "../../../../models/auth-user.model";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 
 @Component({
   selector: "app-listings",
@@ -42,11 +44,13 @@ export class ListingsPage implements OnInit {
   loading$: Observable<boolean>;
   error$: Observable<string | null>;
   listingTypes = ["all", "volunteer", "job", "internship", "gig"];
+  authUser$: Observable<AuthUser | null>;
 
   constructor(
     private store: Store<AppState>,
     private navCtrl: NavController,
   ) {
+    this.authUser$ = this.store.select(selectAuthUser);
     this.listings$ = this.store.select(selectFilteredListings);
     this.loading$ = this.store.select(selectLoading);
     this.error$ = this.store.select(selectError);
@@ -91,5 +95,21 @@ export class ListingsPage implements OnInit {
       return `${primaryAddress.city}, ${primaryAddress.country}`;
     }
     return "Location not specified";
+  }
+
+  getIconForType(type: string): string {
+    const iconMap: Record<string, string> = {
+      volunteer: "people-outline",
+      job: "briefcase-outline",
+      event: "calendar-outline",
+      project: "construct-outline",
+      resource: "library-outline",
+      service: "hand-right-outline",
+      all: "apps-outline",
+      internship: "school-outline",
+      gig: "flash-outline",
+    };
+
+    return iconMap[type.toLowerCase()] || "help-outline";
   }
 }

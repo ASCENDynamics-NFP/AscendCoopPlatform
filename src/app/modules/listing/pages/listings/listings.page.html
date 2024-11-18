@@ -17,28 +17,23 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Listings</ion-title>
-    <ion-buttons slot="end">
-      <ion-button routerLink="/listings/create">
-        <ion-icon name="add"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-  <ion-toolbar>
-    <ion-searchbar (ionInput)="searchListings($event)"></ion-searchbar>
-  </ion-toolbar>
-  <ion-toolbar>
-    <ion-segment (ionChange)="filterListings($event)">
-      <ion-segment-button *ngFor="let type of listingTypes" [value]="type">
-        <ion-label>{{type | titlecase}}</ion-label>
-      </ion-segment-button>
-    </ion-segment>
-  </ion-toolbar>
-</ion-header>
-
+<app-header title="Listings"></app-header>
 <ion-content>
+  <ion-header>
+    <ion-toolbar>
+      <ion-searchbar (ionInput)="searchListings($event)"></ion-searchbar>
+    </ion-toolbar>
+
+    <ion-toolbar>
+      <ion-segment scrollable (ionChange)="filterListings($event)">
+        <ion-segment-button *ngFor="let type of listingTypes" [value]="type">
+          <ion-icon [name]="getIconForType(type)"></ion-icon>
+          <ion-label>{{type | titlecase}}</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </ion-toolbar>
+  </ion-header>
+
   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
@@ -78,7 +73,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     </ion-item>
   </ion-list>
 
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab
+    vertical="bottom"
+    horizontal="end"
+    slot="fixed"
+    *ngIf="authUser$ | async"
+  >
     <ion-fab-button routerLink="/listings/create">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>

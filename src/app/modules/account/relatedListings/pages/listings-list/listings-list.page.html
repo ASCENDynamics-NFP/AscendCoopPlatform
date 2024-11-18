@@ -91,7 +91,13 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <ion-text *ngIf="!(filteredRelatedListings$ | async)?.length">
     No listings to display.
   </ion-text>
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+
+  <ion-fab
+    vertical="bottom"
+    horizontal="end"
+    slot="fixed"
+    *ngIf="currentUser$ | async"
+  >
     <ion-fab-button routerLink="/listings/create">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>

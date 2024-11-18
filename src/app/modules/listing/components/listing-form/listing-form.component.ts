@@ -321,25 +321,32 @@ export class ListingFormComponent implements OnInit {
 
   private submitForm(status: "draft" | "active" | "inactive") {
     if (this.listingForm.valid) {
-      const formValue = this.listingForm.value;
-      const listing = {
-        ...formValue,
-        timeCommitment: {
-          ...formValue.timeCommitment,
-          startDate: formValue.timeCommitment.startDate
-            ? Timestamp.fromDate(new Date(formValue.timeCommitment.startDate))
-            : null,
-          endDate: formValue.timeCommitment.endDate
-            ? Timestamp.fromDate(new Date(formValue.timeCommitment.endDate))
-            : null,
-        },
-        status,
-        iconImage: this.authUser?.iconImage || "",
-        heroImage: this.authUser?.heroImage || "",
-        lastModifiedBy: this.authUser?.uid,
-        lastModifiedDate: serverTimestamp(),
-      };
-      this.formSubmit.emit(listing);
+      this.store
+        .select(selectAuthUser)
+        .pipe(take(1))
+        .subscribe((user) => {
+          const formValue = this.listingForm.value;
+          const listing = {
+            ...formValue,
+            id: this.listing?.id,
+            timeCommitment: {
+              ...formValue.timeCommitment,
+              startDate: formValue.timeCommitment.startDate
+                ? Timestamp.fromDate(
+                    new Date(formValue.timeCommitment.startDate),
+                  )
+                : null,
+              endDate: formValue.timeCommitment.endDate
+                ? Timestamp.fromDate(new Date(formValue.timeCommitment.endDate))
+                : null,
+            },
+            status,
+            iconImage: user?.iconImage || "",
+            heroImage: user?.heroImage || "",
+            lastModifiedBy: user?.uid,
+          };
+          this.formSubmit.emit(listing);
+        });
     } else {
       this.markFormGroupTouched(this.listingForm);
     }

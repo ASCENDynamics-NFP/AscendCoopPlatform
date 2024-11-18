@@ -31,43 +31,42 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-// New trigger for relatedAccounts onCreate
-export const onCreateListingsRelatedAccount = functions.firestore
+/**
+ * Firebase Cloud Function trigger that handles updates to relatedAccount documents.
+ * Keeps the corresponding relatedListing document in sync with any changes.
+ */
+export const onUpdateListingsRelatedAccount = functions.firestore
   .document("listings/{listingId}/relatedAccounts/{accountId}")
-  .onCreate(handleListingsRelatedAccountCreate);
+  .onUpdate(handleListingsRelatedAccountUpdate);
 
 /**
- * Handles the creation of a new relatedAccount document in Firestore.
- * When a user applies to a listing, this function creates a relatedListing
- * document under the applicant's account, linking the account to the listing.
+ * Handles updates to a relatedAccount document in Firestore.
+ * When a relatedAccount document is updated, this function updates the corresponding
+ * relatedListing document under the applicant's account to maintain data consistency.
  *
- * @param {QueryDocumentSnapshot} snapshot - The snapshot of the newly created relatedAccount document.
- * @param {EventContext} context - The context object containing metadata about the event, including listingId and accountId.
- * @return {Promise<void>} A promise that resolves when the relatedListing document is created, or logs an error if it fails.
+ * @param {functions.Change<QueryDocumentSnapshot>} change - Contains both the previous and current versions of the document
+ * @param {EventContext} context - The context object containing metadata about the event, including listingId and accountId
+ * @return {Promise<void>} A promise that resolves when the relatedListing document is updated, or logs an error if it fails
  */
-async function handleListingsRelatedAccountCreate(
-  snapshot: QueryDocumentSnapshot,
+async function handleListingsRelatedAccountUpdate(
+  change: functions.Change<QueryDocumentSnapshot>,
   context: EventContext,
 ) {
   const {listingId, accountId} = context.params;
-  const relatedAccount = snapshot.data();
+  const updatedAccount = change.after.data();
+  const previousAccount = change.before.data();
+
+  // Check specific fields that affect relatedListings
+  const hasRelevantChanges = ["relationship", "notes"].some(
+    (field) => previousAccount[field] !== updatedAccount[field],
+  );
+
+  if (!hasRelevantChanges) {
+    logger.info("No relevant changes detected for relatedListings");
+    return;
+  }
 
   try {
-    const relatedListingDoc = await db
-      .collection("accounts")
-      .doc(accountId)
-      .collection("relatedListings")
-      .doc(listingId)
-      .get();
-
-    if (relatedListingDoc.exists) {
-      logger.info(
-        `RelatedListing already exists for account ${accountId} and listing ${listingId}`,
-      );
-      return;
-    }
-
-    // Fetch the listing details
     const listingDoc = await db.collection("listings").doc(listingId).get();
 
     if (!listingDoc.exists) {
@@ -77,7 +76,6 @@ async function handleListingsRelatedAccountCreate(
 
     const listing = listingDoc.data();
 
-    // Create the relatedListing document
     const relatedListing: any = {
       id: listingId,
       accountId: accountId,
@@ -87,13 +85,9 @@ async function handleListingsRelatedAccountCreate(
       remote: listing?.remote ?? false,
       iconImage: listing?.iconImage ?? null,
       status: listing?.status,
-      relationship: relatedAccount.relationship || "applicant",
-      applicationDate:
-        relatedAccount.applicationDate ??
-        admin.firestore.FieldValue.serverTimestamp(),
-      notes: relatedAccount.notes ?? null,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      createdBy: accountId,
+      relationship: updatedAccount.relationship || "applicant",
+      applicationDate: updatedAccount.applicationDate,
+      notes: updatedAccount.notes ?? null,
       lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
       lastModifiedBy: accountId,
     };
@@ -103,12 +97,12 @@ async function handleListingsRelatedAccountCreate(
       .doc(accountId)
       .collection("relatedListings")
       .doc(listingId)
-      .set(relatedListing);
+      .update(relatedListing);
 
     logger.info(
-      `Successfully created relatedListing for account ${accountId} and listing ${listingId}`,
+      `Successfully updated relatedListing for account ${accountId} and listing ${listingId}`,
     );
   } catch (error) {
-    logger.error("Error in handleRelatedAccountCreate:", error);
+    logger.error("Error in handleListingsRelatedAccountUpdate:", error);
   }
 }

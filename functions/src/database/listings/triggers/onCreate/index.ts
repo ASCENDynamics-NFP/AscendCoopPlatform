@@ -38,14 +38,14 @@ export const onCreateListing = functions.firestore
 
 /**
  * Handles the creation of a new listing document in Firestore.
- * This function is triggered when a new listing is created and creates a relatedListing
- * document in the `relatedListings` sub-collection under the associated account's document.
- * The relatedListing is linked to the listing and includes metadata such as the relationship
- * to the account (set as "owner") and the status of the listing.
+ * This function is triggered when a new listing is created and establishes bidirectional relationships by:
+ * 1. Creating a relatedAccount document in the `listings/{listingId}/relatedAccounts` collection
+ * 2. Creating a relatedListing document in the `accounts/{accountId}/relatedListings` collection
+ * Both documents are linked to the listing creator with "owner" relationship status.
  *
  * @param {QueryDocumentSnapshot} snapshot - The snapshot of the newly created listing document.
  * @param {EventContext} context - The context object containing metadata about the event, including the listing ID.
- * @return {Promise<void>} A promise that resolves when the relatedListing document is created, or logs an error if it fails.
+ * @return {Promise<void>} A promise that resolves when both relationship documents are created, or logs an error if it fails.
  */
 async function handleListingCreate(
   snapshot: QueryDocumentSnapshot,
@@ -68,7 +68,27 @@ async function handleListingCreate(
       return;
     }
 
-    // Create the relatedListing document
+    const account = accountDoc.data();
+
+    // Create relatedAccount document
+    const relatedAccount: any = {
+      id: accountId,
+      listingId: listingId,
+      name: account?.name,
+      email: account?.email,
+      phone: account?.phone ?? null,
+      iconImage: account?.iconImage ?? null,
+      status: "active",
+      relationship: "owner",
+      applicationDate: admin.firestore.FieldValue.serverTimestamp(),
+      notes: null,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdBy: accountId,
+      lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+      lastModifiedBy: accountId,
+    };
+
+    // Create relatedListing document
     const relatedListing: any = {
       id: listingId,
       accountId: accountId,
@@ -78,24 +98,34 @@ async function handleListingCreate(
       remote: listing.remote ?? false,
       iconImage: listing.iconImage ?? null,
       status: listing.status,
-      relationship: "owner", // Set to owner
+      relationship: "owner",
+      applicationDate: admin.firestore.FieldValue.serverTimestamp(),
+      notes: null,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       createdBy: accountId,
       lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
       lastModifiedBy: accountId,
     };
 
-    await db
-      .collection("accounts")
-      .doc(accountId)
-      .collection("relatedListings")
-      .doc(listingId)
-      .set(relatedListing);
+    await Promise.all([
+      db
+        .collection("listings")
+        .doc(listingId)
+        .collection("relatedAccounts")
+        .doc(accountId)
+        .set(relatedAccount),
+      db
+        .collection("accounts")
+        .doc(accountId)
+        .collection("relatedListings")
+        .doc(listingId)
+        .set(relatedListing),
+    ]);
 
     logger.info(
-      `Successfully created relatedListing for account ${accountId} and listing ${listingId}`,
+      `Successfully created relatedAccount and relatedListing for listing ${listingId} and account ${accountId}`,
     );
   } catch (error) {
-    logger.error("Error creating relatedListing document: ", error);
+    logger.error("Error creating relationship documents: ", error);
   }
 }

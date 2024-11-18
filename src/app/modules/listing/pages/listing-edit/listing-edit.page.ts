@@ -76,18 +76,8 @@ export class ListingEditPage implements OnInit {
 
   onSubmit(listing: Listing) {
     if (this.listingId) {
-      this.authUser$.pipe(first()).subscribe((user) => {
-        if (user) {
-          const updatedListing = {
-            ...listing,
-            id: listing.id || this.listingId!,
-          };
-          this.store.dispatch(
-            ListingsActions.updateListing({listing: updatedListing}),
-          );
-          this.router.navigate(["/listings", this.listingId]);
-        }
-      });
+      this.store.dispatch(ListingsActions.updateListing({listing: listing}));
+      this.router.navigate(["/listings", this.listingId]);
     }
   }
 }

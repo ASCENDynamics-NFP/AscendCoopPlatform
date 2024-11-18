@@ -20,13 +20,13 @@
 import {Component, Input, Output, EventEmitter, OnInit} from "@angular/core";
 import {FormBuilder, FormGroup, Validators, FormArray} from "@angular/forms";
 import {Listing, SkillRequirement} from "../../../../models/listing.model";
-import {serverTimestamp, Timestamp} from "firebase/firestore";
+import {Timestamp} from "firebase/firestore";
 import {Store} from "@ngrx/store";
 import {filter, first, switchMap, take, tap} from "rxjs";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {Account} from "../../../../models/account.model";
-import {selectSelectedAccount} from "../../../../state/selectors/account.selectors";
+import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import {AuthUser} from "../../../../models/auth-user.model";
 
 @Component({
@@ -134,7 +134,7 @@ export class ListingFormComponent implements OnInit {
               this.authUser = user;
             }
           }),
-          switchMap(() => this.store.select(selectSelectedAccount)),
+          switchMap((user) => this.store.select(selectAccountById(user!.uid))),
           filter((account): account is Account => account !== null),
           take(1),
         )
@@ -328,7 +328,7 @@ export class ListingFormComponent implements OnInit {
           const formValue = this.listingForm.value;
           const listing = {
             ...formValue,
-            id: this.listing?.id,
+            id: this.listing?.id || null,
             timeCommitment: {
               ...formValue.timeCommitment,
               startDate: formValue.timeCommitment.startDate

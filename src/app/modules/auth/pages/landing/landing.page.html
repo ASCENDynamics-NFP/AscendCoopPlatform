@@ -25,7 +25,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <img
         src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
         alt="ASCENDynamics Logo"
-        style="height: 40px; margin-right: 0px"
+        style="height: 40px; margin-right: 0"
       />
       <ion-title class="header-title">ASCENDynamics NFP</ion-title>
     </ion-buttons>
@@ -44,8 +44,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <!-- Hero Section -->
   <section class="hero">
     <ion-grid>
-      <ion-row class="ion-align-items-center">
-        <ion-col size="12" size-md="6" class="hero-text">
+      <ion-row class="ion-justify-content-center">
+        <ion-col size="10" size-md="8" size-lg="8" size-xl="8" class="hero-text">
           <h1>
             <span style="color: #808080">Empowering</span> Worker-Owned
             Cooperatives to Succeed
@@ -58,18 +58,18 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             >Try Now</ion-button
           >
         </ion-col>
-        <ion-col size="12" size-md="6" class="hero-image">
-          <swiper-container [slidesPerView]="1" [loop]="true" autoplay="true">
+        <ion-col size="12" size-md="12" class="hero-image">
+          <swiper-container #swiperElement init="false">
             <swiper-slide>
               <img
-                src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
-                alt="ASCENDynamics Logo"
+                src="assets/image/hero1.png"
+                alt="People working in the open space office"
               />
             </swiper-slide>
             <swiper-slide>
               <img
-                src="assets/image/Humans_and_Technology.png"
-                alt="Humans and Technology"
+                src="assets/image/hero2.png"
+                alt="Work meeting"
               />
             </swiper-slide>
           </swiper-container>

@@ -18,9 +18,10 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 // landing.page.ts
-import {Component} from "@angular/core";
+import {Component, ViewChild} from "@angular/core";
 import {ModalController} from "@ionic/angular";
 import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
+import {SwiperOptions} from "swiper/types";
 
 @Component({
   selector: "app-landing",
@@ -28,7 +29,35 @@ import {LegalModalComponent} from "../../../../shared/components/legal-modal/leg
   styleUrls: ["./landing.page.scss"],
 })
 export class LandingPage {
+  @ViewChild('swiperElement') swiperElement: any;
+  swiperConfig: SwiperOptions = {
+    init: true,
+    slidesPerView: 1,
+    loop: true,
+    autoplay: true,
+    spaceBetween: 10,
+    mousewheel: { forceToAxis: true },
+    breakpoints: {
+      640: {
+        slidesPerView: 1,
+        spaceBetween: 10,
+      },
+      768: {
+        slidesPerView: 2,
+        spaceBetween: 20,
+      }
+    },
+  };
   currentYear: number = new Date().getFullYear();
+
+  ngAfterViewInit(): void {
+    this.initSwiper();
+  }
+
+  initSwiper() {
+    Object.assign(this.swiperElement.nativeElement, this.swiperConfig);
+    this.swiperElement.nativeElement.initialize();
+  }
 
   constructor(private modalController: ModalController) {}
 

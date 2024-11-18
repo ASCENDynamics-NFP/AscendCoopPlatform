@@ -20,13 +20,14 @@
 import {Component, Input, Output, EventEmitter, OnInit} from "@angular/core";
 import {FormBuilder, FormGroup, Validators, FormArray} from "@angular/forms";
 import {Listing, SkillRequirement} from "../../../../models/listing.model";
-import {Timestamp} from "firebase/firestore";
+import {serverTimestamp, Timestamp} from "firebase/firestore";
 import {Store} from "@ngrx/store";
 import {filter, first, switchMap, take, tap} from "rxjs";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {Account} from "../../../../models/account.model";
 import {selectSelectedAccount} from "../../../../state/selectors/account.selectors";
+import {AuthUser} from "../../../../models/auth-user.model";
 
 @Component({
   selector: "app-listing-form",
@@ -36,6 +37,7 @@ import {selectSelectedAccount} from "../../../../state/selectors/account.selecto
 export class ListingFormComponent implements OnInit {
   @Input() listing: Listing | null = null;
   @Output() formSubmit = new EventEmitter<any>();
+  authUser: AuthUser | null = null;
 
   listingForm!: FormGroup;
   listingTypes = ["volunteer", "job", "internship", "gig"];
@@ -129,6 +131,7 @@ export class ListingFormComponent implements OnInit {
               this.store.dispatch(
                 AccountActions.loadAccount({accountId: user.uid}),
               );
+              this.authUser = user;
             }
           }),
           switchMap(() => this.store.select(selectSelectedAccount)),
@@ -331,6 +334,10 @@ export class ListingFormComponent implements OnInit {
             : null,
         },
         status,
+        iconImage: this.authUser?.iconImage || "",
+        heroImage: this.authUser?.heroImage || "",
+        lastModifiedBy: this.authUser?.uid,
+        lastModifiedDate: serverTimestamp(),
       };
       this.formSubmit.emit(listing);
     } else {

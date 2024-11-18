@@ -23,6 +23,7 @@ import {Router} from "@angular/router";
 import {first} from "rxjs/operators";
 import * as ListingActions from "../../../../state/actions/listings.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {serverTimestamp} from "firebase/firestore";
 
 @Component({
   selector: "app-listing-create",
@@ -44,8 +45,7 @@ export class ListingCreatePage {
           const listing = {
             ...formValue,
             createdBy: user.uid,
-            lastModifiedBy: user.uid,
-            accountId: user.uid,
+            createdAt: serverTimestamp(),
           };
           this.store.dispatch(ListingActions.createListing({listing}));
           this.router.navigate(["/listings"]);

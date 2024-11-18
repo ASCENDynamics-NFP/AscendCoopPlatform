@@ -73,9 +73,9 @@ async function handleListingCreate(
       id: listingId,
       accountId: accountId,
       title: listing.title,
+      organization: listing.organization,
       type: listing.type,
       remote: listing.remote ?? false,
-      heroImage: listing.heroImage ?? null,
       iconImage: listing.iconImage ?? null,
       status: listing.status,
       relationship: "owner", // Set to owner

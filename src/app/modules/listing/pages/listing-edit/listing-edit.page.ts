@@ -80,8 +80,7 @@ export class ListingEditPage implements OnInit {
         if (user) {
           const updatedListing = {
             ...listing,
-            lastModifiedBy: user.uid,
-            id: this.listingId!,
+            id: listing.id || this.listingId!,
           };
           this.store.dispatch(
             ListingsActions.updateListing({listing: updatedListing}),

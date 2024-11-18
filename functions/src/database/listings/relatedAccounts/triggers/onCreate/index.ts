@@ -68,6 +68,7 @@ async function handleListingsRelatedAccountCreate(
       id: listingId,
       accountId: accountId,
       title: listing?.title,
+      organization: listing?.organization,
       type: listing?.type,
       remote: listing?.remote ?? false,
       iconImage: listing?.iconImage ?? null,

@@ -23,6 +23,7 @@ import {Timestamp, FieldValue} from "firebase/firestore";
 
 export interface RelatedListing extends BaseDocument {
   title: string;
+  organization: string;
   type: ListingType;
   remote: boolean;
   heroImage?: string;

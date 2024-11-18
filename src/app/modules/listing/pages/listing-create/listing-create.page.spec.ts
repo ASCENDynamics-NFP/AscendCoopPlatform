@@ -115,6 +115,7 @@ describe("ListingCreatePage", () => {
         preferredMethodOfContact: "Email",
       },
       status: "active",
+      accountId: mockUser.uid,
     };
 
     component.onSubmit(mockFormValue);
@@ -123,9 +124,7 @@ describe("ListingCreatePage", () => {
       ListingActions.createListing({
         listing: {
           ...mockFormValue,
-          accountId: mockUser.uid,
           createdBy: mockUser.uid,
-          lastModifiedBy: mockUser.uid,
         } as Listing,
       }),
     );

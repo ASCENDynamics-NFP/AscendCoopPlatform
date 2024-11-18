@@ -341,6 +341,7 @@ export class ListingFormComponent implements OnInit {
                 : null,
             },
             status,
+            accountId: user?.uid,
             iconImage: user?.iconImage || "",
             heroImage: user?.heroImage || "",
             lastModifiedBy: user?.uid,

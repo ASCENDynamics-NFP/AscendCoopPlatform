@@ -33,7 +33,6 @@ export class LandingPage {
   swiperConfig: SwiperOptions = {
     init: true,
     slidesPerView: 1,
-    loop: true,
     autoplay: true,
     spaceBetween: 10,
     mousewheel: { forceToAxis: true },
@@ -41,10 +40,12 @@ export class LandingPage {
       640: {
         slidesPerView: 1,
         spaceBetween: 10,
+        loop: true,
       },
       768: {
         slidesPerView: 2,
         spaceBetween: 20,
+        loop: false,
       }
     },
   };

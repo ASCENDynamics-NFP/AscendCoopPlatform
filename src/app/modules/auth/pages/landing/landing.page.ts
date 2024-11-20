@@ -29,23 +29,24 @@ import {SwiperOptions} from "swiper/types";
   styleUrls: ["./landing.page.scss"],
 })
 export class LandingPage {
-  @ViewChild('swiperElement') swiperElement: any;
+  @ViewChild("swiperElement") swiperElement: any;
   swiperConfig: SwiperOptions = {
     init: true,
     slidesPerView: 1,
-    loop: true,
     autoplay: true,
     spaceBetween: 10,
-    mousewheel: { forceToAxis: true },
+    mousewheel: {forceToAxis: true},
     breakpoints: {
       640: {
         slidesPerView: 1,
         spaceBetween: 10,
+        loop: true,
       },
       768: {
         slidesPerView: 2,
         spaceBetween: 20,
-      }
+        loop: false,
+      },
     },
   };
   currentYear: number = new Date().getFullYear();

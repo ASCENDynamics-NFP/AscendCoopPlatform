@@ -3,8 +3,6 @@
 
 module.exports = function (config) {
   config.set({
-    browserNoActivityTimeout: 60000,
-    browserDisconnectTimeout: 20000,
     basePath: "",
     frameworks: ["jasmine", "@angular-devkit/build-angular"],
     plugins: [

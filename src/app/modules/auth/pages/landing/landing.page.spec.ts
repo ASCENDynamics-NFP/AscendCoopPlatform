@@ -31,6 +31,13 @@ describe("LandingPage", () => {
   beforeEach(waitForAsync(() => {
     const modalSpy = jasmine.createSpyObj("ModalController", ["create"]);
 
+    component.swiperConfig.loop = false;
+    component.swiperElement = {
+      nativeElement: {
+        initialize: jasmine.createSpy("initialize"),
+      },
+    };
+
     TestBed.configureTestingModule({
       declarations: [LandingPage],
       imports: [IonicModule.forRoot()],

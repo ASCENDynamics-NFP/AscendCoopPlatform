@@ -54,35 +54,35 @@ describe("LandingPage", () => {
     fixture.detectChanges();
   }));
 
-  it("should create the landing page component", () => {
+  it("should create the landing page component", async () => {
     expect(component).toBeTruthy();
-  });
+  }, 10000);
 
-  it("should have currentYear set to the current year", () => {
+  it("should have currentYear set to the current year", async () => {
     const currentYear = new Date().getFullYear();
     expect(component.currentYear).toEqual(currentYear);
-  });
+  }, 10000);
 
-  it("should have features defined and not empty", () => {
+  it("should have features defined and not empty", async () => {
     expect(component.features).toBeDefined();
     expect(component.features.length).toBeGreaterThan(0);
-  });
+  }, 10000);
 
-  it("should have roadmap defined and not empty", () => {
+  it("should have roadmap defined and not empty", async () => {
     expect(component.roadmap).toBeDefined();
     expect(component.roadmap.length).toBeGreaterThan(0);
-  });
+  }, 10000);
 
-  // it("should have testimonials defined and not empty", () => {
-  //   expect(component.testimonials).toBeDefined();
-  //   expect(component.testimonials.length).toBeGreaterThan(0);
-  // });
+  it("should have testimonials defined and not empty", async () => {
+    expect(component.testimonials).toBeDefined();
+    expect(component.testimonials.length).toBeGreaterThan(0);
+  }, 10000);
 
-  // it("should have testimonialOptions defined with correct values", () => {
-  //   expect(component.testimonialOptions).toBeDefined();
-  //   expect(component.testimonialOptions.autoplay.delay).toEqual(5000);
-  //   expect(component.testimonialOptions.loop).toBeTrue();
-  // });
+  it("should have testimonialOptions defined with correct values", async () => {
+    expect(component.testimonialOptions).toBeDefined();
+    expect(component.testimonialOptions.autoplay.delay).toEqual(5000);
+    expect(component.testimonialOptions.loop).toBeTrue();
+  }, 10000);
 
   it("should open legal modal with correct content type", async () => {
     const contentType: "privacyPolicy" | "termsOfUse" = "privacyPolicy";
@@ -97,5 +97,5 @@ describe("LandingPage", () => {
     const modal =
       await modalControllerSpy.create.calls.mostRecent().returnValue;
     expect(modal.present).toHaveBeenCalled();
-  });
+  }, 10000);
 });

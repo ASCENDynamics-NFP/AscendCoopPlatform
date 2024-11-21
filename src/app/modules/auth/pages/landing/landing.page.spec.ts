@@ -31,13 +31,6 @@ describe("LandingPage", () => {
   beforeEach(waitForAsync(() => {
     const modalSpy = jasmine.createSpyObj("ModalController", ["create"]);
 
-    component.swiperConfig.loop = false;
-    component.swiperElement = {
-      nativeElement: {
-        initialize: jasmine.createSpy("initialize"),
-      },
-    };
-
     TestBed.configureTestingModule({
       declarations: [LandingPage],
       imports: [IonicModule.forRoot()],
@@ -47,6 +40,30 @@ describe("LandingPage", () => {
 
     fixture = TestBed.createComponent(LandingPage);
     component = fixture.componentInstance;
+    component.swiperConfig = {
+      init: true,
+      slidesPerView: 1,
+      autoplay: true,
+      spaceBetween: 10,
+      mousewheel: {forceToAxis: true},
+      breakpoints: {
+        640: {
+          slidesPerView: 1,
+          spaceBetween: 10,
+          loop: true,
+        },
+        768: {
+          slidesPerView: 2,
+          spaceBetween: 20,
+          loop: false,
+        },
+      },
+    };
+    component.swiperElement = {
+      nativeElement: {
+        initialize: jasmine.createSpy("initialize"),
+      },
+    };
     modalControllerSpy = TestBed.inject(
       ModalController,
     ) as jasmine.SpyObj<ModalController>;

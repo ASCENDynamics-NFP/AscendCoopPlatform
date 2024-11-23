@@ -112,7 +112,7 @@ export class ListingDetailPage implements OnInit {
 
     const noteAlert = await this.alertController.create({
       header: "Application Note",
-      message: `Your Info: ${user.displayName || "Anonymous"}, ${user.email}, ${user.phoneNumber}. Enter a note for your application (optional):`,
+      message: `Your Info: ${user.displayName || "Anonymous"}, ${user.email}, ${user.phoneNumber ?? ""}. Enter a note for your application (optional):`,
       inputs: [
         {
           name: "note",
@@ -142,10 +142,10 @@ export class ListingDetailPage implements OnInit {
               const applicant: ListingRelatedAccount = {
                 id: user.uid,
                 accountId: user.uid,
-                iconImage: user.iconImage || undefined,
+                iconImage: user.iconImage || "src/assets/avatar/male1.png",
                 name: user.displayName || "Anonymous",
                 email: user.email || "",
-                phone: user.phoneNumber || undefined,
+                phone: user.phoneNumber || "",
                 listingId: this.listingId,
                 status: "applied",
                 applicationDate: serverTimestamp(),

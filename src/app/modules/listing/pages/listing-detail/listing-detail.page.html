@@ -17,24 +17,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button></ion-back-button>
-    </ion-buttons>
-    <ion-title>Listing Details</ion-title>
-    <ng-container *ngIf="listing$ | async as listing">
-      <ion-buttons slot="end" *ngIf="isOwner$ | async">
-        <ion-button [routerLink]="['/listings', listing.id, 'edit']">
-          <ion-icon name="create-outline"></ion-icon>
-        </ion-button>
-        <ion-button (click)="deleteListing()">
-          <ion-icon name="trash-outline"></ion-icon>
-        </ion-button>
-      </ion-buttons>
-    </ng-container>
-  </ion-toolbar>
-</ion-header>
+<app-header title="Listing Details" defaultHref="/listings/"></app-header>
 
 <ion-content>
   <ng-container *ngIf="listing$ | async as listing">

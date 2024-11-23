@@ -27,8 +27,13 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <div class="listing-header">
   <div class="listing-info">
     <div class="title-section">
-      <h2>{{ listing.title }}</h2>
-      <h3>{{ listing.organization }}</h3>
+      <div class="hero-image-small" *ngIf="listing.iconImage">
+        <img [src]="listing.iconImage" alt="Listing Hero" />
+      </div>
+      <div class="title-content">
+        <h2>{{ listing.title }}</h2>
+        <h3>{{ listing.organization }}</h3>
+      </div>
     </div>
 
     <div class="details-icons">

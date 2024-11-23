@@ -153,6 +153,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   <ion-icon name="alarm-outline"></ion-icon>
                   <span>Schedule: {{ listing.timeCommitment.schedule }}</span>
                 </div>
+                <div
+                  class="time-item"
+                  *ngIf="listing.timeCommitment.isFlexible"
+                >
+                  <ion-icon name="calendar-clear-outline"></ion-icon>
+                  <span>Flexible Schedule Available</span>
+                  <ion-badge color="success">Flexible</ion-badge>
+                </div>
               </div>
             </ion-card-content>
           </ion-card>

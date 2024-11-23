@@ -100,12 +100,17 @@
 /* Listing Actions Section */
 .listing-actions {
   display: flex;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 8px;
   justify-content: flex-start;
   margin-top: 1rem;
 
   ion-button {
     font-size: 0.9rem;
+  }
+
+  ion-icon {
+    margin-right: 8px;
   }
 
   .edit-button {

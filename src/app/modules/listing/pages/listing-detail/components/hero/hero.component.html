@@ -65,6 +65,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
   <div class="listing-actions">
     <ion-button
+      *ngIf="!isOwner"
       fill="outline"
       [disabled]="listing.status !== 'active'"
       (click)="onApply()"
@@ -74,11 +75,18 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ion-button
       *ngIf="isOwner"
       fill="outline"
-      class="edit-button"
       size="small"
       [routerLink]="['/listings', listing.id, 'edit']"
     >
       <ion-icon name="pencil-outline"></ion-icon> Edit
+    </ion-button>
+    <ion-button
+      *ngIf="isOwner"
+      fill="outline"
+      size="small"
+      [routerLink]="['/listings', listing.id, 'applicants']"
+    >
+      <ion-icon name="people-outline"></ion-icon> View Applicants
     </ion-button>
   </div>
 </div>

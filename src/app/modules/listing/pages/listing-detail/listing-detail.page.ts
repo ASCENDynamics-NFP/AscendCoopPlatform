@@ -22,7 +22,7 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
-import {AlertController} from "@ionic/angular";
+import {AlertController, ToastController} from "@ionic/angular";
 import {Observable, combineLatest} from "rxjs";
 import {first, map} from "rxjs/operators";
 import {Listing} from "../../../../models/listing.model";
@@ -48,6 +48,7 @@ export class ListingDetailPage implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private alertController: AlertController,
+    private toastController: ToastController,
   ) {
     this.listingId = this.route.snapshot.paramMap.get("id") || "";
     this.listing$ = this.store.select(selectListingById(this.listingId));
@@ -170,5 +171,28 @@ export class ListingDetailPage implements OnInit {
     });
 
     await noteAlert.present();
+  }
+
+  togglePublishStatus() {
+    this.listing$.pipe(first()).subscribe(async (listing) => {
+      if (listing) {
+        const newStatus = listing.status === "active" ? "draft" : "active";
+        const updatedListing = {
+          ...listing,
+          status: newStatus,
+          lastModifiedAt: serverTimestamp(),
+        } as Listing;
+        this.store.dispatch(
+          ListingsActions.updateListing({listing: updatedListing}),
+        );
+        const toast = await this.toastController.create({
+          message: `Listing ${newStatus === "active" ? "Published" : "Unpublished"} Successfully!`,
+          duration: 2000,
+          position: "top",
+          color: "success",
+        });
+        toast.present();
+      }
+    });
   }
 }

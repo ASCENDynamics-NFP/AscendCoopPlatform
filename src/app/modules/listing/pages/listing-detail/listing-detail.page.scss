@@ -156,5 +156,17 @@ ion-badge {
   }
 }
 
+.bottom-actions {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem;
+
+  ion-button {
+    min-width: 200px;
+  }
+}
+
 @media (prefers-color-scheme: light) {
 }

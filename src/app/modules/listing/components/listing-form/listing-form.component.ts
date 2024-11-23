@@ -37,6 +37,7 @@ import {AuthUser} from "../../../../models/auth-user.model";
 export class ListingFormComponent implements OnInit {
   @Input() listing: Listing | null = null;
   @Output() formSubmit = new EventEmitter<any>();
+  currentStep = 1; // Start at the first step
   authUser: AuthUser | null = null;
 
   listingForm!: FormGroup;
@@ -319,7 +320,7 @@ export class ListingFormComponent implements OnInit {
     return this.listingForm.get(arrayName) as FormArray;
   }
 
-  private submitForm(status: "draft" | "active" | "inactive") {
+  private submitForm(status: "draft" | "active" | "filled" | "expired") {
     if (this.listingForm.valid) {
       this.store
         .select(selectAuthUser)
@@ -353,16 +354,18 @@ export class ListingFormComponent implements OnInit {
     }
   }
 
-  saveAsDraft() {
-    this.submitForm("draft");
-  }
-
-  saveAsActive() {
-    this.submitForm("active");
-  }
-
-  saveAsInactive() {
-    this.submitForm("inactive");
+  onSubmit() {
+    if (this.listingForm.invalid) {
+      this.listingForm.markAllAsTouched();
+      return;
+    }
+    if (this.listingForm.valid) {
+      // If listing exists, keep current status, otherwise set as draft
+      const status = this.listing?.id ? this.listing.status : "draft";
+      this.submitForm(status as "draft" | "active" | "filled" | "expired");
+    } else {
+      this.markFormGroupTouched(this.listingForm);
+    }
   }
 
   addAddress() {
@@ -381,5 +384,23 @@ export class ListingFormComponent implements OnInit {
     (this.listingForm.get("contactInformation.addresses") as FormArray).push(
       addressForm,
     );
+  }
+
+  goToNextStep() {
+    if (this.listingForm.invalid) {
+      this.listingForm.markAllAsTouched();
+      return;
+    }
+    this.currentStep++;
+  }
+
+  goToPreviousStep() {
+    if (this.currentStep > 1) {
+      this.currentStep--;
+    }
+  }
+
+  getProgress() {
+    return this.currentStep / 2; // Progress value for the progress bar
   }
 }

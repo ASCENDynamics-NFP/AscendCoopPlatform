@@ -46,6 +46,8 @@ export * from "./database/accounts/relatedAccounts/triggers/onCreate"; // trigge
 export * from "./database/accounts/relatedAccounts/triggers/onDelete"; // triggers
 export * from "./database/accounts/relatedAccounts/triggers/onUpdate"; // triggers
 
+export * from "./database/accounts/relatedListings/triggers/onDelete"; // triggers
+
 export * from "./database/listings/triggers/onCreate"; // triggers
 export * from "./database/listings/triggers/onUpdate"; // triggers
 

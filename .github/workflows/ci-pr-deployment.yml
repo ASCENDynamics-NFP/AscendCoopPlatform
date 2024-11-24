@@ -38,11 +38,10 @@ jobs:
       - name: Run Lint
         run: npm run lint
 
-  # Build, Test, and Deploy job
-  build-test-deploy:
-    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}  # Only run for PRs from the same repo
+  # Build and test job
+  build-and-test:
     runs-on: ubuntu-latest
-    needs: lint
+    # needs: lint
 
     steps:
       - uses: actions/checkout@v4
@@ -72,21 +71,63 @@ jobs:
         run: npm run build --prefix functions
       - name: Run Tests
         run: npm run test
-
-      # Deploy to Firebase Preview Channel using the Firebase Hosting Deploy Action
-      - name: Deploy to Firebase Preview Channel
-        id: deploy  
-        uses: FirebaseExtended/action-hosting-deploy@v0
+      # Upload Build Artifacts
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v3
         with:
-          repoToken: "${{ secrets.GITHUB_TOKEN }}"
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}'
-          projectId: "${{ secrets.DEV_FIREBASE_PROJECT_ID }}"
-          channelId: "pr${{ github.event.number }}"
-          expires: 7d  # 7 days (optional)
+          name: build-artifacts
+          path: |
+            www/            # Adjust this path to your actual build output directory
+            functions/lib/  # Include this if you need to deploy functions
+
+  # Deploy to Firebase Preview
+  deploy-preview:
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}  # Only run for PRs from the same repo
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Download Build Artifacts
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      # Install Firebase CLI
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      # Authenticate to Firebase
+      - name: Authenticate to Firebase
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}'
+          export_environment_variables: true
+
+      # Deploy to Firebase Preview Channel
+      - name: Deploy to Firebase Preview Channel
+        id: firebase-deploy
+        run: >
+          firebase hosting:channel:deploy pr${{ github.event.number }}
+          --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}
+          --only hosting
+          --json > firebase-deploy-output.json
+
+      # Extract Preview URL using Node.js
+      - name: Extract Preview URL
+        run: |
+          echo "PREVIEW_URL=$(node -pe "JSON.parse(require('fs').readFileSync('firebase-deploy-output.json')).result.find(r => r.status === 'success').url")" >> $GITHUB_ENV
 
       # Comment on PR with Preview URL
-      - name: Comment on PR with Preview URL
+      - name: Comment on PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           message: |
-            🚀 Preview URL: ${{ steps.deploy.outputs.preview_url }}
+            🚀 Preview URL: ${{ env.PREVIEW_URL }}

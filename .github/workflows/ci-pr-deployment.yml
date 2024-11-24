@@ -108,39 +108,21 @@ jobs:
         with:
           node-version: '20'
 
-      # Step 3: Install Firebase CLI
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
 
-      # Step 4: Authenticate to Firebase
-      # Using Google Cloud Service Account
-      - name: Authenticate to Firebase
-        uses: google-github-actions/auth@v1
-        with:
-          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}'
-          export_environment_variables: true
-
-      # Step 5: Install jq utility
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
-
-      # Step 6: Deploy to Firebase Preview Channel
+      # Step 3: Deploy to Firebase Preview Channel using the Firebase Hosting Deploy Action
       - name: Deploy to Firebase Preview Channel
-        id: firebase-deploy
-        run: >
-          firebase hosting:channel:deploy pr${{ github.event.number }}
-          --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}
-          --only hosting
-          --json --debug > firebase-deploy-output.json
+        id: deploy  # Assign an ID to reference outputs
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}'
+          projectId: "${{ secrets.DEV_FIREBASE_PROJECT_ID }}"
+          channelId: "pr${{ github.event.number }}"
+          expires: 7d  # 7 days (optional)
 
-      # Step 7: Extract Preview URL
-      - name: Extract Preview URL
-        run: |
-          echo "PREVIEW_URL=$(jq -r '.result[] | select(.status == "success") | .url' firebase-deploy-output.json)" >> $GITHUB_ENV
-
-      # Step 8: Comment on PR with Preview URL
-      - name: Comment on PR
+      # Step 4: Comment on PR with Preview URL
+      - name: Comment on PR with Preview URL
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           message: |
-            🚀 Preview URL: ${{ env.PREVIEW_URL }}
+            🚀 Preview URL: ${{ steps.deploy.outputs.preview_url }}

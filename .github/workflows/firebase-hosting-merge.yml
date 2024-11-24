@@ -55,6 +55,10 @@ jobs:
           echo "FIREBASE_MESSAGING_SENDER_ID=${{ secrets.DEV_FIREBASE_MESSAGING_SENDER_ID }}" >> $GITHUB_ENV
           echo "FIREBASE_APP_ID=${{ secrets.DEV_FIREBASE_APP_ID }}" >> $GITHUB_ENV
           echo "FIREBASE_MEASUREMENT_ID=${{ secrets.DEV_FIREBASE_MEASUREMENT_ID }}" >> $GITHUB_ENV
+          
+      # Generate environment file
+      - name: Generate Environment File
+        run: node generate-env.js
 
       # Build the project (Development)
       - name: Build Project

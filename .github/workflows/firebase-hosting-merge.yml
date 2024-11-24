@@ -15,7 +15,7 @@
 
 # You should have received a copy of the GNU Affero General Public License
 # along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
-name: Deploy to Firebase Hosting on Merge
+name: Build and Deploy to Firebase on Merge (Development)
 
 on:
   push:
@@ -30,18 +30,6 @@ jobs:
       # Checkout the repository
       - uses: actions/checkout@v4
 
-      # Cache node modules to speed up installation
-      - name: Cache node modules
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm
-            node_modules
-            functions/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
       # Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -52,7 +40,7 @@ jobs:
       - name: Install Dependencies
         run: |
           npm ci
-          npm --prefix functions ci
+          npm ci --prefix functions
 
       # Set Environment Variables
       - name: Set Environment Variables
@@ -68,17 +56,13 @@ jobs:
           echo "FIREBASE_APP_ID=${{ secrets.DEV_FIREBASE_APP_ID }}" >> $GITHUB_ENV
           echo "FIREBASE_MEASUREMENT_ID=${{ secrets.DEV_FIREBASE_MEASUREMENT_ID }}" >> $GITHUB_ENV
 
-      # Generate environment file
-      - name: Generate Environment File
-        run: node generate-env.js
-
       # Build the project (Development)
       - name: Build Project
-        run: npm run build
+        run: npm run build:dev
 
-      # Build Firebase Functions (if necessary)
+      # Build Firebase Functions
       - name: Build Firebase Functions
-        run: npm --prefix functions run build
+        run: npm run build --prefix functions
 
       # Install Firebase CLI
       - name: Install Firebase CLI
@@ -90,6 +74,6 @@ jobs:
         with:
           credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}'
 
-      # Deploy to Firebase Hosting, Functions, Firestore rules, Realtime Database rules, Cloud Storage, etc.
+      # Deploy to Firebase
       - name: Deploy to Firebase
         run: firebase deploy --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}

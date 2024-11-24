@@ -38,11 +38,11 @@ jobs:
           node-version: '20'
 
       # Step 3: Install dependencies
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm ci
 
       # Step 4: Run linting
-      - name: Run lint
+      - name: Run Lint
         run: npm run lint
 
   # Build and test job
@@ -60,26 +60,14 @@ jobs:
         with:
           node-version: '20'
 
-      # Step 3: Cache node modules
-      - name: Cache node modules
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm                    # NPM cache directory
-            node_modules              # Root node_modules
-            functions/node_modules    # Functions node_modules
-          key: ${{ runner.os }}-node-20-${{ hashFiles('package-lock.json', 'functions/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-20-
-
-      # Step 4: Install dependencies
-      - name: Install dependencies
+      # Step 3: Install dependencies
+      - name: Install Dependencies
         run: |
           npm ci                            # Install root project dependencies
-          npm --prefix functions ci         # Install functions dependencies
+          npm ci --prefix functions         # Install functions dependencies
 
-      # Step 5: Set environment variables
-      - name: Set environment variables
+      # Step 4: Set Environment Variables
+      - name: Set Environment Variables
         run: |
           echo "CI=true" >> $GITHUB_ENV
           echo "NODE_ENV=development" >> $GITHUB_ENV
@@ -92,81 +80,62 @@ jobs:
           echo "FIREBASE_APP_ID=${{ secrets.DEV_FIREBASE_APP_ID }}" >> $GITHUB_ENV
           echo "FIREBASE_MEASUREMENT_ID=${{ secrets.DEV_FIREBASE_MEASUREMENT_ID }}" >> $GITHUB_ENV
 
-      # Step 6: Generate environment file
-      - name: Generate environment file
-        run: node generate-env.js
-
-      # Step 7: Build the project (Development)
+      # Step 5: Build the project (Development)
       - name: Build Project
-        run: npm run build
+        run: npm run build:dev
 
-      # Step 8: Run tests
-      - name: Run tests
+      # Step 6: Build Firebase Functions
+      - name: Build Firebase Functions
+        run: npm run build --prefix functions
+
+      # Step 7: Run Tests
+      - name: Run Tests
         run: npm run test
 
-      # Step 9: Upload Build Artifact
-      # - name: Upload Build Artifact
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: www
-      #     path: www/  # Adjust to include all files in the build directory
-
   # Deploy to Firebase Preview
-  build_and_preview:
+  deploy-preview:
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}  # Only run for PRs from the same repo
     runs-on: ubuntu-latest
     needs: build-and-test
 
     steps:
-      # Checkout the repository
+      # Step 1: Checkout the repository
       - uses: actions/checkout@v4
 
-      # Cache node modules
-      - name: Cache node modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      # Set up Node.js environment
+      # Step 2: Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      # Install dependencies
-      - name: Install dependencies
-        run: npm ci
+      # Step 3: Install Firebase CLI
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
 
-      # Set environment variables
-      - name: Set environment variables
-        run: |
-          echo "CI=true" >> $GITHUB_ENV
-          echo "NODE_ENV=development" >> $GITHUB_ENV
-          echo "FIREBASE_API_KEY=${{ secrets.DEV_FIREBASE_API_KEY }}" >> $GITHUB_ENV
-          echo "FIREBASE_AUTH_DOMAIN=${{ secrets.DEV_FIREBASE_AUTH_DOMAIN }}" >> $GITHUB_ENV
-          echo "FIREBASE_DATABASE_URL=${{ secrets.DEV_FIREBASE_DATABASE_URL }}" >> $GITHUB_ENV
-          echo "FIREBASE_PROJECT_ID=${{ secrets.DEV_FIREBASE_PROJECT_ID }}" >> $GITHUB_ENV
-          echo "FIREBASE_STORAGE_BUCKET=${{ secrets.DEV_FIREBASE_STORAGE_BUCKET }}" >> $GITHUB_ENV
-          echo "FIREBASE_MESSAGING_SENDER_ID=${{ secrets.DEV_FIREBASE_MESSAGING_SENDER_ID }}" >> $GITHUB_ENV
-          echo "FIREBASE_APP_ID=${{ secrets.DEV_FIREBASE_APP_ID }}" >> $GITHUB_ENV
-          echo "FIREBASE_MEASUREMENT_ID=${{ secrets.DEV_FIREBASE_MEASUREMENT_ID }}" >> $GITHUB_ENV
-
-      # Generate environment file
-      - name: Generate environment file
-        run: node generate-env.js
-
-      # Build the project (Development)
-      - name: Build project
-        run: npm run build
-
-      # Deploy to Firebase Preview
-      - name: Deploy to Firebase Preview
-        id: deploy  # Assign an ID to reference outputs
-        uses: FirebaseExtended/action-hosting-deploy@v0
+      # Step 4: Authenticate to Firebase
+        # Using Firebase Service Account
+      - name: Authenticate to Firebase
+        uses: google-github-actions/auth@v1
         with:
-          repoToken: "${{ secrets.GITHUB_TOKEN }}"
-          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}"
-          projectId: ascendcoopplatform-dev
+          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}'
+
+      # Step 5: Deploy to Firebase Preview Channel
+      - name: Deploy to Firebase Preview Channel
+        id: firebase-deploy
+        run: |
+          firebase hosting:channel:deploy pr${{ github.event.number }} \
+            --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} \
+            --only hosting \
+            --json > firebase-deploy-output.json
+
+      # Step 6: Extract Preview URL
+      - name: Extract Preview URL
+        run: |
+          echo "PREVIEW_URL=$(cat firebase-deploy-output.json | jq -r '.result[].url')" >> $GITHUB_ENV
+
+      # Step 7: Comment on PR with Preview URL
+      - name: Comment on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: |
+            🚀 Preview URL: ${{ env.PREVIEW_URL }}

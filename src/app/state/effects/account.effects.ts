@@ -352,4 +352,28 @@ export class AccountEffects {
       }),
     ),
   );
+
+  // Delete Related Listing
+  deleteRelatedListing$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AccountActions.deleteRelatedListing),
+      mergeMap(({accountId, relatedListingId}) =>
+        from(
+          this.firestoreService.deleteDocumentAtPath(
+            `accounts/${accountId}/relatedListings/${relatedListingId}`,
+          ),
+        ).pipe(
+          map(() =>
+            AccountActions.deleteRelatedListingSuccess({
+              accountId,
+              relatedListingId,
+            }),
+          ),
+          catchError((error) =>
+            of(AccountActions.deleteRelatedListingFailure({error})),
+          ),
+        ),
+      ),
+    ),
+  );
 }

@@ -220,5 +220,5 @@ export const deleteRelatedListingSuccess = createAction(
 
 export const deleteRelatedListingFailure = createAction(
   "[Account] Delete Related Listing Failure",
-  props<{accountId: string; error: any}>(),
+  props<{error: any}>(),
 );

@@ -38,14 +38,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-icon name="paper-plane-outline"></ion-icon>
       <ion-label>Applications</ion-label>
     </ion-segment-button>
-    <!-- <ion-segment-button value="participant">
+    <ion-segment-button value="participant">
       <ion-icon name="people-outline"></ion-icon>
       <ion-label>Participating</ion-label>
     </ion-segment-button>
     <ion-segment-button value="saved">
       <ion-icon name="bookmark-outline"></ion-icon>
       <ion-label>Saved</ion-label>
-    </ion-segment-button> -->
+    </ion-segment-button>
   </ion-segment>
 
   <ion-list *ngIf="filteredRelatedListings$ | async as listings">
@@ -79,12 +79,32 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         </div>
       </ion-label>
       <ion-button
-        *ngIf="(isOwner$ | async)"
+        *ngIf="(isOwner$ | async) && listing.relationship === 'owner' && listing.accountId === (currentUser$ | async)?.uid"
+        slot="end"
+        color="primary"
+        [routerLink]="['/listings', listing.id, 'applicants']"
+        (click)="$event.stopPropagation()"
+      >
+        <ion-icon name="people-outline" slot="start"></ion-icon>
+        View Applicants
+      </ion-button>
+      <ion-button
+        *ngIf="(isOwner$ | async) && listing.relationship === 'owner' && listing.accountId === (currentUser$ | async)?.uid"
         slot="end"
         color="danger"
-        (click)="removeListing(listing); $event.stopPropagation()"
+        (click)="deleteListing(listing); $event.stopPropagation()"
       >
-        Remove
+        <ion-icon name="trash-outline" slot="start"></ion-icon>
+        DELETE Listing
+      </ion-button>
+      <ion-button
+        *ngIf="(isOwner$ | async) && listing.relationship !== 'owner'"
+        slot="end"
+        color="danger"
+        (click)="removeRelatedListing(listing); $event.stopPropagation()"
+      >
+        <ion-icon name="close-circle-outline" slot="start"></ion-icon>
+        Remove Application
       </ion-button>
     </ion-item>
   </ion-list>

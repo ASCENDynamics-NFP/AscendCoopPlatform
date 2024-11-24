@@ -20,6 +20,7 @@
 // src/app/pages/account/relatedListings/pages/listings-list.page.ts
 
 import {Component, OnInit} from "@angular/core";
+import {AlertController} from "@ionic/angular";
 import {Store} from "@ngrx/store";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, combineLatest, BehaviorSubject, of} from "rxjs";
@@ -33,6 +34,7 @@ import {
 } from "../../../../../state/selectors/account.selectors";
 import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../../state/actions/account.actions";
+import * as ListingsActions from "../../../../../state/actions/listings.actions";
 
 @Component({
   selector: "app-listings-list",
@@ -59,6 +61,7 @@ export class ListingsListPage implements OnInit {
     private activatedRoute: ActivatedRoute,
     private router: Router,
     private store: Store,
+    private alertController: AlertController,
   ) {
     // Extract route parameters
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
@@ -125,16 +128,62 @@ export class ListingsListPage implements OnInit {
    * Removes a related listing.
    * @param listing The related listing to remove.
    */
-  removeListing(listing: RelatedListing) {
-    if (!this.accountId || !listing.id) return;
+  async removeRelatedListing(listing: RelatedListing) {
+    const alert = await this.alertController.create({
+      header: "Confirm Removal",
+      message:
+        listing.relationship === "owner"
+          ? "Are you sure you want to delete this listing?"
+          : "Are you sure you want to remove your application?",
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "Remove",
+          role: "destructive",
+          handler: () => {
+            if (this.accountId && listing.id) {
+              this.store.dispatch(
+                AccountActions.deleteRelatedListing({
+                  accountId: this.accountId,
+                  relatedListingId: listing.id,
+                }),
+              );
+            }
+          },
+        },
+      ],
+    });
 
-    // Dispatch an action to delete the related listing
-    this.store.dispatch(
-      AccountActions.deleteRelatedListing({
-        accountId: this.accountId,
-        relatedListingId: listing.id,
-      }),
-    );
+    await alert.present();
+  }
+
+  async deleteListing(listing: RelatedListing) {
+    const alert = await this.alertController.create({
+      header: "Confirm Deletion",
+      message: "Are you sure you want to delete this listing?",
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "Delete",
+          role: "destructive",
+          handler: () => {
+            if (listing.id) {
+              this.store.dispatch(
+                ListingsActions.deleteListing({id: listing.id}),
+              );
+            }
+          },
+        },
+      ],
+    });
+
+    await alert.present();
   }
 
   /**

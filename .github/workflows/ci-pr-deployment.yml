@@ -20,7 +20,7 @@ name: CI and PR Deployment
 on:
   pull_request:
     branches:
-      - main
+      - main  # Trigger workflow on pull requests targeting the main branch
 
 jobs:
   # Linting job
@@ -28,32 +28,58 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout the repository
       - uses: actions/checkout@v4
+
+      # Step 2: Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
-      - name: Install Dependencies
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
         run: npm ci
-      - name: Run Lint
+
+      # Step 4: Run linting
+      - name: Run lint
         run: npm run lint
 
   # Build and test job
   build-and-test:
     runs-on: ubuntu-latest
-    # needs: lint
+    # needs: lint  # This job depends on the successful completion of the lint job
 
     steps:
+      # Step 1: Checkout the repository
       - uses: actions/checkout@v4
+
+      # Step 2: Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
-      - name: Install Dependencies
+
+      # Step 3: Cache node modules
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm                    # NPM cache directory
+            node_modules              # Root node_modules
+            functions/node_modules    # Functions node_modules
+          key: ${{ runner.os }}-node-20-${{ hashFiles('package-lock.json', 'functions/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-20-
+
+      # Step 4: Install dependencies
+      - name: Install dependencies
         run: |
-          npm ci
-          npm ci --prefix functions
-      - name: Set Environment Variables
+          npm ci                            # Install root project dependencies
+          npm --prefix functions ci         # Install functions dependencies
+
+      # Step 5: Set environment variables
+      - name: Set environment variables
         run: |
           echo "CI=true" >> $GITHUB_ENV
           echo "NODE_ENV=development" >> $GITHUB_ENV
@@ -65,54 +91,82 @@ jobs:
           echo "FIREBASE_MESSAGING_SENDER_ID=${{ secrets.DEV_FIREBASE_MESSAGING_SENDER_ID }}" >> $GITHUB_ENV
           echo "FIREBASE_APP_ID=${{ secrets.DEV_FIREBASE_APP_ID }}" >> $GITHUB_ENV
           echo "FIREBASE_MEASUREMENT_ID=${{ secrets.DEV_FIREBASE_MEASUREMENT_ID }}" >> $GITHUB_ENV
+
+      # Step 6: Generate environment file
+      - name: Generate environment file
+        run: node generate-env.js
+
+      # Step 7: Build the project (Development)
       - name: Build Project
-        run: npm run build:dev
-      - name: Build Firebase Functions
-        run: npm run build --prefix functions
-      - name: List Build Directory Contents
-        run: ls -R public/
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: build-artifacts
-          path: |
-            public/
-            functions/lib/
+        run: npm run build
+
+      # Step 8: Run tests
+      - name: Run tests
+        run: npm run test
+
+      # Step 9: Upload Build Artifact
+      # - name: Upload Build Artifact
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: www
+      #     path: www/  # Adjust to include all files in the build directory
 
   # Deploy to Firebase Preview
-  deploy-preview:
+  build_and_preview:
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}  # Only run for PRs from the same repo
     runs-on: ubuntu-latest
     needs: build-and-test
 
     steps:
+      # Checkout the repository
       - uses: actions/checkout@v4
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v3
+
+      # Cache node modules
+      - name: Cache node modules
+        uses: actions/cache@v3
         with:
-          name: build-artifacts
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
-      - name: Authenticate to Firebase
-        uses: google-github-actions/auth@v1
-        with:
-          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}'
-          export_environment_variables: true
-      - name: Deploy to Firebase Preview Channel
-        run: >
-          firebase hosting:channel:deploy pr${{ github.event.number }}
-          --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}
-          --only hosting
-          --json > firebase-deploy-output.json
-      - name: Extract Preview URL
+
+      # Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Set environment variables
+      - name: Set environment variables
         run: |
-          echo "PREVIEW_URL=$(node -pe "JSON.parse(require('fs').readFileSync('firebase-deploy-output.json')).result.find(r => r.status === 'success').url")" >> $GITHUB_ENV
-      - name: Comment on PR
-        uses: marocchino/sticky-pull-request-comment@v2
+          echo "CI=true" >> $GITHUB_ENV
+          echo "NODE_ENV=development" >> $GITHUB_ENV
+          echo "FIREBASE_API_KEY=${{ secrets.DEV_FIREBASE_API_KEY }}" >> $GITHUB_ENV
+          echo "FIREBASE_AUTH_DOMAIN=${{ secrets.DEV_FIREBASE_AUTH_DOMAIN }}" >> $GITHUB_ENV
+          echo "FIREBASE_DATABASE_URL=${{ secrets.DEV_FIREBASE_DATABASE_URL }}" >> $GITHUB_ENV
+          echo "FIREBASE_PROJECT_ID=${{ secrets.DEV_FIREBASE_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "FIREBASE_STORAGE_BUCKET=${{ secrets.DEV_FIREBASE_STORAGE_BUCKET }}" >> $GITHUB_ENV
+          echo "FIREBASE_MESSAGING_SENDER_ID=${{ secrets.DEV_FIREBASE_MESSAGING_SENDER_ID }}" >> $GITHUB_ENV
+          echo "FIREBASE_APP_ID=${{ secrets.DEV_FIREBASE_APP_ID }}" >> $GITHUB_ENV
+          echo "FIREBASE_MEASUREMENT_ID=${{ secrets.DEV_FIREBASE_MEASUREMENT_ID }}" >> $GITHUB_ENV
+
+      # Generate environment file
+      - name: Generate environment file
+        run: node generate-env.js
+
+      # Build the project (Development)
+      - name: Build project
+        run: npm run build
+
+      # Deploy to Firebase Preview
+      - name: Deploy to Firebase Preview
+        id: deploy  # Assign an ID to reference outputs
+        uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          message: |
-            🚀 Preview URL: ${{ env.PREVIEW_URL }}
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}"
+          projectId: ascendcoopplatform-dev

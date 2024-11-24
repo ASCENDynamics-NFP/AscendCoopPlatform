@@ -297,12 +297,7 @@ export class AccountEffects {
       ofType(AccountActions.loadRelatedListings),
       mergeMap(({accountId}) =>
         this.firestoreService
-          .getCollectionWithCondition<RelatedListing>(
-            `accounts/${accountId}/relatedListings`,
-            "status",
-            "in",
-            ["active", "filled"],
-          )
+          .getDocuments<RelatedListing>(`accounts/${accountId}/relatedListings`)
           .pipe(
             map((relatedListings) =>
               AccountActions.loadRelatedListingsSuccess({
@@ -355,6 +350,30 @@ export class AccountEffects {
 
         return EMPTY;
       }),
+    ),
+  );
+
+  // Delete Related Listing
+  deleteRelatedListing$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AccountActions.deleteRelatedListing),
+      mergeMap(({accountId, relatedListingId}) =>
+        from(
+          this.firestoreService.deleteDocumentAtPath(
+            `accounts/${accountId}/relatedListings/${relatedListingId}`,
+          ),
+        ).pipe(
+          map(() =>
+            AccountActions.deleteRelatedListingSuccess({
+              accountId,
+              relatedListingId,
+            }),
+          ),
+          catchError((error) =>
+            of(AccountActions.deleteRelatedListingFailure({error})),
+          ),
+        ),
+      ),
     ),
   );
 }

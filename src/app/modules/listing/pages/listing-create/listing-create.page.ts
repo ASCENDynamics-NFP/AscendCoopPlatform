@@ -23,6 +23,7 @@ import {Router} from "@angular/router";
 import {first} from "rxjs/operators";
 import * as ListingActions from "../../../../state/actions/listings.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {serverTimestamp} from "firebase/firestore";
 
 @Component({
   selector: "app-listing-create",

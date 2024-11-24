@@ -23,14 +23,20 @@ import {combineLatest, Observable, of} from "rxjs";
 import {map, catchError} from "rxjs/operators";
 import {FirebaseError} from "firebase/app";
 import {Account, RelatedAccount} from "../../models/account.model";
-import {AngularFirestore} from "@angular/fire/compat/firestore";
+import {AngularFirestore, Query} from "@angular/fire/compat/firestore";
 import {RelatedListing} from "../../models/related-listing.model";
+import {DocumentData, WhereFilterOp} from "firebase/firestore";
 
 @Injectable({
   providedIn: "root",
 })
 export class FirestoreService {
   constructor(private afs: AngularFirestore) {}
+
+  // Helper to ensure documents have an id property
+  private populateId<T>(data: T, id: string): T {
+    return {...data, id} as T;
+  }
 
   // Firebase Query Logic (Start) //
 
@@ -48,8 +54,14 @@ export class FirestoreService {
     return this.afs
       .collection<T>(collectionName)
       .doc<T>(documentId)
-      .valueChanges({idField: "id"})
-      .pipe(map((data) => data ?? null));
+      .valueChanges()
+      .pipe(
+        map((data) => (data ? this.populateId(data, documentId) : null)), // Populate id
+        catchError((error) => {
+          console.error("Error retrieving document:", error);
+          return of(null);
+        }),
+      );
   }
 
   /**
@@ -161,19 +173,16 @@ export class FirestoreService {
   }
 
   /**
-   * Deletes a document at the given path in Firestore.
-   *
-   * @param {string} docPath - The full path to the document, including its ID.
+   * Deletes a document at a specific Firestore path.
+   * @param fullPath The full Firestore path to the document (e.g., 'listings/{listingId}/relatedAccounts/{relatedAccountId}').
    * @returns {Promise<void>}
    */
-  async deleteDocumentAtPath(docPath: string): Promise<void> {
+  async deleteDocumentAtPath(fullPath: string): Promise<void> {
     try {
-      await this.afs.doc(docPath).delete();
+      await this.afs.doc(fullPath).delete();
     } catch (error) {
-      throw new FirebaseError(
-        "delete-document-at-path-error",
-        `Error deleting document at path ${docPath}: ${error}`,
-      );
+      console.error(`Error deleting document at path: ${fullPath}`, error);
+      throw error;
     }
   }
 
@@ -195,9 +204,16 @@ export class FirestoreService {
     const collectionRef = this.afs.collection<T>(collectionName, (ref) =>
       ref.where(field, condition, value),
     );
-    return collectionRef.valueChanges({idField: "id"}).pipe(
+    return collectionRef.snapshotChanges().pipe(
+      map((actions) =>
+        actions.map((action) => {
+          const data = action.payload.doc.data() as T;
+          const id = action.payload.doc.id;
+          return this.populateId(data, id); // Ensure id is populated
+        }),
+      ),
       catchError((error) => {
-        console.error("Error retrieving collection:", error);
+        console.error("Error retrieving collection with condition:", error);
         return of([]);
       }),
     );
@@ -242,27 +258,6 @@ export class FirestoreService {
   }
 
   /**
-   * Retrieves a document by its ID as an Observable.
-   *
-   * @param {string} collectionName - Name of the collection.
-   * @param {string} docId - ID of the document.
-   * @returns {Observable<T | null>}
-   */
-  getDocById<T>(collectionName: string, docId: string): Observable<T | null> {
-    return this.afs
-      .collection<T>(collectionName)
-      .doc<T>(docId)
-      .valueChanges({idField: "id"})
-      .pipe(
-        map((data) => data ?? null), // Map undefined to null
-        catchError((error) => {
-          console.error("Error getting document by ID:", error);
-          return of(null);
-        }),
-      );
-  }
-
-  /**
    * Retrieves documents from a relatedAccounts sub-collection for a given account in real-time.
    *
    * @param {string} accountId - ID of the account.
@@ -273,7 +268,14 @@ export class FirestoreService {
       `accounts/${accountId}/relatedAccounts`,
     );
 
-    return relatedAccountsRef.valueChanges({idField: "id"}).pipe(
+    return relatedAccountsRef.snapshotChanges().pipe(
+      map((actions) =>
+        actions.map((action) => {
+          const data = action.payload.doc.data() as RelatedAccount;
+          const id = action.payload.doc.id;
+          return this.populateId(data, id); // Ensure id is populated
+        }),
+      ),
       catchError((error) => {
         console.error("Error getting related accounts:", error);
         return of([]);
@@ -292,8 +294,15 @@ export class FirestoreService {
           .where("privacy", "==", "public")
           .where("type", "in", ["user", "group"]),
       )
-      .valueChanges({idField: "id"})
+      .snapshotChanges()
       .pipe(
+        map((actions) =>
+          actions.map((action) => {
+            const data = action.payload.doc.data() as Account;
+            const id = action.payload.doc.id;
+            return this.populateId(data, id); // Ensure id is populated
+          }),
+        ),
         catchError((error) => {
           console.error("Error getting accounts:", error);
           return of([]);
@@ -301,6 +310,12 @@ export class FirestoreService {
       );
   }
 
+  /**
+   * Retrieves an account with its related accounts and related listings.
+   *
+   * @param {string} accountId - ID of the account.
+   * @returns {Observable<{ account: Account | null; relatedAccounts: RelatedAccount[]; relatedListings: RelatedListing[] }>}
+   */
   getAccountWithRelated(accountId: string): Observable<{
     account: Account | null;
     relatedAccounts: RelatedAccount[];
@@ -308,16 +323,20 @@ export class FirestoreService {
   }> {
     return combineLatest([
       this.getDocument<Account>("accounts", accountId),
-      this.getCollectionWithCondition<RelatedAccount>(
-        `accounts/${accountId}/relatedAccounts`,
-        "status",
-        "!=",
-        "rejected",
-      ),
+      this.getRelatedAccounts(accountId),
       this.afs
         .collection<RelatedListing>(`accounts/${accountId}/relatedListings`)
-        .valueChanges({idField: "id"})
-        .pipe(catchError(() => of([]))),
+        .snapshotChanges()
+        .pipe(
+          map((actions) =>
+            actions.map((action) => {
+              const data = action.payload.doc.data() as RelatedListing;
+              const id = action.payload.doc.id;
+              return this.populateId(data, id); // Ensure id is populated
+            }),
+          ),
+          catchError(() => of([])),
+        ),
     ]).pipe(
       map(([account, relatedAccounts, relatedListings]) => ({
         account,
@@ -336,4 +355,50 @@ export class FirestoreService {
   }
 
   // Firebase Query Logic (Ends) //
+
+  /**
+   * Retrieves documents from any collection or sub-collection.
+   * @param fullPath The full Firestore path to the collection (e.g., 'listings/{listingId}/relatedAccounts').
+   * @param conditions Optional conditions to filter documents.
+   * @returns {Observable<T[]>}
+   */
+  getDocuments<T>(
+    fullPath: string,
+    conditions?: {
+      field: string;
+      operator: WhereFilterOp;
+      value: any;
+    }[],
+  ): Observable<T[]> {
+    const collectionRef = this.afs.collection<T>(fullPath, (ref) => {
+      let query: Query<DocumentData> = ref; // Use Query type
+      if (conditions) {
+        conditions.forEach((condition) => {
+          query = query.where(
+            condition.field,
+            condition.operator,
+            condition.value,
+          );
+        });
+      }
+      return query;
+    });
+
+    return collectionRef.snapshotChanges().pipe(
+      map((actions) =>
+        actions.map((action) => {
+          const data = action.payload.doc.data() as T;
+          const id = action.payload.doc.id;
+          return {...data, id}; // Ensure id is populated
+        }),
+      ),
+      catchError((error) => {
+        console.error(
+          `Error retrieving documents from path: ${fullPath}`,
+          error,
+        );
+        return of([]);
+      }),
+    );
+  }
 }

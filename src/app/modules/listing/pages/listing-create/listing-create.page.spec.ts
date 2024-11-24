@@ -115,6 +115,7 @@ describe("ListingCreatePage", () => {
         preferredMethodOfContact: "Email",
       },
       status: "active",
+      accountId: mockUser.uid,
     };
 
     component.onSubmit(mockFormValue);

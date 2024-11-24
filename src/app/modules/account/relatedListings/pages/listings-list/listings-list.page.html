@@ -1,0 +1,125 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<!-- src/app/pages/account/relatedListings/pages/listings-list.page.html -->
+
+<app-header [title]="title" [defaultHref]="'account/'+ accountId"></app-header>
+<ion-content>
+  <ion-segment
+    scrollable
+    [(ngModel)]="relationshipFilter"
+    (ionChange)="onRelationshipFilterChange($event)"
+  >
+    <ion-segment-button value="all">
+      <ion-icon name="list-outline"></ion-icon>
+      <ion-label>All</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="owner">
+      <ion-icon name="person-outline"></ion-icon>
+      <ion-label>My Listings</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="applicant">
+      <ion-icon name="paper-plane-outline"></ion-icon>
+      <ion-label>Applications</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="participant">
+      <ion-icon name="people-outline"></ion-icon>
+      <ion-label>Participating</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="saved">
+      <ion-icon name="bookmark-outline"></ion-icon>
+      <ion-label>Saved</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <ion-list *ngIf="filteredRelatedListings$ | async as listings">
+    <ion-item
+      *ngFor="let listing of listings; trackBy: trackById"
+      (click)="goToListing(listing.id)"
+      button
+    >
+      <ion-thumbnail slot="start">
+        <img
+          *ngIf="listing.iconImage"
+          [src]="listing.iconImage"
+          [alt]="listing.title"
+        />
+        <div *ngIf="!listing.iconImage" class="placeholder-thumbnail"></div>
+      </ion-thumbnail>
+      <ion-label>
+        <h2>{{ listing.title }}</h2>
+        <h3>{{ listing.organization }}</h3>
+        <div class="ion-padding-vertical">
+          <ion-badge color="primary" class="ion-margin-end"
+            >{{ listing.type }}</ion-badge
+          >
+          <ion-badge
+            [color]="listing.status === 'active' ? 'success' : 'warning'"
+            class="ion-margin-end"
+          >
+            {{ listing.status }}
+          </ion-badge>
+          <ion-badge color="tertiary">{{ listing.relationship }}</ion-badge>
+        </div>
+      </ion-label>
+      <ion-button
+        *ngIf="(isOwner$ | async) && listing.relationship === 'owner' && listing.accountId === (currentUser$ | async)?.uid"
+        slot="end"
+        color="primary"
+        [routerLink]="['/listings', listing.id, 'applicants']"
+        (click)="$event.stopPropagation()"
+      >
+        <ion-icon name="people-outline" slot="start"></ion-icon>
+        View Applicants
+      </ion-button>
+      <ion-button
+        *ngIf="(isOwner$ | async) && listing.relationship === 'owner' && listing.accountId === (currentUser$ | async)?.uid"
+        slot="end"
+        color="danger"
+        (click)="deleteListing(listing); $event.stopPropagation()"
+      >
+        <ion-icon name="trash-outline" slot="start"></ion-icon>
+        DELETE Listing
+      </ion-button>
+      <ion-button
+        *ngIf="(isOwner$ | async) && listing.relationship !== 'owner'"
+        slot="end"
+        color="danger"
+        (click)="removeRelatedListing(listing); $event.stopPropagation()"
+      >
+        <ion-icon name="close-circle-outline" slot="start"></ion-icon>
+        Remove Application
+      </ion-button>
+    </ion-item>
+  </ion-list>
+  <ion-text *ngIf="!(filteredRelatedListings$ | async)?.length">
+    No listings to display.
+  </ion-text>
+
+  <ion-fab
+    vertical="bottom"
+    horizontal="end"
+    slot="fixed"
+    *ngIf="currentUser$ | async"
+  >
+    <ion-fab-button routerLink="/listings/create">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

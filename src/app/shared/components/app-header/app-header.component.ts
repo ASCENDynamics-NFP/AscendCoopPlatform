@@ -32,6 +32,8 @@ import {AuthUser} from "../../../models/auth-user.model";
 })
 export class AppHeaderComponent {
   @Input() title?: string;
+  @Input() defaultHref?: string;
+
   authUser$: Observable<AuthUser | null>; // Declare type for clarity
   public popoverEvent: any;
 

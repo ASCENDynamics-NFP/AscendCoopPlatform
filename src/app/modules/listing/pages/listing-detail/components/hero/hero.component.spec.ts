@@ -109,20 +109,4 @@ describe("HeroComponent", () => {
     const heroImage = fixture.nativeElement.querySelector("img");
     expect(heroImage.src).toContain("assets/image/orghero.png");
   });
-
-  it("should show edit button when isOwner is true", () => {
-    component.listing = mockListing;
-    component.isOwner = true;
-    fixture.detectChanges();
-    const editButton = fixture.nativeElement.querySelector(".edit-button");
-    expect(editButton).toBeTruthy();
-  });
-
-  it("should hide edit button when isOwner is false", () => {
-    component.listing = mockListing;
-    component.isOwner = false;
-    fixture.detectChanges();
-    const editButton = fixture.nativeElement.querySelector(".edit-button");
-    expect(editButton).toBeFalsy();
-  });
 });

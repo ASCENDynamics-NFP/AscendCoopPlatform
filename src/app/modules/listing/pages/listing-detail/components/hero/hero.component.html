@@ -26,43 +26,67 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
 <div class="listing-header">
   <div class="listing-info">
-    <div class="listing-details">
-      <div class="title-section">
+    <div class="title-section">
+      <div class="hero-image-small" *ngIf="listing.iconImage">
+        <img [src]="listing.iconImage" alt="Listing Hero" />
+      </div>
+      <div class="title-content">
         <h2>{{ listing.title }}</h2>
-        <ion-button
-          *ngIf="isOwner"
-          fill="outline"
-          class="edit-button"
-          size="small"
-          [routerLink]="['/listings', listing.id, 'edit']"
-        >
-          <ion-icon name="pencil-outline"></ion-icon> Edit
-        </ion-button>
+        <h3>{{ listing.organization }}</h3>
       </div>
+    </div>
 
-      <div class="organization">
-        <ion-icon name="business-outline"></ion-icon>
-        <span>{{ listing.organization }}</span>
+    <div class="details-icons">
+      <div class="detail-item">
+        <ion-icon name="heart-outline" color="primary"></ion-icon>
+        <span>{{ listing.type | titlecase }}</span>
       </div>
-
-      <div class="badges">
-        <ion-badge color="primary">{{ listing.type | titlecase }}</ion-badge>
-        <ion-badge [color]="listing.status === 'active' ? 'success' : 'medium'">
-          {{ listing.status | titlecase }}
-        </ion-badge>
-        <ion-badge *ngIf="listing.remote" color="tertiary">Remote</ion-badge>
+      <div class="detail-item">
+        <ion-icon
+          [name]="listing.remote ? 'cloud-outline' : 'business-outline'"
+          color="primary"
+        ></ion-icon>
+        <span>{{ listing.remote ? "Remote" : "On-site" }}</span>
       </div>
-
-      <p class="description">{{ listing.description }}</p>
+      <div class="detail-item">
+        <ion-icon name="location-outline" color="primary"></ion-icon>
+        <span>{{ getCities() }}</span>
+      </div>
+      <div class="detail-item">
+        <ion-icon name="time-outline" color="primary"></ion-icon>
+        <span>{{ listing.timeCommitment.hoursPerWeek }} hrs/week</span>
+      </div>
+      <div class="detail-item">
+        <ion-icon name="briefcase-outline" color="primary"></ion-icon>
+        <span>{{ listing.status | titlecase }}</span>
+      </div>
     </div>
   </div>
-  <!-- <div class="listing-actions">
+
+  <div class="listing-actions">
     <ion-button
+      *ngIf="!isOwner"
       fill="outline"
       [disabled]="listing.status !== 'active'"
       (click)="onApply()"
     >
       Apply Now
     </ion-button>
-  </div> -->
+    <ion-button
+      *ngIf="isOwner"
+      fill="outline"
+      size="small"
+      [routerLink]="['/listings', listing.id, 'edit']"
+    >
+      <ion-icon name="pencil-outline"></ion-icon> Edit
+    </ion-button>
+    <ion-button
+      *ngIf="isOwner"
+      fill="outline"
+      size="small"
+      [routerLink]="['/listings', listing.id, 'applicants']"
+    >
+      <ion-icon name="people-outline"></ion-icon> View Applicants
+    </ion-button>
+  </div>
 </div>

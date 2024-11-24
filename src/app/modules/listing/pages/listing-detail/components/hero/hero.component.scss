@@ -17,6 +17,9 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// src/app/modules/listing/pages/listing-detail/components/hero/hero.component.scss
+
+/* Header Image Styling */
 .header-image {
   position: relative;
   height: 200px;
@@ -29,6 +32,7 @@
   }
 }
 
+/* Listing Header Styling */
 .listing-header {
   padding: 20px;
   margin-top: -50px;
@@ -40,48 +44,78 @@
 .listing-info {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-}
+  gap: 1rem;
 
-.listing-details {
   .title-section {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    gap: 1rem;
 
-    h2 {
-      margin: 0;
-      font-size: 1.5em;
-      font-weight: bold;
+    .hero-image-small {
+      width: 80px;
+      height: 80px;
+      overflow: hidden;
+      border-radius: 8px;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+    .title-content {
+      h2 {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin: 0;
+      }
+
+      h3 {
+        font-size: 1.2rem;
+        color: var(--ion-color-medium);
+        margin: 0;
+      }
     }
   }
 
-  .organization {
+  .details-icons {
     display: flex;
-    align-items: center;
-    gap: 5px;
-    color: var(--ion-color-medium);
-    margin-bottom: 10px;
-  }
+    flex-wrap: wrap;
+    gap: 1rem;
 
-  .badges {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 15px;
-  }
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1rem;
+      color: var(--ion-color-dark);
 
-  .description {
-    margin: 15px 0;
-    line-height: 1.6;
-    color: var(--ion-color-dark);
+      ion-icon {
+        font-size: 1.2rem;
+      }
+    }
   }
 }
 
+/* Listing Actions Section */
 .listing-actions {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-start;
+  margin-top: 1rem;
+
+  ion-button {
+    font-size: 0.9rem;
+  }
+
+  ion-icon {
+    margin-right: 8px;
+  }
+
+  .edit-button {
+    --color: var(--ion-color-primary);
+  }
 }
 
 @media (prefers-color-scheme: light) {

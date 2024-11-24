@@ -93,14 +93,14 @@ describe("ListingFormComponent", () => {
     };
 
     component.listingForm.patchValue(mockListing);
-    component.saveAsActive();
+    component.onSubmit();
 
     expect(component.formSubmit.emit).toHaveBeenCalled();
   });
 
   it("should not emit form value on invalid submit", () => {
     spyOn(component.formSubmit, "emit");
-    component.saveAsActive();
+    component.onSubmit();
     expect(component.formSubmit.emit).not.toHaveBeenCalled();
   });
 
@@ -132,48 +132,11 @@ describe("ListingFormComponent", () => {
     };
 
     component.listingForm.patchValue(mockListing);
-    component.saveAsDraft();
+    component.onSubmit();
 
     expect(emitSpy).toHaveBeenCalled();
     const emittedListing = emitSpy.calls.first().args[0];
     expect(emittedListing.status).toBe("draft");
-  });
-
-  it("should emit form value with inactive status", () => {
-    const emitSpy = spyOn(component.formSubmit, "emit");
-    const mockListing = {
-      title: "Test Listing",
-      description: "Test Description",
-      type: "volunteer",
-      organization: "Test Org",
-      remote: false,
-      timeCommitment: {
-        hoursPerWeek: 10,
-        duration: "3 months",
-        schedule: "Flexible",
-        startDate: Timestamp.fromDate(new Date()),
-        endDate: Timestamp.fromDate(new Date()),
-        isFlexible: true,
-      },
-      skills: [],
-      requirements: [],
-      responsibilities: [],
-      benefits: [],
-      contactInformation: {
-        emails: [],
-        phoneNumbers: [],
-        addresses: [],
-        preferredMethodOfContact: "Email",
-      },
-    };
-
-    component.listingForm.patchValue(mockListing);
-    fixture.detectChanges();
-    component.saveAsInactive();
-
-    expect(emitSpy).toHaveBeenCalled();
-    const emittedListing = emitSpy.calls.first().args[0];
-    expect(emittedListing.status).toBe("inactive");
   });
 
   it("should initialize form with listing data when provided", () => {

@@ -38,12 +38,14 @@ export const onCreateListing = functions.firestore
 
 /**
  * Handles the creation of a new listing document in Firestore.
- * This function is triggered when a new listing is created and updates it with additional metadata
- * including creator information and timestamps.
+ * This function is triggered when a new listing is created and establishes bidirectional relationships by:
+ * 1. Creating a relatedAccount document in the `listings/{listingId}/relatedAccounts` collection
+ * 2. Creating a relatedListing document in the `accounts/{accountId}/relatedListings` collection
+ * Both documents are linked to the listing creator with "owner" relationship status.
  *
- * @param {QueryDocumentSnapshot} snapshot - The snapshot of the newly created listing document
- * @param {EventContext} context - The context object containing metadata about the event
- * @return {Promise<void>} A promise that resolves when the listing has been updated
+ * @param {QueryDocumentSnapshot} snapshot - The snapshot of the newly created listing document.
+ * @param {EventContext} context - The context object containing metadata about the event, including the listing ID.
+ * @return {Promise<void>} A promise that resolves when both relationship documents are created, or logs an error if it fails.
  */
 async function handleListingCreate(
   snapshot: QueryDocumentSnapshot,
@@ -53,12 +55,12 @@ async function handleListingCreate(
   const listing = snapshot.data();
   const accountId = listing.createdBy;
 
-  try {
-    if (!accountId) {
-      logger.error(`No authenticated user found for listing ${listingId}`);
-      return;
-    }
+  if (!accountId) {
+    logger.error(`No authenticated user found for listing ${listingId}`);
+    return;
+  }
 
+  try {
     const accountDoc = await db.collection("accounts").doc(accountId).get();
 
     if (!accountDoc.exists) {
@@ -68,20 +70,62 @@ async function handleListingCreate(
 
     const account = accountDoc.data();
 
-    const listingUpdate = {
-      createdBy: accountId,
+    // Create relatedAccount document
+    const relatedAccount: any = {
+      id: accountId,
+      listingId: listingId,
+      name: account?.name,
+      email: account?.email,
+      phone: account?.phone ?? null,
+      iconImage: account?.iconImage ?? null,
+      status: "active",
+      relationship: "owner",
+      applicationDate: admin.firestore.FieldValue.serverTimestamp(),
+      notes: null,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdBy: accountId,
       lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
       lastModifiedBy: accountId,
-      heroImage: account?.heroImage,
-      iconImage: account?.iconImage,
     };
 
-    await snapshot.ref.update(listingUpdate);
+    // Create relatedListing document
+    const relatedListing: any = {
+      id: listingId,
+      accountId: accountId,
+      title: listing.title,
+      organization: listing.organization,
+      type: listing.type,
+      remote: listing.remote ?? false,
+      iconImage: listing.iconImage ?? null,
+      status: listing.status,
+      relationship: "owner",
+      applicationDate: admin.firestore.FieldValue.serverTimestamp(),
+      notes: null,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdBy: accountId,
+      lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+      lastModifiedBy: accountId,
+    };
+
+    await Promise.all([
+      db
+        .collection("listings")
+        .doc(listingId)
+        .collection("relatedAccounts")
+        .doc(accountId)
+        .set(relatedAccount),
+      db
+        .collection("accounts")
+        .doc(accountId)
+        .collection("relatedListings")
+        .doc(listingId)
+        .set(relatedListing),
+    ]);
+
     logger.info(
-      `Successfully updated listing ${listingId} with account information`,
+      `Successfully created relatedAccount and relatedListing for listing ${listingId} and account ${accountId}`,
     );
   } catch (error) {
-    logger.error("Error updating listing with account information: ", error);
+    logger.error("Error creating relationship documents: ", error);
   }
 }

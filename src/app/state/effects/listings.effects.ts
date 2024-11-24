@@ -21,11 +21,12 @@
 
 import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
-import {catchError, from, map, mergeMap, of} from "rxjs";
+import {catchError, from, map, mergeMap, of, switchMap} from "rxjs";
 import {FirestoreService} from "../../core/services/firestore.service";
 import * as ListingsActions from "./../actions/listings.actions";
 import {Listing} from "../../models/listing.model";
 import {serverTimestamp} from "@angular/fire/firestore";
+import {ListingRelatedAccount} from "../../models/listing-related-account.model";
 
 @Injectable()
 export class ListingsEffects {
@@ -132,6 +133,49 @@ export class ListingsEffects {
             of(ListingsActions.deleteListingFailure({error: error.message})),
           ),
         ),
+      ),
+    ),
+  );
+
+  applyToListing$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ListingsActions.applyToListing),
+      switchMap(({listingId, applicant}) =>
+        this.firestoreService
+          .setDocument(
+            `listings/${listingId}/relatedAccounts/${applicant.id}`,
+            applicant,
+          )
+          .then(() => ListingsActions.applyToListingSuccess())
+          .catch((error) => ListingsActions.applyToListingFailure({error})),
+      ),
+    ),
+  );
+
+  loadListingRelatedAccounts$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ListingsActions.loadListingRelatedAccounts),
+      mergeMap(({listingId}) =>
+        this.firestoreService
+          .getDocuments<ListingRelatedAccount>(
+            `listings/${listingId}/relatedAccounts`,
+          )
+          .pipe(
+            map((relatedAccounts) =>
+              ListingsActions.loadListingRelatedAccountsSuccess({
+                listingId,
+                relatedAccounts,
+              }),
+            ),
+            catchError((error) =>
+              of(
+                ListingsActions.loadListingRelatedAccountsFailure({
+                  listingId,
+                  error,
+                }),
+              ),
+            ),
+          ),
       ),
     ),
   );

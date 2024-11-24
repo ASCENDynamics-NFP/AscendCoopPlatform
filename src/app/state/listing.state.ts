@@ -19,10 +19,12 @@
 ***********************************************************************************************/
 // src/app/state/listing.state.ts
 
+import {ListingRelatedAccount} from "../models/listing-related-account.model";
 import {Listing} from "../models/listing.model";
 
 interface ListingState {
   entities: {[id: string]: Listing};
+  relatedAccounts: {[listingId: string]: ListingRelatedAccount[]};
   selectedListingId: string | null;
   loading: boolean;
   error: string | null;

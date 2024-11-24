@@ -22,12 +22,13 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
-import {combineLatest, map, Observable, tap} from "rxjs";
+import {combineLatest, first, map, Observable, of, tap} from "rxjs";
 import {Listing} from "../../../../models/listing.model";
 import * as ListingsActions from "../../../../state/actions/listings.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {AppState} from "../../../../state/app.state";
 import {selectListingById} from "../../../../state/selectors/listings.selectors";
+import {AuthUser} from "../../../../models/auth-user.model";
 
 @Component({
   selector: "app-listing-edit",
@@ -35,24 +36,24 @@ import {selectListingById} from "../../../../state/selectors/listings.selectors"
   styleUrls: ["./listing-edit.page.scss"],
 })
 export class ListingEditPage implements OnInit {
+  authUser$: Observable<AuthUser | null>;
   listing$: Observable<Listing | null>;
   isOwner$: Observable<boolean>;
-  private listingId: string;
+  listingId: string | null;
 
   constructor(
     private store: Store<AppState>,
     private route: ActivatedRoute,
     private router: Router,
   ) {
-    this.listingId = this.route.snapshot.paramMap.get("id") || "";
-    this.listing$ = this.store
-      .select(selectListingById(this.listingId))
-      .pipe(map((listing) => listing || null)); // Map undefined to null
-
-    this.isOwner$ = combineLatest([
-      this.store.select(selectAuthUser),
-      this.listing$,
-    ]).pipe(
+    this.authUser$ = this.store.select(selectAuthUser);
+    this.listingId = this.route.snapshot.paramMap.get("id");
+    this.listing$ = this.listingId
+      ? this.store
+          .select(selectListingById(this.listingId))
+          .pipe(map((listing) => listing || null)) // Map undefined to null
+      : of(null);
+    this.isOwner$ = combineLatest([this.authUser$, this.listing$]).pipe(
       map(
         ([user, listing]) =>
           !!(user && listing && listing.createdBy === user.uid),
@@ -75,10 +76,7 @@ export class ListingEditPage implements OnInit {
 
   onSubmit(listing: Listing) {
     if (this.listingId) {
-      const updatedListing = {...listing, id: this.listingId};
-      this.store.dispatch(
-        ListingsActions.updateListing({listing: updatedListing}),
-      );
+      this.store.dispatch(ListingsActions.updateListing({listing: listing}));
       this.router.navigate(["/listings", this.listingId]);
     }
   }

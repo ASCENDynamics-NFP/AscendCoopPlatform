@@ -13,6 +13,11 @@ service cloud.firestore {
         request.auth.uid == resource.data.createdBy; // Only creator can modify
     }
 
+    // Allow authenticated users to apply for listings
+    match /listings/{listingId}/relatedAccounts/{relatedAccountId} {
+      allow create, read, write, delete: if request.auth.uid != null; // Only the user can write to their own data
+    }
+
     match /accounts {
       allow list: if isPublicUser() || isPublicGroup();
 

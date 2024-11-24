@@ -26,7 +26,8 @@ import {filter, first, switchMap, take, tap} from "rxjs";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {Account} from "../../../../models/account.model";
-import {selectSelectedAccount} from "../../../../state/selectors/account.selectors";
+import {selectAccountById} from "../../../../state/selectors/account.selectors";
+import {AuthUser} from "../../../../models/auth-user.model";
 
 @Component({
   selector: "app-listing-form",
@@ -36,6 +37,8 @@ import {selectSelectedAccount} from "../../../../state/selectors/account.selecto
 export class ListingFormComponent implements OnInit {
   @Input() listing: Listing | null = null;
   @Output() formSubmit = new EventEmitter<any>();
+  currentStep = 1; // Start at the first step
+  authUser: AuthUser | null = null;
 
   listingForm!: FormGroup;
   listingTypes = ["volunteer", "job", "internship", "gig"];
@@ -129,9 +132,10 @@ export class ListingFormComponent implements OnInit {
               this.store.dispatch(
                 AccountActions.loadAccount({accountId: user.uid}),
               );
+              this.authUser = user;
             }
           }),
-          switchMap(() => this.store.select(selectSelectedAccount)),
+          switchMap((user) => this.store.select(selectAccountById(user!.uid))),
           filter((account): account is Account => account !== null),
           take(1),
         )
@@ -316,38 +320,52 @@ export class ListingFormComponent implements OnInit {
     return this.listingForm.get(arrayName) as FormArray;
   }
 
-  private submitForm(status: "draft" | "active" | "inactive") {
+  private submitForm(status: "draft" | "active" | "filled" | "expired") {
     if (this.listingForm.valid) {
-      const formValue = this.listingForm.value;
-      const listing = {
-        ...formValue,
-        timeCommitment: {
-          ...formValue.timeCommitment,
-          startDate: formValue.timeCommitment.startDate
-            ? Timestamp.fromDate(new Date(formValue.timeCommitment.startDate))
-            : null,
-          endDate: formValue.timeCommitment.endDate
-            ? Timestamp.fromDate(new Date(formValue.timeCommitment.endDate))
-            : null,
-        },
-        status,
-      };
-      this.formSubmit.emit(listing);
+      this.store
+        .select(selectAuthUser)
+        .pipe(take(1))
+        .subscribe((user) => {
+          const formValue = this.listingForm.value;
+          const listing = {
+            ...formValue,
+            id: this.listing?.id || null,
+            timeCommitment: {
+              ...formValue.timeCommitment,
+              startDate: formValue.timeCommitment.startDate
+                ? Timestamp.fromDate(
+                    new Date(formValue.timeCommitment.startDate),
+                  )
+                : null,
+              endDate: formValue.timeCommitment.endDate
+                ? Timestamp.fromDate(new Date(formValue.timeCommitment.endDate))
+                : null,
+            },
+            status,
+            accountId: user?.uid,
+            iconImage: user?.iconImage || "",
+            heroImage: user?.heroImage || "",
+            lastModifiedBy: user?.uid,
+          };
+          this.formSubmit.emit(listing);
+        });
     } else {
       this.markFormGroupTouched(this.listingForm);
     }
   }
 
-  saveAsDraft() {
-    this.submitForm("draft");
-  }
-
-  saveAsActive() {
-    this.submitForm("active");
-  }
-
-  saveAsInactive() {
-    this.submitForm("inactive");
+  onSubmit() {
+    if (this.listingForm.invalid) {
+      this.listingForm.markAllAsTouched();
+      return;
+    }
+    if (this.listingForm.valid) {
+      // If listing exists, keep current status, otherwise set as draft
+      const status = this.listing?.id ? this.listing.status : "draft";
+      this.submitForm(status as "draft" | "active" | "filled" | "expired");
+    } else {
+      this.markFormGroupTouched(this.listingForm);
+    }
   }
 
   addAddress() {
@@ -366,5 +384,23 @@ export class ListingFormComponent implements OnInit {
     (this.listingForm.get("contactInformation.addresses") as FormArray).push(
       addressForm,
     );
+  }
+
+  goToNextStep() {
+    if (this.listingForm.invalid) {
+      this.listingForm.markAllAsTouched();
+      return;
+    }
+    this.currentStep++;
+  }
+
+  goToPreviousStep() {
+    if (this.currentStep > 1) {
+      this.currentStep--;
+    }
+  }
+
+  getProgress() {
+    return this.currentStep / 2; // Progress value for the progress bar
   }
 }

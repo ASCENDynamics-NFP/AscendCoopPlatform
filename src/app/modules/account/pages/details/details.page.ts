@@ -30,9 +30,11 @@ import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {
   selectRelatedAccountsByAccountId,
   selectAccountById,
+  selectRelatedListingsByAccountId,
 } from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {IonContent, ViewWillEnter} from "@ionic/angular";
+import {RelatedListing} from "../../../../models/related-listing.model";
 
 @Component({
   selector: "app-details",
@@ -45,6 +47,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
   authUser$!: Observable<AuthUser | null>;
   account$!: Observable<Account | null>;
   relatedAccounts$!: Observable<RelatedAccount[]>;
+  relatedListings$!: Observable<RelatedListing[]>;
   isProfileOwner$!: Observable<boolean>;
 
   constructor(
@@ -78,6 +81,9 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         this.account$ = this.store.select(selectAccountById(this.accountId));
         this.relatedAccounts$ = this.store.select(
           selectRelatedAccountsByAccountId(this.accountId),
+        );
+        this.relatedListings$ = this.store.select(
+          selectRelatedListingsByAccountId(this.accountId),
         );
 
         // Determine if the current user is the profile owner

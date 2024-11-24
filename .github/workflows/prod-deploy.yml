@@ -15,12 +15,12 @@
 
 # You should have received a copy of the GNU Affero General Public License
 # along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
-name: Deploy to PROD Firebase
+name: Deploy to Production Firebase
 
 on:
   push:
     branches:
-      - prod
+      - prod  # Triggers when pushing to the 'prod' branch
 
 jobs:
   build-and-deploy:
@@ -36,25 +36,13 @@ jobs:
         with:
           node-version: '20'
 
-      # 3. Cache Node.js modules
-      - name: Cache Node.js modules
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm
-            functions/node_modules
-            node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      # 4. Install project dependencies
-      - name: Install dependencies
+      # 3. Install Dependencies
+      - name: Install Dependencies
         run: |
           npm ci
-          npm --prefix functions ci
+          npm ci --prefix functions
 
-      # 5. Set Firebase environment variables
+      # 4. Set Environment Variables
       - name: Set Environment Variables
         run: |
           echo "CI=true" >> $GITHUB_ENV
@@ -68,28 +56,24 @@ jobs:
           echo "FIREBASE_APP_ID=${{ secrets.PROD_FIREBASE_APP_ID }}" >> $GITHUB_ENV
           echo "FIREBASE_MEASUREMENT_ID=${{ secrets.PROD_FIREBASE_MEASUREMENT_ID }}" >> $GITHUB_ENV
 
-      # 6. Generate environment file
-      - name: Generate Environment File
-        run: node generate-env.js
-
-      # 7. Build the project (Production)
-      - name: Build
+      # 5. Build the Project (Production)
+      - name: Build Project
         run: npm run build:prod
 
-      # 8. Install Firebase CLI
+      # 6. Build Firebase Functions
+      - name: Build Firebase Functions
+        run: npm run build --prefix functions
+
+      # 7. Install Firebase CLI
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
-      # 9. Build Firebase Functions
-      - name: Build Firebase Functions
-        run: npm --prefix functions run build
-
-      # 10. Authenticate to Firebase
+      # 8. Authenticate to Firebase
       - name: Authenticate to Firebase
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.PROD_GOOGLE_APPLICATION_CREDENTIALS }}
 
-      # 11. Deploy to Firebase Hosting, Functions, Firestore rules, Realtime Database rules, Cloud Storage, etc.
+      # 9. Deploy to Firebase
       - name: Deploy to Firebase
         run: firebase deploy --force --project ${{ secrets.PROD_FIREBASE_PROJECT_ID }}

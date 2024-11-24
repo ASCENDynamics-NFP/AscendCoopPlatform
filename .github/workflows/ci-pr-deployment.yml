@@ -120,21 +120,25 @@ jobs:
           credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}'
           export_environment_variables: true
 
-      # Step 5: Deploy to Firebase Preview Channel
+      # Step 5: Install jq utility
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      # Step 6: Deploy to Firebase Preview Channel
       - name: Deploy to Firebase Preview Channel
         id: firebase-deploy
-        run: |
-          firebase hosting:channel:deploy pr${{ github.event.number }} \
-            --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} \
-            --only hosting \
-            --json --debug > firebase-deploy-output.json
+        run: >
+          firebase hosting:channel:deploy pr${{ github.event.number }}
+          --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}
+          --only hosting
+          --json --debug > firebase-deploy-output.json
 
-      # Step 6: Extract Preview URL
+      # Step 7: Extract Preview URL
       - name: Extract Preview URL
         run: |
-          echo "PREVIEW_URL=$(cat firebase-deploy-output.json | jq -r '.result[].url')" >> $GITHUB_ENV
+          echo "PREVIEW_URL=$(jq -r '.result[] | select(.status == "success") | .url' firebase-deploy-output.json)" >> $GITHUB_ENV
 
-      # Step 7: Comment on PR with Preview URL
+      # Step 8: Comment on PR with Preview URL
       - name: Comment on PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:

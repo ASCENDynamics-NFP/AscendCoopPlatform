@@ -29,19 +29,36 @@
 
 /* Header */
 ion-header {
+  box-shadow: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+
   ion-toolbar {
     display: flex;
     justify-content: space-between;
     padding: 0 1rem;
 
     .header-title {
-      padding: 0 0.25rem;
+      padding: 0 0.5rem;
+      text-transform: uppercase;
+      font-size: 1rem;
       color: var(--ion-color-primary);
+      flex-shrink: 5;
     }
 
     ion-button {
       --border-radius: 20px;
+      --padding-start: 1.25rem;
+      --padding-end: 1.25rem;
+      margin: 0 4px;
+      text-transform: capitalize;
+      text-wrap: nowrap;
     }
+  }
+}
+
+@media (max-width: 440px) {
+  .header-title {
+    overflow: auto;
   }
 }
 

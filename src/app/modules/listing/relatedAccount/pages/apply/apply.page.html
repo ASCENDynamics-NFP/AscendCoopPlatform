@@ -19,80 +19,89 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <!-- src/app/modules/listings/pages/apply/apply.page.html -->
 
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/"></ion-back-button>
-    </ion-buttons>
-    <ion-title>Apply to this Opportunity</ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-header
+  [defaultHref]="'/listings/' + listingId"
+  [title]="'Apply for ' + (listing$ | async)?.title"
+></app-header>
 
 <ion-content>
   <form [formGroup]="applyForm" (ngSubmit)="onSubmit()">
     <ion-grid>
+      <!-- Application Details Card -->
       <ion-row>
         <ion-col size="12">
-          <h2>Apply to this Opportunity</h2>
-          <p>Please complete the form below to apply to this position</p>
-        </ion-col>
-      </ion-row>
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Apply to this Opportunity</ion-card-title>
+              <ion-card-subtitle>
+                Please complete the form below to apply to this position
+              </ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <!-- First Name -->
+              <ion-item lines="none">
+                <ion-input
+                  formControlName="firstName"
+                  label="First Name"
+                  label-placement="floating"
+                  fill="outline"
+                  placeholder="Enter your first name"
+                  required
+                ></ion-input>
+              </ion-item>
 
-      <!-- First Name -->
-      <ion-row>
-        <ion-col size="12">
-          <ion-input
-            formControlName="firstName"
-            label="First Name"
-            label-placement="floating"
-            fill="outline"
-            placeholder="Enter your first name"
-            required
-          ></ion-input>
-        </ion-col>
-      </ion-row>
+              <!-- Last Name -->
+              <ion-item lines="none">
+                <ion-input
+                  formControlName="lastName"
+                  label="Last Name"
+                  label-placement="floating"
+                  fill="outline"
+                  placeholder="Enter your last name"
+                  required
+                ></ion-input>
+              </ion-item>
 
-      <!-- Last Name -->
-      <ion-row>
-        <ion-col size="12">
-          <ion-input
-            formControlName="lastName"
-            label="Last Name"
-            label-placement="floating"
-            fill="outline"
-            placeholder="Enter your last name"
-            required
-          ></ion-input>
-        </ion-col>
-      </ion-row>
+              <!-- Email Address -->
+              <ion-item lines="none">
+                <ion-input
+                  formControlName="email"
+                  type="email"
+                  label="Email Address"
+                  label-placement="floating"
+                  fill="outline"
+                  placeholder="Enter your email address"
+                  required
+                ></ion-input>
+              </ion-item>
 
-      <!-- Email Address -->
-      <ion-row>
-        <ion-col size="12">
-          <ion-input
-            formControlName="email"
-            type="email"
-            label="Email Address"
-            label-placement="floating"
-            fill="outline"
-            placeholder="Enter your email address"
-            required
-          ></ion-input>
-        </ion-col>
-      </ion-row>
+              <!-- Phone Number -->
+              <ion-item lines="none">
+                <ion-input
+                  formControlName="phone"
+                  type="tel"
+                  label="Phone Number"
+                  label-placement="floating"
+                  fill="outline"
+                  placeholder="Enter your phone number"
+                  (ionInput)="formatPhoneNumber($event)"
+                  required
+                ></ion-input>
+              </ion-item>
 
-      <!-- Phone Number -->
-      <ion-row>
-        <ion-col size="12">
-          <ion-input
-            formControlName="phone"
-            type="tel"
-            label="Phone Number"
-            label-placement="floating"
-            fill="outline"
-            placeholder="Enter your phone number"
-            required
-          ></ion-input>
+              <!-- Notes Textarea -->
+              <ion-item lines="none">
+                <ion-textarea
+                  formControlName="notes"
+                  label="Notes"
+                  label-placement="floating"
+                  fill="outline"
+                  placeholder="Enter any additional information"
+                  auto-grow="true"
+                ></ion-textarea>
+              </ion-item>
+            </ion-card-content>
+          </ion-card>
         </ion-col>
       </ion-row>
 
@@ -107,14 +116,22 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               </ion-card-subtitle>
             </ion-card-header>
             <ion-card-content>
-              <ion-item>
+              <ion-item lines="none">
                 <ion-label>Upload Resume</ion-label>
+                <ion-button fill="outline" (click)="resumeInput.click()">
+                  Choose File
+                </ion-button>
                 <input
                   type="file"
                   accept="application/pdf"
                   (change)="onFileSelect($event, 'resume')"
+                  #resumeInput
+                  hidden
                 />
               </ion-item>
+              <ion-text *ngIf="resumeFileName">
+                Selected File: {{ resumeFileName }}
+              </ion-text>
             </ion-card-content>
           </ion-card>
         </ion-col>
@@ -129,14 +146,22 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               <ion-card-subtitle>Maximum size: 10 MB</ion-card-subtitle>
             </ion-card-header>
             <ion-card-content>
-              <ion-item>
+              <ion-item lines="none">
                 <ion-label>Upload Cover Letter</ion-label>
+                <ion-button fill="outline" (click)="coverLetterInput.click()">
+                  Choose File
+                </ion-button>
                 <input
                   type="file"
                   accept="application/pdf"
                   (change)="onFileSelect($event, 'coverLetter')"
+                  #coverLetterInput
+                  hidden
                 />
               </ion-item>
+              <ion-text *ngIf="coverLetterFileName">
+                Selected File: {{ coverLetterFileName }}
+              </ion-text>
             </ion-card-content>
           </ion-card>
         </ion-col>

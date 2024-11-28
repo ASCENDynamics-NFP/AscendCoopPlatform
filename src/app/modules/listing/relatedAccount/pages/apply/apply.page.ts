@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 // src/app/modules/listings/pages/apply/apply.page.ts
 
-import {Component, OnInit} from "@angular/core";
+import {Component, ElementRef, OnInit, ViewChild} from "@angular/core";
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {Store} from "@ngrx/store";
 import {AppState} from "../../../../../state/app.state";
@@ -29,6 +29,9 @@ import {Observable} from "rxjs";
 import {take} from "rxjs/operators";
 import * as ListingsActions from "../../../../../state/actions/listings.actions";
 import {ActivatedRoute} from "@angular/router";
+import {selectListingById} from "../../../../../state/selectors/listings.selectors";
+import {Listing} from "../../../../../models/listing.model";
+import {AlertController} from "@ionic/angular";
 
 @Component({
   selector: "app-apply",
@@ -41,25 +44,33 @@ export class ApplyPage implements OnInit {
   coverLetterFile: File | null = null;
   authUser$: Observable<AuthUser | null>;
   listingId?: string;
+  listing$: Observable<Listing>;
+  @ViewChild("resumeInput") resumeInput!: ElementRef<HTMLInputElement>;
+  @ViewChild("coverLetterInput")
+  coverLetterInput!: ElementRef<HTMLInputElement>;
+  resumeFileName: string = "";
+  coverLetterFileName: string = "";
 
   constructor(
     private fb: FormBuilder,
     private store: Store<AppState>,
     private route: ActivatedRoute,
+    private alertController: AlertController,
   ) {
     this.applyForm = this.fb.group({
       firstName: ["", [Validators.required, Validators.minLength(2)]],
       lastName: ["", [Validators.required, Validators.minLength(2)]],
       email: ["", [Validators.required, Validators.email]],
       phone: ["", [Validators.required, Validators.minLength(7)]],
+      notes: [""],
     });
 
     this.authUser$ = this.store.select(selectAuthUser);
+    this.listingId = this.route.snapshot.paramMap.get("id") || "";
+    this.listing$ = this.store.select(selectListingById(this.listingId));
   }
 
   ngOnInit(): void {
-    this.listingId = this.route.snapshot.paramMap.get("id") || "";
-
     this.authUser$.pipe(take(1)).subscribe((authUser) => {
       if (authUser) {
         const [firstName, ...lastNameParts] = (authUser.name || "").split(" ");
@@ -81,50 +92,96 @@ export class ApplyPage implements OnInit {
       const file = input.files[0];
       if (file.type !== "application/pdf") {
         alert("Please upload a valid PDF file.");
+        input.value = ""; // Reset the input
         return;
       }
       if (file.size > 10 * 1024 * 1024) {
         alert("File size must not exceed 10 MB.");
+        input.value = ""; // Reset the input
         return;
       }
 
       if (type === "resume") {
         this.resumeFile = file;
+        this.resumeFileName = file.name;
       } else if (type === "coverLetter") {
         this.coverLetterFile = file;
+        this.coverLetterFileName = file.name;
       }
     }
   }
 
-  onSubmit(): void {
-    if (this.applyForm.valid) {
-      this.authUser$.pipe(take(1)).subscribe((authUser) => {
-        if (authUser) {
-          const relatedAccount = {
-            ...this.applyForm.value,
-            id: authUser.uid, // Populate the id
-            accountId: authUser.uid, // Populate the accountId
-            resumeFile: this.resumeFile,
-            coverLetterFile: this.coverLetterFile,
-            listingId: this.listingId,
-            type: "application",
-            status: "applied",
-          };
+  formatPhoneNumber(event: any): void {
+    const input = event.target as HTMLInputElement;
+    let phone = input.value.replace(/\D/g, ""); // Remove all non-numeric characters
 
-          // Dispatch action to submit application
-          this.store.dispatch(
-            ListingsActions.submitApplication({relatedAccount}),
-          );
-
-          console.log("Form Submitted!", relatedAccount);
-
-          // TODO: Navigate or show success message as needed
-        } else {
-          console.error("Auth user not available");
-        }
-      });
-    } else {
-      console.log("Form is invalid");
+    if (phone.length > 3 && phone.length <= 6) {
+      phone = `(${phone.slice(0, 3)}) ${phone.slice(3)}`;
+    } else if (phone.length > 6) {
+      phone = `(${phone.slice(0, 3)}) ${phone.slice(3, 6)}-${phone.slice(6, 10)}`;
     }
+
+    input.value = phone; // Update the input value
+  }
+
+  onSubmit(): void {
+    if (!this.applyForm.valid) {
+      this.markFormAsDirty(this.applyForm);
+      this.showAlert(
+        "Form Invalid",
+        "Please fill out all required fields correctly.",
+      );
+      return;
+    }
+
+    this.authUser$.pipe(take(1)).subscribe((authUser) => {
+      if (!authUser) {
+        this.showAlert(
+          "Error",
+          "Unable to fetch user information. Please try again.",
+        );
+        return;
+      }
+
+      const relatedAccount = {
+        ...this.applyForm.value,
+        id: authUser.uid, // Populate the id
+        accountId: authUser.uid, // Populate the accountId
+        resumeFile: this.resumeFile,
+        coverLetterFile: this.coverLetterFile,
+        listingId: this.listingId,
+        type: "application",
+        status: "applied",
+      };
+
+      // Dispatch action to submit application
+      this.store.dispatch(ListingsActions.submitApplication({relatedAccount}));
+
+      this.showAlert(
+        "Application Submitted",
+        "Your application has been submitted successfully!",
+      );
+      console.log("Form Submitted!", relatedAccount);
+    });
+  }
+
+  markFormAsDirty(formGroup: FormGroup): void {
+    Object.keys(formGroup.controls).forEach((key) => {
+      const control = formGroup.get(key);
+      if (control) {
+        control.markAsTouched();
+        control.updateValueAndValidity();
+      }
+    });
+  }
+
+  async showAlert(header: string, message: string): Promise<void> {
+    const alert = await this.alertController.create({
+      header,
+      message,
+      buttons: ["OK"],
+    });
+
+    await alert.present();
   }
 }

@@ -37,69 +37,135 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 Please complete the form below to apply to this position
               </ion-card-subtitle>
             </ion-card-header>
-            <ion-card-content>
-              <!-- First Name -->
-              <ion-item lines="none">
-                <ion-input
-                  formControlName="firstName"
-                  label="First Name"
-                  label-placement="floating"
-                  fill="outline"
-                  placeholder="Enter your first name"
-                  required
-                ></ion-input>
-              </ion-item>
+            <ion-card-content
+              ><ion-grid>
+                <!-- First Name -->
+                <ion-row>
+                  <ion-col size="12">
+                    <ion-item lines="none">
+                      <ion-input
+                        formControlName="firstName"
+                        label="First Name"
+                        label-placement="floating"
+                        fill="outline"
+                        placeholder="Enter your first name"
+                      ></ion-input>
+                    </ion-item>
+                    <ion-note
+                      *ngIf="applyForm.get('firstName')?.touched && applyForm.get('firstName')?.errors?.['required']"
+                      color="danger"
+                    >
+                      First Name is required.
+                    </ion-note>
+                    <ion-note
+                      *ngIf="applyForm.get('firstName')?.touched && applyForm.get('firstName')?.errors?.['minlength']"
+                      color="danger"
+                    >
+                      First Name must be at least 2 characters long.
+                    </ion-note>
+                  </ion-col>
+                </ion-row>
 
-              <!-- Last Name -->
-              <ion-item lines="none">
-                <ion-input
-                  formControlName="lastName"
-                  label="Last Name"
-                  label-placement="floating"
-                  fill="outline"
-                  placeholder="Enter your last name"
-                  required
-                ></ion-input>
-              </ion-item>
+                <!-- Last Name -->
+                <ion-row>
+                  <ion-col size="12">
+                    <ion-item lines="none">
+                      <ion-input
+                        formControlName="lastName"
+                        label="Last Name"
+                        label-placement="floating"
+                        fill="outline"
+                        placeholder="Enter your last name"
+                      ></ion-input>
+                    </ion-item>
+                    <ion-note
+                      *ngIf="applyForm.get('lastName')?.touched && applyForm.get('lastName')?.errors?.['required']"
+                      color="danger"
+                    >
+                      Last Name is required.
+                    </ion-note>
+                    <ion-note
+                      *ngIf="applyForm.get('lastName')?.touched && applyForm.get('lastName')?.errors?.['minlength']"
+                      color="danger"
+                    >
+                      Last Name must be at least 2 characters long.
+                    </ion-note>
+                  </ion-col>
+                </ion-row>
 
-              <!-- Email Address -->
-              <ion-item lines="none">
-                <ion-input
-                  formControlName="email"
-                  type="email"
-                  label="Email Address"
-                  label-placement="floating"
-                  fill="outline"
-                  placeholder="Enter your email address"
-                  required
-                ></ion-input>
-              </ion-item>
+                <!-- Email -->
+                <ion-row>
+                  <ion-col size="12">
+                    <ion-item lines="none">
+                      <ion-input
+                        formControlName="email"
+                        type="email"
+                        label="Email Address"
+                        label-placement="floating"
+                        fill="outline"
+                        placeholder="Enter your email address"
+                      ></ion-input>
+                    </ion-item>
+                    <ion-note
+                      *ngIf="applyForm.get('email')?.touched && applyForm.get('email')?.errors?.['required']"
+                      color="danger"
+                    >
+                      Email is required.
+                    </ion-note>
+                    <ion-note
+                      *ngIf="applyForm.get('email')?.touched && applyForm.get('email')?.errors?.['email']"
+                      color="danger"
+                    >
+                      Please enter a valid email address.
+                    </ion-note>
+                  </ion-col>
+                </ion-row>
 
-              <!-- Phone Number -->
-              <ion-item lines="none">
-                <ion-input
-                  formControlName="phone"
-                  type="tel"
-                  label="Phone Number"
-                  label-placement="floating"
-                  fill="outline"
-                  placeholder="Enter your phone number"
-                  (ionInput)="formatPhoneNumber($event)"
-                  required
-                ></ion-input>
-              </ion-item>
+                <!-- Phone -->
+                <ion-row>
+                  <ion-col size="12">
+                    <ion-item lines="none">
+                      <ion-input
+                        formControlName="phone"
+                        type="tel"
+                        label="Phone Number"
+                        label-placement="floating"
+                        fill="outline"
+                        placeholder="Enter your phone number"
+                        (ionInput)="formatPhoneNumber($event)"
+                      ></ion-input>
+                    </ion-item>
+                    <ion-note
+                      *ngIf="applyForm.get('phone')?.touched && applyForm.get('phone')?.errors?.['required']"
+                      color="danger"
+                    >
+                      Phone Number is required.
+                    </ion-note>
+                    <ion-note
+                      *ngIf="applyForm.get('phone')?.touched && applyForm.get('phone')?.errors?.['minlength']"
+                      color="danger"
+                    >
+                      Phone Number must be at least 7 characters long.
+                    </ion-note>
+                  </ion-col>
+                </ion-row>
 
-              <!-- Notes Textarea -->
-              <ion-item lines="none">
-                <ion-textarea
-                  formControlName="notes"
-                  label="Notes"
-                  label-placement="floating"
-                  fill="outline"
-                  placeholder="Enter any additional information"
-                  auto-grow="true"
-                ></ion-textarea>
-              </ion-item>
+                <!-- Notes Textarea -->
+                <ion-row>
+                  <ion-col size="12">
+                    <ion-item lines="none">
+                      <ion-textarea
+                        formControlName="notes"
+                        label="Notes"
+                        label-placement="floating"
+                        fill="outline"
+                        placeholder="Enter any additional information"
+                        auto-grow="true"
+                      ></ion-textarea>
+                    </ion-item>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
             </ion-card-content>
           </ion-card>
         </ion-col>

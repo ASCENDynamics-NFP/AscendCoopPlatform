@@ -22,10 +22,10 @@ import {ApplicantsPage} from "./applicants.page";
 import {Store} from "@ngrx/store";
 import {ActivatedRoute} from "@angular/router";
 import {of} from "rxjs";
-import {ListingRelatedAccount} from "../../../../models/listing-related-account.model";
-import * as ListingsActions from "../../../../state/actions/listings.actions";
+import {ListingRelatedAccount} from "../../../../../models/listing-related-account.model";
+import * as ListingsActions from "../../../../../state/actions/listings.actions";
 import {provideMockStore, MockStore} from "@ngrx/store/testing";
-import * as ListingsSelectors from "../../../../state/selectors/listings.selectors";
+import * as ListingsSelectors from "../../../../../state/selectors/listings.selectors";
 
 describe("ApplicantsPage", () => {
   let component: ApplicantsPage;

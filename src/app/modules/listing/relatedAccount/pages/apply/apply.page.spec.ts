@@ -17,23 +17,20 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// models/applicant.model.ts
+import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {ApplyPage} from "./apply.page";
 
-import {BaseDocument} from "./base-document";
-import {Timestamp, FieldValue} from "firebase/firestore";
+describe("ApplyPage", () => {
+  let component: ApplyPage;
+  let fixture: ComponentFixture<ApplyPage>;
 
-export interface ListingRelatedAccount extends BaseDocument {
-  accountId: string; // ID of the applicant's account
-  iconImage?: string;
-  firstName: string;
-  lastName: string;
-  name: string;
-  email: string;
-  phone?: string;
-  listingId: string; // ID of the listing
-  status: "applied" | "accepted" | "rejected" | "withdrawn";
-  applicationDate: Timestamp | FieldValue;
-  notes?: string;
-  resumeFile?: File | null;
-  coverLetterFile?: File | null;
-}
+  beforeEach(() => {
+    fixture = TestBed.createComponent(ApplyPage);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

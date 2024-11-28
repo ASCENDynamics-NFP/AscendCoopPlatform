@@ -149,16 +149,16 @@ export const listingsReducer = createReducer(
   })),
 
   // Applying to a listing
-  on(ListingsActions.applyToListing, (state) => ({
+  on(ListingsActions.submitApplication, (state) => ({
     ...state,
     loading: true,
     error: null,
   })),
-  on(ListingsActions.applyToListingSuccess, (state) => ({
+  on(ListingsActions.submitApplicationSuccess, (state) => ({
     ...state,
     loading: false,
   })),
-  on(ListingsActions.applyToListingFailure, (state, {error}) => ({
+  on(ListingsActions.submitApplicationFailure, (state, {error}) => ({
     ...state,
     loading: false,
     error,

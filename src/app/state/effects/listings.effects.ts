@@ -137,20 +137,66 @@ export class ListingsEffects {
     ),
   );
 
-  applyToListing$ = createEffect(() =>
+  submitApplication$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(ListingsActions.applyToListing),
-      switchMap(({listingId, applicant}) =>
-        this.firestoreService
-          .setDocument(
-            `listings/${listingId}/relatedAccounts/${applicant.id}`,
-            applicant,
-          )
-          .then(() => ListingsActions.applyToListingSuccess())
-          .catch((error) => ListingsActions.applyToListingFailure({error})),
+      ofType(ListingsActions.submitApplication),
+      mergeMap(({relatedAccount}) =>
+        from(this.submitApplicationToFirestore(relatedAccount)).pipe(
+          map(() => ListingsActions.submitApplicationSuccess()),
+          catchError((error) =>
+            of(
+              ListingsActions.submitApplicationFailure({
+                error: error.message,
+              }),
+            ),
+          ),
+        ),
       ),
     ),
   );
+
+  private async submitApplicationToFirestore(
+    relatedAccount: any,
+  ): Promise<void> {
+    try {
+      const applicationId = relatedAccount.id;
+
+      // Upload files if present
+      const resumeUrl = relatedAccount.resumeFile
+        ? await this.firestoreService.uploadFile(
+            `accounts/${applicationId}/listing/${relatedAccount.listingId}/resume.pdf`,
+            relatedAccount.resumeFile,
+          )
+        : null;
+
+      const coverLetterUrl = relatedAccount.coverLetterFile
+        ? await this.firestoreService.uploadFile(
+            `accounts/${applicationId}/listing/${relatedAccount.listingId}/coverLetter.pdf`,
+            relatedAccount.coverLetterFile,
+          )
+        : null;
+
+      // Save application data using setDocument
+      await this.firestoreService.setDocument(
+        `listings/${relatedAccount.listingId}/relatedAccounts/${applicationId}`,
+        {
+          id: applicationId,
+          firstName: relatedAccount.firstName,
+          lastName: relatedAccount.lastName,
+          email: relatedAccount.email,
+          phone: relatedAccount.phone,
+          resumeUrl,
+          coverLetterUrl,
+          listingId: relatedAccount.listingId,
+          createdAt: new Date(),
+        },
+        {merge: true}, // Use merge if partial updates might be needed
+      );
+    } catch (error) {
+      console.error("Error submitting application to Firestore:", error);
+      throw new Error("Failed to submit application. Please try again later.");
+    }
+  }
 
   loadListingRelatedAccounts$ = createEffect(() =>
     this.actions$.pipe(

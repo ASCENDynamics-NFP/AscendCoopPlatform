@@ -20,10 +20,10 @@
 import {Component, OnInit} from "@angular/core";
 import {Store} from "@ngrx/store";
 import {Observable} from "rxjs";
-import {ListingRelatedAccount} from "../../../../models/listing-related-account.model";
-import {AppState} from "../../../../state/app.state";
-import * as ListingsActions from "../../../../state/actions/listings.actions";
-import {selectRelatedAccountsByListingId} from "../../../../state/selectors/listings.selectors";
+import {ListingRelatedAccount} from "../../../../../models/listing-related-account.model";
+import {AppState} from "../../../../../state/app.state";
+import * as ListingsActions from "../../../../../state/actions/listings.actions";
+import {selectRelatedAccountsByListingId} from "../../../../../state/selectors/listings.selectors";
 import {ActivatedRoute} from "@angular/router";
 
 @Component({

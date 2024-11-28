@@ -1,0 +1,155 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<!-- src/app/modules/listings/pages/apply/apply.page.html -->
+
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Apply to this Opportunity</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="applyForm" (ngSubmit)="onSubmit()">
+    <ion-grid>
+      <ion-row>
+        <ion-col size="12">
+          <h2>Apply to this Opportunity</h2>
+          <p>Please complete the form below to apply to this position</p>
+        </ion-col>
+      </ion-row>
+
+      <!-- First Name -->
+      <ion-row>
+        <ion-col size="12">
+          <ion-input
+            formControlName="firstName"
+            label="First Name"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter your first name"
+            required
+          ></ion-input>
+        </ion-col>
+      </ion-row>
+
+      <!-- Last Name -->
+      <ion-row>
+        <ion-col size="12">
+          <ion-input
+            formControlName="lastName"
+            label="Last Name"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter your last name"
+            required
+          ></ion-input>
+        </ion-col>
+      </ion-row>
+
+      <!-- Email Address -->
+      <ion-row>
+        <ion-col size="12">
+          <ion-input
+            formControlName="email"
+            type="email"
+            label="Email Address"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter your email address"
+            required
+          ></ion-input>
+        </ion-col>
+      </ion-row>
+
+      <!-- Phone Number -->
+      <ion-row>
+        <ion-col size="12">
+          <ion-input
+            formControlName="phone"
+            type="tel"
+            label="Phone Number"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter your phone number"
+            required
+          ></ion-input>
+        </ion-col>
+      </ion-row>
+
+      <!-- Resume Upload -->
+      <ion-row>
+        <ion-col size="12">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Resume (if applicable)</ion-card-title>
+              <ion-card-subtitle>
+                Resume must be uploaded in PDF format (Max 10 MB)
+              </ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item>
+                <ion-label>Upload Resume</ion-label>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  (change)="onFileSelect($event, 'resume')"
+                />
+              </ion-item>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
+      <!-- Cover Letter Upload -->
+      <ion-row>
+        <ion-col size="12">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Cover Letter (if applicable)</ion-card-title>
+              <ion-card-subtitle>Maximum size: 10 MB</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item>
+                <ion-label>Upload Cover Letter</ion-label>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  (change)="onFileSelect($event, 'coverLetter')"
+                />
+              </ion-item>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
+      <!-- Submit Button -->
+      <ion-row>
+        <ion-col>
+          <ion-button expand="block" color="primary" type="submit">
+            Submit
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </form>
+</ion-content>

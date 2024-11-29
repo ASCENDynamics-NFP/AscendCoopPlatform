@@ -34,7 +34,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     message="Loading applicants..."
   ></ion-loading>
   <ion-list *ngIf="!(loading$ | async)">
-    <ion-item *ngFor="let account of relatedAccounts$ | async">
+    <ion-item
+      *ngFor="let account of relatedAccounts$ | async"
+      (click)="openApplicantDetailsModal(account)"
+    >
       <ion-avatar slot="start">
         <img [src]="account.iconImage || 'assets/avatar-placeholder.png'" />
       </ion-avatar>
@@ -51,14 +54,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       >
         {{ account.status }}
       </ion-badge>
-      <ion-button
+      <!-- <ion-button
         slot="end"
         fill="clear"
         [routerLink]="['/account', account.accountId]"
       >
         <ion-icon name="person-circle-outline"></ion-icon>
         View Profile
-      </ion-button>
+      </ion-button> -->
     </ion-item>
   </ion-list>
 

@@ -39,6 +39,7 @@ import {ApplicantsPage} from "./relatedAccount/pages/applicants/applicants.page"
 import {PhoneFormatPipe} from "../../shared/pipes/phone-format.pipe";
 import {SharedModule} from "../../shared/shared.module";
 import {ApplyPage} from "./relatedAccount/pages/apply/apply.page";
+import {ApplicantDetailsModalComponent} from "./relatedAccount/pages/applicants/components/applicant-details-modal/applicant-details-modal.component";
 
 @NgModule({
   declarations: [
@@ -53,6 +54,7 @@ import {ApplyPage} from "./relatedAccount/pages/apply/apply.page";
     FormatAddressPipe,
     PhoneFormatPipe,
     HeroComponent,
+    ApplicantDetailsModalComponent,
   ],
   imports: [
     CommonModule,

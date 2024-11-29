@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 import {Component, OnInit} from "@angular/core";
 import {Store} from "@ngrx/store";
-import {combineLatest, map, Observable} from "rxjs";
+import {combineLatest, map, Observable, take} from "rxjs";
 import {ListingRelatedAccount} from "../../../../../models/listing-related-account.model";
 import {AppState} from "../../../../../state/app.state";
 import * as ListingsActions from "../../../../../state/actions/listings.actions";
@@ -27,9 +27,11 @@ import {
   selectListingById,
   selectRelatedAccountsByListingId,
 } from "../../../../../state/selectors/listings.selectors";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
 import {Listing} from "../../../../../models/listing.model";
+import {ModalController} from "@ionic/angular";
+import {ApplicantDetailsModalComponent} from "./components/applicant-details-modal/applicant-details-modal.component";
 
 @Component({
   selector: "app-applicants",
@@ -47,6 +49,8 @@ export class ApplicantsPage implements OnInit {
   constructor(
     private store: Store<AppState>,
     private route: ActivatedRoute,
+    private modalController: ModalController,
+    private router: Router, // Add Router to constructor
   ) {
     this.listingId = this.route.snapshot.paramMap.get("id") || "";
     this.relatedAccounts$ = this.store.select(
@@ -72,8 +76,31 @@ export class ApplicantsPage implements OnInit {
   ngOnInit() {
     if (this.listingId) {
       this.store.dispatch(
-        ListingsActions.loadListingRelatedAccounts({listingId: this.listingId}),
+        ListingsActions.loadListingRelatedAccounts({
+          listingId: this.listingId,
+        }),
       );
     }
+  }
+
+  async openApplicantDetailsModal(account: ListingRelatedAccount) {
+    // Check if the user is the owner
+    this.isOwner$.pipe(take(1)).subscribe((isOwner) => {
+      if (isOwner) {
+        // Open modal for owners
+        this.openModal(account);
+      } else {
+        // Navigate to the profile page for non-owners
+        this.router.navigate(["/account", account.accountId]); // Ensure Router is used correctly
+      }
+    });
+  }
+
+  async openModal(account: ListingRelatedAccount) {
+    const modal = await this.modalController.create({
+      component: ApplicantDetailsModalComponent,
+      componentProps: {account},
+    });
+    await modal.present();
   }
 }

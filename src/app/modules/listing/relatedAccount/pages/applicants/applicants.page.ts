@@ -19,12 +19,17 @@
 ***********************************************************************************************/
 import {Component, OnInit} from "@angular/core";
 import {Store} from "@ngrx/store";
-import {Observable} from "rxjs";
+import {combineLatest, map, Observable} from "rxjs";
 import {ListingRelatedAccount} from "../../../../../models/listing-related-account.model";
 import {AppState} from "../../../../../state/app.state";
 import * as ListingsActions from "../../../../../state/actions/listings.actions";
-import {selectRelatedAccountsByListingId} from "../../../../../state/selectors/listings.selectors";
+import {
+  selectListingById,
+  selectRelatedAccountsByListingId,
+} from "../../../../../state/selectors/listings.selectors";
 import {ActivatedRoute} from "@angular/router";
+import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
+import {Listing} from "../../../../../models/listing.model";
 
 @Component({
   selector: "app-applicants",
@@ -36,6 +41,8 @@ export class ApplicantsPage implements OnInit {
   loading$: Observable<boolean>;
   error$: Observable<string | null>;
   listingId: string;
+  listing$: Observable<Listing>;
+  isOwner$: Observable<boolean>;
 
   constructor(
     private store: Store<AppState>,
@@ -47,6 +54,19 @@ export class ApplicantsPage implements OnInit {
     );
     this.loading$ = this.store.select((state) => state.listings.loading);
     this.error$ = this.store.select((state) => state.listings.error);
+
+    this.listing$ = this.store.select(selectListingById(this.listingId));
+
+    // Determine if current user is the listing creator
+    this.isOwner$ = combineLatest([
+      this.store.select(selectAuthUser),
+      this.listing$,
+    ]).pipe(
+      map(
+        ([user, listing]) =>
+          !!(user && listing && listing.createdBy === user.uid),
+      ),
+    );
   }
 
   ngOnInit() {

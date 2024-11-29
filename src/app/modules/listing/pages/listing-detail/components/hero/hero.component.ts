@@ -28,6 +28,7 @@ import {Listing} from "../../../../../../models/listing.model";
 export class HeroComponent {
   @Input() listing!: Listing;
   @Input() isOwner: boolean = false;
+  @Input() showButtons: boolean = true;
 
   constructor() {}
 

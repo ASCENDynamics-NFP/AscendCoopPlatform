@@ -17,9 +17,18 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<app-header title="Applicants"></app-header>
+<app-header
+  title="Applicants"
+  [defaultHref]="'/listings/'+ listingId"
+></app-header>
 
 <ion-content>
+  <app-hero
+    *ngIf="listing$ | async as listing"
+    [listing]="listing"
+    [isOwner]="(isOwner$ | async) ?? false"
+    [showButtons]="false"
+  ></app-hero>
   <ion-loading
     *ngIf="loading$ | async"
     message="Loading applicants..."

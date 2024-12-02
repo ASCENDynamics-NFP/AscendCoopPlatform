@@ -19,7 +19,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <ion-header>
   <ion-toolbar>
-    <ion-title>{{ relatedAccount?.name }} Application Details</ion-title>
+    <ion-title>{{ relatedAccount.name }} Application Details</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="closeModal()">
         <ion-icon name="close"></ion-icon>
@@ -29,17 +29,25 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 </ion-header>
 
 <ion-content>
+  <!-- Applicant Information -->
   <ion-card>
     <ion-card-header>
       <ion-card-title>Applicant Information</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <p><strong>First Name:</strong> {{ relatedAccount?.firstName }}</p>
-      <p><strong>Last Name:</strong> {{ relatedAccount?.lastName }}</p>
-      <p><strong>Email Address:</strong> {{ relatedAccount?.email }}</p>
+      <p><strong>First Name:</strong> {{ relatedAccount.firstName }}</p>
+      <p><strong>Last Name:</strong> {{ relatedAccount.lastName }}</p>
+      <p><strong>Email Address:</strong> {{ relatedAccount.email }}</p>
+      <p *ngIf="relatedAccount.phone">
+        <strong>Phone Number:</strong> {{ relatedAccount.phone }}
+      </p>
+      <p *ngIf="relatedAccount.notes">
+        <strong>Notes:</strong> {{ relatedAccount.notes }}
+      </p>
     </ion-card-content>
   </ion-card>
 
+  <!-- Resume -->
   <ion-card *ngIf="relatedAccount?.resumeFile">
     <ion-card-header>
       <ion-card-title>Resume</ion-card-title>
@@ -47,17 +55,19 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ion-card-content>
       <ion-item>
         <ion-icon name="document-outline" slot="start"></ion-icon>
-        <!-- <ion-label>{{ relatedAccount?.resumeFileName }}</ion-label> -->
+        <ion-label>{{ relatedAccount.resumeFile }}</ion-label>
         <ion-button
           fill="clear"
-          href="{{ relatedAccount?.resumeFile }}"
+          href="{{ relatedAccount.resumeFile }}"
           target="_blank"
-          >Download</ion-button
         >
+          Download
+        </ion-button>
       </ion-item>
     </ion-card-content>
   </ion-card>
 
+  <!-- Cover Letter -->
   <ion-card *ngIf="relatedAccount?.coverLetterFile">
     <ion-card-header>
       <ion-card-title>Cover Letter</ion-card-title>
@@ -65,19 +75,21 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ion-card-content>
       <ion-item>
         <ion-icon name="document-outline" slot="start"></ion-icon>
-        <!-- <ion-label>{{ relatedAccount?.coverLetterFileName }}</ion-label> -->
+        <ion-label>{{ relatedAccount.coverLetterFile }}</ion-label>
         <ion-button
           fill="clear"
-          href="{{ relatedAccount?.coverLetterFile }}"
+          href="{{ relatedAccount.coverLetterFile }}"
           target="_blank"
-          >Download</ion-button
         >
+          Download
+        </ion-button>
       </ion-item>
     </ion-card-content>
   </ion-card>
 </ion-content>
 
 <ion-footer>
+  <!-- Action Buttons -->
   <ion-grid>
     <ion-row>
       <ion-col size="6">
@@ -91,7 +103,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         </ion-button>
       </ion-col>
     </ion-row>
-    <ion-row>
+    <!-- <ion-row>
       <ion-col size="6">
         <ion-button
           expand="block"
@@ -106,6 +118,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           Reject
         </ion-button>
       </ion-col>
-    </ion-row>
+    </ion-row> -->
   </ion-grid>
 </ion-footer>

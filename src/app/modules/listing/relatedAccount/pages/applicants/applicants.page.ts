@@ -96,10 +96,10 @@ export class ApplicantsPage implements OnInit {
     });
   }
 
-  async openModal(account: ListingRelatedAccount) {
+  async openModal(relatedAccount: ListingRelatedAccount) {
     const modal = await this.modalController.create({
       component: ApplicantDetailsModalComponent,
-      componentProps: {account},
+      componentProps: {relatedAccount},
     });
     await modal.present();
   }

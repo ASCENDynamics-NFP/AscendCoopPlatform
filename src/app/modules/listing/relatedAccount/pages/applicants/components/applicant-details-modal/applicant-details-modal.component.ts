@@ -41,25 +41,33 @@ export class ApplicantDetailsModalComponent {
 
   copyEmail() {
     navigator.clipboard.writeText(this.relatedAccount.email);
-    alert("Email copied to clipboard!");
+    this.showToast("Email copied to clipboard!");
   }
 
   rejectApplication() {
-    alert("Application rejected!");
     this.relatedAccount.status = "rejected"; // Update the status for UI feedback
+    this.showToast("Application rejected!");
     this.closeModal();
-    // Add your rejection logic here
+    // Add rejection logic here
   }
 
   acceptApplication() {
-    alert("Application accepted!");
     this.relatedAccount.status = "accepted"; // Update the status for UI feedback
+    this.showToast("Application accepted!");
     this.closeModal();
-    // Add your acceptance logic here
+    // Add acceptance logic here
   }
 
   viewProfile() {
-    this.router.navigate(["/account", this.relatedAccount.id]);
+    this.router.navigate(["/account", this.relatedAccount.accountId]);
     this.closeModal();
+  }
+
+  async showToast(message: string) {
+    const toast = document.createElement("ion-toast");
+    toast.message = message;
+    toast.duration = 2000;
+    document.body.appendChild(toast);
+    await toast.present();
   }
 }

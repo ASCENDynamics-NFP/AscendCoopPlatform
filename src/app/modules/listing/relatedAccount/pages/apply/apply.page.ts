@@ -32,6 +32,7 @@ import {ActivatedRoute} from "@angular/router";
 import {selectListingById} from "../../../../../state/selectors/listings.selectors";
 import {Listing} from "../../../../../models/listing.model";
 import {AlertController} from "@ionic/angular";
+import {serverTimestamp} from "firebase/firestore";
 
 @Component({
   selector: "app-apply",
@@ -91,12 +92,12 @@ export class ApplyPage implements OnInit {
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
       if (file.type !== "application/pdf") {
-        alert("Please upload a valid PDF file.");
+        this.showAlert("Invalid File", "Please upload a valid PDF file.");
         input.value = ""; // Reset the input
         return;
       }
       if (file.size > 10 * 1024 * 1024) {
-        alert("File size must not exceed 10 MB.");
+        this.showAlert("File Too Large", "File size must not exceed 10 MB.");
         input.value = ""; // Reset the input
         return;
       }
@@ -146,12 +147,16 @@ export class ApplyPage implements OnInit {
       const relatedAccount = {
         ...this.applyForm.value,
         id: authUser.uid, // Populate the id
+        name: authUser.name,
+        iconImage: authUser.iconImage,
+        heroImage: authUser.heroImage,
         accountId: authUser.uid, // Populate the accountId
         resumeFile: this.resumeFile,
         coverLetterFile: this.coverLetterFile,
         listingId: this.listingId,
         type: "application",
         status: "applied",
+        applicationDate: serverTimestamp(),
       };
 
       // Dispatch action to submit application

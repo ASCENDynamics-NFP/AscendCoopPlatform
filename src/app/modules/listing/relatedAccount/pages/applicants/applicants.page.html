@@ -39,7 +39,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       (click)="openApplicantDetailsModal(account)"
     >
       <ion-avatar slot="start">
-        <img [src]="account.iconImage || 'assets/avatar-placeholder.png'" />
+        <img *ngIf="account.iconImage" [src]="account.iconImage" />
       </ion-avatar>
       <ion-label>
         <h2>{{ account.name }}</h2>

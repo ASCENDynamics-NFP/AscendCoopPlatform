@@ -19,11 +19,9 @@
 ***********************************************************************************************/
 import {Component} from "@angular/core";
 import {Store} from "@ngrx/store";
-import {Router} from "@angular/router";
 import {first} from "rxjs/operators";
 import * as ListingActions from "../../../../state/actions/listings.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
-import {serverTimestamp} from "firebase/firestore";
 
 @Component({
   selector: "app-listing-create",
@@ -31,10 +29,7 @@ import {serverTimestamp} from "firebase/firestore";
   styleUrls: ["./listing-create.page.scss"],
 })
 export class ListingCreatePage {
-  constructor(
-    private store: Store,
-    private router: Router,
-  ) {}
+  constructor(private store: Store) {}
 
   onSubmit(formValue: any) {
     this.store
@@ -47,7 +42,6 @@ export class ListingCreatePage {
             createdBy: user.uid,
           };
           this.store.dispatch(ListingActions.createListing({listing}));
-          this.router.navigate(["/listings"]);
         }
       });
   }

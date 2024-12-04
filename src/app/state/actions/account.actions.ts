@@ -48,8 +48,6 @@ export const loadAccountSuccess = createAction(
   "[Account] Load Account Success",
   props<{
     account: Account;
-    relatedAccounts: RelatedAccount[];
-    relatedListings: RelatedListing[];
   }>(),
 );
 

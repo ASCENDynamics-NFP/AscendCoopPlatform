@@ -29,6 +29,7 @@ import {
   catchError,
   mergeMap,
   withLatestFrom,
+  debounceTime,
 } from "rxjs/operators";
 import {FirestoreService} from "../../core/services/firestore.service";
 import {Account} from "../../models/account.model";
@@ -38,13 +39,22 @@ import {Store} from "@ngrx/store";
 import * as AuthActions from "../actions/auth.actions";
 import {selectAccountEntities} from "../selectors/account.selectors";
 import {serverTimestamp} from "@angular/fire/firestore";
+import {ToastController} from "@ionic/angular";
+import {Router} from "@angular/router";
 
 @Injectable()
 export class AccountEffects {
+  private accountsCache = new Map<string, Account>();
+  private relatedAccountsCache = new Map<string, any[]>();
+  private relatedListingsCache = new Map<string, RelatedListing[]>();
+  private cacheExpiration = 5 * 60 * 1000; // 5 minutes
+
   constructor(
     private actions$: Actions,
     private firestoreService: FirestoreService,
     private store: Store,
+    private router: Router,
+    private toastController: ToastController,
   ) {}
 
   // Load Accounts
@@ -71,23 +81,43 @@ export class AccountEffects {
   loadAccount$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.loadAccount),
-      mergeMap(({accountId}) =>
-        this.firestoreService.getAccountWithRelated(accountId).pipe(
-          map(({account, relatedAccounts, relatedListings}) => {
-            if (account) {
+      mergeMap(({accountId}) => {
+        const cachedAccount = this.accountsCache.get(accountId);
+        if (cachedAccount) {
+          return of(
+            AccountActions.loadAccountSuccess({
+              account: cachedAccount,
+            }),
+          );
+        }
+
+        return this.firestoreService
+          .getDocument<Account>("accounts", accountId)
+          .pipe(
+            map((account) => {
+              if (!account) {
+                throw new Error("Account not found");
+              }
+              this.accountsCache.set(accountId, account);
+              setTimeout(() => {
+                this.accountsCache.delete(accountId);
+              }, this.cacheExpiration);
               return AccountActions.loadAccountSuccess({
                 account,
-                relatedAccounts,
-                relatedListings,
               });
-            }
-            return AccountActions.loadAccountFailure({
-              error: "Account not found",
-            });
-          }),
-          catchError((error) => of(AccountActions.loadAccountFailure({error}))),
-        ),
-      ),
+            }),
+            catchError((error) => {
+              this.toastController
+                .create({
+                  message: `Error loading account: ${error.message}`,
+                  duration: 2000,
+                  color: "danger",
+                })
+                .then((toast) => toast.present());
+              return of(AccountActions.loadAccountFailure({error}));
+            }),
+          );
+      }),
     ),
   );
 
@@ -105,19 +135,28 @@ export class AccountEffects {
           this.firestoreService.addDocument("accounts", newAccount),
         ).pipe(
           map((accountId) => {
-            if (accountId) {
-              return AccountActions.createAccountSuccess({
-                account: {...newAccount, id: accountId},
-              });
-            } else {
-              return AccountActions.createAccountFailure({
-                error: "Failed to create account",
-              });
-            }
+            this.router.navigate([`/accounts/${accountId}`]);
+            this.toastController
+              .create({
+                message: "Account created successfully",
+                duration: 2000,
+                color: "success",
+              })
+              .then((toast) => toast.present());
+            return AccountActions.createAccountSuccess({
+              account: {...newAccount, id: accountId},
+            });
           }),
-          catchError((error) =>
-            of(AccountActions.createAccountFailure({error})),
-          ),
+          catchError((error) => {
+            this.toastController
+              .create({
+                message: `Error creating account: ${error.message}`,
+                duration: 2000,
+                color: "danger",
+              })
+              .then((toast) => toast.present());
+            return of(AccountActions.createAccountFailure({error}));
+          }),
         );
       }),
     ),
@@ -127,10 +166,12 @@ export class AccountEffects {
   updateAccount$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.updateAccount),
+      debounceTime(300), // Prevent rapid updates
       switchMap(({account}) => {
+        this.accountsCache.delete(account.id);
         const updatedAccount = {
           ...account,
-          lastModifiedAt: serverTimestamp(), // Always update
+          lastModifiedAt: serverTimestamp(),
         };
         return from(
           this.firestoreService.updateDocument(
@@ -139,12 +180,29 @@ export class AccountEffects {
             updatedAccount,
           ),
         ).pipe(
-          map(() =>
-            AccountActions.updateAccountSuccess({account: updatedAccount}),
-          ),
-          catchError((error) =>
-            of(AccountActions.updateAccountFailure({error})),
-          ),
+          map(() => {
+            this.accountsCache.set(account.id, updatedAccount);
+            this.toastController
+              .create({
+                message: "Account updated successfully",
+                duration: 2000,
+                color: "success",
+              })
+              .then((toast) => toast.present());
+            return AccountActions.updateAccountSuccess({
+              account: updatedAccount,
+            });
+          }),
+          catchError((error) => {
+            this.toastController
+              .create({
+                message: `Error updating account: ${error.message}`,
+                duration: 2000,
+                color: "danger",
+              })
+              .then((toast) => toast.present());
+            return of(AccountActions.updateAccountFailure({error}));
+          }),
         );
       }),
     ),
@@ -154,14 +212,34 @@ export class AccountEffects {
   deleteAccount$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.deleteAccount),
-      switchMap(({accountId}) =>
-        from(this.firestoreService.deleteDocument("accounts", accountId)).pipe(
-          map(() => AccountActions.deleteAccountSuccess({accountId})),
-          catchError((error) =>
-            of(AccountActions.deleteAccountFailure({error})),
-          ),
-        ),
-      ),
+      switchMap(({accountId}) => {
+        this.accountsCache.delete(accountId);
+        return from(
+          this.firestoreService.deleteDocument("accounts", accountId),
+        ).pipe(
+          map(() => {
+            this.router.navigate(["/"]);
+            this.toastController
+              .create({
+                message: "Account deleted successfully",
+                duration: 2000,
+                color: "success",
+              })
+              .then((toast) => toast.present());
+            return AccountActions.deleteAccountSuccess({accountId});
+          }),
+          catchError((error) => {
+            this.toastController
+              .create({
+                message: `Error deleting account: ${error.message}`,
+                duration: 2000,
+                color: "danger",
+              })
+              .then((toast) => toast.present());
+            return of(AccountActions.deleteAccountFailure({error}));
+          }),
+        );
+      }),
     ),
   );
 
@@ -169,19 +247,32 @@ export class AccountEffects {
   searchAccounts$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.searchAccounts),
+      debounceTime(300),
       switchMap(({query}) =>
         from(this.firestoreService.searchAccountByName("accounts", query)).pipe(
           map((accountsData) => {
             const accounts: Account[] = (accountsData || []).map(
-              (accountData) => ({
-                ...(accountData as Account),
-              }),
+              (accountData) => ({...(accountData as Account)}),
             );
+            this.toastController
+              .create({
+                message: `Found ${accounts.length} accounts`,
+                duration: 2000,
+                color: "success",
+              })
+              .then((toast) => toast.present());
             return AccountActions.searchAccountsSuccess({accounts});
           }),
-          catchError((error) =>
-            of(AccountActions.searchAccountsFailure({error})),
-          ),
+          catchError((error) => {
+            this.toastController
+              .create({
+                message: `Search failed: ${error.message}`,
+                duration: 2000,
+                color: "danger",
+              })
+              .then((toast) => toast.present());
+            return of(AccountActions.searchAccountsFailure({error}));
+          }),
         ),
       ),
     ),
@@ -203,15 +294,29 @@ export class AccountEffects {
             newRelatedAccount,
           ),
         ).pipe(
-          map(() =>
-            AccountActions.createRelatedAccountSuccess({
+          map(() => {
+            this.toastController
+              .create({
+                message: "Related account created successfully",
+                duration: 2000,
+                color: "success",
+              })
+              .then((toast) => toast.present());
+            return AccountActions.createRelatedAccountSuccess({
               accountId,
               relatedAccount: newRelatedAccount,
-            }),
-          ),
-          catchError((error) =>
-            of(AccountActions.createRelatedAccountFailure({error})),
-          ),
+            });
+          }),
+          catchError((error) => {
+            this.toastController
+              .create({
+                message: `Failed to create related account: ${error.message}`,
+                duration: 2000,
+                color: "danger",
+              })
+              .then((toast) => toast.present());
+            return of(AccountActions.createRelatedAccountFailure({error}));
+          }),
         );
       }),
     ),
@@ -221,23 +326,40 @@ export class AccountEffects {
   deleteRelatedAccount$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.deleteRelatedAccount),
-      mergeMap(({accountId, relatedAccountId}) =>
-        from(
+      mergeMap(({accountId, relatedAccountId}) => {
+        // Clear related accounts cache
+        this.relatedAccountsCache.delete(accountId);
+
+        return from(
           this.firestoreService.deleteDocumentAtPath(
             `accounts/${accountId}/relatedAccounts/${relatedAccountId}`,
           ),
         ).pipe(
-          map(() =>
-            AccountActions.deleteRelatedAccountSuccess({
+          map(() => {
+            this.toastController
+              .create({
+                message: "Related account removed successfully",
+                duration: 2000,
+                color: "success",
+              })
+              .then((toast) => toast.present());
+            return AccountActions.deleteRelatedAccountSuccess({
               accountId,
               relatedAccountId,
-            }),
-          ),
-          catchError((error) =>
-            of(AccountActions.deleteRelatedAccountFailure({error})),
-          ),
-        ),
-      ),
+            });
+          }),
+          catchError((error) => {
+            this.toastController
+              .create({
+                message: `Failed to remove related account: ${error.message}`,
+                duration: 2000,
+                color: "danger",
+              })
+              .then((toast) => toast.present());
+            return of(AccountActions.deleteRelatedAccountFailure({error}));
+          }),
+        );
+      }),
     ),
   );
 
@@ -245,19 +367,48 @@ export class AccountEffects {
   loadRelatedAccounts$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.loadRelatedAccounts),
-      switchMap(({accountId}) =>
-        this.firestoreService.getRelatedAccounts(accountId).pipe(
-          map((relatedAccounts) =>
+      switchMap(({accountId}) => {
+        const cachedRelatedAccounts = this.relatedAccountsCache.get(accountId);
+        if (cachedRelatedAccounts) {
+          return of(
             AccountActions.loadRelatedAccountsSuccess({
               accountId,
-              relatedAccounts,
+              relatedAccounts: cachedRelatedAccounts,
             }),
-          ),
-          catchError((error) =>
-            of(AccountActions.loadRelatedAccountsFailure({error})),
-          ),
-        ),
-      ),
+          );
+        }
+
+        return this.firestoreService.getRelatedAccounts(accountId).pipe(
+          map((relatedAccounts) => {
+            this.relatedAccountsCache.set(accountId, relatedAccounts);
+            setTimeout(() => {
+              this.relatedAccountsCache.delete(accountId);
+            }, this.cacheExpiration);
+
+            this.toastController
+              .create({
+                message: `Loaded ${relatedAccounts.length} related accounts`,
+                duration: 2000,
+                color: "success",
+              })
+              .then((toast) => toast.present());
+            return AccountActions.loadRelatedAccountsSuccess({
+              accountId,
+              relatedAccounts,
+            });
+          }),
+          catchError((error) => {
+            this.toastController
+              .create({
+                message: `Error loading related accounts: ${error.message}`,
+                duration: 2000,
+                color: "danger",
+              })
+              .then((toast) => toast.present());
+            return of(AccountActions.loadRelatedAccountsFailure({error}));
+          }),
+        );
+      }),
     ),
   );
 
@@ -265,10 +416,14 @@ export class AccountEffects {
   updateRelatedAccount$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.updateRelatedAccount),
+      debounceTime(300),
       switchMap(({accountId, relatedAccount}) => {
+        // Clear related accounts cache
+        this.relatedAccountsCache.delete(accountId);
+
         const updatedRelatedAccount = {
           ...relatedAccount,
-          lastModifiedAt: serverTimestamp(), // Always update
+          lastModifiedAt: serverTimestamp(),
         };
         return from(
           this.firestoreService.updateDocument(
@@ -277,15 +432,29 @@ export class AccountEffects {
             updatedRelatedAccount,
           ),
         ).pipe(
-          map(() =>
-            AccountActions.updateRelatedAccountSuccess({
+          map(() => {
+            this.toastController
+              .create({
+                message: "Related account updated successfully",
+                duration: 2000,
+                color: "success",
+              })
+              .then((toast) => toast.present());
+            return AccountActions.updateRelatedAccountSuccess({
               accountId,
               relatedAccount: updatedRelatedAccount,
-            }),
-          ),
-          catchError((error) =>
-            of(AccountActions.updateRelatedAccountFailure({error})),
-          ),
+            });
+          }),
+          catchError((error) => {
+            this.toastController
+              .create({
+                message: `Update failed: ${error.message}`,
+                duration: 2000,
+                color: "danger",
+              })
+              .then((toast) => toast.present());
+            return of(AccountActions.updateRelatedAccountFailure({error}));
+          }),
         );
       }),
     ),
@@ -295,21 +464,50 @@ export class AccountEffects {
   loadRelatedListings$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.loadRelatedListings),
-      mergeMap(({accountId}) =>
-        this.firestoreService
+      mergeMap(({accountId}) => {
+        const cachedRelatedListings = this.relatedListingsCache.get(accountId);
+        if (cachedRelatedListings) {
+          return of(
+            AccountActions.loadRelatedListingsSuccess({
+              accountId,
+              relatedListings: cachedRelatedListings,
+            }),
+          );
+        }
+
+        return this.firestoreService
           .getDocuments<RelatedListing>(`accounts/${accountId}/relatedListings`)
           .pipe(
-            map((relatedListings) =>
-              AccountActions.loadRelatedListingsSuccess({
+            map((relatedListings) => {
+              this.relatedListingsCache.set(accountId, relatedListings);
+              setTimeout(() => {
+                this.relatedListingsCache.delete(accountId);
+              }, this.cacheExpiration);
+
+              this.toastController
+                .create({
+                  message: `Loaded ${relatedListings.length} related listings`,
+                  duration: 2000,
+                  color: "success",
+                })
+                .then((toast) => toast.present());
+              return AccountActions.loadRelatedListingsSuccess({
                 accountId,
                 relatedListings,
-              }),
-            ),
-            catchError((error) =>
-              of(AccountActions.loadRelatedListingsFailure({error})),
-            ),
-          ),
-      ),
+              });
+            }),
+            catchError((error) => {
+              this.toastController
+                .create({
+                  message: `Error loading related listings: ${error.message}`,
+                  duration: 2000,
+                  color: "danger",
+                })
+                .then((toast) => toast.present());
+              return of(AccountActions.loadRelatedListingsFailure({error}));
+            }),
+          );
+      }),
     ),
   );
 
@@ -357,23 +555,40 @@ export class AccountEffects {
   deleteRelatedListing$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.deleteRelatedListing),
-      mergeMap(({accountId, relatedListingId}) =>
-        from(
+      mergeMap(({accountId, relatedListingId}) => {
+        // Clear related listings cache
+        this.relatedListingsCache.delete(accountId);
+
+        return from(
           this.firestoreService.deleteDocumentAtPath(
             `accounts/${accountId}/relatedListings/${relatedListingId}`,
           ),
         ).pipe(
-          map(() =>
-            AccountActions.deleteRelatedListingSuccess({
+          map(() => {
+            this.toastController
+              .create({
+                message: "Related listing removed successfully",
+                duration: 2000,
+                color: "success",
+              })
+              .then((toast) => toast.present());
+            return AccountActions.deleteRelatedListingSuccess({
               accountId,
               relatedListingId,
-            }),
-          ),
-          catchError((error) =>
-            of(AccountActions.deleteRelatedListingFailure({error})),
-          ),
-        ),
-      ),
+            });
+          }),
+          catchError((error) => {
+            this.toastController
+              .create({
+                message: `Failed to remove related listing: ${error.message}`,
+                duration: 2000,
+                color: "danger",
+              })
+              .then((toast) => toast.present());
+            return of(AccountActions.deleteRelatedListingFailure({error}));
+          }),
+        );
+      }),
     ),
   );
 }

@@ -79,27 +79,16 @@ export const accountReducer = createReducer(
     loading: true,
     error: null,
   })),
-  on(
-    AccountActions.loadAccountSuccess,
-    (state, {account, relatedAccounts, relatedListings}) => ({
-      ...state,
-      entities: {
-        ...state.entities,
-        [account.id]: account,
-      },
-      relatedAccounts: {
-        ...state.relatedAccounts,
-        [account.id]: relatedAccounts,
-      },
-      relatedListings: {
-        ...state.relatedListings,
-        [account.id]: relatedListings,
-      },
-      selectedAccountId: account.id,
-      loading: false,
-      error: null,
-    }),
-  ),
+  on(AccountActions.loadAccountSuccess, (state, {account}) => ({
+    ...state,
+    entities: {
+      ...state.entities,
+      [account.id]: account,
+    },
+    selectedAccountId: account.id,
+    loading: false,
+    error: null,
+  })),
   on(AccountActions.loadAccountFailure, (state, {error}) => ({
     ...state,
     loading: false,

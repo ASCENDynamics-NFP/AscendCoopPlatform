@@ -33,6 +33,7 @@ import {ToastController} from "@ionic/angular";
 @Injectable()
 export class ListingsEffects {
   private listingsCache = new Map<string, Listing>();
+  private relatedAccountsCache = new Map<string, ListingRelatedAccount[]>();
   private cacheExpiration = 5 * 60 * 1000; // 5 minutes
 
   constructor(
@@ -244,8 +245,10 @@ export class ListingsEffects {
   submitApplication$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.submitApplication),
-      mergeMap(({relatedAccount}) =>
-        from(this.submitApplicationToFirestore(relatedAccount)).pipe(
+      mergeMap(({relatedAccount}) => {
+        this.relatedAccountsCache.delete(relatedAccount.listingId);
+
+        return from(this.submitApplicationToFirestore(relatedAccount)).pipe(
           map(() => {
             this.router.navigate([
               "/listings",
@@ -273,8 +276,8 @@ export class ListingsEffects {
               ListingsActions.submitApplicationFailure({error: error.message}),
             );
           }),
-        ),
-      ),
+        );
+      }),
     ),
   );
 
@@ -325,13 +328,38 @@ export class ListingsEffects {
   loadListingRelatedAccounts$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.loadListingRelatedAccounts),
-      mergeMap(({listingId}) =>
-        this.firestoreService
+      mergeMap(({listingId}) => {
+        // Check cache first
+        const cachedRelatedAccounts = this.relatedAccountsCache.get(listingId);
+        if (cachedRelatedAccounts) {
+          this.toastController
+            .create({
+              message: "Applications loaded successfully",
+              duration: 2000,
+              color: "success",
+            })
+            .then((toast) => toast.present());
+
+          return of(
+            ListingsActions.loadListingRelatedAccountsSuccess({
+              listingId,
+              relatedAccounts: cachedRelatedAccounts,
+            }),
+          );
+        }
+
+        return this.firestoreService
           .getDocuments<ListingRelatedAccount>(
             `listings/${listingId}/relatedAccounts`,
           )
           .pipe(
             map((relatedAccounts) => {
+              // Update cache
+              this.relatedAccountsCache.set(listingId, relatedAccounts);
+              setTimeout(() => {
+                this.relatedAccountsCache.delete(listingId);
+              }, this.cacheExpiration);
+
               this.toastController
                 .create({
                   message: "Applications loaded successfully",
@@ -339,6 +367,7 @@ export class ListingsEffects {
                   color: "success",
                 })
                 .then((toast) => toast.present());
+
               return ListingsActions.loadListingRelatedAccountsSuccess({
                 listingId,
                 relatedAccounts,
@@ -359,8 +388,8 @@ export class ListingsEffects {
                 }),
               );
             }),
-          ),
-      ),
+          );
+      }),
     ),
   );
 }

@@ -19,7 +19,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <app-header
   title="Applicants"
-  [defaultHref]="'/listings/'+ listingId"
+  [defaultHref]="'/listings/' + listingId"
 ></app-header>
 
 <ion-content>
@@ -29,13 +29,15 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     [isOwner]="(isOwner$ | async) ?? false"
     [showButtons]="false"
   ></app-hero>
+
   <ion-loading
     *ngIf="loading$ | async"
     message="Loading applicants..."
   ></ion-loading>
+
   <ion-list *ngIf="!(loading$ | async)">
     <ion-item
-      *ngFor="let account of relatedAccounts$ | async"
+      *ngFor="let account of paginatedAccounts$ | async"
       (click)="openApplicantDetailsModal(account)"
     >
       <ion-avatar slot="start">
@@ -50,7 +52,13 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-label>
       <ion-badge
         slot="end"
-        [color]="account.status === 'accepted' ? 'success' : account.status === 'rejected' ? 'danger' : 'primary'"
+        [color]="
+          account.status === 'accepted'
+            ? 'success'
+            : account.status === 'rejected'
+            ? 'danger'
+            : 'primary'
+        "
       >
         {{ account.status }}
       </ion-badge>
@@ -69,3 +77,67 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     {{ error }}
   </ion-text>
 </ion-content>
+
+<!-- Pagination Controls -->
+<ion-footer>
+  <ion-toolbar class="pagination-toolbar">
+    <!-- Current Page Range -->
+    <ng-container *ngIf="currentPageRange$ | async as range">
+      <ion-text class="pagination-range">
+        {{ range.start }}-{{ range.end }} of {{ range.total }}
+      </ion-text>
+    </ng-container>
+
+    <!-- Pagination Controls -->
+    <ng-container *ngIf="pagination$ | async as pageData">
+      <div class="pagination-controls">
+        <!-- Previous Button -->
+        <ion-button
+          fill="clear"
+          (click)="previousPage()"
+          [disabled]="pageData.currentPage === 1"
+        >
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </ion-button>
+
+        <!-- Page Numbers -->
+        <ion-button
+          *ngFor="let page of pageData.pageNumbers"
+          fill="clear"
+          [color]="pageData.currentPage === page ? 'primary' : 'medium'"
+          (click)="goToPage(page)"
+        >
+          {{ page }}
+        </ion-button>
+
+        <!-- Ellipsis and Last Page -->
+        <ng-container
+          *ngIf="
+            pageData.totalPages > maxVisiblePages &&
+            pageData.pageNumbers.length &&
+            pageData.pageNumbers[pageData.pageNumbers.length - 1] <
+              pageData.totalPages
+          "
+        >
+          <ion-text>...</ion-text>
+          <ion-button
+            fill="clear"
+            (click)="goToPage(pageData.totalPages)"
+            [disabled]="pageData.currentPage === pageData.totalPages"
+          >
+            {{ pageData.totalPages }}
+          </ion-button>
+        </ng-container>
+
+        <!-- Next Button -->
+        <ion-button
+          fill="clear"
+          (click)="nextPage()"
+          [disabled]="pageData.currentPage === pageData.totalPages"
+        >
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </ng-container>
+  </ion-toolbar>
+</ion-footer>

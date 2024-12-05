@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 import {Component, OnInit} from "@angular/core";
 import {Store} from "@ngrx/store";
-import {combineLatest, map, Observable, take} from "rxjs";
+import {BehaviorSubject, combineLatest, map, Observable, of, take} from "rxjs";
 import {ListingRelatedAccount} from "../../../../../models/listing-related-account.model";
 import {AppState} from "../../../../../state/app.state";
 import * as ListingsActions from "../../../../../state/actions/listings.actions";
@@ -40,6 +40,31 @@ import {ApplicantDetailsModalComponent} from "./components/applicant-details-mod
 })
 export class ApplicantsPage implements OnInit {
   relatedAccounts$: Observable<ListingRelatedAccount[]>;
+  paginatedAccounts$!: Observable<ListingRelatedAccount[]>;
+  currentPageSubject = new BehaviorSubject<number>(1);
+  currentPage$ = this.currentPageSubject.asObservable();
+  pageSize = 20; // Items per page
+  maxVisiblePages = 5; // Max visible page numbers
+
+  totalItems$!: Observable<number>;
+  totalPages$!: Observable<number>;
+  pageNumbers$!: Observable<number[]>;
+  currentPageStart$!: Observable<number>;
+  currentPageEnd$!: Observable<number>;
+
+  // Combined pagination info observable
+  pagination$!: Observable<{
+    currentPage: number;
+    totalPages: number;
+    pageNumbers: number[];
+  }>;
+
+  currentPageRange$!: Observable<{
+    start: number;
+    end: number;
+    total: number;
+  }>;
+
   loading$: Observable<boolean>;
   error$: Observable<string | null>;
   listingId: string;
@@ -50,12 +75,13 @@ export class ApplicantsPage implements OnInit {
     private store: Store<AppState>,
     private route: ActivatedRoute,
     private modalController: ModalController,
-    private router: Router, // Add Router to constructor
+    private router: Router,
   ) {
     this.listingId = this.route.snapshot.paramMap.get("id") || "";
     this.relatedAccounts$ = this.store.select(
       selectRelatedAccountsByListingId(this.listingId),
     );
+
     this.loading$ = this.store.select((state) => state.listings.loading);
     this.error$ = this.store.select((state) => state.listings.error);
 
@@ -81,6 +107,89 @@ export class ApplicantsPage implements OnInit {
         }),
       );
     }
+
+    // Calculate total items dynamically
+    this.totalItems$ = this.relatedAccounts$.pipe(
+      map((accounts) => accounts.length),
+    );
+
+    // Calculate total pages
+    this.totalPages$ = this.totalItems$.pipe(
+      map((totalItems) => Math.ceil(totalItems / this.pageSize)),
+    );
+
+    // Generate paginated accounts
+    this.paginatedAccounts$ = combineLatest([
+      this.relatedAccounts$,
+      this.currentPage$,
+    ]).pipe(
+      map(([accounts, currentPage]) => {
+        const startIndex = (currentPage - 1) * this.pageSize;
+        return accounts.slice(startIndex, startIndex + this.pageSize);
+      }),
+    );
+
+    // Generate page numbers
+    this.pageNumbers$ = combineLatest([
+      this.currentPage$,
+      this.totalPages$,
+    ]).pipe(
+      map(([currentPage, totalPages]) => {
+        let startPage = Math.max(
+          1,
+          currentPage - Math.floor(this.maxVisiblePages / 2),
+        );
+        let endPage = startPage + this.maxVisiblePages - 1;
+        if (endPage > totalPages) {
+          endPage = totalPages;
+          startPage = Math.max(1, endPage - this.maxVisiblePages + 1);
+        }
+        return Array.from(
+          {length: endPage - startPage + 1},
+          (_, i) => startPage + i,
+        );
+      }),
+    );
+
+    // Calculate start and end indices for the current page
+    this.currentPageStart$ = combineLatest([
+      this.currentPage$,
+      this.totalItems$,
+    ]).pipe(
+      map(([currentPage, totalItems]) => {
+        const start = (currentPage - 1) * this.pageSize + 1;
+        return Math.min(start, totalItems);
+      }),
+    );
+
+    this.currentPageEnd$ = combineLatest([
+      this.currentPage$,
+      this.totalItems$,
+    ]).pipe(
+      map(([currentPage, totalItems]) =>
+        Math.min(currentPage * this.pageSize, totalItems),
+      ),
+    );
+
+    // Combine pagination observables
+    this.pagination$ = combineLatest([
+      this.currentPage$,
+      this.totalPages$,
+      this.pageNumbers$,
+    ]).pipe(
+      map(([currentPage, totalPages, pageNumbers]) => ({
+        currentPage,
+        totalPages,
+        pageNumbers,
+      })),
+    );
+
+    // Combine current page range observables
+    this.currentPageRange$ = combineLatest([
+      this.currentPageStart$,
+      this.currentPageEnd$,
+      this.totalItems$,
+    ]).pipe(map(([start, end, total]) => ({start, end, total})));
   }
 
   async openApplicantDetailsModal(account: ListingRelatedAccount) {
@@ -91,7 +200,7 @@ export class ApplicantsPage implements OnInit {
         this.openModal(account);
       } else {
         // Navigate to the profile page for non-owners
-        this.router.navigate(["/account", account.accountId]); // Ensure Router is used correctly
+        this.router.navigate(["/account", account.accountId]);
       }
     });
   }
@@ -102,5 +211,22 @@ export class ApplicantsPage implements OnInit {
       componentProps: {relatedAccount},
     });
     await modal.present();
+  }
+
+  // Pagination methods
+  goToPage(pageNumber: number) {
+    this.currentPageSubject.next(pageNumber);
+  }
+
+  nextPage() {
+    this.currentPage$.pipe(take(1)).subscribe((currentPage) => {
+      this.currentPageSubject.next(currentPage + 1);
+    });
+  }
+
+  previousPage() {
+    this.currentPage$.pipe(take(1)).subscribe((currentPage) => {
+      this.currentPageSubject.next(currentPage - 1);
+    });
   }
 }

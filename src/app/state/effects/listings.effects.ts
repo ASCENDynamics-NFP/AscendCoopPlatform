@@ -215,7 +215,7 @@ export class ListingsEffects {
 
         return from(this.firestoreService.deleteDocument("listings", id)).pipe(
           map(() => {
-            this.router.navigate(["/listings"]);
+            // this.router.navigate(["/listings"]); // Want to navigate to account's listings page.
             this.toastController
               .create({
                 message: "Listing deleted successfully",

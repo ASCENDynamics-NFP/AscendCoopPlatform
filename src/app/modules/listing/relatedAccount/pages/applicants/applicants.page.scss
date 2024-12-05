@@ -17,3 +17,64 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+.pagination-toolbar {
+  display: flex; /* Enable Flexbox */
+  justify-content: center; /* Center items horizontally */
+  align-items: center; /* Center items vertically */
+  padding: 0.5rem 1rem;
+  gap: 2rem; /* Space between the range and controls */
+  width: 100%; /* Ensure the toolbar spans the full width */
+  box-sizing: border-box; /* Include padding in width calculations */
+
+  /* Optional: Add a temporary border for debugging */
+  /* border: 1px solid red; */
+
+  /* Current Page Range Styling */
+  .pagination-range,
+  .pagination-controls {
+    display: flex; /* Arrange buttons in a row */
+    align-items: center; /* Vertically center buttons */
+    gap: 0.5rem; /* Space between buttons */
+    flex-shrink: 0; /* Prevent shrinking */
+    justify-content: center; /* Center pagination controls */
+  }
+
+  /* Button Styling */
+  .pagination-controls ion-button {
+    --background: transparent; /* Transparent background */
+    --color: var(--ion-color-medium); /* Default color */
+    padding: 0; /* Remove default padding */
+    font-size: 1rem; /* Adjust font size */
+
+    &.active {
+      --color: var(--ion-color-primary); /* Active button color */
+    }
+
+    &:hover {
+      --color: var(--ion-color-primary-shade); /* Hover color */
+    }
+  }
+
+  /* Icon Styling */
+  .pagination-controls ion-icon {
+    font-size: 1.2rem; /* Adjust icon size */
+  }
+
+  /* Ellipsis Text Styling */
+  .pagination-controls ion-text {
+    margin: 0 0.25rem; /* Space around ellipsis */
+    white-space: nowrap; /* Prevent text from wrapping */
+  }
+}
+
+/* Responsive Design for Smaller Screens */
+@media (max-width: 768px) {
+  .pagination-toolbar {
+    flex-direction: column; /* Stack elements vertically */
+    gap: 1rem; /* Reduced space between elements */
+  }
+
+  .pagination-range,
+  .pagination-controls {
+  }
+}

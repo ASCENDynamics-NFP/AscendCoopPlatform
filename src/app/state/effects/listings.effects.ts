@@ -21,26 +21,40 @@
 
 import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
-import {catchError, debounceTime, from, map, mergeMap, of} from "rxjs";
+import {
+  catchError,
+  debounceTime,
+  from,
+  map,
+  mergeMap,
+  of,
+  withLatestFrom,
+  filter,
+  take,
+} from "rxjs";
 import {FirestoreService} from "../../core/services/firestore.service";
-import * as ListingsActions from "./../actions/listings.actions";
+import * as ListingsActions from "../actions/listings.actions";
 import {Listing} from "../../models/listing.model";
 import {serverTimestamp} from "@angular/fire/firestore";
 import {ListingRelatedAccount} from "../../models/listing-related-account.model";
 import {Router} from "@angular/router";
 import {ToastController} from "@ionic/angular";
+import {Store} from "@ngrx/store";
+import {AppState} from "../app.state";
+import {
+  selectAllListings,
+  selectListingById,
+  selectRelatedAccountsByListingId,
+} from "../selectors/listings.selectors";
 
 @Injectable()
 export class ListingsEffects {
-  private listingsCache = new Map<string, Listing>();
-  private relatedAccountsCache = new Map<string, ListingRelatedAccount[]>();
-  private cacheExpiration = 5 * 60 * 1000; // 5 minutes
-
   constructor(
     private actions$: Actions,
     private firestoreService: FirestoreService,
     private router: Router,
     private toastController: ToastController,
+    private store: Store<AppState>,
   ) {}
 
   createListing$ = createEffect(() =>
@@ -57,25 +71,13 @@ export class ListingsEffects {
         ).pipe(
           map((docId) => {
             this.router.navigate([`/listings/${docId}`]);
-            this.toastController
-              .create({
-                message: "Listing created successfully",
-                duration: 2000,
-                color: "success",
-              })
-              .then((toast) => toast.present());
+            this.showToast("Listing created successfully", "success");
             return ListingsActions.createListingSuccess({
               listing: {...newListing, id: docId},
             });
           }),
           catchError((error) => {
-            this.toastController
-              .create({
-                message: `Error: ${error.message}`,
-                duration: 2000,
-                color: "danger",
-              })
-              .then((toast) => toast.present());
+            this.showToast(`Error: ${error.message}`, "danger");
             return of(
               ListingsActions.createListingFailure({error: error.message}),
             );
@@ -88,17 +90,10 @@ export class ListingsEffects {
   loadListings$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.loadListings),
-      mergeMap(() => {
-        // Check cache first
-        const cachedListings = Array.from(this.listingsCache.values());
-        if (cachedListings.length > 0) {
-          return of(
-            ListingsActions.loadListingsSuccess({listings: cachedListings}),
-          );
-        }
-
-        // If not in cache, fetch from Firestore
-        return this.firestoreService
+      withLatestFrom(this.store.select(selectAllListings)),
+      filter(([_, loaded]) => !loaded),
+      mergeMap(() =>
+        this.firestoreService
           .getCollectionWithCondition<Listing>(
             "listings",
             "status",
@@ -106,64 +101,58 @@ export class ListingsEffects {
             "active",
           )
           .pipe(
-            map((listings) => {
-              // Update cache
-              listings.forEach((listing) => {
-                this.listingsCache.set(listing.id, listing);
-                // Set timeout to clear cache
-                setTimeout(() => {
-                  this.listingsCache.delete(listing.id);
-                }, this.cacheExpiration);
-              });
-              return ListingsActions.loadListingsSuccess({listings});
-            }),
+            map((listings) => ListingsActions.loadListingsSuccess({listings})),
             catchError((error) =>
               of(ListingsActions.loadListingsFailure({error: error.message})),
             ),
-          );
-      }),
+          ),
+      ),
     ),
   );
 
   loadListingById$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.loadListingById),
-      mergeMap(({id}) => {
-        // Check cache first
-        const cachedListing = this.listingsCache.get(id);
-        if (cachedListing) {
-          return of(
-            ListingsActions.loadListingByIdSuccess({listing: cachedListing}),
-          );
-        }
-
-        return this.firestoreService.getDocument<Listing>("listings", id).pipe(
-          map((listing) => {
-            if (!listing) {
-              throw new Error("Listing not found");
+      mergeMap(({id}) =>
+        this.store.select(selectListingById(id)).pipe(
+          take(1),
+          mergeMap((listing) => {
+            if (listing) {
+              // Listing is already loaded
+              return of(ListingsActions.loadListingByIdSuccess({listing}));
+            } else {
+              // Fetch from Firestore
+              return this.firestoreService
+                .getDocument<Listing>("listings", id)
+                .pipe(
+                  map((fetchedListing) => {
+                    if (!fetchedListing) {
+                      throw new Error("Listing not found");
+                    }
+                    return ListingsActions.loadListingByIdSuccess({
+                      listing: fetchedListing,
+                    });
+                  }),
+                  catchError((error) =>
+                    of(
+                      ListingsActions.loadListingByIdFailure({
+                        error: error.message,
+                      }),
+                    ),
+                  ),
+                );
             }
-            // Update cache
-            this.listingsCache.set(id, listing);
-            setTimeout(() => {
-              this.listingsCache.delete(id);
-            }, this.cacheExpiration);
-            return ListingsActions.loadListingByIdSuccess({listing});
           }),
-          catchError((error) =>
-            of(ListingsActions.loadListingByIdFailure({error: error.message})),
-          ),
-        );
-      }),
+        ),
+      ),
     ),
   );
 
-  // Add cache invalidation on updates
   updateListing$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.updateListing),
-      debounceTime(300), // Add debounce time for rapid updates
+      debounceTime(300),
       mergeMap(({listing}) => {
-        this.listingsCache.delete(listing.id);
         const updatedListing = {
           ...listing,
           lastModifiedAt: serverTimestamp(),
@@ -176,27 +165,17 @@ export class ListingsEffects {
           ),
         ).pipe(
           map(() => {
-            this.listingsCache.set(listing.id, updatedListing);
             this.router.navigate([`/listings/${listing.id}`]);
-            this.toastController
-              .create({
-                message: "Listing updated successfully",
-                duration: 2000,
-                color: "success",
-              })
-              .then((toast) => toast.present());
+            this.showToast("Listing updated successfully", "success");
             return ListingsActions.updateListingSuccess({
               listing: updatedListing,
             });
           }),
           catchError((error) => {
-            this.toastController
-              .create({
-                message: `Error updating listing: ${error.message}`,
-                duration: 2000,
-                color: "danger",
-              })
-              .then((toast) => toast.present());
+            this.showToast(
+              `Error updating listing: ${error.message}`,
+              "danger",
+            );
             return of(
               ListingsActions.updateListingFailure({error: error.message}),
             );
@@ -209,70 +188,90 @@ export class ListingsEffects {
   deleteListing$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.deleteListing),
-      mergeMap(({id}) => {
-        // Clear from cache
-        this.listingsCache.delete(id);
-
-        return from(this.firestoreService.deleteDocument("listings", id)).pipe(
+      mergeMap(({id}) =>
+        from(this.firestoreService.deleteDocument("listings", id)).pipe(
           map(() => {
-            // this.router.navigate(["/listings"]); // Want to navigate to account's listings page.
-            this.toastController
-              .create({
-                message: "Listing deleted successfully",
-                duration: 2000,
-                color: "success",
-              })
-              .then((toast) => toast.present());
+            // Navigate to the listings page or desired route
+            this.showToast("Listing deleted successfully", "success");
             return ListingsActions.deleteListingSuccess({id});
           }),
           catchError((error) => {
-            this.toastController
-              .create({
-                message: `Error deleting listing: ${error.message}`,
-                duration: 2000,
-                color: "danger",
-              })
-              .then((toast) => toast.present());
+            this.showToast(
+              `Error deleting listing: ${error.message}`,
+              "danger",
+            );
             return of(
               ListingsActions.deleteListingFailure({error: error.message}),
             );
           }),
-        );
-      }),
+        ),
+      ),
     ),
   );
 
   submitApplication$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.submitApplication),
-      mergeMap(({relatedAccount}) => {
-        this.relatedAccountsCache.delete(relatedAccount.listingId);
-
-        return from(this.submitApplicationToFirestore(relatedAccount)).pipe(
+      mergeMap(({relatedAccount}) =>
+        from(this.submitApplicationToFirestore(relatedAccount)).pipe(
           map(() => {
             this.router.navigate(["/listings", relatedAccount.listingId]);
-            this.toastController
-              .create({
-                message: "Application submitted successfully",
-                duration: 2000,
-                color: "success",
-              })
-              .then((toast) => toast.present());
+            this.showToast("Application submitted successfully", "success");
             return ListingsActions.submitApplicationSuccess();
           }),
           catchError((error) => {
-            this.toastController
-              .create({
-                message: `Error submitting application: ${error.message}`,
-                duration: 2000,
-                color: "danger",
-              })
-              .then((toast) => toast.present());
+            this.showToast(
+              `Error submitting application: ${error.message}`,
+              "danger",
+            );
             return of(
               ListingsActions.submitApplicationFailure({error: error.message}),
             );
           }),
-        );
+        ),
+      ),
+    ),
+  );
+
+  loadListingRelatedAccounts$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ListingsActions.loadListingRelatedAccounts),
+      mergeMap(({listingId}) => {
+        return this.firestoreService
+          .getDocuments<ListingRelatedAccount>(
+            `listings/${listingId}/relatedAccounts`,
+          )
+          .pipe(
+            map((relatedAccounts) => {
+              this.toastController
+                .create({
+                  message: "Applications loaded successfully",
+                  duration: 2000,
+                  color: "success",
+                })
+                .then((toast) => toast.present());
+
+              return ListingsActions.loadListingRelatedAccountsSuccess({
+                listingId,
+                relatedAccounts,
+              });
+            }),
+            catchError((error) => {
+              this.toastController
+                .create({
+                  message: `Error loading applications: ${error.message}`,
+                  duration: 2000,
+                  color: "danger",
+                })
+                .then((toast) => toast.present());
+              return of(
+                ListingsActions.loadListingRelatedAccountsFailure({
+                  listingId,
+                  error,
+                }),
+              );
+            }),
+          );
       }),
     ),
   );
@@ -315,7 +314,7 @@ export class ListingsEffects {
           createdAt: serverTimestamp(),
           lastModifiedAt: serverTimestamp(),
         },
-        {merge: true}, // Use merge if partial updates might be needed
+        {merge: true},
       );
     } catch (error) {
       console.error("Error submitting application to Firestore:", error);
@@ -323,71 +322,13 @@ export class ListingsEffects {
     }
   }
 
-  loadListingRelatedAccounts$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(ListingsActions.loadListingRelatedAccounts),
-      mergeMap(({listingId}) => {
-        // Check cache first
-        const cachedRelatedAccounts = this.relatedAccountsCache.get(listingId);
-        if (cachedRelatedAccounts) {
-          this.toastController
-            .create({
-              message: "Applications loaded successfully",
-              duration: 2000,
-              color: "success",
-            })
-            .then((toast) => toast.present());
-
-          return of(
-            ListingsActions.loadListingRelatedAccountsSuccess({
-              listingId,
-              relatedAccounts: cachedRelatedAccounts,
-            }),
-          );
-        }
-
-        return this.firestoreService
-          .getDocuments<ListingRelatedAccount>(
-            `listings/${listingId}/relatedAccounts`,
-          )
-          .pipe(
-            map((relatedAccounts) => {
-              // Update cache
-              this.relatedAccountsCache.set(listingId, relatedAccounts);
-              setTimeout(() => {
-                this.relatedAccountsCache.delete(listingId);
-              }, this.cacheExpiration);
-
-              this.toastController
-                .create({
-                  message: "Applications loaded successfully",
-                  duration: 2000,
-                  color: "success",
-                })
-                .then((toast) => toast.present());
-
-              return ListingsActions.loadListingRelatedAccountsSuccess({
-                listingId,
-                relatedAccounts,
-              });
-            }),
-            catchError((error) => {
-              this.toastController
-                .create({
-                  message: `Error loading applications: ${error.message}`,
-                  duration: 2000,
-                  color: "danger",
-                })
-                .then((toast) => toast.present());
-              return of(
-                ListingsActions.loadListingRelatedAccountsFailure({
-                  listingId,
-                  error,
-                }),
-              );
-            }),
-          );
-      }),
-    ),
-  );
+  private showToast(message: string, color: string) {
+    this.toastController
+      .create({
+        message,
+        duration: 2000,
+        color,
+      })
+      .then((toast) => toast.present());
+  }
 }

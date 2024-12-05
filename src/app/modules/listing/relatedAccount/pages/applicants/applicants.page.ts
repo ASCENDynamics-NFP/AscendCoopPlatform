@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 import {Component, OnInit} from "@angular/core";
 import {Store} from "@ngrx/store";
-import {BehaviorSubject, combineLatest, map, Observable, of, take} from "rxjs";
+import {BehaviorSubject, combineLatest, map, Observable, take} from "rxjs";
 import {ListingRelatedAccount} from "../../../../../models/listing-related-account.model";
 import {AppState} from "../../../../../state/app.state";
 import * as ListingsActions from "../../../../../state/actions/listings.actions";

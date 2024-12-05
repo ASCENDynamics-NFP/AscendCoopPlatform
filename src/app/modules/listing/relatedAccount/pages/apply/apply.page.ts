@@ -156,7 +156,6 @@ export class ApplyPage implements OnInit {
         listingId: this.listingId,
         type: "application",
         status: "applied",
-        applicationDate: serverTimestamp(),
       };
 
       // Dispatch action to submit application

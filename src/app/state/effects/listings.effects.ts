@@ -250,11 +250,7 @@ export class ListingsEffects {
 
         return from(this.submitApplicationToFirestore(relatedAccount)).pipe(
           map(() => {
-            this.router.navigate([
-              "/listings",
-              relatedAccount.listingId,
-              "application-success",
-            ]);
+            this.router.navigate(["/listings", relatedAccount.listingId]);
             this.toastController
               .create({
                 message: "Application submitted successfully",
@@ -288,14 +284,14 @@ export class ListingsEffects {
       const applicationId = relatedAccount.id;
 
       // Upload files if present
-      const resumeUrl = relatedAccount.resumeFile
+      const resumeFile = relatedAccount.resumeFile
         ? await this.firestoreService.uploadFile(
             `accounts/${applicationId}/listing/${relatedAccount.listingId}/resume.pdf`,
             relatedAccount.resumeFile,
           )
         : null;
 
-      const coverLetterUrl = relatedAccount.coverLetterFile
+      const coverLetterFile = relatedAccount.coverLetterFile
         ? await this.firestoreService.uploadFile(
             `accounts/${applicationId}/listing/${relatedAccount.listingId}/coverLetter.pdf`,
             relatedAccount.coverLetterFile,
@@ -311,9 +307,11 @@ export class ListingsEffects {
           lastName: relatedAccount.lastName,
           email: relatedAccount.email,
           phone: relatedAccount.phone,
-          resumeUrl,
-          coverLetterUrl,
+          notes: relatedAccount.notes,
+          resumeFile,
+          coverLetterFile,
           listingId: relatedAccount.listingId,
+          applicationDate: serverTimestamp(),
           createdAt: serverTimestamp(),
           lastModifiedAt: serverTimestamp(),
         },

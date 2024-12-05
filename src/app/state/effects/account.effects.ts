@@ -297,7 +297,7 @@ export class AccountEffects {
           map(() => {
             this.toastController
               .create({
-                message: "Related account created successfully",
+                message: "Request successfully",
                 duration: 2000,
                 color: "success",
               })
@@ -338,7 +338,7 @@ export class AccountEffects {
           map(() => {
             this.toastController
               .create({
-                message: "Related account removed successfully",
+                message: "Removed successfully",
                 duration: 2000,
                 color: "success",
               })
@@ -385,13 +385,13 @@ export class AccountEffects {
               this.relatedAccountsCache.delete(accountId);
             }, this.cacheExpiration);
 
-            this.toastController
-              .create({
-                message: `Loaded ${relatedAccounts.length} related accounts`,
-                duration: 2000,
-                color: "success",
-              })
-              .then((toast) => toast.present());
+            // this.toastController
+            //   .create({
+            //     message: `Loaded ${relatedAccounts.length} related accounts`,
+            //     duration: 2000,
+            //     color: "success",
+            //   })
+            //   .then((toast) => toast.present());
             return AccountActions.loadRelatedAccountsSuccess({
               accountId,
               relatedAccounts,
@@ -435,7 +435,7 @@ export class AccountEffects {
           map(() => {
             this.toastController
               .create({
-                message: "Related account updated successfully",
+                message: "Updated successfully",
                 duration: 2000,
                 color: "success",
               })
@@ -484,13 +484,13 @@ export class AccountEffects {
                 this.relatedListingsCache.delete(accountId);
               }, this.cacheExpiration);
 
-              this.toastController
-                .create({
-                  message: `Loaded ${relatedListings.length} related listings`,
-                  duration: 2000,
-                  color: "success",
-                })
-                .then((toast) => toast.present());
+              // this.toastController
+              //   .create({
+              //     message: `Loaded ${relatedListings.length} related listings`,
+              //     duration: 2000,
+              //     color: "success",
+              //   })
+              //   .then((toast) => toast.present());
               return AccountActions.loadRelatedListingsSuccess({
                 accountId,
                 relatedListings,
@@ -567,7 +567,7 @@ export class AccountEffects {
           map(() => {
             this.toastController
               .create({
-                message: "Related listing removed successfully",
+                message: "Removed successfully",
                 duration: 2000,
                 color: "success",
               })

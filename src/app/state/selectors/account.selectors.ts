@@ -23,9 +23,22 @@ import {createFeatureSelector, createSelector} from "@ngrx/store";
 import {AccountState} from "../reducers/account.reducer";
 import {Account} from "../../models/account.model";
 
+// TTL Configuration
+const ACCOUNTS_TTL = 5 * 60 * 1000; // 5 minutes
+const RELATED_LISTINGS_TTL = 10 * 60 * 1000; // 10 minutes
+
+// Utility: Check if data is stale
+function isStale(lastUpdated: number | null, ttl: number): boolean {
+  if (!lastUpdated) return true; // If never updated, consider it stale
+  const now = Date.now();
+  return now - lastUpdated > ttl;
+}
+
+// Feature Selector
 export const selectAccountState =
   createFeatureSelector<AccountState>("accounts");
 
+// Entity Selectors
 export const selectAccountEntities = createSelector(
   selectAccountState,
   (state) => state.entities,
@@ -39,6 +52,7 @@ export const selectAllAccounts = createSelector(
 export const selectAccountById = (accountId: string) =>
   createSelector(selectAccountEntities, (entities) => entities[accountId]);
 
+// Selected Account Selectors
 export const selectSelectedAccountId = createSelector(
   selectAccountState,
   (state) => state.selectedAccountId,
@@ -51,6 +65,7 @@ export const selectSelectedAccount = createSelector(
     selectedAccountId ? entities[selectedAccountId] : null,
 );
 
+// Related Data Selectors
 export const selectRelatedAccountsByAccountId = (accountId: string) =>
   createSelector(
     selectAccountState,
@@ -63,6 +78,7 @@ export const selectRelatedListingsByAccountId = (accountId: string) =>
     (state) => state.relatedListings[accountId] || [],
   );
 
+// Loading and Error Selectors
 export const selectAccountLoading = createSelector(
   selectAccountState,
   (state) => state.loading,
@@ -73,7 +89,7 @@ export const selectAccountError = createSelector(
   (state) => state.error,
 );
 
-// Select Filtered Accounts
+// Filtered Accounts Selector
 export const selectFilteredAccounts = (
   searchTerm: string,
   accountType: string,
@@ -97,3 +113,40 @@ export const selectFilteredAccounts = (
       })
       .sort((a, b) => (a.name && b.name ? a.name.localeCompare(b.name) : 0));
   });
+
+// Cache and Freshness Selectors
+export const selectAccountsLastUpdated = createSelector(
+  selectAccountState,
+  (state) => state.accountsLastUpdated,
+);
+
+export const selectRelatedAccountsLastUpdated = (accountId: string) =>
+  createSelector(
+    selectAccountState,
+    (state) => state.relatedAccountsLastUpdated[accountId] || null,
+  );
+
+export const selectRelatedListingsLastUpdated = (accountId: string) =>
+  createSelector(
+    selectAccountState,
+    (state) => state.relatedListingsLastUpdated[accountId] || null,
+  );
+
+export const selectAreAccountsFresh = createSelector(
+  selectAccountsLastUpdated,
+  (accountsLastUpdated) => !isStale(accountsLastUpdated, ACCOUNTS_TTL),
+);
+
+export const selectAreRelatedAccountsFresh = (accountId: string) =>
+  createSelector(
+    selectRelatedAccountsLastUpdated(accountId),
+    (relatedAccountsLastUpdated) =>
+      !isStale(relatedAccountsLastUpdated, ACCOUNTS_TTL),
+  );
+
+export const selectAreRelatedListingsFresh = (accountId: string) =>
+  createSelector(
+    selectRelatedListingsLastUpdated(accountId),
+    (relatedListingsLastUpdated) =>
+      !isStale(relatedListingsLastUpdated, RELATED_LISTINGS_TTL),
+  );

@@ -32,6 +32,10 @@ export interface ListingsState {
   error: string | null; // Stores any errors
   filterType: string; // Type of listing to filter (e.g., 'all', 'active')
   searchQuery: string; // Search query for filtering listings
+
+  // Timestamps for cache invalidation
+  listingsLastUpdated: number | null;
+  relatedAccountsLastUpdated: {[listingId: string]: number | null};
 }
 
 const initialState: ListingsState = {
@@ -42,12 +46,15 @@ const initialState: ListingsState = {
   error: null,
   filterType: "all",
   searchQuery: "",
+  // Timestamps for cache invalidation
+  listingsLastUpdated: null,
+  relatedAccountsLastUpdated: {},
 };
 
 export const listingsReducer = createReducer(
   initialState,
 
-  // Loading listings
+  // Load Listings
   on(ListingsActions.loadListings, (state) => ({
     ...state,
     loading: true,
@@ -55,44 +62,41 @@ export const listingsReducer = createReducer(
   })),
   on(ListingsActions.loadListingsSuccess, (state, {listings}) => ({
     ...state,
-    entities: listings.reduce((entities, listing) => {
-      return {...entities, [listing.id]: listing}; // Add listings to the dictionary
-    }, {}),
+    entities: listings.reduce(
+      (entities, listing) => ({
+        ...entities,
+        [listing.id]: listing,
+      }),
+      {},
+    ),
+    listingsLastUpdated: Date.now(),
     loading: false,
   })),
   on(ListingsActions.loadListingsFailure, (state, {error}) => ({
     ...state,
-    error,
     loading: false,
+    error,
   })),
 
-  // Loading a single listing by ID
-  on(ListingsActions.loadListingByIdSuccess, (state, {listing}) => {
-    if (listing) {
-      return {
-        ...state,
-        entities: {
+  // Load Listing by ID
+  on(ListingsActions.loadListingByIdSuccess, (state, {listing}) => ({
+    ...state,
+    entities: listing
+      ? {
           ...state.entities,
           [listing.id]: listing,
-        },
-        selectedListingId: listing.id,
-        loading: false,
-      };
-    } else {
-      return {
-        ...state,
-        selectedListingId: null,
-        loading: false,
-      };
-    }
-  }),
+        }
+      : state.entities,
+    selectedListingId: listing?.id || null,
+    loading: false,
+  })),
   on(ListingsActions.loadListingByIdFailure, (state, {error}) => ({
     ...state,
     error,
     loading: false,
   })),
 
-  // Creating a listing
+  // Create Listing
   on(ListingsActions.createListingSuccess, (state, {listing}) => ({
     ...state,
     entities: {
@@ -104,31 +108,30 @@ export const listingsReducer = createReducer(
   })),
   on(ListingsActions.createListingFailure, (state, {error}) => ({
     ...state,
-    error,
     loading: false,
+    error,
   })),
 
-  // Updating a listing
+  // Update Listing
   on(ListingsActions.updateListingSuccess, (state, {listing}) => ({
     ...state,
     entities: {
       ...state.entities,
       [listing.id]: listing,
     },
-    selectedListingId: listing.id,
     loading: false,
   })),
   on(ListingsActions.updateListingFailure, (state, {error}) => ({
     ...state,
-    error,
     loading: false,
+    error,
   })),
 
-  // Deleting a listing
+  // Delete Listing
   on(ListingsActions.deleteListingSuccess, (state, {id}) => {
-    const {[id]: removed, ...entities} = state.entities; // Remove deleted listing
+    const {[id]: removed, ...entities} = state.entities;
     const selectedListingId =
-      state.selectedListingId === id ? null : state.selectedListingId; // Deselect if deleted
+      state.selectedListingId === id ? null : state.selectedListingId;
     return {
       ...state,
       entities,
@@ -136,19 +139,26 @@ export const listingsReducer = createReducer(
     };
   }),
 
-  // Filtering listings
+  // Delete Listing Failure
+  on(ListingsActions.deleteListingFailure, (state, {error}) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
+
+  // Filtering Listings
   on(ListingsActions.filterListings, (state, {listingType}) => ({
     ...state,
     filterType: listingType,
   })),
 
-  // Searching listings
+  // Searching Listings
   on(ListingsActions.searchListings, (state, {query}) => ({
     ...state,
     searchQuery: query,
   })),
 
-  // Applying to a listing
+  // Submit Application
   on(ListingsActions.submitApplication, (state) => ({
     ...state,
     loading: true,

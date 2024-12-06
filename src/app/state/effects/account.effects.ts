@@ -31,6 +31,7 @@ import {
   withLatestFrom,
   debounceTime,
   take,
+  filter,
 } from "rxjs/operators";
 import {FirestoreService} from "../../core/services/firestore.service";
 import {Account} from "../../models/account.model";
@@ -47,6 +48,9 @@ import {
   selectAccountEntities,
   selectRelatedAccountsByAccountId,
   selectRelatedListingsByAccountId,
+  selectAreAccountsFresh,
+  selectAreRelatedAccountsFresh,
+  selectAreRelatedListingsFresh,
 } from "../selectors/account.selectors";
 
 @Injectable()
@@ -59,37 +63,37 @@ export class AccountEffects {
     private toastController: ToastController,
   ) {}
 
-  // Load Accounts
+  // Load Accounts only if not fresh
   loadAccounts$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.loadAccounts),
+      withLatestFrom(this.store.select(selectAreAccountsFresh)),
+      filter(([_, areFresh]) => !areFresh),
       switchMap(() =>
         this.firestoreService.getAllAccounts().pipe(
           map((accounts) => AccountActions.loadAccountsSuccess({accounts})),
-          catchError((error) => {
-            console.error("Effect: Error loading accounts:", error);
-            return of(
+          catchError((error) =>
+            of(
               AccountActions.loadAccountsFailure({
                 error: error.message || error,
               }),
-            );
-          }),
+            ),
+          ),
         ),
       ),
     ),
   );
 
-  // Load Account by ID
+  // Load Account by ID if it doesn't exist locally
   loadAccount$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.loadAccount),
       mergeMap(({accountId}) =>
         this.store.select(selectAccountById(accountId)).pipe(
           take(1),
-          mergeMap((loaded) => {
-            if (loaded) {
-              // Account already loaded
-              return of({type: "NO_ACTION"});
+          mergeMap((existingAccount) => {
+            if (existingAccount) {
+              return of({type: "[Account] No Action"});
             } else {
               return this.firestoreService
                 .getDocument<Account>("accounts", accountId)
@@ -312,39 +316,35 @@ export class AccountEffects {
     ),
   );
 
-  // Load Related Accounts
+  // Load Related Accounts if not fresh
   loadRelatedAccounts$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.loadRelatedAccounts),
-      switchMap(({accountId}) =>
-        this.store.select(selectRelatedAccountsByAccountId(accountId)).pipe(
+      mergeMap(({accountId}) =>
+        this.store.select(selectAreRelatedAccountsFresh(accountId)).pipe(
           take(1),
-          mergeMap((loaded) => {
-            if (loaded) {
-              // Related accounts already loaded
-              return of({type: "NO_ACTION"});
-            } else {
-              return this.firestoreService.getRelatedAccounts(accountId).pipe(
-                map((relatedAccounts) =>
-                  AccountActions.loadRelatedAccountsSuccess({
-                    accountId,
-                    relatedAccounts,
-                  }),
-                ),
-                catchError((error) => {
-                  this.showToast(
-                    `Error loading related accounts: ${error.message}`,
-                    "danger",
-                  );
-                  return of(
-                    AccountActions.loadRelatedAccountsFailure({
-                      error: error.message,
-                    }),
-                  );
+          filter((areFresh) => !areFresh),
+          switchMap(() =>
+            this.firestoreService.getRelatedAccounts(accountId).pipe(
+              map((relatedAccounts) =>
+                AccountActions.loadRelatedAccountsSuccess({
+                  accountId,
+                  relatedAccounts,
                 }),
-              );
-            }
-          }),
+              ),
+              catchError((error) => {
+                this.showToast(
+                  `Error loading related accounts: ${error.message}`,
+                  "danger",
+                );
+                return of(
+                  AccountActions.loadRelatedAccountsFailure({
+                    error: error.message,
+                  }),
+                );
+              }),
+            ),
+          ),
         ),
       ),
     ),
@@ -387,49 +387,45 @@ export class AccountEffects {
     ),
   );
 
-  // Load Related Listings
+  // Load Related Listings if not fresh
   loadRelatedListings$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.loadRelatedListings),
       mergeMap(({accountId}) =>
-        this.store.select(selectRelatedListingsByAccountId(accountId)).pipe(
+        this.store.select(selectAreRelatedListingsFresh(accountId)).pipe(
           take(1),
-          mergeMap((loaded) => {
-            if (loaded) {
-              // Related listings already loaded
-              return of({type: "NO_ACTION"});
-            } else {
-              return this.firestoreService
-                .getDocuments<RelatedListing>(
-                  `accounts/${accountId}/relatedListings`,
-                )
-                .pipe(
-                  map((relatedListings) =>
-                    AccountActions.loadRelatedListingsSuccess({
-                      accountId,
-                      relatedListings,
-                    }),
-                  ),
-                  catchError((error) => {
-                    this.showToast(
-                      `Error loading related listings: ${error.message}`,
-                      "danger",
-                    );
-                    return of(
-                      AccountActions.loadRelatedListingsFailure({
-                        error: error.message,
-                      }),
-                    );
+          filter((areFresh) => !areFresh),
+          switchMap(() =>
+            this.firestoreService
+              .getDocuments<RelatedListing>(
+                `accounts/${accountId}/relatedListings`,
+              )
+              .pipe(
+                map((relatedListings) =>
+                  AccountActions.loadRelatedListingsSuccess({
+                    accountId,
+                    relatedListings,
                   }),
-                );
-            }
-          }),
+                ),
+                catchError((error) => {
+                  this.showToast(
+                    `Error loading related listings: ${error.message}`,
+                    "danger",
+                  );
+                  return of(
+                    AccountActions.loadRelatedListingsFailure({
+                      error: error.message,
+                    }),
+                  );
+                }),
+              ),
+          ),
         ),
       ),
     ),
   );
 
-  // Sync Auth User with Account
+  // Sync Auth User with Account after a successful load
   syncAuthUserWithAccount$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.loadAccountSuccess),
@@ -447,7 +443,7 @@ export class AccountEffects {
             },
           });
         }
-        return {type: "NO_ACTION"};
+        return {type: "[Account] No Action"};
       }),
     ),
   );
@@ -459,11 +455,9 @@ export class AccountEffects {
       withLatestFrom(this.store.select(selectAccountEntities)),
       mergeMap(([action, entities]) => {
         const accountExists = !!entities[action.accountId];
-
         if (!accountExists) {
           return of(AccountActions.loadAccount({accountId: action.accountId}));
         }
-
         return EMPTY;
       }),
     ),

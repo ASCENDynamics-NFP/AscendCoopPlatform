@@ -31,6 +31,7 @@ import {
   withLatestFrom,
   filter,
   take,
+  switchMap,
 } from "rxjs";
 import {FirestoreService} from "../../core/services/firestore.service";
 import * as ListingsActions from "../actions/listings.actions";
@@ -42,9 +43,9 @@ import {ToastController} from "@ionic/angular";
 import {Store} from "@ngrx/store";
 import {AppState} from "../app.state";
 import {
-  selectAllListings,
   selectListingById,
-  selectRelatedAccountsByListingId,
+  selectAreListingsFresh,
+  selectAreRelatedAccountsFresh,
 } from "../selectors/listings.selectors";
 
 @Injectable()
@@ -57,6 +58,7 @@ export class ListingsEffects {
     private store: Store<AppState>,
   ) {}
 
+  // Create a new listing
   createListing$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.createListing),
@@ -87,12 +89,13 @@ export class ListingsEffects {
     ),
   );
 
+  // Load all listings if not fresh
   loadListings$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.loadListings),
-      withLatestFrom(this.store.select(selectAllListings)),
-      filter(([_, loaded]) => !loaded),
-      mergeMap(() =>
+      withLatestFrom(this.store.select(selectAreListingsFresh)),
+      filter(([_, areFresh]) => !areFresh), // Only load if not fresh
+      switchMap(() =>
         this.firestoreService
           .getCollectionWithCondition<Listing>(
             "listings",
@@ -110,6 +113,7 @@ export class ListingsEffects {
     ),
   );
 
+  // Load a single listing by ID if not already in the store
   loadListingById$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.loadListingById),
@@ -118,7 +122,7 @@ export class ListingsEffects {
           take(1),
           mergeMap((listing) => {
             if (listing) {
-              // Listing is already loaded
+              // Listing already loaded
               return of(ListingsActions.loadListingByIdSuccess({listing}));
             } else {
               // Fetch from Firestore
@@ -148,6 +152,7 @@ export class ListingsEffects {
     ),
   );
 
+  // Update an existing listing
   updateListing$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.updateListing),
@@ -185,13 +190,13 @@ export class ListingsEffects {
     ),
   );
 
+  // Delete a listing
   deleteListing$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.deleteListing),
       mergeMap(({id}) =>
         from(this.firestoreService.deleteDocument("listings", id)).pipe(
           map(() => {
-            // Navigate to the listings page or desired route
             this.showToast("Listing deleted successfully", "success");
             return ListingsActions.deleteListingSuccess({id});
           }),
@@ -209,6 +214,7 @@ export class ListingsEffects {
     ),
   );
 
+  // Submit application (related to a listing)
   submitApplication$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.submitApplication),
@@ -233,49 +239,47 @@ export class ListingsEffects {
     ),
   );
 
+  // Load related accounts for a listing if not fresh
   loadListingRelatedAccounts$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.loadListingRelatedAccounts),
-      mergeMap(({listingId}) => {
-        return this.firestoreService
-          .getDocuments<ListingRelatedAccount>(
-            `listings/${listingId}/relatedAccounts`,
-          )
-          .pipe(
-            map((relatedAccounts) => {
-              this.toastController
-                .create({
-                  message: "Applications loaded successfully",
-                  duration: 2000,
-                  color: "success",
-                })
-                .then((toast) => toast.present());
-
-              return ListingsActions.loadListingRelatedAccountsSuccess({
-                listingId,
-                relatedAccounts,
-              });
-            }),
-            catchError((error) => {
-              this.toastController
-                .create({
-                  message: `Error loading applications: ${error.message}`,
-                  duration: 2000,
-                  color: "danger",
-                })
-                .then((toast) => toast.present());
-              return of(
-                ListingsActions.loadListingRelatedAccountsFailure({
-                  listingId,
-                  error,
+      mergeMap(({listingId}) =>
+        this.store.select(selectAreRelatedAccountsFresh(listingId)).pipe(
+          take(1),
+          filter((areFresh) => !areFresh), // Only load if stale
+          switchMap(() =>
+            this.firestoreService
+              .getDocuments<ListingRelatedAccount>(
+                `listings/${listingId}/relatedAccounts`,
+              )
+              .pipe(
+                map((relatedAccounts) => {
+                  this.showToast("Applications loaded successfully", "success");
+                  return ListingsActions.loadListingRelatedAccountsSuccess({
+                    listingId,
+                    relatedAccounts,
+                  });
                 }),
-              );
-            }),
-          );
-      }),
+                catchError((error) => {
+                  this.showToast(
+                    `Error loading applications: ${error.message}`,
+                    "danger",
+                  );
+                  return of(
+                    ListingsActions.loadListingRelatedAccountsFailure({
+                      listingId,
+                      error: error.message,
+                    }),
+                  );
+                }),
+              ),
+          ),
+        ),
+      ),
     ),
   );
 
+  // Helper method for submitting an application
   private async submitApplicationToFirestore(
     relatedAccount: ListingRelatedAccount,
   ): Promise<void> {

@@ -59,7 +59,7 @@ export class ApplicantDetailsModalComponent {
   }
 
   viewProfile() {
-    this.router.navigate(["/account", this.relatedAccount.accountId]);
+    this.router.navigate(["/account", this.relatedAccount.id]);
     this.closeModal();
   }
 

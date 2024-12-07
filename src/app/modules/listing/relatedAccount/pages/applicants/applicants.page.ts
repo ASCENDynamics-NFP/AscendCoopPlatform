@@ -200,7 +200,7 @@ export class ApplicantsPage implements OnInit {
         this.openModal(account);
       } else {
         // Navigate to the profile page for non-owners
-        this.router.navigate(["/account", account.accountId]);
+        this.router.navigate(["/account", account.id]);
       }
     });
   }

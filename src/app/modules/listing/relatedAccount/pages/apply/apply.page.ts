@@ -32,7 +32,6 @@ import {ActivatedRoute} from "@angular/router";
 import {selectListingById} from "../../../../../state/selectors/listings.selectors";
 import {Listing} from "../../../../../models/listing.model";
 import {AlertController} from "@ionic/angular";
-import {serverTimestamp} from "firebase/firestore";
 
 @Component({
   selector: "app-apply",

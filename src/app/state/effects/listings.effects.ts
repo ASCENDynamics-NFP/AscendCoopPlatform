@@ -306,6 +306,7 @@ export class ListingsEffects {
         `listings/${relatedAccount.listingId}/relatedAccounts/${applicationId}`,
         {
           id: applicationId,
+          name: relatedAccount.name,
           firstName: relatedAccount.firstName,
           lastName: relatedAccount.lastName,
           email: relatedAccount.email,
@@ -317,6 +318,10 @@ export class ListingsEffects {
           applicationDate: serverTimestamp(),
           createdAt: serverTimestamp(),
           lastModifiedAt: serverTimestamp(),
+          iconImage: relatedAccount.iconImage,
+          accountId: applicationId,
+          type: "application",
+          status: "applied",
         },
         {merge: true},
       );

@@ -194,4 +194,25 @@ export const listingsReducer = createReducer(
     loading: false,
     error,
   })),
+  on(
+    ListingsActions.updateRelatedAccountSuccess,
+    (state, {listingId, relatedAccount}) => {
+      const updatedRelatedAccounts =
+        state.relatedAccounts[listingId]?.map((account) =>
+          account.id === relatedAccount.id ? relatedAccount : account,
+        ) || [];
+
+      return {
+        ...state,
+        relatedAccounts: {
+          ...state.relatedAccounts,
+          [listingId]: updatedRelatedAccounts,
+        },
+      };
+    },
+  ),
+  on(ListingsActions.updateRelatedAccountFailure, (state, {error}) => {
+    console.error("Failed to update related account:", error);
+    return state;
+  }),
 );

@@ -45,22 +45,21 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-avatar>
       <ion-label>
         <h2>{{ account.name }}</h2>
-        <h3>{{ account.email }}</h3>
-        <p *ngIf="account.phone">{{ account.phone | phoneFormat }}</p>
-        <p>Applied: {{ account.applicationDate | timestamp }}</p>
-        <p *ngIf="account.notes">Notes: {{ account.notes }}</p>
+        <h3 *ngIf="isOwner$ | async">{{ account.email }}</h3>
+        <p *ngIf="account.phone && (isOwner$ | async)">
+          {{ account.phone | phoneFormat }}
+        </p>
+        <p *ngIf="isOwner$ | async">
+          Applied: {{ account.applicationDate | timestamp }}
+        </p>
+        <p *ngIf="account.notes && (isOwner$ | async)">
+          Notes: {{ account.notes }}
+        </p>
       </ion-label>
-      <ion-badge
-        slot="end"
-        [color]="
-          account.status === 'accepted'
-            ? 'success'
-            : account.status === 'rejected'
-            ? 'danger'
-            : 'primary'
-        "
-      >
-        {{ account.status }}
+      <ion-badge *ngIf="isOwner$ | async">
+        slot="end" [color]=" account.status === 'accepted' ? 'success' :
+        account.status === 'rejected' ? 'danger' : 'primary' " > {{
+        account.status }}
       </ion-badge>
       <!-- <ion-button
         slot="end"

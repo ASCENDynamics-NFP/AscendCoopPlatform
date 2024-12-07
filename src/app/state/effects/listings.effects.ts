@@ -331,6 +331,35 @@ export class ListingsEffects {
     }
   }
 
+  updateRelatedAccount$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ListingsActions.updateRelatedAccount),
+      mergeMap(({listingId, relatedAccount}) =>
+        from(
+          this.firestoreService.updateDocument(
+            `listings/${listingId}/relatedAccounts`,
+            relatedAccount.id,
+            relatedAccount,
+          ),
+        ).pipe(
+          map(() =>
+            ListingsActions.updateRelatedAccountSuccess({
+              listingId,
+              relatedAccount,
+            }),
+          ),
+          catchError((error) =>
+            of(
+              ListingsActions.updateRelatedAccountFailure({
+                error: error.message,
+              }),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
   private showToast(message: string, color: string) {
     this.toastController
       .create({

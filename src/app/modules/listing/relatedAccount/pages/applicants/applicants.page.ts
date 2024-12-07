@@ -17,6 +17,8 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// src/app/modules/listing/relatedAccount/pages/applicants/applicants.page.ts
+
 import {Component, OnInit} from "@angular/core";
 import {Store} from "@ngrx/store";
 import {BehaviorSubject, combineLatest, map, Observable, take} from "rxjs";
@@ -197,7 +199,7 @@ export class ApplicantsPage implements OnInit {
     this.isOwner$.pipe(take(1)).subscribe((isOwner) => {
       if (isOwner) {
         // Open modal for owners
-        this.openModal(account);
+        this.openModal(account, isOwner);
       } else {
         // Navigate to the profile page for non-owners
         this.router.navigate(["/account", account.id]);
@@ -205,10 +207,10 @@ export class ApplicantsPage implements OnInit {
     });
   }
 
-  async openModal(relatedAccount: ListingRelatedAccount) {
+  async openModal(relatedAccount: ListingRelatedAccount, isOwner: boolean) {
     const modal = await this.modalController.create({
       component: ApplicantDetailsModalComponent,
-      componentProps: {relatedAccount},
+      componentProps: {relatedAccount, isOwner},
     });
     await modal.present();
   }

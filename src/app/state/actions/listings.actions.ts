@@ -134,3 +134,21 @@ export const loadListingRelatedAccountsFailure = createAction(
   "[Listing] Load Related Accounts Failure",
   props<{listingId: string; error: any}>(),
 );
+
+export const updateRelatedAccount = createAction(
+  "[Listings] Update Related Account",
+  props<{
+    listingId: string;
+    relatedAccount: ListingRelatedAccount;
+  }>(),
+);
+
+export const updateRelatedAccountSuccess = createAction(
+  "[Listings] Update Related Account Success",
+  props<{listingId: string; relatedAccount: ListingRelatedAccount}>(),
+);
+
+export const updateRelatedAccountFailure = createAction(
+  "[Listings] Update Related Account Failure",
+  props<{error: string}>(),
+);

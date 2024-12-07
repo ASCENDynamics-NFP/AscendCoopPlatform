@@ -17,10 +17,15 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// src/app/modules/listing/relatedAccount/pages/applicants/components/applicant-details-modal/applicant-details-modal.component.ts
+
 import {Component, Input} from "@angular/core";
 import {ModalController} from "@ionic/angular";
 import {Router} from "@angular/router";
+import {Store} from "@ngrx/store";
+import {AppState} from "../../../../../../../state/app.state";
 import {ListingRelatedAccount} from "../../../../../../../models/listing-related-account.model";
+import * as ListingsActions from "../../../../../../../state/actions/listings.actions";
 
 @Component({
   selector: "app-applicant-details-modal",
@@ -28,11 +33,13 @@ import {ListingRelatedAccount} from "../../../../../../../models/listing-related
   styleUrls: ["./applicant-details-modal.component.scss"],
 })
 export class ApplicantDetailsModalComponent {
-  @Input() relatedAccount!: ListingRelatedAccount; // Use the ListingRelatedAccount model
+  @Input() relatedAccount!: ListingRelatedAccount;
+  @Input() isOwner: boolean = false;
 
   constructor(
     private modalController: ModalController,
     private router: Router,
+    private store: Store<AppState>,
   ) {}
 
   closeModal() {
@@ -45,21 +52,36 @@ export class ApplicantDetailsModalComponent {
   }
 
   rejectApplication() {
-    this.relatedAccount.status = "rejected"; // Update the status for UI feedback
-    this.showToast("Application rejected!");
-    this.closeModal();
-    // Add rejection logic here
+    this.updateApplicationStatus("rejected", "Application rejected!");
   }
 
   acceptApplication() {
-    this.relatedAccount.status = "accepted"; // Update the status for UI feedback
-    this.showToast("Application accepted!");
-    this.closeModal();
-    // Add acceptance logic here
+    this.updateApplicationStatus("accepted", "Application accepted!");
   }
 
   viewProfile() {
     this.router.navigate(["/account", this.relatedAccount.id]);
+    this.closeModal();
+  }
+
+  private updateApplicationStatus(
+    status: "applied" | "accepted" | "rejected" | "withdrawn",
+    successMessage: string,
+  ) {
+    const updatedAccount = {
+      ...this.relatedAccount,
+      status,
+    };
+
+    // Dispatch an action to update the status in the store
+    this.store.dispatch(
+      ListingsActions.updateRelatedAccount({
+        listingId: this.relatedAccount.listingId,
+        relatedAccount: updatedAccount,
+      }),
+    );
+
+    this.showToast(successMessage);
     this.closeModal();
   }
 

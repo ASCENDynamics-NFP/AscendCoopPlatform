@@ -56,10 +56,13 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           Notes: {{ account.notes }}
         </p>
       </ion-label>
-      <ion-badge *ngIf="isOwner$ | async">
-        slot="end" [color]=" account.status === 'accepted' ? 'success' :
-        account.status === 'rejected' ? 'danger' : 'primary' " > {{
-        account.status }}
+      <ion-badge
+        *ngIf="isOwner$ | async"
+        slot="end"
+        [color]="account.status === 'accepted' ? 'success' :
+        account.status === 'rejected' ? 'danger' : 'primary' "
+      >
+        {{ account.status }}
       </ion-badge>
       <!-- <ion-button
         slot="end"

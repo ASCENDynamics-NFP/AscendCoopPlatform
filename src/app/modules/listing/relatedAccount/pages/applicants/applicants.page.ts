@@ -196,15 +196,18 @@ export class ApplicantsPage implements OnInit {
 
   async openApplicantDetailsModal(account: ListingRelatedAccount) {
     // Check if the user is the owner
-    this.isOwner$.pipe(take(1)).subscribe((isOwner) => {
-      if (isOwner) {
-        // Open modal for owners
-        this.openModal(account, isOwner);
-      } else {
-        // Navigate to the profile page for non-owners
-        this.router.navigate(["/account", account.id]);
-      }
-    });
+    combineLatest([this.isOwner$, this.store.select(selectAuthUser)])
+      .pipe(take(1))
+      .subscribe(([isOwner, authUser]) => {
+        // Check if user is owner or if it's their own account
+        if (isOwner && authUser && authUser.uid !== account.id) {
+          // Open modal for owners or account owners
+          this.openModal(account, isOwner);
+        } else {
+          // Navigate to profile for other users
+          this.router.navigate(["/account", account.id]);
+        }
+      });
   }
 
   async openModal(relatedAccount: ListingRelatedAccount, isOwner: boolean) {

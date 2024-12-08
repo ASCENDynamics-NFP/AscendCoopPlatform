@@ -44,7 +44,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <img *ngIf="account.iconImage" [src]="account.iconImage" />
       </ion-avatar>
       <ion-label>
-        <h2>{{ account.name }}</h2>
+        <h2>{{ account.firstName }} {{ account.lastName }}</h2>
         <h3 *ngIf="isOwner$ | async">{{ account.email }}</h3>
         <p *ngIf="account.phone && (isOwner$ | async)">
           {{ account.phone | phoneFormat }}
@@ -52,9 +52,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <p *ngIf="isOwner$ | async">
           Applied: {{ account.applicationDate | timestamp }}
         </p>
-        <p *ngIf="account.notes && (isOwner$ | async)">
+        <!-- <p *ngIf="account.notes && (isOwner$ | async)">
           Notes: {{ account.notes }}
-        </p>
+        </p> -->
       </ion-label>
       <ion-badge
         *ngIf="isOwner$ | async"

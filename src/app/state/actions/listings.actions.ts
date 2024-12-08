@@ -105,18 +105,19 @@ export const searchListings = createAction(
   props<{query: string}>(),
 );
 
-export const applyToListing = createAction(
-  "[Listing Detail] Apply To Listing",
-  props<{listingId: string; applicant: ListingRelatedAccount}>(),
+// Application Submission Actions
+export const submitApplication = createAction(
+  "[Listings] Submit Application",
+  props<{relatedAccount: ListingRelatedAccount}>(),
 );
 
-export const applyToListingSuccess = createAction(
-  "[Listing API] Apply To Listing Success",
+export const submitApplicationSuccess = createAction(
+  "[Listings] Submit Application Success",
 );
 
-export const applyToListingFailure = createAction(
-  "[Listing API] Apply To Listing Failure",
-  props<{error: any}>(),
+export const submitApplicationFailure = createAction(
+  "[Listings] Submit Application Failure",
+  props<{error: string}>(),
 );
 
 export const loadListingRelatedAccounts = createAction(
@@ -132,4 +133,22 @@ export const loadListingRelatedAccountsSuccess = createAction(
 export const loadListingRelatedAccountsFailure = createAction(
   "[Listing] Load Related Accounts Failure",
   props<{listingId: string; error: any}>(),
+);
+
+export const updateRelatedAccount = createAction(
+  "[Listings] Update Related Account",
+  props<{
+    listingId: string;
+    relatedAccount: ListingRelatedAccount;
+  }>(),
+);
+
+export const updateRelatedAccountSuccess = createAction(
+  "[Listings] Update Related Account Success",
+  props<{listingId: string; relatedAccount: ListingRelatedAccount}>(),
+);
+
+export const updateRelatedAccountFailure = createAction(
+  "[Listings] Update Related Account Failure",
+  props<{error: string}>(),
 );

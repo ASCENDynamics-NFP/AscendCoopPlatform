@@ -1,0 +1,145 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<app-header
+  title="Applicants"
+  [defaultHref]="'/listings/' + listingId"
+></app-header>
+
+<ion-content>
+  <app-hero
+    *ngIf="listing$ | async as listing"
+    [listing]="listing"
+    [isOwner]="(isOwner$ | async) ?? false"
+    [showButtons]="false"
+  ></app-hero>
+
+  <ion-loading
+    *ngIf="loading$ | async"
+    message="Loading applicants..."
+  ></ion-loading>
+
+  <ion-list *ngIf="!(loading$ | async)">
+    <ion-item
+      *ngFor="let account of paginatedAccounts$ | async"
+      (click)="openApplicantDetailsModal(account)"
+    >
+      <ion-avatar slot="start">
+        <img *ngIf="account.iconImage" [src]="account.iconImage" />
+      </ion-avatar>
+      <ion-label>
+        <h2>{{ account.firstName }} {{ account.lastName }}</h2>
+        <h3 *ngIf="isOwner$ | async">{{ account.email }}</h3>
+        <p *ngIf="account.phone && (isOwner$ | async)">
+          {{ account.phone | phoneFormat }}
+        </p>
+        <p *ngIf="isOwner$ | async">
+          Applied: {{ account.applicationDate | timestamp }}
+        </p>
+        <!-- <p *ngIf="account.notes && (isOwner$ | async)">
+          Notes: {{ account.notes }}
+        </p> -->
+      </ion-label>
+      <ion-badge
+        *ngIf="isOwner$ | async"
+        slot="end"
+        [color]="account.status === 'accepted' ? 'success' :
+        account.status === 'rejected' ? 'danger' : 'primary' "
+      >
+        {{ account.status }}
+      </ion-badge>
+      <!-- <ion-button
+        slot="end"
+        fill="clear"
+        [routerLink]="['/account', account.accountId]"
+      >
+        <ion-icon name="person-circle-outline"></ion-icon>
+        View Profile
+      </ion-button> -->
+    </ion-item>
+  </ion-list>
+
+  <ion-text color="danger" *ngIf="error$ | async as error">
+    {{ error }}
+  </ion-text>
+</ion-content>
+
+<!-- Pagination Controls -->
+<ion-footer>
+  <ion-toolbar class="pagination-toolbar">
+    <!-- Current Page Range -->
+    <ng-container *ngIf="currentPageRange$ | async as range">
+      <ion-text class="pagination-range">
+        {{ range.start }}-{{ range.end }} of {{ range.total }}
+      </ion-text>
+    </ng-container>
+
+    <!-- Pagination Controls -->
+    <ng-container *ngIf="pagination$ | async as pageData">
+      <div class="pagination-controls">
+        <!-- Previous Button -->
+        <ion-button
+          fill="clear"
+          (click)="previousPage()"
+          [disabled]="pageData.currentPage === 1"
+        >
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </ion-button>
+
+        <!-- Page Numbers -->
+        <ion-button
+          *ngFor="let page of pageData.pageNumbers"
+          fill="clear"
+          [color]="pageData.currentPage === page ? 'primary' : 'medium'"
+          (click)="goToPage(page)"
+        >
+          {{ page }}
+        </ion-button>
+
+        <!-- Ellipsis and Last Page -->
+        <ng-container
+          *ngIf="
+            pageData.totalPages > maxVisiblePages &&
+            pageData.pageNumbers.length &&
+            pageData.pageNumbers[pageData.pageNumbers.length - 1] <
+              pageData.totalPages
+          "
+        >
+          <ion-text>...</ion-text>
+          <ion-button
+            fill="clear"
+            (click)="goToPage(pageData.totalPages)"
+            [disabled]="pageData.currentPage === pageData.totalPages"
+          >
+            {{ pageData.totalPages }}
+          </ion-button>
+        </ng-container>
+
+        <!-- Next Button -->
+        <ion-button
+          fill="clear"
+          (click)="nextPage()"
+          [disabled]="pageData.currentPage === pageData.totalPages"
+        >
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </ng-container>
+  </ion-toolbar>
+</ion-footer>

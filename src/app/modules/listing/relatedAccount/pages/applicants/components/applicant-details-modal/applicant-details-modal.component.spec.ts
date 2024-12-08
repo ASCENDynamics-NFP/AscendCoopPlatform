@@ -17,23 +17,27 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// models/applicant.model.ts
+// import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
+// import {IonicModule} from "@ionic/angular";
 
-import {BaseDocument} from "./base-document";
-import {Timestamp, FieldValue} from "firebase/firestore";
+// import {ApplicantDetailsModalComponent} from "./applicant-details-modal.component";
 
-export interface ListingRelatedAccount extends BaseDocument {
-  accountId: string; // ID of the applicant's account
-  iconImage?: string;
-  firstName: string;
-  lastName: string;
-  name: string;
-  email: string;
-  phone?: string;
-  listingId: string; // ID of the listing
-  status: "applied" | "accepted" | "rejected" | "withdrawn";
-  applicationDate: Timestamp | FieldValue;
-  notes?: string;
-  resumeFile?: File | null;
-  coverLetterFile?: File | null;
-}
+// describe("ApplicantDetailsModalComponent", () => {
+//   let component: ApplicantDetailsModalComponent;
+//   let fixture: ComponentFixture<ApplicantDetailsModalComponent>;
+
+//   beforeEach(waitForAsync(() => {
+//     TestBed.configureTestingModule({
+//       declarations: [ApplicantDetailsModalComponent],
+//       imports: [IonicModule.forRoot()],
+//     }).compileComponents();
+
+//     fixture = TestBed.createComponent(ApplicantDetailsModalComponent);
+//     component = fixture.componentInstance;
+//     fixture.detectChanges();
+//   }));
+
+//   it("should create", () => {
+//     expect(component).toBeTruthy();
+//   });
+// });

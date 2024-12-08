@@ -20,9 +20,9 @@
 // src/app/modules/listings/pages/listing-detail/listing-detail.page.ts
 
 import {Component, OnInit} from "@angular/core";
-import {ActivatedRoute, Router} from "@angular/router";
+import {ActivatedRoute} from "@angular/router";
 import {Store} from "@ngrx/store";
-import {AlertController, ToastController} from "@ionic/angular";
+import {AlertController} from "@ionic/angular";
 import {Observable, combineLatest} from "rxjs";
 import {first, map} from "rxjs/operators";
 import {Listing} from "../../../../models/listing.model";
@@ -30,7 +30,6 @@ import * as ListingsActions from "../../../../state/actions/listings.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {AppState} from "../../../../state/app.state";
 import {selectListingById} from "../../../../state/selectors/listings.selectors";
-import {ListingRelatedAccount} from "../../../../models/listing-related-account.model";
 import {serverTimestamp} from "firebase/firestore";
 
 @Component({
@@ -45,10 +44,8 @@ export class ListingDetailPage implements OnInit {
 
   constructor(
     private store: Store<AppState>,
-    private router: Router,
     private route: ActivatedRoute,
     private alertController: AlertController,
-    private toastController: ToastController,
   ) {
     this.listingId = this.route.snapshot.paramMap.get("id") || "";
     this.listing$ = this.store.select(selectListingById(this.listingId));
@@ -90,7 +87,6 @@ export class ListingDetailPage implements OnInit {
               this.store.dispatch(
                 ListingsActions.deleteListing({id: this.listingId}),
               );
-              this.router.navigate(["/listings"]);
             }
           },
         },
@@ -98,79 +94,6 @@ export class ListingDetailPage implements OnInit {
     });
 
     await alert.present();
-  }
-
-  async onApplyToListing() {
-    const user = await this.store
-      .select(selectAuthUser)
-      .pipe(first())
-      .toPromise(); // Get the current user
-
-    if (!user) {
-      console.error("User or Listing not found");
-      return;
-    }
-
-    const noteAlert = await this.alertController.create({
-      header: "Application Note",
-      message: `Your Info: ${user.displayName || "Anonymous"}, ${user.email}, ${user.phoneNumber ?? ""}. Enter a note for your application (optional):`,
-      inputs: [
-        {
-          name: "note",
-          type: "textarea",
-          placeholder: "Add a note about your application...",
-        },
-      ],
-      buttons: [
-        {
-          text: "Cancel",
-          role: "cancel",
-        },
-        {
-          text: "Submit",
-          handler: async (data) => {
-            const note = data.note || ""; // Retrieve the entered note
-            const user = await this.store
-              .select(selectAuthUser)
-              .pipe(first())
-              .toPromise(); // Get the current user
-            if (!user) {
-              console.error("User not authenticated");
-              return;
-            }
-
-            if (this.listingId) {
-              const applicant: ListingRelatedAccount = {
-                id: user.uid,
-                accountId: user.uid,
-                iconImage: user.iconImage || "src/assets/avatar/male1.png",
-                name: user.displayName || "Anonymous",
-                email: user.email || "",
-                phone: user.phoneNumber || "",
-                listingId: this.listingId,
-                status: "applied",
-                applicationDate: serverTimestamp(),
-                notes: note,
-                createdAt: serverTimestamp(),
-                createdBy: user.uid,
-                lastModifiedAt: serverTimestamp(),
-                lastModifiedBy: user.uid,
-              };
-
-              // Dispatch action to apply for listing with the applicant details
-              this.store.dispatch(
-                ListingsActions.applyToListing({
-                  listingId: this.listingId,
-                  applicant,
-                }),
-              );
-            }
-          },
-        },
-      ],
-    });
-
-    await noteAlert.present();
   }
 
   togglePublishStatus() {
@@ -185,13 +108,6 @@ export class ListingDetailPage implements OnInit {
         this.store.dispatch(
           ListingsActions.updateListing({listing: updatedListing}),
         );
-        const toast = await this.toastController.create({
-          message: `Listing ${newStatus === "active" ? "Published" : "Unpublished"} Successfully!`,
-          duration: 2000,
-          position: "top",
-          color: "success",
-        });
-        toast.present();
       }
     });
   }

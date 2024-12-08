@@ -19,11 +19,12 @@
 ***********************************************************************************************/
 // src/app/core/services/firestore.service.ts
 import {Injectable} from "@angular/core";
-import {combineLatest, Observable, of} from "rxjs";
+import {combineLatest, firstValueFrom, Observable, of} from "rxjs";
 import {map, catchError} from "rxjs/operators";
 import {FirebaseError} from "firebase/app";
 import {Account, RelatedAccount} from "../../models/account.model";
 import {AngularFirestore, Query} from "@angular/fire/compat/firestore";
+import {AngularFireStorage} from "@angular/fire/compat/storage";
 import {RelatedListing} from "../../models/related-listing.model";
 import {DocumentData, WhereFilterOp} from "firebase/firestore";
 
@@ -31,7 +32,10 @@ import {DocumentData, WhereFilterOp} from "firebase/firestore";
   providedIn: "root",
 })
 export class FirestoreService {
-  constructor(private afs: AngularFirestore) {}
+  constructor(
+    private afs: AngularFirestore,
+    private storage: AngularFireStorage,
+  ) {}
 
   // Helper to ensure documents have an id property
   private populateId<T>(data: T, id: string): T {
@@ -400,5 +404,16 @@ export class FirestoreService {
         return of([]);
       }),
     );
+  }
+
+  // Upload a file to Firestore storage
+  async uploadFile(path: string, file: File): Promise<string> {
+    const fileRef = this.storage.ref(path);
+
+    // Upload the file
+    await this.storage.upload(path, file);
+
+    // Get the download URL using firstValueFrom
+    return firstValueFrom(fileRef.getDownloadURL());
   }
 }

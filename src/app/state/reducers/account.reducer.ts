@@ -31,6 +31,11 @@ export interface AccountState {
   selectedAccountId: string | null;
   loading: boolean;
   error: any;
+
+  // Timestamps for cache invalidation
+  accountsLastUpdated: number | null;
+  relatedAccountsLastUpdated: {[accountId: string]: number | null};
+  relatedListingsLastUpdated: {[accountId: string]: number | null};
 }
 
 export const initialState: AccountState = {
@@ -40,6 +45,10 @@ export const initialState: AccountState = {
   selectedAccountId: null,
   loading: false,
   error: null,
+  // Timestamps for cache invalidation
+  accountsLastUpdated: null,
+  relatedAccountsLastUpdated: {},
+  relatedListingsLastUpdated: {},
 };
 
 export const accountReducer = createReducer(
@@ -59,13 +68,14 @@ export const accountReducer = createReducer(
   on(AccountActions.loadAccountsSuccess, (state, {accounts}) => ({
     ...state,
     entities: accounts.reduce(
-      (entities: {[id: string]: Account}, account) => {
-        entities[account.id] = account;
-        return entities;
-      },
-      {} as {[id: string]: Account},
+      (entities: {[id: string]: Account}, account) => ({
+        ...entities,
+        [account.id]: account,
+      }),
+      {},
     ),
     loading: false,
+    accountsLastUpdated: Date.now(),
   })),
   on(AccountActions.loadAccountsFailure, (state, {error}) => ({
     ...state,
@@ -79,27 +89,16 @@ export const accountReducer = createReducer(
     loading: true,
     error: null,
   })),
-  on(
-    AccountActions.loadAccountSuccess,
-    (state, {account, relatedAccounts, relatedListings}) => ({
-      ...state,
-      entities: {
-        ...state.entities,
-        [account.id]: account,
-      },
-      relatedAccounts: {
-        ...state.relatedAccounts,
-        [account.id]: relatedAccounts,
-      },
-      relatedListings: {
-        ...state.relatedListings,
-        [account.id]: relatedListings,
-      },
-      selectedAccountId: account.id,
-      loading: false,
-      error: null,
-    }),
-  ),
+  on(AccountActions.loadAccountSuccess, (state, {account}) => ({
+    ...state,
+    entities: {
+      ...state.entities,
+      [account.id]: account,
+    },
+    selectedAccountId: account.id,
+    loading: false,
+    error: null,
+  })),
   on(AccountActions.loadAccountFailure, (state, {error}) => ({
     ...state,
     loading: false,
@@ -158,6 +157,10 @@ export const accountReducer = createReducer(
       relatedAccounts: {
         ...state.relatedAccounts,
         [accountId]: relatedAccounts,
+      },
+      relatedAccountsLastUpdated: {
+        ...state.relatedAccountsLastUpdated,
+        [accountId]: Date.now(),
       },
       loading: false,
     }),
@@ -223,6 +226,10 @@ export const accountReducer = createReducer(
       relatedListings: {
         ...state.relatedListings,
         [accountId]: relatedListings,
+      },
+      relatedListingsLastUpdated: {
+        ...state.relatedListingsLastUpdated,
+        [accountId]: Date.now(),
       },
       loading: false,
     }),

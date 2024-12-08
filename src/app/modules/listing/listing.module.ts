@@ -35,13 +35,16 @@ import {TimestampPipe} from "../../shared/pipes/timestamp.pipe";
 import {ListingFormComponent} from "./components/listing-form/listing-form.component";
 import {FormatAddressPipe} from "../../shared/pipes/format-address.pipe";
 import {HeroComponent} from "./pages/listing-detail/components/hero/hero.component";
-import {ApplicantsPage} from "./pages/applicants/applicants.page";
+import {ApplicantsPage} from "./relatedAccount/pages/applicants/applicants.page";
 import {PhoneFormatPipe} from "../../shared/pipes/phone-format.pipe";
 import {SharedModule} from "../../shared/shared.module";
+import {ApplyPage} from "./relatedAccount/pages/apply/apply.page";
+import {ApplicantDetailsModalComponent} from "./relatedAccount/pages/applicants/components/applicant-details-modal/applicant-details-modal.component";
 
 @NgModule({
   declarations: [
     ApplicantsPage,
+    ApplyPage,
     ListingsPage,
     ListingCreatePage,
     ListingDetailPage,
@@ -51,6 +54,7 @@ import {SharedModule} from "../../shared/shared.module";
     FormatAddressPipe,
     PhoneFormatPipe,
     HeroComponent,
+    ApplicantDetailsModalComponent,
   ],
   imports: [
     CommonModule,

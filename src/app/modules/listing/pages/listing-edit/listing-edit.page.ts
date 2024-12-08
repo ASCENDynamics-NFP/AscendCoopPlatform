@@ -22,7 +22,7 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
-import {combineLatest, first, map, Observable, of, tap} from "rxjs";
+import {combineLatest, map, Observable, of, tap} from "rxjs";
 import {Listing} from "../../../../models/listing.model";
 import * as ListingsActions from "../../../../state/actions/listings.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
@@ -77,7 +77,6 @@ export class ListingEditPage implements OnInit {
   onSubmit(listing: Listing) {
     if (this.listingId) {
       this.store.dispatch(ListingsActions.updateListing({listing: listing}));
-      this.router.navigate(["/listings", this.listingId]);
     }
   }
 }

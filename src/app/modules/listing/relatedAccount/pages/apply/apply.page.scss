@@ -17,3 +17,51 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+/* src/app/modules/listings/pages/apply/apply.page.scss */
+
+ion-header {
+  --background: var(--ion-color-primary);
+  --color: white;
+}
+
+ion-content {
+  padding: 16px;
+}
+
+h2 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+p {
+  margin: 0 0 16px 0;
+  color: var(--ion-color-medium);
+}
+
+ion-input,
+ion-textarea {
+  margin: 8px auto;
+}
+
+ion-card {
+  margin-bottom: 16px;
+}
+
+ion-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+}
+
+ion-button {
+  margin-left: auto;
+}
+
+ion-text {
+  display: block;
+  margin-top: 8px;
+  color: var(--ion-color-medium);
+}
+
+ion-button[type="submit"] {
+  margin-top: 16px;
+}

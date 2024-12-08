@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, EventEmitter, Input, Output} from "@angular/core";
+import {Component, Input} from "@angular/core";
 import {Listing} from "../../../../../../models/listing.model";
 
 @Component({
@@ -28,13 +28,9 @@ import {Listing} from "../../../../../../models/listing.model";
 export class HeroComponent {
   @Input() listing!: Listing;
   @Input() isOwner: boolean = false;
-  @Output() applyToListing = new EventEmitter<void>();
+  @Input() showButtons: boolean = true;
 
   constructor() {}
-
-  onApply() {
-    this.applyToListing.emit();
-  }
 
   getCities(): string {
     if (this.listing.remote) {

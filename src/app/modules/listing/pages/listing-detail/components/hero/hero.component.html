@@ -63,12 +63,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     </div>
   </div>
 
-  <div class="listing-actions">
+  <div class="listing-actions" *ngIf="showButtons">
     <ion-button
       *ngIf="!isOwner"
       fill="outline"
       [disabled]="listing.status !== 'active'"
-      (click)="onApply()"
+      [routerLink]="['/listings', listing.id, 'apply']"
     >
       Apply Now
     </ion-button>

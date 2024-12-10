@@ -314,7 +314,7 @@ export class AuthEffects {
         from(signOut(this.auth)).pipe(
           tap(() => {
             this.successHandler.handleSuccess("You have been signed out!");
-            this.router.navigate(["auth/login"]);
+            this.router.navigate(["auth"]);
           }),
           switchMap(() => [
             AuthActions.signOutSuccess(),

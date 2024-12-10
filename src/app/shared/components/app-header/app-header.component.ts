@@ -31,8 +31,9 @@ import {AuthUser} from "../../../models/auth-user.model";
   styleUrls: ["./app-header.component.scss"],
 })
 export class AppHeaderComponent {
-  @Input() title?: string;
+  @Input() title?: string = "ASCENDynamics NFP";
   @Input() defaultHref?: string;
+  @Input() showLogo?: boolean = false;
 
   authUser$: Observable<AuthUser | null>; // Declare type for clarity
   public popoverEvent: any;

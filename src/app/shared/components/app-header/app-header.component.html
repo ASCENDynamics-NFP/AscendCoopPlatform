@@ -18,21 +18,37 @@ You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <ion-toolbar>
-  <ion-buttons slot="start">
+  <ion-buttons slot="start" class="toolbar-buttons">
     <ion-menu-button></ion-menu-button>
     <ion-back-button
       *ngIf="defaultHref"
       [defaultHref]="defaultHref"
     ></ion-back-button>
   </ion-buttons>
-  <ion-title>{{ title }}</ion-title>
-  <ion-buttons slot="end">
+  <div class="toolbar-content">
+    <img
+      *ngIf="showLogo"
+      src="assets/image/logo/logo.png"
+      alt="ASCENDynamics Logo"
+      class="toolbar-logo"
+    />
+    <ion-title class="header-title">{{ title }}</ion-title>
+  </div>
+  <ion-buttons slot="end" class="toolbar-buttons">
     <ion-avatar
-      *ngIf="image"
+      *ngIf="image && authUser$ | async as authUser; else notLoggedIn"
       class="padded-avatar"
       (click)="presentPopover($event)"
     >
       <img [src]="image | async" alt="User Avatar" />
     </ion-avatar>
+    <ng-template #notLoggedIn>
+      <ion-button routerLink="/auth/login" color="primary" fill="outline">
+        Login
+      </ion-button>
+      <ion-button routerLink="/auth/signup" color="primary" fill="solid">
+        Sign Up
+      </ion-button>
+    </ng-template>
   </ion-buttons>
 </ion-toolbar>

@@ -19,35 +19,42 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <!-- src/app/pages/account/relatedListings/pages/listings-list.page.html -->
 
-<app-header [title]="title" [defaultHref]="'account/'+ accountId"></app-header>
-<ion-content>
-  <ion-segment
-    scrollable
-    [(ngModel)]="relationshipFilter"
-    (ionChange)="onRelationshipFilterChange($event)"
-  >
-    <ion-segment-button value="all">
-      <ion-icon name="list-outline"></ion-icon>
-      <ion-label>All</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="owner">
-      <ion-icon name="person-outline"></ion-icon>
-      <ion-label>My Listings</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="applicant">
-      <ion-icon name="paper-plane-outline"></ion-icon>
-      <ion-label>Applications</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="participant">
-      <ion-icon name="people-outline"></ion-icon>
-      <ion-label>Participating</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="saved">
-      <ion-icon name="bookmark-outline"></ion-icon>
-      <ion-label>Saved</ion-label>
-    </ion-segment-button>
-  </ion-segment>
+<ion-header>
+  <app-header
+    [title]="title"
+    [defaultHref]="'account/'+ accountId"
+  ></app-header>
+  <ion-toolbar>
+    <ion-segment
+      scrollable
+      [(ngModel)]="relationshipFilter"
+      (ionChange)="onRelationshipFilterChange($event)"
+    >
+      <ion-segment-button value="all">
+        <ion-icon name="list-outline"></ion-icon>
+        <ion-label>All</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="owner">
+        <ion-icon name="person-outline"></ion-icon>
+        <ion-label>My Listings</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="applicant">
+        <ion-icon name="paper-plane-outline"></ion-icon>
+        <ion-label>Applications</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="participant">
+        <ion-icon name="people-outline"></ion-icon>
+        <ion-label>Participating</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="saved">
+        <ion-icon name="bookmark-outline"></ion-icon>
+        <ion-label>Saved</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
 
+<ion-content>
   <ion-list *ngIf="filteredRelatedListings$ | async as listings">
     <ion-item
       *ngFor="let listing of listings; trackBy: trackById"

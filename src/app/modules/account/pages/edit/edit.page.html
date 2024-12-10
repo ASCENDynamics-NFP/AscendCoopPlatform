@@ -19,10 +19,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <!-- src/app/modules/account/pages/edit/edit.page.html -->
 
-<app-header
-  *ngIf="account$ | async as account"
-  [title]="account.name"
-></app-header>
+<ion-header>
+  <app-header
+    *ngIf="account$ | async as account"
+    [title]="account.name"
+  ></app-header>
+</ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-grid *ngIf="account$ | async as account">

@@ -22,6 +22,8 @@
 import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
 import * as AuthActions from "../actions/auth.actions";
+import * as AccountActions from "../actions/account.actions";
+import * as ListingsActions from "../actions/listings.actions";
 import {
   Auth,
   getAuth,
@@ -314,7 +316,11 @@ export class AuthEffects {
             this.successHandler.handleSuccess("You have been signed out!");
             this.router.navigate(["auth/login"]);
           }),
-          map(() => AuthActions.signOutSuccess()),
+          switchMap(() => [
+            AuthActions.signOutSuccess(),
+            AccountActions.clearAccountsState(),
+            ListingsActions.clearListingsState(),
+          ]),
           catchError((error) => {
             this.errorHandler.handleFirebaseAuthError(error);
             return of(AuthActions.signOutFailure({error}));

@@ -55,7 +55,7 @@ export const accountReducer = createReducer(
   initialState,
 
   // Clear Account State
-  on(AccountActions.clearAccounts, () => ({
+  on(AccountActions.clearAccountsState, () => ({
     ...initialState,
   })),
 

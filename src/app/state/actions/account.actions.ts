@@ -23,7 +23,7 @@ import {createAction, props} from "@ngrx/store";
 import {Account, RelatedAccount} from "../../models/account.model";
 import {RelatedListing} from "../../models/related-listing.model";
 
-export const clearAccounts = createAction("[Account] Clear Accounts");
+export const clearAccountsState = createAction("[Account] Clear Accounts");
 
 // Load Accounts
 export const loadAccounts = createAction("[Account] Load Accounts");

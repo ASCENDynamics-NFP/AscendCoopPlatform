@@ -25,6 +25,8 @@ import {ListingRelatedAccount} from "../../models/listing-related-account.model"
 
 export const loadListings = createAction("[Listings Page] Load Listings");
 
+export const clearListingsState = createAction("[Listings] Clear Listings");
+
 export const loadListingsSuccess = createAction(
   "[Listings API] Load Listings Success",
   props<{listings: Listing[]}>(),

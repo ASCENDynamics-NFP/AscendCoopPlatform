@@ -20,24 +20,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <!-- landing.page.html -->
 
 <ion-header>
-  <ion-toolbar color="light">
-    <ion-buttons slot="start">
-      <img
-        src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
-        alt="ASCENDynamics Logo"
-        style="height: 40px; margin-right: 0px"
-      />
-      <ion-title class="header-title">ASCENDynamics NFP</ion-title>
-    </ion-buttons>
-    <ion-buttons slot="end">
-      <ion-button routerLink="/auth/login" color="primary" fill="outline"
-        >Login</ion-button
-      >
-      <ion-button routerLink="/auth/signup" color="primary" fill="solid"
-        >Sign Up</ion-button
-      >
-    </ion-buttons>
-  </ion-toolbar>
+  <app-header [showLogo]="true"></app-header>
 </ion-header>
 
 <ion-content fullscreen>

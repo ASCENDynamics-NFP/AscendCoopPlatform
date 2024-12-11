@@ -46,8 +46,6 @@ import {AppState} from "../app.state";
 import {
   selectAccountById,
   selectAccountEntities,
-  selectRelatedAccountsByAccountId,
-  selectRelatedListingsByAccountId,
   selectAreAccountsFresh,
   selectAreRelatedAccountsFresh,
   selectAreRelatedListingsFresh,

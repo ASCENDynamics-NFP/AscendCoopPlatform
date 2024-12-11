@@ -20,19 +20,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <!-- src/app/modules/account/pages/signup/signup.page.html -->
 
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
-    <ion-title translate>user.signup.title</ion-title>
-  </ion-toolbar>
+  <app-header [title]="'user.signup.title'"></app-header>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large" translate>user.signup.title</ion-title>
-    </ion-toolbar>
+    <app-header [title]="'user.signup.title'"></app-header>
   </ion-header>
 
   <ion-card-content class="content-center">

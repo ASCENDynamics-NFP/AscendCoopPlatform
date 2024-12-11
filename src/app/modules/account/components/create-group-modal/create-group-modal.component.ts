@@ -69,7 +69,7 @@ export class CreateGroupModalComponent {
         type: "group", // Specify that this account is a group
         // Include other necessary fields like address, language, etc.
         // Default images or placeholder values
-        iconImage: "assets/icon/favicon.png",
+        iconImage: "assets/icon/logo.png",
         heroImage: "assets/image/orghero.png",
         // Initialize other group-specific properties if needed
         groupDetails: {

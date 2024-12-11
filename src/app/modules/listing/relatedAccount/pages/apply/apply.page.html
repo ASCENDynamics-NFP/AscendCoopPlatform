@@ -19,10 +19,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <!-- src/app/modules/listings/pages/apply/apply.page.html -->
 
-<app-header
-  [defaultHref]="'/listings/' + listingId"
-  [title]="'Apply for ' + (listing$ | async)?.title"
-></app-header>
+<ion-header>
+  <app-header
+    [defaultHref]="'/listings/' + listingId"
+    [title]="'Apply for ' + (listing$ | async)?.title"
+  ></app-header>
+</ion-header>
 
 <ion-content>
   <form [formGroup]="applyForm" (ngSubmit)="onSubmit()">

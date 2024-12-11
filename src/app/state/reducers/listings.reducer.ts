@@ -54,6 +54,11 @@ const initialState: ListingsState = {
 export const listingsReducer = createReducer(
   initialState,
 
+  // Clear Account State
+  on(ListingsActions.clearListingsState, () => ({
+    ...initialState,
+  })),
+
   // Load Listings
   on(ListingsActions.loadListings, (state) => ({
     ...state,

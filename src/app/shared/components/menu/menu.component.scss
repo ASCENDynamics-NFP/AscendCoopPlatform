@@ -18,6 +18,23 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 
+.menu-toolbar {
+  display: flex;
+  align-items: center;
+}
+
+.toolbar-content {
+  display: flex;
+  align-items: center;
+  gap: 0; /* Adjust spacing between logo and text */
+}
+
+.toolbar-logo {
+  padding-left: 0.75rem;
+  height: 30px; /* Adjust as needed */
+  width: auto;
+}
+
 ion-item {
   cursor: pointer;
   &:hover {

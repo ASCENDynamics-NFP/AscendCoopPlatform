@@ -20,7 +20,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <!-- src/app/modules/account/pages/details/details.page.html -->
 
 <ng-container *ngIf="account$ | async as account; else loading">
-  <app-header [title]="account.name"></app-header>
+  <ion-header>
+    <app-header [title]="account.name"></app-header>
+  </ion-header>
 
   <ion-content [fullscreen]="true">
     <app-hero

@@ -19,25 +19,19 @@
 ***********************************************************************************************/
 // src/app/modules/account/pages/settings/settings.page.spec.ts
 
-import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {Store} from "@ngrx/store";
+import {TestBed, ComponentFixture} from "@angular/core/testing";
 import {SettingsPage} from "./settings.page";
 import {provideMockStore, MockStore} from "@ngrx/store/testing";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
-import {selectAccountById} from "../../../../state/selectors/account.selectors";
-import * as AccountActions from "../../../../state/actions/account.actions";
 import {AuthUser} from "../../../../models/auth-user.model";
 import {Account} from "../../../../models/account.model";
 import {Timestamp} from "firebase/firestore";
-import {SharedModule} from "../../../../shared/shared.module";
-import {AngularDelegate, IonicModule, PopoverController} from "@ionic/angular";
+import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 
 describe("SettingsPage", () => {
   let component: SettingsPage;
   let fixture: ComponentFixture<SettingsPage>;
   let store: MockStore;
-  let dispatchSpy: jasmine.Spy;
-
   const mockAuthUser: AuthUser = {
     uid: "12345",
     email: "test@example.com",
@@ -80,70 +74,43 @@ describe("SettingsPage", () => {
     email: "",
   };
 
+  // Initial mock state
+  const initialState = {
+    auth: {user: mockAuthUser},
+    accounts: {[mockAuthUser.uid]: mockAccount},
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [SettingsPage],
-      imports: [SharedModule, IonicModule.forRoot()],
-      providers: [provideMockStore(), AngularDelegate, PopoverController],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
+      providers: [provideMockStore({initialState})],
     }).compileComponents();
 
-    store = TestBed.inject(Store) as MockStore;
-    dispatchSpy = spyOn(store, "dispatch");
-
-    // Set up the mock selectors to return observables
-    store.overrideSelector(selectAuthUser, mockAuthUser);
-
-    // Use the selector factory with the correct accountId and override its return value
-    store.overrideSelector(selectAccountById("12345"), mockAccount);
-
+    store = TestBed.inject(MockStore);
     fixture = TestBed.createComponent(SettingsPage);
     component = fixture.componentInstance;
-
-    // Call ngOnInit explicitly
-    component.ngOnInit();
   });
 
-  beforeEach(() => {
-    // Reset the calls for dispatchSpy between tests
-    dispatchSpy.calls.reset();
-  });
-
-  it("should create the component", () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should select authUser$", (done) => {
-    component.authUser$.subscribe((authUser) => {
-      expect(authUser).toEqual(mockAuthUser);
-      done();
-    });
+  it("should emit undefined if no authenticated user is found", () => {
+    store.overrideSelector(selectAuthUser, null);
+
+    let account: Account | undefined;
+    component.account$.subscribe((acc) => (account = acc));
+
+    expect(account).toBeUndefined();
   });
 
-  // it("should dispatch loadAccount action on authUser change", (done) => {
-  //   component.authUser$.subscribe(() => {
-  //     expect(dispatchSpy).toHaveBeenCalledWith(
-  //       AccountActions.loadAccount({accountId: mockAuthUser.uid}),
-  //     );
-  //     done();
-  //   });
-  // });
+  it("should handle a user without a valid UID gracefully", () => {
+    store.overrideSelector(selectAuthUser, {...mockAuthUser, uid: ""});
 
-  // it("should select account$ based on authUser uid", (done) => {
-  //   component.account$.subscribe((account) => {
-  //     expect(account).toEqual(mockAccount);
-  //     done();
-  //   });
-  // });
+    let account: Account | undefined;
+    component.account$.subscribe((acc) => (account = acc));
 
-  it("should not dispatch loadAccount if authUser is null", (done) => {
-    store.overrideSelector(selectAuthUser, null);
-    component.ngOnInit(); // Call ngOnInit to trigger the logic
-
-    component.authUser$.subscribe(() => {
-      expect(dispatchSpy).not.toHaveBeenCalledWith(
-        AccountActions.loadAccount({accountId: mockAuthUser.uid}),
-      );
-      done();
-    });
+    expect(account).toBeUndefined();
   });
 });

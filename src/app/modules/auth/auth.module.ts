@@ -31,10 +31,12 @@ import {StoreModule} from "@ngrx/store";
 import {authReducer} from "../../state/reducers/auth.reducer";
 import {AuthEffects} from "../../state/effects/auth.effects";
 import {LandingPage} from "./pages/landing/landing.page";
+import {SharedModule} from "../../shared/shared.module";
 
 @NgModule({
   declarations: [LoginPage, SignupPage, LandingPage],
   imports: [
+    SharedModule,
     AuthRoutingModule,
     CommonModule,
     IonicModule,

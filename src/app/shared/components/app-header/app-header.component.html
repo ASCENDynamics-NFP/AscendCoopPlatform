@@ -19,9 +19,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <ion-toolbar>
   <ion-buttons slot="start" class="toolbar-buttons">
-    <ion-menu-button></ion-menu-button>
+    <ion-menu-button color="primary"></ion-menu-button>
     <ion-back-button
       *ngIf="defaultHref"
+      color="primary"
       [defaultHref]="defaultHref"
     ></ion-back-button>
   </ion-buttons>
@@ -32,7 +33,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       alt="ASCENDynamics Logo"
       class="toolbar-logo"
     />
-    <ion-title class="header-title">{{ title }}</ion-title>
+    <ion-title class="header-title" translate>{{ title }}</ion-title>
   </div>
   <ion-buttons slot="end" class="toolbar-buttons">
     <ion-avatar

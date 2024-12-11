@@ -18,19 +18,12 @@ You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
-    <ion-title translate>user.login.title</ion-title>
-  </ion-toolbar>
+  <app-header [title]="'user.login.title'"></app-header>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large" translate>user.login.title</ion-title>
-    </ion-toolbar>
+    <app-header [title]="'user.login.title'"></app-header>
   </ion-header>
 
   <ion-card-content class="content-center">

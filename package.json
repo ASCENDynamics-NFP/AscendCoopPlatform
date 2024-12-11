@@ -35,7 +35,7 @@
     "@capacitor/haptics": "^6.0.0",
     "@capacitor/keyboard": "^6.0.0",
     "@capacitor/status-bar": "^6.0.0",
-    "@ionic/angular": "^8.3.3",
+    "@ionic/angular": "^8.4.1",
     "@ionic/cli": "^7.2.0",
     "@ionic/pwa-elements": "^3.1.1",
     "@ngrx/effects": "^17.2.0",
@@ -93,7 +93,6 @@
   },
   "overrides": {
     "inflight": "npm:lru-cache@latest",
-    "read-package-json": "@npmcli/package-json@latest",
     "superagent": "npm:superagent@latest"
   },
   "description": "An open-source collaboration platform for worker-owned cooperatives, nonprofits, and private organizations, built with Ionic and Firebase, to foster growth, real-time data-driven decision-making, and address basic human needs through community-based solutions.",

@@ -17,20 +17,36 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// landing.page.ts
-import {Component} from "@angular/core";
+// src/app/modules/auth/pages/landing/landing.page.ts
+
+import {Component, OnInit} from "@angular/core";
 import {ModalController} from "@ionic/angular";
 import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
+import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
   selector: "app-landing",
   templateUrl: "./landing.page.html",
   styleUrls: ["./landing.page.scss"],
 })
-export class LandingPage {
+export class LandingPage implements OnInit {
   currentYear: number = new Date().getFullYear();
 
-  constructor(private modalController: ModalController) {}
+  constructor(
+    private metaService: MetaService,
+    private modalController: ModalController,
+  ) {}
+
+  ngOnInit() {
+    this.metaService.updateMetaTags(
+      "ASCENDynamics NFP | Volunteer Opportunities",
+      "Join ASCENDynamics NFP to connect with nonprofits, find volunteer opportunities, and make an impact in your community.",
+      "volunteer, nonprofits, community, opportunities",
+      "ASCENDynamics NFP | Volunteer Opportunities",
+      "Find local nonprofits and volunteer opportunities with ASCENDynamics NFP.",
+      "https://app.ASCENDynamics.org/",
+    );
+  }
 
   // Open the legal modal (Privacy Policy or Terms of Use)
   async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {

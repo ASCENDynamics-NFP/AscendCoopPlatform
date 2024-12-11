@@ -29,15 +29,14 @@ import {
 import {ModalController} from "@ionic/angular";
 import {Router} from "@angular/router";
 import {Store} from "@ngrx/store";
-
 import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
-
 import * as AuthActions from "../../../../state/actions/auth.actions";
 import {
   selectAuthError,
   selectAuthLoading,
 } from "../../../../state/selectors/auth.selectors";
 import {Observable} from "rxjs";
+import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
   selector: "app-signup",
@@ -52,6 +51,7 @@ export class SignupPage implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
+    private metaService: MetaService,
     private modalController: ModalController,
     private store: Store,
   ) {
@@ -61,6 +61,15 @@ export class SignupPage implements OnInit {
 
   // Initialize form and state selectors in ngOnInit
   ngOnInit() {
+    this.metaService.updateMetaTags(
+      "Sign Up | ASCENDynamics NFP",
+      "Create an account on ASCENDynamics NFP to find volunteer opportunities and connect with nonprofits.",
+      "sign up, volunteer, nonprofits, community",
+      "Sign Up for ASCENDynamics NFP",
+      "Join ASCENDynamics NFP to start making an impact in your community today.",
+      "https://app.ASCENDynamics.org/auth/signup",
+    );
+
     this.signupForm = this.fb.nonNullable.group(
       {
         email: ["", [Validators.required, Validators.email]],

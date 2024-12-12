@@ -163,8 +163,6 @@ export class LandingPage {
     loop: true,
   };
 
-  constructor(private modalController: ModalController) {}
-
   ngAfterViewInit(): void {
     this.initSwiper();
   }
@@ -172,18 +170,5 @@ export class LandingPage {
   initSwiper() {
     Object.assign(this.swiperElement?.nativeElement, this.swiperConfig);
     this.swiperElement?.nativeElement.initialize();
-  }
-
-  // Open the legal modal (Privacy Policy or Terms of Use)
-  async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {
-    try {
-      const modal = await this.modalController.create({
-        component: LegalModalComponent,
-        componentProps: {content: contentType},
-      });
-      await modal.present();
-    } catch (error) {
-      console.error("Error opening legal modal:", error);
-    }
   }
 }

@@ -55,9 +55,19 @@ export class LoginPage implements OnInit {
       "Login | ASCENDynamics NFP",
       "Log in to your ASCENDynamics NFP account to track volunteer hours, find opportunities, and connect with nonprofits.",
       "login, volunteer, nonprofits, community",
-      "Login to ASCENDynamics NFP",
-      "Access your ASCENDynamics NFP account to stay connected with the community.",
-      "https://app.ASCENDynamics.org/auth/login",
+      {
+        title: "Login to ASCENDynamics NFP",
+        description:
+          "Access your ASCENDynamics NFP account to stay connected with the community.",
+        url: "https://app.ASCENDynamics.org/login",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary",
+        title: "Login | ASCENDynamics NFP",
+        description: "Stay connected with your volunteering community.",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
     );
 
     // Initialize the form after fb is available

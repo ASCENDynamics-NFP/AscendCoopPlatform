@@ -65,9 +65,20 @@ export class SignupPage implements OnInit {
       "Sign Up | ASCENDynamics NFP",
       "Create an account on ASCENDynamics NFP to find volunteer opportunities and connect with nonprofits.",
       "sign up, volunteer, nonprofits, community",
-      "Sign Up for ASCENDynamics NFP",
-      "Join ASCENDynamics NFP to start making an impact in your community today.",
-      "https://app.ASCENDynamics.org/auth/signup",
+      {
+        title: "Sign Up for ASCENDynamics NFP",
+        description:
+          "Join ASCENDynamics NFP to start making an impact in your community today.",
+        url: "https://app.ASCENDynamics.org/signup",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary",
+        title: "Sign Up | ASCENDynamics NFP",
+        description:
+          "Become part of ASCENDynamics NFP and start your volunteering journey.",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
     );
 
     this.signupForm = this.fb.nonNullable.group(

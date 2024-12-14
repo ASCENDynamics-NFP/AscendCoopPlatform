@@ -35,6 +35,7 @@ import {
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {IonContent, ViewWillEnter} from "@ionic/angular";
 import {RelatedListing} from "../../../../models/related-listing.model";
+import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
   selector: "app-details",
@@ -51,6 +52,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
   isProfileOwner$!: Observable<boolean>;
 
   constructor(
+    private metaService: MetaService,
     private route: ActivatedRoute,
     private router: Router,
     private store: Store,
@@ -103,6 +105,26 @@ export class DetailsPage implements OnInit, ViewWillEnter {
   }
 
   ngOnInit(): void {
+    this.metaService.updateMetaTags(
+      "Profile | ASCENDynamics NFP",
+      "View and manage your profile details, volunteering history, and preferences on ASCENDynamics NFP.",
+      "profile, volunteer, community, nonprofits",
+      {
+        title: "Profile | ASCENDynamics NFP",
+        description:
+          "Manage your profile and connect with volunteering opportunities on ASCENDynamics NFP.",
+        url: "https://app.ASCENDynamics.org/profile",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary",
+        title: "Profile | ASCENDynamics NFP",
+        description:
+          "Customize your profile and stay connected with your community.",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+    );
+
     this.authUser$ = this.store.select(selectAuthUser);
 
     this.authUser$

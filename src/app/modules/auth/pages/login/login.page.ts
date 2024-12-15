@@ -50,7 +50,8 @@ export class LoginPage implements OnInit {
     private store: Store,
   ) {}
 
-  ngOnInit() {
+  // Runs when the page is about to enter the view
+  ionViewWillEnter() {
     this.metaService.updateMetaTags(
       "Login | ASCENDynamics NFP",
       "Log in to your ASCENDynamics NFP account to track volunteer hours, find opportunities, and connect with nonprofits.",
@@ -69,7 +70,10 @@ export class LoginPage implements OnInit {
         image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
       },
     );
+  }
 
+  // Runs when the component is initialized
+  ngOnInit() {
     // Initialize the form after fb is available
     this.loginForm = this.fb.nonNullable.group({
       email: ["", [Validators.required, Validators.email]],

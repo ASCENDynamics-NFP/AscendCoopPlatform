@@ -66,6 +66,26 @@ export class DetailsPage implements OnInit, ViewWillEnter {
   }
 
   ionViewWillEnter() {
+    this.metaService.updateMetaTags(
+      "Profile | ASCENDynamics NFP",
+      "View and manage your profile details, volunteering history, and preferences on ASCENDynamics NFP.",
+      "profile, volunteer, community, nonprofits",
+      {
+        title: "Profile | ASCENDynamics NFP",
+        description:
+          "Manage your profile and connect with volunteering opportunities on ASCENDynamics NFP.",
+        url: "https://app.ASCENDynamics.org/profile",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary",
+        title: "Profile | ASCENDynamics NFP",
+        description:
+          "Customize your profile and stay connected with your community.",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+    );
+
     // Initialize authUser$ observable
     this.authUser$ = this.store.select(selectAuthUser);
 
@@ -105,26 +125,6 @@ export class DetailsPage implements OnInit, ViewWillEnter {
   }
 
   ngOnInit(): void {
-    this.metaService.updateMetaTags(
-      "Profile | ASCENDynamics NFP",
-      "View and manage your profile details, volunteering history, and preferences on ASCENDynamics NFP.",
-      "profile, volunteer, community, nonprofits",
-      {
-        title: "Profile | ASCENDynamics NFP",
-        description:
-          "Manage your profile and connect with volunteering opportunities on ASCENDynamics NFP.",
-        url: "https://app.ASCENDynamics.org/profile",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
-      },
-      {
-        card: "summary",
-        title: "Profile | ASCENDynamics NFP",
-        description:
-          "Customize your profile and stay connected with your community.",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
-      },
-    );
-
     this.authUser$ = this.store.select(selectAuthUser);
 
     this.authUser$

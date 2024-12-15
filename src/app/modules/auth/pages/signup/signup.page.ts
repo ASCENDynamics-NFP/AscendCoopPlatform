@@ -59,8 +59,8 @@ export class SignupPage implements OnInit {
     this.loading$ = this.store.select(selectAuthLoading);
   }
 
-  // Initialize form and state selectors in ngOnInit
-  ngOnInit() {
+  // Runs when the page is about to enter the view
+  ionViewWillEnter() {
     this.metaService.updateMetaTags(
       "Sign Up | ASCENDynamics NFP",
       "Create an account on ASCENDynamics NFP to find volunteer opportunities and connect with nonprofits.",
@@ -80,7 +80,10 @@ export class SignupPage implements OnInit {
         image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
       },
     );
+  }
 
+  // Initialize form and state selectors in ngOnInit
+  ngOnInit() {
     this.signupForm = this.fb.nonNullable.group(
       {
         email: ["", [Validators.required, Validators.email]],

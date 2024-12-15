@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 // src/app/modules/auth/pages/landing/landing.page.ts
 
-import {Component, OnInit} from "@angular/core";
+import {Component} from "@angular/core";
 import {ModalController} from "@ionic/angular";
 import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
 import {MetaService} from "../../../../core/services/meta.service";
@@ -29,7 +29,7 @@ import {MetaService} from "../../../../core/services/meta.service";
   templateUrl: "./landing.page.html",
   styleUrls: ["./landing.page.scss"],
 })
-export class LandingPage implements OnInit {
+export class LandingPage {
   currentYear: number = new Date().getFullYear();
 
   constructor(
@@ -37,7 +37,8 @@ export class LandingPage implements OnInit {
     private modalController: ModalController,
   ) {}
 
-  ngOnInit() {
+  // Runs when the page is about to enter the view
+  ionViewWillEnter() {
     this.metaService.updateMetaTags(
       "ASCENDynamics NFP | Volunteer Opportunities",
       "Join ASCENDynamics NFP to connect with nonprofits, find volunteer opportunities, and make an impact in your community.",

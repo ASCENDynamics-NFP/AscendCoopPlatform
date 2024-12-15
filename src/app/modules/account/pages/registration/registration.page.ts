@@ -27,6 +27,7 @@ import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {Observable} from "rxjs";
 import {tap, switchMap, filter, map, shareReplay} from "rxjs/operators";
+import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
   selector: "app-registration",
@@ -39,6 +40,7 @@ export class RegistrationPage implements OnInit {
   private accountId$!: Observable<string>;
 
   constructor(
+    private metaService: MetaService,
     private route: ActivatedRoute,
     private router: Router,
     private store: Store,
@@ -65,6 +67,29 @@ export class RegistrationPage implements OnInit {
           this.router.navigate([`/account/${account.id}`]);
         }
       }),
+    );
+  }
+
+  ionViewWillEnter() {
+    // Default Meta Tags
+    this.metaService.updateMetaTags(
+      "Registration | ASCENDynamics NFP",
+      "Create your account and join the ASCENDynamics NFP community today.",
+      "registration, sign up, volunteer, nonprofits",
+      {
+        title: "Registration | ASCENDynamics NFP",
+        description:
+          "Sign up for ASCENDynamics NFP to explore and connect with impactful opportunities.",
+        url: "https://app.ASCENDynamics.org/registration",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary_large_image",
+        title: "Join ASCENDynamics NFP",
+        description:
+          "Sign up to connect with meaningful opportunities and start making a difference.",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
     );
   }
 

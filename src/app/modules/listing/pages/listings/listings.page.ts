@@ -58,7 +58,7 @@ export class ListingsPage implements OnInit {
     this.error$ = this.store.select(selectError);
   }
 
-  ngOnInit() {
+  ionViewWillEnter() {
     this.metaService.updateMetaTags(
       "Volunteer Listings | ASCENDynamics NFP",
       "Explore volunteering opportunities available on ASCENDynamics NFP to make an impact in your community.",
@@ -78,7 +78,9 @@ export class ListingsPage implements OnInit {
         image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
       },
     );
+  }
 
+  ngOnInit() {
     this.loadListings();
   }
 

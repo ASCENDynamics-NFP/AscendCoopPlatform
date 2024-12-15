@@ -35,7 +35,7 @@
     "@capacitor/haptics": "^6.0.0",
     "@capacitor/keyboard": "^6.0.0",
     "@capacitor/status-bar": "^6.0.0",
-    "@ionic/angular": "^8.3.3",
+    "@ionic/angular": "^8.4.1",
     "@ionic/cli": "^7.2.0",
     "@ionic/pwa-elements": "^3.1.1",
     "@ngrx/effects": "^17.2.0",

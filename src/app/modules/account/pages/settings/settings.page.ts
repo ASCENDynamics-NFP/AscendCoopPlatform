@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 // src/app/modules/account/pages/settings/settings.page.ts
 
-import {Component, OnInit} from "@angular/core";
+import {Component} from "@angular/core";
 import {Observable} from "rxjs";
 import {AuthUser} from "../../../../models/auth-user.model";
 import {Account} from "../../../../models/account.model";
@@ -27,17 +27,21 @@ import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import {switchMap} from "rxjs/operators";
+import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
   selector: "app-settings",
   templateUrl: "./settings.page.html",
   styleUrls: ["./settings.page.scss"],
 })
-export class SettingsPage implements OnInit {
+export class SettingsPage {
   authUser$: Observable<AuthUser | null>;
   account$: Observable<Account | undefined>;
 
-  constructor(private store: Store) {
+  constructor(
+    private metaService: MetaService,
+    private store: Store,
+  ) {
     // Get the authUser observable
     this.authUser$ = this.store.select(selectAuthUser);
 
@@ -52,5 +56,25 @@ export class SettingsPage implements OnInit {
     );
   }
 
-  ngOnInit() {}
+  ionViewWillEnter() {
+    this.metaService.updateMetaTags(
+      "Settings | ASCENDynamics NFP",
+      "Customize your settings and preferences on ASCENDynamics NFP.",
+      "settings, preferences, account, customization",
+      {
+        title: "Settings | ASCENDynamics NFP",
+        description:
+          "Manage your preferences and account settings on ASCENDynamics NFP.",
+        url: "https://app.ASCENDynamics.org/settings",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary",
+        title: "Settings | ASCENDynamics NFP",
+        description:
+          "Update your account preferences and settings on ASCENDynamics NFP.",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+    );
+  }
 }

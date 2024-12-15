@@ -42,6 +42,7 @@ const requiredEnvVars = [
   "FIREBASE_MESSAGING_SENDER_ID",
   "FIREBASE_APP_ID",
   "FIREBASE_MEASUREMENT_ID",
+  "FIREBASE_API_URL",
 ];
 
 requiredEnvVars.forEach((varName) => {
@@ -69,6 +70,7 @@ export const environment = {
     messagingSenderId: '${process.env.FIREBASE_MESSAGING_SENDER_ID}',
     appId: '${process.env.FIREBASE_APP_ID}',
     measurementId: '${process.env.FIREBASE_MEASUREMENT_ID}',
+    apiUrl: '${process.env.FIREBASE_API_URL}',
   }
 };
 `;

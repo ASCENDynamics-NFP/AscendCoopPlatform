@@ -21,7 +21,7 @@
 
 import {Component, OnInit, ViewChild} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
-import {Observable, combineLatest} from "rxjs";
+import {Observable, Subscription, combineLatest} from "rxjs";
 import {filter, map, take, tap} from "rxjs/operators";
 import {AuthUser} from "../../../../models/auth-user.model";
 import {Store} from "@ngrx/store";
@@ -47,6 +47,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
   public accountId: string | null = null;
   authUser$!: Observable<AuthUser | null>;
   account$!: Observable<Account | null>;
+  private subscription: Subscription | null = null;
   relatedAccounts$!: Observable<RelatedAccount[]>;
   relatedListings$!: Observable<RelatedListing[]>;
   isProfileOwner$!: Observable<boolean>;
@@ -58,34 +59,23 @@ export class DetailsPage implements OnInit, ViewWillEnter {
     private store: Store,
   ) {}
 
-  scrollToSection(sectionId: string): void {
-    const yOffset = document.getElementById(sectionId)?.offsetTop;
-    if (yOffset !== undefined) {
-      this.content.scrollToPoint(0, yOffset, 500);
-    }
+  ngOnInit(): void {
+    this.authUser$ = this.store.select(selectAuthUser);
+
+    this.authUser$
+      .pipe(
+        filter((user): user is AuthUser => user !== null),
+        take(1),
+        tap((user) => {
+          if (!user.type) {
+            this.router.navigate([`/account/registration/${user.uid}`]);
+          }
+        }),
+      )
+      .subscribe();
   }
 
   ionViewWillEnter() {
-    this.metaService.updateMetaTags(
-      "Profile | ASCENDynamics NFP",
-      "View and manage your profile details, volunteering history, and preferences on ASCENDynamics NFP.",
-      "profile, volunteer, community, nonprofits",
-      {
-        title: "Profile | ASCENDynamics NFP",
-        description:
-          "Manage your profile and connect with volunteering opportunities on ASCENDynamics NFP.",
-        url: "https://app.ASCENDynamics.org/profile",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
-      },
-      {
-        card: "summary",
-        title: "Profile | ASCENDynamics NFP",
-        description:
-          "Customize your profile and stay connected with your community.",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
-      },
-    );
-
     // Initialize authUser$ observable
     this.authUser$ = this.store.select(selectAuthUser);
 
@@ -122,21 +112,89 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         );
       }
     });
+
+    this.subscription = this.account$.subscribe({
+      next: (account) => {
+        if (account) {
+          this.updateAccountMeta(account);
+        }
+      },
+      error: () => {
+        this.setDefaultMeta();
+      },
+    });
   }
 
-  ngOnInit(): void {
-    this.authUser$ = this.store.select(selectAuthUser);
+  ionViewWillLeave() {
+    if (this.subscription) {
+      this.subscription.unsubscribe(); // Unsubscribe to prevent memory leaks
+      this.subscription = null;
+    }
+  }
 
-    this.authUser$
-      .pipe(
-        filter((user): user is AuthUser => user !== null),
-        take(1),
-        tap((user) => {
-          if (!user.type) {
-            this.router.navigate([`/account/registration/${user.uid}`]);
-          }
-        }),
-      )
-      .subscribe();
+  scrollToSection(sectionId: string): void {
+    const yOffset = document.getElementById(sectionId)?.offsetTop;
+    if (yOffset !== undefined) {
+      this.content.scrollToPoint(0, yOffset, 500);
+    }
+  }
+
+  private updateAccountMeta(account: Account) {
+    const accountType =
+      account.type === "user"
+        ? "Profile"
+        : account.type.charAt(0).toUpperCase() + account.type.slice(1);
+    const descriptionPrefix =
+      account.type === "user"
+        ? `Explore ${account.name}'s profile. Learn about their volunteering efforts and achievements on ASCENDynamics NFP.`
+        : `Discover ${account.name}. Join their efforts to make a difference through volunteering.`;
+    const tags =
+      account.type === "user"
+        ? "profile, user, volunteer"
+        : "group, volunteer, community";
+
+    this.metaService.updateMetaTags(
+      `${account.name} | ASCENDynamics NFP`,
+      descriptionPrefix,
+      tags,
+      {
+        title: `${account.name} | ASCENDynamics NFP`,
+        description: descriptionPrefix,
+        url: `https://app.ASCENDynamics.org/account/${account.id}`,
+        image:
+          account.iconImage ||
+          "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary_large_image",
+        title: `${account.name}`,
+        description: descriptionPrefix,
+        image:
+          account.iconImage ||
+          "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+    );
+  }
+
+  private setDefaultMeta() {
+    this.metaService.updateMetaTags(
+      "Profile | ASCENDynamics NFP",
+      "View and manage your profile details, volunteering history, and preferences on ASCENDynamics NFP.",
+      "profile, volunteer, community, nonprofits",
+      {
+        title: "Profile | ASCENDynamics NFP",
+        description:
+          "Manage your profile and connect with volunteering opportunities on ASCENDynamics NFP.",
+        url: "https://app.ASCENDynamics.org/",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary",
+        title: "Profile | ASCENDynamics NFP",
+        description:
+          "Customize your profile and stay connected with your community.",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+    );
   }
 }

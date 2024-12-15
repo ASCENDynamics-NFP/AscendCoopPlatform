@@ -33,6 +33,7 @@ import {
 import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../../state/actions/account.actions";
 import {take} from "rxjs/operators";
+import {MetaService} from "../../../../../core/services/meta.service";
 
 @Component({
   selector: "app-list",
@@ -55,6 +56,7 @@ export class ListPage implements OnInit {
 
   constructor(
     private activatedRoute: ActivatedRoute,
+    private metaService: MetaService,
     private store: Store,
   ) {
     // Extract route parameters
@@ -121,6 +123,40 @@ export class ListPage implements OnInit {
         ),
       );
     }
+  }
+
+  ionViewWillEnter() {
+    this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
+    this.listType = this.activatedRoute.snapshot.paramMap.get("listType");
+    // Dynamic Meta Tags
+    const isUserList = this.listType === "user";
+    const title = isUserList
+      ? "Users | ASCENDynamics NFP"
+      : "Organizations | ASCENDynamics NFP";
+    const description = isUserList
+      ? "Explore a diverse list of users contributing to the ASCENDynamics NFP community."
+      : "Discover organizations making an impact through volunteering and community efforts on ASCENDynamics NFP.";
+    const keywords = isUserList
+      ? "users, profiles, volunteer"
+      : "organizations, nonprofits, community";
+
+    this.metaService.updateMetaTags(
+      title,
+      description,
+      keywords,
+      {
+        title: title,
+        description: description,
+        url: `https://app.ASCENDynamics.org/account/${this.accountId}/related/${this.listType}`,
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary_large_image",
+        title: title,
+        description: description,
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+    );
   }
 
   /**

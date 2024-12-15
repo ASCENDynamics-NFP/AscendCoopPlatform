@@ -22,6 +22,7 @@ import {Store} from "@ngrx/store";
 import {first} from "rxjs/operators";
 import * as ListingActions from "../../../../state/actions/listings.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
   selector: "app-listing-create",
@@ -29,7 +30,32 @@ import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
   styleUrls: ["./listing-create.page.scss"],
 })
 export class ListingCreatePage {
-  constructor(private store: Store) {}
+  constructor(
+    private metaService: MetaService,
+    private store: Store,
+  ) {}
+
+  ionViewWillEnter() {
+    // Default Meta Tags
+    this.metaService.updateMetaTags(
+      "Create Listing | ASCENDynamics NFP",
+      "Create listing details to reach the right audience on ASCENDynamics NFP.",
+      "listing, create, volunteer, nonprofits",
+      {
+        title: "Create Listing | ASCENDynamics NFP",
+        description: "Create a listing to enhance visibility and engagement.",
+        url: "https://app.ASCENDynamics.org/listings",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary_large_image",
+        title: "Create Listing",
+        description:
+          "Create your listing on ASCENDynamics NFP to reach a wider audience.",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+    );
+  }
 
   onSubmit(formValue: any) {
     this.store

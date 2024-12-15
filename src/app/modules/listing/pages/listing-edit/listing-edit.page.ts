@@ -29,6 +29,7 @@ import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {AppState} from "../../../../state/app.state";
 import {selectListingById} from "../../../../state/selectors/listings.selectors";
 import {AuthUser} from "../../../../models/auth-user.model";
+import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
   selector: "app-listing-edit",
@@ -42,6 +43,7 @@ export class ListingEditPage implements OnInit {
   listingId: string | null;
 
   constructor(
+    private metaService: MetaService,
     private store: Store<AppState>,
     private route: ActivatedRoute,
     private router: Router,
@@ -72,6 +74,29 @@ export class ListingEditPage implements OnInit {
         ListingsActions.loadListingById({id: this.listingId}),
       );
     }
+  }
+
+  ionViewWillEnter() {
+    // Default Meta Tags
+    this.metaService.updateMetaTags(
+      "Edit Listing | ASCENDynamics NFP",
+      "Modify your listing details to reach the right audience on ASCENDynamics NFP.",
+      "listing, edit, volunteer, nonprofits",
+      {
+        title: "Edit Listing | ASCENDynamics NFP",
+        description:
+          "Make updates to your listing to enhance visibility and engagement.",
+        url: "https://app.ASCENDynamics.org/listings",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary_large_image",
+        title: "Edit Listing",
+        description:
+          "Update your listing on ASCENDynamics NFP to reach a wider audience.",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+    );
   }
 
   onSubmit(listing: Listing) {

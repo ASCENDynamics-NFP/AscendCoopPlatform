@@ -32,6 +32,7 @@ import {ActivatedRoute} from "@angular/router";
 import {selectListingById} from "../../../../../state/selectors/listings.selectors";
 import {Listing} from "../../../../../models/listing.model";
 import {AlertController} from "@ionic/angular";
+import {MetaService} from "../../../../../core/services/meta.service";
 
 @Component({
   selector: "app-apply",
@@ -52,6 +53,7 @@ export class ApplyPage implements OnInit {
   coverLetterFileName: string = "";
 
   constructor(
+    private metaService: MetaService,
     private fb: FormBuilder,
     private store: Store<AppState>,
     private route: ActivatedRoute,
@@ -84,6 +86,29 @@ export class ApplyPage implements OnInit {
         });
       }
     });
+  }
+
+  ionViewWillEnter(): void {
+    // Default Meta Tags
+    this.metaService.updateMetaTags(
+      "Apply to Listing | ASCENDynamics NFP",
+      "Submit your application to join this opportunity on ASCENDynamics NFP.",
+      "listing, apply, volunteer, nonprofits",
+      {
+        title: "Apply to Listing | ASCENDynamics NFP",
+        description:
+          "Fill out your application and connect with organizations to make a difference.",
+        url: "https://app.ASCENDynamics.org/listings",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary_large_image",
+        title: "Apply to Listing",
+        description:
+          "Submit your application to this listing and start making an impact today.",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+    );
   }
 
   onFileSelect(event: Event, type: "resume" | "coverLetter"): void {

@@ -25,19 +25,19 @@ const routes = [{
 }, {
   path: "",
   // Used to remove "/auth" from landing page.
-  loadChildren: () => Promise.all(/*! import() */[__webpack_require__.e("default-src_app_shared_shared_module_ts"), __webpack_require__.e("src_app_modules_auth_auth_module_ts")]).then(__webpack_require__.bind(__webpack_require__, /*! ./modules/auth/auth.module */ 7751)).then(m => m.AuthModule)
+  loadChildren: () => Promise.all(/*! import() */[__webpack_require__.e("default-src_app_core_services_meta_service_ts-src_app_shared_shared_module_ts"), __webpack_require__.e("src_app_modules_auth_auth_module_ts")]).then(__webpack_require__.bind(__webpack_require__, /*! ./modules/auth/auth.module */ 7751)).then(m => m.AuthModule)
 }, {
   path: "account",
   // Used to organize routes in "/account" folder.
-  loadChildren: () => Promise.all(/*! import() */[__webpack_require__.e("default-src_app_shared_shared_module_ts"), __webpack_require__.e("src_app_modules_account_account_module_ts")]).then(__webpack_require__.bind(__webpack_require__, /*! ./modules/account/account.module */ 1797)).then(m => m.AccountModule)
+  loadChildren: () => Promise.all(/*! import() */[__webpack_require__.e("default-src_app_core_services_meta_service_ts-src_app_shared_shared_module_ts"), __webpack_require__.e("src_app_modules_account_account_module_ts")]).then(__webpack_require__.bind(__webpack_require__, /*! ./modules/account/account.module */ 1797)).then(m => m.AccountModule)
 }, {
   path: "auth",
   // Used to organize routes in "/auth" folder.
-  loadChildren: () => Promise.all(/*! import() */[__webpack_require__.e("default-src_app_shared_shared_module_ts"), __webpack_require__.e("src_app_modules_auth_auth_module_ts")]).then(__webpack_require__.bind(__webpack_require__, /*! ./modules/auth/auth.module */ 7751)).then(m => m.AuthModule)
+  loadChildren: () => Promise.all(/*! import() */[__webpack_require__.e("default-src_app_core_services_meta_service_ts-src_app_shared_shared_module_ts"), __webpack_require__.e("src_app_modules_auth_auth_module_ts")]).then(__webpack_require__.bind(__webpack_require__, /*! ./modules/auth/auth.module */ 7751)).then(m => m.AuthModule)
 }, {
   path: "listings",
   // Used to organize routes in "/listings" folder.
-  loadChildren: () => Promise.all(/*! import() */[__webpack_require__.e("default-src_app_shared_shared_module_ts"), __webpack_require__.e("src_app_modules_listing_listing_module_ts")]).then(__webpack_require__.bind(__webpack_require__, /*! ./modules/listing/listing.module */ 3461)).then(m => m.ListingModule)
+  loadChildren: () => Promise.all(/*! import() */[__webpack_require__.e("default-src_app_core_services_meta_service_ts-src_app_shared_shared_module_ts"), __webpack_require__.e("src_app_modules_listing_listing_module_ts")]).then(__webpack_require__.bind(__webpack_require__, /*! ./modules/listing/listing.module */ 3461)).then(m => m.ListingModule)
 }];
 // Router options
 const routerOptions = {
@@ -4016,10 +4016,22 @@ var map = {
 		"common",
 		"node_modules_ionic_core_dist_esm_ion-searchbar_entry_js"
 	],
+	"./ion-segment-content.entry.js": [
+		2365,
+		"node_modules_ionic_core_dist_esm_ion-segment-content_entry_js"
+	],
+	"./ion-segment-view.entry.js": [
+		879,
+		"node_modules_ionic_core_dist_esm_ion-segment-view_entry_js"
+	],
 	"./ion-segment_2.entry.js": [
 		2492,
 		"common",
 		"node_modules_ionic_core_dist_esm_ion-segment_2_entry_js"
+	],
+	"./ion-select-modal.entry.js": [
+		4838,
+		"node_modules_ionic_core_dist_esm_ion-select-modal_entry_js"
 	],
 	"./ion-select_3.entry.js": [
 		2904,

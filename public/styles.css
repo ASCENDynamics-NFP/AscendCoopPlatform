@@ -304,7 +304,7 @@ html{font-family:var(--ion-font-family)}@supports(-webkit-touch-callout: none){h
  */
 /* Core CSS required for Ionic components to work properly */
 /**
- * Swiper 11.1.14
+ * Swiper 11.1.15
  * Most modern mobile touch slider and framework with hardware accelerated transitions
  * https://swiperjs.com
  *
@@ -312,7 +312,7 @@ html{font-family:var(--ion-font-family)}@supports(-webkit-touch-callout: none){h
  *
  * Released under the MIT License
  *
- * Released on: September 12, 2024
+ * Released on: November 18, 2024
  */
 /* FONT_START */
 @font-face {

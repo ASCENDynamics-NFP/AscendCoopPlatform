@@ -19,7 +19,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <ion-toolbar>
   <ion-buttons slot="start" class="toolbar-buttons">
-    <ion-menu-button color="primary"></ion-menu-button>
+    <ion-menu-button color="primary" *ngIf="!authUser$"></ion-menu-button>
     <ion-back-button
       *ngIf="defaultHref"
       color="primary"

@@ -32,9 +32,17 @@ import {authReducer} from "../../state/reducers/auth.reducer";
 import {AuthEffects} from "../../state/effects/auth.effects";
 import {LandingPage} from "./pages/landing/landing.page";
 import {SharedModule} from "../../shared/shared.module";
+import {HomepageListingsComponent} from "./pages/landing/components/homepage-listings/homepage-listings.component";
+import {TimeAgoPipe} from "../../shared/pipes/time-ago.pipe";
 
 @NgModule({
-  declarations: [LoginPage, SignupPage, LandingPage],
+  declarations: [
+    HomepageListingsComponent,
+    LoginPage,
+    SignupPage,
+    LandingPage,
+    TimeAgoPipe,
+  ],
   imports: [
     SharedModule,
     AuthRoutingModule,

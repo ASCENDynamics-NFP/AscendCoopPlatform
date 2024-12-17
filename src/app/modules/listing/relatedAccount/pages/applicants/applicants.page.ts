@@ -34,6 +34,7 @@ import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
 import {Listing} from "../../../../../models/listing.model";
 import {ModalController} from "@ionic/angular";
 import {ApplicantDetailsModalComponent} from "./components/applicant-details-modal/applicant-details-modal.component";
+import {MetaService} from "../../../../../core/services/meta.service";
 
 @Component({
   selector: "app-applicants",
@@ -74,6 +75,7 @@ export class ApplicantsPage implements OnInit {
   isOwner$: Observable<boolean>;
 
   constructor(
+    private metaService: MetaService,
     private store: Store<AppState>,
     private route: ActivatedRoute,
     private modalController: ModalController,
@@ -192,6 +194,28 @@ export class ApplicantsPage implements OnInit {
       this.currentPageEnd$,
       this.totalItems$,
     ]).pipe(map(([start, end, total]) => ({start, end, total})));
+  }
+
+  ionViewWillEnter() {
+    // Default Meta Tags
+    this.metaService.updateMetaTags(
+      "Listing Applicants | ASCENDynamics NFP",
+      "View and manage applicants for your listing on ASCENDynamics NFP.",
+      "listing, applicants, volunteer, nonprofits",
+      {
+        title: "Listing Applicants | ASCENDynamics NFP",
+        description:
+          "Review and manage all applicants for your listing to find the right candidates.",
+        url: "https://app.ASCENDynamics.org/listing/applicants",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary_large_image",
+        title: "Listing Applicants",
+        description: "Manage applicants for your listing on ASCENDynamics NFP.",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+    );
   }
 
   async openApplicantDetailsModal(account: ListingRelatedAccount) {

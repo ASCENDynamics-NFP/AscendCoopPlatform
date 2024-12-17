@@ -41,6 +41,7 @@ import {
 } from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {ViewWillEnter} from "@ionic/angular";
+import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
   selector: "app-group-list",
@@ -54,12 +55,35 @@ export class GroupListPage implements OnInit, ViewWillEnter {
   searchedValue: string = "";
   loading$: Observable<boolean>;
 
-  constructor(private store: Store) {
+  constructor(
+    private metaService: MetaService,
+    private store: Store,
+  ) {
     this.loading$ = this.store.select(selectAccountLoading);
   }
 
   ionViewWillEnter() {
     this.loadRelatedAccountsForAuthUser();
+    // Default Meta Tags
+    this.metaService.updateMetaTags(
+      "Search NGOs | ASCENDynamics NFP",
+      "Find opportunities, groups, and profiles tailored to your interests on ASCENDynamics NFP.",
+      "search, opportunities, volunteer, nonprofits",
+      {
+        title: "Search NGOs | ASCENDynamics NFP",
+        description:
+          "Discover listings, profiles, and groups that match your search criteria.",
+        url: "https://app.ASCENDynamics.org/search",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary_large_image",
+        title: "Search Results",
+        description:
+          "Browse search results and find opportunities that match your interests.",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+    );
   }
 
   private loadRelatedAccountsForAuthUser() {

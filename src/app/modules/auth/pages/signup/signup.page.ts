@@ -29,15 +29,14 @@ import {
 import {ModalController} from "@ionic/angular";
 import {Router} from "@angular/router";
 import {Store} from "@ngrx/store";
-
 import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
-
 import * as AuthActions from "../../../../state/actions/auth.actions";
 import {
   selectAuthError,
   selectAuthLoading,
 } from "../../../../state/selectors/auth.selectors";
 import {Observable} from "rxjs";
+import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
   selector: "app-signup",
@@ -52,11 +51,35 @@ export class SignupPage implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
+    private metaService: MetaService,
     private modalController: ModalController,
     private store: Store,
   ) {
     this.error$ = this.store.select(selectAuthError);
     this.loading$ = this.store.select(selectAuthLoading);
+  }
+
+  // Runs when the page is about to enter the view
+  ionViewWillEnter() {
+    this.metaService.updateMetaTags(
+      "Sign Up | ASCENDynamics NFP",
+      "Create an account on ASCENDynamics NFP to find volunteer opportunities and connect with nonprofits.",
+      "sign up, volunteer, nonprofits, community",
+      {
+        title: "Sign Up for ASCENDynamics NFP",
+        description:
+          "Join ASCENDynamics NFP to start making an impact in your community today.",
+        url: "https://app.ASCENDynamics.org/signup",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary",
+        title: "Sign Up | ASCENDynamics NFP",
+        description:
+          "Become part of ASCENDynamics NFP and start your volunteering journey.",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+    );
   }
 
   // Initialize form and state selectors in ngOnInit

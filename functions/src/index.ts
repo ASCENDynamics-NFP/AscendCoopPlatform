@@ -54,3 +54,6 @@ export * from "./database/listings/triggers/onUpdate"; // listing update trigger
 
 export * from "./database/listings/relatedAccounts/triggers/onCreate"; // triggers
 export * from "./database/listings/relatedAccounts/triggers/onUpdate"; // triggers
+
+// Homepage Function
+export * from "./functions/listings/homepage";

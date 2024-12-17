@@ -33,6 +33,7 @@ import {
 } from "../../../../state/selectors/listings.selectors";
 import {AuthUser} from "../../../../models/auth-user.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
   selector: "app-listings",
@@ -47,13 +48,36 @@ export class ListingsPage implements OnInit {
   authUser$: Observable<AuthUser | null>;
 
   constructor(
-    private store: Store<AppState>,
+    private metaService: MetaService,
     private navCtrl: NavController,
+    private store: Store<AppState>,
   ) {
     this.authUser$ = this.store.select(selectAuthUser);
     this.listings$ = this.store.select(selectFilteredListings);
     this.loading$ = this.store.select(selectLoading);
     this.error$ = this.store.select(selectError);
+  }
+
+  ionViewWillEnter() {
+    this.metaService.updateMetaTags(
+      "Volunteer Listings | ASCENDynamics NFP",
+      "Explore volunteering opportunities available on ASCENDynamics NFP to make an impact in your community.",
+      "volunteer listings, nonprofits, opportunities, community impact",
+      {
+        title: "Volunteer Listings | ASCENDynamics NFP",
+        description:
+          "Browse and apply for volunteer roles on ASCENDynamics NFP.",
+        url: "https://app.ASCENDynamics.org/listings",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary",
+        title: "Volunteer Listings | ASCENDynamics NFP",
+        description:
+          "Find opportunities to contribute and grow your skills with ASCENDynamics NFP.",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+    );
   }
 
   ngOnInit() {

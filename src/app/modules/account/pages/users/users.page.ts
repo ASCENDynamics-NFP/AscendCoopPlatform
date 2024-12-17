@@ -41,6 +41,7 @@ import {
   selectRelatedAccountsByAccountId,
 } from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
+import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
   selector: "app-users",
@@ -54,12 +55,35 @@ export class UsersPage implements OnInit, ViewWillEnter {
   searchedValue: string = "";
   loading$: Observable<boolean>;
 
-  constructor(private store: Store) {
+  constructor(
+    private metaService: MetaService,
+    private store: Store,
+  ) {
     this.loading$ = this.store.select(selectAccountLoading);
   }
 
   ionViewWillEnter() {
     this.loadRelatedAccountsForAuthUser();
+
+    this.metaService.updateMetaTags(
+      "Search Volunteers | ASCENDynamics NFP",
+      "Find opportunities, groups, and profiles tailored to your interests on ASCENDynamics NFP.",
+      "search, opportunities, volunteer, nonprofits",
+      {
+        title: "Search Volunteers | ASCENDynamics NFP",
+        description:
+          "Discover listings, profiles, and groups that match your search criteria.",
+        url: "https://app.ASCENDynamics.org/search",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary_large_image",
+        title: "Search Results",
+        description:
+          "Browse search results and find opportunities that match your interests.",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+    );
   }
 
   private loadRelatedAccountsForAuthUser() {

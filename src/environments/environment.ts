@@ -9,5 +9,6 @@ export const environment = {
     messagingSenderId: "360409127691",
     appId: "1:360409127691:web:b1c488ce58f4e9330ca00e",
     measurementId: "G-9EKFS37KV8",
+    apiUrl: "https://us-central1-ascendcoopplatform-dev.cloudfunctions.net",
   },
 };

@@ -29,6 +29,7 @@ import {Store} from "@ngrx/store";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
+import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
   selector: "app-edit",
@@ -43,9 +44,32 @@ export class EditPage implements OnInit {
 
   constructor(
     private activatedRoute: ActivatedRoute,
+    private metaService: MetaService,
     private router: Router,
     private store: Store,
   ) {}
+
+  ionViewWillEnter() {
+    this.metaService.updateMetaTags(
+      "Account | ASCENDynamics NFP",
+      "Manage your account details, preferences, and activities on ASCENDynamics NFP.",
+      "account, profile, settings, volunteer",
+      {
+        title: "Account | ASCENDynamics NFP",
+        description:
+          "Access and manage your account details on ASCENDynamics NFP.",
+        url: "https://app.ASCENDynamics.org/account",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary",
+        title: "Account | ASCENDynamics NFP",
+        description:
+          "Update your account details and settings on ASCENDynamics NFP.",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+    );
+  }
 
   ngOnInit(): void {
     this.authUser$ = this.store.select(selectAuthUser);

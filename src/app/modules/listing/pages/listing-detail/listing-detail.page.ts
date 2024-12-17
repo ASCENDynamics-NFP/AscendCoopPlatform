@@ -23,7 +23,7 @@ import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {Store} from "@ngrx/store";
 import {AlertController} from "@ionic/angular";
-import {Observable, combineLatest} from "rxjs";
+import {Observable, Subscription, combineLatest} from "rxjs";
 import {first, map} from "rxjs/operators";
 import {Listing} from "../../../../models/listing.model";
 import * as ListingsActions from "../../../../state/actions/listings.actions";
@@ -31,6 +31,7 @@ import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {AppState} from "../../../../state/app.state";
 import {selectListingById} from "../../../../state/selectors/listings.selectors";
 import {serverTimestamp} from "firebase/firestore";
+import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
   selector: "app-listing-detail",
@@ -38,14 +39,16 @@ import {serverTimestamp} from "firebase/firestore";
   styleUrls: ["./listing-detail.page.scss"],
 })
 export class ListingDetailPage implements OnInit {
+  private subscription: Subscription | null = null;
   listing$: Observable<Listing | undefined>;
   isOwner$: Observable<boolean>;
   private listingId: string;
 
   constructor(
+    private alertController: AlertController,
+    private metaService: MetaService,
     private store: Store<AppState>,
     private route: ActivatedRoute,
-    private alertController: AlertController,
   ) {
     this.listingId = this.route.snapshot.paramMap.get("id") || "";
     this.listing$ = this.store.select(selectListingById(this.listingId));
@@ -67,6 +70,76 @@ export class ListingDetailPage implements OnInit {
       this.store.dispatch(
         ListingsActions.loadListingById({id: this.listingId}),
       );
+    }
+  }
+
+  ionViewWillEnter() {
+    this.subscription = this.listing$.subscribe({
+      next: (listing) => {
+        if (listing) {
+          const benefitsText = listing.benefits
+            ? listing.benefits.join(", ")
+            : "Explore unique benefits tailored to this opportunity";
+          const skillsText =
+            listing.skills && listing.skills.length > 0
+              ? listing.skills.map((skill) => skill.name).join(", ")
+              : "No specific skills required, just bring your enthusiasm!";
+
+          this.metaService.updateMetaTags(
+            `${listing.title} | ASCENDynamics NFP`,
+            `Join ${listing.organization} as a ${listing.type}. Responsibilities include ${listing.responsibilities.join(", ")}. Skills required: ${skillsText}. Benefits include: ${benefitsText}.`,
+            `listing, volunteer, ${listing.type}, ${skillsText}`,
+            {
+              title: `${listing.title} | ASCENDynamics NFP`,
+              description: `Explore the ${listing.type} opportunity at ${listing.organization}. ${listing.description}`,
+              url: `https://app.ASCENDynamics.org/listing/${listing.id}`,
+              image:
+                listing.heroImage ||
+                listing.iconImage ||
+                "https://app.ASCENDynamics.org/assets/icon/logo.png",
+            },
+            {
+              card: "summary_large_image",
+              title: listing.title,
+              description: listing.description,
+              image:
+                listing.heroImage ||
+                listing.iconImage ||
+                "https://app.ASCENDynamics.org/assets/icon/logo.png",
+            },
+          );
+        }
+      },
+      error: (error) => {
+        const listingId = this.route.snapshot.paramMap.get("id");
+        this.metaService.updateMetaTags(
+          "Discover Opportunities | ASCENDynamics NFP",
+          "Explore a variety of opportunities to contribute and grow your skills. Join our community today!",
+          "volunteer, nonprofits, community, opportunities",
+          {
+            title: "Discover Opportunities | ASCENDynamics NFP",
+            description:
+              "Explore a variety of opportunities to contribute and grow your skills. Join our community today!",
+            url: `https://app.ASCENDynamics.org/listing/${listingId}`,
+            image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+          },
+          {
+            card: "summary_large_image",
+            title: "Discover Opportunities",
+            description:
+              "Explore a variety of opportunities to contribute and grow your skills. Join our community today!",
+            image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+          },
+        );
+      },
+    });
+  }
+
+  ionViewWillLeave() {
+    // Unsubscribe when leaving the page to prevent memory leaks
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+      this.subscription = null;
     }
   }
 

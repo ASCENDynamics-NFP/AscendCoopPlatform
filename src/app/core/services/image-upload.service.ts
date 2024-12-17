@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// image-upload.service.ts
+// src/app/core/services/image-upload.service.ts
 import {Injectable} from "@angular/core";
 import {LoadingController, ToastController} from "@ionic/angular";
 import {

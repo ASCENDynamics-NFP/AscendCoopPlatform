@@ -27,8 +27,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <!-- Hero Section -->
   <section class="hero">
     <ion-grid>
-      <ion-row class="ion-align-items-center">
-        <ion-col size="12" size-md="6" class="hero-text">
+      <ion-row class="ion-justify-content-center">
+        <ion-col
+          size="10"
+          size-md="8"
+          size-lg="8"
+          size-xl="8"
+          class="hero-text"
+        >
           <h1>
             <span style="color: #808080">Empowering</span> Worker-Owned
             Cooperatives to Succeed
@@ -41,18 +47,23 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             >Try Now</ion-button
           >
         </ion-col>
-        <ion-col size="12" size-md="6" class="hero-image">
-          <swiper-container [slidesPerView]="1" [loop]="true" autoplay="true">
+        <ion-col size="12" size-md="12" class="hero-image">
+          <swiper-container
+            [slidesPerView]="2"
+            space-between="20"
+            #swiperElement
+            init="false"
+          >
             <swiper-slide>
               <img
-                src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
-                alt="ASCENDynamics Logo"
+                src="assets/image/hero1.png"
+                alt="Two people collaborating on a computer project"
               />
             </swiper-slide>
             <swiper-slide>
               <img
-                src="assets/image/Humans_and_Technology.png"
-                alt="Humans and Technology"
+                src="assets/image/hero2.png"
+                alt="Volunteers engaged in a meeting to coordinate efforts"
               />
             </swiper-slide>
           </swiper-container>
@@ -86,31 +97,34 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
   <!-- Roadmap Section -->
   <section class="roadmap">
-    <h2>Platform Development Roadmap</h2>
-    <ion-accordion-group>
-      <!-- Phases -->
-      <ion-accordion *ngFor="let phase of roadmap" value="{{ phase.id }}">
-        <ion-item slot="header">
-          <ion-label>
-            <h3>{{ phase.title }}</h3>
-            <p>{{ phase.subtitle }}</p>
-          </ion-label>
-          <ion-badge slot="end" [color]="phase.statusColor"
-            >{{ phase.status }}</ion-badge
-          >
-        </ion-item>
-        <div class="ion-padding" slot="content">
-          <ul>
-            <li *ngFor="let item of phase.items">
-              {{ item.name }}
-              <ion-badge [color]="item.statusColor"
-                >{{ item.status }}</ion-badge
-              >
-            </li>
-          </ul>
-        </div>
-      </ion-accordion>
-    </ion-accordion-group>
+    <figure>
+      <figcaption>Development Roadmap</figcaption>
+      <img src="assets/image/roadmap.png" alt="Development Roadmap Phases" />
+    </figure>
+    <!--    <ion-accordion-group>-->
+    <!--      &lt;!&ndash; Phases &ndash;&gt;-->
+    <!--      <ion-accordion *ngFor="let phase of roadmap" value="{{ phase.id }}">-->
+    <!--        <ion-item slot="header">-->
+    <!--          <ion-label>-->
+    <!--            <h3>{{ phase.title }}</h3>-->
+    <!--            <p>{{ phase.subtitle }}</p>-->
+    <!--          </ion-label>-->
+    <!--          <ion-badge slot="end" [color]="phase.statusColor"-->
+    <!--            >{{ phase.status }}</ion-badge-->
+    <!--          >-->
+    <!--        </ion-item>-->
+    <!--        <div class="ion-padding" slot="content">-->
+    <!--          <ul>-->
+    <!--            <li *ngFor="let item of phase.items">-->
+    <!--              {{ item.name }}-->
+    <!--              <ion-badge [color]="item.statusColor"-->
+    <!--                >{{ item.status }}</ion-badge-->
+    <!--              >-->
+    <!--            </li>-->
+    <!--          </ul>-->
+    <!--        </div>-->
+    <!--      </ion-accordion>-->
+    <!--    </ion-accordion-group>-->
   </section>
 
   <!-- Testimonials Section -->

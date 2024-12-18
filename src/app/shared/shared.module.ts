@@ -30,6 +30,7 @@ import {AppHeaderComponent} from "./components/app-header/app-header.component";
 import {FeedbackModalComponent} from "./components/feedback-modal/feedback-modal.component";
 import {UserMenuComponent} from "./components/user-menu/user-menu.component";
 import {ImageUploadModalComponent} from "./components/image-upload-modal/image-upload-modal.component";
+import {PaginationComponent} from "./components/pagination/pagination.component";
 
 @NgModule({
   declarations: [
@@ -37,6 +38,7 @@ import {ImageUploadModalComponent} from "./components/image-upload-modal/image-u
     CreateGroupModalComponent,
     FeedbackModalComponent,
     ImageUploadModalComponent,
+    PaginationComponent,
     UserMenuComponent,
   ],
   imports: [

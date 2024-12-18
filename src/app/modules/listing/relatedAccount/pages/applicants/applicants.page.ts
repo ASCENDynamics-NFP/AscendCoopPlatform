@@ -42,7 +42,7 @@ import {MetaService} from "../../../../../core/services/meta.service";
   styleUrls: ["./applicants.page.scss"],
 })
 export class ApplicantsPage implements OnInit {
-  relatedAccounts$: Observable<ListingRelatedAccount[]>;
+  relatedAccounts$: Observable<ListingRelatedAccount[]> = new Observable();
   paginatedAccounts$!: Observable<ListingRelatedAccount[]>;
   currentPageSubject = new BehaviorSubject<number>(1);
   currentPage$ = this.currentPageSubject.asObservable();
@@ -55,7 +55,6 @@ export class ApplicantsPage implements OnInit {
   currentPageStart$!: Observable<number>;
   currentPageEnd$!: Observable<number>;
 
-  // Combined pagination info observable
   pagination$!: Observable<{
     currentPage: number;
     totalPages: number;
@@ -68,11 +67,11 @@ export class ApplicantsPage implements OnInit {
     total: number;
   }>;
 
-  loading$: Observable<boolean>;
-  error$: Observable<string | null>;
-  listingId: string;
-  listing$: Observable<Listing>;
-  isOwner$: Observable<boolean>;
+  loading$: Observable<boolean> = new Observable();
+  error$: Observable<string | null> = new Observable();
+  listingId: string = "";
+  listing$: Observable<Listing> = new Observable();
+  isOwner$: Observable<boolean> = new Observable();
 
   constructor(
     private metaService: MetaService,
@@ -80,38 +79,65 @@ export class ApplicantsPage implements OnInit {
     private route: ActivatedRoute,
     private modalController: ModalController,
     private router: Router,
-  ) {
+  ) {}
+
+  ngOnInit() {}
+
+  ionViewWillEnter() {
     this.listingId = this.route.snapshot.paramMap.get("id") || "";
-    this.relatedAccounts$ = this.store.select(
-      selectRelatedAccountsByListingId(this.listingId),
-    );
 
-    this.loading$ = this.store.select((state) => state.listings.loading);
-    this.error$ = this.store.select((state) => state.listings.error);
-
-    this.listing$ = this.store.select(selectListingById(this.listingId));
-
-    // Determine if current user is the listing creator
-    this.isOwner$ = combineLatest([
-      this.store.select(selectAuthUser),
-      this.listing$,
-    ]).pipe(
-      map(
-        ([user, listing]) =>
-          !!(user && listing && listing.createdBy === user.uid),
-      ),
-    );
-  }
-
-  ngOnInit() {
     if (this.listingId) {
       this.store.dispatch(
         ListingsActions.loadListingRelatedAccounts({
           listingId: this.listingId,
         }),
       );
+
+      this.relatedAccounts$ = this.store.select(
+        selectRelatedAccountsByListingId(this.listingId),
+      );
+
+      this.loading$ = this.store.select((state) => state.listings.loading);
+      this.error$ = this.store.select((state) => state.listings.error);
+
+      this.listing$ = this.store.select(selectListingById(this.listingId));
+
+      // Determine if current user is the listing creator
+      this.isOwner$ = combineLatest([
+        this.store.select(selectAuthUser),
+        this.listing$,
+      ]).pipe(
+        map(
+          ([user, listing]) =>
+            !!(user && listing && listing.createdBy === user.uid),
+        ),
+      );
     }
 
+    // Default Meta Tags
+    this.metaService.updateMetaTags(
+      "Listing Applicants | ASCENDynamics NFP",
+      "View and manage applicants for your listing on ASCENDynamics NFP.",
+      "listing, applicants, volunteer, nonprofits",
+      {
+        title: "Listing Applicants | ASCENDynamics NFP",
+        description:
+          "Review and manage all applicants for your listing to find the right candidates.",
+        url: "https://app.ASCENDynamics.org/listing/applicants",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary_large_image",
+        title: "Listing Applicants",
+        description: "Manage applicants for your listing on ASCENDynamics NFP.",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+    );
+
+    this.setPaginationCalculations();
+  }
+
+  setPaginationCalculations() {
     // Calculate total items dynamically
     this.totalItems$ = this.relatedAccounts$.pipe(
       map((accounts) => accounts.length),
@@ -196,39 +222,14 @@ export class ApplicantsPage implements OnInit {
     ]).pipe(map(([start, end, total]) => ({start, end, total})));
   }
 
-  ionViewWillEnter() {
-    // Default Meta Tags
-    this.metaService.updateMetaTags(
-      "Listing Applicants | ASCENDynamics NFP",
-      "View and manage applicants for your listing on ASCENDynamics NFP.",
-      "listing, applicants, volunteer, nonprofits",
-      {
-        title: "Listing Applicants | ASCENDynamics NFP",
-        description:
-          "Review and manage all applicants for your listing to find the right candidates.",
-        url: "https://app.ASCENDynamics.org/listing/applicants",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
-      },
-      {
-        card: "summary_large_image",
-        title: "Listing Applicants",
-        description: "Manage applicants for your listing on ASCENDynamics NFP.",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
-      },
-    );
-  }
-
   async openApplicantDetailsModal(account: ListingRelatedAccount) {
-    // Check if the user is the owner
     combineLatest([this.isOwner$, this.store.select(selectAuthUser)])
       .pipe(take(1))
       .subscribe(([isOwner, authUser]) => {
         // Check if user is owner or if it's their own account
         if (isOwner && authUser && authUser.uid !== account.id) {
-          // Open modal for owners or account owners
           this.openModal(account, isOwner);
         } else {
-          // Navigate to profile for other users
           this.router.navigate(["/account", account.id]);
         }
       });
@@ -242,7 +243,6 @@ export class ApplicantsPage implements OnInit {
     await modal.present();
   }
 
-  // Pagination methods
   goToPage(pageNumber: number) {
     this.currentPageSubject.next(pageNumber);
   }

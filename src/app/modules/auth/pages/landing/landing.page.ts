@@ -55,43 +55,6 @@ export class LandingPage {
 
   currentYear: number = new Date().getFullYear();
 
-  constructor(
-    private metaService: MetaService,
-    private modalController: ModalController,
-  ) {}
-
-  // Runs when the page is about to enter the view
-  ionViewWillEnter() {
-    this.metaService.updateMetaTags(
-      "ASCENDynamics NFP | Volunteer Opportunities",
-      "Join ASCENDynamics NFP to connect with nonprofits, find volunteer opportunities, and make an impact in your community.",
-      "volunteer, nonprofits, community, opportunities",
-      {
-        title: "ASCENDynamics NFP | Volunteer Opportunities",
-        description:
-          "Find local nonprofits and volunteer opportunities with ASCENDynamics NFP.",
-        url: "https://app.ASCENDynamics.org/",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
-      },
-      {
-        card: "summary_large_image",
-        title: "ASCENDynamics NFP | Volunteer Opportunities",
-        description:
-          "Explore meaningful ways to contribute to your community with ASCENDynamics NFP.",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
-      },
-    );
-  }
-
-  // Open the legal modal (Privacy Policy or Terms of Use)
-  async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {
-    const modal = await this.modalController.create({
-      component: LegalModalComponent,
-      componentProps: {content: contentType},
-    });
-    await modal.present();
-  }
-
   features = [
     {
       icon: "people-outline",
@@ -163,7 +126,33 @@ export class LandingPage {
     loop: true,
   };
 
-  constructor(private modalController: ModalController) {}
+  constructor(
+    private metaService: MetaService,
+    private modalController: ModalController,
+  ) {}
+
+  // Runs when the page is about to enter the view
+  ionViewWillEnter() {
+    this.metaService.updateMetaTags(
+      "ASCENDynamics NFP | Volunteer Opportunities",
+      "Join ASCENDynamics NFP to connect with nonprofits, find volunteer opportunities, and make an impact in your community.",
+      "volunteer, nonprofits, community, opportunities",
+      {
+        title: "ASCENDynamics NFP | Volunteer Opportunities",
+        description:
+          "Find local nonprofits and volunteer opportunities with ASCENDynamics NFP.",
+        url: "https://app.ASCENDynamics.org/",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+      {
+        card: "summary_large_image",
+        title: "ASCENDynamics NFP | Volunteer Opportunities",
+        description:
+          "Explore meaningful ways to contribute to your community with ASCENDynamics NFP.",
+        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+      },
+    );
+  }
 
   ngAfterViewInit(): void {
     this.initSwiper();

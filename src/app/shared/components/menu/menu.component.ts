@@ -124,11 +124,11 @@ export class MenuComponent implements OnInit, OnDestroy {
         url: "/auth/signup",
         icon: "person-add",
       },
-      {
-        title: this.translate.instant("menu.groups"),
-        url: "/account/group-list",
-        icon: "business",
-      },
+      // {
+      //   title: this.translate.instant("menu.groups"),
+      //   url: "/account/group-list",
+      //   icon: "business",
+      // },
     ];
   }
 

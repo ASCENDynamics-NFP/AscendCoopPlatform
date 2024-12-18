@@ -68,11 +68,6 @@ describe("LandingPage", () => {
     expect(component.features.length).toBeGreaterThan(0);
   });
 
-  it("should have roadmap defined and not empty", () => {
-    expect(component.roadmap).toBeDefined();
-    expect(component.roadmap.length).toBeGreaterThan(0);
-  });
-
   it("should have testimonials defined and not empty", () => {
     expect(component.testimonials).toBeDefined();
     expect(component.testimonials.length).toBeGreaterThan(0);

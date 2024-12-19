@@ -125,7 +125,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     slot="fixed"
     *ngIf="currentUser$ | async"
   >
-    <ion-fab-button routerLink="/listings/create">
+    <ion-fab-button *ngIf="(isOwner$ | async)" routerLink="/listings/create">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>

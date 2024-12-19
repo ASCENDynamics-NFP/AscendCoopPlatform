@@ -107,18 +107,26 @@ export class ListingsListPage implements OnInit {
       this.filteredRelatedListings$ = combineLatest([
         this.relatedListings$,
         this.relationshipFilter$,
+        this.isOwner$,
       ]).pipe(
-        map(([listings, filter]) => {
+        map(([listings, filter, isOwner]) => {
+          let filteredListings = listings;
+
+          if (!isOwner) {
+            filteredListings = listings.filter(
+              (listing) => listing.status === "active",
+            );
+          }
+
           if (filter === "all") {
-            return listings;
+            return filteredListings;
           } else {
-            return listings.filter(
+            return filteredListings.filter(
               (listing) => listing.relationship === filter,
             );
           }
         }),
       );
-
       // Dispatch action to load related listings if not already loaded
       this.store.dispatch(
         AccountActions.loadRelatedListings({accountId: this.accountId}),

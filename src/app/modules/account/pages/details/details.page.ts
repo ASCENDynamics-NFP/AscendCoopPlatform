@@ -88,15 +88,25 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         this.store.dispatch(
           AccountActions.loadAccount({accountId: this.accountId}),
         );
+        this.store.dispatch(
+          AccountActions.loadRelatedAccounts({accountId: this.accountId}),
+        );
+        this.store.dispatch(
+          AccountActions.loadRelatedListings({accountId: this.accountId}),
+        );
 
         // Select account and related accounts from the store
         this.account$ = this.store.select(selectAccountById(this.accountId));
         this.relatedAccounts$ = this.store.select(
           selectRelatedAccountsByAccountId(this.accountId),
         );
-        this.relatedListings$ = this.store.select(
-          selectRelatedListingsByAccountId(this.accountId),
-        );
+        this.relatedListings$ = this.store
+          .select(selectRelatedListingsByAccountId(this.accountId))
+          .pipe(
+            map((listings) =>
+              listings.filter((listing) => listing.status === "active"),
+            ),
+          );
 
         // Determine if the current user is the profile owner
         this.isProfileOwner$ = combineLatest([

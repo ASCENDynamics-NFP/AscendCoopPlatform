@@ -88,6 +88,10 @@ export class ApplicantsPage implements OnInit {
 
     if (this.listingId) {
       this.store.dispatch(
+        ListingsActions.loadListingById({id: this.listingId}),
+      );
+
+      this.store.dispatch(
         ListingsActions.loadListingRelatedAccounts({
           listingId: this.listingId,
         }),

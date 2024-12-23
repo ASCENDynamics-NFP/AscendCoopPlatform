@@ -20,7 +20,7 @@
 // src/app/modules/account/pages/group-list/group-list.page.ts
 
 import {Component, OnInit} from "@angular/core";
-import {Subject, Observable} from "rxjs";
+import {Subject, Observable, BehaviorSubject, combineLatest} from "rxjs";
 import {
   debounceTime,
   startWith,
@@ -52,8 +52,16 @@ export class GroupListPage implements OnInit, ViewWillEnter {
   private searchTerms = new Subject<string>();
   authUser$!: Observable<AuthUser | null>;
   accountList$!: Observable<Account[]>;
-  searchedValue: string = "";
+  paginatedAccounts$!: Observable<Account[]>;
+  totalItems$!: Observable<number>;
   loading$: Observable<boolean>;
+  searchedValue: string = "";
+
+  // Pagination State
+  pageSize = 10; // Number of groups per page
+  currentPageSubject = new BehaviorSubject<number>(1);
+  currentPage$ = this.currentPageSubject.asObservable();
+  totalPages$!: Observable<number>;
 
   constructor(
     private metaService: MetaService,
@@ -64,7 +72,6 @@ export class GroupListPage implements OnInit, ViewWillEnter {
 
   ionViewWillEnter() {
     this.loadRelatedAccountsForAuthUser();
-    // Default Meta Tags
     this.metaService.updateMetaTags(
       "Search NGOs | ASCENDynamics NFP",
       "Find opportunities, groups, and profiles tailored to your interests on ASCENDynamics NFP.",
@@ -104,7 +111,7 @@ export class GroupListPage implements OnInit, ViewWillEnter {
 
     this.store.dispatch(AccountActions.loadAccounts());
 
-    this.accountList$ = this.searchTerms.pipe(
+    const filteredAccounts$ = this.searchTerms.pipe(
       startWith(this.searchedValue),
       debounceTime(300),
       distinctUntilChanged(),
@@ -112,11 +119,36 @@ export class GroupListPage implements OnInit, ViewWillEnter {
         this.store.select(selectFilteredAccounts(term, "group")),
       ),
     );
+
+    // Total Items for Pagination
+    this.totalItems$ = filteredAccounts$.pipe(
+      map((accounts) => accounts.length),
+    );
+
+    // Total Pages
+    this.totalPages$ = this.totalItems$.pipe(
+      map((totalItems) => Math.ceil(totalItems / this.pageSize)),
+    );
+
+    // Paginated Results
+    this.paginatedAccounts$ = combineLatest([
+      filteredAccounts$,
+      this.currentPage$,
+    ]).pipe(
+      map(([accounts, currentPage]) => {
+        const startIndex = (currentPage - 1) * this.pageSize;
+        return accounts.slice(startIndex, startIndex + this.pageSize);
+      }),
+    );
   }
 
   search(event: any) {
     const value = event.target.value;
     this.searchTerms.next(value);
+  }
+
+  goToPage(pageNumber: number) {
+    this.currentPageSubject.next(pageNumber);
   }
 
   sendRequest(account: Account) {

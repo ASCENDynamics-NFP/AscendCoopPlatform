@@ -56,6 +56,7 @@ import {PaginationComponent} from "./components/pagination/pagination.component"
     FeedbackModalComponent,
     ImageUploadModalComponent,
     UserMenuComponent,
+    PaginationComponent,
   ],
 })
 export class SharedModule {}

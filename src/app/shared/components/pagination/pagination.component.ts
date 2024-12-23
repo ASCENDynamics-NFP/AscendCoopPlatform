@@ -17,43 +17,122 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, Input, Output, EventEmitter} from "@angular/core";
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+} from "@angular/core";
+import {BehaviorSubject, Observable, combineLatest, map} from "rxjs";
 
 @Component({
   selector: "app-pagination",
   templateUrl: "./pagination.component.html",
   styleUrls: ["./pagination.component.scss"],
 })
-export class PaginationComponent {
-  @Input() currentPage: number = 1;
-  @Input() totalPages: number = 1;
-  @Input() pageNumbers: number[] = [];
-  @Input() totalItems: number = 0;
+export class PaginationComponent implements OnInit, OnChanges {
+  @Input() totalItems!: number;
   @Input() pageSize: number = 20;
-
+  @Input() maxVisiblePages: number = 5;
   @Output() pageChange = new EventEmitter<number>();
-  @Output() previous = new EventEmitter<void>();
-  @Output() next = new EventEmitter<void>();
 
-  get currentRangeStart(): number {
-    return (this.currentPage - 1) * this.pageSize + 1;
+  currentPageSubject = new BehaviorSubject<number>(1);
+  currentPage$ = this.currentPageSubject.asObservable();
+
+  totalPages$!: Observable<number>;
+  pageNumbers$!: Observable<number[]>;
+  currentPageRange$!: Observable<{start: number; end: number; total: number}>;
+  pagination$!: Observable<{
+    currentPage: number;
+    totalPages: number;
+    pageNumbers: number[];
+  }>;
+
+  ngOnInit() {
+    this.initializePagination();
   }
 
-  get currentRangeEnd(): number {
-    return Math.min(this.currentPage * this.pageSize, this.totalItems);
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes["totalItems"] || changes["pageSize"]) {
+      this.initializePagination();
+    }
   }
 
-  goToPage(page: number | Event) {
-    const pageNumber =
-      typeof page === "number" ? page : (page.target as HTMLInputElement).value;
-    this.pageChange.emit(Number(pageNumber));
+  initializePagination() {
+    // Calculate total pages
+    this.totalPages$ = new BehaviorSubject(this.totalItems).pipe(
+      map(() => Math.ceil(this.totalItems / this.pageSize)),
+    );
+
+    // Generate page numbers
+    this.pageNumbers$ = combineLatest([
+      this.currentPage$,
+      this.totalPages$,
+    ]).pipe(
+      map(([currentPage, totalPages]) => {
+        let startPage = Math.max(
+          1,
+          currentPage - Math.floor(this.maxVisiblePages / 2),
+        );
+        let endPage = startPage + this.maxVisiblePages - 1;
+        if (endPage > totalPages) {
+          endPage = totalPages;
+          startPage = Math.max(1, endPage - this.maxVisiblePages + 1);
+        }
+        return Array.from(
+          {length: endPage - startPage + 1},
+          (_, i) => startPage + i,
+        );
+      }),
+    );
+
+    // Calculate page range
+    this.currentPageRange$ = combineLatest([
+      this.currentPage$,
+      this.totalPages$,
+    ]).pipe(
+      map(([currentPage, totalPages]) => {
+        const start = (currentPage - 1) * this.pageSize + 1;
+        const end = Math.min(currentPage * this.pageSize, this.totalItems);
+        return {start, end, total: this.totalItems};
+      }),
+    );
+
+    // Combine pagination data
+    this.pagination$ = combineLatest([
+      this.currentPage$,
+      this.totalPages$,
+      this.pageNumbers$,
+    ]).pipe(
+      map(([currentPage, totalPages, pageNumbers]) => ({
+        currentPage,
+        totalPages,
+        pageNumbers,
+      })),
+    );
   }
 
-  previousPage() {
-    this.previous.emit();
+  goToPage(page: number) {
+    if (page >= 1 && page <= Math.ceil(this.totalItems / this.pageSize)) {
+      this.currentPageSubject.next(page);
+      this.pageChange.emit(page);
+    }
   }
 
   nextPage() {
-    this.next.emit();
+    const currentPage = this.currentPageSubject.getValue();
+    if (currentPage < Math.ceil(this.totalItems / this.pageSize)) {
+      this.goToPage(currentPage + 1);
+    }
+  }
+
+  previousPage() {
+    const currentPage = this.currentPageSubject.getValue();
+    if (currentPage > 1) {
+      this.goToPage(currentPage - 1);
+    }
   }
 }

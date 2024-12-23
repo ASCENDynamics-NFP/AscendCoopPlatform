@@ -84,64 +84,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
 <!-- Pagination Controls -->
 <ion-footer>
-  <ion-toolbar class="pagination-toolbar">
-    <!-- Current Page Range -->
-    <ng-container *ngIf="currentPageRange$ | async as range">
-      <ion-text class="pagination-range">
-        {{ range.start }}-{{ range.end }} of {{ range.total }}
-      </ion-text>
-    </ng-container>
-
-    <!-- Pagination Controls -->
-    <ng-container *ngIf="pagination$ | async as pageData">
-      <div class="pagination-controls">
-        <!-- Previous Button -->
-        <ion-button
-          fill="clear"
-          (click)="previousPage()"
-          [disabled]="pageData.currentPage === 1"
-        >
-          <ion-icon name="chevron-back-outline"></ion-icon>
-        </ion-button>
-
-        <!-- Page Numbers -->
-        <ion-button
-          *ngFor="let page of pageData.pageNumbers"
-          fill="clear"
-          [color]="pageData.currentPage === page ? 'primary' : 'medium'"
-          (click)="goToPage(page)"
-        >
-          {{ page }}
-        </ion-button>
-
-        <!-- Ellipsis and Last Page -->
-        <ng-container
-          *ngIf="
-            pageData.totalPages > maxVisiblePages &&
-            pageData.pageNumbers.length &&
-            pageData.pageNumbers[pageData.pageNumbers.length - 1] <
-              pageData.totalPages
-          "
-        >
-          <ion-text>...</ion-text>
-          <ion-button
-            fill="clear"
-            (click)="goToPage(pageData.totalPages)"
-            [disabled]="pageData.currentPage === pageData.totalPages"
-          >
-            {{ pageData.totalPages }}
-          </ion-button>
-        </ng-container>
-
-        <!-- Next Button -->
-        <ion-button
-          fill="clear"
-          (click)="nextPage()"
-          [disabled]="pageData.currentPage === pageData.totalPages"
-        >
-          <ion-icon name="chevron-forward-outline"></ion-icon>
-        </ion-button>
-      </div>
-    </ng-container>
-  </ion-toolbar>
+  <app-pagination
+    [totalItems]="(relatedAccounts$ | async)?.length || 0"
+    [pageSize]="pageSize"
+    (pageChange)="goToPage($event)"
+  ></app-pagination>
 </ion-footer>

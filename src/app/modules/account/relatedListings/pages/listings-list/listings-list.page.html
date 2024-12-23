@@ -55,7 +55,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 </ion-header>
 
 <ion-content>
-  <ion-list *ngIf="filteredRelatedListings$ | async as listings">
+  <ion-list *ngIf="paginatedListings$ | async as listings">
     <ion-item
       *ngFor="let listing of listings; trackBy: trackById"
       (click)="goToListing(listing.id)"
@@ -115,9 +115,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-button>
     </ion-item>
   </ion-list>
-  <ion-text *ngIf="!(filteredRelatedListings$ | async)?.length">
-    No listings to display.
-  </ion-text>
 
   <ion-fab
     vertical="bottom"
@@ -129,4 +126,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>
+
+  <app-pagination
+    [totalItems]="(filteredRelatedListings$ | async)?.length || 0"
+    [pageSize]="pageSize"
+    [maxVisiblePages]="5"
+    (pageChange)="goToPage($event)"
+  ></app-pagination>
 </ion-content>

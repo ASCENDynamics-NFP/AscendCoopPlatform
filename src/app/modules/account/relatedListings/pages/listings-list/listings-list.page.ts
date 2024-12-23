@@ -43,20 +43,24 @@ import {MetaService} from "../../../../../core/services/meta.service";
   styleUrls: ["./listings-list.page.scss"],
 })
 export class ListingsListPage implements OnInit {
-  // Route Parameters
   accountId: string | null = null;
-
-  // Observables
   currentUser$!: Observable<AuthUser | null>;
   account$!: Observable<Account | undefined>;
   relatedListings$!: Observable<RelatedListing[]>;
   filteredRelatedListings$!: Observable<RelatedListing[]>;
+  paginatedListings$!: Observable<RelatedListing[]>;
   isOwner$!: Observable<boolean>;
-  title: string = "Listings"; // Default title
+  title: string = "Listings";
 
-  // Filtering
   relationshipFilter$ = new BehaviorSubject<string>("all");
   relationshipFilter: string = "all";
+
+  // Pagination State
+  pageSize = 10; // Number of listings per page
+  currentPageSubject = new BehaviorSubject<number>(1);
+  currentPage$ = this.currentPageSubject.asObservable();
+  totalItems$!: Observable<number>;
+  totalPages$!: Observable<number>;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -65,29 +69,21 @@ export class ListingsListPage implements OnInit {
     private router: Router,
     private store: Store,
   ) {
-    // Extract route parameters
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
   }
 
   ngOnInit() {
-    // Select the authenticated user from the store
     this.currentUser$ = this.store.select(selectAuthUser);
 
     if (this.accountId) {
-      // Dispatch an action to load the account details if not already loaded
       this.store.dispatch(
         AccountActions.loadAccount({accountId: this.accountId}),
       );
-
-      // Select the specific account by ID
       this.account$ = this.store.select(selectAccountById(this.accountId));
-
-      // Select related listings for the account
       this.relatedListings$ = this.store.select(
         selectRelatedListingsByAccountId(this.accountId),
       );
 
-      // Determine ownership based on current user and accountId
       this.isOwner$ = combineLatest([
         this.currentUser$,
         of(this.accountId),
@@ -95,7 +91,6 @@ export class ListingsListPage implements OnInit {
         map(([currentUser, accountId]) => currentUser?.uid === accountId),
       );
 
-      // Set the title based on the account type
       this.account$.pipe(take(1)).subscribe((account) => {
         if (account) {
           this.title =
@@ -103,31 +98,43 @@ export class ListingsListPage implements OnInit {
         }
       });
 
-      // Create filtered listings observable
       this.filteredRelatedListings$ = combineLatest([
         this.relatedListings$,
         this.relationshipFilter$,
         this.isOwner$,
       ]).pipe(
         map(([listings, filter, isOwner]) => {
-          let filteredListings = listings;
+          let filteredListings = isOwner
+            ? listings
+            : listings.filter((listing) => listing.status === "active");
 
-          if (!isOwner) {
-            filteredListings = listings.filter(
-              (listing) => listing.status === "active",
-            );
-          }
-
-          if (filter === "all") {
-            return filteredListings;
-          } else {
-            return filteredListings.filter(
-              (listing) => listing.relationship === filter,
-            );
-          }
+          return filter === "all"
+            ? filteredListings
+            : filteredListings.filter(
+                (listing) => listing.relationship === filter,
+              );
         }),
       );
-      // Dispatch action to load related listings if not already loaded
+
+      // Pagination Logic
+      this.totalItems$ = this.filteredRelatedListings$.pipe(
+        map((listings) => listings.length),
+      );
+
+      this.totalPages$ = this.totalItems$.pipe(
+        map((totalItems) => Math.ceil(totalItems / this.pageSize)),
+      );
+
+      this.paginatedListings$ = combineLatest([
+        this.filteredRelatedListings$,
+        this.currentPage$,
+      ]).pipe(
+        map(([listings, currentPage]) => {
+          const startIndex = (currentPage - 1) * this.pageSize;
+          return listings.slice(startIndex, startIndex + this.pageSize);
+        }),
+      );
+
       this.store.dispatch(
         AccountActions.loadRelatedListings({accountId: this.accountId}),
       );
@@ -246,5 +253,9 @@ export class ListingsListPage implements OnInit {
    */
   onRelationshipFilterChange(event: any) {
     this.relationshipFilter$.next(event.detail.value);
+  }
+
+  goToPage(pageNumber: number) {
+    this.currentPageSubject.next(pageNumber);
   }
 }

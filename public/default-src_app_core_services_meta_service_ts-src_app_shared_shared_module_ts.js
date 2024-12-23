@@ -394,6 +394,251 @@ _ImageUploadModalComponent.ɵcmp = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_
 
 /***/ }),
 
+/***/ 4815:
+/*!**********************************************************************!*\
+  !*** ./src/app/shared/components/pagination/pagination.component.ts ***!
+  \**********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   PaginationComponent: () => (/* binding */ PaginationComponent)
+/* harmony export */ });
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @angular/core */ 6623);
+/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! rxjs */ 5536);
+/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! rxjs */ 4406);
+/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! rxjs */ 1640);
+/* harmony import */ var _ionic_angular__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @ionic/angular */ 1116);
+/* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/common */ 9191);
+var _PaginationComponent;
+/***********************************************************************************************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+*
+* This file is part of Nonprofit Social Networking Platform.
+*
+* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+
+* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+
+* You should have received a copy of the GNU Affero General Public License
+* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+***********************************************************************************************/
+
+
+
+
+
+function PaginationComponent_ng_container_1_Template(rf, ctx) {
+  if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementContainerStart"](0, 3);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](1, "ion-text");
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](2);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementContainerEnd"]();
+  }
+  if (rf & 2) {
+    const range_r1 = ctx.ngIf;
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](2);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtextInterpolate3"](" ", range_r1.start, "-", range_r1.end, " of ", range_r1.total, " ");
+  }
+}
+function PaginationComponent_ng_container_3_ion_button_4_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r4 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵgetCurrentView"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "ion-button", 9);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵlistener"]("click", function PaginationComponent_ng_container_3_ion_button_4_Template_ion_button_click_0_listener() {
+      const page_r5 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵrestoreView"](_r4).$implicit;
+      const ctx_r2 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"](2);
+      return _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵresetView"](ctx_r2.goToPage(page_r5));
+    });
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+  }
+  if (rf & 2) {
+    const page_r5 = ctx.$implicit;
+    const pageData_r6 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"]().ngIf;
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("color", pageData_r6.currentPage === page_r5 ? "primary" : "medium");
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtextInterpolate1"](" ", page_r5, " ");
+  }
+}
+function PaginationComponent_ng_container_3_ng_container_5_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r7 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵgetCurrentView"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementContainerStart"](0);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](1, "ion-text");
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](2, "...");
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](3, "ion-button", 5);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵlistener"]("click", function PaginationComponent_ng_container_3_ng_container_5_Template_ion_button_click_3_listener() {
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵrestoreView"](_r7);
+      const pageData_r6 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"]().ngIf;
+      const ctx_r2 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"]();
+      return _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵresetView"](ctx_r2.goToPage(pageData_r6.totalPages));
+    });
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](4);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementContainerEnd"]();
+  }
+  if (rf & 2) {
+    const pageData_r6 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"]().ngIf;
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](3);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("disabled", pageData_r6.currentPage === pageData_r6.totalPages);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtextInterpolate1"](" ", pageData_r6.totalPages, " ");
+  }
+}
+function PaginationComponent_ng_container_3_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r2 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵgetCurrentView"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementContainerStart"](0);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](1, "div", 4)(2, "ion-button", 5);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵlistener"]("click", function PaginationComponent_ng_container_3_Template_ion_button_click_2_listener() {
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵrestoreView"](_r2);
+      const ctx_r2 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"]();
+      return _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵresetView"](ctx_r2.previousPage());
+    });
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](3, "ion-icon", 6);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtemplate"](4, PaginationComponent_ng_container_3_ion_button_4_Template, 2, 2, "ion-button", 7)(5, PaginationComponent_ng_container_3_ng_container_5_Template, 5, 2, "ng-container", 2);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](6, "ion-button", 5);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵlistener"]("click", function PaginationComponent_ng_container_3_Template_ion_button_click_6_listener() {
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵrestoreView"](_r2);
+      const ctx_r2 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"]();
+      return _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵresetView"](ctx_r2.nextPage());
+    });
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](7, "ion-icon", 8);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]()();
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementContainerEnd"]();
+  }
+  if (rf & 2) {
+    const pageData_r6 = ctx.ngIf;
+    const ctx_r2 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](2);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("disabled", pageData_r6.currentPage === 1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](2);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("ngForOf", pageData_r6.pageNumbers);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("ngIf", pageData_r6.totalPages > ctx_r2.maxVisiblePages && pageData_r6.pageNumbers.length && pageData_r6.pageNumbers[pageData_r6.pageNumbers.length - 1] < pageData_r6.totalPages);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("disabled", pageData_r6.currentPage === pageData_r6.totalPages);
+  }
+}
+class PaginationComponent {
+  constructor() {
+    this.pageSize = 20;
+    this.maxVisiblePages = 5;
+    this.pageChange = new _angular_core__WEBPACK_IMPORTED_MODULE_0__.EventEmitter();
+    this.currentPageSubject = new rxjs__WEBPACK_IMPORTED_MODULE_1__.BehaviorSubject(1);
+    this.currentPage$ = this.currentPageSubject.asObservable();
+  }
+  ngOnInit() {
+    this.initializePagination();
+  }
+  ngOnChanges(changes) {
+    if (changes["totalItems"] || changes["pageSize"]) {
+      this.initializePagination();
+    }
+  }
+  initializePagination() {
+    // Calculate total pages
+    this.totalPages$ = new rxjs__WEBPACK_IMPORTED_MODULE_1__.BehaviorSubject(this.totalItems).pipe((0,rxjs__WEBPACK_IMPORTED_MODULE_2__.map)(() => Math.ceil(this.totalItems / this.pageSize)));
+    // Generate page numbers
+    this.pageNumbers$ = (0,rxjs__WEBPACK_IMPORTED_MODULE_3__.combineLatest)([this.currentPage$, this.totalPages$]).pipe((0,rxjs__WEBPACK_IMPORTED_MODULE_2__.map)(([currentPage, totalPages]) => {
+      let startPage = Math.max(1, currentPage - Math.floor(this.maxVisiblePages / 2));
+      let endPage = startPage + this.maxVisiblePages - 1;
+      if (endPage > totalPages) {
+        endPage = totalPages;
+        startPage = Math.max(1, endPage - this.maxVisiblePages + 1);
+      }
+      return Array.from({
+        length: endPage - startPage + 1
+      }, (_, i) => startPage + i);
+    }));
+    // Calculate page range
+    this.currentPageRange$ = (0,rxjs__WEBPACK_IMPORTED_MODULE_3__.combineLatest)([this.currentPage$, this.totalPages$]).pipe((0,rxjs__WEBPACK_IMPORTED_MODULE_2__.map)(([currentPage, totalPages]) => {
+      const start = (currentPage - 1) * this.pageSize + 1;
+      const end = Math.min(currentPage * this.pageSize, this.totalItems);
+      return {
+        start,
+        end,
+        total: this.totalItems
+      };
+    }));
+    // Combine pagination data
+    this.pagination$ = (0,rxjs__WEBPACK_IMPORTED_MODULE_3__.combineLatest)([this.currentPage$, this.totalPages$, this.pageNumbers$]).pipe((0,rxjs__WEBPACK_IMPORTED_MODULE_2__.map)(([currentPage, totalPages, pageNumbers]) => ({
+      currentPage,
+      totalPages,
+      pageNumbers
+    })));
+  }
+  goToPage(page) {
+    if (page >= 1 && page <= Math.ceil(this.totalItems / this.pageSize)) {
+      this.currentPageSubject.next(page);
+      this.pageChange.emit(page);
+    }
+  }
+  nextPage() {
+    const currentPage = this.currentPageSubject.getValue();
+    if (currentPage < Math.ceil(this.totalItems / this.pageSize)) {
+      this.goToPage(currentPage + 1);
+    }
+  }
+  previousPage() {
+    const currentPage = this.currentPageSubject.getValue();
+    if (currentPage > 1) {
+      this.goToPage(currentPage - 1);
+    }
+  }
+}
+_PaginationComponent = PaginationComponent;
+_PaginationComponent.ɵfac = function PaginationComponent_Factory(t) {
+  return new (t || _PaginationComponent)();
+};
+_PaginationComponent.ɵcmp = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({
+  type: _PaginationComponent,
+  selectors: [["app-pagination"]],
+  inputs: {
+    totalItems: "totalItems",
+    pageSize: "pageSize",
+    maxVisiblePages: "maxVisiblePages"
+  },
+  outputs: {
+    pageChange: "pageChange"
+  },
+  features: [_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵNgOnChangesFeature"]],
+  decls: 5,
+  vars: 6,
+  consts: [[1, "pagination-toolbar"], ["class", "pagination-range", 4, "ngIf"], [4, "ngIf"], [1, "pagination-range"], [1, "pagination-controls"], ["fill", "clear", 3, "click", "disabled"], ["name", "chevron-back-outline"], ["fill", "clear", 3, "color", "click", 4, "ngFor", "ngForOf"], ["name", "chevron-forward-outline"], ["fill", "clear", 3, "click", "color"]],
+  template: function PaginationComponent_Template(rf, ctx) {
+    if (rf & 1) {
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "ion-toolbar", 0);
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtemplate"](1, PaginationComponent_ng_container_1_Template, 3, 3, "ng-container", 1);
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵpipe"](2, "async");
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtemplate"](3, PaginationComponent_ng_container_3_Template, 8, 4, "ng-container", 2);
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵpipe"](4, "async");
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+    }
+    if (rf & 2) {
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"]();
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("ngIf", _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵpipeBind1"](2, 2, ctx.currentPageRange$));
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](2);
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("ngIf", _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵpipeBind1"](4, 4, ctx.pagination$));
+    }
+  },
+  dependencies: [_ionic_angular__WEBPACK_IMPORTED_MODULE_4__.IonButton, _ionic_angular__WEBPACK_IMPORTED_MODULE_4__.IonIcon, _ionic_angular__WEBPACK_IMPORTED_MODULE_4__.IonText, _ionic_angular__WEBPACK_IMPORTED_MODULE_4__.IonToolbar, _angular_common__WEBPACK_IMPORTED_MODULE_5__.NgForOf, _angular_common__WEBPACK_IMPORTED_MODULE_5__.NgIf, _angular_common__WEBPACK_IMPORTED_MODULE_5__.AsyncPipe],
+  styles: ["\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n.pagination-toolbar[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column; \n\n  justify-content: center; \n\n  align-items: center; \n\n  padding: 0.5rem 1rem;\n  gap: 0.5rem; \n\n  width: 100%;\n  box-sizing: border-box;\n  text-align: center;\n}\n.pagination-toolbar[_ngcontent-%COMP%]   .pagination-range[_ngcontent-%COMP%] {\n  font-size: 0.9rem;\n  color: var(--ion-color-medium);\n  text-align: center;\n  width: 100%;\n  margin-bottom: 0.5rem;\n}\n.pagination-toolbar[_ngcontent-%COMP%]   .pagination-controls[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  gap: 0.5rem; \n\n}\n.pagination-toolbar[_ngcontent-%COMP%]   .pagination-controls[_ngcontent-%COMP%]   ion-button[_ngcontent-%COMP%] {\n  --background: transparent;\n  --color: var(--ion-color-primary);\n  font-size: 1rem;\n  padding: 0.2rem 0.5rem;\n}\n.pagination-toolbar[_ngcontent-%COMP%]   .pagination-controls[_ngcontent-%COMP%]   ion-button.active[_ngcontent-%COMP%] {\n  --color: var(--ion-color-primary);\n  font-weight: bold;\n}\n.pagination-toolbar[_ngcontent-%COMP%]   .pagination-controls[_ngcontent-%COMP%]   ion-button[_ngcontent-%COMP%]:hover {\n  --color: var(--ion-color-primary-shade);\n}\n.pagination-toolbar[_ngcontent-%COMP%]   .pagination-controls[_ngcontent-%COMP%]   ion-icon[_ngcontent-%COMP%] {\n  font-size: 1.4rem;\n  color: var(--ion-color-primary);\n}\n.pagination-toolbar[_ngcontent-%COMP%]   .pagination-controls[_ngcontent-%COMP%]   ion-text[_ngcontent-%COMP%] {\n  margin: 0 0.5rem;\n  white-space: nowrap;\n  color: var(--ion-color-medium);\n}\n\n\n\n@media (max-width: 768px) {\n  .pagination-toolbar[_ngcontent-%COMP%] {\n    gap: 0.8rem;\n  }\n  .pagination-controls[_ngcontent-%COMP%] {\n    display: none; \n\n  }\n  .pagination-range[_ngcontent-%COMP%] {\n    margin-bottom: 0; \n\n  }\n}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8uL3NyYy9hcHAvc2hhcmVkL2NvbXBvbmVudHMvcGFnaW5hdGlvbi9wYWdpbmF0aW9uLmNvbXBvbmVudC5zY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7K0ZBQUE7QUFtQkE7RUFDRSxhQUFBO0VBQ0Esc0JBQUEsRUFBQSx3Q0FBQTtFQUNBLHVCQUFBLEVBQUEsOEJBQUE7RUFDQSxtQkFBQSxFQUFBLGdDQUFBO0VBQ0Esb0JBQUE7RUFDQSxXQUFBLEVBQUEsOENBQUE7RUFDQSxXQUFBO0VBQ0Esc0JBQUE7RUFDQSxrQkFBQTtBQUNGO0FBQ0U7RUFDRSxpQkFBQTtFQUNBLDhCQUFBO0VBQ0Esa0JBQUE7RUFDQSxXQUFBO0VBQ0EscUJBQUE7QUFDSjtBQUVFO0VBQ0UsYUFBQTtFQUNBLG1CQUFBO0VBQ0EsdUJBQUE7RUFDQSxXQUFBLEVBQUEscUNBQUE7QUFBSjtBQUdFO0VBQ0UseUJBQUE7RUFDQSxpQ0FBQTtFQUNBLGVBQUE7RUFDQSxzQkFBQTtBQURKO0FBR0k7RUFDRSxpQ0FBQTtFQUNBLGlCQUFBO0FBRE47QUFJSTtFQUNFLHVDQUFBO0FBRk47QUFNRTtFQUNFLGlCQUFBO0VBQ0EsK0JBQUE7QUFKSjtBQU9FO0VBQ0UsZ0JBQUE7RUFDQSxtQkFBQTtFQUNBLDhCQUFBO0FBTEo7O0FBU0EsOENBQUE7QUFDQTtFQUNFO0lBQ0UsV0FBQTtFQU5GO0VBU0E7SUFDRSxhQUFBLEVBQUEsNkJBQUE7RUFQRjtFQVVBO0lBQ0UsZ0JBQUEsRUFBQSxtQkFBQTtFQVJGO0FBQ0YiLCJzb3VyY2VzQ29udGVudCI6WyIvKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKipcbiogTm9ucHJvZml0IFNvY2lhbCBOZXR3b3JraW5nIFBsYXRmb3JtOiBBbGxvd2luZyBVc2VycyBhbmQgT3JnYW5pemF0aW9ucyB0byBDb2xsYWJvcmF0ZS5cbiogQ29weXJpZ2h0IChDKSAyMDIzICBBU0NFTkR5bmFtaWNzIE5GUFxuKlxuKiBUaGlzIGZpbGUgaXMgcGFydCBvZiBOb25wcm9maXQgU29jaWFsIE5ldHdvcmtpbmcgUGxhdGZvcm0uXG4qXG4qIE5vbnByb2ZpdCBTb2NpYWwgTmV0d29ya2luZyBQbGF0Zm9ybSBpcyBmcmVlIHNvZnR3YXJlOiB5b3UgY2FuIHJlZGlzdHJpYnV0ZSBpdCBhbmQvb3IgbW9kaWZ5XG4qIGl0IHVuZGVyIHRoZSB0ZXJtcyBvZiB0aGUgR05VIEFmZmVybyBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlIGFzIHB1Ymxpc2hlZFxuKiBieSB0aGUgRnJlZSBTb2Z0d2FyZSBGb3VuZGF0aW9uLCBlaXRoZXIgdmVyc2lvbiAzIG9mIHRoZSBMaWNlbnNlLCBvclxuKiAoYXQgeW91ciBvcHRpb24pIGFueSBsYXRlciB2ZXJzaW9uLlxuXG4qIE5vbnByb2ZpdCBTb2NpYWwgTmV0d29ya2luZyBQbGF0Zm9ybSBpcyBkaXN0cmlidXRlZCBpbiB0aGUgaG9wZSB0aGF0IGl0IHdpbGwgYmUgdXNlZnVsLFxuKiBidXQgV0lUSE9VVCBBTlkgV0FSUkFOVFk7IHdpdGhvdXQgZXZlbiB0aGUgaW1wbGllZCB3YXJyYW50eSBvZlxuKiBNRVJDSEFOVEFCSUxJVFkgb3IgRklUTkVTUyBGT1IgQSBQQVJUSUNVTEFSIFBVUlBPU0UuICBTZWUgdGhlXG4qIEdOVSBBZmZlcm8gR2VuZXJhbCBQdWJsaWMgTGljZW5zZSBmb3IgbW9yZSBkZXRhaWxzLlxuXG4qIFlvdSBzaG91bGQgaGF2ZSByZWNlaXZlZCBhIGNvcHkgb2YgdGhlIEdOVSBBZmZlcm8gR2VuZXJhbCBQdWJsaWMgTGljZW5zZVxuKiBhbG9uZyB3aXRoIE5vbnByb2ZpdCBTb2NpYWwgTmV0d29ya2luZyBQbGF0Zm9ybS4gIElmIG5vdCwgc2VlIDxodHRwczovL3d3dy5nbnUub3JnL2xpY2Vuc2VzLz4uXG4qKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi9cbi5wYWdpbmF0aW9uLXRvb2xiYXIge1xuICBkaXNwbGF5OiBmbGV4O1xuICBmbGV4LWRpcmVjdGlvbjogY29sdW1uOyAvKiBTdGFjayByYW5nZSBhbmQgY29udHJvbHMgdmVydGljYWxseSAqL1xuICBqdXN0aWZ5LWNvbnRlbnQ6IGNlbnRlcjsgLyogQ2VudGVyIGNvbnRlbnQgdmVydGljYWxseSAqL1xuICBhbGlnbi1pdGVtczogY2VudGVyOyAvKiBDZW50ZXIgY29udGVudCBob3Jpem9udGFsbHkgKi9cbiAgcGFkZGluZzogMC41cmVtIDFyZW07XG4gIGdhcDogMC41cmVtOyAvKiBBZGp1c3Qgc3BhY2luZyBiZXR3ZWVuIHJhbmdlIGFuZCBjb250cm9scyAqL1xuICB3aWR0aDogMTAwJTtcbiAgYm94LXNpemluZzogYm9yZGVyLWJveDtcbiAgdGV4dC1hbGlnbjogY2VudGVyO1xuXG4gIC5wYWdpbmF0aW9uLXJhbmdlIHtcbiAgICBmb250LXNpemU6IDAuOXJlbTtcbiAgICBjb2xvcjogdmFyKC0taW9uLWNvbG9yLW1lZGl1bSk7XG4gICAgdGV4dC1hbGlnbjogY2VudGVyO1xuICAgIHdpZHRoOiAxMDAlO1xuICAgIG1hcmdpbi1ib3R0b206IDAuNXJlbTtcbiAgfVxuXG4gIC5wYWdpbmF0aW9uLWNvbnRyb2xzIHtcbiAgICBkaXNwbGF5OiBmbGV4O1xuICAgIGFsaWduLWl0ZW1zOiBjZW50ZXI7XG4gICAganVzdGlmeS1jb250ZW50OiBjZW50ZXI7XG4gICAgZ2FwOiAwLjVyZW07IC8qIFNwYWNlIGJldHdlZW4gcGFnaW5hdGlvbiBidXR0b25zICovXG4gIH1cblxuICAucGFnaW5hdGlvbi1jb250cm9scyBpb24tYnV0dG9uIHtcbiAgICAtLWJhY2tncm91bmQ6IHRyYW5zcGFyZW50O1xuICAgIC0tY29sb3I6IHZhcigtLWlvbi1jb2xvci1wcmltYXJ5KTtcbiAgICBmb250LXNpemU6IDFyZW07XG4gICAgcGFkZGluZzogMC4ycmVtIDAuNXJlbTtcblxuICAgICYuYWN0aXZlIHtcbiAgICAgIC0tY29sb3I6IHZhcigtLWlvbi1jb2xvci1wcmltYXJ5KTtcbiAgICAgIGZvbnQtd2VpZ2h0OiBib2xkO1xuICAgIH1cblxuICAgICY6aG92ZXIge1xuICAgICAgLS1jb2xvcjogdmFyKC0taW9uLWNvbG9yLXByaW1hcnktc2hhZGUpO1xuICAgIH1cbiAgfVxuXG4gIC5wYWdpbmF0aW9uLWNvbnRyb2xzIGlvbi1pY29uIHtcbiAgICBmb250LXNpemU6IDEuNHJlbTtcbiAgICBjb2xvcjogdmFyKC0taW9uLWNvbG9yLXByaW1hcnkpO1xuICB9XG5cbiAgLnBhZ2luYXRpb24tY29udHJvbHMgaW9uLXRleHQge1xuICAgIG1hcmdpbjogMCAwLjVyZW07XG4gICAgd2hpdGUtc3BhY2U6IG5vd3JhcDtcbiAgICBjb2xvcjogdmFyKC0taW9uLWNvbG9yLW1lZGl1bSk7XG4gIH1cbn1cblxuLyogSGlkZSBwYWdpbmF0aW9uIGNvbnRyb2xzIG9uIHNtYWxsIHNjcmVlbnMgKi9cbkBtZWRpYSAobWF4LXdpZHRoOiA3NjhweCkge1xuICAucGFnaW5hdGlvbi10b29sYmFyIHtcbiAgICBnYXA6IDAuOHJlbTtcbiAgfVxuXG4gIC5wYWdpbmF0aW9uLWNvbnRyb2xzIHtcbiAgICBkaXNwbGF5OiBub25lOyAvKiBIaWRlIHBhZ2luYXRpb24gY29udHJvbHMgKi9cbiAgfVxuXG4gIC5wYWdpbmF0aW9uLXJhbmdlIHtcbiAgICBtYXJnaW4tYm90dG9tOiAwOyAvKiBBZGp1c3Qgc3BhY2luZyAqL1xuICB9XG59XG4iXSwic291cmNlUm9vdCI6IiJ9 */"]
+});
+
+/***/ }),
+
 /***/ 6585:
 /*!********************************************************************!*\
   !*** ./src/app/shared/components/user-menu/user-menu.component.ts ***!
@@ -514,18 +759,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   SharedModule: () => (/* binding */ SharedModule)
 /* harmony export */ });
-/* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @angular/common */ 9191);
-/* harmony import */ var _angular_router__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @angular/router */ 1099);
-/* harmony import */ var _ionic_angular__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @ionic/angular */ 1116);
-/* harmony import */ var _ngx_translate_core__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @ngx-translate/core */ 7353);
-/* harmony import */ var _angular_forms__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @angular/forms */ 8015);
+/* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @angular/common */ 9191);
+/* harmony import */ var _angular_router__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @angular/router */ 1099);
+/* harmony import */ var _ionic_angular__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @ionic/angular */ 1116);
+/* harmony import */ var _ngx_translate_core__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @ngx-translate/core */ 7353);
+/* harmony import */ var _angular_forms__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @angular/forms */ 8015);
 /* harmony import */ var _modules_account_components_create_group_modal_create_group_modal_component__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../modules/account/components/create-group-modal/create-group-modal.component */ 8517);
 /* harmony import */ var _components_app_header_app_header_component__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/app-header/app-header.component */ 8245);
 /* harmony import */ var _components_feedback_modal_feedback_modal_component__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/feedback-modal/feedback-modal.component */ 261);
 /* harmony import */ var _components_user_menu_user_menu_component__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/user-menu/user-menu.component */ 6585);
 /* harmony import */ var _components_image_upload_modal_image_upload_modal_component__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/image-upload-modal/image-upload-modal.component */ 861);
-/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/core */ 6623);
+/* harmony import */ var _components_pagination_pagination_component__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/pagination/pagination.component */ 4815);
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @angular/core */ 6623);
 var _SharedModule;
+
 
 
 
@@ -542,17 +789,17 @@ _SharedModule = SharedModule;
 _SharedModule.ɵfac = function SharedModule_Factory(t) {
   return new (t || _SharedModule)();
 };
-_SharedModule.ɵmod = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_5__["ɵɵdefineNgModule"]({
+_SharedModule.ɵmod = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵdefineNgModule"]({
   type: _SharedModule
 });
-_SharedModule.ɵinj = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_5__["ɵɵdefineInjector"]({
-  imports: [_ionic_angular__WEBPACK_IMPORTED_MODULE_6__.IonicModule, _angular_common__WEBPACK_IMPORTED_MODULE_7__.CommonModule, _ngx_translate_core__WEBPACK_IMPORTED_MODULE_8__.TranslateModule, _angular_forms__WEBPACK_IMPORTED_MODULE_9__.FormsModule, _angular_forms__WEBPACK_IMPORTED_MODULE_9__.ReactiveFormsModule]
+_SharedModule.ɵinj = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵdefineInjector"]({
+  imports: [_ionic_angular__WEBPACK_IMPORTED_MODULE_7__.IonicModule, _angular_common__WEBPACK_IMPORTED_MODULE_8__.CommonModule, _ngx_translate_core__WEBPACK_IMPORTED_MODULE_9__.TranslateModule, _angular_forms__WEBPACK_IMPORTED_MODULE_10__.FormsModule, _angular_forms__WEBPACK_IMPORTED_MODULE_10__.ReactiveFormsModule]
 });
 (function () {
-  (typeof ngJitMode === "undefined" || ngJitMode) && _angular_core__WEBPACK_IMPORTED_MODULE_5__["ɵɵsetNgModuleScope"](SharedModule, {
-    declarations: [_components_app_header_app_header_component__WEBPACK_IMPORTED_MODULE_1__.AppHeaderComponent, _modules_account_components_create_group_modal_create_group_modal_component__WEBPACK_IMPORTED_MODULE_0__.CreateGroupModalComponent, _components_feedback_modal_feedback_modal_component__WEBPACK_IMPORTED_MODULE_2__.FeedbackModalComponent, _components_image_upload_modal_image_upload_modal_component__WEBPACK_IMPORTED_MODULE_4__.ImageUploadModalComponent, _components_user_menu_user_menu_component__WEBPACK_IMPORTED_MODULE_3__.UserMenuComponent],
-    imports: [_ionic_angular__WEBPACK_IMPORTED_MODULE_6__.IonicModule, _angular_router__WEBPACK_IMPORTED_MODULE_10__.RouterLink, _angular_router__WEBPACK_IMPORTED_MODULE_10__.RouterLinkActive, _angular_common__WEBPACK_IMPORTED_MODULE_7__.CommonModule, _ngx_translate_core__WEBPACK_IMPORTED_MODULE_8__.TranslateModule, _angular_forms__WEBPACK_IMPORTED_MODULE_9__.FormsModule, _angular_forms__WEBPACK_IMPORTED_MODULE_9__.ReactiveFormsModule],
-    exports: [_components_app_header_app_header_component__WEBPACK_IMPORTED_MODULE_1__.AppHeaderComponent, _modules_account_components_create_group_modal_create_group_modal_component__WEBPACK_IMPORTED_MODULE_0__.CreateGroupModalComponent, _components_feedback_modal_feedback_modal_component__WEBPACK_IMPORTED_MODULE_2__.FeedbackModalComponent, _components_image_upload_modal_image_upload_modal_component__WEBPACK_IMPORTED_MODULE_4__.ImageUploadModalComponent, _components_user_menu_user_menu_component__WEBPACK_IMPORTED_MODULE_3__.UserMenuComponent]
+  (typeof ngJitMode === "undefined" || ngJitMode) && _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵsetNgModuleScope"](SharedModule, {
+    declarations: [_components_app_header_app_header_component__WEBPACK_IMPORTED_MODULE_1__.AppHeaderComponent, _modules_account_components_create_group_modal_create_group_modal_component__WEBPACK_IMPORTED_MODULE_0__.CreateGroupModalComponent, _components_feedback_modal_feedback_modal_component__WEBPACK_IMPORTED_MODULE_2__.FeedbackModalComponent, _components_image_upload_modal_image_upload_modal_component__WEBPACK_IMPORTED_MODULE_4__.ImageUploadModalComponent, _components_pagination_pagination_component__WEBPACK_IMPORTED_MODULE_5__.PaginationComponent, _components_user_menu_user_menu_component__WEBPACK_IMPORTED_MODULE_3__.UserMenuComponent],
+    imports: [_ionic_angular__WEBPACK_IMPORTED_MODULE_7__.IonicModule, _angular_router__WEBPACK_IMPORTED_MODULE_11__.RouterLink, _angular_router__WEBPACK_IMPORTED_MODULE_11__.RouterLinkActive, _angular_common__WEBPACK_IMPORTED_MODULE_8__.CommonModule, _ngx_translate_core__WEBPACK_IMPORTED_MODULE_9__.TranslateModule, _angular_forms__WEBPACK_IMPORTED_MODULE_10__.FormsModule, _angular_forms__WEBPACK_IMPORTED_MODULE_10__.ReactiveFormsModule],
+    exports: [_components_app_header_app_header_component__WEBPACK_IMPORTED_MODULE_1__.AppHeaderComponent, _modules_account_components_create_group_modal_create_group_modal_component__WEBPACK_IMPORTED_MODULE_0__.CreateGroupModalComponent, _components_feedback_modal_feedback_modal_component__WEBPACK_IMPORTED_MODULE_2__.FeedbackModalComponent, _components_image_upload_modal_image_upload_modal_component__WEBPACK_IMPORTED_MODULE_4__.ImageUploadModalComponent, _components_user_menu_user_menu_component__WEBPACK_IMPORTED_MODULE_3__.UserMenuComponent, _components_pagination_pagination_component__WEBPACK_IMPORTED_MODULE_5__.PaginationComponent]
   });
 })();
 

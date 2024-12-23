@@ -89,6 +89,8 @@ export class ApplyPage implements OnInit {
   }
 
   ionViewWillEnter(): void {
+    this.listingId = this.route.snapshot.paramMap.get("id") || "";
+    this.store.dispatch(ListingsActions.loadListingById({id: this.listingId}));
     // Default Meta Tags
     this.metaService.updateMetaTags(
       "Apply to Listing | ASCENDynamics NFP",

@@ -18,141 +18,154 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 /* Homepage Listings Component Styles - Supports Light and Dark Modes */
-
+/* General Styling */
 .homepage-listings {
   font-family: "Roboto", sans-serif;
-  padding: 20px;
-  color: var(--text-color);
+  padding: 0 20px;
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
 }
 
+/* Heading */
 .homepage-listings h1 {
   font-size: 2rem;
   margin-bottom: 20px;
   text-align: center;
+  color: var(--ion-text-color);
 }
 
+/* Listings Container */
 .listings {
   display: flex;
   flex-direction: column;
-  gap: 20px;
 }
 
+/* Individual Card */
 .listing-card {
-  border-radius: 10px;
-  box-shadow: 0 4px 10px var(--shadow);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px var(--ion-color-primary);
+  background-color: var(--ion-item-background);
+  padding: 15px;
   transition:
-    background-color 0.3s ease,
-    box-shadow 0.3s ease;
+    box-shadow 0.3s ease,
+    background-color 0.3s ease;
 }
 
+/* Header */
 .listing-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.listing-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .listing-icon {
-  width: 50px;
-  height: 50px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
 }
 
 .listing-info {
-  flex-grow: 1;
-  margin-left: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
-.listing-info h2 {
-  font-size: 1.5rem;
-  margin: 0;
-  color: var(--text-color);
-}
-
-.listing-info p {
-  font-size: 1rem;
-  margin: 0;
-  color: var(--text-color-muted);
-}
-
-.badge {
-  padding: 5px 10px;
-  border-radius: 5px;
-  font-size: 0.9rem;
+.listing-info ion-card-title {
+  font-size: 1.2rem;
   font-weight: bold;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  color: var(--ion-color-primary);
 }
 
+.listing-info ion-card-subtitle {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+}
+
+.status-badge {
+  background-color: var(--ion-color-primary);
+  // color: var(--ion-color-warning-contrast);
+  border-radius: 12px;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Description */
 .listing-description {
-  font-size: 1rem;
-  color: var(--text-color-muted);
-  margin: 10px 0 0;
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+  margin-top: 5px;
+}
+
+/* Footer */
+.listing-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
 }
 
 .listing-details {
   display: flex;
-  font-size: 0.9rem;
-  color: var(--text-color-muted);
-  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--ion-text-color);
 }
 
-.listing-details .detail {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
+/* Buttons */
 .listing-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 6px;
 }
 
-.btn {
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: bold;
-  transition:
-    background-color 0.3s ease,
-    transform 0.2s ease;
+.save-btn,
+.apply-btn {
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: transform 0.2s ease;
+  font-weight: 500;
 }
 
-.save-btn:hover {
-  transform: translateY(-2px);
-}
-
+.save-btn:hover,
 .apply-btn:hover {
-  transform: translateY(-2px);
+  transform: scale(1.05);
 }
 
+/* More Opportunities */
 .more-opportunities {
-  text-align: center;
+  text-align: right;
   margin-top: 20px;
 }
 
 .more-link {
-  color: var(--primary-color);
   text-decoration: none;
-  font-size: 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .more-link:hover {
   text-decoration: underline;
 }
 
-.listing-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 15px;
+/* Hide ion-chips on small screens */
+@media (max-width: 576px) {
+  .listing-details ion-chip {
+    display: none;
+  }
+}
+
+@media (max-width: 740px) {
+  .listing-details ion-chip:last-child {
+    display: none;
+  }
 }

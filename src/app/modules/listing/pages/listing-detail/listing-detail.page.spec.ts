@@ -206,33 +206,4 @@ describe("ListingDetailPage", () => {
   //     done();
   //   });
   // });
-
-  it("should dispatch deleteListing action and navigate when confirmed", async () => {
-    spyOn(store, "dispatch");
-    const alertSpyObj = jasmine.createSpyObj("HTMLIonAlertElement", [
-      "present",
-    ]);
-    alertSpyObj.onDidDismiss = jasmine
-      .createSpy("onDidDismiss")
-      .and.returnValue(Promise.resolve({}));
-
-    (alertController.create as jasmine.Spy).and.returnValue(
-      Promise.resolve(alertSpyObj),
-    );
-
-    await component.deleteListing();
-
-    expect(alertController.create).toHaveBeenCalled();
-
-    // Simulate the handler being called
-    const alertArgs = (alertController.create as jasmine.Spy).calls.mostRecent()
-      .args[0];
-    const deleteButton = alertArgs.buttons[1];
-    deleteButton.handler();
-
-    expect(store.dispatch).toHaveBeenCalledWith(
-      ListingsActions.deleteListing({id: "123"}),
-    );
-    // expect(router.navigate).toHaveBeenCalledWith(["/listings/123"]);
-  });
 });

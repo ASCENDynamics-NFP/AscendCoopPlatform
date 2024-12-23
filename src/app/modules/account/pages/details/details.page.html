@@ -32,7 +32,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     ></app-hero>
 
     <div class="tabs">
-      <a (click)="scrollToSection('profile')" class="tab-link">Profile</a>
       <a (click)="scrollToSection('contact')" class="tab-link"
         >Contact Information</a
       >
@@ -58,10 +57,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         class="tab-link"
         >Mutual Aid</a
       >
+      <a (click)="scrollToSection('listings')" class="tab-link">Listings</a>
     </div>
 
     <div>
-      <app-profile id="profile" [account]="account"></app-profile>
+      <app-profile [account]="account"></app-profile>
       <app-contact-information
         id="contact"
         [account]="account"
@@ -86,6 +86,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         type="group"
       ></app-related-accounts>
       <app-related-listings
+        id="listings"
         [account]="account"
         [relatedListings]="(relatedListings$ | async) ?? []"
         relationship="owner"

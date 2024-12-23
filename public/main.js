@@ -29,7 +29,7 @@ const routes = [{
 }, {
   path: "account",
   // Used to organize routes in "/account" folder.
-  loadChildren: () => Promise.all(/*! import() */[__webpack_require__.e("default-src_app_core_services_meta_service_ts-src_app_shared_shared_module_ts"), __webpack_require__.e("src_app_modules_account_account_module_ts")]).then(__webpack_require__.bind(__webpack_require__, /*! ./modules/account/account.module */ 1797)).then(m => m.AccountModule)
+  loadChildren: () => Promise.all(/*! import() */[__webpack_require__.e("default-src_app_core_services_meta_service_ts-src_app_shared_shared_module_ts"), __webpack_require__.e("common"), __webpack_require__.e("src_app_modules_account_account_module_ts")]).then(__webpack_require__.bind(__webpack_require__, /*! ./modules/account/account.module */ 1797)).then(m => m.AccountModule)
 }, {
   path: "auth",
   // Used to organize routes in "/auth" folder.
@@ -37,7 +37,7 @@ const routes = [{
 }, {
   path: "listings",
   // Used to organize routes in "/listings" folder.
-  loadChildren: () => Promise.all(/*! import() */[__webpack_require__.e("default-src_app_core_services_meta_service_ts-src_app_shared_shared_module_ts"), __webpack_require__.e("src_app_modules_listing_listing_module_ts")]).then(__webpack_require__.bind(__webpack_require__, /*! ./modules/listing/listing.module */ 3461)).then(m => m.ListingModule)
+  loadChildren: () => Promise.all(/*! import() */[__webpack_require__.e("default-src_app_core_services_meta_service_ts-src_app_shared_shared_module_ts"), __webpack_require__.e("common"), __webpack_require__.e("src_app_modules_listing_listing_module_ts")]).then(__webpack_require__.bind(__webpack_require__, /*! ./modules/listing/listing.module */ 3461)).then(m => m.ListingModule)
 }];
 // Router options
 const routerOptions = {

@@ -45,7 +45,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-card-header>
 
       <ion-card-content>
-        <p class="listing-description">{{ listing.description }}</p>
+        <p class="listing-description">
+          {{
+            (listing.description | slice: 0 : 200) +
+              (listing.description.length > 200 ? "..." : "")
+          }}
+        </p>
         <div class="listing-footer">
           <div class="listing-details">
             <ion-chip>

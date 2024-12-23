@@ -1096,15 +1096,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   ListingRoutingModule: () => (/* binding */ ListingRoutingModule)
 /* harmony export */ });
-/* harmony import */ var _angular_router__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @angular/router */ 1099);
+/* harmony import */ var _angular_router__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @angular/router */ 1099);
 /* harmony import */ var _pages_listings_listings_page__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./pages/listings/listings.page */ 8418);
 /* harmony import */ var _pages_listing_detail_listing_detail_page__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./pages/listing-detail/listing-detail.page */ 4068);
 /* harmony import */ var _pages_listing_edit_listing_edit_page__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./pages/listing-edit/listing-edit.page */ 6364);
 /* harmony import */ var _pages_listing_create_listing_create_page__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./pages/listing-create/listing-create.page */ 9322);
 /* harmony import */ var _relatedAccount_pages_applicants_applicants_page__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./relatedAccount/pages/applicants/applicants.page */ 4653);
 /* harmony import */ var _relatedAccount_pages_apply_apply_page__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./relatedAccount/pages/apply/apply.page */ 1733);
-/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @angular/core */ 6623);
+/* harmony import */ var _core_guards_auth_guard__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../core/guards/auth.guard */ 4978);
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @angular/core */ 6623);
 var _ListingRoutingModule;
+
 
 
 
@@ -1116,38 +1118,44 @@ var _ListingRoutingModule;
 
 const routes = [{
   path: "",
-  component: _pages_listings_listings_page__WEBPACK_IMPORTED_MODULE_0__.ListingsPage
+  component: _pages_listings_listings_page__WEBPACK_IMPORTED_MODULE_0__.ListingsPage,
+  canActivate: [_core_guards_auth_guard__WEBPACK_IMPORTED_MODULE_6__.AuthGuard]
 }, {
   path: "create",
-  component: _pages_listing_create_listing_create_page__WEBPACK_IMPORTED_MODULE_3__.ListingCreatePage
+  component: _pages_listing_create_listing_create_page__WEBPACK_IMPORTED_MODULE_3__.ListingCreatePage,
+  canActivate: [_core_guards_auth_guard__WEBPACK_IMPORTED_MODULE_6__.AuthGuard]
 }, {
   path: ":id",
-  component: _pages_listing_detail_listing_detail_page__WEBPACK_IMPORTED_MODULE_1__.ListingDetailPage
+  component: _pages_listing_detail_listing_detail_page__WEBPACK_IMPORTED_MODULE_1__.ListingDetailPage,
+  canActivate: [_core_guards_auth_guard__WEBPACK_IMPORTED_MODULE_6__.AuthGuard]
 }, {
   path: ":id/applicants",
-  component: _relatedAccount_pages_applicants_applicants_page__WEBPACK_IMPORTED_MODULE_4__.ApplicantsPage
+  component: _relatedAccount_pages_applicants_applicants_page__WEBPACK_IMPORTED_MODULE_4__.ApplicantsPage,
+  canActivate: [_core_guards_auth_guard__WEBPACK_IMPORTED_MODULE_6__.AuthGuard]
 }, {
   path: ":id/apply",
-  component: _relatedAccount_pages_apply_apply_page__WEBPACK_IMPORTED_MODULE_5__.ApplyPage
+  component: _relatedAccount_pages_apply_apply_page__WEBPACK_IMPORTED_MODULE_5__.ApplyPage,
+  canActivate: [_core_guards_auth_guard__WEBPACK_IMPORTED_MODULE_6__.AuthGuard]
 }, {
   path: ":id/edit",
-  component: _pages_listing_edit_listing_edit_page__WEBPACK_IMPORTED_MODULE_2__.ListingEditPage
+  component: _pages_listing_edit_listing_edit_page__WEBPACK_IMPORTED_MODULE_2__.ListingEditPage,
+  canActivate: [_core_guards_auth_guard__WEBPACK_IMPORTED_MODULE_6__.AuthGuard]
 }];
 class ListingRoutingModule {}
 _ListingRoutingModule = ListingRoutingModule;
 _ListingRoutingModule.ɵfac = function ListingRoutingModule_Factory(t) {
   return new (t || _ListingRoutingModule)();
 };
-_ListingRoutingModule.ɵmod = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵdefineNgModule"]({
+_ListingRoutingModule.ɵmod = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_7__["ɵɵdefineNgModule"]({
   type: _ListingRoutingModule
 });
-_ListingRoutingModule.ɵinj = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵdefineInjector"]({
-  imports: [_angular_router__WEBPACK_IMPORTED_MODULE_7__.RouterModule.forChild(routes), _angular_router__WEBPACK_IMPORTED_MODULE_7__.RouterModule]
+_ListingRoutingModule.ɵinj = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_7__["ɵɵdefineInjector"]({
+  imports: [_angular_router__WEBPACK_IMPORTED_MODULE_8__.RouterModule.forChild(routes), _angular_router__WEBPACK_IMPORTED_MODULE_8__.RouterModule]
 });
 (function () {
-  (typeof ngJitMode === "undefined" || ngJitMode) && _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵsetNgModuleScope"](ListingRoutingModule, {
-    imports: [_angular_router__WEBPACK_IMPORTED_MODULE_7__.RouterModule],
-    exports: [_angular_router__WEBPACK_IMPORTED_MODULE_7__.RouterModule]
+  (typeof ngJitMode === "undefined" || ngJitMode) && _angular_core__WEBPACK_IMPORTED_MODULE_7__["ɵɵsetNgModuleScope"](ListingRoutingModule, {
+    imports: [_angular_router__WEBPACK_IMPORTED_MODULE_8__.RouterModule],
+    exports: [_angular_router__WEBPACK_IMPORTED_MODULE_8__.RouterModule]
   });
 })();
 
@@ -3248,6 +3256,10 @@ class ApplyPage {
     });
   }
   ionViewWillEnter() {
+    this.listingId = this.route.snapshot.paramMap.get("id") || "";
+    this.store.dispatch(_state_actions_listings_actions__WEBPACK_IMPORTED_MODULE_2__.loadListingById({
+      id: this.listingId
+    }));
     // Default Meta Tags
     this.metaService.updateMetaTags("Apply to Listing | ASCENDynamics NFP", "Submit your application to join this opportunity on ASCENDynamics NFP.", "listing, apply, volunteer, nonprofits", {
       title: "Apply to Listing | ASCENDynamics NFP",

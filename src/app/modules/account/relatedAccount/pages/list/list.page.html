@@ -22,6 +22,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <ion-header>
   <app-header
     *ngIf="(account$ | async) as account"
+    [defaultHref]="'account/'+ account.id"
     [title]="account.name"
   ></app-header>
 </ion-header>

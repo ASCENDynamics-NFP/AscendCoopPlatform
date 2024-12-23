@@ -21,7 +21,7 @@
 
 import {Component, OnInit} from "@angular/core";
 import {Store} from "@ngrx/store";
-import {Observable} from "rxjs";
+import {Observable, BehaviorSubject, combineLatest, map} from "rxjs";
 import {NavController} from "@ionic/angular";
 import {Listing} from "../../../../models/listing.model";
 import * as ListingsActions from "../../../../state/actions/listings.actions";
@@ -42,10 +42,18 @@ import {MetaService} from "../../../../core/services/meta.service";
 })
 export class ListingsPage implements OnInit {
   listings$: Observable<Listing[]>;
+  paginatedListings$: Observable<Listing[]>;
   loading$: Observable<boolean>;
   error$: Observable<string | null>;
-  listingTypes = ["all", "volunteer", "job", "internship", "gig"];
   authUser$: Observable<AuthUser | null>;
+  listingTypes = ["all", "volunteer", "job", "internship", "gig"];
+
+  // Pagination State
+  pageSize = 10;
+  currentPageSubject = new BehaviorSubject<number>(1);
+  currentPage$ = this.currentPageSubject.asObservable();
+  totalItems$: Observable<number>;
+  totalPages$: Observable<number>;
 
   constructor(
     private metaService: MetaService,
@@ -56,6 +64,25 @@ export class ListingsPage implements OnInit {
     this.listings$ = this.store.select(selectFilteredListings);
     this.loading$ = this.store.select(selectLoading);
     this.error$ = this.store.select(selectError);
+
+    // Calculate total items dynamically
+    this.totalItems$ = this.listings$.pipe(map((listings) => listings.length));
+
+    // Calculate total pages
+    this.totalPages$ = this.totalItems$.pipe(
+      map((totalItems) => Math.ceil(totalItems / this.pageSize)),
+    );
+
+    // Paginate listings
+    this.paginatedListings$ = combineLatest([
+      this.listings$,
+      this.currentPage$,
+    ]).pipe(
+      map(([listings, currentPage]) => {
+        const startIndex = (currentPage - 1) * this.pageSize;
+        return listings.slice(startIndex, startIndex + this.pageSize);
+      }),
+    );
   }
 
   ionViewWillEnter() {
@@ -135,5 +162,9 @@ export class ListingsPage implements OnInit {
     };
 
     return iconMap[type.toLowerCase()] || "help-outline";
+  }
+
+  goToPage(pageNumber: number) {
+    this.currentPageSubject.next(pageNumber);
   }
 }

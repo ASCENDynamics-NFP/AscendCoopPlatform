@@ -1489,6 +1489,71 @@ const findCheckedOption = (node, tagName) => {
 };
 
 
+/***/ }),
+
+/***/ 4978:
+/*!*******************************************!*\
+  !*** ./src/app/core/guards/auth.guard.ts ***!
+  \*******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   AuthGuard: () => (/* binding */ AuthGuard)
+/* harmony export */ });
+/* harmony import */ var _Users_marcinufniarz_Desktop_ASCENDynamicsNFP_ascendcoopplatform_node_modules_babel_runtime_helpers_esm_asyncToGenerator_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./node_modules/@babel/runtime/helpers/esm/asyncToGenerator.js */ 6207);
+/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! rxjs */ 5167);
+/* harmony import */ var _state_selectors_auth_selectors__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../state/selectors/auth.selectors */ 9559);
+/* harmony import */ var _state_actions_auth_actions__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../state/actions/auth.actions */ 2345);
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/core */ 6623);
+/* harmony import */ var _ngrx_store__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @ngrx/store */ 5480);
+/* harmony import */ var _angular_router__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @angular/router */ 1099);
+
+var _AuthGuard;
+
+
+
+
+
+
+class AuthGuard {
+  constructor(store, router) {
+    this.store = store;
+    this.router = router;
+  }
+  canActivate() {
+    var _this = this;
+    return (0,_Users_marcinufniarz_Desktop_ASCENDynamicsNFP_ascendcoopplatform_node_modules_babel_runtime_helpers_esm_asyncToGenerator_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function* () {
+      const authUser = yield (0,rxjs__WEBPACK_IMPORTED_MODULE_3__.firstValueFrom)(_this.store.select(_state_selectors_auth_selectors__WEBPACK_IMPORTED_MODULE_1__.selectAuthUser));
+      if (!authUser) {
+        // Redirect to login if not authenticated
+        _this.router.navigate(["/auth/login"]);
+        return false;
+      } else if (authUser && !authUser.emailVerified) {
+        // Send verification email if the user is not verified
+        if (authUser.email) {
+          _this.store.dispatch(_state_actions_auth_actions__WEBPACK_IMPORTED_MODULE_2__.sendVerificationMail({
+            email: authUser.email
+          }));
+        }
+        // Sign out the user and redirect to login
+        _this.store.dispatch(_state_actions_auth_actions__WEBPACK_IMPORTED_MODULE_2__.signOut());
+        return false;
+      }
+      return true;
+    })();
+  }
+}
+_AuthGuard = AuthGuard;
+_AuthGuard.ɵfac = function AuthGuard_Factory(t) {
+  return new (t || _AuthGuard)(_angular_core__WEBPACK_IMPORTED_MODULE_4__["ɵɵinject"](_ngrx_store__WEBPACK_IMPORTED_MODULE_5__.Store), _angular_core__WEBPACK_IMPORTED_MODULE_4__["ɵɵinject"](_angular_router__WEBPACK_IMPORTED_MODULE_6__.Router));
+};
+_AuthGuard.ɵprov = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_4__["ɵɵdefineInjectable"]({
+  token: _AuthGuard,
+  factory: _AuthGuard.ɵfac,
+  providedIn: "root"
+});
+
 /***/ })
 
 }]);

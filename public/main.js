@@ -29,7 +29,7 @@ const routes = [{
 }, {
   path: "account",
   // Used to organize routes in "/account" folder.
-  loadChildren: () => Promise.all(/*! import() */[__webpack_require__.e("default-src_app_core_services_meta_service_ts-src_app_shared_shared_module_ts"), __webpack_require__.e("src_app_modules_account_account_module_ts")]).then(__webpack_require__.bind(__webpack_require__, /*! ./modules/account/account.module */ 1797)).then(m => m.AccountModule)
+  loadChildren: () => Promise.all(/*! import() */[__webpack_require__.e("default-src_app_core_services_meta_service_ts-src_app_shared_shared_module_ts"), __webpack_require__.e("common"), __webpack_require__.e("src_app_modules_account_account_module_ts")]).then(__webpack_require__.bind(__webpack_require__, /*! ./modules/account/account.module */ 1797)).then(m => m.AccountModule)
 }, {
   path: "auth",
   // Used to organize routes in "/auth" folder.
@@ -37,7 +37,7 @@ const routes = [{
 }, {
   path: "listings",
   // Used to organize routes in "/listings" folder.
-  loadChildren: () => Promise.all(/*! import() */[__webpack_require__.e("default-src_app_core_services_meta_service_ts-src_app_shared_shared_module_ts"), __webpack_require__.e("src_app_modules_listing_listing_module_ts")]).then(__webpack_require__.bind(__webpack_require__, /*! ./modules/listing/listing.module */ 3461)).then(m => m.ListingModule)
+  loadChildren: () => Promise.all(/*! import() */[__webpack_require__.e("default-src_app_core_services_meta_service_ts-src_app_shared_shared_module_ts"), __webpack_require__.e("common"), __webpack_require__.e("src_app_modules_listing_listing_module_ts")]).then(__webpack_require__.bind(__webpack_require__, /*! ./modules/listing/listing.module */ 3461)).then(m => m.ListingModule)
 }];
 // Router options
 const routerOptions = {
@@ -1883,11 +1883,13 @@ class MenuComponent {
       title: this.translate.instant("menu.signup"),
       url: "/auth/signup",
       icon: "person-add"
-    }, {
-      title: this.translate.instant("menu.groups"),
-      url: "/account/group-list",
-      icon: "business"
-    }];
+    }
+    // {
+    //   title: this.translate.instant("menu.groups"),
+    //   url: "/account/group-list",
+    //   icon: "business",
+    // },
+    ];
   }
   setUserMenuItems() {
     var _this$user;
@@ -1969,8 +1971,8 @@ _MenuComponent.ɵcmp = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_4__["
   type: _MenuComponent,
   selectors: [["app-menu"]],
   decls: 19,
-  vars: 3,
-  consts: [["contentId", "main-content"], ["side", "start", "contentId", "main-content", "type", "overlay"], [1, "menu-toolbar"], [1, "toolbar-content"], ["src", "assets/icon/logo.png", "alt", "ASCENDynamics Logo", 1, "toolbar-logo"], ["color", "primary", "translate", ""], ["auto-hide", "false"], [4, "ngFor", "ngForOf"], ["style", "cursor: pointer", "lines", "none", "detail", "false", 3, "click", 4, "ngIf"], ["lines", "none", "target", "_blank", "class", "project-item", 3, "href", 4, "ngFor", "ngForOf"], ["id", "main-content"], ["lines", "none", "detail", "false", "routerLinkActive", "selected", 3, "routerLink", 4, "ngIf"], ["lines", "none", "detail", "false", "routerLinkActive", "selected", 3, "routerLink"], ["aria-hidden", "true", "slot", "start", 3, "name"], ["fill", "outline", "slot", "end", 3, "routerLink", "click", 4, "ngIf"], ["fill", "outline", "slot", "end", 3, "click", "routerLink"], ["lines", "none", "detail", "false", 2, "cursor", "pointer", 3, "click"], ["aria-hidden", "true", "slot", "start", "name", "ear-outline"], ["lines", "none", "target", "_blank", 1, "project-item", 3, "href"]],
+  vars: 4,
+  consts: [["contentId", "main-content", 3, "disabled"], ["side", "start", "contentId", "main-content", "type", "overlay"], [1, "menu-toolbar"], [1, "toolbar-content"], ["src", "assets/icon/logo.png", "alt", "ASCENDynamics Logo", 1, "toolbar-logo"], ["color", "primary", "translate", ""], ["auto-hide", "false"], [4, "ngFor", "ngForOf"], ["style", "cursor: pointer", "lines", "none", "detail", "false", 3, "click", 4, "ngIf"], ["lines", "none", "target", "_blank", "class", "project-item", 3, "href", 4, "ngFor", "ngForOf"], ["id", "main-content"], ["lines", "none", "detail", "false", "routerLinkActive", "selected", 3, "routerLink", 4, "ngIf"], ["lines", "none", "detail", "false", "routerLinkActive", "selected", 3, "routerLink"], ["aria-hidden", "true", "slot", "start", 3, "name"], ["fill", "outline", "slot", "end", 3, "routerLink", "click", 4, "ngIf"], ["fill", "outline", "slot", "end", 3, "click", "routerLink"], ["lines", "none", "detail", "false", 2, "cursor", "pointer", 3, "click"], ["aria-hidden", "true", "slot", "start", "name", "ear-outline"], ["lines", "none", "target", "_blank", 1, "project-item", 3, "href"]],
   template: function MenuComponent_Template(rf, ctx) {
     if (rf & 1) {
       _angular_core__WEBPACK_IMPORTED_MODULE_4__["ɵɵelementStart"](0, "ion-split-pane", 0)(1, "ion-menu", 1)(2, "ion-header")(3, "ion-toolbar", 2)(4, "div", 3);
@@ -1990,6 +1992,7 @@ _MenuComponent.ɵcmp = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_4__["
       _angular_core__WEBPACK_IMPORTED_MODULE_4__["ɵɵelementEnd"]();
     }
     if (rf & 2) {
+      _angular_core__WEBPACK_IMPORTED_MODULE_4__["ɵɵproperty"]("disabled", !ctx.user);
       _angular_core__WEBPACK_IMPORTED_MODULE_4__["ɵɵadvance"](11);
       _angular_core__WEBPACK_IMPORTED_MODULE_4__["ɵɵproperty"]("ngForOf", ctx.menuPages);
       _angular_core__WEBPACK_IMPORTED_MODULE_4__["ɵɵadvance"]();

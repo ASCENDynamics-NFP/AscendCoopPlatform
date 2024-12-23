@@ -19,6 +19,10 @@
 ***********************************************************************************************/
 import {Component, Input} from "@angular/core";
 import {Listing} from "../../../../../../models/listing.model";
+import {serverTimestamp} from "firebase/firestore";
+import * as ListingsActions from "../../../../../../state/actions/listings.actions";
+import {AppState} from "../../../../../../state/app.state";
+import {Store} from "@ngrx/store";
 
 @Component({
   selector: "app-hero",
@@ -30,7 +34,7 @@ export class HeroComponent {
   @Input() isOwner: boolean = false;
   @Input() showButtons: boolean = true;
 
-  constructor() {}
+  constructor(private store: Store<AppState>) {}
 
   getCities(): string {
     if (this.listing.remote) {
@@ -46,4 +50,44 @@ export class HeroComponent {
       .map((address) => `${address?.city}, ${address?.country}`)
       .join(", ");
   }
+
+  togglePublishStatus() {
+    if (this.listing) {
+      const newStatus = this.listing.status === "active" ? "draft" : "active";
+      const updatedListing = {
+        ...this.listing,
+        status: newStatus,
+        lastModifiedAt: serverTimestamp(),
+      } as Listing;
+      this.store.dispatch(
+        ListingsActions.updateListing({listing: updatedListing}),
+      );
+    }
+  }
+
+  // async deleteListing() {
+  //   const alert = await this.alertController.create({
+  //     header: "Confirm Deletion",
+  //     message: "Are you sure you want to delete this listing?",
+  //     buttons: [
+  //       {
+  //         text: "Cancel",
+  //         role: "cancel",
+  //       },
+  //       {
+  //         text: "Delete",
+  //         role: "destructive",
+  //         handler: () => {
+  //           if (this.listingId) {
+  //             this.store.dispatch(
+  //               ListingsActions.deleteListing({id: this.listingId}),
+  //             );
+  //           }
+  //         },
+  //       },
+  //     ],
+  //   });
+
+  //   await alert.present();
+  // }
 }

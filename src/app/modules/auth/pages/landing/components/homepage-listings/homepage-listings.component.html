@@ -23,24 +23,34 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ion-card class="listing-card" *ngFor="let listing of listings">
       <ion-card-header>
         <div class="listing-header">
-          <img
-            [src]="listing.iconImage || 'assets/default-icon.png'"
-            alt="Organization Icon"
-            class="listing-icon"
-          />
-          <div class="listing-info">
-            <ion-card-title>{{ listing.title }}</ion-card-title>
-            <ion-card-subtitle>{{ listing.organization }}</ion-card-subtitle>
+          <div class="listing-main">
+            <img
+              [src]="listing.iconImage || 'assets/icon/logo.png'"
+              alt="Organization Icon"
+              class="listing-icon"
+            />
+            <div class="listing-info">
+              <ion-card-title>{{ listing.title }}</ion-card-title>
+              <ion-card-subtitle>{{ listing.organization }}</ion-card-subtitle>
+            </div>
           </div>
-          <div class="listing-status" *ngIf="listing.status === 'active'">
-            <ion-badge color="primary">Actively Seeking</ion-badge>
-          </div>
+          <ion-badge *ngIf="listing.status === 'active'" class="status-badge">
+            {{
+              listing.type === "volunteer"
+                ? "Actively Seeking"
+                : "Actively Hiring"
+            }}
+          </ion-badge>
         </div>
       </ion-card-header>
 
       <ion-card-content>
-        <p class="listing-description">{{ listing.description }}</p>
-
+        <p class="listing-description">
+          {{
+            (listing.description | slice: 0 : 200) +
+              (listing.description.length > 200 ? "..." : "")
+          }}
+        </p>
         <div class="listing-footer">
           <div class="listing-details">
             <ion-chip>
@@ -62,13 +72,16 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               <ion-label>Posted {{ listing.createdAt | timeAgo }}</ion-label>
             </ion-chip>
           </div>
-
           <div class="listing-actions">
-            <ion-button fill="outline">
+            <!-- <ion-button fill="outline" class="save-btn" size="small">
               <ion-icon name="bookmark"></ion-icon>
               Save
-            </ion-button>
-            <ion-button>
+            </ion-button> -->
+            <ion-button
+              class="apply-btn"
+              size="small"
+              [routerLink]="['/listings', listing.id, 'apply']"
+            >
               <ion-icon name="send"></ion-icon>
               Apply
             </ion-button>
@@ -78,6 +91,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     </ion-card>
   </div>
   <div class="more-opportunities">
-    <a href="/listings" class="more-link">Find More Opportunities &rarr;</a>
+    <a href="/listings" class="more-link">Find More Opportunities →</a>
   </div>
 </div>

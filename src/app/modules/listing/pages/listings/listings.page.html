@@ -53,7 +53,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
   <ion-list>
     <ion-item
-      *ngFor="let listing of listings$ | async"
+      *ngFor="let listing of paginatedListings$ | async"
       [routerLink]="['/listings', listing.id]"
     >
       <ion-thumbnail slot="start">
@@ -86,4 +86,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>
+
+  <!-- Pagination Component -->
+  <ion-footer>
+    <app-pagination
+      [totalItems]="(listings$ | async)?.length || 0"
+      [pageSize]="pageSize"
+      [maxVisiblePages]="5"
+      (pageChange)="goToPage($event)"
+    ></app-pagination>
+  </ion-footer>
 </ion-content>

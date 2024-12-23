@@ -25,31 +25,38 @@ import {ListingEditPage} from "./pages/listing-edit/listing-edit.page";
 import {ListingCreatePage} from "./pages/listing-create/listing-create.page";
 import {ApplicantsPage} from "./relatedAccount/pages/applicants/applicants.page";
 import {ApplyPage} from "./relatedAccount/pages/apply/apply.page";
+import {AuthGuard} from "../../core/guards/auth.guard";
 
 const routes: Routes = [
   {
     path: "",
     component: ListingsPage,
+    canActivate: [AuthGuard],
   },
   {
     path: "create",
     component: ListingCreatePage,
+    canActivate: [AuthGuard],
   },
   {
     path: ":id",
     component: ListingDetailPage,
+    canActivate: [AuthGuard],
   },
   {
     path: ":id/applicants",
     component: ApplicantsPage,
+    canActivate: [AuthGuard],
   },
   {
     path: ":id/apply",
     component: ApplyPage,
+    canActivate: [AuthGuard],
   },
   {
     path: ":id/edit",
     component: ListingEditPage,
+    canActivate: [AuthGuard],
   },
 ];
 

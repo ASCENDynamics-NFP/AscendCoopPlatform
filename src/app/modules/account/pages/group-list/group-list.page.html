@@ -24,13 +24,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ion-searchbar [debounce]="300" (ionInput)="search($event)"></ion-searchbar>
   </ion-toolbar>
 </ion-header>
+
 <ion-content [fullscreen]="true">
   <ion-list>
     <ng-container
-      *ngIf="(accountList$ | async)?.length; else noResultsTemplate"
+      *ngIf="(paginatedAccounts$ | async)?.length; else noResultsTemplate"
     >
       <ion-item
-        *ngFor="let item of accountList$ | async; let i = index"
+        *ngFor="let item of paginatedAccounts$ | async"
         [routerLink]="['/account/', item.id]"
         button
       >
@@ -50,17 +51,21 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           slot="end"
           mode="md"
           expand="block"
-          (click)="
-                    $event.stopPropagation();
-                    $event.preventDefault();
-                    sendRequest(item);
-                  "
+          (click)="$event.stopPropagation();$event.preventDefault();sendRequest(item);"
         >
           Send Request
         </ion-button>
       </ion-item>
     </ng-container>
   </ion-list>
+
+  <app-pagination
+    [totalItems]="(totalItems$ | async) || 0"
+    [pageSize]="pageSize"
+    [maxVisiblePages]="5"
+    (pageChange)="goToPage($event)"
+  ></app-pagination>
+
   <ng-template #noResultsTemplate>
     <ion-item>
       <ion-label class="ion-text-center">

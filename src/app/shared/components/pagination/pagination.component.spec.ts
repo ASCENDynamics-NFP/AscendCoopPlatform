@@ -17,38 +17,27 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-.tabs {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  margin-bottom: 1rem;
-  border-bottom: 2px solid var(--ion-color-primary);
-}
+import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
+import {IonicModule} from "@ionic/angular";
 
-.tab-link {
-  flex: 1 1 auto;
-  padding: 0.75rem 1rem;
-  text-align: center;
-  text-decoration: none;
-  color: var(--ion-color-primary);
-  cursor: pointer;
-  // border: 1px solid var(--ion-color-primary);
-  border-radius: 4px 4px 0 0;
-  margin: 0 2px;
-  // background-color: var(--ion-color-light);
-}
+import {PaginationComponent} from "./pagination.component";
 
-.tab-link:hover,
-.tab-link:focus,
-.tab-link.active {
-  background-color: var(--ion-color-primary);
-  color: white;
-  outline: none;
-}
+describe("PaginationComponent", () => {
+  let component: PaginationComponent;
+  let fixture: ComponentFixture<PaginationComponent>;
 
-@media (max-width: 600px) {
-  .tab-link {
-    flex: 1 1 100%;
-    margin-bottom: 2px;
-  }
-}
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [PaginationComponent],
+      imports: [IonicModule.forRoot()],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(PaginationComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
+
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

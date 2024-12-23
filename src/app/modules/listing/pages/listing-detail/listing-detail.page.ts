@@ -22,15 +22,13 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {Store} from "@ngrx/store";
-import {AlertController} from "@ionic/angular";
 import {Observable, Subscription, combineLatest} from "rxjs";
-import {first, map} from "rxjs/operators";
+import {map} from "rxjs/operators";
 import {Listing} from "../../../../models/listing.model";
 import * as ListingsActions from "../../../../state/actions/listings.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {AppState} from "../../../../state/app.state";
 import {selectListingById} from "../../../../state/selectors/listings.selectors";
-import {serverTimestamp} from "firebase/firestore";
 import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
@@ -45,7 +43,6 @@ export class ListingDetailPage implements OnInit {
   private listingId: string;
 
   constructor(
-    private alertController: AlertController,
     private metaService: MetaService,
     private store: Store<AppState>,
     private route: ActivatedRoute,
@@ -141,47 +138,5 @@ export class ListingDetailPage implements OnInit {
       this.subscription.unsubscribe();
       this.subscription = null;
     }
-  }
-
-  async deleteListing() {
-    const alert = await this.alertController.create({
-      header: "Confirm Deletion",
-      message: "Are you sure you want to delete this listing?",
-      buttons: [
-        {
-          text: "Cancel",
-          role: "cancel",
-        },
-        {
-          text: "Delete",
-          role: "destructive",
-          handler: () => {
-            if (this.listingId) {
-              this.store.dispatch(
-                ListingsActions.deleteListing({id: this.listingId}),
-              );
-            }
-          },
-        },
-      ],
-    });
-
-    await alert.present();
-  }
-
-  togglePublishStatus() {
-    this.listing$.pipe(first()).subscribe(async (listing) => {
-      if (listing) {
-        const newStatus = listing.status === "active" ? "draft" : "active";
-        const updatedListing = {
-          ...listing,
-          status: newStatus,
-          lastModifiedAt: serverTimestamp(),
-        } as Listing;
-        this.store.dispatch(
-          ListingsActions.updateListing({listing: updatedListing}),
-        );
-      }
-    });
   }
 }

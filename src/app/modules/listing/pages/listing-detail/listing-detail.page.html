@@ -228,21 +228,5 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         </ion-col>
       </ion-row>
     </ion-grid>
-    <div class="bottom-actions" *ngIf="isOwner$ | async">
-      <ion-button
-        fill="outline"
-        [routerLink]="['/listings', listing.id, 'edit']"
-      >
-        <ion-icon name="pencil-outline" slot="start"></ion-icon>
-        Edit
-      </ion-button>
-      <ion-button (click)="togglePublishStatus()" color="primary">
-        <ion-icon
-          [name]="listing.status === 'active' ? 'pencil-outline' : 'cloud-upload-outline'"
-          slot="start"
-        ></ion-icon>
-        {{ listing.status === 'active' ? 'Unpublish' : 'Publish' }} Listing
-      </ion-button>
-    </div>
   </ng-container>
 </ion-content>

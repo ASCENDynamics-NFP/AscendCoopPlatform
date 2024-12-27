@@ -24,6 +24,7 @@ import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import {EventContext} from "firebase-functions";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
+import {geocodeAddress} from "../../../../utils/geocoding"; // Import your geocode utility
 
 if (!admin.apps.length) {
   admin.initializeApp();
@@ -33,7 +34,7 @@ const db = admin.firestore();
 
 /**
  * Firebase Cloud Function trigger that handles updates to listing documents.
- * Updates all related relatedListing documents when a listing is modified.
+ * Updates all related documents when a listing is modified and geocodes addresses if they've changed.
  */
 export const onUpdateListing = functions.firestore
   .document("listings/{listingId}")
@@ -41,9 +42,9 @@ export const onUpdateListing = functions.firestore
 
 /**
  * Handles updates to a listing document in Firestore.
- * When a listing is updated, this function maintains bidirectional data consistency by:
- * 1. Updating all relatedAccount documents in the `listings/{listingId}/relatedAccounts` collection
- * 2. Updating all relatedListing documents in the `accounts/{accountId}/relatedListings` collection
+ * 1. Check for address changes; if changed, geocode each address and update the listing doc.
+ * 2. Update all relatedAccount docs in `listings/{listingId}/relatedAccounts`
+ * 3. Update all relatedListing docs in `accounts/{accountId}/relatedListings`
  * Fresh account data is fetched to ensure accuracy of the updates.
  *
  * @param {functions.Change<QueryDocumentSnapshot>} change - Contains both the previous and current versions of the document
@@ -58,6 +59,71 @@ async function handleListingUpdate(
   const updatedListing = change.after.data();
   const previousListing = change.before.data();
 
+  // -----------------------
+  // 1) Address change logic
+  // -----------------------
+  const addressesBefore = previousListing.contactInformation.addresses || [];
+  const addressesAfter = updatedListing.contactInformation.addresses || [];
+  let addressesNeedUpdate = false;
+
+  // Compare lengths
+  if (addressesBefore.length !== addressesAfter.length) {
+    addressesNeedUpdate = true;
+  } else {
+    // Deep-compare fields in each address if you want thorough checks
+    addressesNeedUpdate = addressesBefore.some((addr: any, i: number) => {
+      const afterAddr = addressesAfter[i];
+      return (
+        addr.street !== afterAddr.street ||
+        addr.city !== afterAddr.city ||
+        addr.state !== afterAddr.state ||
+        addr.country !== afterAddr.country
+      );
+    });
+  }
+
+  // If addresses changed, geocode them
+  if (addressesNeedUpdate) {
+    logger.info(
+      `Listing addresses changed; attempting geocode for ${listingId}...`,
+    );
+
+    const newAddresses = await Promise.all(
+      addressesAfter.map(async (addr: any) => {
+        // Skip if no actual address data
+        if (!addr.street && !addr.city && !addr.state && !addr.country) {
+          return addr;
+        }
+
+        // Build string like "123 Main St, Springfield, IL, USA"
+        const parts = [addr.street, addr.city, addr.state, addr.country]
+          .filter(Boolean)
+          .join(", ");
+
+        // Call the geocoding utility
+        const geocoded = await geocodeAddress(parts);
+        if (geocoded) {
+          return {
+            ...addr,
+            formatted: geocoded.formatted_address,
+            geopoint: new admin.firestore.GeoPoint(geocoded.lat, geocoded.lng),
+          };
+        } else {
+          return addr; // fallback to original if geocoding fails
+        }
+      }),
+    );
+
+    // Update the listing doc with newly geocoded addresses
+    await change.after.ref.update({
+      contactInformation: {addresses: newAddresses},
+    });
+    logger.info(`Geocoded addresses for listing ${listingId}`);
+  }
+
+  // ----------------------------
+  // 2) Relationship update logic
+  // ----------------------------
   // Check specific fields that affect relatedAccounts
   const hasAccountChanges = [
     "name",
@@ -77,11 +143,13 @@ async function handleListingUpdate(
     "status",
   ].some((field) => previousListing[field] !== updatedListing[field]);
 
+  // If no relevant changes for relationships, we can skip the update
   if (!hasAccountChanges && !hasListingChanges) {
     logger.info("No relevant changes detected for relationship documents");
     return;
   }
 
+  // Proceed with existing logic to update related documents
   try {
     const relatedAccountsSnapshot = await db
       .collection("listings")
@@ -101,6 +169,7 @@ async function handleListingUpdate(
 
       const account = accountDoc.data();
 
+      // Build updates for the relatedAccount
       const relatedAccountUpdate = {
         id: accountId,
         listingId: listingId,
@@ -114,6 +183,7 @@ async function handleListingUpdate(
         lastModifiedBy: updatedListing.lastModifiedBy,
       };
 
+      // Build updates for the relatedListing
       const relatedListingUpdate = {
         id: listingId,
         accountId: accountId,
@@ -128,6 +198,7 @@ async function handleListingUpdate(
         lastModifiedBy: updatedListing.lastModifiedBy,
       };
 
+      // Update both
       return Promise.all([
         db
           .collection("listings")

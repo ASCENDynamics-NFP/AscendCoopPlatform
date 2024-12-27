@@ -26,6 +26,10 @@
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
+              "src/favicon.ico",
+              "src/manifest.json",
+              "src/robots.txt",
+              "src/sitemap.xml",
               {
                 "glob": "**/*",
                 "input": "src/assets",

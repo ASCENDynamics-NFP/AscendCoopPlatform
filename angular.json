@@ -19,6 +19,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
+            "allowedCommonJsDependencies": ["deepmerge"],
             "outputPath": "public",
             "index": "src/index.html",
             "main": "src/main.ts",
@@ -38,7 +39,7 @@
               {
                 "glob": "**/*.svg",
                 "input": "node_modules/ionicons/dist/ionicons/svg",
-                "output": "./svg"
+                "output": "assets/svg"
               }
             ],
             "styles": ["src/theme/variables.scss", "src/global.scss"],
@@ -54,8 +55,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "4kb",
+                  "maximumError": "5kb"
                 }
               ],
               "fileReplacements": [
@@ -84,7 +85,6 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "app:build:production",
               "buildTarget": "app:build:production"
             },
             "development": {
@@ -119,7 +119,7 @@
               {
                 "glob": "**/*.svg",
                 "input": "node_modules/ionicons/dist/ionicons/svg",
-                "output": "./svg"
+                "output": "assets/svg"
               }
             ],
             "styles": ["src/theme/variables.scss", "src/global.scss"],

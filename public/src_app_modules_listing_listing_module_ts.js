@@ -1278,12 +1278,12 @@ class ListingCreatePage {
       title: "Create Listing | ASCENDynamics NFP",
       description: "Create a listing to enhance visibility and engagement.",
       url: "https://app.ASCENDynamics.org/listings",
-      image: "https://app.ASCENDynamics.org/assets/icon/logo.png"
+      image: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
     }, {
       card: "summary_large_image",
       title: "Create Listing",
       description: "Create your listing on ASCENDynamics NFP to reach a wider audience.",
-      image: "https://app.ASCENDynamics.org/assets/icon/logo.png"
+      image: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
     });
   }
   onSubmit(formValue) {
@@ -1982,12 +1982,12 @@ class ListingDetailPage {
             title: `${listing.title} | ASCENDynamics NFP`,
             description: `Explore the ${listing.type} opportunity at ${listing.organization}. ${listing.description}`,
             url: `https://app.ASCENDynamics.org/listing/${listing.id}`,
-            image: listing.heroImage || listing.iconImage || "https://app.ASCENDynamics.org/assets/icon/logo.png"
+            image: listing.heroImage || listing.iconImage || "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
           }, {
             card: "summary_large_image",
             title: listing.title,
             description: listing.description,
-            image: listing.heroImage || listing.iconImage || "https://app.ASCENDynamics.org/assets/icon/logo.png"
+            image: listing.heroImage || listing.iconImage || "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
           });
         }
       },
@@ -1997,12 +1997,12 @@ class ListingDetailPage {
           title: "Discover Opportunities | ASCENDynamics NFP",
           description: "Explore a variety of opportunities to contribute and grow your skills. Join our community today!",
           url: `https://app.ASCENDynamics.org/listing/${listingId}`,
-          image: "https://app.ASCENDynamics.org/assets/icon/logo.png"
+          image: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
         }, {
           card: "summary_large_image",
           title: "Discover Opportunities",
           description: "Explore a variety of opportunities to contribute and grow your skills. Join our community today!",
-          image: "https://app.ASCENDynamics.org/assets/icon/logo.png"
+          image: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
         });
       }
     });
@@ -2111,12 +2111,12 @@ class ListingEditPage {
       title: "Edit Listing | ASCENDynamics NFP",
       description: "Make updates to your listing to enhance visibility and engagement.",
       url: "https://app.ASCENDynamics.org/listings",
-      image: "https://app.ASCENDynamics.org/assets/icon/logo.png"
+      image: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
     }, {
       card: "summary_large_image",
       title: "Edit Listing",
       description: "Update your listing on ASCENDynamics NFP to reach a wider audience.",
-      image: "https://app.ASCENDynamics.org/assets/icon/logo.png"
+      image: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
     });
   }
   onSubmit(listing) {
@@ -2344,12 +2344,12 @@ class ListingsPage {
       title: "Volunteer Listings | ASCENDynamics NFP",
       description: "Browse and apply for volunteer roles on ASCENDynamics NFP.",
       url: "https://app.ASCENDynamics.org/listings",
-      image: "https://app.ASCENDynamics.org/assets/icon/logo.png"
+      image: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
     }, {
       card: "summary",
       title: "Volunteer Listings | ASCENDynamics NFP",
       description: "Find opportunities to contribute and grow your skills with ASCENDynamics NFP.",
-      image: "https://app.ASCENDynamics.org/assets/icon/logo.png"
+      image: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
     });
   }
   ngOnInit() {
@@ -2714,12 +2714,12 @@ class ApplicantsPage {
       title: "Listing Applicants | ASCENDynamics NFP",
       description: "Review and manage all applicants for your listing to find the right candidates.",
       url: "https://app.ASCENDynamics.org/listing/applicants",
-      image: "https://app.ASCENDynamics.org/assets/icon/logo.png"
+      image: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
     }, {
       card: "summary_large_image",
       title: "Listing Applicants",
       description: "Manage applicants for your listing on ASCENDynamics NFP.",
-      image: "https://app.ASCENDynamics.org/assets/icon/logo.png"
+      image: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
     });
     this.setPaginationCalculations();
   }
@@ -3265,12 +3265,12 @@ class ApplyPage {
       title: "Apply to Listing | ASCENDynamics NFP",
       description: "Fill out your application and connect with organizations to make a difference.",
       url: "https://app.ASCENDynamics.org/listings",
-      image: "https://app.ASCENDynamics.org/assets/icon/logo.png"
+      image: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
     }, {
       card: "summary_large_image",
       title: "Apply to Listing",
       description: "Submit your application to this listing and start making an impact today.",
-      image: "https://app.ASCENDynamics.org/assets/icon/logo.png"
+      image: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
     });
   }
   onFileSelect(event, type) {

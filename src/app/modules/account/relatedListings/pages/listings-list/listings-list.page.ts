@@ -151,14 +151,16 @@ export class ListingsListPage implements OnInit {
         description:
           "Browse and apply for volunteer roles on ASCENDynamics NFP.",
         url: "https://app.ASCENDynamics.org/listings",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
       {
         card: "summary",
         title: "Volunteer Listings | ASCENDynamics NFP",
         description:
           "Find opportunities to contribute and grow your skills with ASCENDynamics NFP.",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
   }

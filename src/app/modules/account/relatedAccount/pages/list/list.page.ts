@@ -148,13 +148,15 @@ export class ListPage implements OnInit {
         title: title,
         description: description,
         url: `https://app.ASCENDynamics.org/account/${this.accountId}/related/${this.listType}`,
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
       {
         card: "summary_large_image",
         title: title,
         description: description,
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
   }

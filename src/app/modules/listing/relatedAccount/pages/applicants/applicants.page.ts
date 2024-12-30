@@ -128,13 +128,15 @@ export class ApplicantsPage implements OnInit {
         description:
           "Review and manage all applicants for your listing to find the right candidates.",
         url: "https://app.ASCENDynamics.org/listing/applicants",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
       {
         card: "summary_large_image",
         title: "Listing Applicants",
         description: "Manage applicants for your listing on ASCENDynamics NFP.",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
 

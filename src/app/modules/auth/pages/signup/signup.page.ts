@@ -70,14 +70,16 @@ export class SignupPage implements OnInit {
         description:
           "Join ASCENDynamics NFP to start making an impact in your community today.",
         url: "https://app.ASCENDynamics.org/signup",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
       {
         card: "summary",
         title: "Sign Up | ASCENDynamics NFP",
         description:
           "Become part of ASCENDynamics NFP and start your volunteering journey.",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
   }

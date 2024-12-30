@@ -93,7 +93,7 @@ export class ListingDetailPage implements OnInit {
               image:
                 listing.heroImage ||
                 listing.iconImage ||
-                "https://app.ASCENDynamics.org/assets/icon/logo.png",
+                "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
             },
             {
               card: "summary_large_image",
@@ -102,7 +102,7 @@ export class ListingDetailPage implements OnInit {
               image:
                 listing.heroImage ||
                 listing.iconImage ||
-                "https://app.ASCENDynamics.org/assets/icon/logo.png",
+                "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
             },
           );
         }
@@ -118,14 +118,16 @@ export class ListingDetailPage implements OnInit {
             description:
               "Explore a variety of opportunities to contribute and grow your skills. Join our community today!",
             url: `https://app.ASCENDynamics.org/listing/${listingId}`,
-            image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+            image:
+              "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
           },
           {
             card: "summary_large_image",
             title: "Discover Opportunities",
             description:
               "Explore a variety of opportunities to contribute and grow your skills. Join our community today!",
-            image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+            image:
+              "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
           },
         );
       },

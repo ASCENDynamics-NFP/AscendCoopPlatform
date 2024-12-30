@@ -71,14 +71,16 @@ export class LandingPage {
         description:
           "Find local nonprofits and volunteer opportunities with ASCENDynamics NFP.",
         url: "https://app.ASCENDynamics.org/",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
       {
         card: "summary_large_image",
         title: "ASCENDynamics NFP | Volunteer Opportunities",
         description:
           "Explore meaningful ways to contribute to your community with ASCENDynamics NFP.",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
   }

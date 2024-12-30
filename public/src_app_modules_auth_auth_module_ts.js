@@ -556,12 +556,12 @@ class LandingPage {
       title: "ASCENDynamics NFP | Volunteer Opportunities",
       description: "Find local nonprofits and volunteer opportunities with ASCENDynamics NFP.",
       url: "https://app.ASCENDynamics.org/",
-      image: "https://app.ASCENDynamics.org/assets/icon/logo.png"
+      image: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
     }, {
       card: "summary_large_image",
       title: "ASCENDynamics NFP | Volunteer Opportunities",
       description: "Explore meaningful ways to contribute to your community with ASCENDynamics NFP.",
-      image: "https://app.ASCENDynamics.org/assets/icon/logo.png"
+      image: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
     });
   }
   // Open the legal modal (Privacy Policy or Terms of Use)
@@ -776,12 +776,12 @@ class LoginPage {
       title: "Login to ASCENDynamics NFP",
       description: "Access your ASCENDynamics NFP account to stay connected with the community.",
       url: "https://app.ASCENDynamics.org/login",
-      image: "https://app.ASCENDynamics.org/assets/icon/logo.png"
+      image: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
     }, {
       card: "summary",
       title: "Login | ASCENDynamics NFP",
       description: "Stay connected with your volunteering community.",
-      image: "https://app.ASCENDynamics.org/assets/icon/logo.png"
+      image: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
     });
   }
   // Runs when the component is initialized
@@ -1090,12 +1090,12 @@ class SignupPage {
       title: "Sign Up for ASCENDynamics NFP",
       description: "Join ASCENDynamics NFP to start making an impact in your community today.",
       url: "https://app.ASCENDynamics.org/signup",
-      image: "https://app.ASCENDynamics.org/assets/icon/logo.png"
+      image: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
     }, {
       card: "summary",
       title: "Sign Up | ASCENDynamics NFP",
       description: "Become part of ASCENDynamics NFP and start your volunteering journey.",
-      image: "https://app.ASCENDynamics.org/assets/icon/logo.png"
+      image: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media"
     });
   }
   // Initialize form and state selectors in ngOnInit

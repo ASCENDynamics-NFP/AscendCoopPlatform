@@ -5,7 +5,7 @@
     "role": "maintainer",
     "name": "ASCENDynamics NFP",
     "email": "support@ascendynamics.org",
-    "description": "ASCENDynamics NFP is building open-source collaboration platform for worker-owned cooperatives, nonprofits, and private organizations. Our mission is to empower organizations with data-driven decision-making tools, fostering sustainable growth and addressing societal challenges."
+    "description": "ASCENDynamics NFP is building an open-source collaboration platform for worker-owned cooperatives, nonprofits, and private organizations. Our mission is to empower organizations with data-driven decision-making tools, fostering sustainable growth and addressing societal challenges."
   },
   "projects": [
     {
@@ -49,7 +49,7 @@
         "status": "active",
         "name": "Platform Infrastructure Support",
         "description": "Supports ongoing costs for server hosting, database management, and infrastructure maintenance to ensure 24/7 availability and reliability of the ASCENDynamics platform.",
-        "amount": 1000,
+        "amount": 2000,
         "currency": "USD",
         "frequency": "monthly",
         "channels": ["stripe-donation"]
@@ -59,7 +59,7 @@
         "status": "active",
         "name": "Full-Time Developer Sponsorship",
         "description": "Sponsor a full-time developer to contribute to ASCENDynamics' open-source platform, ensuring continuous improvement, updates, and security enhancements.",
-        "amount": 5000,
+        "amount": 7000,
         "currency": "USD",
         "frequency": "monthly",
         "channels": ["stripe-donation"]
@@ -69,7 +69,7 @@
         "status": "active",
         "name": "Part-Time Developer Support",
         "description": "Fund part-time developer contributions to focus on specific features, bug fixes, and enhancements.",
-        "amount": 2000,
+        "amount": 3000,
         "currency": "USD",
         "frequency": "monthly",
         "channels": ["stripe-donation"]
@@ -79,7 +79,7 @@
         "status": "active",
         "name": "Volunteer Engagement Fund",
         "description": "Supports tools, workshops, and events aimed at enhancing volunteer participation, engagement, and onboarding experiences.",
-        "amount": 1500,
+        "amount": 2500,
         "currency": "USD",
         "frequency": "monthly",
         "channels": ["stripe-donation"]
@@ -102,7 +102,7 @@
         "expenses": 200,
         "taxes": 0,
         "currency": "USD",
-        "description": "Initial phase focusing on infrastructure and volunteer management features."
+        "description": "Initial setup and research phase, focusing on laying the groundwork for platform architecture."
       },
       {
         "year": 2021,
@@ -110,7 +110,7 @@
         "expenses": 200,
         "taxes": 0,
         "currency": "USD",
-        "description": "Initial phase focusing on infrastructure and volunteer management features."
+        "description": "Prototype development and initial volunteer onboarding processes."
       },
       {
         "year": 2022,
@@ -118,7 +118,7 @@
         "expenses": 500,
         "taxes": 0,
         "currency": "USD",
-        "description": "Initial funding phase focusing on infrastructure and volunteer management features."
+        "description": "Platform MVP launch with basic collaborative features."
       },
       {
         "year": 2023,
@@ -126,15 +126,15 @@
         "expenses": 600,
         "taxes": 0,
         "currency": "USD",
-        "description": "Expansion of platform features and developer contributions."
+        "description": "Beta release with additional resource management tools."
       },
       {
         "year": 2024,
         "income": 0,
-        "expenses": 600,
+        "expenses": 800,
         "taxes": 0,
         "currency": "USD",
-        "description": "Expansion of platform features and developer contributions."
+        "description": "Implementation of platform features and developer contributions."
       }
     ]
   }

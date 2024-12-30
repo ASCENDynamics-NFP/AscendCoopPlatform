@@ -45,14 +45,16 @@ export class ListingCreatePage {
         title: "Create Listing | ASCENDynamics NFP",
         description: "Create a listing to enhance visibility and engagement.",
         url: "https://app.ASCENDynamics.org/listings",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
       {
         card: "summary_large_image",
         title: "Create Listing",
         description:
           "Create your listing on ASCENDynamics NFP to reach a wider audience.",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
   }

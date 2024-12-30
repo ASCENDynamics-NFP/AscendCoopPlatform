@@ -82,14 +82,16 @@ export class UsersPage implements OnInit, ViewWillEnter {
         description:
           "Discover listings, profiles, and groups that match your search criteria.",
         url: "https://app.ASCENDynamics.org/search",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
       {
         card: "summary_large_image",
         title: "Search Results",
         description:
           "Browse search results and find opportunities that match your interests.",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
   }

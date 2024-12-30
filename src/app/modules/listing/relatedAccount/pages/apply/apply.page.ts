@@ -101,14 +101,16 @@ export class ApplyPage implements OnInit {
         description:
           "Fill out your application and connect with organizations to make a difference.",
         url: "https://app.ASCENDynamics.org/listings",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
       {
         card: "summary_large_image",
         title: "Apply to Listing",
         description:
           "Submit your application to this listing and start making an impact today.",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
   }

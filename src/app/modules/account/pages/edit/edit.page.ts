@@ -59,14 +59,16 @@ export class EditPage implements OnInit {
         description:
           "Access and manage your account details on ASCENDynamics NFP.",
         url: "https://app.ASCENDynamics.org/account",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
       {
         card: "summary",
         title: "Account | ASCENDynamics NFP",
         description:
           "Update your account details and settings on ASCENDynamics NFP.",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
   }

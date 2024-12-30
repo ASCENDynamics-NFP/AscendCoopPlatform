@@ -61,13 +61,15 @@ export class LoginPage implements OnInit {
         description:
           "Access your ASCENDynamics NFP account to stay connected with the community.",
         url: "https://app.ASCENDynamics.org/login",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
       {
         card: "summary",
         title: "Login | ASCENDynamics NFP",
         description: "Stay connected with your volunteering community.",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
   }

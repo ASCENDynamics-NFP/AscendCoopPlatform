@@ -21,4 +21,13 @@ service firebase.storage {
         request.resource.size < 5 * 1024 * 1024; // 5MB
     }
   }
+
+  // Depreciating for 'org' directory to make it more generalized.
+  match /ASCENDynamicsNFP/{allPaths=**} {
+    allow read: if true;
+  }
+
+  match /org/{allPaths=**} {
+    allow read: if true;
+  }
 }

@@ -81,14 +81,16 @@ export class RegistrationPage implements OnInit {
         description:
           "Sign up for ASCENDynamics NFP to explore and connect with impactful opportunities.",
         url: "https://app.ASCENDynamics.org/registration",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
       {
         card: "summary_large_image",
         title: "Join ASCENDynamics NFP",
         description:
           "Sign up to connect with meaningful opportunities and start making a difference.",
-        image: "https://app.ASCENDynamics.org/assets/icon/logo.png",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
   }

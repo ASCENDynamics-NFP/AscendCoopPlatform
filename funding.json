@@ -1,0 +1,141 @@
+{
+  "version": "v1.0.0",
+  "entity": {
+    "type": "organization",
+    "role": "maintainer",
+    "name": "ASCENDynamics NFP",
+    "email": "support@ascendynamics.org",
+    "description": "ASCENDynamics NFP is building open-source collaboration platform for worker-owned cooperatives, nonprofits, and private organizations. Our mission is to empower organizations with data-driven decision-making tools, fostering sustainable growth and addressing societal challenges."
+  },
+  "projects": [
+    {
+      "guid": "ascend-platform",
+      "name": "ASCENDynamics Collaboration Platform",
+      "description": "An open-source platform designed for NGOs, worker cooperatives, and nonprofit organizations to streamline collaboration, manage resources, and track volunteer contributions in real-time.",
+      "webpageUrl": {
+        "url": "https://ASCENDynamics.org/"
+      },
+      "repositoryUrl": {
+        "url": "https://github.com/ASCENDynamics-NFP/AscendCoopPlatform"
+      },
+      "licenses": ["spdx:AGPL-3.0"],
+      "tags": [
+        "collaboration",
+        "nonprofit",
+        "open-source",
+        "platform",
+        "volunteer-management",
+        "data-analytics"
+      ]
+    }
+  ],
+  "funding": {
+    "channels": [
+      {
+        "guid": "direct-bank",
+        "type": "bank",
+        "description": "Direct bank transfers are available upon request for substantial contributions. Please reach out to us directly."
+      },
+      {
+        "guid": "stripe-donation",
+        "type": "payment-provider",
+        "address": "https://buy.stripe.com/bIY5mC9sY1ob4TufYY",
+        "description": "Support our platform via Stripe with secure credit/debit card transactions."
+      }
+    ],
+    "plans": [
+      {
+        "guid": "platform-infrastructure-support",
+        "status": "active",
+        "name": "Platform Infrastructure Support",
+        "description": "Supports ongoing costs for server hosting, database management, and infrastructure maintenance to ensure 24/7 availability and reliability of the ASCENDynamics platform.",
+        "amount": 1000,
+        "currency": "USD",
+        "frequency": "monthly",
+        "channels": ["stripe-donation"]
+      },
+      {
+        "guid": "developer-full-time",
+        "status": "active",
+        "name": "Full-Time Developer Sponsorship",
+        "description": "Sponsor a full-time developer to contribute to ASCENDynamics' open-source platform, ensuring continuous improvement, updates, and security enhancements.",
+        "amount": 5000,
+        "currency": "USD",
+        "frequency": "monthly",
+        "channels": ["stripe-donation"]
+      },
+      {
+        "guid": "developer-part-time",
+        "status": "active",
+        "name": "Part-Time Developer Support",
+        "description": "Fund part-time developer contributions to focus on specific features, bug fixes, and enhancements.",
+        "amount": 2000,
+        "currency": "USD",
+        "frequency": "monthly",
+        "channels": ["stripe-donation"]
+      },
+      {
+        "guid": "volunteer-engagement",
+        "status": "active",
+        "name": "Volunteer Engagement Fund",
+        "description": "Supports tools, workshops, and events aimed at enhancing volunteer participation, engagement, and onboarding experiences.",
+        "amount": 1500,
+        "currency": "USD",
+        "frequency": "monthly",
+        "channels": ["stripe-donation"]
+      },
+      {
+        "guid": "goodwill-plan",
+        "status": "active",
+        "name": "Goodwill Contribution",
+        "description": "A flexible plan where contributors can donate any amount as a gesture of support towards our mission.",
+        "amount": 0,
+        "currency": "USD",
+        "frequency": "one-time",
+        "channels": ["stripe-donation"]
+      }
+    ],
+    "history": [
+      {
+        "year": 2020,
+        "income": 0,
+        "expenses": 200,
+        "taxes": 0,
+        "currency": "USD",
+        "description": "Initial phase focusing on infrastructure and volunteer management features."
+      },
+      {
+        "year": 2021,
+        "income": 0,
+        "expenses": 200,
+        "taxes": 0,
+        "currency": "USD",
+        "description": "Initial phase focusing on infrastructure and volunteer management features."
+      },
+      {
+        "year": 2022,
+        "income": 0,
+        "expenses": 500,
+        "taxes": 0,
+        "currency": "USD",
+        "description": "Initial funding phase focusing on infrastructure and volunteer management features."
+      },
+      {
+        "year": 2023,
+        "income": 0,
+        "expenses": 600,
+        "taxes": 0,
+        "currency": "USD",
+        "description": "Expansion of platform features and developer contributions."
+      },
+      {
+        "year": 2024,
+        "income": 0,
+        "expenses": 600,
+        "taxes": 0,
+        "currency": "USD",
+        "description": "Expansion of platform features and developer contributions."
+      }
+    ]
+  }
+}

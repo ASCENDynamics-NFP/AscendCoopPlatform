@@ -8,6 +8,9 @@
   "etags": {
     "ascendcoopplatform-dev": {
       "extensionInstances": {}
+    },
+    "ascendcoopplatform": {
+      "extensionInstances": {}
     }
   },
   "dataconnectEmulatorConfig": {}

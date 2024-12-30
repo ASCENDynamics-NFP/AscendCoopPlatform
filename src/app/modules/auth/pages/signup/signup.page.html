@@ -185,13 +185,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             </ion-row>
           </form>
 
-          <!-- Display Error Message -->
-          <div *ngIf="(error$ | async) as error" class="error-message">
-            <p>{{ error?.message }}</p>
-          </div>
-
           <!-- Loading Spinner -->
-          <!-- <ion-spinner *ngIf="(loading$ | async)" name="crescent"></ion-spinner> -->
+          <ion-spinner *ngIf="(loading$ | async)" name="crescent"></ion-spinner>
         </div>
       </ion-col>
     </ion-row>

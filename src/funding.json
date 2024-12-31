@@ -23,7 +23,7 @@
       },
       "repositoryUrl": {
         "url": "https://github.com/ASCENDynamics-NFP/AscendCoopPlatform",
-        "wellKnown": "https://github.com/ASCENDynamics-NFP/AscendCoopPlatform/blob/main/.well-known/funding-manifest-urls"
+        "wellKnown": "https://github.com/ASCENDynamics-NFP/AscendCoopPlatform/tree/main/.well-known/funding-manifest-urls"
       },
       "licenses": ["spdx:AGPL-3.0"],
       "tags": [

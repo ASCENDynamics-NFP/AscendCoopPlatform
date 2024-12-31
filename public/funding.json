@@ -1,22 +1,29 @@
 {
   "version": "v1.0.0",
   "entity": {
-    "type": "organization",
+    "type": "organisation",
     "role": "maintainer",
     "name": "ASCENDynamics NFP",
     "email": "support@ascendynamics.org",
-    "description": "ASCENDynamics NFP is building an open-source collaboration platform for worker-owned cooperatives, nonprofits, and private organizations. Our mission is to empower organizations with data-driven decision-making tools, fostering sustainable growth and addressing societal challenges."
+    "phone": "",
+    "description": "ASCENDynamics NFP is building an open-source collaboration platform for worker-owned cooperatives, nonprofits, and private organisations. Our mission is to empower organisations with data-driven decision-making tools, fostering sustainable growth and addressing societal challenges.",
+    "webpageUrl": {
+      "url": "https://app.ascendynamics.org/",
+      "wellKnown": ""
+    }
   },
   "projects": [
     {
       "guid": "ascend-platform",
       "name": "ASCENDynamics Collaboration Platform",
-      "description": "An open-source platform designed for NGOs, worker cooperatives, and nonprofit organizations to streamline collaboration, manage resources, and track volunteer contributions in real-time.",
+      "description": "An open-source platform designed for NGOs, worker cooperatives, and nonprofit organisations to streamline collaboration, manage resources, and track volunteer contributions in real-time.",
       "webpageUrl": {
-        "url": "https://ASCENDynamics.org/"
+        "url": "https://app.ascendynamics.org/",
+        "wellKnown": ""
       },
       "repositoryUrl": {
-        "url": "https://github.com/ASCENDynamics-NFP/AscendCoopPlatform"
+        "url": "https://github.com/ASCENDynamics-NFP/AscendCoopPlatform",
+        "wellKnown": "https://github.com/ASCENDynamics-NFP/AscendCoopPlatform/tree/main/.well-known/funding-manifest-urls"
       },
       "licenses": ["spdx:AGPL-3.0"],
       "tags": [
@@ -34,6 +41,7 @@
       {
         "guid": "direct-bank",
         "type": "bank",
+        "address": "",
         "description": "Direct bank transfers are available upon request for substantial contributions. Please reach out to us directly."
       },
       {

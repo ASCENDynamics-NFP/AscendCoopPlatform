@@ -21,6 +21,7 @@
 
 import {NgModule} from "@angular/core";
 import {RouterModule, Routes, ExtraOptions} from "@angular/router";
+import {FundingJsonComponent} from "./shared/components/funding-json/funding-json.component";
 
 export const routes: Routes = [
   {
@@ -28,6 +29,7 @@ export const routes: Routes = [
     redirectTo: "",
     pathMatch: "full",
   },
+  {path: "funding.json", component: FundingJsonComponent},
   {
     path: "", // Used to remove "/auth" from landing page.
     loadChildren: () =>

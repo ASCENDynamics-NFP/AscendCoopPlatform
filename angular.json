@@ -28,7 +28,6 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
-              "src/funding.json",
               "src/manifest.json",
               "src/robots.txt",
               "src/sitemap.xml",

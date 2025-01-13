@@ -45,6 +45,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <form [formGroup]="signupForm" (ngSubmit)="signup()">
             <ion-row>
               <ion-col class="ion-text-center">
+                <!-- Loading Spinner -->
+                <!-- <ion-spinner *ngIf="(loading$ | async)" name="crescent"></ion-spinner> -->
                 <h1 class="ion-padding-bottom"><b>Sign up</b></h1>
                 <h3 class="ion-padding-bottom">
                   ASCENDynamics NFP is committed to creating a utopian society.
@@ -184,9 +186,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               </ion-col>
             </ion-row>
           </form>
-
-          <!-- Loading Spinner -->
-          <ion-spinner *ngIf="(loading$ | async)" name="crescent"></ion-spinner>
         </div>
       </ion-col>
     </ion-row>

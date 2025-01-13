@@ -25,7 +25,7 @@
   },
   "user": {
     "login": {
-      "title": "Login to ASCENDynamics Platform",
+      "title": "Login",
       "email_label": "Email:",
       "email_error": "Please insert your email",
       "password_label": "Password:",
@@ -37,7 +37,7 @@
       "google_login": "Login with Google"
     },
     "signup": {
-      "title": "Sign Up for ASCENDynamics Platform",
+      "title": "Sign Up",
       "email_label": "Email:",
       "email_error": "Please insert your email",
       "password_label": "Password:",

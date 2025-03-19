@@ -57,3 +57,4 @@ export * from "./database/listings/relatedAccounts/triggers/onUpdate"; // trigge
 
 // Homepage Function
 export * from "./functions/listings/homepage";
+export * from "./functions/contactform";

@@ -20,17 +20,20 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import * as nodemailer from "nodemailer";
+import * as cors from "cors";
 
 // Initialize the Firebase admin SDK
 if (!admin.apps.length) {
   admin.initializeApp();
 }
 
-// Retrieve Gmail credentials from Firebase environment config
+// Configure CORS middleware
+const corsHandler = cors({origin: true});
+
+// Retrieve Gmail credentials from Firebase config
 const gmailEmail = functions.config().gmail.email;
 const gmailPassword = functions.config().gmail.password;
 
-// Create a nodemailer transporter using Gmail SMTP
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -39,58 +42,70 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const submitLead = functions.https.onRequest(async (req, res) => {
-  // Only allow POST requests
-  if (req.method !== "POST") {
-    res.status(405).send("Method Not Allowed");
-    return;
-  }
+export const submitLead = functions.https.onRequest((req, res) => {
+  // Use CORS middleware to allow cross-origin requests
+  corsHandler(req, res, async () => {
+    if (req.method === "OPTIONS") {
+      // Stop preflight requests here
+      res.status(204).send("");
+      return;
+    }
 
-  // Extract parameters from the request body
-  const {name, email, message, from, to} = req.body;
+    // Only accept POST requests
+    if (req.method !== "POST") {
+      res.status(405).send("Method Not Allowed");
+      return;
+    }
 
-  // Validate required fields
-  if (!name || !email || !from || !to) {
-    res.status(400).send("Missing required fields: name, email, from, or to");
-    return;
-  }
+    // Extract parameters from the request body
+    const {name, email, message, from, to} = req.body;
 
-  // Create a lead data object to be stored in Firestore
-  const leadData = {
-    name,
-    email,
-    message: message || "",
-    from,
-    to,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-  };
+    // Validate required fields
+    if (!name || !email || !message || !from || !to) {
+      res.status(400).send("Missing required fields: name, email, from, or to");
+      return;
+    }
 
-  // Prepare email options using the provided parameters
-  const mailOptions = {
-    from: `"${from}" <${gmailEmail}>`, // Display name from the request; actual sender remains your Gmail account
-    to: to, // Recipient email provided in the request
-    subject: "New Lead Submission",
-    text: `You have a new lead submission:
-    
-Name: ${name}
-Email: ${email}
-Message: ${message || "No message provided"}`,
-    html: `<p>You have a new lead submission:</p>
-           <p><strong>Name:</strong> ${name}</p>
-           <p><strong>Email:</strong> ${email}</p>
-           <p><strong>Message:</strong> ${message || "No message provided"}</p>`,
-  };
+    // Create a lead data object to be stored in Firestore
+    const leadData = {
+      name,
+      email,
+      message: message || "",
+      from,
+      to,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
 
-  try {
-    // Send the email
-    await transporter.sendMail(mailOptions);
-    // Save the lead data to Firestore in the "leads" collection
-    await admin.firestore().collection("leads").add(leadData);
-    res
-      .status(200)
-      .send("Lead submitted, email sent, and data saved successfully");
-  } catch (error) {
-    console.error("Error processing submission:", error);
-    res.status(500).send("Error processing submission");
-  }
+    // Prepare email options using the provided parameters
+    const mailOptions = {
+      from: `"${from}" <${gmailEmail}>`,
+      to: to,
+      subject: "New Lead Submission",
+      text: `You have a new lead submission:
+
+    Name: ${name}
+    Email: ${email}
+    Message: ${message || "No message provided"}`,
+      html: `<p>You have a new lead submission:</p>
+                 <p><strong>Name:</strong> ${name}</p>
+                 <p><strong>Email:</strong> ${email}</p>
+                 <p><strong>Message:</strong> ${message || "No message provided"}</p>`,
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error("Error sending email:", error);
+    }
+
+    try {
+      await admin.firestore().collection("leads").add(leadData);
+      res
+        .status(200)
+        .send("Lead submitted, email sent, and data saved successfully");
+    } catch (error) {
+      console.error("Error processing submission:", error);
+      res.status(500).send("Error processing submission");
+    }
+  });
 });

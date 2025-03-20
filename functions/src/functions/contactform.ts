@@ -58,11 +58,14 @@ export const submitLead = functions.https.onRequest((req, res) => {
     }
 
     // Extract parameters from the request body
-    const {name, email, message, from, to} = req.body;
+    const {name, email, phone, inquiry, message, from} = req.body;
 
     // Validate required fields
-    if (!name || !email || !message || !from || !to) {
-      res.status(400).send("Missing required fields: name, email, from, or to");
+    // Here, "phone" and "message" are optional, but "inquiry" is required.
+    if (!name || !email || !inquiry || !from) {
+      res
+        .status(400)
+        .send("Missing required fields: name, email, inquiry, from, or to");
       return;
     }
 
@@ -70,35 +73,44 @@ export const submitLead = functions.https.onRequest((req, res) => {
     const leadData = {
       name,
       email,
+      phone: phone || "",
+      inquiry,
       message: message || "",
       from,
-      to,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
     // Prepare email options using the provided parameters
     const mailOptions = {
       from: `"${from}" <${gmailEmail}>`,
-      to: to,
+      to: gmailEmail,
       subject: "New Lead Submission",
       text: `You have a new lead submission:
 
-    Name: ${name}
-    Email: ${email}
-    Message: ${message || "No message provided"}`,
+Name: ${name}
+Email: ${email}
+Phone: ${phone || "N/A"}
+Reason for Inquiry: ${inquiry}
+Additional Information: ${message || "No message provided"}
+`,
       html: `<p>You have a new lead submission:</p>
-                 <p><strong>Name:</strong> ${name}</p>
-                 <p><strong>Email:</strong> ${email}</p>
-                 <p><strong>Message:</strong> ${message || "No message provided"}</p>`,
+             <p><strong>Name:</strong> ${name}</p>
+             <p><strong>Email:</strong> ${email}</p>
+             <p><strong>Phone:</strong> ${phone || "N/A"}</p>
+             <p><strong>Reason for Inquiry:</strong> ${inquiry}</p>
+             <p><strong>Additional Information:</strong> ${message || "No message provided"}</p>`,
     };
 
     try {
+      // Send the email
       await transporter.sendMail(mailOptions);
     } catch (error) {
       console.error("Error sending email:", error);
+      // We won't return here, because we still want to attempt saving the lead.
     }
 
     try {
+      // Save the lead data to Firestore in the "leads" collection
       await admin.firestore().collection("leads").add(leadData);
       res
         .status(200)

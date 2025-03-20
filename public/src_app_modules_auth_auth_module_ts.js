@@ -906,7 +906,7 @@ _LoginPage.ɵcmp = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_5__["ɵɵ
         return ctx.login();
       });
       _angular_core__WEBPACK_IMPORTED_MODULE_5__["ɵɵelementStart"](13, "ion-row")(14, "ion-col", 11)(15, "h1", 12)(16, "b");
-      _angular_core__WEBPACK_IMPORTED_MODULE_5__["ɵɵtext"](17, "Log In");
+      _angular_core__WEBPACK_IMPORTED_MODULE_5__["ɵɵtext"](17, "Login");
       _angular_core__WEBPACK_IMPORTED_MODULE_5__["ɵɵelementEnd"]()();
       _angular_core__WEBPACK_IMPORTED_MODULE_5__["ɵɵelementStart"](18, "h3", 12);
       _angular_core__WEBPACK_IMPORTED_MODULE_5__["ɵɵtext"](19, " ASCENDynamics NFP is committed to creating a utopian society. ");
@@ -1027,8 +1027,8 @@ function SignupPage_ion_note_23_span_2_Template(rf, ctx) {
 }
 function SignupPage_ion_note_23_Template(rf, ctx) {
   if (rf & 1) {
-    _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelementStart"](0, "ion-note", 23);
-    _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵtemplate"](1, SignupPage_ion_note_23_span_1_Template, 2, 0, "span", 24)(2, SignupPage_ion_note_23_span_2_Template, 2, 0, "span", 24);
+    _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelementStart"](0, "ion-note", 22);
+    _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵtemplate"](1, SignupPage_ion_note_23_span_1_Template, 2, 0, "span", 23)(2, SignupPage_ion_note_23_span_2_Template, 2, 0, "span", 23);
     _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelementEnd"]();
   }
   if (rf & 2) {
@@ -1043,28 +1043,23 @@ function SignupPage_ion_note_23_Template(rf, ctx) {
 }
 function SignupPage_ion_note_27_Template(rf, ctx) {
   if (rf & 1) {
-    _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelementStart"](0, "ion-note", 23);
+    _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelementStart"](0, "ion-note", 22);
     _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵtext"](1, " Password must include at least one uppercase letter, one lowercase letter, one numeric digit, and one special character. ");
     _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelementEnd"]();
   }
 }
 function SignupPage_ion_note_31_Template(rf, ctx) {
   if (rf & 1) {
-    _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelementStart"](0, "ion-note", 23);
+    _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelementStart"](0, "ion-note", 22);
     _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵtext"](1, " Passwords do not match. ");
     _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelementEnd"]();
   }
 }
 function SignupPage_ion_note_43_Template(rf, ctx) {
   if (rf & 1) {
-    _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelementStart"](0, "ion-note", 23);
+    _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelementStart"](0, "ion-note", 22);
     _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵtext"](1, " You must agree to the terms and conditions. ");
     _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelementEnd"]();
-  }
-}
-function SignupPage_ion_spinner_52_Template(rf, ctx) {
-  if (rf & 1) {
-    _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelement"](0, "ion-spinner", 25);
   }
 }
 class SignupPage {
@@ -1164,9 +1159,9 @@ _SignupPage.ɵfac = function SignupPage_Factory(t) {
 _SignupPage.ɵcmp = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵdefineComponent"]({
   type: _SignupPage,
   selectors: [["app-signup"]],
-  decls: 54,
-  vars: 13,
-  consts: [[3, "translucent"], [3, "title"], [3, "fullscreen"], ["collapse", "condense"], [1, "content-center"], ["size", "12", "size-md", "6", 1, "ion-text-center"], [1, "col-container", "ion-padding-bottom"], ["width", "100%", "src", "assets/image/logo/ASCENDynamics NFP-logos_transparent.png", "alt", "ASCENDynamics NFP", 1, "logo"], ["size", "12", "size-md", "6"], [1, "col-container"], [3, "ngSubmit", "formGroup"], [1, "ion-text-center"], [1, "ion-padding-bottom"], ["label", "Email", "label-placement", "floating", "fill", "outline", "type", "email", "inputmode", "email", "formControlName", "email", "placeholder", "email@domain.com"], ["color", "danger", 4, "ngIf"], ["label", "Password", "label-placement", "floating", "fill", "outline", "formControlName", "password", "type", "password", "placeholder", "Password", "minlength", "8"], ["label", "Confirm Password", "label-placement", "floating", "fill", "outline", "formControlName", "confirmPassword", "type", "password", "placeholder", "Confirm Password", "minlength", "8"], ["labelPlacement", "end", "formControlName", "agreedToTerms"], [1, "ion-padding"], [3, "click"], ["type", "submit", "expand", "block", "strong", "true", "translate", "", 1, "ion-margin-top", 2, "width", "100%", 3, "disabled"], ["translate", "", 3, "click"], ["name", "crescent", 4, "ngIf"], ["color", "danger"], [4, "ngIf"], ["name", "crescent"]],
+  decls: 52,
+  vars: 10,
+  consts: [[3, "translucent"], [3, "title"], [3, "fullscreen"], ["collapse", "condense"], [1, "content-center"], ["size", "12", "size-md", "6", 1, "ion-text-center"], [1, "col-container", "ion-padding-bottom"], ["width", "100%", "src", "assets/image/logo/ASCENDynamics NFP-logos_transparent.png", "alt", "ASCENDynamics NFP", 1, "logo"], ["size", "12", "size-md", "6"], [1, "col-container"], [3, "ngSubmit", "formGroup"], [1, "ion-text-center"], [1, "ion-padding-bottom"], ["label", "Email", "label-placement", "floating", "fill", "outline", "type", "email", "inputmode", "email", "formControlName", "email", "placeholder", "email@domain.com"], ["color", "danger", 4, "ngIf"], ["label", "Password", "label-placement", "floating", "fill", "outline", "formControlName", "password", "type", "password", "placeholder", "Password", "minlength", "8"], ["label", "Confirm Password", "label-placement", "floating", "fill", "outline", "formControlName", "confirmPassword", "type", "password", "placeholder", "Confirm Password", "minlength", "8"], ["labelPlacement", "end", "formControlName", "agreedToTerms"], [1, "ion-padding"], [3, "click"], ["type", "submit", "expand", "block", "strong", "true", "translate", "", 1, "ion-margin-top", 2, "width", "100%", 3, "disabled"], ["translate", "", 3, "click"], ["color", "danger"], [4, "ngIf"]],
   template: function SignupPage_Template(rf, ctx) {
     if (rf & 1) {
       _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelementStart"](0, "ion-header", 0);
@@ -1231,10 +1226,7 @@ _SignupPage.ɵcmp = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵ�
         return ctx.goToLogin();
       });
       _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵtext"](51, " user.signup.login ");
-      _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelementEnd"]()()()()();
-      _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵtemplate"](52, SignupPage_ion_spinner_52_Template, 1, 0, "ion-spinner", 22);
-      _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵpipe"](53, "async");
-      _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelementEnd"]()()()()();
+      _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelementEnd"]()()()()()()()()()();
     }
     if (rf & 2) {
       let tmp_5_0;
@@ -1260,11 +1252,9 @@ _SignupPage.ɵcmp = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵ�
       _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵproperty"]("ngIf", ((tmp_8_0 = ctx.signupForm.get("agreedToTerms")) == null ? null : tmp_8_0.invalid) && (((tmp_8_0 = ctx.signupForm.get("agreedToTerms")) == null ? null : tmp_8_0.dirty) || ((tmp_8_0 = ctx.signupForm.get("agreedToTerms")) == null ? null : tmp_8_0.touched)));
       _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵadvance"](3);
       _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵproperty"]("disabled", ctx.signupForm.invalid);
-      _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵadvance"](6);
-      _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵproperty"]("ngIf", _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵpipeBind1"](53, 11, ctx.loading$));
     }
   },
-  dependencies: [_shared_components_app_header_app_header_component__WEBPACK_IMPORTED_MODULE_5__.AppHeaderComponent, _angular_common__WEBPACK_IMPORTED_MODULE_11__.NgIf, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonButton, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonCardContent, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonCheckbox, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonCol, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonContent, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonHeader, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonInput, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonNote, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonRow, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonSpinner, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonText, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.BooleanValueAccessor, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.TextValueAccessor, _angular_forms__WEBPACK_IMPORTED_MODULE_7__["ɵNgNoValidate"], _angular_forms__WEBPACK_IMPORTED_MODULE_7__.NgControlStatus, _angular_forms__WEBPACK_IMPORTED_MODULE_7__.NgControlStatusGroup, _angular_forms__WEBPACK_IMPORTED_MODULE_7__.MinLengthValidator, _angular_forms__WEBPACK_IMPORTED_MODULE_7__.FormGroupDirective, _angular_forms__WEBPACK_IMPORTED_MODULE_7__.FormControlName, _ngx_translate_core__WEBPACK_IMPORTED_MODULE_12__.TranslateDirective, _angular_common__WEBPACK_IMPORTED_MODULE_11__.AsyncPipe],
+  dependencies: [_shared_components_app_header_app_header_component__WEBPACK_IMPORTED_MODULE_5__.AppHeaderComponent, _angular_common__WEBPACK_IMPORTED_MODULE_11__.NgIf, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonButton, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonCardContent, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonCheckbox, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonCol, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonContent, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonHeader, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonInput, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonNote, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonRow, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.IonText, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.BooleanValueAccessor, _ionic_angular__WEBPACK_IMPORTED_MODULE_9__.TextValueAccessor, _angular_forms__WEBPACK_IMPORTED_MODULE_7__["ɵNgNoValidate"], _angular_forms__WEBPACK_IMPORTED_MODULE_7__.NgControlStatus, _angular_forms__WEBPACK_IMPORTED_MODULE_7__.NgControlStatusGroup, _angular_forms__WEBPACK_IMPORTED_MODULE_7__.MinLengthValidator, _angular_forms__WEBPACK_IMPORTED_MODULE_7__.FormGroupDirective, _angular_forms__WEBPACK_IMPORTED_MODULE_7__.FormControlName, _ngx_translate_core__WEBPACK_IMPORTED_MODULE_12__.TranslateDirective],
   styles: ["\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\na[_ngcontent-%COMP%] {\n  cursor: pointer;\n}\n\n.logo[_ngcontent-%COMP%] {\n  width: 500px;\n  max-width: 100%;\n}\n\nh2[_ngcontent-%COMP%] {\n  margin-top: 10px;\n  margin-bottom: 10px;\n  font-size: 24px;\n  font-weight: bold;\n  text-align: center;\n}\n\n.content-center[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  height: 100%; \n\n}\n\nion-card[_ngcontent-%COMP%] {\n  height: 100%; \n\n}\n\nion-content[_ngcontent-%COMP%] {\n  --padding-start: 0;\n  --padding-end: 0;\n  --padding-top: 0;\n  --padding-bottom: 0;\n}\nion-content[_ngcontent-%COMP%]   ion-text[_ngcontent-%COMP%] {\n  font-size: small;\n}\n\n.col-container[_ngcontent-%COMP%] {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  height: 100%; \n\n}\n\nion-note[_ngcontent-%COMP%] {\n  display: block;\n}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8uL3NyYy9hcHAvbW9kdWxlcy9hdXRoL3BhZ2VzL3NpZ251cC9zaWdudXAucGFnZS5zY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7K0ZBQUE7QUFtQkE7RUFDRSxlQUFBO0FBQ0Y7O0FBRUE7RUFDRSxZQUFBO0VBQ0EsZUFBQTtBQUNGOztBQUVBO0VBQ0UsZ0JBQUE7RUFDQSxtQkFBQTtFQUNBLGVBQUE7RUFDQSxpQkFBQTtFQUNBLGtCQUFBO0FBQ0Y7O0FBRUE7RUFDRSxhQUFBO0VBQ0Esc0JBQUE7RUFDQSx1QkFBQTtFQUNBLG1CQUFBO0VBQ0EsWUFBQSxFQUFBLHVFQUFBO0FBQ0Y7O0FBRUE7RUFDRSxZQUFBLEVBQUEsZ0VBQUE7QUFDRjs7QUFFQTtFQUNFLGtCQUFBO0VBQ0EsZ0JBQUE7RUFDQSxnQkFBQTtFQUNBLG1CQUFBO0FBQ0Y7QUFDRTtFQUNFLGdCQUFBO0FBQ0o7O0FBR0E7RUFDRSxhQUFBO0VBQ0EsdUJBQUE7RUFDQSxtQkFBQTtFQUNBLFlBQUEsRUFBQSxpRUFBQTtBQUFGOztBQUdBO0VBQ0UsY0FBQTtBQUFGIiwic291cmNlc0NvbnRlbnQiOlsiLyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqXG4qIE5vbnByb2ZpdCBTb2NpYWwgTmV0d29ya2luZyBQbGF0Zm9ybTogQWxsb3dpbmcgVXNlcnMgYW5kIE9yZ2FuaXphdGlvbnMgdG8gQ29sbGFib3JhdGUuXG4qIENvcHlyaWdodCAoQykgMjAyMyAgQVNDRU5EeW5hbWljcyBORlBcbipcbiogVGhpcyBmaWxlIGlzIHBhcnQgb2YgTm9ucHJvZml0IFNvY2lhbCBOZXR3b3JraW5nIFBsYXRmb3JtLlxuKlxuKiBOb25wcm9maXQgU29jaWFsIE5ldHdvcmtpbmcgUGxhdGZvcm0gaXMgZnJlZSBzb2Z0d2FyZTogeW91IGNhbiByZWRpc3RyaWJ1dGUgaXQgYW5kL29yIG1vZGlmeVxuKiBpdCB1bmRlciB0aGUgdGVybXMgb2YgdGhlIEdOVSBBZmZlcm8gR2VuZXJhbCBQdWJsaWMgTGljZW5zZSBhcyBwdWJsaXNoZWRcbiogYnkgdGhlIEZyZWUgU29mdHdhcmUgRm91bmRhdGlvbiwgZWl0aGVyIHZlcnNpb24gMyBvZiB0aGUgTGljZW5zZSwgb3JcbiogKGF0IHlvdXIgb3B0aW9uKSBhbnkgbGF0ZXIgdmVyc2lvbi5cblxuKiBOb25wcm9maXQgU29jaWFsIE5ldHdvcmtpbmcgUGxhdGZvcm0gaXMgZGlzdHJpYnV0ZWQgaW4gdGhlIGhvcGUgdGhhdCBpdCB3aWxsIGJlIHVzZWZ1bCxcbiogYnV0IFdJVEhPVVQgQU5ZIFdBUlJBTlRZOyB3aXRob3V0IGV2ZW4gdGhlIGltcGxpZWQgd2FycmFudHkgb2ZcbiogTUVSQ0hBTlRBQklMSVRZIG9yIEZJVE5FU1MgRk9SIEEgUEFSVElDVUxBUiBQVVJQT1NFLiAgU2VlIHRoZVxuKiBHTlUgQWZmZXJvIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgZm9yIG1vcmUgZGV0YWlscy5cblxuKiBZb3Ugc2hvdWxkIGhhdmUgcmVjZWl2ZWQgYSBjb3B5IG9mIHRoZSBHTlUgQWZmZXJvIEdlbmVyYWwgUHVibGljIExpY2Vuc2VcbiogYWxvbmcgd2l0aCBOb25wcm9maXQgU29jaWFsIE5ldHdvcmtpbmcgUGxhdGZvcm0uICBJZiBub3QsIHNlZSA8aHR0cHM6Ly93d3cuZ251Lm9yZy9saWNlbnNlcy8+LlxuKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovXG5hIHtcbiAgY3Vyc29yOiBwb2ludGVyO1xufVxuXG4ubG9nbyB7XG4gIHdpZHRoOiA1MDBweDtcbiAgbWF4LXdpZHRoOiAxMDAlO1xufVxuXG5oMiB7XG4gIG1hcmdpbi10b3A6IDEwcHg7XG4gIG1hcmdpbi1ib3R0b206IDEwcHg7XG4gIGZvbnQtc2l6ZTogMjRweDtcbiAgZm9udC13ZWlnaHQ6IGJvbGQ7XG4gIHRleHQtYWxpZ246IGNlbnRlcjtcbn1cblxuLmNvbnRlbnQtY2VudGVyIHtcbiAgZGlzcGxheTogZmxleDtcbiAgZmxleC1kaXJlY3Rpb246IGNvbHVtbjtcbiAganVzdGlmeS1jb250ZW50OiBjZW50ZXI7XG4gIGFsaWduLWl0ZW1zOiBjZW50ZXI7XG4gIGhlaWdodDogMTAwJTsgLyogVGhpcyBlbnN1cmVzIHRoYXQgdGhlIGlvbi1jYXJkLWNvbnRlbnQgdGFrZXMgZnVsbCBhdmFpbGFibGUgaGVpZ2h0ICovXG59XG5cbmlvbi1jYXJkIHtcbiAgaGVpZ2h0OiAxMDAlOyAvKiBNYWtlIHRoZSBpb24tY2FyZCB0YWtlIGZ1bGwgYXZhaWxhYmxlIGhlaWdodCBvZiBpb24tY29udGVudCAqL1xufVxuXG5pb24tY29udGVudCB7XG4gIC0tcGFkZGluZy1zdGFydDogMDtcbiAgLS1wYWRkaW5nLWVuZDogMDtcbiAgLS1wYWRkaW5nLXRvcDogMDtcbiAgLS1wYWRkaW5nLWJvdHRvbTogMDtcblxuICBpb24tdGV4dCB7XG4gICAgZm9udC1zaXplOiBzbWFsbDtcbiAgfVxufVxuXG4uY29sLWNvbnRhaW5lciB7XG4gIGRpc3BsYXk6IGZsZXg7XG4gIGp1c3RpZnktY29udGVudDogY2VudGVyO1xuICBhbGlnbi1pdGVtczogY2VudGVyO1xuICBoZWlnaHQ6IDEwMCU7IC8qIEVuc3VyZSB0aGUgY29udGFpbmVyIHRha2VzIGZ1bGwgaGVpZ2h0IHRvIGNlbnRlciBpdHMgY29udGVudCAqL1xufVxuXG5pb24tbm90ZSB7XG4gIGRpc3BsYXk6IGJsb2NrO1xufVxuIl0sInNvdXJjZVJvb3QiOiIifQ== */"]
 });
 

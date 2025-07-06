@@ -170,3 +170,12 @@ jobs:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}"
           projectId: ascendcoopplatform-dev
+
+      # Register the preview domain for Firebase Authentication
+      - name: Authorize Preview Domain
+        run: |
+          PREVIEW_DOMAIN=$(echo "${{ steps.deploy.outputs.details_url }}" | sed -E 's#https?://([^/]+)/?.*#\1#')
+          export GOOGLE_APPLICATION_CREDENTIALS_JSON='${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}'
+          export FIREBASE_PROJECT_ID='${{ secrets.DEV_FIREBASE_PROJECT_ID }}'
+          export PREVIEW_DOMAIN
+          node .github/scripts/addAuthorizedDomain.js

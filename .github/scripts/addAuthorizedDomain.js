@@ -18,7 +18,7 @@ async function addAuthorizedDomain() {
 
     // Initialize the Identity Toolkit API with the correct version
     const identityToolkit = google.identitytoolkit({
-      version: 'v3', // Updated API version
+      version: 'v2', // Use v2 for projects.* methods
       auth: authClient,
     });
 

@@ -14,7 +14,7 @@ async function removeAuthorizedDomain() {
     const authClient = await auth.getClient();
 
     const identityToolkit = google.identitytoolkit({
-      version: 'v3',
+      version: 'v2',
       auth: authClient,
     });
 

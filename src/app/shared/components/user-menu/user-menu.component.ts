@@ -23,7 +23,7 @@ import {PopoverController} from "@ionic/angular";
 import {Store} from "@ngrx/store";
 import * as AuthActions from "../../../state/actions/auth.actions";
 import {firstValueFrom, Observable} from "rxjs";
-import {AuthUser} from "../../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 
 @Component({
   selector: "app-user-menu",

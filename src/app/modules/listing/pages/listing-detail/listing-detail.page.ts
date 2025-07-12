@@ -24,7 +24,7 @@ import {ActivatedRoute} from "@angular/router";
 import {Store} from "@ngrx/store";
 import {Observable, Subscription, combineLatest} from "rxjs";
 import {map} from "rxjs/operators";
-import {Listing} from "../../../../models/listing.model";
+import {Listing} from "@shared/models/listing.model";
 import * as ListingsActions from "../../../../state/actions/listings.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {AppState} from "../../../../state/app.state";

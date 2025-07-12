@@ -21,7 +21,7 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {HeroComponent} from "./hero.component";
 import {ModalController} from "@ionic/angular";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
-import {Account} from "../../../../../../models/account.model";
+import {Account} from "@shared/models/account.model";
 import {ImageUploadModalComponent} from "../../../../../../shared/components/image-upload-modal/image-upload-modal.component";
 import {Timestamp} from "firebase/firestore";
 

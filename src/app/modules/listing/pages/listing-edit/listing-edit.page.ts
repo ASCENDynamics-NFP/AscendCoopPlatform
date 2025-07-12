@@ -23,12 +23,12 @@ import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
 import {combineLatest, map, Observable, of, tap} from "rxjs";
-import {Listing} from "../../../../models/listing.model";
+import {Listing} from "@shared/models/listing.model";
 import * as ListingsActions from "../../../../state/actions/listings.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {AppState} from "../../../../state/app.state";
 import {selectListingById} from "../../../../state/selectors/listings.selectors";
-import {AuthUser} from "../../../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({

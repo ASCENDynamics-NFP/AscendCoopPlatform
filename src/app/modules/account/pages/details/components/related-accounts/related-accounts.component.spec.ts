@@ -21,7 +21,7 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {RelatedAccountsComponent} from "./related-accounts.component";
 import {Router} from "@angular/router";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
-import {Account} from "../../../../../../models/account.model";
+import {Account} from "@shared/models/account.model";
 
 describe("RelatedAccountsComponent", () => {
   let component: RelatedAccountsComponent;

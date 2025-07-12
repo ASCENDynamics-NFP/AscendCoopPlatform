@@ -20,8 +20,8 @@
 // src/app/state/actions/account.actions.ts
 
 import {createAction, props} from "@ngrx/store";
-import {Account, RelatedAccount} from "../../models/account.model";
-import {RelatedListing} from "../../models/related-listing.model";
+import {Account, RelatedAccount} from "@shared/models/account.model";
+import {RelatedListing} from "@shared/models/related-listing.model";
 
 export const clearAccountsState = createAction("[Account] Clear Accounts");
 

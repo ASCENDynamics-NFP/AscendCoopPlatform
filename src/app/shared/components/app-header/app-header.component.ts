@@ -23,7 +23,7 @@ import {UserMenuComponent} from "../user-menu/user-menu.component";
 import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../../state/selectors/auth.selectors";
 import {map, Observable} from "rxjs";
-import {AuthUser} from "../../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 
 @Component({
   selector: "app-header",

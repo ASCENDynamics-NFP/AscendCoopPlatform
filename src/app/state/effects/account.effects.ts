@@ -34,8 +34,8 @@ import {
   filter,
 } from "rxjs/operators";
 import {FirestoreService} from "../../core/services/firestore.service";
-import {Account} from "../../models/account.model";
-import {RelatedListing} from "../../models/related-listing.model";
+import {Account} from "@shared/models/account.model";
+import {RelatedListing} from "@shared/models/related-listing.model";
 import {selectAuthUser} from "../selectors/auth.selectors";
 import {Store} from "@ngrx/store";
 import * as AuthActions from "../actions/auth.actions";

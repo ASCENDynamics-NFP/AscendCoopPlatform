@@ -19,15 +19,15 @@
 ***********************************************************************************************/
 import {Component, Input, Output, EventEmitter, OnInit} from "@angular/core";
 import {FormBuilder, FormGroup, Validators, FormArray} from "@angular/forms";
-import {Listing, SkillRequirement} from "../../../../models/listing.model";
+import {Listing, SkillRequirement} from "@shared/models/listing.model";
 import {Timestamp} from "firebase/firestore";
 import {Store} from "@ngrx/store";
 import {filter, first, switchMap, take, tap} from "rxjs";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
-import {Account} from "../../../../models/account.model";
+import {Account} from "@shared/models/account.model";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
-import {AuthUser} from "../../../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 
 @Component({
   selector: "app-listing-form",

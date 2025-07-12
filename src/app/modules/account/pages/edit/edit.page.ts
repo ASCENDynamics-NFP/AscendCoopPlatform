@@ -20,11 +20,11 @@
 // src/app/modules/account/pages/edit/edit.page.ts
 
 import {Component, OnInit} from "@angular/core";
-import {Account} from "../../../../models/account.model";
+import {Account} from "@shared/models/account.model";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, combineLatest} from "rxjs";
 import {map, tap, filter, switchMap, shareReplay, take} from "rxjs/operators";
-import {AuthUser} from "../../../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 import {Store} from "@ngrx/store";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";

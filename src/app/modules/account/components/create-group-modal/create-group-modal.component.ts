@@ -22,7 +22,7 @@ import {Component} from "@angular/core";
 import {ModalController} from "@ionic/angular";
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {Timestamp} from "firebase/firestore";
-import {Account} from "../../../../models/account.model";
+import {Account} from "@shared/models/account.model";
 import {Store} from "@ngrx/store";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";

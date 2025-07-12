@@ -20,8 +20,8 @@
 import {Component, EventEmitter, Input, OnChanges, Output} from "@angular/core";
 import {FormBuilder, FormGroup, FormControl, Validators} from "@angular/forms";
 import {TranslateService} from "@ngx-translate/core";
-import {AuthUser} from "../../../../../../models/auth-user.model";
-import {Account} from "../../../../../../models/account.model";
+import {AuthUser} from "@shared/models/auth-user.model";
+import {Account} from "@shared/models/account.model";
 import {Store} from "@ngrx/store";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 

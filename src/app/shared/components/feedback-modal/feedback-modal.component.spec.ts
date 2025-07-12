@@ -23,7 +23,7 @@ import {FeedbackModalComponent} from "./feedback-modal.component";
 import {ReactiveFormsModule} from "@angular/forms";
 import {ErrorHandlerService} from "../../../core/services/error-handler.service";
 import {FirestoreService} from "../../../core/services/firestore.service";
-import {AuthUser} from "../../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 import {initializeApp} from "firebase/app";
 import {environment} from "../../../../environments/environment";
 

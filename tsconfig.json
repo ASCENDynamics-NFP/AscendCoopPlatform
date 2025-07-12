@@ -20,7 +20,10 @@
     "target": "es2022",
     "module": "es2020",
     "lib": ["es2019", "dom"],
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "paths": {
+      "@shared/*": ["shared/*"]
+    }
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
@@ -28,5 +31,5 @@
     "strictInputAccessModifiers": true,
     "strictTemplates": true
   },
-  "include": ["./functions/.eslintrc.js"]
+  "include": ["./functions/.eslintrc.js", "./shared/**/*.ts"]
 }

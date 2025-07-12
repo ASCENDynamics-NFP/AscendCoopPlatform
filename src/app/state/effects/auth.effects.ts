@@ -54,11 +54,11 @@ import {ErrorHandlerService} from "../../core/services/error-handler.service";
 import {SuccessHandlerService} from "../../core/services/success-handler.service";
 import {Router} from "@angular/router";
 import {AlertController, LoadingController} from "@ionic/angular";
-import {AuthUser} from "../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 import {selectAuthUser} from "../selectors/auth.selectors";
 import {Store} from "@ngrx/store";
 import {AuthState} from "../reducers/auth.reducer";
-import {Settings} from "../../models/account.model";
+import {Settings} from "@shared/models/account.model";
 import {selectAccountById} from "../selectors/account.selectors";
 
 @Injectable()

@@ -37,7 +37,7 @@
 // import {FeedbackModalComponent} from "../feedback-modal/feedback-modal.component";
 // import {CreateGroupModalComponent} from "../../../modules/account/components/create-group-modal/create-group-modal.component";
 // import {TranslateModule, TranslateService} from "@ngx-translate/core";
-// import {AuthUser} from "../../../models/auth-user.model";
+// import {AuthUser} from "@shared/models/auth-user.model";
 // import {of} from "rxjs";
 
 // describe("MenuComponent", () => {

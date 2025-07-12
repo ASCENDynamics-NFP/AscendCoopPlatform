@@ -22,8 +22,8 @@
 import {createReducer, on} from "@ngrx/store";
 import {createEntityAdapter, EntityAdapter, EntityState} from "@ngrx/entity";
 import * as ListingsActions from "../actions/listings.actions";
-import {Listing} from "../../models/listing.model";
-import {ListingRelatedAccount} from "../../models/listing-related-account.model";
+import {Listing} from "@shared/models/listing.model";
+import {ListingRelatedAccount} from "@shared/models/listing-related-account.model";
 
 export interface ListingsState extends EntityState<Listing> {
   relatedAccounts: {[listingId: string]: ListingRelatedAccount[]};

@@ -95,7 +95,7 @@ describe("UserMenuComponent", () => {
 
   // it("should log an error if user ID is not found on goToProfile", async () => {
   //   spyOn(console, "error");
-  //   mockStore.select.and.returnValue(of(null)); // Simulate no user in the store
+  //   mockStore.select.and.returnValue(of(null));
   //   await component.goToProfile();
   //   expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
   //   expect(console.error).toHaveBeenCalledWith("User ID not found.");

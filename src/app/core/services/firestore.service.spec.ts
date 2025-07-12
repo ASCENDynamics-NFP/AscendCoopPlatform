@@ -24,7 +24,7 @@
 //   AngularFirestoreCollection,
 //   AngularFirestoreDocument,
 // } from "@angular/fire/compat/firestore";
-// import {of} from "rxjs";
+// import {of, firstValueFrom} from "rxjs";
 
 // describe("FirestoreService", () => {
 //   let service: FirestoreService;
@@ -33,7 +33,6 @@
 //   let docSpy: jasmine.SpyObj<AngularFirestoreDocument<any>>;
 
 //   beforeEach(() => {
-//     // Create a spy for AngularFirestoreDocument
 //     docSpy = jasmine.createSpyObj("AngularFirestoreDocument", {
 //       ref: {
 //         get: jasmine.createSpy("get").and.returnValue(
@@ -52,7 +51,6 @@
 //         .and.returnValue(of({id: "testDocId", name: "Test Document"})),
 //     });
 
-//     // Create a spy for AngularFirestoreCollection
 //     collectionSpy = jasmine.createSpyObj("AngularFirestoreCollection", {
 //       doc: docSpy,
 //       add: jasmine
@@ -60,13 +58,11 @@
 //         .and.returnValue(Promise.resolve({id: "newDocId"})),
 //     });
 
-//     // Create a spy for AngularFirestore
 //     angularFirestoreMock = jasmine.createSpyObj("AngularFirestore", {
 //       collection: collectionSpy,
 //       doc: docSpy,
 //     });
 
-//     // Configure TestBed with the mocked AngularFirestore
 //     TestBed.configureTestingModule({
 //       providers: [
 //         FirestoreService,
@@ -74,58 +70,46 @@
 //       ],
 //     });
 
-//     // Inject the service
 //     service = TestBed.inject(FirestoreService);
 //   });
 
-//   // Test Case 1: Service Creation
 //   it("should be created", () => {
 //     expect(service).toBeTruthy();
 //   });
 
-// // Test Case 2: Fetching a Document
-// it("should call AngularFirestore.collection and doc with correct arguments and return document data", async () => {
-//   const collectionName = "testCollection";
-//   const docId = "testDocId";
+//   it("should call AngularFirestore.collection and doc with correct arguments and return document data", async () => {
+//     const collectionName = "testCollection";
+//     const docId = "testDocId";
 
-//   const doc = await service.getDocument(collectionName, docId);
+//     const doc = await firstValueFrom(service.getDocument(collectionName, docId));
 
-//   expect(angularFirestoreMock.collection).toHaveBeenCalledWith(
-//     collectionName,
-//   );
-//   expect(collectionSpy.doc).toHaveBeenCalledWith(docId);
-//   expect(docSpy.ref.get).toHaveBeenCalled();
-//   expect(doc).toEqual({id: "testDocId", name: "Test Document"});
-// });
+//     expect(angularFirestoreMock.collection).toHaveBeenCalledWith(collectionName as any);
+//     expect(collectionSpy.doc).toHaveBeenCalledWith(docId);
+//     expect(doc).toEqual({id: "testDocId", name: "Test Document"});
+//   });
 
-// // Test Case 3: Updating a Document Successfully
-// it("should call updateDocument and update the document successfully", async () => {
-//   const collectionName = "testCollection";
-//   const docId = "testDocId";
-//   const updateData = {name: "Updated Name"};
+//   it("should call updateDocument and update the document successfully", async () => {
+//     const collectionName = "testCollection";
+//     const docId = "testDocId";
+//     const updateData = {name: "Updated Name"};
 
-//   await service.updateDocument(collectionName, docId, updateData);
+//     await service.updateDocument(collectionName, docId, updateData);
 
-//   expect(angularFirestoreMock.collection).toHaveBeenCalledWith(
-//     collectionName,
-//   );
-//   expect(collectionSpy.doc).toHaveBeenCalledWith(docId);
-//   expect(docSpy.set).toHaveBeenCalledWith(updateData, {merge: true});
-// });
+//     expect(angularFirestoreMock.collection).toHaveBeenCalledWith(collectionName as any);
+//     expect(collectionSpy.doc).toHaveBeenCalledWith(docId);
+//     expect(docSpy.update).toHaveBeenCalledWith(updateData);
+//   });
 
-// // Test Case 4: Updating a Document with Missing Parameters
-// it("should throw an error when updating a document with missing parameters", async () => {
-//   const collectionName = "testCollection";
-//   const docId = ""; // Missing docId
-//   const updateData = {name: "Updated Name"};
+//   it("should throw an error when updating a document with missing parameters", async () => {
+//     const collectionName = "testCollection";
+//     const docId = "";
+//     const updateData = {name: "Updated Name"};
 
-//   await expectAsync(
-//     service.updateDocument(collectionName, docId, updateData),
-//   ).toBeRejectedWithError(FirebaseError);
+//     await expectAsync(
+//       service.updateDocument(collectionName, docId, updateData),
+//     ).toBeRejected();
 
-//   expect(angularFirestoreMock.collection).toHaveBeenCalledWith(
-//     collectionName,
-//   );
-//   expect(collectionSpy.doc).toHaveBeenCalledWith(docId);
-// });
+//     expect(angularFirestoreMock.collection).toHaveBeenCalledWith(collectionName as any);
+//     expect(collectionSpy.doc).toHaveBeenCalledWith(docId);
+//   });
 // });

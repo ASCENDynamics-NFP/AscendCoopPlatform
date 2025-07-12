@@ -14,7 +14,7 @@
     "format": "prettier --write .",
     "ng": "ng",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
+    "test": "ng test --watch=false && npm --prefix functions test",
     "test:watch": "ng test --watch",
     "lint": "ng lint",
     "clean": "rm -rf node_modules package-lock.json"

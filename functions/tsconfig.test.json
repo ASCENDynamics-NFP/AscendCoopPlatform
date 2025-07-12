@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "types": ["mocha", "node"],
+    "module": "commonjs"
+  },
+  "include": ["test/**/*.ts"]
+}

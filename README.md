@@ -65,7 +65,7 @@ We look forward to your contributions and engaging discussions!
 1. Install Node.js, npm, Ionic CLI, and Angular CLI on your development machine.
 2. Clone this repository: `git clone https://github.com/ASCENDynamics-NFP/AscendCoopPlatform.git`
 3. Change to the project directory: `cd AscendCoopPlatform`
-4. Install dependencies: `npm install`
+4. Install dependencies: `npm install` (Git hooks are installed automatically). If you don't see them, run `npm run prepare`.
 5. Create `.env.development` (and optionally `.env.production`) with your Firebase credentials. The file should define variables such as `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_DATABASE_URL`, `FIREBASE_PROJECT_ID`, `FIREBASE_STORAGE_BUCKET`, `FIREBASE_MESSAGING_SENDER_ID`, `FIREBASE_APP_ID`, `FIREBASE_MEASUREMENT_ID`, and `FIREBASE_API_URL`.
 6. Run `npm run generate-env:dev` (or `NODE_ENV=development node generate-env.js`) to generate `src/environments/environment.ts`. Use `npm run generate-env:prod` for production.
 7. Run the development server: `ionic serve`

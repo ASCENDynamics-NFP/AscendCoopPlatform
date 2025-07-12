@@ -12,6 +12,7 @@
     "start": "npm run generate-env:dev && ng serve",
     "start:prod": "npm run generate-env:prod && ng serve --configuration production",
     "format": "prettier --write .",
+    "prepare": "husky install",
     "ng": "ng",
     "watch": "ng build --watch --configuration development",
     "test": "ng test --watch=false && npm --prefix functions test",

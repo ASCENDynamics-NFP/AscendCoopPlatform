@@ -30,7 +30,11 @@ import {environment} from "../../../environments/environment";
   providedIn: "root",
 })
 export class ListingsService {
-  private endpoint = `${environment.firebaseConfig.apiUrl}/getHomepageListings`;
+  private endpoint =
+    environment.firebaseConfig.apiUrl &&
+    environment.firebaseConfig.apiUrl !== "undefined"
+      ? `${environment.firebaseConfig.apiUrl}/getHomepageListings`
+      : "/getHomepageListings";
 
   constructor(private http: HttpClient) {}
 

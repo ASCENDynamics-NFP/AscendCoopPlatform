@@ -21,7 +21,7 @@
 
 import {createFeatureSelector, createSelector} from "@ngrx/store";
 import {ListingsState, listingsAdapter} from "../reducers/listings.reducer";
-import {Listing} from "../../models/listing.model";
+import {Listing} from "@shared/models/listing.model";
 
 // TTL in milliseconds (e.g., 5 minutes)
 const LISTINGS_TTL = 5 * 60 * 1000; // 5 minutes

@@ -35,6 +35,7 @@ import {Listing} from "@shared/models/listing.model";
 import {ModalController} from "@ionic/angular";
 import {ApplicantDetailsModalComponent} from "./components/applicant-details-modal/applicant-details-modal.component";
 import {MetaService} from "../../../../../core/services/meta.service";
+import {filter} from "rxjs/operators";
 
 @Component({
   selector: "app-applicants",
@@ -104,7 +105,9 @@ export class ApplicantsPage implements OnInit {
       this.loading$ = this.store.select((state) => state.listings.loading);
       this.error$ = this.store.select((state) => state.listings.error);
 
-      this.listing$ = this.store.select(selectListingById(this.listingId));
+      this.listing$ = this.store
+        .select(selectListingById(this.listingId))
+        .pipe(filter((listing): listing is Listing => listing !== undefined));
 
       // Determine if current user is the listing creator
       this.isOwner$ = combineLatest([

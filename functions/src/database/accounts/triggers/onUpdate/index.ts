@@ -19,16 +19,12 @@
 ***********************************************************************************************/
 
 import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
 import {geocodeAddress} from "../../../../utils/geocoding"; // <-- Now only importing geocodeAddress
 
 // Initialize the Firebase admin SDK
-if (!admin.apps.length) {
-  admin.initializeApp();
-}
-
 /**
  * Cloud Function triggered when a document in the `accounts` collection is updated.
  */

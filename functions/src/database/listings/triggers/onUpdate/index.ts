@@ -20,15 +20,11 @@
 // functions/src/database/listings/relatedAccounts/triggers/onUpdate/index.ts
 
 import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {EventContext} from "firebase-functions";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
 import {geocodeAddress} from "../../../../utils/geocoding"; // Import your geocode utility
-
-if (!admin.apps.length) {
-  admin.initializeApp();
-}
 
 const db = admin.firestore();
 

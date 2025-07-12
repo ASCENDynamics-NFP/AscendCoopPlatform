@@ -20,14 +20,10 @@
 
 /** Firebase Cloud Function for Homepage Listings */
 import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import {admin} from "../../utils/firebase";
 import * as cors from "cors";
 
 // Initialize the Firebase admin SDK
-if (!admin.apps.length) {
-  admin.initializeApp();
-}
-
 const corsHandler = cors({origin: true});
 
 /**

@@ -3,7 +3,7 @@ import * as sinon from 'sinon';
 const proxyquire = require('proxyquire');
 const adminStub = {firestore: sinon.stub(), apps: [], initializeApp: sinon.stub()};
 const {getHomepageListings} = proxyquire('../src/functions/listings/homepage', {
-  'firebase-admin': adminStub,
+  '../../utils/firebase': {admin: adminStub},
   cors: () => (req: any, res: any, cb: any) => cb(),
 });
 import {Request, Response} from 'express';

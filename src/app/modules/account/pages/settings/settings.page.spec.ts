@@ -23,8 +23,8 @@ import {TestBed, ComponentFixture} from "@angular/core/testing";
 import {SettingsPage} from "./settings.page";
 import {provideMockStore, MockStore} from "@ngrx/store/testing";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
-import {AuthUser} from "../../../../models/auth-user.model";
-import {Account} from "../../../../models/account.model";
+import {AuthUser} from "@shared/models/auth-user.model";
+import {Account} from "@shared/models/account.model";
 import {Timestamp} from "firebase/firestore";
 import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 

@@ -22,7 +22,7 @@ import {MutualAidCommunityEngagementFormComponent} from "./mutual-aid-community-
 import {ReactiveFormsModule, FormsModule} from "@angular/forms";
 import {IonicModule, IonSelect, IonSelectOption} from "@ionic/angular";
 import {provideMockStore} from "@ngrx/store/testing";
-import {Account} from "../../../../../../models/account.model";
+import {Account} from "@shared/models/account.model";
 import {CommonModule} from "@angular/common";
 
 describe("MutualAidCommunityEngagementComponent", () => {

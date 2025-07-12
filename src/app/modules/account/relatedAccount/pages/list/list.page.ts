@@ -24,8 +24,8 @@ import {Store} from "@ngrx/store";
 import {ActivatedRoute} from "@angular/router";
 import {Observable, combineLatest, of} from "rxjs";
 import {map} from "rxjs/operators";
-import {AuthUser} from "../../../../../models/auth-user.model";
-import {Account, RelatedAccount} from "../../../../../models/account.model";
+import {AuthUser} from "@shared/models/auth-user.model";
+import {Account, RelatedAccount} from "@shared/models/account.model";
 import {
   selectAccountById,
   selectRelatedAccountsByAccountId,

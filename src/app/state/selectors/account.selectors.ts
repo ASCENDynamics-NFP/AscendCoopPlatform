@@ -21,7 +21,7 @@
 
 import {createFeatureSelector, createSelector} from "@ngrx/store";
 import {AccountState} from "../reducers/account.reducer";
-import {Account} from "../../models/account.model";
+import {Account} from "@shared/models/account.model";
 
 // TTL Configuration
 const ACCOUNTS_TTL = 5 * 60 * 1000; // 5 minutes

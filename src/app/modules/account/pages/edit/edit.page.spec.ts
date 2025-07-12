@@ -29,8 +29,8 @@ import {EditPage} from "./edit.page";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
 import {of, BehaviorSubject} from "rxjs";
-import {Account} from "../../../../models/account.model";
-import {AuthUser} from "../../../../models/auth-user.model";
+import {Account} from "@shared/models/account.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 

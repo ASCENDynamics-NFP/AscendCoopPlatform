@@ -24,9 +24,9 @@
 // import {Store} from "@ngrx/store";
 // import {ActivatedRoute, Router} from "@angular/router";
 // import {of, BehaviorSubject} from "rxjs";
-// import {AuthUser} from "../../../../../models/auth-user.model";
-// import {Account} from "../../../../../models/account.model";
-// import {RelatedListing} from "../../../../../models/related-listing.model";
+// import {AuthUser} from "@shared/models/auth-user.model";
+// import {Account} from "@shared/models/account.model";
+// import {RelatedListing} from "@shared/models/related-listing.model";
 // import {provideMockStore, MockStore} from "@ngrx/store/testing";
 // import * as AccountSelectors from "../../../../../state/selectors/account.selectors";
 // import * as AuthSelectors from "../../../../../state/selectors/auth.selectors";

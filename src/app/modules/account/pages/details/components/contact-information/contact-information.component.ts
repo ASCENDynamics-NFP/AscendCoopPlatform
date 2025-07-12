@@ -23,7 +23,7 @@ import {
   Address,
   Email,
   PhoneNumber,
-} from "../../../../../../models/account.model";
+} from "@shared/models/account.model";
 
 @Component({
   selector: "app-contact-information",

@@ -20,7 +20,7 @@
 // basic-info.component.ts
 import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
 import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {Account, WebLink} from "../../../../../../models/account.model";
+import {Account, WebLink} from "@shared/models/account.model";
 import {Store} from "@ngrx/store";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 

@@ -19,8 +19,8 @@
 ***********************************************************************************************/
 // src/app/state/listing.state.ts
 
-import {ListingRelatedAccount} from "../models/listing-related-account.model";
-import {Listing} from "../models/listing.model";
+import {ListingRelatedAccount} from "@shared/models/listing-related-account.model";
+import {Listing} from "@shared/models/listing.model";
 
 interface ListingState {
   entities: {[id: string]: Listing};

@@ -21,7 +21,7 @@
 
 import {Component, Input} from "@angular/core";
 import {ModalController} from "@ionic/angular";
-import {Account} from "../../../../../../models/account.model";
+import {Account} from "@shared/models/account.model";
 import {ImageUploadModalComponent} from "../../../../../../shared/components/image-upload-modal/image-upload-modal.component";
 
 @Component({

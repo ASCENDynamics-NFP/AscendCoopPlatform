@@ -24,7 +24,7 @@ import * as AuthActions from "../../state/actions/auth.actions";
 import {selectAuthUser} from "../../state/selectors/auth.selectors";
 import {RouterTestingModule} from "@angular/router/testing";
 import {provideMockStore, MockStore} from "@ngrx/store/testing";
-import {AuthUser} from "../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 
 describe("AuthGuard", () => {
   let guard: AuthGuard;

@@ -22,7 +22,7 @@
 import {Component, OnInit} from "@angular/core";
 import {Store} from "@ngrx/store";
 import {BehaviorSubject, combineLatest, map, Observable, take} from "rxjs";
-import {ListingRelatedAccount} from "../../../../../models/listing-related-account.model";
+import {ListingRelatedAccount} from "@shared/models/listing-related-account.model";
 import {AppState} from "../../../../../state/app.state";
 import * as ListingsActions from "../../../../../state/actions/listings.actions";
 import {
@@ -31,7 +31,7 @@ import {
 } from "../../../../../state/selectors/listings.selectors";
 import {ActivatedRoute, Router} from "@angular/router";
 import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
-import {Listing} from "../../../../../models/listing.model";
+import {Listing} from "@shared/models/listing.model";
 import {ModalController} from "@ionic/angular";
 import {ApplicantDetailsModalComponent} from "./components/applicant-details-modal/applicant-details-modal.component";
 import {MetaService} from "../../../../../core/services/meta.service";

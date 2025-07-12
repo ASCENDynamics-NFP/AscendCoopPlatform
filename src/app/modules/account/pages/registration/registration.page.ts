@@ -21,7 +21,7 @@
 
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
-import {Account} from "../../../../models/account.model";
+import {Account} from "@shared/models/account.model";
 import {Store} from "@ngrx/store";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";

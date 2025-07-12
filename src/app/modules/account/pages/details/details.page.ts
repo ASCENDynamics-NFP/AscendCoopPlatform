@@ -23,9 +23,9 @@ import {Component, OnInit, ViewChild} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, Subscription, combineLatest} from "rxjs";
 import {filter, map, take, tap} from "rxjs/operators";
-import {AuthUser} from "../../../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 import {Store} from "@ngrx/store";
-import {Account, RelatedAccount} from "../../../../models/account.model";
+import {Account, RelatedAccount} from "@shared/models/account.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {
   selectRelatedAccountsByAccountId,
@@ -34,7 +34,7 @@ import {
 } from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {IonContent, ViewWillEnter} from "@ionic/angular";
-import {RelatedListing} from "../../../../models/related-listing.model";
+import {RelatedListing} from "@shared/models/related-listing.model";
 import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({

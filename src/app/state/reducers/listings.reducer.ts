@@ -21,8 +21,8 @@
 
 import {createReducer, on} from "@ngrx/store";
 import * as ListingsActions from "../actions/listings.actions";
-import {Listing} from "../../models/listing.model";
-import {ListingRelatedAccount} from "../../models/listing-related-account.model";
+import {Listing} from "@shared/models/listing.model";
+import {ListingRelatedAccount} from "@shared/models/listing-related-account.model";
 
 export interface ListingsState {
   entities: {[id: string]: Listing}; // Dictionary of listings by ID

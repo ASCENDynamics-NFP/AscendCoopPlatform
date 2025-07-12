@@ -18,7 +18,7 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Component, Input} from "@angular/core";
-import {Listing} from "../../../../../../models/listing.model";
+import {Listing} from "@shared/models/listing.model";
 import {serverTimestamp} from "firebase/firestore";
 import * as ListingsActions from "../../../../../../state/actions/listings.actions";
 import {AppState} from "../../../../../../state/app.state";

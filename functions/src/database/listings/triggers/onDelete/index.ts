@@ -20,14 +20,10 @@
 // functions/src/database/listings/triggers/onDelete/index.ts
 
 import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {EventContext} from "firebase-functions";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
-
-if (!admin.apps.length) {
-  admin.initializeApp();
-}
 
 const db = admin.firestore();
 

@@ -18,14 +18,10 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import * as functions from "firebase-functions/v1/auth";
-import * as admin from "firebase-admin";
+import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 
 // Initialize Firebase Admin SDK if not already initialized
-if (!admin.apps.length) {
-  admin.initializeApp();
-}
-
 // Firestore database reference
 const db = admin.firestore();
 

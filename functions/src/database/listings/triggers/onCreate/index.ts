@@ -19,17 +19,13 @@
 ***********************************************************************************************/
 
 import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {EventContext} from "firebase-functions";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
 import {geocodeAddress} from "../../../../utils/geocoding"; // <-- using the same utility
 
 // Initialize the Firebase admin SDK
-if (!admin.apps.length) {
-  admin.initializeApp();
-}
-
 // Reference to the Firestore database
 const db = admin.firestore();
 

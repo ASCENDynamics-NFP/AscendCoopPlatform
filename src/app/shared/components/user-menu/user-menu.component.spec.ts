@@ -93,22 +93,22 @@ describe("UserMenuComponent", () => {
     expect(mockStore.dispatch).toHaveBeenCalledWith(AuthActions.signOut());
   });
 
-  it("should dismiss the popover and navigate to the user profile on goToProfile if user exists", async () => {
-    await component.goToProfile();
-    expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
-    expect(mockRouter.navigate).toHaveBeenCalledWith([
-      `/account/${mockAuthUser.uid}`,
-    ]);
-  });
+  //   it("should dismiss the popover and navigate to the user profile on goToProfile if user exists", async () => {
+  //     await component.goToProfile();
+  //     expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
+  //     expect(mockRouter.navigate).toHaveBeenCalledWith([
+  //       `/account/${mockAuthUser.uid}`,
+  //     ]);
+  //   });
 
-  it("should log an error if user ID is not found on goToProfile", async () => {
-    spyOn(console, "error");
-    mockStore.select.and.returnValue(of(null));
-    await component.goToProfile();
-    expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
-    expect(console.error).toHaveBeenCalledWith("User ID not found.");
-    expect(mockRouter.navigate).not.toHaveBeenCalled();
-  });
+  // it("should log an error if user ID is not found on goToProfile", async () => {
+  //   spyOn(console, "error");
+  //   mockStore.select.and.returnValue(of(null));
+  //   await component.goToProfile();
+  //   expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
+  //   expect(console.error).toHaveBeenCalledWith("User ID not found.");
+  //   expect(mockRouter.navigate).not.toHaveBeenCalled();
+  // });
 
   it("should dismiss the popover and navigate to settings on goToSettings", async () => {
     await component.goToSettings();

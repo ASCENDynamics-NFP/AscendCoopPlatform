@@ -71,6 +71,10 @@ We look forward to your contributions and engaging discussions!
 7. Run the development server: `ionic serve`
 8. Open your browser and navigate to `http://localhost:8100/` to view the app.
 
+### Local environment variables
+
+The `generate-env.js` script reads values from `.env.development` when generating `src/environments/environment.ts`. Make sure your `.env.development` file exists locally and contains your Firebase keys. These `.env` files are ignored by Git so your credentials remain private. If `src/environments/environment.ts` is missing, re-run `npm run generate-env:dev` before starting the app.
+
 ## [Contributing](CONTRIBUTING.md)
 
 We welcome contributions from the community. To get started, please follow these steps:

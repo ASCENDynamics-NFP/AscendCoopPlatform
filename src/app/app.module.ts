@@ -43,7 +43,6 @@ import {StoreDevtoolsModule} from "@ngrx/store-devtools";
 
 // Reducers and Effects
 import {reducers} from "./state/reducers";
-import {AccountEffects} from "./state/effects/account.effects";
 import {AuthEffects} from "./state/effects/auth.effects";
 
 // Services
@@ -102,7 +101,7 @@ export function createTranslateLoader(http: HttpClient) {
       },
     }),
     StoreModule.forRoot(reducers, {metaReducers}),
-    EffectsModule.forRoot([AuthEffects, AccountEffects]),
+    EffectsModule.forRoot([AuthEffects]),
     StoreDevtoolsModule.instrument({maxAge: 25, logOnly: !isDevMode()}),
   ],
   providers: [

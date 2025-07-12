@@ -21,13 +21,8 @@
 
 import {ActionReducerMap} from "@ngrx/store";
 import {authReducer} from "./auth.reducer";
-import {accountReducer} from "./account.reducer";
-import {listingsReducer} from "./listings.reducer";
-import {AppState} from "../app.state";
 
-export const reducers: ActionReducerMap<AppState> = {
+export const reducers: ActionReducerMap<any> = {
   auth: authReducer,
-  accounts: accountReducer,
-  listings: listingsReducer,
-  // Other reducers...
+  // Other reducers registered in feature modules
 };

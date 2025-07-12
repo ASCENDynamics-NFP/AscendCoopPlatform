@@ -17,44 +17,4 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-ion-segment {
-  --padding-top: 0;
-  --padding-bottom: 0;
-  --padding-start: 0;
-  --padding-end: 0;
-  --indicator-height: 2px;
-  overflow-x: auto;
-}
-
-ion-segment-button {
-  --padding: 6px 8px;
-  --min-width: auto;
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-ion-segment-button ion-icon {
-  font-size: 20px;
-  margin-bottom: 4px;
-}
-
-ion-segment-button ion-label {
-  font-size: 12px;
-  margin: 0;
-}
-
-@media (max-width: 576px) {
-  ion-segment-button {
-    --padding: 4px 6px;
-  }
-
-  ion-segment-button ion-label {
-    display: none;
-  }
-
-  ion-segment-button ion-icon {
-    margin-bottom: 0;
-  }
-}
+@import '../../../../../styles/segment';

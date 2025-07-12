@@ -72,9 +72,8 @@ export const authReducer = createReducer(
     }),
   ),
 
-  on(AuthActions.signInSuccess, (state, {uid}) => ({
+  on(AuthActions.signInSuccess, (state) => ({
     ...state,
-    uid: uid,
     error: null,
     loading: false,
   })),

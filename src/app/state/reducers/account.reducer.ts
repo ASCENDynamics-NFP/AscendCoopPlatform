@@ -20,12 +20,15 @@
 // src/app/state/reducers/account.reducer.ts
 
 import {createReducer, on} from "@ngrx/store";
+import {createEntityAdapter, EntityAdapter, EntityState} from "@ngrx/entity";
 import * as AccountActions from "../actions/account.actions";
 import {Account, RelatedAccount} from "@shared/models/account.model";
 import {RelatedListing} from "@shared/models/related-listing.model";
 
-export interface AccountState {
-  entities: {[id: string]: Account};
+export const accountAdapter: EntityAdapter<Account> =
+  createEntityAdapter<Account>({selectId: (account) => account.id});
+
+export interface AccountState extends EntityState<Account> {
   relatedAccounts: {[accountId: string]: RelatedAccount[]};
   relatedListings: {[accountId: string]: RelatedListing[]};
   selectedAccountId: string | null;
@@ -38,8 +41,7 @@ export interface AccountState {
   relatedListingsLastUpdated: {[accountId: string]: number | null};
 }
 
-export const initialState: AccountState = {
-  entities: {},
+export const initialState: AccountState = accountAdapter.getInitialState({
   relatedAccounts: {},
   relatedListings: {},
   selectedAccountId: null,
@@ -49,7 +51,7 @@ export const initialState: AccountState = {
   accountsLastUpdated: null,
   relatedAccountsLastUpdated: {},
   relatedListingsLastUpdated: {},
-};
+});
 
 export const accountReducer = createReducer(
   initialState,
@@ -65,18 +67,13 @@ export const accountReducer = createReducer(
     loading: true,
     error: null,
   })),
-  on(AccountActions.loadAccountsSuccess, (state, {accounts}) => ({
-    ...state,
-    entities: accounts.reduce(
-      (entities: {[id: string]: Account}, account) => ({
-        ...entities,
-        [account.id]: account,
-      }),
-      {},
-    ),
-    loading: false,
-    accountsLastUpdated: Date.now(),
-  })),
+  on(AccountActions.loadAccountsSuccess, (state, {accounts}) =>
+    accountAdapter.setAll(accounts, {
+      ...state,
+      loading: false,
+      accountsLastUpdated: Date.now(),
+    }),
+  ),
   on(AccountActions.loadAccountsFailure, (state, {error}) => ({
     ...state,
     loading: false,
@@ -89,16 +86,14 @@ export const accountReducer = createReducer(
     loading: true,
     error: null,
   })),
-  on(AccountActions.loadAccountSuccess, (state, {account}) => ({
-    ...state,
-    entities: {
-      ...state.entities,
-      [account.id]: account,
-    },
-    selectedAccountId: account.id,
-    loading: false,
-    error: null,
-  })),
+  on(AccountActions.loadAccountSuccess, (state, {account}) =>
+    accountAdapter.upsertOne(account, {
+      ...state,
+      selectedAccountId: account.id,
+      loading: false,
+      error: null,
+    }),
+  ),
   on(AccountActions.loadAccountFailure, (state, {error}) => ({
     ...state,
     loading: false,
@@ -106,34 +101,23 @@ export const accountReducer = createReducer(
   })),
 
   // Create Account
-  on(AccountActions.createAccountSuccess, (state, {account}) => ({
-    ...state,
-    entities: {
-      ...state.entities,
-      [account.id]: account,
-    },
-  })),
+  on(AccountActions.createAccountSuccess, (state, {account}) =>
+    accountAdapter.addOne(account, state),
+  ),
 
   // Update Account
-  on(AccountActions.updateAccountSuccess, (state, {account}) => ({
-    ...state,
-    entities: {
-      ...state.entities,
-      [account.id]: account,
-    },
-  })),
+  on(AccountActions.updateAccountSuccess, (state, {account}) =>
+    accountAdapter.updateOne({id: account.id, changes: account}, state),
+  ),
 
   // Delete Account
   on(AccountActions.deleteAccountSuccess, (state, {accountId}) => {
-    const {[accountId]: removedAccount, ...entities} = state.entities;
-    const {[accountId]: removedRelatedAccounts, ...relatedAccounts} =
-      state.relatedAccounts;
-    const {[accountId]: removedRelatedListings, ...relatedListings} =
-      state.relatedListings;
+    const newState = accountAdapter.removeOne(accountId, state);
+    const {[accountId]: _ra, ...relatedAccounts} = newState.relatedAccounts;
+    const {[accountId]: _rl, ...relatedListings} = newState.relatedListings;
 
     return {
-      ...state,
-      entities,
+      ...newState,
       relatedAccounts,
       relatedListings,
     };

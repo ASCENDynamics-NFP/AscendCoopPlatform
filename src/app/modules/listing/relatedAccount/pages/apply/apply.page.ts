@@ -45,7 +45,7 @@ export class ApplyPage implements OnInit {
   coverLetterFile: File | null = null;
   authUser$: Observable<AuthUser | null>;
   listingId?: string;
-  listing$: Observable<Listing>;
+  listing$: Observable<Listing | undefined>;
   @ViewChild("resumeInput") resumeInput!: ElementRef<HTMLInputElement>;
   @ViewChild("coverLetterInput")
   coverLetterInput!: ElementRef<HTMLInputElement>;

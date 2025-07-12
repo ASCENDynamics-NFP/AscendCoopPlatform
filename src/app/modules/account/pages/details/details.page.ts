@@ -46,7 +46,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
   @ViewChild(IonContent, {static: false}) content!: IonContent;
   public accountId: string | null = null;
   authUser$!: Observable<AuthUser | null>;
-  account$!: Observable<Account | null>;
+  account$!: Observable<Account | undefined>;
   private subscription: Subscription | null = null;
   relatedAccounts$!: Observable<RelatedAccount[]>;
   relatedListings$!: Observable<RelatedListing[]>;

@@ -20,7 +20,8 @@
 // src/app/state/listings/listings.selectors.ts
 
 import {createFeatureSelector, createSelector} from "@ngrx/store";
-import {ListingsState} from "../reducers/listings.reducer";
+import {ListingsState, listingsAdapter} from "../reducers/listings.reducer";
+import {Listing} from "@shared/models/listing.model";
 
 // TTL in milliseconds (e.g., 5 minutes)
 const LISTINGS_TTL = 5 * 60 * 1000; // 5 minutes
@@ -44,24 +45,31 @@ export const selectRelatedAccountsByListingId = (listingId: string) =>
   );
 
 // Select all listings
+const {
+  selectAll: selectAllListingsArray,
+  selectEntities: selectListingEntities,
+} = listingsAdapter.getSelectors();
+
 export const selectAllListings = createSelector(
   selectListingsState,
-  (state: ListingsState) => Object.values(state.entities),
+  selectAllListingsArray,
 );
 
 // Select a specific listing by ID
 export const selectListingById = (listingId: string) =>
   createSelector(
     selectListingsState,
-    (state: ListingsState) => state.entities[listingId],
+    (state): Listing | undefined => selectListingEntities(state)[listingId],
   );
 
 // Select the currently selected listing
 export const selectSelectedListing = createSelector(
   selectListingsState,
-  (state: ListingsState) =>
+  (state) =>
     state.selectedListingId
-      ? state.entities[state.selectedListingId]
+      ? (selectListingEntities(state)[state.selectedListingId] as
+          | Listing
+          | undefined)
       : undefined,
 );
 

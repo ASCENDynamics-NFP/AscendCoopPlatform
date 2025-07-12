@@ -20,7 +20,11 @@
 // src/app/state/listings/listings.selectors.ts
 
 import {createFeatureSelector, createSelector} from "@ngrx/store";
-import {ListingsState, listingsAdapter} from "../reducers/listings.reducer";
+import {
+  ListingsState,
+  listingsAdapter,
+  initialState as listingsInitialState,
+} from "../reducers/listings.reducer";
 import {Listing} from "@shared/models/listing.model";
 
 // TTL in milliseconds (e.g., 5 minutes)
@@ -34,8 +38,13 @@ function isStale(lastUpdated: number | null, ttl: number): boolean {
 }
 
 // Feature Selector
-export const selectListingsState =
+const selectListingsStateUnsafe =
   createFeatureSelector<ListingsState>("listings");
+
+export const selectListingsState = createSelector(
+  selectListingsStateUnsafe,
+  (state) => state || listingsInitialState,
+);
 
 // Selectors for related accounts
 export const selectRelatedAccountsByListingId = (listingId: string) =>

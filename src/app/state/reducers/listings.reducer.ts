@@ -41,7 +41,7 @@ export interface ListingsState extends EntityState<Listing> {
 export const listingsAdapter: EntityAdapter<Listing> =
   createEntityAdapter<Listing>({selectId: (listing) => listing.id});
 
-const initialState: ListingsState = listingsAdapter.getInitialState({
+export const initialState: ListingsState = listingsAdapter.getInitialState({
   relatedAccounts: {},
   selectedListingId: null,
   loading: false,

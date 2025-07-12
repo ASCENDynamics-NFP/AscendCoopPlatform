@@ -20,7 +20,11 @@
 // src/app/state/selectors/account.selectors.ts
 
 import {createFeatureSelector, createSelector} from "@ngrx/store";
-import {AccountState, accountAdapter} from "../reducers/account.reducer";
+import {
+  AccountState,
+  accountAdapter,
+  initialState as accountInitialState,
+} from "../reducers/account.reducer";
 import {Account} from "@shared/models/account.model";
 
 // TTL Configuration
@@ -35,8 +39,13 @@ function isStale(lastUpdated: number | null, ttl: number): boolean {
 }
 
 // Feature Selector
-export const selectAccountState =
+const selectAccountStateUnsafe =
   createFeatureSelector<AccountState>("accounts");
+
+export const selectAccountState = createSelector(
+  selectAccountStateUnsafe,
+  (state) => state || accountInitialState,
+);
 
 // Entity Selectors
 const {

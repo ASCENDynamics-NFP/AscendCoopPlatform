@@ -34,6 +34,8 @@ import {
   switchMap,
 } from "rxjs";
 import {FirestoreService} from "../../core/services/firestore.service";
+import {ListingsService} from "../../core/services/listings.service";
+import {StorageService} from "../../core/services/storage.service";
 import * as ListingsActions from "../actions/listings.actions";
 import {Listing} from "@shared/models/listing.model";
 import {serverTimestamp} from "@angular/fire/firestore";
@@ -53,6 +55,8 @@ export class ListingsEffects {
   constructor(
     private actions$: Actions,
     private firestoreService: FirestoreService,
+    private listingsService: ListingsService,
+    private storageService: StorageService,
     private router: Router,
     private toastController: ToastController,
     private store: Store<AppState>,
@@ -96,7 +100,7 @@ export class ListingsEffects {
       withLatestFrom(this.store.select(selectAreListingsFresh)),
       filter(([_, areFresh]) => !areFresh), // Only load if not fresh
       switchMap(() =>
-        this.firestoreService
+        this.listingsService
           .getCollectionWithCondition<Listing>(
             "listings",
             "status",
@@ -248,7 +252,7 @@ export class ListingsEffects {
           take(1),
           filter((areFresh) => !areFresh), // Only load if stale
           switchMap(() =>
-            this.firestoreService
+            this.listingsService
               .getDocuments<ListingRelatedAccount>(
                 `listings/${listingId}/relatedAccounts`,
               )
@@ -288,14 +292,14 @@ export class ListingsEffects {
 
       // Upload files if present
       const resumeFile = relatedAccount.resumeFile
-        ? await this.firestoreService.uploadFile(
+        ? await this.storageService.uploadFile(
             `accounts/${applicationId}/listing/${relatedAccount.listingId}/resume.pdf`,
             relatedAccount.resumeFile,
           )
         : null;
 
       const coverLetterFile = relatedAccount.coverLetterFile
-        ? await this.firestoreService.uploadFile(
+        ? await this.storageService.uploadFile(
             `accounts/${applicationId}/listing/${relatedAccount.listingId}/coverLetter.pdf`,
             relatedAccount.coverLetterFile,
           )

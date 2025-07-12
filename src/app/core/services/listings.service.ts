@@ -21,7 +21,10 @@
 
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {Injectable} from "@angular/core";
-import {Observable} from "rxjs";
+import {Observable, of} from "rxjs";
+import {catchError, map} from "rxjs/operators";
+import {AngularFirestore, Query} from "@angular/fire/compat/firestore";
+import {DocumentData, WhereFilterOp} from "firebase/firestore";
 import {Listing} from "@shared/models/listing.model";
 import {environment} from "../../../environments/environment";
 
@@ -32,7 +35,7 @@ import {environment} from "../../../environments/environment";
 export class ListingsService {
   private endpoint = `${environment.firebaseConfig.apiUrl}/getHomepageListings`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private afs: AngularFirestore) {}
 
   /**
    * Fetch homepage listings with user's location
@@ -58,5 +61,59 @@ export class ListingsService {
     }
 
     return this.http.get<Listing[]>(this.endpoint, {params});
+  }
+}
+
+  getCollectionWithCondition<T>(
+    collectionName: string,
+    field: string,
+    condition: any,
+    value: any,
+  ): Observable<T[]> {
+    const collectionRef = this.afs.collection<T>(collectionName, (ref) =>
+      ref.where(field, condition, value),
+    );
+    return collectionRef.snapshotChanges().pipe(
+      map((actions) =>
+        actions.map((action) => {
+          const data = action.payload.doc.data() as T;
+          const id = action.payload.doc.id;
+          return {...data, id};
+        }),
+      ),
+      catchError((error) => {
+        console.error("Error retrieving collection with condition:", error);
+        return of([]);
+      }),
+    );
+  }
+
+  getDocuments<T>(
+    fullPath: string,
+    conditions?: {field: string; operator: WhereFilterOp; value: any}[],
+  ): Observable<T[]> {
+    const collectionRef = this.afs.collection<T>(fullPath, (ref) => {
+      let query: Query<DocumentData> = ref;
+      if (conditions) {
+        conditions.forEach((condition) => {
+          query = query.where(condition.field, condition.operator, condition.value);
+        });
+      }
+      return query;
+    });
+
+    return collectionRef.snapshotChanges().pipe(
+      map((actions) =>
+        actions.map((action) => {
+          const data = action.payload.doc.data() as T;
+          const id = action.payload.doc.id;
+          return {...data, id};
+        }),
+      ),
+      catchError((error) => {
+        console.error(`Error retrieving documents from path: ${fullPath}`, error);
+        return of([]);
+      }),
+    );
   }
 }

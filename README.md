@@ -6,6 +6,16 @@ Ascend Co-op Platform is an open-source platform built using Ionic and Firebase,
 
 This project uses a continuous development process. As changes are made, they are immediately deployed to a development environment.
 
+### Running Tests
+
+To execute the unit tests for both the Angular application and Firebase functions run:
+
+```bash
+npm run test
+```
+
+This command will build the project and run all Jasmine and Mocha tests.
+
 ## Latest Development Environment
 
 You can view the latest version of the application in the development environment at the following link:

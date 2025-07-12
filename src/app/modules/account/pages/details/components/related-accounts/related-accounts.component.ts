@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 import {Component, Input} from "@angular/core";
 import {Router} from "@angular/router";
-import {Account, RelatedAccount} from "../../../../../../models/account.model";
+import {Account, RelatedAccount} from "@shared/models/account.model";
 
 @Component({
   selector: "app-related-accounts",

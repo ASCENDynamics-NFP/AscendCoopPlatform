@@ -19,8 +19,8 @@
 ***********************************************************************************************/
 import {Component, Input} from "@angular/core";
 import {Router} from "@angular/router";
-import {RelatedListing} from "../../../../../../models/related-listing.model";
-import {Account} from "../../../../../../models/account.model";
+import {RelatedListing} from "@shared/models/related-listing.model";
+import {Account} from "@shared/models/account.model";
 
 @Component({
   selector: "app-related-listings",

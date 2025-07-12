@@ -20,7 +20,7 @@
 // src/app/core/store/auth/auth.actions.ts
 
 import {createAction, props} from "@ngrx/store";
-import {AuthUser} from "../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 
 export const initializeAuth = createAction("[Auth] Initialize Auth");
 

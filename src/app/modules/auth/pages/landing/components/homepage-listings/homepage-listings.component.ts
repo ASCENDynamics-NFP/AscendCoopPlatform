@@ -21,7 +21,7 @@
 
 import {Component, OnInit} from "@angular/core";
 import {ListingsService} from "../../../../../../core/services/listings.service";
-import {Listing} from "../../../../../../models/listing.model";
+import {Listing} from "@shared/models/listing.model";
 
 @Component({
   selector: "app-homepage-listings",

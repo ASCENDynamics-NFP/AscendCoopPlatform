@@ -20,8 +20,8 @@
 // src/app/state/listings/listings.actions.ts
 
 import {createAction, props} from "@ngrx/store";
-import {Listing} from "../../models/listing.model";
-import {ListingRelatedAccount} from "../../models/listing-related-account.model";
+import {Listing} from "@shared/models/listing.model";
+import {ListingRelatedAccount} from "@shared/models/listing-related-account.model";
 
 export const loadListings = createAction("[Listings Page] Load Listings");
 

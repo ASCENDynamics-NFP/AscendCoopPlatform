@@ -1,5 +1,5 @@
 import {Pipe, PipeTransform} from "@angular/core";
-import {Address} from "../../models/account.model";
+import {Address} from "@shared/models/account.model";
 
 @Pipe({
   name: "formatAddress",

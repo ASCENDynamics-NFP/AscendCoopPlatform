@@ -34,8 +34,8 @@ import {AlertController, IonicModule} from "@ionic/angular";
 import {provideMockStore, MockStore} from "@ngrx/store/testing";
 import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
 import {selectListingById} from "../../../../../state/selectors/listings.selectors";
-import {AuthUser} from "../../../../../models/auth-user.model";
-import {Listing} from "../../../../../models/listing.model";
+import {AuthUser} from "@shared/models/auth-user.model";
+import {Listing} from "@shared/models/listing.model";
 import {Timestamp} from "firebase/firestore";
 import * as ListingsActions from "../../../../../state/actions/listings.actions";
 

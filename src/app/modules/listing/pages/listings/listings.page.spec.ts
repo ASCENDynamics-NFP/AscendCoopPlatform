@@ -23,7 +23,7 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {ListingsPage} from "./listings.page";
 import {IonicModule, NavController} from "@ionic/angular";
 import {Store} from "@ngrx/store";
-import {Listing} from "../../../../models/listing.model";
+import {Listing} from "@shared/models/listing.model";
 import * as ListingsActions from "../../../../state/actions/listings.actions";
 import {Timestamp} from "firebase/firestore";
 import {provideMockStore, MockStore} from "@ngrx/store/testing";

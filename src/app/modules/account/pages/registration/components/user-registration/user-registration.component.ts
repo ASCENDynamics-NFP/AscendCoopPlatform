@@ -26,7 +26,7 @@ import {
   Email,
   PhoneNumber,
   WebLink,
-} from "../../../../../../models/account.model";
+} from "@shared/models/account.model";
 import {countryCodes} from "../../../../../../core/data/phone";
 import {countries, statesProvinces} from "../../../../../../core/data/country";
 import {Router} from "@angular/router";

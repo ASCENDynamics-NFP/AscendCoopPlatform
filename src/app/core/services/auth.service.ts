@@ -30,7 +30,7 @@ import {
 } from "../../state/selectors/auth.selectors";
 import {AuthState} from "../../state/reducers/auth.reducer";
 import {Observable} from "rxjs";
-import {AuthUser} from "../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 
 @Injectable({
   providedIn: "root",

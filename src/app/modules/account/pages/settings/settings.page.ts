@@ -21,8 +21,8 @@
 
 import {Component} from "@angular/core";
 import {Observable} from "rxjs";
-import {AuthUser} from "../../../../models/auth-user.model";
-import {Account} from "../../../../models/account.model";
+import {AuthUser} from "@shared/models/auth-user.model";
+import {Account} from "@shared/models/account.model";
 import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";

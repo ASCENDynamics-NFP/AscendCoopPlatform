@@ -22,7 +22,7 @@ import {IonicModule} from "@ionic/angular";
 import {HeroComponent} from "./hero.component";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {Timestamp} from "firebase/firestore";
-import {Listing} from "../../../../../../models/listing.model";
+import {Listing} from "@shared/models/listing.model";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
 
 describe("HeroComponent", () => {

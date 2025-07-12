@@ -23,7 +23,7 @@ import {PopoverController} from "@ionic/angular";
 import {Store, StoreModule} from "@ngrx/store";
 import {of} from "rxjs";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
-import {AuthUser} from "../../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 import {UserMenuComponent} from "../user-menu/user-menu.component";
 
 describe("AppHeaderComponent", () => {

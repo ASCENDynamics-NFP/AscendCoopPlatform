@@ -28,8 +28,8 @@ import {
 import {GroupListPage} from "./group-list.page";
 import {provideMockStore, MockStore} from "@ngrx/store/testing";
 import {FormsModule} from "@angular/forms";
-import {Account, RelatedAccount} from "../../../../models/account.model";
-import {AuthUser} from "../../../../models/auth-user.model";
+import {Account, RelatedAccount} from "@shared/models/account.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {
   selectAccountLoading,

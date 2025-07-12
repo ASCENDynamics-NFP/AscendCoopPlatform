@@ -22,7 +22,7 @@
 import {Component, OnDestroy, OnInit} from "@angular/core";
 import {Router} from "@angular/router";
 import {ModalController} from "@ionic/angular";
-import {AuthUser} from "../../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 import {TranslateService} from "@ngx-translate/core";
 import {Subscription, combineLatest} from "rxjs";
 import {Store} from "@ngrx/store";

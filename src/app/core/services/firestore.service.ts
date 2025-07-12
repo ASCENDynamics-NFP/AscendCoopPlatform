@@ -22,10 +22,10 @@ import {Injectable} from "@angular/core";
 import {combineLatest, firstValueFrom, Observable, of} from "rxjs";
 import {map, catchError} from "rxjs/operators";
 import {FirebaseError} from "firebase/app";
-import {Account, RelatedAccount} from "../../models/account.model";
+import {Account, RelatedAccount} from "@shared/models/account.model";
 import {AngularFirestore, Query} from "@angular/fire/compat/firestore";
 import {AngularFireStorage} from "@angular/fire/compat/storage";
-import {RelatedListing} from "../../models/related-listing.model";
+import {RelatedListing} from "@shared/models/related-listing.model";
 import {DocumentData, WhereFilterOp} from "firebase/firestore";
 
 @Injectable({

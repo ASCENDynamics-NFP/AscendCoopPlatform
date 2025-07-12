@@ -27,7 +27,7 @@ import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {Timestamp} from "firebase/firestore";
 import {BehaviorSubject} from "rxjs";
-import {Listing} from "../../../../models/listing.model";
+import {Listing} from "@shared/models/listing.model";
 
 describe("ListingCreatePage", () => {
   let component: ListingCreatePage;

@@ -18,7 +18,7 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Component, Input} from "@angular/core";
-import {Account, WebLink} from "../../../../../../models/account.model";
+import {Account, WebLink} from "@shared/models/account.model";
 
 @Component({
   selector: "app-profile",

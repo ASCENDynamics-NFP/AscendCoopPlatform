@@ -22,7 +22,7 @@
 // import {ReactiveFormsModule, FormBuilder} from "@angular/forms";
 // import {Store, StoreModule} from "@ngrx/store";
 // import {NO_ERRORS_SCHEMA} from "@angular/core";
-// import {Account} from "../../../../../../models/account.model";
+// import {Account} from "@shared/models/account.model";
 // import * as AccountActions from "../../../../../../state/actions/account.actions";
 // import {Timestamp} from "firebase/firestore";
 

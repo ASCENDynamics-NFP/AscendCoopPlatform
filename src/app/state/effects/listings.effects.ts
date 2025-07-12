@@ -35,9 +35,9 @@ import {
 } from "rxjs";
 import {FirestoreService} from "../../core/services/firestore.service";
 import * as ListingsActions from "../actions/listings.actions";
-import {Listing} from "../../models/listing.model";
+import {Listing} from "@shared/models/listing.model";
 import {serverTimestamp} from "@angular/fire/firestore";
-import {ListingRelatedAccount} from "../../models/listing-related-account.model";
+import {ListingRelatedAccount} from "@shared/models/listing-related-account.model";
 import {Router} from "@angular/router";
 import {ToastController} from "@ionic/angular";
 import {Store} from "@ngrx/store";

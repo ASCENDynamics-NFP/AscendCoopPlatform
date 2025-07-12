@@ -21,7 +21,7 @@
 
 import {createReducer, on} from "@ngrx/store";
 import * as AuthActions from "../actions/auth.actions";
-import {AuthUser} from "../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 
 export interface AuthState {
   user: AuthUser | null;

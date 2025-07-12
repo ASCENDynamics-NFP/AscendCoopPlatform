@@ -22,8 +22,8 @@ import {UsersPage} from "./users.page";
 import {Store, StoreModule} from "@ngrx/store";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
 import {of, Subject} from "rxjs";
-import {AuthUser} from "../../../../models/auth-user.model";
-import {Account, RelatedAccount} from "../../../../models/account.model";
+import {AuthUser} from "@shared/models/auth-user.model";
+import {Account, RelatedAccount} from "@shared/models/account.model";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {
   selectFilteredAccounts,

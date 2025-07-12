@@ -20,13 +20,10 @@
 // src/app/state/reducers/index.ts
 
 import {ActionReducerMap} from "@ngrx/store";
-import {AuthState, authReducer} from "./auth.reducer";
-// Other imports...
-
-export interface AppState {
-  auth: AuthState;
-  // Other states...
-}
+import {authReducer} from "./auth.reducer";
+import {accountReducer} from "./account.reducer";
+import {listingsReducer} from "./listings.reducer";
+import {AppState} from "../app.state";
 
 export const reducers: ActionReducerMap<AppState> = {
   auth: authReducer,

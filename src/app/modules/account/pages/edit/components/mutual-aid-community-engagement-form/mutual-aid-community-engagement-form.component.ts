@@ -23,7 +23,7 @@ import {Store} from "@ngrx/store";
 import {
   Account,
   MutualAidCommunityEngagement,
-} from "../../../../../../models/account.model";
+} from "@shared/models/account.model";
 import {
   servicesOptions,
   communityAffiliationsOptions,

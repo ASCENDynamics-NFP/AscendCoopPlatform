@@ -21,10 +21,7 @@
 
 import {Component, Input, OnInit} from "@angular/core";
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {
-  Account,
-  VolunteerPreferences,
-} from "../../../../../../models/account.model";
+import {Account, VolunteerPreferences} from "@shared/models/account.model";
 import {Store} from "@ngrx/store";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 import {areasOfInterestOptions} from "../../../../../../core/data/options";

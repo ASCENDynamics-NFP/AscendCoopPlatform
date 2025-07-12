@@ -34,14 +34,14 @@ import {
 } from "@ionic/angular";
 import {ActivatedRoute, Router} from "@angular/router";
 import {provideMockStore, MockStore} from "@ngrx/store/testing";
-import {Listing} from "../../../../models/listing.model";
+import {Listing} from "@shared/models/listing.model";
 import * as ListingsActions from "../../../../state/actions/listings.actions";
 import {Timestamp} from "firebase/firestore";
 import {TimestampPipe} from "../../../../shared/pipes/timestamp.pipe";
 import {selectListingById} from "../../../../state/selectors/listings.selectors";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {AppState} from "../../../../state/app.state";
-import {AuthUser} from "../../../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 import {Store} from "@ngrx/store";
 import {Location} from "@angular/common";
 import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";

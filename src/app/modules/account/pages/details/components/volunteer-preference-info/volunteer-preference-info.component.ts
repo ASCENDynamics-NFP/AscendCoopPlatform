@@ -18,7 +18,7 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
-import {VolunteerPreferences} from "../../../../../../models/account.model";
+import {VolunteerPreferences} from "@shared/models/account.model";
 
 @Component({
   selector: "app-volunteer-preference-info",

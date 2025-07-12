@@ -21,7 +21,7 @@
 
 import {createFeatureSelector, createSelector} from "@ngrx/store";
 import {AuthState} from "../reducers/auth.reducer";
-import {AuthUser} from "../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 
 export const selectAuthState = createFeatureSelector<AuthState>("auth");
 

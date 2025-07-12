@@ -25,7 +25,7 @@ import {
   Email,
   PhoneNumber,
   Address,
-} from "../../../../../../models/account.model";
+} from "@shared/models/account.model";
 import {Store} from "@ngrx/store";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 import {countryCodes} from "../../../../../../core/data/phone";

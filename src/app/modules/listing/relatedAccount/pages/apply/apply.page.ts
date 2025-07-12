@@ -24,13 +24,13 @@ import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {Store} from "@ngrx/store";
 import {AppState} from "../../../../../state/app.state";
 import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
-import {AuthUser} from "../../../../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 import {Observable} from "rxjs";
 import {take} from "rxjs/operators";
 import * as ListingsActions from "../../../../../state/actions/listings.actions";
 import {ActivatedRoute} from "@angular/router";
 import {selectListingById} from "../../../../../state/selectors/listings.selectors";
-import {Listing} from "../../../../../models/listing.model";
+import {Listing} from "@shared/models/listing.model";
 import {AlertController} from "@ionic/angular";
 import {MetaService} from "../../../../../core/services/meta.service";
 
@@ -45,7 +45,7 @@ export class ApplyPage implements OnInit {
   coverLetterFile: File | null = null;
   authUser$: Observable<AuthUser | null>;
   listingId?: string;
-  listing$: Observable<Listing>;
+  listing$: Observable<Listing | undefined>;
   @ViewChild("resumeInput") resumeInput!: ElementRef<HTMLInputElement>;
   @ViewChild("coverLetterInput")
   coverLetterInput!: ElementRef<HTMLInputElement>;

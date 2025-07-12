@@ -20,8 +20,8 @@
 // src/app/state/selectors/account.selectors.ts
 
 import {createFeatureSelector, createSelector} from "@ngrx/store";
-import {AccountState} from "../reducers/account.reducer";
-import {Account} from "../../models/account.model";
+import {AccountState, accountAdapter} from "../reducers/account.reducer";
+import {Account} from "@shared/models/account.model";
 
 // TTL Configuration
 const ACCOUNTS_TTL = 5 * 60 * 1000; // 5 minutes
@@ -39,18 +39,26 @@ export const selectAccountState =
   createFeatureSelector<AccountState>("accounts");
 
 // Entity Selectors
+const {
+  selectAll: selectAllAccountsArray,
+  selectEntities: selectAccountEntityMap,
+} = accountAdapter.getSelectors();
+
 export const selectAccountEntities = createSelector(
   selectAccountState,
-  (state) => state.entities,
+  selectAccountEntityMap,
 );
 
 export const selectAllAccounts = createSelector(
-  selectAccountEntities,
-  (entities) => Object.values(entities),
+  selectAccountState,
+  selectAllAccountsArray,
 );
 
 export const selectAccountById = (accountId: string) =>
-  createSelector(selectAccountEntities, (entities) => entities[accountId]);
+  createSelector(
+    selectAccountEntities,
+    (entities): Account | undefined => entities[accountId],
+  );
 
 // Selected Account Selectors
 export const selectSelectedAccountId = createSelector(

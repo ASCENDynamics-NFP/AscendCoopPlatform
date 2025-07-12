@@ -31,9 +31,9 @@
 //   selectRelatedAccountsByListingId,
 // } from "../../../../../state/selectors/listings.selectors";
 // import {ActivatedRoute, Router} from "@angular/router";
-// import {AuthUser} from "../../../../../models/auth-user.model";
-// import {Listing} from "../../../../../models/listing.model";
-// import {ListingRelatedAccount} from "../../../../../models/listing-related-account.model";
+// import {AuthUser} from "@shared/models/auth-user.model";
+// import {Listing} from "@shared/models/listing.model";
+// import {ListingRelatedAccount} from "@shared/models/listing-related-account.model";
 // import {of} from "rxjs";
 // import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 // import {ApplicantDetailsModalComponent} from "./components/applicant-details-modal/applicant-details-modal.component";

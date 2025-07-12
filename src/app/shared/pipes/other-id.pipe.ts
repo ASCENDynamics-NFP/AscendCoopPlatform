@@ -20,7 +20,7 @@
 // other-id.pipe.ts
 
 import {Pipe, PipeTransform} from "@angular/core";
-import {RelatedAccount} from "../../models/account.model";
+import {RelatedAccount} from "@shared/models/account.model";
 
 @Pipe({
   name: "otherId",

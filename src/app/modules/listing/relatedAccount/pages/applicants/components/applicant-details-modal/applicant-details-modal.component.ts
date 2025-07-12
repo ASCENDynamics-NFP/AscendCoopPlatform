@@ -24,7 +24,7 @@ import {ModalController} from "@ionic/angular";
 import {Router} from "@angular/router";
 import {Store} from "@ngrx/store";
 import {AppState} from "../../../../../../../state/app.state";
-import {ListingRelatedAccount} from "../../../../../../../models/listing-related-account.model";
+import {ListingRelatedAccount} from "@shared/models/listing-related-account.model";
 import * as ListingsActions from "../../../../../../../state/actions/listings.actions";
 
 @Component({

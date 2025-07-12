@@ -26,9 +26,9 @@ import {
   ValidationErrors,
 } from "@angular/forms";
 import {LoadingController, ModalController} from "@ionic/angular";
-import {AuthUser} from "../../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 import {FirestoreService} from "../../../core/services/firestore.service";
-import {AppFeedback} from "../../../models/feedback.model";
+import {AppFeedback} from "@shared/models/feedback.model";
 import {
   ref,
   getStorage,

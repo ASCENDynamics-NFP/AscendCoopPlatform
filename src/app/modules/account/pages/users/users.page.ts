@@ -32,8 +32,8 @@ import {
   filter,
 } from "rxjs/operators";
 import {Store} from "@ngrx/store";
-import {AuthUser} from "../../../../models/auth-user.model";
-import {Account, RelatedAccount} from "../../../../models/account.model";
+import {AuthUser} from "@shared/models/auth-user.model";
+import {Account, RelatedAccount} from "@shared/models/account.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {
   selectFilteredAccounts,

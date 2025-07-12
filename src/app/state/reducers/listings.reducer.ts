@@ -20,12 +20,12 @@
 // src/app/state/listings/listings.reducer.ts
 
 import {createReducer, on} from "@ngrx/store";
+import {createEntityAdapter, EntityAdapter, EntityState} from "@ngrx/entity";
 import * as ListingsActions from "../actions/listings.actions";
-import {Listing} from "../../models/listing.model";
-import {ListingRelatedAccount} from "../../models/listing-related-account.model";
+import {Listing} from "@shared/models/listing.model";
+import {ListingRelatedAccount} from "@shared/models/listing-related-account.model";
 
-export interface ListingsState {
-  entities: {[id: string]: Listing}; // Dictionary of listings by ID
+export interface ListingsState extends EntityState<Listing> {
   relatedAccounts: {[listingId: string]: ListingRelatedAccount[]};
   selectedListingId: string | null; // Currently selected listing
   loading: boolean; // Indicates if a request is in progress
@@ -38,8 +38,10 @@ export interface ListingsState {
   relatedAccountsLastUpdated: {[listingId: string]: number | null};
 }
 
-const initialState: ListingsState = {
-  entities: {},
+export const listingsAdapter: EntityAdapter<Listing> =
+  createEntityAdapter<Listing>({selectId: (listing) => listing.id});
+
+const initialState: ListingsState = listingsAdapter.getInitialState({
   relatedAccounts: {},
   selectedListingId: null,
   loading: false,
@@ -49,7 +51,7 @@ const initialState: ListingsState = {
   // Timestamps for cache invalidation
   listingsLastUpdated: null,
   relatedAccountsLastUpdated: {},
-};
+});
 
 export const listingsReducer = createReducer(
   initialState,
@@ -65,18 +67,13 @@ export const listingsReducer = createReducer(
     loading: true,
     error: null,
   })),
-  on(ListingsActions.loadListingsSuccess, (state, {listings}) => ({
-    ...state,
-    entities: listings.reduce(
-      (entities, listing) => ({
-        ...entities,
-        [listing.id]: listing,
-      }),
-      {},
-    ),
-    listingsLastUpdated: Date.now(),
-    loading: false,
-  })),
+  on(ListingsActions.loadListingsSuccess, (state, {listings}) =>
+    listingsAdapter.setAll(listings, {
+      ...state,
+      listingsLastUpdated: Date.now(),
+      loading: false,
+    }),
+  ),
   on(ListingsActions.loadListingsFailure, (state, {error}) => ({
     ...state,
     loading: false,
@@ -84,17 +81,19 @@ export const listingsReducer = createReducer(
   })),
 
   // Load Listing by ID
-  on(ListingsActions.loadListingByIdSuccess, (state, {listing}) => ({
-    ...state,
-    entities: listing
-      ? {
-          ...state.entities,
-          [listing.id]: listing,
-        }
-      : state.entities,
-    selectedListingId: listing?.id || null,
-    loading: false,
-  })),
+  on(ListingsActions.loadListingByIdSuccess, (state, {listing}) =>
+    listing
+      ? listingsAdapter.upsertOne(listing, {
+          ...state,
+          selectedListingId: listing.id,
+          loading: false,
+        })
+      : {
+          ...state,
+          selectedListingId: null,
+          loading: false,
+        },
+  ),
   on(ListingsActions.loadListingByIdFailure, (state, {error}) => ({
     ...state,
     error,
@@ -102,15 +101,13 @@ export const listingsReducer = createReducer(
   })),
 
   // Create Listing
-  on(ListingsActions.createListingSuccess, (state, {listing}) => ({
-    ...state,
-    entities: {
-      ...state.entities,
-      [listing.id]: listing,
-    },
-    selectedListingId: listing.id,
-    loading: false,
-  })),
+  on(ListingsActions.createListingSuccess, (state, {listing}) =>
+    listingsAdapter.addOne(listing, {
+      ...state,
+      selectedListingId: listing.id,
+      loading: false,
+    }),
+  ),
   on(ListingsActions.createListingFailure, (state, {error}) => ({
     ...state,
     loading: false,
@@ -118,14 +115,15 @@ export const listingsReducer = createReducer(
   })),
 
   // Update Listing
-  on(ListingsActions.updateListingSuccess, (state, {listing}) => ({
-    ...state,
-    entities: {
-      ...state.entities,
-      [listing.id]: listing,
-    },
-    loading: false,
-  })),
+  on(ListingsActions.updateListingSuccess, (state, {listing}) =>
+    listingsAdapter.updateOne(
+      {id: listing.id, changes: listing},
+      {
+        ...state,
+        loading: false,
+      },
+    ),
+  ),
   on(ListingsActions.updateListingFailure, (state, {error}) => ({
     ...state,
     loading: false,
@@ -134,12 +132,11 @@ export const listingsReducer = createReducer(
 
   // Delete Listing
   on(ListingsActions.deleteListingSuccess, (state, {id}) => {
-    const {[id]: removed, ...entities} = state.entities;
+    const newState = listingsAdapter.removeOne(id, state);
     const selectedListingId =
-      state.selectedListingId === id ? null : state.selectedListingId;
+      newState.selectedListingId === id ? null : newState.selectedListingId;
     return {
-      ...state,
-      entities,
+      ...newState,
       selectedListingId,
     };
   }),

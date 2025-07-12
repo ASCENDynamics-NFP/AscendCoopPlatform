@@ -24,7 +24,7 @@ import {PopoverController} from "@ionic/angular";
 import {Store, StoreModule} from "@ngrx/store";
 import {of} from "rxjs";
 import * as AuthActions from "../../../state/actions/auth.actions";
-import {AuthUser} from "../../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 
 describe("UserMenuComponent", () => {
   let component: UserMenuComponent;

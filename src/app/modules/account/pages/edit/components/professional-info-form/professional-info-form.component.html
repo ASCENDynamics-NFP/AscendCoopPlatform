@@ -122,6 +122,27 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           ></ion-textarea>
         </ion-col>
       </ion-row>
+      <!-- Resume Upload -->
+      <ion-row>
+        <ion-col>
+          <ion-item lines="none">
+            <ion-label>Upload Resume</ion-label>
+            <ion-button fill="outline" (click)="resumeInput.click()">
+              Choose File
+            </ion-button>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx"
+              (change)="onFileSelect($event)"
+              #resumeInput
+              hidden
+            />
+          </ion-item>
+          <ion-text *ngIf="resumeFileName">
+            Selected File: {{ resumeFileName }}
+          </ion-text>
+        </ion-col>
+      </ion-row>
       <!-- Save Button -->
       <ion-row>
         <ion-col>

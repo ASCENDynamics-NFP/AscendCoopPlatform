@@ -99,7 +99,11 @@ export interface ProfessionalInformation {
   skillsAndExpertise?: string[];
   currentJobTitle?: string;
   linkedInProfile?: string;
-  resumeUpload?: File | null;
+  /**
+   * Local resume file selected by the user or the resulting download URL
+   * after the file has been uploaded to Firebase Storage.
+   */
+  resumeUpload?: File | string | null;
   educationalBackground?: string;
 }
 

@@ -57,6 +57,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               professionalInfo?.linkedInProfile
             }}</a>
           </div>
+          <div class="info-block" *ngIf="professionalInfo?.resumeUpload">
+            <h2>Resume</h2>
+            <ion-button fill="clear" [href]="professionalInfo?.resumeUpload" target="_blank">
+              Download
+            </ion-button>
+          </div>
         </ion-col>
       </ion-row>
     </ion-grid>

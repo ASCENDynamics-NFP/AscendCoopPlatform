@@ -32,7 +32,7 @@ export class StorageService {
   async uploadFile(path: string, file: File): Promise<string> {
     const fileRef = this.storage.ref(path);
 
-    await this.storage.upload(path, file);
+    await this.storage.upload(path, file, {contentType: file.type});
     return firstValueFrom(fileRef.getDownloadURL());
   }
 }

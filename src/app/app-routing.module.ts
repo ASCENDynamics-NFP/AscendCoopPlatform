@@ -48,6 +48,11 @@ export const routes: Routes = [
     loadChildren: () =>
       import("./modules/listing/listing.module").then((m) => m.ListingModule),
   },
+  {
+    path: "info",
+    loadChildren: () =>
+      import("./modules/info/info.module").then((m) => m.InfoModule),
+  },
 ];
 
 // Router options

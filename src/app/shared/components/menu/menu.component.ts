@@ -42,6 +42,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   user: AuthUser | null = null;
   menuPages: MenuItem[] = [];
   project: MenuItem[] = [];
+  infoPages: MenuItem[] = [];
 
   constructor(
     private store: Store,
@@ -88,6 +89,18 @@ export class MenuComponent implements OnInit, OnDestroy {
         url: "https://github.com/ASCENDynamics-NFP/AscendCoopPlatform",
         icon: "code-slash",
       },
+    ];
+
+    // Initialize informational page links
+    this.infoPages = [
+      {title: "About Us", url: "/info/about-us", icon: "information-circle"},
+      {title: "Contact Us", url: "/info/contact-us", icon: "mail"},
+      {title: "Services", url: "/info/services", icon: "construct"},
+      {title: "Startups", url: "/info/startups", icon: "rocket"},
+      {title: "Nonprofits", url: "/info/nonprofits", icon: "heart"},
+      {title: "Event Calendar", url: "/info/event-calendar", icon: "calendar"},
+      {title: "Our Team", url: "/info/team", icon: "people"},
+      {title: "Think Tank", url: "/info/think-tank", icon: "bulb"},
     ];
 
     // Combine authUser and language change observables

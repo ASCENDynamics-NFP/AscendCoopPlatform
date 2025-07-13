@@ -1,112 +1,33 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>event-calendar</ion-title>
-  </ion-toolbar>
+  <app-header title="Event Calendar"></app-header>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">event-calendar</ion-title>
-    </ion-toolbar>
+    <app-header title="Event Calendar"></app-header>
   </ion-header>
-  <!-- Responsive navbar-->
-  <nav class="navbar navbar-collapse-lg navbar-dark bg-dark">
-    <div class="container">
-      <a class="navbar-brand text-wrap" href="/"
-        >ASCENDynamics NFP - Event Calendar</a
-      >
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/about-us.html">About Us</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/services.html">Services</a>
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link active"
-              aria-current="page"
-              href="/page/event-calendar.html"
-              >Event Calendar</a
-            >
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/startups.html">Startups</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/nonprofits.html">Nonprofits</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/think-tank.html">Think Tank </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/team.html">Team</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/contact-us.html">Contact Us</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="https://buy.stripe.com/bIY5mC9sY1ob4TufYY"
-              >Donate</a
-            >
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-  <!-- Header - set the background image for the header in the line below-->
-  <header
+  <ion-grid fixed>
+    <!-- Header - set the background image for the header in the line below-->
+  <ion-img
     class="py-5 bg-image-full"
-    style="
-      background-image: url(&quot;../img/pexels-snapwire-37728.jpg&quot;);
-      height: calc(50vh - 56px);
-    "
-  >
-    <div class="text-center my-5">
-      <!-- <img class="img-fluid rounded-circle mb-4" src="img\pexels-duane-viljoen-7238619.jpg" alt="..." /> -->
-      <h1 class="text-dark fs-3 fw-bolder">Explore Our Upcoming Events</h1>
-      <p class="text-dark mb-0">
-        Join us in making a difference. Discover events, workshops, and
-        gatherings that align with our mission. Particpate, learn, and
-        contribute to our cause!
-      </p>
-    </div>
-  </header>
+    src="assets/image/pexels-snapwire-37728.jpg"
+    style="height: calc(50vh - 56px);"
+  ></ion-img>
+  <div class="text-center my-5">
+    <h1 class="text-dark fs-3 fw-bolder">Explore Our Upcoming Events</h1>
+    <p class="text-dark mb-0">
+      Join us in making a difference. Discover events, workshops, and
+      gatherings that align with our mission. Particpate, learn, and contribute
+      to our cause!
+    </p>
+  </div>
   <!-- Content section-->
-  <section>
-    <div class="container my-5">
-      <div class="row justify-content-center">
-        <div class="col-lg-10">
-          <!-- <h2>Address and Phone</h2>
-                        <p class="lead">If you prefer to Event Calendar directly, you can find our contact information below:</p>
-                        <p class="mb-0">Address: 7649 W Irving Park Rd 1N, Chicago, Illinois</p>
-                        <p class="mb-0">Phone: 708-670-5104</p> -->
-          <iframe
-            src="https://calendar.google.com/calendar/embed?src=c_2fe7a9f24d9592ffd143dcecc2aaaef9d7ce7ef2c65ee0abcff57155a83caa99%40group.calendar.google.com&ctz=America%2FIndiana%2FKnox"
-            style="border: 0"
-            width="100%"
-            height="600"
-            frameborder="0"
-            scrolling="no"
-          ></iframe>
-        </div>
-      </div>
-    </div>
-  </section>
+  <ion-card class="ion-margin">
+    <iframe
+      src="https://calendar.google.com/calendar/embed?src=c_2fe7a9f24d9592ffd143dcecc2aaaef9d7ce7ef2c65ee0abcff57155a83caa99%40group.calendar.google.com&ctz=America%2FIndiana%2FKnox"
+      style="border: 0" width="100%" height="600" frameborder="0" scrolling="no"
+    ></iframe>
+  </ion-card>
   <!-- Content section-->
   <!-- <section class="py-5">
         <div class="container my-5">
@@ -133,57 +54,5 @@
                 </div>
             </div>
         </section> -->
-  <!-- Footer-->
-  <footer class="py-5 bg-dark">
-    <!-- Responsive navbar-->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <div class="container">
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav mb-2 mb-lg-0" style="margin: auto">
-            <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/about-us.html">About Us</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/services.html">Services</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/startups.html">Startups</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/nonprofits.html">Nonprofits</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/think-tank.html">Think Tank </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/team.html">Team</a>
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link"
-                aria-current="page"
-                href="/page/contact-us.html"
-                >Event Calendar</a
-              >
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link"
-                target="_blank"
-                href="https://buy.stripe.com/bIY5mC9sY1ob4TufYY"
-                >Donate</a
-              >
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-    <!-- Social Media Links -->
-    <div class="container">
-      <p class="m-0 text-center text-white">
-        Copyright &copy; ASCENDynamics 2021
-      </p>
-    </div>
-  </footer>
+  </ion-grid>
 </ion-content>

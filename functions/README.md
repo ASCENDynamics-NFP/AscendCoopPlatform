@@ -61,4 +61,12 @@ npm --prefix functions test
 ```
 
 From the repository root you can also run `npm run test` which executes
-Angular and functions tests together.
+Angular and functions tests together. Ensure the global `@angular/cli` package
+and a headless Chrome binary are installed beforehand so Karma can launch the
+browser. On Ubuntu you can install them with:
+
+```bash
+npm install -g @angular/cli
+sudo apt-get update
+sudo apt-get install -y chromium-browser
+```

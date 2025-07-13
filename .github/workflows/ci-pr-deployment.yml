@@ -78,6 +78,12 @@ jobs:
           npm ci                            # Install root project dependencies
           npm --prefix functions ci         # Install functions dependencies
 
+      - name: Install Angular CLI and Chrome
+        run: |
+          npm install -g @angular/cli
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser
+
       # Step 5: Set environment variables
       - name: Set environment variables
         run: |

@@ -17,7 +17,17 @@ To execute the unit tests for both the Angular application and Firebase function
 npm run test
 ```
 
-This command will build the project and run all Jasmine and Mocha tests.
+This command will build the project and run all Jasmine and Mocha tests. Ensure
+`@angular/cli` is installed globally and that a headless Chrome binary is
+available so Karma can launch the browser.
+
+Example installation on Ubuntu:
+
+```bash
+npm install -g @angular/cli
+sudo apt-get update
+sudo apt-get install -y chromium-browser
+```
 
 ## Latest Development Environment
 

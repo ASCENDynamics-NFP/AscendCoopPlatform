@@ -55,11 +55,6 @@ export class MenuComponent implements OnInit, OnDestroy {
     // Initialize project links
     this.project = [
       {
-        title: "ASCENDynamics NFP",
-        url: "https://ascendynamics.org",
-        icon: "globe-outline",
-      },
-      {
         title: "LinkedIn",
         url: "https://www.linkedin.com/company/ascendynamics-nfp",
         icon: "logo-linkedin",
@@ -93,6 +88,7 @@ export class MenuComponent implements OnInit, OnDestroy {
 
     // Initialize informational page links
     this.infoPages = [
+      {title: "Home", url: "", icon: "globe-outline"},
       {title: "About Us", url: "/info/about-us", icon: "information-circle"},
       {title: "Services", url: "/info/services", icon: "construct"},
       {title: "Startups", url: "/info/startups", icon: "rocket"},

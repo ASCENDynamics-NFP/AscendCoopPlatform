@@ -376,3 +376,51 @@ ion-header {
     align-items: center;
   }
 }
+
+@media (max-width: 600px) {
+  .hero {
+    padding: 40px 0;
+
+    .hero-text {
+      h1 {
+        font-size: 2rem;
+      }
+
+      p {
+        font-size: 1rem;
+      }
+    }
+  }
+  .features h2 {
+    font-size: 2.2rem;
+  }
+  .footer-logo img {
+    max-width: 130px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 30px 0;
+
+    .hero-text {
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      p {
+        font-size: 0.9rem;
+      }
+    }
+  }
+  .features h2 {
+    font-size: 2rem;
+  }
+  .footer-nav h3,
+  .footer-social h3 {
+    font-size: 1rem;
+  }
+  .footer-logo img {
+    max-width: 120px;
+  }
+}

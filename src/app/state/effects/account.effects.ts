@@ -34,6 +34,8 @@ import {
   filter,
 } from "rxjs/operators";
 import {FirestoreService} from "../../core/services/firestore.service";
+import {AccountsService} from "../../core/services/accounts.service";
+import {ListingsService} from "../../core/services/listings.service";
 import {Account} from "@shared/models/account.model";
 import {RelatedListing} from "@shared/models/related-listing.model";
 import {selectAuthUser} from "../selectors/auth.selectors";
@@ -56,6 +58,8 @@ export class AccountEffects {
   constructor(
     private actions$: Actions,
     private firestoreService: FirestoreService,
+    private accountsService: AccountsService,
+    private listingsService: ListingsService,
     private store: Store<AppState>,
     private router: Router,
     private toastController: ToastController,
@@ -68,7 +72,7 @@ export class AccountEffects {
       withLatestFrom(this.store.select(selectAreAccountsFresh)),
       filter(([_, areFresh]) => !areFresh),
       switchMap(() =>
-        this.firestoreService.getAllAccounts().pipe(
+        this.accountsService.getAllAccounts().pipe(
           map((accounts) => AccountActions.loadAccountsSuccess({accounts})),
           catchError((error) =>
             of(
@@ -221,7 +225,7 @@ export class AccountEffects {
       ofType(AccountActions.searchAccounts),
       debounceTime(300),
       switchMap(({query}) =>
-        from(this.firestoreService.searchAccountByName("accounts", query)).pipe(
+        from(this.accountsService.searchAccountByName("accounts", query)).pipe(
           map((accountsData) => {
             const accounts: Account[] = (accountsData || []).map(
               (accountData) => ({
@@ -323,7 +327,7 @@ export class AccountEffects {
           take(1),
           filter((areFresh) => !areFresh),
           switchMap(() =>
-            this.firestoreService.getRelatedAccounts(accountId).pipe(
+            this.accountsService.getRelatedAccounts(accountId).pipe(
               map((relatedAccounts) =>
                 AccountActions.loadRelatedAccountsSuccess({
                   accountId,
@@ -394,7 +398,7 @@ export class AccountEffects {
           take(1),
           filter((areFresh) => !areFresh),
           switchMap(() =>
-            this.firestoreService
+            this.listingsService
               .getDocuments<RelatedListing>(
                 `accounts/${accountId}/relatedListings`,
               )

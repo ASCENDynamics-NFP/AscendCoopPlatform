@@ -81,10 +81,14 @@ export class ListingDetailPage implements OnInit {
             listing.skills && listing.skills.length > 0
               ? listing.skills.map((skill) => skill.name).join(", ")
               : "No specific skills required, just bring your enthusiasm!";
+          const responsibilitiesText =
+            listing.responsibilities && listing.responsibilities.length > 0
+              ? listing.responsibilities.join(", ")
+              : "Multiple responsibilities";
 
           this.metaService.updateMetaTags(
             `${listing.title} | ASCENDynamics NFP`,
-            `Join ${listing.organization} as a ${listing.type}. Responsibilities include ${listing.responsibilities.join(", ")}. Skills required: ${skillsText}. Benefits include: ${benefitsText}.`,
+            `Join ${listing.organization} as a ${listing.type}. Responsibilities include ${responsibilitiesText}. Skills required: ${skillsText}. Benefits include: ${benefitsText}.`,
             `listing, volunteer, ${listing.type}, ${skillsText}`,
             {
               title: `${listing.title} | ASCENDynamics NFP`,

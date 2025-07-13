@@ -14,7 +14,6 @@
 
     img {
       max-width: 9.375rem;
-      margin-bottom: 1.25rem;
     }
 
     p {
@@ -84,6 +83,20 @@
       color: var(--ion-text-color);
     }
   }
+}
+
+/* Event Calendar Styles */
+.content-image {
+  max-height: 300px;
+  width: 100%;
+  object-fit: cover;
+  margin-bottom: 1rem;
+}
+
+.text-section {
+  padding: 1rem;
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 /* Responsive Styles */

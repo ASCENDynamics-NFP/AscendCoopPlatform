@@ -14,7 +14,6 @@
 
     img {
       max-width: 9.375rem;
-      margin-bottom: 1.25rem;
     }
 
     p {
@@ -106,4 +105,17 @@
   .footer-nav ul {
     align-items: center;
   }
+}
+
+.content-image {
+  max-height: 300px;
+  width: 100%;
+  object-fit: cover;
+  margin-bottom: 1rem;
+}
+
+.text-section {
+  padding: 1rem;
+  font-size: 1rem;
+  line-height: 1.6;
 }

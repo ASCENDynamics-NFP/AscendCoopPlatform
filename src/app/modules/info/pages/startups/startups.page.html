@@ -7,97 +7,111 @@
     <app-header title="Startups"></app-header>
   </ion-header>
   <ion-grid fixed>
-    <!-- Header - set the background image for the header in the line below-->
-  <ion-img
-    class="py-5 bg-image-full"
-    src="assets/image/pexels-snapwire-37728.jpg"
-    style="height: calc(50vh - 56px);"
-  ></ion-img>
-  <div class="text-center my-5">
-    <h1 class="text-dark fs-3 fw-bolder">Launch Your Worker-Owned Startup</h1>
-    <p class="text-dark mb-0">ASCENDynamics is here to help startups succeed.</p>
-  </div>
-  <!-- Content section-->
-  <section class="py-5">
-    <div class="container my-5">
-      <div class="row justify-content-center">
-        <div class="col-lg-6">
-          <h2>Startup Incubator</h2>
-          <p class="lead">
-            Our startup incubator program is designed to help entrepreneurs
-            launch worker-owned cooperatives. We provide technical, marketing,
-            development, funding, and networking resources to help startups get
-            off the ground and succeed. Guidance includes SEO basics for better
-            visibility.
-          </p>
-          <!-- <p class="mb-0"></p> -->
+    <!-- Content section-->
+    <section class="py-5">
+      <div class="container my-5">
+        <div class="row justify-content-center">
+          <div class="col-lg-6">
+            <h2>Startup Incubator</h2>
+            <p class="lead">
+              Our startup incubator program is designed to help entrepreneurs
+              launch worker-owned cooperatives. We provide technical, marketing,
+              development, funding, and networking resources to help startups
+              get off the ground and succeed. Guidance includes SEO basics for
+              better visibility.
+            </p>
+            <!-- <p class="mb-0"></p> -->
+          </div>
         </div>
       </div>
-    </div>
-  </section>
-  <!-- Image element - set the background image for the header in the line below-->
-  <ion-img class="py-5 bg-image-full" src="assets/image/pexels-kindel-media-7688161.jpg"></ion-img>
-  <!-- Content section-->
-  <section class="py-5">
-    <div class="container my-5">
-      <div class="row justify-content-center">
-        <div class="col-lg-6">
-          <h2>Success Stories</h2>
-          <p class="lead">
-            Check out some of the worker-owned cooperatives that have
-            successfully launched with the help of ASCENDynamics. Learn about
-            their challenges, successes, and the impact they're making in their
-            communities.
-          </p>
-          <!-- <p class="mb-0"></p> -->
+    </section>
+    <!-- Image element - set the background image for the header in the line below-->
+    <ion-img
+      class="py-5 bg-image-full"
+      src="assets/image/pexels-kindel-media-7688161.jpg"
+    ></ion-img>
+    <!-- Content section-->
+    <section class="py-5">
+      <div class="container my-5">
+        <div class="row justify-content-center">
+          <div class="col-lg-6">
+            <h2>Success Stories</h2>
+            <p class="lead">
+              Check out some of the worker-owned cooperatives that have
+              successfully launched with the help of ASCENDynamics. Learn about
+              their challenges, successes, and the impact they're making in
+              their communities.
+            </p>
+            <!-- <p class="mb-0"></p> -->
+          </div>
         </div>
       </div>
-    </div>
-  </section>
-  <!-- Image element - set the background image for the header in the line below-->
-  <ion-img class="py-5 bg-image-full" src="assets/image/pexels-nataliya-vaitkevich-7172856.jpg"></ion-img>
-  <!-- Content section-->
-  <section class="py-5">
-    <div class="container my-5">
-      <div class="row justify-content-center">
-        <div class="col-lg-6">
-          <h2>Resources</h2>
-          <p class="lead">
-            Find resources and tools to help you launch and grow your
-            worker-owned startup. We offer guides, templates, and other
-            resources to help you succeed.
-          </p>
-          <!-- <p class="mb-0"></p> -->
+    </section>
+    <!-- Image element - set the background image for the header in the line below-->
+    <ion-img
+      class="py-5 bg-image-full"
+      src="assets/image/pexels-nataliya-vaitkevich-7172856.jpg"
+    ></ion-img>
+    <!-- Content section-->
+    <section class="py-5">
+      <div class="container my-5">
+        <div class="row justify-content-center">
+          <div class="col-lg-6">
+            <h2>Resources</h2>
+            <p class="lead">
+              Find resources and tools to help you launch and grow your
+              worker-owned startup. We offer guides, templates, and other
+              resources to help you succeed.
+            </p>
+            <!-- <p class="mb-0"></p> -->
+          </div>
         </div>
       </div>
-    </div>
-  </section>
-  <!-- Image element - set the background image for the header in the line below-->
+    </section>
+    <!-- Image element - set the background image for the header in the line below-->
   </ion-grid>
-</ion-content>
   <ion-footer>
     <div class="footer">
       <ion-grid>
         <ion-row>
           <ion-col size="12" size-md="4" class="footer-logo">
-            <img src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png" alt="ASCENDynamics Logo" />
-            <p>Connecting volunteers with nonprofits to create meaningful change.</p>
+            <img
+              src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
+              alt="ASCENDynamics Logo"
+            />
+            <p>
+              Connecting volunteers with nonprofits to create meaningful change.
+            </p>
           </ion-col>
           <ion-col size="12" size-md="4" class="footer-nav">
             <h3>Quick Links</h3>
             <ul>
-              <li><a routerLink="/info/about-us">About Us</a></li>
-              <li><a routerLink="/info/contact-us">Contact</a></li>
-              <li><a (click)="openLegalModal('privacyPolicy')">Privacy Policy</a></li>
-              <li><a (click)="openLegalModal('termsOfUse')">Terms of Service</a></li>
+              <li>
+                <a (click)="openLegalModal('privacyPolicy')">Privacy Policy</a>
+              </li>
+              <li>
+                <a (click)="openLegalModal('termsOfUse')">Terms of Service</a>
+              </li>
             </ul>
           </ion-col>
           <ion-col size="12" size-md="4" class="footer-social">
             <h3>Follow Us</h3>
             <ion-buttons class="social-buttons">
-              <ion-button href="https://github.com/ASCENDynamics-NFP" target="_blank"><ion-icon slot="icon-only" name="logo-github"></ion-icon></ion-button>
-              <ion-button href="https://www.facebook.com/ASCENDynamicsNFP" target="_blank"><ion-icon slot="icon-only" name="logo-facebook"></ion-icon></ion-button>
-              <ion-button href="https://www.linkedin.com/company/ascendynamics-nfp" target="_blank"><ion-icon slot="icon-only" name="logo-linkedin"></ion-icon></ion-button>
+              <ion-button
+                href="https://github.com/ASCENDynamics-NFP"
+                target="_blank"
+                ><ion-icon slot="icon-only" name="logo-github"></ion-icon
+              ></ion-button>
+              <ion-button
+                href="https://www.facebook.com/ASCENDynamicsNFP"
+                target="_blank"
+                ><ion-icon slot="icon-only" name="logo-facebook"></ion-icon
+              ></ion-button>
+              <ion-button
+                href="https://www.linkedin.com/company/ascendynamics-nfp"
+                target="_blank"
+                ><ion-icon slot="icon-only" name="logo-linkedin"></ion-icon
+              ></ion-button>
             </ion-buttons>
           </ion-col>
         </ion-row>
@@ -107,3 +121,4 @@
       </div>
     </div>
   </ion-footer>
+</ion-content>

@@ -20,6 +20,7 @@
 // src/app/modules/info/pages/nonprofits/nonprofits.page.ts
 
 import {Component, OnInit} from "@angular/core";
+import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
   selector: "app-nonprofits",
@@ -27,7 +28,33 @@ import {Component, OnInit} from "@angular/core";
   styleUrls: ["./nonprofits.page.scss"],
 })
 export class NonprofitsPage implements OnInit {
-  constructor() {}
+  currentYear: number = new Date().getFullYear();
+
+  constructor(private metaService: MetaService) {}
+
+  ionViewWillEnter() {
+    this.metaService.updateMetaTags(
+      "For Nonprofits | ASCENDynamics NFP",
+      "Resources and SEO guidance for nonprofits collaborating with ASCENDynamics NFP.",
+      "nonprofit resources, collaboration, SEO",
+      {
+        title: "For Nonprofits | ASCENDynamics NFP",
+        description:
+          "Discover our collaborative platform and SEO tips to grow your nonprofit's reach.",
+        url: "https://app.ASCENDynamics.org/info/nonprofits",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+      },
+      {
+        card: "summary",
+        title: "Nonprofit Resources",
+        description:
+          "ASCENDynamics NFP offers networking and SEO resources for nonprofits.",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+      },
+    );
+  }
 
   ngOnInit() {}
 }

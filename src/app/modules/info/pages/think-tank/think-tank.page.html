@@ -1,225 +1,81 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>think-tank</ion-title>
-  </ion-toolbar>
+  <app-header title="Think Tank"></app-header>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">think-tank</ion-title>
-    </ion-toolbar>
+    <app-header title="Think Tank"></app-header>
   </ion-header>
-  <!-- Responsive navbar-->
-  <nav class="navbar navbar-collapse-lg navbar-dark bg-dark">
-    <div class="container">
-      <a class="navbar-brand text-wrap" href="/"
-        >ASCENDynamics NFP - Think Tank</a
-      >
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/about-us.html">About Us</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/services.html">Services</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/event-calendar.html"
-              >Event Calendar</a
-            >
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/startups.html">Startups</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/nonprofits.html">Nonprofits</a>
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link active"
-              aria-current="page"
-              href="/page/think-tank.html"
-              >Think Tank
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/team.html">Team</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/contact-us.html">Contact Us</a>
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              target="_blank"
-              href="https://buy.stripe.com/bIY5mC9sY1ob4TufYY"
-              >Donate</a
-            >
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-  <!-- Header - set the background image for the header in the line below-->
-  <header
-    class="py-5 bg-image-full"
-    style="
-      background-image: url(&quot;../img/pexels-snapwire-37728.jpg&quot;);
-      height: calc(50vh - 56px);
-    "
-  >
+  <ion-grid fixed>
+    <ion-img class="py-5 bg-image-full" src="assets/image/pexels-snapwire-37728.jpg" style="height: calc(50vh - 56px);"></ion-img>
     <div class="text-center my-5">
-      <!-- <img class="img-fluid rounded-circle mb-4" src="img\pexels-duane-viljoen-7238619.jpg" alt="..." /> -->
       <h1 class="text-dark fs-3 fw-bolder">Building a Better World</h1>
-      <p class="text-dark mb-0">
-        ASCENDynamics is committed to creating a utopian society.
-      </p>
+      <p class="text-dark mb-0">ASCENDynamics is committed to creating a utopian society.</p>
     </div>
-  </header>
-  <!-- Content section-->
-  <section class="py-5">
-    <div class="container my-5">
-      <div class="row justify-content-center">
-        <div class="col-lg-6">
-          <h2>About the Think Tank</h2>
-          <p class="lead">
-            Our think tank is a space for visioning, strategizing, and building
-            a better world. We bring together thought leaders, activists, and
-            changemakers to explore new ideas, challenge assumptions, and
-            develop innovative solutions to complex problems.
-          </p>
-          <!-- <p class="mb-0"></p> -->
-        </div>
+    <ion-card class="ion-margin">
+      <ion-card-header>
+        <ion-card-title>About the Think Tank</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          Our think tank is a space for visioning, strategizing, and building a better world. We explore innovative solutions and share SEO research to amplify cooperative movements.
+        </p>
+      </ion-card-content>
+    </ion-card>
+    <ion-img class="py-5 bg-image-full" src="assets/image/pexels-fauxels-3183197.jpg"></ion-img>
+    <ion-card class="ion-margin">
+      <ion-card-header>
+        <ion-card-title>Research</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          Learn about our latest projects on worker-owned cooperatives, social justice, and effective SEO strategies for grassroots organizations.
+        </p>
+      </ion-card-content>
+    </ion-card>
+    <ion-img class="py-5 bg-image-full" src="assets/image/pexels-lukas-590022.jpg"></ion-img>
+    <ion-card class="ion-margin">
+      <ion-card-header>
+        <ion-card-title>Events</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          Join our conferences, workshops, and webinars to connect with like-minded people and collaborate on new ideas.
+        </p>
+      </ion-card-content>
+    </ion-card>
+    <ion-img class="py-5 bg-image-full" src="assets/image/jakob-dalbjorn-cuKJre3nyYc-unsplash.jpg"></ion-img>
+  </ion-grid>
+  <ion-footer>
+    <div class="footer">
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" size-md="4" class="footer-logo">
+            <img src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png" alt="ASCENDynamics Logo" />
+            <p>Connecting volunteers with nonprofits to create meaningful change.</p>
+          </ion-col>
+          <ion-col size="12" size-md="4" class="footer-nav">
+            <h3>Quick Links</h3>
+            <ul>
+              <li><a routerLink="/info/about-us">About Us</a></li>
+              <li><a routerLink="/info/contact-us">Contact</a></li>
+              <li><a (click)="openLegalModal('privacyPolicy')">Privacy Policy</a></li>
+              <li><a (click)="openLegalModal('termsOfUse')">Terms of Service</a></li>
+            </ul>
+          </ion-col>
+          <ion-col size="12" size-md="4" class="footer-social">
+            <h3>Follow Us</h3>
+            <ion-buttons class="social-buttons">
+              <ion-button href="https://github.com/ASCENDynamics-NFP" target="_blank"><ion-icon slot="icon-only" name="logo-github"></ion-icon></ion-button>
+              <ion-button href="https://www.facebook.com/ASCENDynamicsNFP" target="_blank"><ion-icon slot="icon-only" name="logo-facebook"></ion-icon></ion-button>
+              <ion-button href="https://www.linkedin.com/company/ascendynamics-nfp" target="_blank"><ion-icon slot="icon-only" name="logo-linkedin"></ion-icon></ion-button>
+            </ion-buttons>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+      <div class="footer-bottom">
+        <p>&copy; {{ currentYear }} ASCENDynamics NFP. All rights reserved.</p>
       </div>
     </div>
-  </section>
-  <!-- Image element - set the background image for the header in the line below-->
-  <div
-    class="py-5 bg-image-full"
-    style="background-image: url(&quot;../img/pexels-fauxels-3183197.jpg&quot;)"
-  >
-    <!-- Put anything you want here! The spacer below with inline CSS is just for demo purposes!-->
-    <div style="height: 20rem"></div>
-  </div>
-  <!-- Content section-->
-  <section class="py-5">
-    <div class="container my-5">
-      <div class="row justify-content-center">
-        <div class="col-lg-6">
-          <h2>Research</h2>
-          <p class="lead">
-            Learn about our latest research projects, reports, and publications.
-            We focus on topics related to worker-owned cooperatives, social
-            justice, and utopian visions.
-          </p>
-          <!-- <p class="mb-0"></p> -->
-        </div>
-      </div>
-    </div>
-  </section>
-  <!-- Image element - set the background image for the header in the line below-->
-  <div
-    class="py-5 bg-image-full"
-    style="background-image: url(&quot;../img/pexels-lukas-590022.jpg&quot;)"
-  >
-    <!-- Put anything you want here! The spacer below with inline CSS is just for demo purposes!-->
-    <div style="height: 20rem"></div>
-  </div>
-  <!-- Content section-->
-  <section class="py-5">
-    <div class="container my-5">
-      <div class="row justify-content-center">
-        <div class="col-lg-6">
-          <h2>Events</h2>
-          <p class="lead">
-            Check out our upcoming events, including conferences, workshops, and
-            webinars. Join us to connect with like-minded people, learn from
-            experts, and collaborate on new ideas.
-          </p>
-          <!-- <p class="mb-0"></p> -->
-        </div>
-      </div>
-    </div>
-  </section>
-  <!-- Image element - set the background image for the header in the line below-->
-  <div
-    class="py-5 bg-image-full"
-    style="
-      background-image: url(&quot;../img/jakob-dalbjorn-cuKJre3nyYc-unsplash.jpg&quot;);
-    "
-  >
-    <!-- Put anything you want here! The spacer below with inline CSS is just for demo purposes!-->
-    <div style="height: 20rem"></div>
-  </div>
-  <!-- Footer-->
-  <footer class="py-5 bg-dark">
-    <!-- Responsive navbar-->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <div class="container">
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav mb-2 mb-lg-0" style="margin: auto">
-            <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/about-us.html">About Us</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/services.html">Services</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/event-calendar.html"
-                >Event Calendar</a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/startups.html">Startups</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/nonprofits.html">Nonprofits</a>
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link"
-                aria-current="page"
-                href="/page/think-tank.html"
-                >Think Tank
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/team.html">Team</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/contact-us.html">Contact Us</a>
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link"
-                target="_blank"
-                href="https://buy.stripe.com/bIY5mC9sY1ob4TufYY"
-                >Donate</a
-              >
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-    <!-- Social Media Links -->
-    <div class="container">
-      <p class="m-0 text-center text-white">
-        Copyright &copy; ASCENDynamics 2021
-      </p>
-    </div>
-  </footer>
+  </ion-footer>
 </ion-content>

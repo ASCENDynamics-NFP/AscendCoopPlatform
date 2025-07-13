@@ -20,6 +20,7 @@
 // src/app/modules/info/pages/think-tank/think-tank.page.ts
 
 import {Component, OnInit} from "@angular/core";
+import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
   selector: "app-think-tank",
@@ -27,7 +28,33 @@ import {Component, OnInit} from "@angular/core";
   styleUrls: ["./think-tank.page.scss"],
 })
 export class ThinkTankPage implements OnInit {
-  constructor() {}
+  currentYear: number = new Date().getFullYear();
+
+  constructor(private metaService: MetaService) {}
+
+  ionViewWillEnter() {
+    this.metaService.updateMetaTags(
+      "Think Tank | ASCENDynamics NFP",
+      "Explore research and SEO strategies from the ASCENDynamics NFP think tank.",
+      "think tank, research, SEO, ASCENDynamics",
+      {
+        title: "Think Tank | ASCENDynamics NFP",
+        description:
+          "Join our think tank to collaborate on cooperative research and SEO outreach.",
+        url: "https://app.ASCENDynamics.org/info/think-tank",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+      },
+      {
+        card: "summary",
+        title: "ASCENDynamics Think Tank",
+        description:
+          "Researching better futures and effective SEO for community projects.",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+      },
+    );
+  }
 
   ngOnInit() {}
 }

@@ -148,15 +148,39 @@ interface GroupCategory {
   tagsKeywords?: string[]; // Optional, for search and categorization
 }
 
-interface Event {
+export interface Event {
+  /** Unique identifier for the event */
+  id?: string;
+  /** Event title */
   title: string;
+  /** Detailed description of the event */
   description?: string;
+  /** Event start date and time */
   startDate: Timestamp;
+  /** Event end date and time */
   endDate: Timestamp;
-  location?: string; // Optional, physical location or online link
+  /** Physical or virtual location */
+  location?: Address | string;
+  /** Organizer account ID */
   organizerId?: string;
+  /** List of attendee account IDs */
   attendeeIds?: string[];
+  /** Maximum number of attendees */
   capacity?: number;
+  /** Optional image representing the event */
+  imageUrl?: string;
+  /** Whether the event is held online */
+  isOnline?: boolean;
+  /** Link to external registration or RSVP form */
+  registrationUrl?: string;
+  /** Tags used for search and categorisation */
+  tags?: string[];
+  /** Contact information for inquiries */
+  contactInformation?: ContactInformation;
+  /** Record creation timestamp */
+  createdAt?: Timestamp;
+  /** Record update timestamp */
+  updatedAt?: Timestamp;
 }
 
 interface User {

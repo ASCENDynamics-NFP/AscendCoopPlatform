@@ -3053,10 +3053,12 @@ _AuthEffects.ɵprov = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_19__["
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   accountAdapter: () => (/* binding */ accountAdapter),
 /* harmony export */   accountReducer: () => (/* binding */ accountReducer),
 /* harmony export */   initialState: () => (/* binding */ initialState)
 /* harmony export */ });
-/* harmony import */ var _ngrx_store__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @ngrx/store */ 5480);
+/* harmony import */ var _ngrx_store__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @ngrx/store */ 5480);
+/* harmony import */ var _ngrx_entity__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @ngrx/entity */ 4156);
 /* harmony import */ var _actions_account_actions__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../actions/account.actions */ 8314);
 /***********************************************************************************************
 * Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
@@ -3080,8 +3082,11 @@ __webpack_require__.r(__webpack_exports__);
 // src/app/state/reducers/account.reducer.ts
 
 
-const initialState = {
-  entities: {},
+
+const accountAdapter = (0,_ngrx_entity__WEBPACK_IMPORTED_MODULE_1__.createEntityAdapter)({
+  selectId: account => account.id
+});
+const initialState = accountAdapter.getInitialState({
   relatedAccounts: {},
   relatedListings: {},
   selectedAccountId: null,
@@ -3091,28 +3096,24 @@ const initialState = {
   accountsLastUpdated: null,
   relatedAccountsLastUpdated: {},
   relatedListingsLastUpdated: {}
-};
-const accountReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createReducer)(initialState,
+});
+const accountReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.createReducer)(initialState,
 // Clear Account State
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.clearAccountsState, () => ({
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.clearAccountsState, () => ({
   ...initialState
 })),
 // Load Accounts
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadAccounts, state => ({
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadAccounts, state => ({
   ...state,
   loading: true,
   error: null
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadAccountsSuccess, (state, {
+})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadAccountsSuccess, (state, {
   accounts
-}) => ({
+}) => accountAdapter.setAll(accounts, {
   ...state,
-  entities: accounts.reduce((entities, account) => ({
-    ...entities,
-    [account.id]: account
-  }), {}),
   loading: false,
   accountsLastUpdated: Date.now()
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadAccountsFailure, (state, {
+})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadAccountsFailure, (state, {
   error
 }) => ({
   ...state,
@@ -3120,22 +3121,18 @@ const accountReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createReducer
   error
 })),
 // Load Account
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadAccount, state => ({
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadAccount, state => ({
   ...state,
   loading: true,
   error: null
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadAccountSuccess, (state, {
+})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadAccountSuccess, (state, {
   account
-}) => ({
+}) => accountAdapter.upsertOne(account, {
   ...state,
-  entities: {
-    ...state.entities,
-    [account.id]: account
-  },
   selectedAccountId: account.id,
   loading: false,
   error: null
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadAccountFailure, (state, {
+})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadAccountFailure, (state, {
   error
 }) => ({
   ...state,
@@ -3143,60 +3140,47 @@ const accountReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createReducer
   error
 })),
 // Create Account
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.createAccountSuccess, (state, {
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.createAccountSuccess, (state, {
   account
-}) => ({
-  ...state,
-  entities: {
-    ...state.entities,
-    [account.id]: account
-  }
-})),
+}) => accountAdapter.addOne(account, state)),
 // Update Account
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.updateAccountSuccess, (state, {
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.updateAccountSuccess, (state, {
   account
-}) => ({
-  ...state,
-  entities: {
-    ...state.entities,
-    [account.id]: account
-  }
-})),
+}) => accountAdapter.updateOne({
+  id: account.id,
+  changes: account
+}, state)),
 // Delete Account
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.deleteAccountSuccess, (state, {
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.deleteAccountSuccess, (state, {
   accountId
 }) => {
+  const newState = accountAdapter.removeOne(accountId, state);
   const {
-    [accountId]: removedAccount,
-    ...entities
-  } = state.entities;
-  const {
-    [accountId]: removedRelatedAccounts,
+    [accountId]: _ra,
     ...relatedAccounts
-  } = state.relatedAccounts;
+  } = newState.relatedAccounts;
   const {
-    [accountId]: removedRelatedListings,
+    [accountId]: _rl,
     ...relatedListings
-  } = state.relatedListings;
+  } = newState.relatedListings;
   return {
-    ...state,
-    entities,
+    ...newState,
     relatedAccounts,
     relatedListings
   };
 }),
 // Set Selected Account
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.setSelectedAccount, (state, {
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.setSelectedAccount, (state, {
   accountId
 }) => ({
   ...state,
   selectedAccountId: accountId
 })),
 // Load Related Accounts
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadRelatedAccounts, state => ({
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadRelatedAccounts, state => ({
   ...state,
   loading: true
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadRelatedAccountsSuccess, (state, {
+})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadRelatedAccountsSuccess, (state, {
   accountId,
   relatedAccounts
 }) => ({
@@ -3210,7 +3194,7 @@ const accountReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createReducer
     [accountId]: Date.now()
   },
   loading: false
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadRelatedAccountsFailure, (state, {
+})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadRelatedAccountsFailure, (state, {
   error
 }) => ({
   ...state,
@@ -3218,7 +3202,7 @@ const accountReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createReducer
   loading: false
 })),
 // Create Related Account
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.createRelatedAccountSuccess, (state, {
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.createRelatedAccountSuccess, (state, {
   accountId,
   relatedAccount
 }) => ({
@@ -3229,7 +3213,7 @@ const accountReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createReducer
   }
 })),
 // Update Related Account
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.updateRelatedAccountSuccess, (state, {
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.updateRelatedAccountSuccess, (state, {
   accountId,
   relatedAccount
 }) => ({
@@ -3240,7 +3224,7 @@ const accountReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createReducer
   }
 })),
 // Delete Related Account
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.deleteRelatedAccountSuccess, (state, {
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.deleteRelatedAccountSuccess, (state, {
   accountId,
   relatedAccountId
 }) => ({
@@ -3251,10 +3235,10 @@ const accountReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createReducer
   }
 })),
 // Load Related Listings
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadRelatedListings, state => ({
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadRelatedListings, state => ({
   ...state,
   loading: true
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadRelatedListingsSuccess, (state, {
+})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadRelatedListingsSuccess, (state, {
   accountId,
   relatedListings
 }) => ({
@@ -3268,7 +3252,7 @@ const accountReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createReducer
     [accountId]: Date.now()
   },
   loading: false
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadRelatedListingsFailure, (state, {
+})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_account_actions__WEBPACK_IMPORTED_MODULE_0__.loadRelatedListingsFailure, (state, {
   error
 }) => ({
   ...state,
@@ -3334,11 +3318,8 @@ const authReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createReducer)(i
   user,
   loading: false,
   error: null
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_auth_actions__WEBPACK_IMPORTED_MODULE_0__.signInSuccess, (state, {
-  uid
-}) => ({
+})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_auth_actions__WEBPACK_IMPORTED_MODULE_0__.signInSuccess, state => ({
   ...state,
-  uid: uid,
   error: null,
   loading: false
 })), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_auth_actions__WEBPACK_IMPORTED_MODULE_0__.signOutSuccess, () => ({
@@ -3414,9 +3395,11 @@ const reducers = {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   listingsAdapter: () => (/* binding */ listingsAdapter),
 /* harmony export */   listingsReducer: () => (/* binding */ listingsReducer)
 /* harmony export */ });
-/* harmony import */ var _ngrx_store__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @ngrx/store */ 5480);
+/* harmony import */ var _ngrx_store__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @ngrx/store */ 5480);
+/* harmony import */ var _ngrx_entity__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @ngrx/entity */ 4156);
 /* harmony import */ var _actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../actions/listings.actions */ 7118);
 /***********************************************************************************************
 * Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
@@ -3440,8 +3423,11 @@ __webpack_require__.r(__webpack_exports__);
 // src/app/state/listings/listings.reducer.ts
 
 
-const initialState = {
-  entities: {},
+
+const listingsAdapter = (0,_ngrx_entity__WEBPACK_IMPORTED_MODULE_1__.createEntityAdapter)({
+  selectId: listing => listing.id
+});
+const initialState = listingsAdapter.getInitialState({
   relatedAccounts: {},
   selectedListingId: null,
   loading: false,
@@ -3451,28 +3437,24 @@ const initialState = {
   // Timestamps for cache invalidation
   listingsLastUpdated: null,
   relatedAccountsLastUpdated: {}
-};
-const listingsReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createReducer)(initialState,
+});
+const listingsReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.createReducer)(initialState,
 // Clear Account State
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.clearListingsState, () => ({
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.clearListingsState, () => ({
   ...initialState
 })),
 // Load Listings
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.loadListings, state => ({
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.loadListings, state => ({
   ...state,
   loading: true,
   error: null
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.loadListingsSuccess, (state, {
+})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.loadListingsSuccess, (state, {
   listings
-}) => ({
+}) => listingsAdapter.setAll(listings, {
   ...state,
-  entities: listings.reduce((entities, listing) => ({
-    ...entities,
-    [listing.id]: listing
-  }), {}),
   listingsLastUpdated: Date.now(),
   loading: false
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.loadListingsFailure, (state, {
+})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.loadListingsFailure, (state, {
   error
 }) => ({
   ...state,
@@ -3480,17 +3462,17 @@ const listingsReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createReduce
   error
 })),
 // Load Listing by ID
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.loadListingByIdSuccess, (state, {
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.loadListingByIdSuccess, (state, {
   listing
-}) => ({
+}) => listing ? listingsAdapter.upsertOne(listing, {
   ...state,
-  entities: listing ? {
-    ...state.entities,
-    [listing.id]: listing
-  } : state.entities,
-  selectedListingId: (listing === null || listing === void 0 ? void 0 : listing.id) || null,
+  selectedListingId: listing.id,
   loading: false
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.loadListingByIdFailure, (state, {
+}) : {
+  ...state,
+  selectedListingId: null,
+  loading: false
+}), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.loadListingByIdFailure, (state, {
   error
 }) => ({
   ...state,
@@ -3498,17 +3480,13 @@ const listingsReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createReduce
   loading: false
 })),
 // Create Listing
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.createListingSuccess, (state, {
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.createListingSuccess, (state, {
   listing
-}) => ({
+}) => listingsAdapter.addOne(listing, {
   ...state,
-  entities: {
-    ...state.entities,
-    [listing.id]: listing
-  },
   selectedListingId: listing.id,
   loading: false
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.createListingFailure, (state, {
+})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.createListingFailure, (state, {
   error
 }) => ({
   ...state,
@@ -3516,16 +3494,15 @@ const listingsReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createReduce
   error
 })),
 // Update Listing
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.updateListingSuccess, (state, {
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.updateListingSuccess, (state, {
   listing
-}) => ({
+}) => listingsAdapter.updateOne({
+  id: listing.id,
+  changes: listing
+}, {
   ...state,
-  entities: {
-    ...state.entities,
-    [listing.id]: listing
-  },
   loading: false
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.updateListingFailure, (state, {
+})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.updateListingFailure, (state, {
   error
 }) => ({
   ...state,
@@ -3533,22 +3510,18 @@ const listingsReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createReduce
   error
 })),
 // Delete Listing
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.deleteListingSuccess, (state, {
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.deleteListingSuccess, (state, {
   id
 }) => {
-  const {
-    [id]: removed,
-    ...entities
-  } = state.entities;
-  const selectedListingId = state.selectedListingId === id ? null : state.selectedListingId;
+  const newState = listingsAdapter.removeOne(id, state);
+  const selectedListingId = newState.selectedListingId === id ? null : newState.selectedListingId;
   return {
-    ...state,
-    entities,
+    ...newState,
     selectedListingId
   };
 }),
 // Delete Listing Failure
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.deleteListingFailure, (state, {
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.deleteListingFailure, (state, {
   error
 }) => ({
   ...state,
@@ -3556,38 +3529,38 @@ const listingsReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createReduce
   error
 })),
 // Filtering Listings
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.filterListings, (state, {
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.filterListings, (state, {
   listingType
 }) => ({
   ...state,
   filterType: listingType
 })),
 // Searching Listings
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.searchListings, (state, {
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.searchListings, (state, {
   query
 }) => ({
   ...state,
   searchQuery: query
 })),
 // Submit Application
-(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.submitApplication, state => ({
+(0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.submitApplication, state => ({
   ...state,
   loading: true,
   error: null
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.submitApplicationSuccess, state => ({
+})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.submitApplicationSuccess, state => ({
   ...state,
   loading: false
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.submitApplicationFailure, (state, {
+})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.submitApplicationFailure, (state, {
   error
 }) => ({
   ...state,
   loading: false,
   error
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.loadListingRelatedAccounts, state => ({
+})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.loadListingRelatedAccounts, state => ({
   ...state,
   loading: true,
   error: null
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.loadListingRelatedAccountsSuccess, (state, {
+})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.loadListingRelatedAccountsSuccess, (state, {
   listingId,
   relatedAccounts
 }) => ({
@@ -3597,13 +3570,13 @@ const listingsReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createReduce
     [listingId]: relatedAccounts
   },
   loading: false
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.loadListingRelatedAccountsFailure, (state, {
+})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.loadListingRelatedAccountsFailure, (state, {
   error
 }) => ({
   ...state,
   loading: false,
   error
-})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.updateRelatedAccountSuccess, (state, {
+})), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.updateRelatedAccountSuccess, (state, {
   listingId,
   relatedAccount
 }) => {
@@ -3616,7 +3589,7 @@ const listingsReducer = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createReduce
       [listingId]: updatedRelatedAccounts
     }
   };
-}), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.updateRelatedAccountFailure, (state, {
+}), (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_2__.on)(_actions_listings_actions__WEBPACK_IMPORTED_MODULE_0__.updateRelatedAccountFailure, (state, {
   error
 }) => {
   console.error("Failed to update related account:", error);
@@ -3652,7 +3625,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   selectSelectedAccount: () => (/* binding */ selectSelectedAccount),
 /* harmony export */   selectSelectedAccountId: () => (/* binding */ selectSelectedAccountId)
 /* harmony export */ });
-/* harmony import */ var _ngrx_store__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @ngrx/store */ 5480);
+/* harmony import */ var _ngrx_store__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @ngrx/store */ 5480);
+/* harmony import */ var _reducers_account_reducer__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../reducers/account.reducer */ 1497);
 /***********************************************************************************************
 * Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
 * Copyright (C) 2023  ASCENDynamics NFP
@@ -3674,6 +3648,7 @@ __webpack_require__.r(__webpack_exports__);
 ***********************************************************************************************/
 // src/app/state/selectors/account.selectors.ts
 
+
 // TTL Configuration
 const ACCOUNTS_TTL = 5 * 60 * 1000; // 5 minutes
 const RELATED_LISTINGS_TTL = 10 * 60 * 1000; // 10 minutes
@@ -3684,22 +3659,26 @@ function isStale(lastUpdated, ttl) {
   return now - lastUpdated > ttl;
 }
 // Feature Selector
-const selectAccountState = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_0__.createFeatureSelector)("accounts");
+const selectAccountState = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createFeatureSelector)("accounts");
 // Entity Selectors
-const selectAccountEntities = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_0__.createSelector)(selectAccountState, state => state.entities);
-const selectAllAccounts = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_0__.createSelector)(selectAccountEntities, entities => Object.values(entities));
-const selectAccountById = accountId => (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_0__.createSelector)(selectAccountEntities, entities => entities[accountId]);
+const {
+  selectAll: selectAllAccountsArray,
+  selectEntities: selectAccountEntityMap
+} = _reducers_account_reducer__WEBPACK_IMPORTED_MODULE_0__.accountAdapter.getSelectors();
+const selectAccountEntities = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createSelector)(selectAccountState, selectAccountEntityMap);
+const selectAllAccounts = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createSelector)(selectAccountState, selectAllAccountsArray);
+const selectAccountById = accountId => (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createSelector)(selectAccountEntities, entities => entities[accountId]);
 // Selected Account Selectors
-const selectSelectedAccountId = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_0__.createSelector)(selectAccountState, state => state.selectedAccountId);
-const selectSelectedAccount = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_0__.createSelector)(selectAccountEntities, selectSelectedAccountId, (entities, selectedAccountId) => selectedAccountId ? entities[selectedAccountId] : null);
+const selectSelectedAccountId = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createSelector)(selectAccountState, state => state.selectedAccountId);
+const selectSelectedAccount = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createSelector)(selectAccountEntities, selectSelectedAccountId, (entities, selectedAccountId) => selectedAccountId ? entities[selectedAccountId] : null);
 // Related Data Selectors
-const selectRelatedAccountsByAccountId = accountId => (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_0__.createSelector)(selectAccountState, state => state.relatedAccounts[accountId] || []);
-const selectRelatedListingsByAccountId = accountId => (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_0__.createSelector)(selectAccountState, state => state.relatedListings[accountId] || []);
+const selectRelatedAccountsByAccountId = accountId => (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createSelector)(selectAccountState, state => state.relatedAccounts[accountId] || []);
+const selectRelatedListingsByAccountId = accountId => (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createSelector)(selectAccountState, state => state.relatedListings[accountId] || []);
 // Loading and Error Selectors
-const selectAccountLoading = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_0__.createSelector)(selectAccountState, state => state.loading);
-const selectAccountError = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_0__.createSelector)(selectAccountState, state => state.error);
+const selectAccountLoading = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createSelector)(selectAccountState, state => state.loading);
+const selectAccountError = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createSelector)(selectAccountState, state => state.error);
 // Filtered Accounts Selector
-const selectFilteredAccounts = (searchTerm, accountType) => (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_0__.createSelector)(selectAllAccounts, accounts => {
+const selectFilteredAccounts = (searchTerm, accountType) => (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createSelector)(selectAllAccounts, accounts => {
   const normalizeString = str => str.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/gi, "");
   const normalizedSearchTerm = normalizeString(searchTerm);
   return accounts.filter(acc => {
@@ -3711,12 +3690,12 @@ const selectFilteredAccounts = (searchTerm, accountType) => (0,_ngrx_store__WEBP
   }).sort((a, b) => a.name && b.name ? a.name.localeCompare(b.name) : 0);
 });
 // Cache and Freshness Selectors
-const selectAccountsLastUpdated = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_0__.createSelector)(selectAccountState, state => state.accountsLastUpdated);
-const selectRelatedAccountsLastUpdated = accountId => (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_0__.createSelector)(selectAccountState, state => state.relatedAccountsLastUpdated[accountId] || null);
-const selectRelatedListingsLastUpdated = accountId => (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_0__.createSelector)(selectAccountState, state => state.relatedListingsLastUpdated[accountId] || null);
-const selectAreAccountsFresh = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_0__.createSelector)(selectAccountsLastUpdated, accountsLastUpdated => !isStale(accountsLastUpdated, ACCOUNTS_TTL));
-const selectAreRelatedAccountsFresh = accountId => (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_0__.createSelector)(selectRelatedAccountsLastUpdated(accountId), relatedAccountsLastUpdated => !isStale(relatedAccountsLastUpdated, ACCOUNTS_TTL));
-const selectAreRelatedListingsFresh = accountId => (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_0__.createSelector)(selectRelatedListingsLastUpdated(accountId), relatedListingsLastUpdated => !isStale(relatedListingsLastUpdated, RELATED_LISTINGS_TTL));
+const selectAccountsLastUpdated = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createSelector)(selectAccountState, state => state.accountsLastUpdated);
+const selectRelatedAccountsLastUpdated = accountId => (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createSelector)(selectAccountState, state => state.relatedAccountsLastUpdated[accountId] || null);
+const selectRelatedListingsLastUpdated = accountId => (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createSelector)(selectAccountState, state => state.relatedListingsLastUpdated[accountId] || null);
+const selectAreAccountsFresh = (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createSelector)(selectAccountsLastUpdated, accountsLastUpdated => !isStale(accountsLastUpdated, ACCOUNTS_TTL));
+const selectAreRelatedAccountsFresh = accountId => (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createSelector)(selectRelatedAccountsLastUpdated(accountId), relatedAccountsLastUpdated => !isStale(relatedAccountsLastUpdated, ACCOUNTS_TTL));
+const selectAreRelatedListingsFresh = accountId => (0,_ngrx_store__WEBPACK_IMPORTED_MODULE_1__.createSelector)(selectRelatedListingsLastUpdated(accountId), relatedListingsLastUpdated => !isStale(relatedListingsLastUpdated, RELATED_LISTINGS_TTL));
 
 /***/ }),
 
@@ -3776,18 +3755,37 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   environment: () => (/* binding */ environment)
 /* harmony export */ });
+/***********************************************************************************************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+*
+* This file is part of Nonprofit Social Networking Platform.
+*
+* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+
+* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+
+* You should have received a copy of the GNU Affero General Public License
+* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+***********************************************************************************************/
 const environment = {
   production: false,
   firebaseConfig: {
-    apiKey: 'AIzaSyATq5A6OaHtXtDSRoC1DZ8T_xegCZiUocU',
-    authDomain: 'ascendcoopplatform-dev.firebaseapp.com',
-    databaseURL: 'https://ascendcoopplatform-dev-default-rtdb.firebaseio.com',
-    projectId: 'ascendcoopplatform-dev',
-    storageBucket: 'ascendcoopplatform-dev.appspot.com',
-    messagingSenderId: '360409127691',
-    appId: '1:360409127691:web:b1c488ce58f4e9330ca00e',
-    measurementId: 'G-9EKFS37KV8',
-    apiUrl: 'https://us-central1-ascendcoopplatform-dev.cloudfunctions.net'
+    apiKey: "AIzaSyATq5A6OaHtXtDSRoC1DZ8T_xegCZiUocU",
+    authDomain: "ascendcoopplatform-dev.firebaseapp.com",
+    databaseURL: "https://ascendcoopplatform-dev-default-rtdb.firebaseio.com",
+    projectId: "ascendcoopplatform-dev",
+    storageBucket: "ascendcoopplatform-dev.appspot.com",
+    messagingSenderId: "360409127691",
+    appId: "1:360409127691:web:b1c488ce58f4e9330ca00e",
+    measurementId: "G-9EKFS37KV8",
+    apiUrl: "https://us-central1-ascendcoopplatform-dev.cloudfunctions.net"
   }
 };
 

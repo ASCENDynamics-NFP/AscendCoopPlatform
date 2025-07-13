@@ -572,6 +572,64 @@ html{font-family:var(--ion-font-family)}@supports(-webkit-touch-callout: none){h
 /* Slide styles end */
 /* Basic CSS for apps built with Ionic */
 /* Optional CSS utils that can be commented out */
+/***********************************************************************************************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+*
+* This file is part of Nonprofit Social Networking Platform.
+*
+* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+
+* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+
+* You should have received a copy of the GNU Affero General Public License
+* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+***********************************************************************************************/
+ion-segment {
+  --padding-top: 0;
+  --padding-bottom: 0;
+  --padding-start: 0;
+  --padding-end: 0;
+  --indicator-height: 2px;
+  overflow-x: auto;
+}
+
+ion-segment-button {
+  --padding: 6px 8px;
+  --min-width: auto;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+ion-segment-button ion-icon {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+ion-segment-button ion-label {
+  font-size: 12px;
+  margin: 0;
+}
+
+@media (max-width: 576px) {
+  ion-segment-button {
+    --padding: 4px 6px;
+  }
+  ion-segment-button ion-label {
+    display: none;
+  }
+  ion-segment-button ion-icon {
+    margin-bottom: 0;
+  }
+}
 /* Theme variables */
 :root {
   --ion-font-family: "Roboto", sans-serif;

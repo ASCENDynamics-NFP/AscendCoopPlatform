@@ -38,7 +38,6 @@ export class LandingPage {
     slidesPerView: 1,
     autoplay: true,
     spaceBetween: 10,
-    mousewheel: {forceToAxis: true},
     breakpoints: {
       640: {
         slidesPerView: 1,
@@ -167,6 +166,19 @@ export class LandingPage {
 
   ngAfterViewInit(): void {
     this.initSwiper();
+
+    // Add custom passive event listener for the 'wheel' event
+    this.swiperElement?.nativeElement.addEventListener(
+      "wheel",
+      (event: WheelEvent) => {
+        if (event.deltaY > 0) {
+          this.swiperElement?.nativeElement.swiper.slideNext();
+        } else {
+          this.swiperElement?.nativeElement.swiper.slidePrev();
+        }
+      },
+      {passive: true},
+    );
   }
 
   initSwiper() {

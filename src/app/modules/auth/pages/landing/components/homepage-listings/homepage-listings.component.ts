@@ -34,7 +34,11 @@ export class HomepageListingsComponent implements OnInit {
   constructor(private listingsService: ListingsService) {}
 
   ngOnInit() {
-    // Get user's browser location
+    this.fetchListingsBasedOnLocation();
+  }
+
+  // Get user's browser location
+  fetchListingsBasedOnLocation() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const location = {

@@ -104,7 +104,7 @@ var _ListingsService;
 class ListingsService {
   constructor(http) {
     this.http = http;
-    this.endpoint = `${_environments_environment__WEBPACK_IMPORTED_MODULE_0__.environment.firebaseConfig.apiUrl}/getHomepageListings`;
+    this.endpoint = _environments_environment__WEBPACK_IMPORTED_MODULE_0__.environment.firebaseConfig.apiUrl && _environments_environment__WEBPACK_IMPORTED_MODULE_0__.environment.firebaseConfig.apiUrl !== "undefined" ? `${_environments_environment__WEBPACK_IMPORTED_MODULE_0__.environment.firebaseConfig.apiUrl}/getHomepageListings` : "/getHomepageListings";
   }
   /**
    * Fetch homepage listings with user's location
@@ -367,7 +367,10 @@ class HomepageListingsComponent {
     this.listings = [];
   }
   ngOnInit() {
-    // Get user's browser location
+    this.fetchListingsBasedOnLocation();
+  }
+  // Get user's browser location
+  fetchListingsBasedOnLocation() {
     navigator.geolocation.getCurrentPosition(position => {
       const location = {
         latitude: position.coords.latitude,
@@ -477,9 +480,6 @@ class LandingPage {
       slidesPerView: 1,
       autoplay: true,
       spaceBetween: 10,
-      mousewheel: {
-        forceToAxis: true
-      },
       breakpoints: {
         640: {
           slidesPerView: 1,
@@ -578,12 +578,25 @@ class LandingPage {
     })();
   }
   ngAfterViewInit() {
+    var _this$swiperElement;
     this.initSwiper();
+    // Add custom passive event listener for the 'wheel' event
+    (_this$swiperElement = this.swiperElement) === null || _this$swiperElement === void 0 || _this$swiperElement.nativeElement.addEventListener("wheel", event => {
+      if (event.deltaY > 0) {
+        var _this$swiperElement2;
+        (_this$swiperElement2 = this.swiperElement) === null || _this$swiperElement2 === void 0 || _this$swiperElement2.nativeElement.swiper.slideNext();
+      } else {
+        var _this$swiperElement3;
+        (_this$swiperElement3 = this.swiperElement) === null || _this$swiperElement3 === void 0 || _this$swiperElement3.nativeElement.swiper.slidePrev();
+      }
+    }, {
+      passive: true
+    });
   }
   initSwiper() {
-    var _this$swiperElement, _this$swiperElement2;
-    Object.assign((_this$swiperElement = this.swiperElement) === null || _this$swiperElement === void 0 ? void 0 : _this$swiperElement.nativeElement, this.swiperConfig);
-    (_this$swiperElement2 = this.swiperElement) === null || _this$swiperElement2 === void 0 || _this$swiperElement2.nativeElement.initialize();
+    var _this$swiperElement4, _this$swiperElement5;
+    Object.assign((_this$swiperElement4 = this.swiperElement) === null || _this$swiperElement4 === void 0 ? void 0 : _this$swiperElement4.nativeElement, this.swiperConfig);
+    (_this$swiperElement5 = this.swiperElement) === null || _this$swiperElement5 === void 0 || _this$swiperElement5.nativeElement.initialize();
   }
 }
 _LandingPage = LandingPage;
@@ -1178,7 +1191,7 @@ _SignupPage.ɵcmp = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵ�
         return ctx.signup();
       });
       _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelementStart"](13, "ion-row")(14, "ion-col", 11)(15, "h1", 12)(16, "b");
-      _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵtext"](17, "Sign up");
+      _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵtext"](17, "Sign Up");
       _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelementEnd"]()();
       _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵelementStart"](18, "h3", 12);
       _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵtext"](19, " ASCENDynamics NFP is committed to creating a utopian society. ");

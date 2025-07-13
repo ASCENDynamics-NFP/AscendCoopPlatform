@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 // professional-info.component.ts
 
-import {Component, Input, OnInit} from "@angular/core";
+import {Component, Input, OnInit, ElementRef, ViewChild} from "@angular/core";
 import {Account, ProfessionalInformation} from "@shared/models/account.model";
 import {FormGroup, FormBuilder, Validators} from "@angular/forms";
 import {Store} from "@ngrx/store";
@@ -35,6 +35,9 @@ export class ProfessionalInfoFormComponent implements OnInit {
   @Input() account?: Account;
   professionalInformationForm: FormGroup;
   public skillsOptions: string[] = skillsOptions;
+  resumeFileName = "";
+  resumeFile: File | null = null;
+  @ViewChild("resumeInput") resumeInput!: ElementRef<HTMLInputElement>;
 
   constructor(
     private fb: FormBuilder,
@@ -48,6 +51,7 @@ export class ProfessionalInfoFormComponent implements OnInit {
       currentJobTitle: [""],
       linkedInProfile: [""],
       educationalBackground: [""],
+      resumeUpload: [null],
     });
   }
 
@@ -72,14 +76,32 @@ export class ProfessionalInfoFormComponent implements OnInit {
           this.account.professionalInformation.linkedInProfile || "",
         educationalBackground:
           this.account.professionalInformation.educationalBackground || "",
+        resumeUpload: null,
+      });
+    }
+  }
+
+  onFileSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.resumeFile = input.files[0];
+      this.resumeFileName = this.resumeFile.name;
+      this.professionalInformationForm.patchValue({
+        resumeUpload: this.resumeFile,
       });
     }
   }
 
   onSubmit() {
     if (this.professionalInformationForm.valid && this.account) {
-      const updatedProfessionalInformation: ProfessionalInformation =
-        this.professionalInformationForm.value;
+      const formValue = this.professionalInformationForm.value;
+      const updatedProfessionalInformation: ProfessionalInformation = {
+        ...formValue,
+        resumeUpload:
+          this.resumeFile ||
+          this.account.professionalInformation?.resumeUpload ||
+          null,
+      };
 
       const updatedAccount: Account = {
         ...this.account,

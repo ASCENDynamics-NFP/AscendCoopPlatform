@@ -36,6 +36,7 @@ import {
 import {FirestoreService} from "../../core/services/firestore.service";
 import {AccountsService} from "../../core/services/accounts.service";
 import {ListingsService} from "../../core/services/listings.service";
+import {StorageService} from "../../core/services/storage.service";
 import {Account} from "@shared/models/account.model";
 import {RelatedListing} from "@shared/models/related-listing.model";
 import {selectAuthUser} from "../selectors/auth.selectors";
@@ -60,6 +61,7 @@ export class AccountEffects {
     private firestoreService: FirestoreService,
     private accountsService: AccountsService,
     private listingsService: ListingsService,
+    private storageService: StorageService,
     private store: Store<AppState>,
     private router: Router,
     private toastController: ToastController,
@@ -127,21 +129,12 @@ export class AccountEffects {
   createAccount$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.createAccount),
-      switchMap(({account}) => {
-        const newAccount = {
-          ...account,
-          createdAt: serverTimestamp(),
-          lastModifiedAt: serverTimestamp(),
-        };
-        return from(
-          this.firestoreService.addDocument("accounts", newAccount),
-        ).pipe(
-          map((accountId) => {
-            this.router.navigate([`/accounts/${accountId}`]);
+      switchMap(({account}) =>
+        from(this.createAccountWithResume(account)).pipe(
+          map((created) => {
+            this.router.navigate([`/accounts/${created.id}`]);
             this.showToast("Account created successfully", "success");
-            return AccountActions.createAccountSuccess({
-              account: {...newAccount, id: accountId},
-            });
+            return AccountActions.createAccountSuccess({account: created});
           }),
           catchError((error) => {
             this.showToast(
@@ -152,8 +145,8 @@ export class AccountEffects {
               AccountActions.createAccountFailure({error: error.message}),
             );
           }),
-        );
-      }),
+        ),
+      ),
     ),
   );
 
@@ -162,23 +155,11 @@ export class AccountEffects {
     this.actions$.pipe(
       ofType(AccountActions.updateAccount),
       debounceTime(300),
-      switchMap(({account}) => {
-        const updatedAccount = {
-          ...account,
-          lastModifiedAt: serverTimestamp(),
-        };
-        return from(
-          this.firestoreService.updateDocument(
-            "accounts",
-            account.id,
-            updatedAccount,
-          ),
-        ).pipe(
-          map(() => {
+      switchMap(({account}) =>
+        from(this.updateAccountWithResume(account)).pipe(
+          map((updated) => {
             this.showToast("Account updated successfully", "success");
-            return AccountActions.updateAccountSuccess({
-              account: updatedAccount,
-            });
+            return AccountActions.updateAccountSuccess({account: updated});
           }),
           catchError((error) => {
             this.showToast(
@@ -189,8 +170,8 @@ export class AccountEffects {
               AccountActions.updateAccountFailure({error: error.message}),
             );
           }),
-        );
-      }),
+        ),
+      ),
     ),
   );
 
@@ -497,6 +478,80 @@ export class AccountEffects {
       ),
     ),
   );
+
+  private async createAccountWithResume(account: Account): Promise<Account> {
+    const newAccount: any = {
+      ...account,
+      createdAt: serverTimestamp(),
+      lastModifiedAt: serverTimestamp(),
+    };
+
+    const file = account.professionalInformation?.resumeUpload;
+    if (file instanceof File) {
+      newAccount.professionalInformation = {
+        ...newAccount.professionalInformation,
+        resumeUpload: null,
+      };
+    }
+
+    const accountId = await this.firestoreService.addDocument(
+      "accounts",
+      newAccount,
+    );
+
+    let resumeUrl: string | null = null;
+    if (file instanceof File) {
+      resumeUrl = await this.storageService.uploadFile(
+        `accounts/${accountId}/resume.pdf`,
+        file,
+      );
+      await this.firestoreService.updateDocument("accounts", accountId, {
+        professionalInformation: {
+          ...newAccount.professionalInformation,
+          resumeUpload: resumeUrl,
+        },
+      });
+    }
+
+    return {
+      ...newAccount,
+      id: accountId,
+      professionalInformation: {
+        ...newAccount.professionalInformation,
+        resumeUpload: resumeUrl,
+      },
+    } as Account;
+  }
+
+  private async updateAccountWithResume(account: Account): Promise<Account> {
+    let updatedAccount: any = {
+      ...account,
+      lastModifiedAt: serverTimestamp(),
+    };
+
+    const file = account.professionalInformation?.resumeUpload;
+    if (file instanceof File) {
+      const resumeUrl = await this.storageService.uploadFile(
+        `accounts/${account.id}/resume.pdf`,
+        file,
+      );
+      updatedAccount = {
+        ...updatedAccount,
+        professionalInformation: {
+          ...account.professionalInformation,
+          resumeUpload: resumeUrl,
+        },
+      };
+    }
+
+    await this.firestoreService.updateDocument(
+      "accounts",
+      account.id,
+      updatedAccount,
+    );
+
+    return updatedAccount as Account;
+  }
 
   private showToast(message: string, color: string) {
     this.toastController

@@ -99,6 +99,11 @@ export interface ProfessionalInformation {
   skillsAndExpertise?: string[];
   currentJobTitle?: string;
   linkedInProfile?: string;
+  /**
+   * Local resume file selected by the user. This should be uploaded to
+   * Firebase Storage during account creation or updates and replaced
+   * with the resulting download URL.
+   */
   resumeUpload?: File | null;
   educationalBackground?: string;
 }

@@ -30,11 +30,16 @@ import {LeadService} from "../../../../../../core/services/lead.service";
 })
 export class LeadFormComponent {
   inquiries = [
-    {value: "general", label: "General Inquiry"},
-    {value: "partnership", label: "Partnership"},
-    {value: "support", label: "Support"},
-    {value: "feedback", label: "Feedback"},
-    {value: "donation", label: "Donation"},
+    {value: "donate", label: "Donate to ASCENDynamics NFP"},
+    {value: "question", label: "Question"},
+    {value: "services", label: "Inquire on Services"},
+    {value: "interview", label: "Interview Staff for an Article"},
+    {value: "conference", label: "Invite ASCENDynamics to Conference"},
+    {value: "partner", label: "Partner with ASCENDynamics NFP"},
+    {value: "feedback", label: "Provide Site Feedback"},
+    {value: "refer-client", label: "Refer a Client"},
+    {value: "volunteer", label: "Volunteer at ASCENDynamics NFP"},
+    {value: "other", label: "Other"},
   ];
 
   form = this.fb.nonNullable.group({

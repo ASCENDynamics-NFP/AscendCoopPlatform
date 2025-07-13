@@ -100,11 +100,10 @@ export interface ProfessionalInformation {
   currentJobTitle?: string;
   linkedInProfile?: string;
   /**
-   * Local resume file selected by the user. This should be uploaded to
-   * Firebase Storage during account creation or updates and replaced
-   * with the resulting download URL.
+   * Local resume file selected by the user or the resulting download URL
+   * after the file has been uploaded to Firebase Storage.
    */
-  resumeUpload?: File | null;
+  resumeUpload?: File | string | null;
   educationalBackground?: string;
 }
 

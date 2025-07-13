@@ -8,7 +8,9 @@ service firebase.storage {
       	request.auth != null && 
         request.auth.uid == accountId && 
         (request.resource.contentType.matches('image/.*') ||
-          request.resource.contentType == 'application/pdf') &&
+          request.resource.contentType == 'application/pdf' ||
+          request.resource.contentType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+          request.resource.contentType == 'application/msword') &&
         request.resource.size < 5 * 1024 * 1024; // 5MB
     }
 

@@ -501,10 +501,9 @@ export class AccountEffects {
 
     let resumeUrl: string | null = null;
     if (file instanceof File) {
-      resumeUrl = await this.storageService.uploadFile(
-        `accounts/${accountId}/resume.pdf`,
-        file,
-      );
+      const extension = file.name.split(".").pop()?.toLowerCase() || "pdf";
+      const filePath = `accounts/${accountId}/resume.${extension}`;
+      resumeUrl = await this.storageService.uploadFile(filePath, file);
       await this.firestoreService.updateDocument("accounts", accountId, {
         professionalInformation: {
           ...newAccount.professionalInformation,
@@ -531,10 +530,9 @@ export class AccountEffects {
 
     const file = account.professionalInformation?.resumeUpload;
     if (file instanceof File) {
-      const resumeUrl = await this.storageService.uploadFile(
-        `accounts/${account.id}/resume.pdf`,
-        file,
-      );
+      const extension = file.name.split(".").pop()?.toLowerCase() || "pdf";
+      const filePath = `accounts/${account.id}/resume.${extension}`;
+      const resumeUrl = await this.storageService.uploadFile(filePath, file);
       updatedAccount = {
         ...updatedAccount,
         professionalInformation: {

@@ -27,7 +27,8 @@ export const selectAuthState = createFeatureSelector<AuthState>("auth");
 
 export const selectAuthUser = createSelector(
   selectAuthState,
-  (state: AuthState) => state.user,
+  (state: AuthState | undefined): AuthUser | null =>
+    state ? state.user : null,
 );
 
 export const selectIsLoggedIn = createSelector(

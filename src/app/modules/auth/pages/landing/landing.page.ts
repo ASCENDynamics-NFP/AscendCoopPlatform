@@ -39,7 +39,12 @@ export class LandingPage {
     autoplay: true,
     spaceBetween: 10,
     breakpoints: {
-      640: {
+      480: {
+        slidesPerView: 1,
+        spaceBetween: 10,
+        loop: true,
+      },
+      600: {
         slidesPerView: 1,
         spaceBetween: 10,
         loop: true,

@@ -21,7 +21,7 @@
 /* General Styling */
 .homepage-listings {
   font-family: "Roboto", sans-serif;
-  padding: 0 20px;
+  padding: 0 1.25rem;
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
@@ -30,7 +30,7 @@
 /* Heading */
 .homepage-listings h1 {
   font-size: 2rem;
-  margin-bottom: 20px;
+  margin-bottom: 1.25rem;
   text-align: center;
   color: var(--ion-text-color);
 }
@@ -43,10 +43,10 @@
 
 /* Individual Card */
 .listing-card {
-  border-radius: 8px;
-  box-shadow: 0 4px 8px var(--ion-color-primary);
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.5rem var(--ion-color-primary);
   background-color: var(--ion-item-background);
-  padding: 15px;
+  padding: 0.9375rem;
   transition:
     box-shadow 0.3s ease,
     background-color 0.3s ease;
@@ -57,18 +57,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 0.625rem;
 }
 
 .listing-main {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
 }
 
 .listing-icon {
-  width: 48px;
-  height: 48px;
+  width: 3rem;
+  height: 3rem;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -76,7 +76,7 @@
 .listing-info {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 0.1875rem;
 }
 
 .listing-info ion-card-title {
@@ -93,8 +93,8 @@
 .status-badge {
   background-color: var(--ion-color-primary);
   // color: var(--ion-color-warning-contrast);
-  border-radius: 12px;
-  padding: 4px 8px;
+  border-radius: 0.75rem;
+  padding: 0.25rem 0.5rem;
   font-size: 0.8rem;
   font-weight: 600;
 }
@@ -103,7 +103,7 @@
 .listing-description {
   font-size: 0.9rem;
   color: var(--ion-color-medium);
-  margin-top: 5px;
+  margin-top: 0.3125rem;
 }
 
 /* Footer */
@@ -111,12 +111,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 15px;
+  margin-top: 0.9375rem;
 }
 
 .listing-details {
   display: flex;
-  gap: 8px;
+  gap: 0.5rem;
   font-size: 0.8rem;
   color: var(--ion-text-color);
 }
@@ -124,14 +124,14 @@
 /* Buttons */
 .listing-actions {
   display: flex;
-  gap: 6px;
+  gap: 0.375rem;
 }
 
 .save-btn,
 .apply-btn {
   font-size: 0.8rem;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
   transition: transform 0.2s ease;
   font-weight: 500;
 }
@@ -144,7 +144,7 @@
 /* More Opportunities */
 .more-opportunities {
   text-align: right;
-  margin-top: 20px;
+  margin-top: 1.25rem;
 }
 
 .more-link {

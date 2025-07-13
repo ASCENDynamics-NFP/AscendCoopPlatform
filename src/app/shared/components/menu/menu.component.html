@@ -85,6 +85,23 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           </ion-item>
         </ion-menu-toggle>
       </ion-list>
+      <!-- Info Pages Section -->
+      <ion-list>
+        <ion-list-header>
+          <strong>Learn More</strong>
+        </ion-list-header>
+        <ion-menu-toggle auto-hide="false">
+          <ion-item
+            *ngFor="let info of infoPages"
+            [routerLink]="info.url"
+            lines="none"
+            detail="false"
+          >
+            <ion-icon aria-hidden="true" slot="start" [name]="info.icon"></ion-icon>
+            <ion-label>{{ info.title }}</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+      </ion-list>
       <!-- Project Links Section -->
       <ion-list>
         <ion-list-header>

@@ -33,14 +33,16 @@ export class LeadFormComponent {
     {value: "general", label: "General Inquiry"},
     {value: "partnership", label: "Partnership"},
     {value: "support", label: "Support"},
+    {value: "feedback", label: "Feedback"},
+    {value: "donation", label: "Donation"},
   ];
 
   form = this.fb.nonNullable.group({
-    name: [""],
+    name: ["", [Validators.required, Validators.minLength(2)]],
     email: ["", [Validators.required, Validators.email]],
-    phone: [""],
+    phone: ["", Validators.pattern(/^[0-9()+-\s]*$/)],
     inquiry: ["", Validators.required],
-    message: [""],
+    message: ["", Validators.minLength(10)],
     from: ["ASCENDynamics NFP"],
   });
 

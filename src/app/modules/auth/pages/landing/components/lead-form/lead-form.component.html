@@ -1,6 +1,11 @@
 <form [formGroup]="form" (ngSubmit)="submit()">
   <ion-item>
-    <ion-input label="Name" formControlName="name" label-placement="stacked"></ion-input>
+    <ion-input
+      label="Name"
+      formControlName="name"
+      label-placement="stacked"
+      required
+    ></ion-input>
   </ion-item>
   <ion-item>
     <ion-input
@@ -12,11 +17,23 @@
     ></ion-input>
   </ion-item>
   <ion-item>
-    <ion-input label="Phone" formControlName="phone" label-placement="stacked"></ion-input>
+    <ion-input
+      label="Phone"
+      formControlName="phone"
+      label-placement="stacked"
+      pattern="[0-9()+-\\s]*"
+    ></ion-input>
   </ion-item>
   <ion-item>
-    <ion-select label="Inquiry" formControlName="inquiry" label-placement="stacked" required>
-      <ion-select-option *ngFor="let opt of inquiries" [value]="opt.value">{{ opt.label }}</ion-select-option>
+    <ion-select
+      label="Inquiry"
+      formControlName="inquiry"
+      label-placement="stacked"
+      required
+    >
+      <ion-select-option *ngFor="let opt of inquiries" [value]="opt.value">{{
+        opt.label
+      }}</ion-select-option>
     </ion-select>
   </ion-item>
   <ion-item>
@@ -24,7 +41,11 @@
       label="Message"
       formControlName="message"
       label-placement="stacked"
+      minlength="10"
+      rows="6"
     ></ion-textarea>
   </ion-item>
-  <ion-button type="submit" expand="block" [disabled]="form.invalid">Submit</ion-button>
+  <ion-button type="submit" expand="block" [disabled]="form.invalid"
+    >Submit</ion-button
+  >
 </form>

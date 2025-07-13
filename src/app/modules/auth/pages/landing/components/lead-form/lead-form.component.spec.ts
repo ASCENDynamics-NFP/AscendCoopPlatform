@@ -58,7 +58,7 @@ describe("LeadFormComponent", () => {
       email: "t@example.com",
       phone: "",
       inquiry: "general",
-      message: "hi",
+      message: "hello world",
       from: "ASCENDynamics NFP",
     });
     (leadService.submitLead as jasmine.Spy).and.returnValue({

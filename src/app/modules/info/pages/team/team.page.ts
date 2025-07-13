@@ -20,6 +20,9 @@
 // src/app/modules/info/pages/team/team.page.ts
 
 import {Component, OnInit} from "@angular/core";
+import {ModalController} from "@ionic/angular";
+import {MetaService} from "../../../../core/services/meta.service";
+import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
 
 @Component({
   selector: "app-team",
@@ -27,7 +30,43 @@ import {Component, OnInit} from "@angular/core";
   styleUrls: ["./team.page.scss"],
 })
 export class TeamPage implements OnInit {
-  constructor() {}
+  currentYear: number = new Date().getFullYear();
+
+  constructor(
+    private metaService: MetaService,
+    private modalController: ModalController,
+  ) {}
+
+  ionViewWillEnter() {
+    this.metaService.updateMetaTags(
+      "Our Team | ASCENDynamics NFP",
+      "Meet the volunteers, developers, and SEO experts behind ASCENDynamics NFP.",
+      "team, volunteers, SEO, ASCENDynamics",
+      {
+        title: "Our Team | ASCENDynamics NFP",
+        description:
+          "Learn about the passionate team working to grow cooperatives and enhance SEO outreach.",
+        url: "https://app.ASCENDynamics.org/info/team",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+      },
+      {
+        card: "summary",
+        title: "ASCENDynamics Team",
+        description: "Volunteers and SEO specialists supporting our mission.",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+      },
+    );
+  }
+
+  async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {
+    const modal = await this.modalController.create({
+      component: LegalModalComponent,
+      componentProps: {content: contentType},
+    });
+    await modal.present();
+  }
 
   ngOnInit() {}
 }

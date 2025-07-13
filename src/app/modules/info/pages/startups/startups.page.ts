@@ -20,6 +20,9 @@
 // src/app/modules/info/pages/startups/startups.page.ts
 
 import {Component, OnInit} from "@angular/core";
+import {ModalController} from "@ionic/angular";
+import {MetaService} from "../../../../core/services/meta.service";
+import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
 
 @Component({
   selector: "app-startups",
@@ -27,7 +30,44 @@ import {Component, OnInit} from "@angular/core";
   styleUrls: ["./startups.page.scss"],
 })
 export class StartupsPage implements OnInit {
-  constructor() {}
+  currentYear: number = new Date().getFullYear();
+
+  constructor(
+    private metaService: MetaService,
+    private modalController: ModalController,
+  ) {}
+
+  ionViewWillEnter() {
+    this.metaService.updateMetaTags(
+      "Startup Resources | ASCENDynamics NFP",
+      "Launch your cooperative with ASCENDynamics NFP and learn SEO fundamentals.",
+      "startups, cooperatives, resources, SEO",
+      {
+        title: "Startup Resources | ASCENDynamics NFP",
+        description:
+          "Find tools and SEO advice for your worker-owned startup at ASCENDynamics NFP.",
+        url: "https://app.ASCENDynamics.org/info/startups",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+      },
+      {
+        card: "summary",
+        title: "Startups",
+        description:
+          "ASCENDynamics NFP helps cooperatives grow with funding, networking, and SEO training.",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+      },
+    );
+  }
+
+  async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {
+    const modal = await this.modalController.create({
+      component: LegalModalComponent,
+      componentProps: {content: contentType},
+    });
+    await modal.present();
+  }
 
   ngOnInit() {}
 }

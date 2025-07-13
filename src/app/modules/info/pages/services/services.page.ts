@@ -20,6 +20,9 @@
 // src/app/modules/info/pages/services/services.page.ts
 
 import {Component, OnInit} from "@angular/core";
+import {ModalController} from "@ionic/angular";
+import {MetaService} from "../../../../core/services/meta.service";
+import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
 
 @Component({
   selector: "app-services",
@@ -27,7 +30,44 @@ import {Component, OnInit} from "@angular/core";
   styleUrls: ["./services.page.scss"],
 })
 export class ServicesPage implements OnInit {
-  constructor() {}
+  currentYear: number = new Date().getFullYear();
+
+  constructor(
+    private metaService: MetaService,
+    private modalController: ModalController,
+  ) {}
+
+  ionViewWillEnter() {
+    this.metaService.updateMetaTags(
+      "Our Services | ASCENDynamics NFP",
+      "Discover technical assistance, development, and SEO-driven marketing at ASCENDynamics NFP.",
+      "services, development, SEO, marketing, ASCENDynamics",
+      {
+        title: "Our Services | ASCENDynamics NFP",
+        description:
+          "Learn how ASCENDynamics NFP supports cooperatives with funding, networking, and SEO expertise.",
+        url: "https://app.ASCENDynamics.org/info/services",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+      },
+      {
+        card: "summary",
+        title: "Services",
+        description:
+          "From technical assistance to SEO marketing, ASCENDynamics NFP helps your organization thrive.",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+      },
+    );
+  }
+
+  async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {
+    const modal = await this.modalController.create({
+      component: LegalModalComponent,
+      componentProps: {content: contentType},
+    });
+    await modal.present();
+  }
 
   ngOnInit() {}
 }

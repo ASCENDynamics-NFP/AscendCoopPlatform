@@ -20,6 +20,9 @@
 // src/app/modules/info/pages/contact-us/contact-us.page.ts
 
 import {Component, OnInit} from "@angular/core";
+import {ModalController} from "@ionic/angular";
+import {MetaService} from "../../../../core/services/meta.service";
+import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
 
 @Component({
   selector: "app-contact-us",
@@ -27,7 +30,44 @@ import {Component, OnInit} from "@angular/core";
   styleUrls: ["./contact-us.page.scss"],
 })
 export class ContactUsPage implements OnInit {
-  constructor() {}
+  currentYear: number = new Date().getFullYear();
+
+  constructor(
+    private metaService: MetaService,
+    private modalController: ModalController,
+  ) {}
+
+  ionViewWillEnter() {
+    this.metaService.updateMetaTags(
+      "Contact ASCENDynamics NFP | Get in Touch",
+      "Reach out to ASCENDynamics NFP for cooperative support and SEO guidance.",
+      "contact, ASCENDynamics, nonprofit, cooperative support, SEO",
+      {
+        title: "Contact ASCENDynamics NFP",
+        description:
+          "Send us your questions and learn how our SEO experts can help your organization grow.",
+        url: "https://app.ASCENDynamics.org/info/contact-us",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+      },
+      {
+        card: "summary",
+        title: "Contact ASCENDynamics NFP",
+        description:
+          "Our team is ready to assist with cooperative development and SEO strategies.",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+      },
+    );
+  }
+
+  async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {
+    const modal = await this.modalController.create({
+      component: LegalModalComponent,
+      componentProps: {content: contentType},
+    });
+    await modal.present();
+  }
 
   ngOnInit() {}
 }

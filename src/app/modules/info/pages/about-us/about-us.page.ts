@@ -20,6 +20,9 @@
 // src/app/modules/info/pages/about-us/about-us.page.ts
 
 import {Component, OnInit} from "@angular/core";
+import {ModalController} from "@ionic/angular";
+import {MetaService} from "../../../../core/services/meta.service";
+import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
 
 @Component({
   selector: "app-about-us",
@@ -27,7 +30,44 @@ import {Component, OnInit} from "@angular/core";
   styleUrls: ["./about-us.page.scss"],
 })
 export class AboutUsPage implements OnInit {
-  constructor() {}
+  currentYear: number = new Date().getFullYear();
+
+  constructor(
+    private metaService: MetaService,
+    private modalController: ModalController,
+  ) {}
+
+  ionViewWillEnter() {
+    this.metaService.updateMetaTags(
+      "About ASCENDynamics NFP | Cooperative Incubator",
+      "Learn about ASCENDynamics NFP and how our SEO-focused strategies empower worker-owned cooperatives.",
+      "ASCENDynamics, about, cooperative incubator, nonprofit, SEO",
+      {
+        title: "About ASCENDynamics NFP | Cooperative Incubator",
+        description:
+          "Discover the mission and values of ASCENDynamics NFP and our dedication to SEO for social impact.",
+        url: "https://app.ASCENDynamics.org/info/about-us",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+      },
+      {
+        card: "summary",
+        title: "About ASCENDynamics NFP",
+        description:
+          "ASCENDynamics NFP provides resources and SEO guidance for cooperatives and nonprofits.",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+      },
+    );
+  }
+
+  async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {
+    const modal = await this.modalController.create({
+      component: LegalModalComponent,
+      componentProps: {content: contentType},
+    });
+    await modal.present();
+  }
 
   ngOnInit() {}
 }

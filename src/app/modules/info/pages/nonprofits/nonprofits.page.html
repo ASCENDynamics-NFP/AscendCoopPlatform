@@ -1,88 +1,13 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>nonprofits</ion-title>
-  </ion-toolbar>
+  <app-header title="Nonprofits"></app-header>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">nonprofits</ion-title>
-    </ion-toolbar>
+    <app-header title="Nonprofits"></app-header>
   </ion-header>
-  <!-- Responsive navbar-->
-  <nav class="navbar navbar-collapse-lg navbar-dark bg-dark">
-    <div class="container">
-      <a class="navbar-brand text-wrap" href="/"
-        >ASCENDynamics NFP - For Nonprofits</a
-      >
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/about-us.html">About Us</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/services.html">Services</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/event-calendar.html"
-              >Event Calendar</a
-            >
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/startups.html">Startups</a>
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link active"
-              aria-current="page"
-              href="/page/nonprofits.html"
-              >Nonprofits</a
-            >
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/think-tank.html">Think Tank </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/team.html">Team</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/page/contact-us.html">Contact Us</a>
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              target="_blank"
-              href="https://buy.stripe.com/bIY5mC9sY1ob4TufYY"
-              >Donate</a
-            >
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-  <!-- Header - set the background image for the header in the line below-->
-  <header
-    class="py-5 bg-image-full"
-    style="
-      background-image: url(&quot;../img/pexels-snapwire-37728.jpg&quot;);
-      height: calc(50vh - 56px);
-    "
-  >
+  <ion-grid fixed>
     <div class="text-center my-5">
-      <!-- <img class="img-fluid rounded-circle mb-4" src="img\pexels-duane-viljoen-7238619.jpg" alt="..." /> -->
       <h1 class="text-dark fs-3 fw-bolder">
         Empowering Nonprofits to Make a Difference
       </h1>
@@ -90,157 +15,138 @@
         ASCENDynamics is here to help nonprofits increase their impact.
       </p>
     </div>
-  </header>
-  <!-- Content section-->
-  <section class="py-5">
-    <div class="container my-5">
-      <div class="row justify-content-center">
-        <div class="col-lg-6">
-          <h2>Collaborative Platform</h2>
-          <p class="lead">
-            We're currently developing an open-source, web-based collaboration
-            platform tailored towards organizations, movements, nonprofits, and
-            collaborative groups. This platform aims to enhance capacity for
-            collaboration, streamline internal organization, track and leverage
-            volunteer contributions, manage donations, facilitate internal and
-            external communications, and amplify societal impact. You can follow
-            the development of this platform on our
-            <a href="https://github.com/ASCENDynamics-NFP/AscendCoopPlatform"
-              >GitHub page</a
-            >.
-          </p>
-          <p class="mb-0">
-            We invite you to join our
-            <a
-              href="https://join.slack.com/t/ascendynamicsnfp/shared_invite/zt-1yqcw1hqa-slT2gWkBEkLOTRnN8zEqdQ"
-              >Slack community</a
-            >
-            where you can connect and contribute with other volunteers working
-            on the platform.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-  <!-- Image element - set the background image for the header in the line below-->
-  <div
-    class="py-5 bg-image-full"
-    style="
-      background-image: url(&quot;../img/pexels-lagos-food-bank-initiative-6472412.jpg&quot;);
-    "
-  >
-    <!-- Put anything you want here! The spacer below with inline CSS is just for demo purposes!-->
-    <div style="height: 20rem"></div>
-  </div>
-  <!-- Content section-->
-  <section class="py-5">
-    <div class="container my-5">
-      <div class="row justify-content-center">
-        <div class="col-lg-6">
-          <h2>Impact Stories</h2>
-          <p class="lead">
-            Check out some of the nonprofits that have successfully increased
-            their impact with the help of ASCENDynamics. Learn about their
-            challenges, successes, and the impact they're making in their
-            communities.
-          </p>
-          <!-- <p class="mb-0"></p> -->
-        </div>
-      </div>
-    </div>
-  </section>
-  <!-- Image element - set the background image for the header in the line below-->
-  <div
-    class="py-5 bg-image-full"
-    style="
-      background-image: url(&quot;../img/pexels-markus-spiske-2559749.jpg&quot;);
-    "
-  >
-    <!-- Put anything you want here! The spacer below with inline CSS is just for demo purposes!-->
-    <div style="height: 20rem"></div>
-  </div>
-  <!-- Content section-->
-  <section class="py-5">
-    <div class="container my-5">
-      <div class="row justify-content-center">
-        <div class="col-lg-6">
-          <h2>Resources</h2>
-          <p class="lead">
-            Find resources and tools to help your nonprofit increase its impact.
-            We offer guides, templates, and other resources to help you achieve
-            your goals.
-          </p>
-          <!-- <p class="mb-0"></p> -->
-        </div>
-      </div>
-    </div>
-  </section>
-  <!-- Image element - set the background image for the header in the line below-->
-  <div
-    class="py-5 bg-image-full"
-    style="
-      background-image: url(&quot;../img/pexels-brett-sayles-4754265.jpg&quot;);
-    "
-  >
-    <!-- Put anything you want here! The spacer below with inline CSS is just for demo purposes!-->
-    <div style="height: 20rem"></div>
-  </div>
-  <!-- Footer-->
-  <footer class="py-5 bg-dark">
-    <!-- Responsive navbar-->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <div class="container">
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav mb-2 mb-lg-0" style="margin: auto">
-            <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/about-us.html">About Us</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/services.html">Services</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/event-calendar.html"
-                >Event Calendar</a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/startups.html">Startups</a>
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link"
-                aria-current="page"
-                href="/page/nonprofits.html"
-                >Nonprofits</a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/think-tank.html">Think Tank </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/team.html">Team</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/page/contact-us.html">Contact Us</a>
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link"
+    <ion-card class="ion-margin">
+      <ion-card-header>
+        <ion-card-title>Collaborative Platform</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          We're developing an open-source collaboration platform to streamline
+          organization, track volunteers, and amplify social impact. Follow
+          progress on our
+          <a href="https://github.com/ASCENDynamics-NFP/AscendCoopPlatform"
+            >GitHub page</a
+          >
+          and join our
+          <a
+            href="https://join.slack.com/t/ascendynamicsnfp/shared_invite/zt-1yqcw1hqa-slT2gWkBEkLOTRnN8zEqdQ"
+            >Slack community</a
+          >
+          to contribute.
+        </p>
+      </ion-card-content>
+    </ion-card>
+    <ion-img
+      class="content-image"
+      style="
+        margin-bottom: 1rem;
+        max-height: 300px;
+        object-fit: cover;
+        object-position: 50% 50%;
+        overflow: hidden;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      "
+      src="assets/image/pexels-fauxels-3184423.jpg"
+    ></ion-img>
+    <ion-card class="ion-margin">
+      <ion-card-header>
+        <ion-card-title>Impact Stories</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          Check out nonprofits that have successfully increased their impact
+          with ASCENDynamics. Learn about their challenges and successes.
+        </p>
+      </ion-card-content>
+    </ion-card>
+    <ion-img
+      class="content-image"
+      style="
+        margin-bottom: 1rem;
+        max-height: 300px;
+        object-fit: cover;
+        object-position: 50% 50%;
+        overflow: hidden;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      "
+      src="assets/image/pexels-markus-spiske-2559749.jpg"
+    ></ion-img>
+    <ion-card class="ion-margin">
+      <ion-card-header>
+        <ion-card-title>Resources</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          Find guides and templates to help your nonprofit achieve its goals. We
+          also provide SEO advice to increase your online reach.
+        </p>
+      </ion-card-content>
+    </ion-card>
+    <ion-img
+      class="content-image"
+      style="
+        margin-bottom: 1rem;
+        max-height: 300px;
+        object-fit: cover;
+        object-position: 50% 50%;
+        overflow: hidden;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      "
+      src="assets/image/pexels-brett-sayles-4754265.jpg"
+    ></ion-img>
+  </ion-grid>
+  <ion-footer>
+    <div class="footer">
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" size-md="4" class="footer-logo">
+            <img
+              src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
+              alt="ASCENDynamics Logo"
+            />
+          </ion-col>
+          <ion-col size="12" size-md="4" class="footer-nav">
+            <h3>Quick Links</h3>
+            <ul>
+              <li>
+                <a (click)="openLegalModal('privacyPolicy')">Privacy Policy</a>
+              </li>
+              <li>
+                <a (click)="openLegalModal('termsOfUse')">Terms of Service</a>
+              </li>
+            </ul>
+          </ion-col>
+          <ion-col size="12" size-md="4" class="footer-social">
+            <h3>Follow Us</h3>
+            <ion-buttons class="social-buttons">
+              <ion-button
+                href="https://github.com/ASCENDynamics-NFP"
                 target="_blank"
-                href="https://buy.stripe.com/bIY5mC9sY1ob4TufYY"
-                >Donate</a
-              >
-            </li>
-          </ul>
-        </div>
+                ><ion-icon slot="icon-only" name="logo-github"></ion-icon
+              ></ion-button>
+              <ion-button
+                href="https://www.facebook.com/ASCENDynamicsNFP"
+                target="_blank"
+                ><ion-icon slot="icon-only" name="logo-facebook"></ion-icon
+              ></ion-button>
+              <ion-button
+                href="https://www.linkedin.com/company/ascendynamics-nfp"
+                target="_blank"
+                ><ion-icon slot="icon-only" name="logo-linkedin"></ion-icon
+              ></ion-button>
+            </ion-buttons>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+      <div class="footer-bottom">
+        <p>&copy; {{ currentYear }} ASCENDynamics NFP. All rights reserved.</p>
       </div>
-    </nav>
-    <!-- Social Media Links -->
-    <div class="container">
-      <p class="m-0 text-center text-white">
-        Copyright &copy; ASCENDynamics 2021
-      </p>
     </div>
-  </footer>
+  </ion-footer>
 </ion-content>

@@ -143,8 +143,6 @@ export class MenuComponent implements OnInit, OnDestroy {
       //   icon: "business",
       // },
     ];
-
-    this.menuPages = [...this.menuPages, ...this.infoPages];
   }
 
   private setUserMenuItems() {
@@ -188,8 +186,6 @@ export class MenuComponent implements OnInit, OnDestroy {
       //   icon: "newspaper",
       // },
     ];
-
-    this.menuPages = [...this.menuPages, ...this.infoPages];
   }
 
   // Handle button clicks in menu items

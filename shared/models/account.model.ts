@@ -99,7 +99,7 @@ export interface ProfessionalInformation {
   skillsAndExpertise?: string[];
   currentJobTitle?: string;
   linkedInProfile?: string;
-  // resumeUpload?: File; // TODO: Add support for resume upload
+  resumeUpload?: File | null;
   educationalBackground?: string;
 }
 
@@ -149,12 +149,14 @@ interface GroupCategory {
 }
 
 interface Event {
-  // TODO: Add support for events
   title: string;
   description?: string;
   startDate: Timestamp;
   endDate: Timestamp;
   location?: string; // Optional, physical location or online link
+  organizerId?: string;
+  attendeeIds?: string[];
+  capacity?: number;
 }
 
 interface User {

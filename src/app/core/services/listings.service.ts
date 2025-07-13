@@ -35,7 +35,10 @@ import {environment} from "../../../environments/environment";
 export class ListingsService {
   private endpoint = `${environment.firebaseConfig.apiUrl}/getHomepageListings`;
 
-  constructor(private http: HttpClient, private afs: AngularFirestore) {}
+  constructor(
+    private http: HttpClient,
+    private afs: AngularFirestore,
+  ) {}
 
   /**
    * Fetch homepage listings with user's location
@@ -62,7 +65,6 @@ export class ListingsService {
 
     return this.http.get<Listing[]>(this.endpoint, {params});
   }
-}
 
   getCollectionWithCondition<T>(
     collectionName: string,
@@ -96,7 +98,11 @@ export class ListingsService {
       let query: Query<DocumentData> = ref;
       if (conditions) {
         conditions.forEach((condition) => {
-          query = query.where(condition.field, condition.operator, condition.value);
+          query = query.where(
+            condition.field,
+            condition.operator,
+            condition.value,
+          );
         });
       }
       return query;
@@ -111,7 +117,10 @@ export class ListingsService {
         }),
       ),
       catchError((error) => {
-        console.error(`Error retrieving documents from path: ${fullPath}`, error);
+        console.error(
+          `Error retrieving documents from path: ${fullPath}`,
+          error,
+        );
         return of([]);
       }),
     );

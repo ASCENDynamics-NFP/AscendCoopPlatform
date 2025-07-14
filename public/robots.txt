@@ -1,6 +1,0 @@
-User-agent: *
-Disallow: /admin/
-Disallow: /api/
-Allow: /
-
-Sitemap: https://app.ASCENDynamics.org/sitemap.xml

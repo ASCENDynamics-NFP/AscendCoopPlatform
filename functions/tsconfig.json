@@ -8,6 +8,8 @@
     "strict": true,
     "target": "es2017",
     "baseUrl": "./",
+    "esModuleInterop": true,
+    "types": ["node"],
     "paths": {
       "@shared/*": ["../shared/*"]
     }

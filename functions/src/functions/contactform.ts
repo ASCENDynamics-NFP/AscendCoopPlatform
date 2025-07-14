@@ -20,7 +20,7 @@
 import * as functions from "firebase-functions";
 import {admin} from "../utils/firebase";
 import * as nodemailer from "nodemailer";
-import * as cors from "cors";
+import cors from "cors";
 
 // Initialize the Firebase admin SDK
 // Configure CORS middleware

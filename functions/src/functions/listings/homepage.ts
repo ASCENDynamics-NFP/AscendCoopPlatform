@@ -21,7 +21,7 @@
 /** Firebase Cloud Function for Homepage Listings */
 import * as functions from "firebase-functions";
 import {admin} from "../../utils/firebase";
-import * as cors from "cors";
+import cors from "cors";
 
 // Initialize the Firebase admin SDK
 const corsHandler = cors({origin: true});

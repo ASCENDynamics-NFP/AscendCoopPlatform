@@ -31,8 +31,6 @@ import {InfoRoutingModule} from "./info-routing.module";
 import {AboutUsPage} from "./pages/about-us/about-us.page";
 import {ServicesPage} from "./pages/services/services.page";
 import {StartupsPage} from "./pages/startups/startups.page";
-import {NonprofitsPage} from "./pages/nonprofits/nonprofits.page";
-import {ContactUsPage} from "./pages/contact-us/contact-us.page";
 import {EventCalendarPage} from "./pages/event-calendar/event-calendar.page";
 import {TeamPage} from "./pages/team/team.page";
 import {ThinkTankPage} from "./pages/think-tank/think-tank.page";
@@ -42,8 +40,6 @@ import {ThinkTankPage} from "./pages/think-tank/think-tank.page";
     AboutUsPage,
     ServicesPage,
     StartupsPage,
-    NonprofitsPage,
-    ContactUsPage,
     EventCalendarPage,
     TeamPage,
     ThinkTankPage,

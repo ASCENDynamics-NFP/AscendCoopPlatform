@@ -35,7 +35,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '18'
 
       # Step 3: Install dependencies
       - name: Install dependencies
@@ -58,7 +58,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '18'
 
       # Step 3: Cache node modules
       - name: Cache node modules
@@ -68,9 +68,9 @@ jobs:
             ~/.npm                    # NPM cache directory
             node_modules              # Root node_modules
             functions/node_modules    # Functions node_modules
-          key: ${{ runner.os }}-node-20-${{ hashFiles('package-lock.json', 'functions/package-lock.json') }}
+          key: ${{ runner.os }}-node-18-${{ hashFiles('package-lock.json', 'functions/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-20-
+            ${{ runner.os }}-node-18-
 
       # Step 4: Install dependencies
       - name: Install dependencies
@@ -140,7 +140,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '18'
 
       # Install dependencies
       - name: Install dependencies

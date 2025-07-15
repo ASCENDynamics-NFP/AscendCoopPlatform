@@ -21,6 +21,19 @@ module.exports = {
     "/lib/**/*", // Ignore built files.
     ".eslintrc.js" // Ignore ESLint config file.
   ],
+  overrides: [
+    {
+      files: ["test/**/*.ts"],
+      parserOptions: {
+        project: ["tsconfig.test.json"],
+      },
+      env: { mocha: true },
+      rules: {
+        "@typescript-eslint/no-var-requires": "off",
+        "require-jsdoc": "off",
+      },
+    },
+  ],
   plugins: ["@typescript-eslint", "import"],
   rules: {
     "quotes": ["error", "double"],

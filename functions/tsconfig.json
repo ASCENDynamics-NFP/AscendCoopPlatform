@@ -11,7 +11,8 @@
     "esModuleInterop": true,
     "types": ["node"],
     "paths": {
-      "@shared/*": ["../shared/*"]
+      "@shared/*": ["../shared/*"],
+      "firebase/*": ["node_modules/firebase/*"]
     }
   },
   "compileOnSave": true,

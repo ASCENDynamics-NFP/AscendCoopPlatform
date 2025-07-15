@@ -18,7 +18,7 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";

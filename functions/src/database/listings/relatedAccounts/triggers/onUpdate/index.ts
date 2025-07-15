@@ -19,10 +19,10 @@
 ***********************************************************************************************/
 // functions/src/database/listings/relatedAccounts/triggers/onCreate/index.ts
 
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import {admin} from "../../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
-import {EventContext} from "firebase-functions";
+import {EventContext} from "firebase-functions/v1";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
 
 const db = admin.firestore();

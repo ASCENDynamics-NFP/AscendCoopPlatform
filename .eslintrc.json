@@ -1,8 +1,7 @@
 {
   "root": true,
   "ignorePatterns": [
-    "projects/**/*",
-    "functions/test/*.spec.ts"
+    "projects/**/*"
   ],
   "overrides": [
     {

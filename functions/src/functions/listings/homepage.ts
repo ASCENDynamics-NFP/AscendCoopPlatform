@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 
 /** Firebase Cloud Function for Homepage Listings */
-import * as functions from "firebase-functions";
+import {onRequest} from "firebase-functions/v2/https";
 import {admin} from "../../utils/firebase";
 import cors from "cors";
 
@@ -99,11 +99,9 @@ function getClosestGeopoint(
 /**
  * Fetch homepage listings with optional geolocation sorting and remote filtering.
  *
- * @param {functions.https.Request} req - The incoming HTTP request object.
- * @param {functions.Response} res - The outgoing HTTP response object.
  * @return {Promise<void>} A promise that resolves once the response is sent.
  */
-export const getHomepageListings = functions.https.onRequest(
+export const getHomepageListings = onRequest({region: "us-central1"},
   async (req, res): Promise<void> => {
     corsHandler(req, res, async () => {
       try {

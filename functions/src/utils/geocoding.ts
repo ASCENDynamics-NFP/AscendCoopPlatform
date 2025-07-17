@@ -21,7 +21,7 @@
 
 import fetch from "node-fetch";
 import * as logger from "firebase-functions/logger";
-import {defineString} from "firebase-functions/params";
+import {defineSecret} from "firebase-functions/params";
 
 /**
  * Represents a geocoding result from Google's Geocoding API
@@ -32,8 +32,8 @@ export interface GeocodeResult {
   lng: number;
 }
 
-// Use the new parameter system instead of config()
-const googleApiKey = defineString("GOOGLE_API_KEY");
+// Define the secret
+const googleApiKey = defineSecret("GOOGLE_API_KEY");
 
 /**
  * Geocode an address string using Google's Geocoding API
@@ -54,7 +54,7 @@ export async function geocodeAddress(
 
     if (!apiKey) {
       logger.error(
-        "Google API key is missing. Please set GOOGLE_API_KEY parameter.",
+        "Google API key is missing. Please set GOOGLE_API_KEY secret.",
       );
       return null;
     }

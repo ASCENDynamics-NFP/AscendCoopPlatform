@@ -18,19 +18,20 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {onRequest} from "firebase-functions/v2/https";
-import {defineString} from "firebase-functions/params";
+import {defineSecret} from "firebase-functions/params";
 import {admin} from "../utils/firebase";
 import * as nodemailer from "nodemailer";
 import * as logger from "firebase-functions/logger";
 
 // Define environment parameters for Gmail credentials
-const gmailEmail = defineString("GMAIL_EMAIL");
-const gmailPassword = defineString("GMAIL_PASSWORD");
+const gmailEmail = defineSecret("GMAIL_EMAIL");
+const gmailPassword = defineSecret("GMAIL_PASSWORD");
 
 export const submitLead = onRequest(
   {
     cors: true,
     invoker: "public", // Allow unauthenticated access
+    secrets: [gmailEmail, gmailPassword], // Declare secrets
   },
   async (req, res) => {
     // Log the incoming request for debugging

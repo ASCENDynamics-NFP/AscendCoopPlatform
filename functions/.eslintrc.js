@@ -31,6 +31,7 @@ module.exports = {
       rules: {
         "@typescript-eslint/no-var-requires": "off",
         "require-jsdoc": "off",
+        "quote-props": "off", // Disable quote-props for test files
       },
     },
   ],

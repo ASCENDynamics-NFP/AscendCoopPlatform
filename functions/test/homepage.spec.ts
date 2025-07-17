@@ -34,21 +34,21 @@ const {getHomepageListings} = proxyquire("../src/functions/listings/homepage", {
 import {Request, Response} from "express";
 
 describe("getHomepageListings", () => {
-  function createRes() {
-    const res: any = {headers: {}};
-    res.status = sinon.stub().returns(res);
-    res.json = sinon.stub().returns(res);
-    res.send = sinon.stub().returns(res);
-    res.set = sinon.stub().returns(res);
-    res.setHeader = sinon.stub().returns(res);
-    res.getHeader = sinon.stub().returns(res);
-    res.end = sinon.stub().returns(res);
-    res.on = sinon.stub().returns(res);
-    res.write = sinon.stub().returns(res);
-    res.writeHead = sinon.stub().returns(res);
-    res.headersSent = false;
-    res.locals = {};
-    return res as Response;
+  function createRes(): Response {
+    const res = {headers: {}} as unknown as Response;
+    (res as any).status = sinon.stub().returns(res);
+    (res as any).json = sinon.stub().returns(res);
+    (res as any).send = sinon.stub().returns(res);
+    (res as any).set = sinon.stub().returns(res);
+    (res as any).setHeader = sinon.stub().returns(res);
+    (res as any).getHeader = sinon.stub().returns(res);
+    (res as any).end = sinon.stub().returns(res);
+    (res as any).on = sinon.stub().returns(res);
+    (res as any).write = sinon.stub().returns(res);
+    (res as any).writeHead = sinon.stub().returns(res);
+    (res as any).headersSent = false;
+    (res as any).locals = {};
+    return res;
   }
 
   afterEach(() => {
@@ -95,8 +95,8 @@ describe("getHomepageListings", () => {
     } as unknown as Request;
     const res = createRes();
     await getHomepageListings(req, res);
-    expect((res.status as sinon.SinonStub).calledWith(200)).to.be.true;
-    const data = (res.json as sinon.SinonStub).firstCall.args[0];
+    expect(((res as any).status as sinon.SinonStub).calledWith(200)).to.be.true;
+    const data = ((res as any).json as sinon.SinonStub).firstCall.args[0];
     expect(data).to.be.an("array").with.length(2);
     expect(data[0].id).to.equal("3");
     adminStub.firestore.reset();

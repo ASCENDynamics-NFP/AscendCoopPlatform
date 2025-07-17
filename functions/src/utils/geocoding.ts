@@ -32,11 +32,8 @@ export interface GeocodeResult {
   lng: number;
 }
 
-// Define the Google API key parameter
-const googleApiKey = defineString("GOOGLE_API_KEY", {
-  description: "Google Maps API key for geocoding",
-  default: "",
-});
+// Use the new parameter system instead of config()
+const googleApiKey = defineString("GOOGLE_API_KEY");
 
 /**
  * Geocode an address string using Google's Geocoding API
@@ -52,48 +49,32 @@ export async function geocodeAddress(
     return null;
   }
 
-  // Get API key at runtime
-  const apiKey = googleApiKey.value();
-
-  if (!apiKey) {
-    logger.warn(
-      "Google API key is missing. Geocoding disabled. Set GOOGLE_API_KEY parameter.",
-    );
-    return null;
-  }
-
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-    address,
-  )}&key=${apiKey}`;
-
   try {
-    const res = await fetch(url);
+    const apiKey = googleApiKey.value();
 
-    if (!res.ok) {
-      logger.error(`HTTP error! status: ${res.status}`);
+    if (!apiKey) {
+      logger.error(
+        "Google API key is missing. Please set GOOGLE_API_KEY parameter.",
+      );
       return null;
     }
 
-    const data = await res.json();
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+      address,
+    )}&key=${apiKey}`;
 
-    if (data.status === "OK" && data.results && data.results.length > 0) {
+    const res = await fetch(url);
+    const data = (await res.json()) as any;
+
+    if (data.status === "OK" && data.results.length > 0) {
       const first = data.results[0];
-
-      if (!first.geometry?.location) {
-        logger.warn("No geometry location in geocoding result");
-        return null;
-      }
-
       return {
-        formatted_address: first.formatted_address || address,
+        formatted_address: first.formatted_address,
         lat: first.geometry.location.lat,
         lng: first.geometry.location.lng,
       };
     } else {
-      logger.warn("Geocoding not successful:", {
-        status: data.status,
-        error_message: data.error_message,
-      });
+      logger.warn("Geocoding not successful:", data);
       return null;
     }
   } catch (err) {

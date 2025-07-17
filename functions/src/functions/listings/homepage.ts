@@ -21,6 +21,7 @@
 /** Firebase Cloud Function for Homepage Listings */
 import {onRequest} from "firebase-functions/v2/https";
 import {admin} from "../../utils/firebase";
+import * as logger from "firebase-functions/logger";
 
 /**
  * Calculate distance between two latitude/longitude points using the Haversine formula.
@@ -98,8 +99,55 @@ function getClosestGeopoint(
  * @return {Promise<void>} A promise that resolves once the response is sent.
  */
 export const getHomepageListings = onRequest(
-  {region: "us-central1", timeoutSeconds: 60, memory: "256MiB", cors: true},
+  {
+    region: "us-central1",
+    cors: true,
+    invoker: "public", // Allow unauthenticated access
+  },
   async (req, res): Promise<void> => {
+    // Log the incoming request for debugging
+    logger.info("getHomepageListings called", {
+      method: req.method,
+      origin: req.headers.origin,
+      userAgent: req.headers["user-agent"],
+      query: req.query,
+    });
+
+    // Set CORS headers manually for more control
+    const origin = req.headers.origin;
+    const allowedOrigins = [
+      "http://localhost:8100",
+      "http://localhost:4200",
+      "https://app.ascendynamics.org",
+      "https://ascendcoopplatform.web.app",
+      "https://ascendcoopplatform.firebaseapp.com",
+      "https://ascendcoopplatform-dev.web.app",
+      "https://ascendcoopplatform-dev.firebaseapp.com",
+    ];
+
+    // Always set CORS headers first
+    if (origin && allowedOrigins.includes(origin)) {
+      res.set("Access-Control-Allow-Origin", origin);
+      logger.info("Origin allowed", {origin});
+    } else {
+      res.set("Access-Control-Allow-Origin", "*"); // Allow all for now to debug
+      logger.info("Origin not in allowed list, using wildcard", {
+        origin,
+        allowedOrigins,
+      });
+    }
+
+    res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.set("Access-Control-Max-Age", "3600");
+
+    // Handle preflight requests
+    if (req.method === "OPTIONS") {
+      logger.info("Handling OPTIONS preflight request");
+      res.status(204).send("");
+      return;
+    }
+
     try {
       const {
         limit = 4,
@@ -108,6 +156,14 @@ export const getHomepageListings = onRequest(
         longitude,
         category,
       } = req.query;
+
+      logger.info("Processing request with params", {
+        limit,
+        status,
+        latitude,
+        longitude,
+        category,
+      });
 
       // ✅ Validate Inputs
       const queryLimit = Math.min(
@@ -133,6 +189,10 @@ export const getHomepageListings = onRequest(
       }
 
       const snapshot = await query.get();
+      logger.info("Firestore query completed", {
+        docsCount: snapshot.docs.length,
+      });
+
       let listings = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -161,9 +221,13 @@ export const getHomepageListings = onRequest(
         .sort((a, b) => a.distance - b.distance) // Sort by proximity or remote first
         .slice(0, queryLimit); // Apply final limit
 
+      logger.info("Returning listings", {
+        count: listings.length,
+      });
+
       res.status(200).json(listings);
     } catch (error) {
-      console.error("Error fetching homepage listings:", error);
+      logger.error("Error fetching homepage listings:", error);
       res.status(500).json({error: "Internal server error"});
     }
   },

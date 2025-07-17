@@ -19,7 +19,10 @@
 ***********************************************************************************************/
 // functions/src/database/listings/relatedAccounts/triggers/onCreate/index.ts
 
-import {onDocumentCreated, FirestoreEvent} from "firebase-functions/v2/firestore";
+import {
+  onDocumentCreated,
+  FirestoreEvent,
+} from "firebase-functions/v2/firestore";
 import {admin} from "../../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
@@ -28,7 +31,10 @@ const db = admin.firestore();
 
 // New trigger for relatedAccounts onCreate
 export const onCreateListingsRelatedAccount = onDocumentCreated(
-  {document: "listings/{listingId}/relatedAccounts/{accountId}", region: "us-central1"},
+  {
+    document: "listings/{listingId}/relatedAccounts/{accountId}",
+    region: "us-central1",
+  },
   handleListingsRelatedAccountCreate,
 );
 
@@ -37,15 +43,24 @@ export const onCreateListingsRelatedAccount = onDocumentCreated(
  * When a user applies to a listing, this function creates a relatedListing
  * document under the applicant's account, linking the account to the listing.
  *
- * @param {FirestoreEvent<QueryDocumentSnapshot>} event - The event for the newly created relatedAccount document.
+ * @param {FirestoreEvent<QueryDocumentSnapshot | undefined>} event - The event for the newly created relatedAccount document.
  * @return {Promise<void>} A promise that resolves when the relatedListing document is created, or logs an error if it fails.
-*/
+ */
 async function handleListingsRelatedAccountCreate(
-  event: FirestoreEvent<QueryDocumentSnapshot>,
+  event: FirestoreEvent<
+    QueryDocumentSnapshot | undefined,
+    {listingId: string; accountId: string}
+  >,
 ) {
   const {listingId, accountId} = event.params;
   const snapshot = event.data;
-  const relatedAccount = snapshot?.data();
+
+  if (!snapshot) {
+    logger.error("No document data found in the event");
+    return;
+  }
+
+  const relatedAccount = snapshot.data();
 
   try {
     const relatedListingDoc = await db

@@ -19,7 +19,10 @@
 ***********************************************************************************************/
 // functions/src/database/accounts/relatedListings/triggers/onDelete/index.ts
 
-import {onDocumentDeleted, FirestoreEvent} from "firebase-functions/v2/firestore";
+import {
+  onDocumentDeleted,
+  FirestoreEvent,
+} from "firebase-functions/v2/firestore";
 import {admin} from "../../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
@@ -41,11 +44,14 @@ export const onDeleteAccountsRelatedListing = onDocumentDeleted(
  * this function deletes the corresponding relatedAccount document
  * under the listing, unlinking the account from the listing.
  *
- * @param {FirestoreEvent<QueryDocumentSnapshot>} event - The event for the deleted document.
+ * @param {FirestoreEvent<QueryDocumentSnapshot | undefined>} event - The event for the deleted document.
  * @return {Promise<void>} A promise that resolves when the relatedAccount document is deleted, or logs an error if it fails.
-*/
+ */
 async function handleAccountsRelatedListingDelete(
-  event: FirestoreEvent<QueryDocumentSnapshot>,
+  event: FirestoreEvent<
+    QueryDocumentSnapshot | undefined,
+    {accountId: string; listingId: string}
+  >,
 ) {
   const {accountId, listingId} = event.params;
 

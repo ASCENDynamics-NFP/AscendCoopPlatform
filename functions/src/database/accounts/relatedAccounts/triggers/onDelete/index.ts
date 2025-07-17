@@ -17,7 +17,10 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {onDocumentDeleted, FirestoreEvent} from "firebase-functions/v2/firestore";
+import {
+  onDocumentDeleted,
+  FirestoreEvent,
+} from "firebase-functions/v2/firestore";
 import {admin} from "../../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
@@ -40,13 +43,17 @@ export const onDeleteRelatedAccount = onDocumentDeleted(
 /**
  * Handles the deletion of a related account document, ensuring the corresponding reciprocal document in the target account is also deleted.
  *
- * @param {FirestoreEvent<QueryDocumentSnapshot>} event - The event for the deleted document.
-*/
+ * @param {FirestoreEvent<QueryDocumentSnapshot | undefined>} event - The event for the deleted document.
+ */
 async function handleRelatedAccountDelete(
-  event: FirestoreEvent<QueryDocumentSnapshot>,
+  event: FirestoreEvent<
+    QueryDocumentSnapshot | undefined,
+    {accountId: string; relatedAccountId: string}
+  >,
 ) {
   const accountId = event.params.accountId;
   const relatedAccountId = event.params.relatedAccountId;
+
   try {
     const reciprocalRelatedAccountRef = db
       .collection("accounts")

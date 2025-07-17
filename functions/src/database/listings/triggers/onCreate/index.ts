@@ -18,7 +18,10 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 
-import {onDocumentCreated, FirestoreEvent} from "firebase-functions/v2/firestore";
+import {
+  onDocumentCreated,
+  FirestoreEvent,
+} from "firebase-functions/v2/firestore";
 import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
@@ -40,15 +43,21 @@ export const onCreateListing = onDocumentCreated(
  * - Creates a relatedListing document in `accounts/{accountId}/relatedListings`
  * Both documents are linked to the listing creator with "owner" relationship status.
  *
- * @param {FirestoreEvent<QueryDocumentSnapshot>} event - The event for the newly created listing document.
+ * @param {FirestoreEvent<QueryDocumentSnapshot | undefined>} event - The event for the newly created listing document.
  * @return {Promise<void>} A promise that resolves when both relationship documents are created, or logs an error if it fails.
-*/
+ */
 async function handleListingCreate(
-  event: FirestoreEvent<QueryDocumentSnapshot>,
+  event: FirestoreEvent<QueryDocumentSnapshot | undefined, {listingId: string}>,
 ) {
   const listingId = event.params.listingId;
   const snapshot = event.data;
-  const listing = snapshot?.data();
+
+  if (!snapshot) {
+    logger.error("No document data found in the event");
+    return;
+  }
+
+  const listing = snapshot.data();
   const accountId = listing.createdBy;
 
   if (!accountId) {
@@ -96,7 +105,7 @@ async function handleListingCreate(
       );
 
       // 2) Update the listing doc with geocoded addresses
-      await snapshot?.ref.update({
+      await snapshot.ref.update({
         contactInformation: {addresses: geocodedAddresses},
       });
       logger.info(`Successfully geocoded addresses for listing ${listingId}`);

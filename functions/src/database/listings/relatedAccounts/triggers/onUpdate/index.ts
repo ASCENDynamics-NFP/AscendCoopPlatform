@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// functions/src/database/listings/relatedAccounts/triggers/onCreate/index.ts
+// functions/src/database/listings/relatedAccounts/triggers/onUpdate/index.ts
 
 import {
   onDocumentUpdated,
@@ -35,72 +35,69 @@ const db = admin.firestore();
  * Keeps the corresponding relatedListing document in sync with any changes.
  */
 export const onUpdateListingsRelatedAccount = onDocumentUpdated(
-  {document: "listings/{listingId}/relatedAccounts/{accountId}", region: "us-central1"},
-  handleListingsRelatedAccountUpdate,
-);
+  {
+    document: "listings/{listingId}/relatedAccounts/{accountId}",
+    region: "us-central1",
+  },
+  async (event: FirestoreEvent<Change<QueryDocumentSnapshot> | undefined>) => {
+    const {listingId, accountId} = event.params;
 
-/**
- * Handles updates to a relatedAccount document in Firestore.
- * When a relatedAccount document is updated, this function updates the corresponding
- * relatedListing document under the applicant's account to maintain data consistency.
- *
- * @param {FirestoreEvent<Change<QueryDocumentSnapshot>>} event - Contains the before and after versions of the document
- * @return {Promise<void>} A promise that resolves when the relatedListing document is updated, or logs an error if it fails
-*/
-async function handleListingsRelatedAccountUpdate(
-  event: FirestoreEvent<Change<QueryDocumentSnapshot>>,
-) {
-  const {listingId, accountId} = event.params;
-  const updatedAccount = event.data?.after.data();
-  const previousAccount = event.data?.before.data();
-
-  // Check specific fields that affect relatedListings
-  const hasRelevantChanges = ["relationship", "notes"].some(
-    (field) => previousAccount[field] !== updatedAccount[field],
-  );
-
-  if (!hasRelevantChanges) {
-    logger.info("No relevant changes detected for relatedListings");
-    return;
-  }
-
-  try {
-    const listingDoc = await db.collection("listings").doc(listingId).get();
-
-    if (!listingDoc.exists) {
-      logger.error(`Listing ${listingId} not found.`);
+    if (!event.data?.after || !event.data?.before) {
+      logger.error("Missing before or after data in update event");
       return;
     }
 
-    const listing = listingDoc.data();
+    const updatedAccount = event.data.after.data();
+    const previousAccount = event.data.before.data();
 
-    const relatedListing: any = {
-      id: listingId,
-      accountId: accountId,
-      title: listing?.title,
-      organization: listing?.organization,
-      type: listing?.type,
-      remote: listing?.remote ?? false,
-      iconImage: listing?.iconImage ?? null,
-      status: listing?.status,
-      relationship: updatedAccount.relationship || "applicant",
-      applicationDate: updatedAccount.applicationDate,
-      notes: updatedAccount.notes ?? null,
-      lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
-      lastModifiedBy: accountId,
-    };
-
-    await db
-      .collection("accounts")
-      .doc(accountId)
-      .collection("relatedListings")
-      .doc(listingId)
-      .update(relatedListing);
-
-    logger.info(
-      `Successfully updated relatedListing for account ${accountId} and listing ${listingId}`,
+    // Check specific fields that affect relatedListings
+    const hasRelevantChanges = ["relationship", "notes"].some(
+      (field) => previousAccount[field] !== updatedAccount[field],
     );
-  } catch (error) {
-    logger.error("Error in handleListingsRelatedAccountUpdate:", error);
-  }
-}
+
+    if (!hasRelevantChanges) {
+      logger.info("No relevant changes detected for relatedListings");
+      return;
+    }
+
+    try {
+      const listingDoc = await db.collection("listings").doc(listingId).get();
+
+      if (!listingDoc.exists) {
+        logger.error(`Listing ${listingId} not found.`);
+        return;
+      }
+
+      const listing = listingDoc.data();
+
+      const relatedListing: any = {
+        id: listingId,
+        accountId: accountId,
+        title: listing?.title,
+        organization: listing?.organization,
+        type: listing?.type,
+        remote: listing?.remote ?? false,
+        iconImage: listing?.iconImage ?? null,
+        status: listing?.status,
+        relationship: updatedAccount.relationship || "applicant",
+        applicationDate: updatedAccount.applicationDate,
+        notes: updatedAccount.notes ?? null,
+        lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+        lastModifiedBy: accountId,
+      };
+
+      await db
+        .collection("accounts")
+        .doc(accountId)
+        .collection("relatedListings")
+        .doc(listingId)
+        .update(relatedListing);
+
+      logger.info(
+        `Successfully updated relatedListing for account ${accountId} and listing ${listingId}`,
+      );
+    } catch (error) {
+      logger.error("Error in handleListingsRelatedAccountUpdate:", error);
+    }
+  },
+);

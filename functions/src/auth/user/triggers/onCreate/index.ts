@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import * as functions from "firebase-functions/v1/auth";
+import * as functions from "firebase-functions/v1";
 import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {Timestamp} from "firebase-admin/firestore";
@@ -26,8 +26,11 @@ import {Timestamp} from "firebase-admin/firestore";
 const db = admin.firestore();
 
 // Triggered when a new user is created in Firebase Authentication
+// Note: Firebase Functions v2 doesn't have a direct equivalent for auth user creation
+// so we keep this as v1
 export const createUserProfile = functions
-  .user()
+  .region("us-central1")
+  .auth.user()
   .onCreate(async (user: admin.auth.UserRecord) => {
     try {
       await saveAccountToFirestore(user);
@@ -60,6 +63,7 @@ async function saveAccountToFirestore(
       privacy: "private",
       emails: [{email: user.email}],
       phoneNumbers: [],
+      addresses: [],
     },
     email: user.email,
     privacy: "public",

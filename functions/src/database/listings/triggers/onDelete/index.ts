@@ -19,7 +19,10 @@
 ***********************************************************************************************/
 // functions/src/database/listings/triggers/onDelete/index.ts
 
-import {onDocumentDeleted, FirestoreEvent} from "firebase-functions/v2/firestore";
+import {
+  onDocumentDeleted,
+  FirestoreEvent,
+} from "firebase-functions/v2/firestore";
 import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
@@ -37,11 +40,11 @@ export const onDeleteListing = onDocumentDeleted(
  * When a listing is deleted, this function deletes all relatedListing
  * documents under all accounts that are linked to this listing.
  *
- * @param {FirestoreEvent<QueryDocumentSnapshot>} event - The event for the deleted listing document.
+ * @param {FirestoreEvent<QueryDocumentSnapshot | undefined>} event - The event for the deleted listing document.
  * @return {Promise<void>} A promise that resolves when all relatedListings are deleted, or logs an error if it fails.
-*/
+ */
 async function handleListingDelete(
-  event: FirestoreEvent<QueryDocumentSnapshot>,
+  event: FirestoreEvent<QueryDocumentSnapshot | undefined, {listingId: string}>,
 ) {
   const {listingId} = event.params;
 

@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// functions/src/database/listings/relatedAccounts/triggers/onUpdate/index.ts
+// functions/src/database/listings/triggers/onUpdate/index.ts
 
 import {
   onDocumentUpdated,
@@ -47,15 +47,21 @@ export const onUpdateListing = onDocumentUpdated(
  * 3. Update all relatedListing docs in `accounts/{accountId}/relatedListings`
  * Fresh account data is fetched to ensure accuracy of the updates.
  *
- * @param {FirestoreEvent<Change<QueryDocumentSnapshot>>} event - Contains the before and after versions of the document
+ * @param {FirestoreEvent} event - Contains the before and after versions of the document
  * @return {Promise<void>} A promise that resolves when all relationship documents are updated
-*/
+ */
 async function handleListingUpdate(
-  event: FirestoreEvent<Change<QueryDocumentSnapshot>>,
+  event: FirestoreEvent<Change<QueryDocumentSnapshot> | undefined>,
 ) {
   const listingId = event.params.listingId;
-  const updatedListing = event.data?.after.data();
-  const previousListing = event.data?.before.data();
+
+  if (!event.data?.after || !event.data?.before) {
+    logger.error("Missing before or after data in update event");
+    return;
+  }
+
+  const updatedListing = event.data.after.data();
+  const previousListing = event.data.before.data();
 
   // -----------------------
   // 1) Address change logic
@@ -113,7 +119,7 @@ async function handleListingUpdate(
     );
 
     // Update the listing doc with newly geocoded addresses
-    await event.data?.after.ref.update({
+    await event.data.after.ref.update({
       contactInformation: {addresses: newAddresses},
     });
     logger.info(`Geocoded addresses for listing ${listingId}`);

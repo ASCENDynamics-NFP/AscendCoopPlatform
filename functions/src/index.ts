@@ -37,24 +37,30 @@
 //   logger.info("Hello logs!", {structuredData: true});
 //   response.send("Hello from Firebase!");
 // });
-export * from "./auth/user/triggers/onCreate"; // triggers
-export * from "./auth/user/triggers/onDelete"; // triggers
+// Auth triggers
+export {createUserProfile} from "./auth/user/triggers/onCreate";
+export {onUserRecordDeletion} from "./auth/user/triggers/onDelete";
 
-export * from "./database/accounts/triggers/onUpdate"; // triggers
+// Account triggers
+export {onUpdateAccount} from "./database/accounts/triggers/onUpdate";
 
-export * from "./database/accounts/relatedAccounts/triggers/onCreate"; // triggers
-export * from "./database/accounts/relatedAccounts/triggers/onDelete"; // triggers
-export * from "./database/accounts/relatedAccounts/triggers/onUpdate"; // triggers
+// Related accounts triggers
+export {onCreateRelatedAccount} from "./database/accounts/relatedAccounts/triggers/onCreate";
+export {onDeleteRelatedAccount} from "./database/accounts/relatedAccounts/triggers/onDelete";
+export {onUpdateRelatedAccount} from "./database/accounts/relatedAccounts/triggers/onUpdate";
 
-export * from "./database/accounts/relatedListings/triggers/onDelete"; // triggers
+// Related listings triggers
+export {onDeleteAccountsRelatedListing} from "./database/accounts/relatedListings/triggers/onDelete";
 
-export * from "./database/listings/triggers/onCreate"; // listing create triggers
-export * from "./database/listings/triggers/onDelete"; // listing delete triggers
-export * from "./database/listings/triggers/onUpdate"; // listing update triggers
+// Listing triggers
+export {onCreateListing} from "./database/listings/triggers/onCreate";
+export {onDeleteListing} from "./database/listings/triggers/onDelete";
+export {onUpdateListing} from "./database/listings/triggers/onUpdate";
 
-export * from "./database/listings/relatedAccounts/triggers/onCreate"; // triggers
-export * from "./database/listings/relatedAccounts/triggers/onUpdate"; // triggers
+// Listings related accounts triggers
+export {onCreateListingsRelatedAccount} from "./database/listings/relatedAccounts/triggers/onCreate";
+export {onUpdateListingsRelatedAccount} from "./database/listings/relatedAccounts/triggers/onUpdate";
 
-// Homepage Function
-export * from "./functions/listings/homepage";
-export * from "./functions/contactform";
+// HTTP functions
+export {getHomepageListings} from "./functions/listings/homepage";
+export {submitLead} from "./functions/contactform";

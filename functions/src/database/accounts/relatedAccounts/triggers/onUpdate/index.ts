@@ -38,55 +38,52 @@ export const onUpdateRelatedAccount = onDocumentUpdated(
     document: "accounts/{accountId}/relatedAccounts/{relatedAccountId}",
     region: "us-central1",
   },
-  handleRelatedAccountUpdate,
-);
+  async (event: FirestoreEvent<Change<QueryDocumentSnapshot> | undefined>) => {
+    const accountId = event.params.accountId;
+    const relatedAccountId = event.params.relatedAccountId;
 
-/**
- * Handles the update of a related account document, ensuring the corresponding reciprocal document is also updated.
- *
- * @param {FirestoreEvent<Change<QueryDocumentSnapshot>>} event - The Firestore event containing the before and after data.
-*/
-async function handleRelatedAccountUpdate(
-  event: FirestoreEvent<Change<QueryDocumentSnapshot>>,
-) {
-  const accountId = event.params.accountId;
-  const relatedAccountId = event.params.relatedAccountId;
-  const after = event.data?.after.data();
-  const before = event.data?.before.data();
-
-  try {
-    if (
-      // If the status or relationship has changed, update the reciprocal related account document (prevents infinite loop on lastModifiedAt update)
-      before.status !== after.status ||
-      before.relationship !== after.relationship
-    ) {
-      const reciprocalRelatedAccountRef = db
-        .collection("accounts")
-        .doc(relatedAccountId)
-        .collection("relatedAccounts")
-        .doc(accountId);
-
-      const reciprocalDoc = await reciprocalRelatedAccountRef.get();
-      const reciprocalData = reciprocalDoc.data();
-
-      if (
-        reciprocalData &&
-        (reciprocalData.status !== after.status ||
-          reciprocalData.relationship !== after.relationship)
-      ) {
-        await reciprocalRelatedAccountRef.update({
-          id: accountId,
-          accountId: relatedAccountId,
-          relationship: after.relationship,
-          status: after.status,
-          lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
-          lastModifiedBy: accountId,
-        });
-
-        logger.info("Related accounts updated successfully.");
-      }
+    if (!event.data?.after || !event.data?.before) {
+      logger.error("Missing before or after data in update event");
+      return;
     }
-  } catch (error) {
-    logger.error("Error updating related accounts: ", error);
-  }
-}
+
+    const after = event.data.after.data();
+    const before = event.data.before.data();
+
+    try {
+      if (
+        // If the status or relationship has changed, update the reciprocal related account document (prevents infinite loop on lastModifiedAt update)
+        before.status !== after.status ||
+        before.relationship !== after.relationship
+      ) {
+        const reciprocalRelatedAccountRef = db
+          .collection("accounts")
+          .doc(relatedAccountId)
+          .collection("relatedAccounts")
+          .doc(accountId);
+
+        const reciprocalDoc = await reciprocalRelatedAccountRef.get();
+        const reciprocalData = reciprocalDoc.data();
+
+        if (
+          reciprocalData &&
+          (reciprocalData.status !== after.status ||
+            reciprocalData.relationship !== after.relationship)
+        ) {
+          await reciprocalRelatedAccountRef.update({
+            id: accountId,
+            accountId: relatedAccountId,
+            relationship: after.relationship,
+            status: after.status,
+            lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+            lastModifiedBy: accountId,
+          });
+
+          logger.info("Related accounts updated successfully.");
+        }
+      }
+    } catch (error) {
+      logger.error("Error updating related accounts: ", error);
+    }
+  },
+);

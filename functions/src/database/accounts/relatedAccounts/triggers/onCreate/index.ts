@@ -17,7 +17,10 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {onDocumentCreated, FirestoreEvent} from "firebase-functions/v2/firestore";
+import {
+  onDocumentCreated,
+  FirestoreEvent,
+} from "firebase-functions/v2/firestore";
 import {admin} from "../../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
@@ -34,10 +37,21 @@ export const onCreateRelatedAccount = onDocumentCreated(
     document: "accounts/{accountId}/relatedAccounts/{relatedAccountId}",
     region: "us-central1",
   },
-  async (event: FirestoreEvent<QueryDocumentSnapshot>) => {
+  async (
+    event: FirestoreEvent<
+      QueryDocumentSnapshot | undefined,
+      {accountId: string; relatedAccountId: string}
+    >,
+  ) => {
+    // Check if the document data exists
+    if (!event.data) {
+      logger.error("No document data found in the event");
+      return;
+    }
+
     const accountId = event.params.accountId;
     const relatedAccountId = event.params.relatedAccountId;
-    
+
     // Early exit if IDs match to prevent self-referential relationships
     if (accountId === relatedAccountId) {
       logger.error(
@@ -110,7 +124,8 @@ export const onCreateRelatedAccount = onDocumentCreated(
     } catch (error) {
       logger.error(`Error creating reciprocal relationship: ${error}`);
     }
-  });
+  },
+);
 
 /**
  * Determines the relationship type based on the account types of both parties

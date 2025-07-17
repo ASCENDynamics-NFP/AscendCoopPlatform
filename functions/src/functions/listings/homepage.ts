@@ -21,10 +21,7 @@
 /** Firebase Cloud Function for Homepage Listings */
 import {onRequest} from "firebase-functions/v2/https";
 import {admin} from "../../utils/firebase";
-import cors from "cors";
-
-// Initialize the Firebase admin SDK
-const corsHandler = cors({origin: true});
+import * as logger from "firebase-functions/logger";
 
 /**
  * Calculate distance between two latitude/longitude points using the Haversine formula.
@@ -101,77 +98,137 @@ function getClosestGeopoint(
  *
  * @return {Promise<void>} A promise that resolves once the response is sent.
  */
-export const getHomepageListings = onRequest({region: "us-central1"},
+export const getHomepageListings = onRequest(
+  {
+    region: "us-central1",
+    cors: true,
+    invoker: "public", // Allow unauthenticated access
+  },
   async (req, res): Promise<void> => {
-    corsHandler(req, res, async () => {
-      try {
-        const {
-          limit = 4,
-          status = "active",
-          latitude,
-          longitude,
-          category,
-        } = req.query;
-
-        // ✅ Validate Inputs
-        const queryLimit = Math.min(
-          Math.max(parseInt(limit as string) || 4, 1),
-          100,
-        );
-        const queryStatus = typeof status === "string" ? status : "active";
-        const queryCategory =
-          category && typeof category === "string" ? category : null;
-
-        const queryLatitude = latitude ? parseFloat(latitude as string) : null;
-        const queryLongitude = longitude
-          ? parseFloat(longitude as string)
-          : null;
-
-        // ✅ Fetch More Data Initially
-        let query = admin
-          .firestore()
-          .collection("listings")
-          .where("status", "==", queryStatus)
-          .limit(queryLimit * 3); // Fetch 3x the limit initially
-
-        if (queryCategory) {
-          query = query.where("category", "==", queryCategory);
-        }
-
-        const snapshot = await query.get();
-        let listings = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        // ✅ Apply Geolocation Filtering and Remote Inclusion
-        listings = listings
-          .filter(
-            (listing) =>
-              (listing as any).contactInformation?.addresses?.length > 0,
-          )
-          .map((listing) => {
-            const addresses = (listing as any).contactInformation.addresses;
-            const closestDistance = getClosestGeopoint(
-              addresses,
-              queryLatitude || 0,
-              queryLongitude || 0,
-            );
-
-            return {
-              ...listing,
-              distance:
-                closestDistance !== null ? closestDistance : Number.MAX_VALUE,
-            };
-          })
-          .sort((a, b) => a.distance - b.distance) // Sort by proximity or remote first
-          .slice(0, queryLimit); // Apply final limit
-
-        res.status(200).json(listings);
-      } catch (error) {
-        console.error("Error fetching homepage listings:", error);
-        res.status(500).json({error: "Internal server error"});
-      }
+    // Log the incoming request for debugging
+    logger.info("getHomepageListings called", {
+      method: req.method,
+      origin: req.headers.origin,
+      userAgent: req.headers["user-agent"],
+      query: req.query,
     });
+
+    // Set CORS headers manually for more control
+    const origin = req.headers.origin;
+    const allowedOrigins = [
+      "http://localhost:8100",
+      "http://localhost:4200",
+      "https://app.ascendynamics.org",
+      "https://ascendcoopplatform.web.app",
+      "https://ascendcoopplatform.firebaseapp.com",
+      "https://ascendcoopplatform-dev.web.app",
+      "https://ascendcoopplatform-dev.firebaseapp.com",
+    ];
+
+    // Always set CORS headers first
+    if (origin && allowedOrigins.includes(origin)) {
+      res.set("Access-Control-Allow-Origin", origin);
+      logger.info("Origin allowed", {origin});
+    } else {
+      res.set("Access-Control-Allow-Origin", "*"); // Allow all for now to debug
+      logger.info("Origin not in allowed list, using wildcard", {
+        origin,
+        allowedOrigins,
+      });
+    }
+
+    res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.set("Access-Control-Max-Age", "3600");
+
+    // Handle preflight requests
+    if (req.method === "OPTIONS") {
+      logger.info("Handling OPTIONS preflight request");
+      res.status(204).send("");
+      return;
+    }
+
+    try {
+      const {
+        limit = 4,
+        status = "active",
+        latitude,
+        longitude,
+        category,
+      } = req.query;
+
+      logger.info("Processing request with params", {
+        limit,
+        status,
+        latitude,
+        longitude,
+        category,
+      });
+
+      // ✅ Validate Inputs
+      const queryLimit = Math.min(
+        Math.max(parseInt(limit as string) || 4, 1),
+        100,
+      );
+      const queryStatus = typeof status === "string" ? status : "active";
+      const queryCategory =
+        category && typeof category === "string" ? category : null;
+
+      const queryLatitude = latitude ? parseFloat(latitude as string) : null;
+      const queryLongitude = longitude ? parseFloat(longitude as string) : null;
+
+      // ✅ Fetch More Data Initially
+      let query = admin
+        .firestore()
+        .collection("listings")
+        .where("status", "==", queryStatus)
+        .limit(queryLimit * 3); // Fetch 3x the limit initially
+
+      if (queryCategory) {
+        query = query.where("category", "==", queryCategory);
+      }
+
+      const snapshot = await query.get();
+      logger.info("Firestore query completed", {
+        docsCount: snapshot.docs.length,
+      });
+
+      let listings = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      // ✅ Apply Geolocation Filtering and Remote Inclusion
+      listings = listings
+        .filter(
+          (listing) =>
+            (listing as any).contactInformation?.addresses?.length > 0,
+        )
+        .map((listing) => {
+          const addresses = (listing as any).contactInformation.addresses;
+          const closestDistance = getClosestGeopoint(
+            addresses,
+            queryLatitude || 0,
+            queryLongitude || 0,
+          );
+
+          return {
+            ...listing,
+            distance:
+              closestDistance !== null ? closestDistance : Number.MAX_VALUE,
+          };
+        })
+        .sort((a, b) => a.distance - b.distance) // Sort by proximity or remote first
+        .slice(0, queryLimit); // Apply final limit
+
+      logger.info("Returning listings", {
+        count: listings.length,
+      });
+
+      res.status(200).json(listings);
+    } catch (error) {
+      logger.error("Error fetching homepage listings:", error);
+      res.status(500).json({error: "Internal server error"});
+    }
   },
 );

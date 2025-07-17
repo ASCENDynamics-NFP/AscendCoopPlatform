@@ -1,10 +1,30 @@
+/**
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+*
+* This file is part of Nonprofit Social Networking Platform.
+*
+* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+
+* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+
+* You should have received a copy of the GNU Affero General Public License
+* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+***********************************************************************************************/
 // utils/geocoding.ts
+
 import fetch from "node-fetch";
 import * as logger from "firebase-functions/logger";
-import * as functions from "firebase-functions";
+import {defineString} from "firebase-functions/params";
 
 /**
- * Represents a geocoding result from Google’s Geocoding API
+ * Represents a geocoding result from Google's Geocoding API
  */
 export interface GeocodeResult {
   formatted_address: string;
@@ -12,16 +32,11 @@ export interface GeocodeResult {
   lng: number;
 }
 
-// Centralize the API Key (from config or environment)
-const apiKey = functions.config().google?.apikey || process.env.GOOGLE_API_KEY;
-
-if (!apiKey) {
-  logger.error("Google API key is missing. Please set it in Firebase config.");
-  throw new Error("Missing Google API Key. Set it in Firebase config.");
-}
+// Use the new parameter system instead of config()
+const googleApiKey = defineString("GOOGLE_API_KEY");
 
 /**
- * Geocode an address string using Google’s Geocoding API
+ * Geocode an address string using Google's Geocoding API
  *
  * @param {string} address - The address string to geocode
  * @return {Promise<GeocodeResult | null>} A promise that resolves to a `GeocodeResult` or `null` if not found
@@ -34,13 +49,23 @@ export async function geocodeAddress(
     return null;
   }
 
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-    address,
-  )}&key=${apiKey}`;
-
   try {
+    const apiKey = googleApiKey.value();
+
+    if (!apiKey) {
+      logger.error(
+        "Google API key is missing. Please set GOOGLE_API_KEY parameter.",
+      );
+      return null;
+    }
+
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+      address,
+    )}&key=${apiKey}`;
+
     const res = await fetch(url);
-    const data = await res.json();
+    const data = (await res.json()) as any;
+
     if (data.status === "OK" && data.results.length > 0) {
       const first = data.results[0];
       return {

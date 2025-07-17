@@ -18,10 +18,12 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 
-import * as functions from "firebase-functions/v1";
+import {
+  onDocumentCreated,
+  FirestoreEvent,
+} from "firebase-functions/v2/firestore";
 import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
-import {EventContext} from "firebase-functions/v1";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
 import {geocodeAddress} from "../../../../utils/geocoding"; // <-- using the same utility
 
@@ -29,9 +31,10 @@ import {geocodeAddress} from "../../../../utils/geocoding"; // <-- using the sam
 // Reference to the Firestore database
 const db = admin.firestore();
 
-export const onCreateListing = functions.firestore
-  .document("listings/{listingId}")
-  .onCreate(handleListingCreate);
+export const onCreateListing = onDocumentCreated(
+  {document: "listings/{listingId}", region: "us-central1"},
+  handleListingCreate,
+);
 
 /**
  * Handles the creation of a new listing document in Firestore.
@@ -40,15 +43,20 @@ export const onCreateListing = functions.firestore
  * - Creates a relatedListing document in `accounts/{accountId}/relatedListings`
  * Both documents are linked to the listing creator with "owner" relationship status.
  *
- * @param {QueryDocumentSnapshot} snapshot - The snapshot of the newly created listing document.
- * @param {EventContext} context - The context object containing metadata about the event, including the listing ID.
+ * @param {FirestoreEvent<QueryDocumentSnapshot | undefined>} event - The event for the newly created listing document.
  * @return {Promise<void>} A promise that resolves when both relationship documents are created, or logs an error if it fails.
  */
 async function handleListingCreate(
-  snapshot: QueryDocumentSnapshot,
-  context: EventContext,
+  event: FirestoreEvent<QueryDocumentSnapshot | undefined, {listingId: string}>,
 ) {
-  const listingId = context.params.listingId;
+  const listingId = event.params.listingId;
+  const snapshot = event.data;
+
+  if (!snapshot) {
+    logger.error("No document data found in the event");
+    return;
+  }
+
   const listing = snapshot.data();
   const accountId = listing.createdBy;
 

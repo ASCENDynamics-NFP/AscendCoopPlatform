@@ -17,32 +17,54 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import * as functions from "firebase-functions";
+import {onRequest} from "firebase-functions/v2/https";
+import {defineString} from "firebase-functions/params";
 import {admin} from "../utils/firebase";
 import * as nodemailer from "nodemailer";
-import cors from "cors";
+import * as logger from "firebase-functions/logger";
 
-// Initialize the Firebase admin SDK
-// Configure CORS middleware
-const corsHandler = cors({origin: true});
+// Define environment parameters for Gmail credentials
+const gmailEmail = defineString("GMAIL_EMAIL");
+const gmailPassword = defineString("GMAIL_PASSWORD");
 
-// Retrieve Gmail credentials from Firebase config
-const gmailEmail = functions.config().gmail.email;
-const gmailPassword = functions.config().gmail.password;
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: gmailEmail,
-    pass: gmailPassword,
+export const submitLead = onRequest(
+  {
+    cors: true,
+    invoker: "public", // Allow unauthenticated access
   },
-});
+  async (req, res) => {
+    // Log the incoming request for debugging
+    logger.info("submitLead called", {
+      method: req.method,
+      origin: req.headers.origin,
+    });
 
-export const submitLead = functions.https.onRequest((req, res) => {
-  // Use CORS middleware to allow cross-origin requests
-  corsHandler(req, res, async () => {
+    // Set CORS headers manually for more control
+    const origin = req.headers.origin;
+    const allowedOrigins = [
+      "http://localhost:8100",
+      "http://localhost:4200",
+      "https://app.ascendynamics.org",
+      "https://ascendcoopplatform.web.app",
+      "https://ascendcoopplatform.firebaseapp.com",
+      "https://ascendcoopplatform-dev.web.app",
+      "https://ascendcoopplatform-dev.firebaseapp.com",
+    ];
+
+    // Always set CORS headers first
+    if (origin && allowedOrigins.includes(origin)) {
+      res.set("Access-Control-Allow-Origin", origin);
+    } else {
+      res.set("Access-Control-Allow-Origin", "*"); // Allow all for now to debug
+    }
+
+    res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.set("Access-Control-Max-Age", "3600");
+
+    // Handle preflight requests
     if (req.method === "OPTIONS") {
-      // Stop preflight requests here
+      logger.info("Handling OPTIONS preflight request");
       res.status(204).send("");
       return;
     }
@@ -57,13 +79,21 @@ export const submitLead = functions.https.onRequest((req, res) => {
     const {name, email, phone, inquiry, message, from} = req.body;
 
     // Validate required fields
-    // Here, "phone" and "message" are optional, but "inquiry" is required.
     if (!name || !email || !inquiry || !from) {
       res
         .status(400)
-        .send("Missing required fields: name, email, inquiry, from, or to");
+        .send("Missing required fields: name, email, inquiry, from");
       return;
     }
+
+    // Create transporter at runtime
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: gmailEmail.value(),
+        pass: gmailPassword.value(),
+      },
+    });
 
     // Create a lead data object to be stored in Firestore
     const leadData = {
@@ -76,10 +106,10 @@ export const submitLead = functions.https.onRequest((req, res) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
-    // Prepare email options using the provided parameters
+    // Prepare email options
     const mailOptions = {
-      from: `"${from}" <${gmailEmail}>`,
-      to: gmailEmail,
+      from: `"${from}" <${gmailEmail.value()}>`,
+      to: gmailEmail.value(),
       subject: "New Lead Submission",
       text: `You have a new lead submission:
 
@@ -101,19 +131,20 @@ Additional Information: ${message || "No message provided"}
       // Send the email
       await transporter.sendMail(mailOptions);
     } catch (error) {
-      console.error("Error sending email:", error);
-      // We won't return here, because we still want to attempt saving the lead.
+      logger.error("Error sending email:", error);
+      // Continue to save the lead even if email fails
     }
 
     try {
-      // Save the lead data to Firestore in the "leads" collection
+      // Save the lead data to Firestore
       await admin.firestore().collection("leads").add(leadData);
+
       res
         .status(200)
         .send("Lead submitted, email sent, and data saved successfully");
     } catch (error) {
-      console.error("Error processing submission:", error);
+      logger.error("Error processing submission:", error);
       res.status(500).send("Error processing submission");
     }
-  });
-});
+  },
+);

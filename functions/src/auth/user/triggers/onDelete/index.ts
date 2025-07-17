@@ -17,17 +17,19 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import * as functions from "firebase-functions/v1/auth";
+import * as functions from "firebase-functions/v1";
 import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 
-// Initialize Firebase Admin SDK if not already initialized
 // Firestore database reference
 const db = admin.firestore();
 
 // Triggered when a user is deleted from Firebase Authentication
+// Note: Firebase Functions v2 doesn't have an equivalent for auth user deletion
+// so we keep this as v1
 export const onUserRecordDeletion = functions
-  .user()
+  .region("us-central1")
+  .auth.user()
   .onDelete(async (user: admin.auth.UserRecord) => {
     try {
       await deleteAccountDocument(user.uid);

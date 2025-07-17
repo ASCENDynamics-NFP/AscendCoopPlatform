@@ -17,12 +17,15 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// functions/src/database/listings/relatedAccounts/triggers/onUpdate/index.ts
+// functions/src/database/listings/triggers/onUpdate/index.ts
 
-import * as functions from "firebase-functions/v1";
+import {
+  onDocumentUpdated,
+  FirestoreEvent,
+  Change,
+} from "firebase-functions/v2/firestore";
 import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
-import {EventContext} from "firebase-functions/v1";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
 import {geocodeAddress} from "../../../../utils/geocoding"; // Import your geocode utility
 
@@ -32,9 +35,10 @@ const db = admin.firestore();
  * Firebase Cloud Function trigger that handles updates to listing documents.
  * Updates all related documents when a listing is modified and geocodes addresses if they've changed.
  */
-export const onUpdateListing = functions.firestore
-  .document("listings/{listingId}")
-  .onUpdate(handleListingUpdate);
+export const onUpdateListing = onDocumentUpdated(
+  {document: "listings/{listingId}", region: "us-central1"},
+  handleListingUpdate,
+);
 
 /**
  * Handles updates to a listing document in Firestore.
@@ -43,17 +47,21 @@ export const onUpdateListing = functions.firestore
  * 3. Update all relatedListing docs in `accounts/{accountId}/relatedListings`
  * Fresh account data is fetched to ensure accuracy of the updates.
  *
- * @param {functions.Change<QueryDocumentSnapshot>} change - Contains both the previous and current versions of the document
- * @param {EventContext} context - The context object containing metadata about the event
+ * @param {FirestoreEvent} event - Contains the before and after versions of the document
  * @return {Promise<void>} A promise that resolves when all relationship documents are updated
  */
 async function handleListingUpdate(
-  change: functions.Change<QueryDocumentSnapshot>,
-  context: EventContext,
+  event: FirestoreEvent<Change<QueryDocumentSnapshot> | undefined>,
 ) {
-  const listingId = context.params.listingId;
-  const updatedListing = change.after.data();
-  const previousListing = change.before.data();
+  const listingId = event.params.listingId;
+
+  if (!event.data?.after || !event.data?.before) {
+    logger.error("Missing before or after data in update event");
+    return;
+  }
+
+  const updatedListing = event.data.after.data();
+  const previousListing = event.data.before.data();
 
   // -----------------------
   // 1) Address change logic
@@ -111,7 +119,7 @@ async function handleListingUpdate(
     );
 
     // Update the listing doc with newly geocoded addresses
-    await change.after.ref.update({
+    await event.data.after.ref.update({
       contactInformation: {addresses: newAddresses},
     });
     logger.info(`Geocoded addresses for listing ${listingId}`);

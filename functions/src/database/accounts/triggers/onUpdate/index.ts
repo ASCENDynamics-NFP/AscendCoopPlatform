@@ -18,124 +18,119 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 
-import * as functions from "firebase-functions/v1";
+import {
+  onDocumentUpdated,
+  Change,
+  FirestoreEvent,
+} from "firebase-functions/v2/firestore";
 import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
-import {geocodeAddress} from "../../../../utils/geocoding"; // <-- Now only importing geocodeAddress
+import {geocodeAddress} from "../../../../utils/geocoding";
 
-// Initialize the Firebase admin SDK
 /**
  * Cloud Function triggered when a document in the `accounts` collection is updated.
  */
-export const onUpdateAccount = functions.firestore
-  .document("accounts/{accountId}")
-  .onUpdate(handleAccountUpdate);
-
-/**
- * Handles the update of an account document, ensuring the auth user custom claims are updated
- * and geocoding any changed addresses.
- *
- * @param {Change<QueryDocumentSnapshot>} change - The change object representing the before and after state of the document.
- * @param {EventContext} context - The context of the event, providing parameters and identifiers.
- */
-async function handleAccountUpdate(
-  change: functions.Change<QueryDocumentSnapshot>,
-  context: functions.EventContext,
-) {
-  const after = change.after.data();
-  const before = change.before.data();
-  const uid = context.params.accountId;
-
-  try {
-    // 1) Existing logic to check & update custom claims if relevant fields changed
-    if (
-      before.type !== after.type ||
-      before.name !== after.name ||
-      before.heroImage !== after.heroImage ||
-      before.iconImage !== after.iconImage ||
-      before.tagline !== after.tagline ||
-      before.settings !== after.settings
-    ) {
-      await admin.auth().setCustomUserClaims(uid, {
-        type: after.type,
-        displayName: after.name,
-        heroImage: after.heroImage,
-        iconImage: after.iconImage,
-        tagline: after.tagline,
-        settings: after.settings,
-      });
-      logger.info("User type custom claim updated successfully.");
+export const onUpdateAccount = onDocumentUpdated(
+  "accounts/{accountId}",
+  async (event: FirestoreEvent<Change<QueryDocumentSnapshot> | undefined>) => {
+    if (!event.data?.after || !event.data?.before) {
+      logger.error("Missing before or after data in update event");
+      return;
     }
 
-    // 2) Check if addresses changed (simplified approach)
-    const addressesBefore = before.contactInformation.addresses || [];
-    const addressesAfter = after.contactInformation.addresses || [];
-    let addressesNeedUpdate = false;
+    const after = event.data.after.data();
+    const before = event.data.before.data();
+    const uid = event.params.accountId;
 
-    // If the number of addresses changed, or (optionally) deep-compare each
-    if (addressesBefore.length !== addressesAfter.length) {
-      addressesNeedUpdate = true;
-    } else {
-      // If the number of addresses is the same, deep-compare each
-      addressesNeedUpdate = addressesBefore.some(
-        (
-          addr: {street: any; city: any; state: any; country: any},
-          index: string | number,
-        ) => {
-          const afterAddr = addressesAfter[index];
-          return (
-            addr.street !== afterAddr.street ||
-            addr.city !== afterAddr.city ||
-            addr.state !== afterAddr.state ||
-            addr.country !== afterAddr.country
-          );
-        },
-      );
+    try {
+      // 1) Existing logic to check & update custom claims if relevant fields changed
+      if (
+        before.type !== after.type ||
+        before.name !== after.name ||
+        before.heroImage !== after.heroImage ||
+        before.iconImage !== after.iconImage ||
+        before.tagline !== after.tagline ||
+        before.settings !== after.settings
+      ) {
+        await admin.auth().setCustomUserClaims(uid, {
+          type: after.type,
+          displayName: after.name,
+          heroImage: after.heroImage,
+          iconImage: after.iconImage,
+          tagline: after.tagline,
+          settings: after.settings,
+        });
+        logger.info("User type custom claim updated successfully.");
+      }
+
+      // 2) Check if addresses changed (simplified approach)
+      const addressesBefore = before.contactInformation?.addresses || [];
+      const addressesAfter = after.contactInformation?.addresses || [];
+      let addressesNeedUpdate = false;
+
+      // If the number of addresses changed, or (optionally) deep-compare each
+      if (addressesBefore.length !== addressesAfter.length) {
+        addressesNeedUpdate = true;
+      } else {
+        // If the number of addresses is the same, deep-compare each
+        addressesNeedUpdate = addressesBefore.some(
+          (
+            addr: {street: any; city: any; state: any; country: any},
+            index: string | number,
+          ) => {
+            const afterAddr = addressesAfter[index];
+            return (
+              addr.street !== afterAddr.street ||
+              addr.city !== afterAddr.city ||
+              addr.state !== afterAddr.state ||
+              addr.country !== afterAddr.country
+            );
+          },
+        );
+      }
+
+      if (addressesNeedUpdate) {
+        logger.info("Addresses changed; attempting geocode updates...");
+
+        // 3) Loop over each address and geocode if needed
+        const newAddresses = await Promise.all(
+          addressesAfter.map(async (addr: any) => {
+            // If there's no actual address data, skip
+            if (!addr.street && !addr.city && !addr.state && !addr.country) {
+              return addr;
+            }
+
+            const parts = [addr.street, addr.city, addr.state, addr.country]
+              .filter(Boolean)
+              .join(", ");
+
+            // Call the geocodeAddress UTIL FUNCTION
+            const geocoded = await geocodeAddress(parts);
+            if (geocoded) {
+              // Attach geocoding results
+              return {
+                ...addr,
+                formatted: geocoded.formatted_address,
+                geopoint: new admin.firestore.GeoPoint(
+                  geocoded.lat,
+                  geocoded.lng,
+                ),
+              };
+            } else {
+              return addr; // fallback to original address if geocoding fails
+            }
+          }),
+        );
+
+        // 4) Update the Firestore doc with new addresses
+        await event.data.after.ref.update({
+          "contactInformation.addresses": newAddresses,
+        });
+        logger.info("Updated addresses with geocoded data");
+      }
+    } catch (error) {
+      logger.error("Error in onUpdateAccount function:", error);
     }
-    // If you want deeper checks:
-    // ... compare fields inside each address ...
-
-    if (addressesNeedUpdate) {
-      logger.info("Addresses changed; attempting geocode updates...");
-
-      // 3) Loop over each address and geocode if needed
-      const newAddresses = await Promise.all(
-        addressesAfter.map(async (addr: any) => {
-          // If there's no actual address data, skip
-          if (!addr.street && !addr.city && !addr.state && !addr.country) {
-            return addr;
-          }
-
-          const parts = [addr.street, addr.city, addr.state, addr.country]
-            .filter(Boolean)
-            .join(", ");
-
-          // Call the geocodeAddress UTIL FUNCTION (no API key needed here!)
-          const geocoded = await geocodeAddress(parts);
-          if (geocoded) {
-            // Attach geocoding results
-            return {
-              ...addr,
-              formatted: geocoded.formatted_address,
-              geopoint: new admin.firestore.GeoPoint(
-                geocoded.lat,
-                geocoded.lng,
-              ),
-            };
-          } else {
-            return addr; // fallback to original address if geocoding fails
-          }
-        }),
-      );
-
-      // 4) Update the Firestore doc with new addresses
-      await change.after.ref.update({
-        contactInformation: {addresses: newAddresses},
-      });
-      logger.info("Updated addresses with geocoded data");
-    }
-  } catch (error) {
-    logger.error("Error in onUpdateAccount function:", error);
-  }
-}
+  },
+);

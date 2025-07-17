@@ -19,33 +19,47 @@
 ***********************************************************************************************/
 // functions/src/database/listings/relatedAccounts/triggers/onCreate/index.ts
 
-import * as functions from "firebase-functions/v1";
+import {
+  onDocumentCreated,
+  FirestoreEvent,
+} from "firebase-functions/v2/firestore";
 import {admin} from "../../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
-import {EventContext} from "firebase-functions/v1";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
 
 const db = admin.firestore();
 
 // New trigger for relatedAccounts onCreate
-export const onCreateListingsRelatedAccount = functions.firestore
-  .document("listings/{listingId}/relatedAccounts/{accountId}")
-  .onCreate(handleListingsRelatedAccountCreate);
+export const onCreateListingsRelatedAccount = onDocumentCreated(
+  {
+    document: "listings/{listingId}/relatedAccounts/{accountId}",
+    region: "us-central1",
+  },
+  handleListingsRelatedAccountCreate,
+);
 
 /**
  * Handles the creation of a new relatedAccount document in Firestore.
  * When a user applies to a listing, this function creates a relatedListing
  * document under the applicant's account, linking the account to the listing.
  *
- * @param {QueryDocumentSnapshot} snapshot - The snapshot of the newly created relatedAccount document.
- * @param {EventContext} context - The context object containing metadata about the event, including listingId and accountId.
+ * @param {FirestoreEvent<QueryDocumentSnapshot | undefined>} event - The event for the newly created relatedAccount document.
  * @return {Promise<void>} A promise that resolves when the relatedListing document is created, or logs an error if it fails.
  */
 async function handleListingsRelatedAccountCreate(
-  snapshot: QueryDocumentSnapshot,
-  context: EventContext,
+  event: FirestoreEvent<
+    QueryDocumentSnapshot | undefined,
+    {listingId: string; accountId: string}
+  >,
 ) {
-  const {listingId, accountId} = context.params;
+  const {listingId, accountId} = event.params;
+  const snapshot = event.data;
+
+  if (!snapshot) {
+    logger.error("No document data found in the event");
+    return;
+  }
+
   const relatedAccount = snapshot.data();
 
   try {

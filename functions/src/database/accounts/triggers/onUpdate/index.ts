@@ -18,7 +18,11 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 
-import * as functions from "firebase-functions/v1";
+import {
+  onDocumentUpdated,
+  Change,
+  FirestoreEvent,
+} from "firebase-functions/v2/firestore";
 import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
@@ -28,24 +32,23 @@ import {geocodeAddress} from "../../../../utils/geocoding"; // <-- Now only impo
 /**
  * Cloud Function triggered when a document in the `accounts` collection is updated.
  */
-export const onUpdateAccount = functions.firestore
-  .document("accounts/{accountId}")
-  .onUpdate(handleAccountUpdate);
+export const onUpdateAccount = onDocumentUpdated(
+  {document: "accounts/{accountId}", region: "us-central1"},
+  handleAccountUpdate,
+);
 
 /**
  * Handles the update of an account document, ensuring the auth user custom claims are updated
  * and geocoding any changed addresses.
  *
- * @param {Change<QueryDocumentSnapshot>} change - The change object representing the before and after state of the document.
- * @param {EventContext} context - The context of the event, providing parameters and identifiers.
- */
+ * @param {FirestoreEvent<Change<QueryDocumentSnapshot>>} event - The Firestore event containing the document change.
+*/
 async function handleAccountUpdate(
-  change: functions.Change<QueryDocumentSnapshot>,
-  context: functions.EventContext,
+  event: FirestoreEvent<Change<QueryDocumentSnapshot>>,
 ) {
-  const after = change.after.data();
-  const before = change.before.data();
-  const uid = context.params.accountId;
+  const after = event.data?.after.data();
+  const before = event.data?.before.data();
+  const uid = event.params.accountId;
 
   try {
     // 1) Existing logic to check & update custom claims if relevant fields changed
@@ -130,7 +133,7 @@ async function handleAccountUpdate(
       );
 
       // 4) Update the Firestore doc with new addresses
-      await change.after.ref.update({
+      await event.data?.after.ref.update({
         contactInformation: {addresses: newAddresses},
       });
       logger.info("Updated addresses with geocoded data");

@@ -17,10 +17,9 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import * as functions from "firebase-functions/v1";
+import {onDocumentDeleted, FirestoreEvent} from "firebase-functions/v2/firestore";
 import {admin} from "../../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
-import {EventContext} from "firebase-functions/v1";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
 
 // Initialize the Firebase admin SDK
@@ -30,22 +29,24 @@ const db = admin.firestore();
 /**
  * Cloud Function triggered when a document in the `relatedAccounts` sub-collection of an `accounts` document is deleted.
  */
-export const onDeleteRelatedAccount = functions.firestore
-  .document("accounts/{accountId}/relatedAccounts/{relatedAccountId}")
-  .onDelete(handleRelatedAccountDelete);
+export const onDeleteRelatedAccount = onDocumentDeleted(
+  {
+    document: "accounts/{accountId}/relatedAccounts/{relatedAccountId}",
+    region: "us-central1",
+  },
+  handleRelatedAccountDelete,
+);
 
 /**
  * Handles the deletion of a related account document, ensuring the corresponding reciprocal document in the target account is also deleted.
  *
- * @param {QueryDocumentSnapshot} _snapshot - The snapshot of the document being deleted.
- * @param {EventContext} context - The context of the event, providing parameters and identifiers.
- */
+ * @param {FirestoreEvent<QueryDocumentSnapshot>} event - The event for the deleted document.
+*/
 async function handleRelatedAccountDelete(
-  _snapshot: QueryDocumentSnapshot,
-  context: EventContext,
+  event: FirestoreEvent<QueryDocumentSnapshot>,
 ) {
-  const accountId = context.params.accountId;
-  const relatedAccountId = context.params.relatedAccountId;
+  const accountId = event.params.accountId;
+  const relatedAccountId = event.params.relatedAccountId;
   try {
     const reciprocalRelatedAccountRef = db
       .collection("accounts")

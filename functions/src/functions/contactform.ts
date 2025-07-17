@@ -17,7 +17,8 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import * as functions from "firebase-functions";
+import {onRequest} from "firebase-functions/v2/https";
+import {config} from "firebase-functions";
 import {admin} from "../utils/firebase";
 import * as nodemailer from "nodemailer";
 import cors from "cors";
@@ -27,8 +28,8 @@ import cors from "cors";
 const corsHandler = cors({origin: true});
 
 // Retrieve Gmail credentials from Firebase config
-const gmailEmail = functions.config().gmail.email;
-const gmailPassword = functions.config().gmail.password;
+const gmailEmail = config().gmail.email;
+const gmailPassword = config().gmail.password;
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -38,7 +39,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const submitLead = functions.https.onRequest((req, res) => {
+export const submitLead = onRequest({cors: false}, (req, res) => {
   // Use CORS middleware to allow cross-origin requests
   corsHandler(req, res, async () => {
     if (req.method === "OPTIONS") {

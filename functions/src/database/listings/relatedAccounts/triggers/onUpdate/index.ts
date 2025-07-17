@@ -19,10 +19,13 @@
 ***********************************************************************************************/
 // functions/src/database/listings/relatedAccounts/triggers/onCreate/index.ts
 
-import * as functions from "firebase-functions/v1";
+import {
+  onDocumentUpdated,
+  FirestoreEvent,
+  Change,
+} from "firebase-functions/v2/firestore";
 import {admin} from "../../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
-import {EventContext} from "firebase-functions/v1";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
 
 const db = admin.firestore();
@@ -31,26 +34,25 @@ const db = admin.firestore();
  * Firebase Cloud Function trigger that handles updates to relatedAccount documents.
  * Keeps the corresponding relatedListing document in sync with any changes.
  */
-export const onUpdateListingsRelatedAccount = functions.firestore
-  .document("listings/{listingId}/relatedAccounts/{accountId}")
-  .onUpdate(handleListingsRelatedAccountUpdate);
+export const onUpdateListingsRelatedAccount = onDocumentUpdated(
+  {document: "listings/{listingId}/relatedAccounts/{accountId}", region: "us-central1"},
+  handleListingsRelatedAccountUpdate,
+);
 
 /**
  * Handles updates to a relatedAccount document in Firestore.
  * When a relatedAccount document is updated, this function updates the corresponding
  * relatedListing document under the applicant's account to maintain data consistency.
  *
- * @param {functions.Change<QueryDocumentSnapshot>} change - Contains both the previous and current versions of the document
- * @param {EventContext} context - The context object containing metadata about the event, including listingId and accountId
+ * @param {FirestoreEvent<Change<QueryDocumentSnapshot>>} event - Contains the before and after versions of the document
  * @return {Promise<void>} A promise that resolves when the relatedListing document is updated, or logs an error if it fails
- */
+*/
 async function handleListingsRelatedAccountUpdate(
-  change: functions.Change<QueryDocumentSnapshot>,
-  context: EventContext,
+  event: FirestoreEvent<Change<QueryDocumentSnapshot>>,
 ) {
-  const {listingId, accountId} = context.params;
-  const updatedAccount = change.after.data();
-  const previousAccount = change.before.data();
+  const {listingId, accountId} = event.params;
+  const updatedAccount = event.data?.after.data();
+  const previousAccount = event.data?.before.data();
 
   // Check specific fields that affect relatedListings
   const hasRelevantChanges = ["relationship", "notes"].some(

@@ -17,6 +17,7 @@ describe("submitLead", () => {
     res.setHeader = sinon.stub();
     res.getHeader = sinon.stub();
     res.end = sinon.stub();
+    res.on = sinon.stub();
     return res as Response;
   }
 

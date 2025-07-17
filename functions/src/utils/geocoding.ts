@@ -1,7 +1,7 @@
 // utils/geocoding.ts
 import fetch from "node-fetch";
 import * as logger from "firebase-functions/logger";
-import * as functions from "firebase-functions";
+import {config} from "firebase-functions";
 
 /**
  * Represents a geocoding result from Google’s Geocoding API
@@ -13,7 +13,7 @@ export interface GeocodeResult {
 }
 
 // Centralize the API Key (from config or environment)
-const apiKey = functions.config().google?.apikey || process.env.GOOGLE_API_KEY;
+const apiKey = config().google?.apikey || process.env.GOOGLE_API_KEY;
 
 if (!apiKey) {
   logger.error("Google API key is missing. Please set it in Firebase config.");

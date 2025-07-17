@@ -19,18 +19,21 @@
 ***********************************************************************************************/
 // functions/src/database/accounts/relatedListings/triggers/onDelete/index.ts
 
-import * as functions from "firebase-functions/v1";
+import {onDocumentDeleted, FirestoreEvent} from "firebase-functions/v2/firestore";
 import {admin} from "../../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
-import {EventContext} from "firebase-functions/v1";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
 
 const db = admin.firestore();
 
 // New trigger for relatedListings onDelete
-export const onDeleteAccountsRelatedListing = functions.firestore
-  .document("accounts/{accountId}/relatedListings/{listingId}")
-  .onDelete(handleAccountsRelatedListingDelete);
+export const onDeleteAccountsRelatedListing = onDocumentDeleted(
+  {
+    document: "accounts/{accountId}/relatedListings/{listingId}",
+    region: "us-central1",
+  },
+  handleAccountsRelatedListingDelete,
+);
 
 /**
  * Handles the deletion of a relatedListing document in Firestore.
@@ -38,15 +41,13 @@ export const onDeleteAccountsRelatedListing = functions.firestore
  * this function deletes the corresponding relatedAccount document
  * under the listing, unlinking the account from the listing.
  *
- * @param {QueryDocumentSnapshot} snapshot - The snapshot of the deleted relatedListing document.
- * @param {EventContext} context - The context object containing metadata about the event, including accountId and listingId.
+ * @param {FirestoreEvent<QueryDocumentSnapshot>} event - The event for the deleted document.
  * @return {Promise<void>} A promise that resolves when the relatedAccount document is deleted, or logs an error if it fails.
- */
+*/
 async function handleAccountsRelatedListingDelete(
-  snapshot: QueryDocumentSnapshot,
-  context: EventContext,
+  event: FirestoreEvent<QueryDocumentSnapshot>,
 ) {
-  const {accountId, listingId} = context.params;
+  const {accountId, listingId} = event.params;
 
   try {
     const relatedAccountRef = db

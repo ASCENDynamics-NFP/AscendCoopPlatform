@@ -17,10 +17,13 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import * as functions from "firebase-functions/v1";
+import {
+  onDocumentUpdated,
+  FirestoreEvent,
+  Change,
+} from "firebase-functions/v2/firestore";
 import {admin} from "../../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
-import {Change, EventContext} from "firebase-functions/v1";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
 
 // Initialize the Firebase admin SDK
@@ -30,24 +33,26 @@ const db = admin.firestore();
 /**
  * Cloud Function triggered when a document in the `relatedAccounts` sub-collection of an `accounts` document is updated.
  */
-export const onUpdateRelatedAccount = functions.firestore
-  .document("accounts/{accountId}/relatedAccounts/{relatedAccountId}")
-  .onUpdate(handleRelatedAccountUpdate);
+export const onUpdateRelatedAccount = onDocumentUpdated(
+  {
+    document: "accounts/{accountId}/relatedAccounts/{relatedAccountId}",
+    region: "us-central1",
+  },
+  handleRelatedAccountUpdate,
+);
 
 /**
  * Handles the update of a related account document, ensuring the corresponding reciprocal document is also updated.
  *
- * @param {Change<QueryDocumentSnapshot>} change - The change object representing the before and after state of the document.
- * @param {EventContext} context - The context of the event, providing parameters and identifiers.
- */
+ * @param {FirestoreEvent<Change<QueryDocumentSnapshot>>} event - The Firestore event containing the before and after data.
+*/
 async function handleRelatedAccountUpdate(
-  change: Change<QueryDocumentSnapshot>,
-  context: EventContext,
+  event: FirestoreEvent<Change<QueryDocumentSnapshot>>,
 ) {
-  const accountId = context.params.accountId;
-  const relatedAccountId = context.params.relatedAccountId;
-  const after = change.after.data();
-  const before = change.before.data();
+  const accountId = event.params.accountId;
+  const relatedAccountId = event.params.relatedAccountId;
+  const after = event.data?.after.data();
+  const before = event.data?.before.data();
 
   try {
     if (

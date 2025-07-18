@@ -79,8 +79,23 @@ jobs:
         with:
           credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}'
 
+      # Debug: Verify authentication is working
+      - name: Verify Google Cloud Authentication
+        run: |
+          echo "=== Checking Google Cloud Authentication ==="
+          gcloud auth list
+          echo "=== Checking active account ==="
+          gcloud config get-value account
+          echo "=== Checking project ==="
+          gcloud config get-value project
+          echo "=== Testing Firebase authentication ==="
+          firebase projects:list || echo "Firebase CLI authentication failed"
+          echo "=== Environment variables ==="
+          echo "GOOGLE_APPLICATION_CREDENTIALS: $GOOGLE_APPLICATION_CREDENTIALS"
+          echo "GCLOUD_PROJECT: $GCLOUD_PROJECT"
+
       # Deploy to Firebase
       - name: Deploy to Firebase
-        run: firebase deploy --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}
+        run: firebase deploy --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} --token ${{ secrets.FIREBASE_TOKEN }}
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}

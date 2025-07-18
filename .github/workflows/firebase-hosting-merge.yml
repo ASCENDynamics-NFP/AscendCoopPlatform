@@ -20,8 +20,8 @@ name: Build and Deploy to Firebase on Merge (Development)
 on:
   push:
     branches:
-      - main  # Trigger workflow on push events to the main branch
-  workflow_dispatch:  # Allow manual triggering
+      - main
+  workflow_dispatch:
 
 jobs:
   build_and_deploy:
@@ -81,15 +81,6 @@ jobs:
       # Set up gcloud CLI
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
-
-      # Enable required APIs
-      - name: Enable required APIs
-        run: |
-          gcloud services enable firebase.googleapis.com
-          gcloud services enable cloudfunctions.googleapis.com
-          gcloud services enable compute.googleapis.com
-          gcloud services enable cloudbuild.googleapis.com
-          gcloud services enable artifactregistry.googleapis.com
 
       # Install Firebase CLI
       - name: Install Firebase CLI

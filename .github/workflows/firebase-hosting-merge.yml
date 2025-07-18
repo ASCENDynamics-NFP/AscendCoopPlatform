@@ -42,6 +42,7 @@ jobs:
         run: |
           npm ci
           npm ci --prefix functions
+          npm install --save firebase-functions@latest --prefix functions
 
       # Set Environment Variables
       - name: Set Environment Variables
@@ -82,27 +83,19 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
 
-      # Add this debug step
-      - name: Debug Authentication and Permissions
-        run: |
-          echo "=== Current Authentication ==="
-          gcloud auth list
-          echo "=== Current Project ==="
-          gcloud config get-value project
-          echo "=== Service Account Email ==="
-          gcloud config get-value account
-          echo "=== Test Secret Manager Access ==="
-          gcloud secrets list --limit=5 || echo "Cannot list secrets"
-          echo "=== Test Specific Secret ==="
-          gcloud secrets describe GOOGLE_API_KEY || echo "Cannot access GOOGLE_API_KEY secret"
-          echo "=== Environment Variables ==="
-          echo "GOOGLE_APPLICATION_CREDENTIALS: $GOOGLE_APPLICATION_CREDENTIALS"
-
       # Install Firebase CLI
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
+      # Use Firebase Functions Config instead of Secret Manager
+      - name: Set Firebase Functions Config
+        run: |
+          firebase functions:config:set \
+            google.api_key="${{ secrets.GOOGLE_API_KEY }}" \
+            gmail.email="${{ secrets.GMAIL_EMAIL }}" \
+            gmail.password="${{ secrets.GMAIL_PASSWORD }}" \
+            --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}
+
       # Deploy to Firebase
       - name: Deploy to Firebase
         run: firebase deploy --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}
-        

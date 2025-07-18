@@ -78,9 +78,25 @@ jobs:
           export_environment_variables: true
           create_credentials_file: true
 
-      # Set up gcloud CLI
+      # Set up Cloud SDK
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
+
+      # Add this debug step
+      - name: Debug Authentication and Permissions
+        run: |
+          echo "=== Current Authentication ==="
+          gcloud auth list
+          echo "=== Current Project ==="
+          gcloud config get-value project
+          echo "=== Service Account Email ==="
+          gcloud config get-value account
+          echo "=== Test Secret Manager Access ==="
+          gcloud secrets list --limit=5 || echo "Cannot list secrets"
+          echo "=== Test Specific Secret ==="
+          gcloud secrets describe GOOGLE_API_KEY || echo "Cannot access GOOGLE_API_KEY secret"
+          echo "=== Environment Variables ==="
+          echo "GOOGLE_APPLICATION_CREDENTIALS: $GOOGLE_APPLICATION_CREDENTIALS"
 
       # Install Firebase CLI
       - name: Install Firebase CLI

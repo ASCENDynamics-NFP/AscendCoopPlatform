@@ -69,33 +69,32 @@ jobs:
       - name: Build Firebase Functions
         run: npm run build --prefix functions
 
-      # Install Firebase CLI
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
-
       # Authenticate to Google Cloud
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
         with:
           credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}'
+          project_id: '${{ secrets.DEV_FIREBASE_PROJECT_ID }}'
+          export_environment_variables: true
+          create_credentials_file: true
 
-      # Debug: Verify authentication is working
-      - name: Verify Google Cloud Authentication
+      # Set up gcloud CLI
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+
+      # Enable required APIs
+      - name: Enable required APIs
         run: |
-          echo "=== Checking Google Cloud Authentication ==="
-          gcloud auth list
-          echo "=== Checking active account ==="
-          gcloud config get-value account
-          echo "=== Checking project ==="
-          gcloud config get-value project
-          echo "=== Testing Firebase authentication ==="
-          firebase projects:list || echo "Firebase CLI authentication failed"
-          echo "=== Environment variables ==="
-          echo "GOOGLE_APPLICATION_CREDENTIALS: $GOOGLE_APPLICATION_CREDENTIALS"
-          echo "GCLOUD_PROJECT: $GCLOUD_PROJECT"
+          gcloud services enable firebase.googleapis.com
+          gcloud services enable cloudfunctions.googleapis.com
+          gcloud services enable compute.googleapis.com
+          gcloud services enable cloudbuild.googleapis.com
+          gcloud services enable artifactregistry.googleapis.com
+
+      # Install Firebase CLI
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
 
       # Deploy to Firebase
       - name: Deploy to Firebase
-        run: firebase deploy --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} --token ${{ secrets.FIREBASE_TOKEN }}
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}
+        run: firebase deploy --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}

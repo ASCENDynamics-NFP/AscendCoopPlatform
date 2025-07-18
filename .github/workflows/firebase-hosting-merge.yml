@@ -21,6 +21,7 @@ on:
   push:
     branches:
       - main  # Trigger workflow on push events to the main branch
+  workflow_dispatch:  # Allow manual triggering
 
 jobs:
   build_and_deploy:
@@ -77,21 +78,6 @@ jobs:
         uses: google-github-actions/auth@v1
         with:
           credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}'
-
-      # Set up Firebase Function Secrets
-      - name: Set up Firebase Function Secrets
-        run: |
-          # Check if secrets exist, if not set them
-          firebase functions:secrets:access GOOGLE_API_KEY --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} 2>/dev/null || \
-          echo "${{ secrets.DEV_GOOGLE_API_KEY }}" | firebase functions:secrets:set GOOGLE_API_KEY --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} --force
-          
-          firebase functions:secrets:access GMAIL_EMAIL --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} 2>/dev/null || \
-          echo "${{ secrets.DEV_GMAIL_EMAIL }}" | firebase functions:secrets:set GMAIL_EMAIL --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} --force
-          
-          firebase functions:secrets:access GMAIL_PASSWORD --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} 2>/dev/null || \
-          echo "${{ secrets.DEV_GMAIL_PASSWORD }}" | firebase functions:secrets:set GMAIL_PASSWORD --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} --force
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}
 
       # Deploy to Firebase
       - name: Deploy to Firebase

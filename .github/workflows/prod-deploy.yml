@@ -21,6 +21,7 @@ on:
   push:
     branches:
       - prod  # Triggers when pushing to the 'prod' branch
+  workflow_dispatch:  # Allow manual triggering
 
 jobs:
   build-and-deploy:
@@ -78,22 +79,7 @@ jobs:
         with:
           credentials_json: ${{ secrets.PROD_GOOGLE_APPLICATION_CREDENTIALS }}
 
-      # 9. Set up Firebase Function Secrets
-      - name: Set up Firebase Function Secrets
-        run: |
-          # Check if secrets exist, if not set them
-          firebase functions:secrets:access GOOGLE_API_KEY --project ${{ secrets.PROD_FIREBASE_PROJECT_ID }} 2>/dev/null || \
-          echo "${{ secrets.PROD_GOOGLE_API_KEY }}" | firebase functions:secrets:set GOOGLE_API_KEY --project ${{ secrets.PROD_FIREBASE_PROJECT_ID }} --force
-          
-          firebase functions:secrets:access GMAIL_EMAIL --project ${{ secrets.PROD_FIREBASE_PROJECT_ID }} 2>/dev/null || \
-          echo "${{ secrets.PROD_GMAIL_EMAIL }}" | firebase functions:secrets:set GMAIL_EMAIL --project ${{ secrets.PROD_FIREBASE_PROJECT_ID }} --force
-          
-          firebase functions:secrets:access GMAIL_PASSWORD --project ${{ secrets.PROD_FIREBASE_PROJECT_ID }} 2>/dev/null || \
-          echo "${{ secrets.PROD_GMAIL_PASSWORD }}" | firebase functions:secrets:set GMAIL_PASSWORD --project ${{ secrets.PROD_FIREBASE_PROJECT_ID }} --force
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.PROD_GOOGLE_APPLICATION_CREDENTIALS }}
-
-      # 10. Deploy to Firebase
+      # 9. Deploy to Firebase
       - name: Deploy to Firebase
         run: firebase deploy --force --project ${{ secrets.PROD_FIREBASE_PROJECT_ID }}
         env:

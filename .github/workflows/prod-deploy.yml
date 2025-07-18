@@ -81,6 +81,6 @@ jobs:
 
       # 9. Deploy to Firebase
       - name: Deploy to Firebase
-        run: firebase deploy --force --project ${{ secrets.PROD_FIREBASE_PROJECT_ID }}
+        run: firebase deploy --force --project ${{ secrets.PROD_FIREBASE_PROJECT_ID }} --token ${{ secrets.FIREBASE_TOKEN }}
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.PROD_GOOGLE_APPLICATION_CREDENTIALS }}

@@ -39,10 +39,7 @@ jobs:
 
       # Install dependencies
       - name: Install Dependencies
-        run: |
-          npm ci
-          npm ci --prefix functions
-          npm install --save firebase-functions@latest --prefix functions
+        run: npm ci
 
       # Set Environment Variables
       - name: Set Environment Variables
@@ -66,10 +63,6 @@ jobs:
       - name: Build Project
         run: npm run build:dev
 
-      # Build Firebase Functions
-      - name: Build Firebase Functions
-        run: npm run build --prefix functions
-
       # Authenticate to Google Cloud
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
@@ -87,15 +80,6 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
-      # Use Firebase Functions Config instead of Secret Manager
-      - name: Set Firebase Functions Config
-        run: |
-          firebase functions:config:set \
-            google.api_key="${{ secrets.GOOGLE_API_KEY }}" \
-            gmail.email="${{ secrets.GMAIL_EMAIL }}" \
-            gmail.password="${{ secrets.GMAIL_PASSWORD }}" \
-            --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}
-
-      # Deploy to Firebase
-      - name: Deploy to Firebase
-        run: firebase deploy --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}
+      # Deploy to Firebase (Hosting Only)
+      - name: Deploy to Firebase (Hosting Only)
+        run: firebase deploy --only hosting --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}

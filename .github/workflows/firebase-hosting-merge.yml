@@ -105,3 +105,4 @@ jobs:
       # Deploy to Firebase
       - name: Deploy to Firebase
         run: firebase deploy --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}
+        

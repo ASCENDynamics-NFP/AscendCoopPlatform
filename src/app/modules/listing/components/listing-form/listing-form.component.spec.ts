@@ -223,16 +223,21 @@ describe("ListingFormComponent", () => {
   it("should display contact email validation message when invalid", () => {
     component.addEmail();
     fixture.detectChanges();
+
     const emailGroup = component
       .getFormArray("contactInformation.emails")
       .at(0);
+
     emailGroup.get("email")?.setValue("");
-    emailGroup.get("email")?.markAsTouched();
+    // mark all fields in the email form group as touched
+    emailGroup.markAllAsTouched();
     fixture.detectChanges();
+
     const notes = fixture.debugElement.queryAll(By.css("ion-note"));
     const hasError = notes.some((n) =>
       n.nativeElement.textContent.includes("Email is required."),
     );
+
     expect(hasError).toBeTrue();
   });
 });

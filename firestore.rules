@@ -15,7 +15,7 @@ service cloud.firestore {
 
     // Allow authenticated users to apply for listings
     match /listings/{listingId}/relatedAccounts/{relatedAccountId} {
-      allow create, read, write, delete: if request.auth.uid != null; // Only the user can write to their own data
+      allow create, read, write, delete: if request.auth.uid != null; // Only authenticated users
     }
 
     match /accounts {
@@ -72,11 +72,11 @@ service cloud.firestore {
 
     // Rules for relatedAccount
     match /accounts/{accountId}/relatedAccounts/{relatedAccountId} {
-      allow create, read, write, delete: if request.auth.uid != null; // Only the user can write to their own data
+      allow create, read, write, delete: if request.auth.uid != null;  // Only authenticated users
     }
 
     match /accounts/{accountId}/relatedListings/{listingId} {
-      allow create, read, write, delete: if request.auth.uid != null; // Only the user can write to their own data
+      allow create, read, write, delete: if request.auth.uid != null;  // Only authenticated users
     }
     
     // Rules for AppFeedback

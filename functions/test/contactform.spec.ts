@@ -48,7 +48,7 @@ const {submitLead} = proxyquire("../src/functions/contactform", {
     },
   },
   nodemailer: {
-    createTransporter: sinon.stub().returns({
+    createTransport: sinon.stub().returns({
       sendMail: sinon.stub().resolves(),
     }),
   },

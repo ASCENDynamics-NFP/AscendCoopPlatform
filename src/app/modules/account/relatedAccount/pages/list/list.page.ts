@@ -21,7 +21,7 @@
 
 import {Component, OnInit} from "@angular/core";
 import {Store} from "@ngrx/store";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, combineLatest, of} from "rxjs";
 import {map} from "rxjs/operators";
 import {AuthUser} from "@shared/models/auth-user.model";
@@ -53,9 +53,29 @@ export class ListPage implements OnInit {
   pendingRelatedAccountsList$!: Observable<Partial<RelatedAccount>[]>;
   isOwner$!: Observable<boolean>;
   title$!: Observable<string>;
+  isGroupAdmin$!: Observable<boolean>;
+  showEditControls$!: Observable<boolean>;
+  roleOptions = ["admin", "moderator", "member"] as const;
+  relationshipOptions = [
+    "admin",
+    "friend",
+    "member",
+    "partner",
+    "family",
+    "parent",
+    "child",
+    "boss",
+    "employee",
+    "volunteer",
+    "sibling",
+    "parent-org",
+    "child-org",
+    "external",
+  ] as const;
 
   constructor(
     private activatedRoute: ActivatedRoute,
+    private router: Router,
     private metaService: MetaService,
     private store: Store,
   ) {
@@ -120,6 +140,34 @@ export class ListPage implements OnInit {
           relatedAccounts.filter(
             (ra) => ra.type === this.listType && ra.status === "pending",
           ),
+        ),
+      );
+
+      this.isGroupAdmin$ = combineLatest([
+        this.currentUser$,
+        this.relatedAccounts$,
+      ]).pipe(
+        map(([currentUser, relatedAccounts]) => {
+          if (!currentUser) return false;
+          const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
+          return (
+            rel?.status === "accepted" &&
+            (rel.role === "admin" || rel.role === "moderator")
+          );
+        }),
+      );
+
+      this.showEditControls$ = combineLatest([
+        this.account$,
+        this.currentUser$,
+        this.isGroupAdmin$,
+      ]).pipe(
+        map(
+          ([account, user, isAdmin]) =>
+            !!account &&
+            account.type === "group" &&
+            !!user &&
+            (isAdmin || user.uid === account.id),
         ),
       );
     }
@@ -224,6 +272,42 @@ export class ListPage implements OnInit {
     );
   }
 
+  updateRole(request: Partial<RelatedAccount>, role: string) {
+    this.currentUser$.pipe(take(1)).subscribe((authUser) => {
+      if (!authUser?.uid || !request.id || !this.accountId) return;
+      const updated: RelatedAccount = {
+        ...(request as RelatedAccount),
+        accountId: this.accountId,
+        role: role as "admin" | "moderator" | "member",
+        lastModifiedBy: authUser.uid,
+      };
+      this.store.dispatch(
+        AccountActions.updateRelatedAccount({
+          accountId: this.accountId!,
+          relatedAccount: updated,
+        }),
+      );
+    });
+  }
+
+  updateRelationship(request: Partial<RelatedAccount>, relationship: string) {
+    this.currentUser$.pipe(take(1)).subscribe((authUser) => {
+      if (!authUser?.uid || !request.id || !this.accountId) return;
+      const updated: RelatedAccount = {
+        ...(request as RelatedAccount),
+        accountId: this.accountId,
+        relationship: relationship as any,
+        lastModifiedBy: authUser.uid,
+      };
+      this.store.dispatch(
+        AccountActions.updateRelatedAccount({
+          accountId: this.accountId!,
+          relatedAccount: updated,
+        }),
+      );
+    });
+  }
+
   /**
    * Determines whether to show accept/reject buttons for a related account.
    * @param request The related account request.
@@ -286,5 +370,15 @@ export class ListPage implements OnInit {
    */
   trackById(index: number, item: Partial<RelatedAccount>): string {
     return item.id ? item.id : index.toString();
+  }
+
+  /**
+   * Navigates to the selected related account.
+   * @param id The account ID to navigate to.
+   */
+  goToRelatedAccount(id: string | null | undefined) {
+    if (id) {
+      this.router.navigate([`/account/${id}`]);
+    }
   }
 }

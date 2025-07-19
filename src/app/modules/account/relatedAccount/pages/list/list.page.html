@@ -48,8 +48,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             <ion-list>
               <ion-item
                 *ngFor="let relatedAccount of currentList; trackBy: trackById"
-                [routerLink]="getOtherId(relatedAccount) ? '/account/' + getOtherId(relatedAccount) : '#' "
                 button
+                (click)="goToRelatedAccount(getOtherId(relatedAccount))"
               >
                 <ion-thumbnail slot="start">
                   <img
@@ -62,6 +62,40 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   <h3>{{ relatedAccount.name }}</h3>
                   <p>{{ relatedAccount.tagline }}</p>
                 </ion-label>
+                <ng-container *ngIf="showEditControls$ | async">
+                  <ion-select
+                    [value]="relatedAccount.role"
+                    interface="popover"
+                    placeholder="Role"
+                    (click)="$event.stopPropagation()"
+                    (ionChange)="updateRole(relatedAccount, $event.detail.value)"
+                    style="max-width: 110px; margin-right: 8px"
+                  >
+                    <ion-select-option
+                      *ngFor="let role of roleOptions"
+                      [value]="role"
+                    >
+                      {{ role }}
+                    </ion-select-option>
+                  </ion-select>
+                  <ion-select
+                    [value]="relatedAccount.relationship"
+                    interface="popover"
+                    placeholder="Relationship"
+                    (click)="$event.stopPropagation()"
+                    (ionChange)="
+                      updateRelationship(relatedAccount, $event.detail.value)
+                    "
+                    style="max-width: 130px"
+                  >
+                    <ion-select-option
+                      *ngFor="let rel of relationshipOptions"
+                      [value]="rel"
+                    >
+                      {{ rel }}
+                    </ion-select-option>
+                  </ion-select>
+                </ng-container>
                 <ion-button
                   slot="end"
                   expand="block"
@@ -96,8 +130,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               <ion-list>
                 <ion-item
                   *ngFor="let relatedAccount of pendingList; trackBy: trackById"
-                  [routerLink]="getOtherId(relatedAccount) ? '/account/' + getOtherId(relatedAccount) : '#' "
                   button
+                  (click)="goToRelatedAccount(getOtherId(relatedAccount))"
                 >
                   <ion-thumbnail slot="start">
                     <img
@@ -110,6 +144,38 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                     <h3>{{ relatedAccount.name }}</h3>
                     <p>{{ relatedAccount.tagline }}</p>
                   </ion-label>
+                  <ng-container *ngIf="showEditControls$ | async">
+                    <ion-select
+                      [value]="relatedAccount.role"
+                      interface="popover"
+                      placeholder="Role"
+                      (click)="$event.stopPropagation()"
+                      (ionChange)="updateRole(relatedAccount, $event.detail.value)"
+                      style="max-width: 110px; margin-right: 8px"
+                    >
+                      <ion-select-option
+                        *ngFor="let role of roleOptions"
+                        [value]="role"
+                        >{{ role }}</ion-select-option
+                      >
+                    </ion-select>
+                    <ion-select
+                      [value]="relatedAccount.relationship"
+                      interface="popover"
+                      placeholder="Relationship"
+                      (click)="$event.stopPropagation()"
+                      (ionChange)="
+                        updateRelationship(relatedAccount, $event.detail.value)
+                      "
+                      style="max-width: 130px"
+                    >
+                      <ion-select-option
+                        *ngFor="let rel of relationshipOptions"
+                        [value]="rel"
+                        >{{ rel }}</ion-select-option
+                      >
+                    </ion-select>
+                  </ng-container>
                   <ion-button
                     slot="end"
                     expand="block"

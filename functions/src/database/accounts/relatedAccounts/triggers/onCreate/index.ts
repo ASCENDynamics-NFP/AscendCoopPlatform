@@ -49,6 +49,8 @@ export const onCreateRelatedAccount = onDocumentCreated(
       return;
     }
 
+    const requestData = event.data.data();
+
     const accountId = event.params.accountId;
     const relatedAccountId = event.params.relatedAccountId;
 
@@ -96,6 +98,12 @@ export const onCreateRelatedAccount = onDocumentCreated(
         targetData?.type,
       );
 
+      const role =
+        requestData?.role ??
+        (relationship === "member" || relationship === "partner"
+          ? "member"
+          : undefined);
+
       await db
         .collection("accounts")
         .doc(relatedAccountId)
@@ -110,6 +118,7 @@ export const onCreateRelatedAccount = onDocumentCreated(
           type: initiatorData?.type,
           status: "pending",
           relationship,
+          role,
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
           createdBy: accountId,
           lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),

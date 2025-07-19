@@ -122,8 +122,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         }
         this.errorSubscription = this.error$.subscribe((err) => {
           if (err === "Account not found") {
-            this.presentToast("Account not found");
-            this.location.back();
+            this.presentToast("Account not found", true);
           } else if (err) {
             this.presentToast("This profile is private.");
           }
@@ -174,13 +173,17 @@ export class DetailsPage implements OnInit, ViewWillEnter {
     }
   }
 
-  private async presentToast(message: string) {
+  private async presentToast(message: string, navigateBack = false) {
     const toast = await this.toastController.create({
       message,
       duration: 2000,
       position: "top",
     });
     await toast.present();
+    if (navigateBack) {
+      await toast.onDidDismiss();
+      this.location.back();
+    }
   }
 
   private updateAccountMeta(account: Account) {

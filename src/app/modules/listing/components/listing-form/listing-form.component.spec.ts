@@ -222,6 +222,7 @@ describe("ListingFormComponent", () => {
 
   it("should display contact email validation message when invalid", () => {
     component.addEmail();
+    fixture.detectChanges();
     const emailGroup = component
       .getFormArray("contactInformation.emails")
       .at(0);

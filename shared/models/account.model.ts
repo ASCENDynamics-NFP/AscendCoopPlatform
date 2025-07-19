@@ -54,7 +54,6 @@ interface UserSpecific {
 }
 
 interface GroupSpecific {
-  admins?: string[];
   dateFounded?: Timestamp;
   supportedLanguages?: string[];
   groupType?: string;

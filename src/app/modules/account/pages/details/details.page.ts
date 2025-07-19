@@ -22,6 +22,7 @@
 import {Component, OnInit, ViewChild} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, Subscription, combineLatest} from "rxjs";
+import {Location} from "@angular/common";
 import {filter, map, take, tap} from "rxjs/operators";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {Store} from "@ngrx/store";
@@ -32,8 +33,9 @@ import {
   selectAccountById,
   selectRelatedListingsByAccountId,
 } from "../../../../state/selectors/account.selectors";
+import {selectAccountError} from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
-import {IonContent, ViewWillEnter} from "@ionic/angular";
+import {IonContent, ViewWillEnter, ToastController} from "@ionic/angular";
 import {RelatedListing} from "@shared/models/related-listing.model";
 import {MetaService} from "../../../../core/services/meta.service";
 
@@ -48,14 +50,18 @@ export class DetailsPage implements OnInit, ViewWillEnter {
   authUser$!: Observable<AuthUser | null>;
   account$!: Observable<Account | undefined>;
   private subscription: Subscription | null = null;
+  private errorSubscription: Subscription | null = null;
   relatedAccounts$!: Observable<RelatedAccount[]>;
   relatedListings$!: Observable<RelatedListing[]>;
   isProfileOwner$!: Observable<boolean>;
+  error$!: Observable<any>;
 
   constructor(
     private metaService: MetaService,
     private route: ActivatedRoute,
     private router: Router,
+    private location: Location,
+    private toastController: ToastController,
     private store: Store,
   ) {}
 
@@ -108,6 +114,20 @@ export class DetailsPage implements OnInit, ViewWillEnter {
             ),
           );
 
+        this.error$ = this.store.select(selectAccountError);
+
+        // Handle account load errors
+        if (this.errorSubscription) {
+          this.errorSubscription.unsubscribe();
+        }
+        this.errorSubscription = this.error$.subscribe((err) => {
+          if (err === "Account not found") {
+            this.presentToast("Account not found", true);
+          } else if (err) {
+            this.presentToast("This profile is private.");
+          }
+        });
+
         // Determine if the current user is the profile owner
         this.isProfileOwner$ = combineLatest([
           this.authUser$,
@@ -140,12 +160,29 @@ export class DetailsPage implements OnInit, ViewWillEnter {
       this.subscription.unsubscribe(); // Unsubscribe to prevent memory leaks
       this.subscription = null;
     }
+    if (this.errorSubscription) {
+      this.errorSubscription.unsubscribe();
+      this.errorSubscription = null;
+    }
   }
 
   scrollToSection(sectionId: string): void {
     const yOffset = document.getElementById(sectionId)?.offsetTop;
     if (yOffset !== undefined) {
       this.content.scrollToPoint(0, yOffset, 500);
+    }
+  }
+
+  private async presentToast(message: string, navigateBack = false) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2000,
+      position: "top",
+    });
+    await toast.present();
+    if (navigateBack) {
+      await toast.onDidDismiss();
+      this.location.back();
     }
   }
 

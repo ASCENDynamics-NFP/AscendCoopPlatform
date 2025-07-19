@@ -19,7 +19,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <!-- src/app/modules/account/pages/details/details.page.html -->
 
-<ng-container *ngIf="account$ | async as account; else loading">
+<ng-container *ngIf="account$ | async as account; else loadingOrPrivate">
   <ion-header>
     <app-header [title]="account.name"></app-header>
   </ion-header>
@@ -106,6 +106,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </ion-content>
 </ng-container>
 
-<ng-template #loading>
-  <p>Loading account details...</p>
+<ng-template #loadingOrPrivate>
+  <ng-container *ngIf="(error$ | async) as error; else loading">
+    <p *ngIf="error !== 'Account not found'">This profile is private.</p>
+  </ng-container>
+  <ng-template #loading>
+    <p>Loading account details...</p>
+  </ng-template>
 </ng-template>

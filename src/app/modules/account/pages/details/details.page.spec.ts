@@ -28,6 +28,8 @@ import {
 import {DetailsPage} from "./details.page";
 import {provideMockStore, MockStore} from "@ngrx/store/testing";
 import {ActivatedRoute, Router} from "@angular/router";
+import {Location} from "@angular/common";
+import {ToastController} from "@ionic/angular";
 import {of} from "rxjs";
 import {Account, RelatedAccount} from "@shared/models/account.model";
 import {AuthUser} from "@shared/models/auth-user.model";
@@ -35,6 +37,7 @@ import * as AccountActions from "../../../../state/actions/account.actions";
 import {
   selectAccountById,
   selectRelatedAccountsByAccountId,
+  selectAccountError,
 } from "../../../../state/selectors/account.selectors";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {Timestamp} from "firebase/firestore";
@@ -110,6 +113,18 @@ describe("DetailsPage", () => {
           },
         },
         {provide: Router, useValue: routerSpy},
+        {provide: Location, useValue: {back: () => {}}},
+        {
+          provide: ToastController,
+          useValue: {
+            create: jasmine.createSpy().and.resolveTo({
+              present: jasmine.createSpy(),
+              onDidDismiss: jasmine
+                .createSpy()
+                .and.resolveTo({role: "dismiss"}),
+            }),
+          },
+        },
       ],
     }).compileComponents();
 
@@ -124,6 +139,7 @@ describe("DetailsPage", () => {
     store.overrideSelector(selectAuthUser, mockAuthUser);
     store.overrideSelector(selectAccountById(mockAccountId), mockAccount);
     store.overrideSelector(selectRelatedAccountsByAccountId(mockAccountId), []);
+    store.overrideSelector(selectAccountError, null);
 
     // Spy on dispatch
     spyOn(store, "dispatch");

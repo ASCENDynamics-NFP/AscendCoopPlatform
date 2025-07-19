@@ -233,11 +233,7 @@ describe("ListingFormComponent", () => {
     emailGroup.markAllAsTouched();
     fixture.detectChanges();
 
-    const notes = fixture.debugElement.queryAll(By.css("ion-note"));
-    const hasError = notes.some((n) =>
-      n.nativeElement.textContent.includes("Email is required."),
-    );
-
-    expect(hasError).toBeTrue();
+    const note = fixture.debugElement.query(By.css("[formArrayName='emails'] ion-note span"));
+    expect(note.nativeElement.textContent.trim()).toBe("Email is required.");
   });
 });

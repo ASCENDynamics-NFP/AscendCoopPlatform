@@ -205,6 +205,7 @@ describe("ApplicantsPage", () => {
 
   it("should calculate pages and paginate accounts", fakeAsync(() => {
     component.ionViewWillEnter();
+    tick();
     let pages: number | undefined;
     component.totalPages$.subscribe((p) => (pages = p));
     tick();
@@ -224,6 +225,7 @@ describe("ApplicantsPage", () => {
 
   it("should open applicant details modal if user is owner", fakeAsync(() => {
     component.ionViewWillEnter();
+    tick();
     const selectedAccount = mockAccounts[0];
     const modalSpy = jasmine.createSpyObj("HTMLIonModalElement", ["present"]);
     modalController.create.and.returnValue(Promise.resolve(modalSpy));
@@ -242,6 +244,7 @@ describe("ApplicantsPage", () => {
     store.setState(createState("anotherUser"));
     store.refreshState();
     component.ionViewWillEnter();
+    tick();
 
     const selectedAccount = mockAccounts[0];
     component.openApplicantDetailsModal(selectedAccount);

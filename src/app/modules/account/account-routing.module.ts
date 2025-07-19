@@ -28,6 +28,7 @@ import {SettingsPage} from "./pages/settings/settings.page";
 import {UsersPage} from "./pages/users/users.page";
 import {ListPage} from "./relatedAccount/pages/list/list.page";
 import {ListingsListPage} from "./relatedListings/pages/listings-list/listings-list.page";
+import {RoleManagementPage} from "./pages/role-management/role-management.page";
 
 const routes: Routes = [
   {
@@ -67,6 +68,11 @@ const routes: Routes = [
   {
     path: ":accountId/related/:listType",
     component: ListPage,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: ":accountId/roles",
+    component: RoleManagementPage,
     canActivate: [AuthGuard],
   },
 ];

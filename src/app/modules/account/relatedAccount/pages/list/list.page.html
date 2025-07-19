@@ -64,7 +64,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 </ion-label>
                 <ng-container *ngIf="showEditControls$ | async">
                   <ion-select
-                    [value]="relatedAccount.role"
+                    [value]="relatedAccount.roleId"
                     interface="popover"
                     placeholder="Role"
                     (click)="$event.stopPropagation()"
@@ -76,6 +76,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                       [value]="role"
                     >
                       {{ role }}
+                    </ion-select-option>
+                    <ion-select-option
+                      *ngFor="let role of customRoles$ | async"
+                      [value]="role.id"
+                    >
+                      {{ role.name }}
                     </ion-select-option>
                   </ion-select>
                   <ion-select
@@ -146,7 +152,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   </ion-label>
                   <ng-container *ngIf="showEditControls$ | async">
                     <ion-select
-                      [value]="relatedAccount.role"
+                      [value]="relatedAccount.roleId"
                       interface="popover"
                       placeholder="Role"
                       (click)="$event.stopPropagation()"
@@ -157,6 +163,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                         *ngFor="let role of roleOptions"
                         [value]="role"
                         >{{ role }}</ion-select-option
+                      >
+                      <ion-select-option
+                        *ngFor="let role of customRoles$ | async"
+                        [value]="role.id"
+                        >{{ role.name }}</ion-select-option
                       >
                     </ion-select>
                     <ion-select

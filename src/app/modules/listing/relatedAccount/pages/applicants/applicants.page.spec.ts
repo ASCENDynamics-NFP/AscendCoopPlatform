@@ -149,12 +149,14 @@ describe("ApplicantsPage", () => {
     const accountsState: AccountState = accountAdapter.getInitialState({
       relatedAccounts: {},
       relatedListings: {},
+      groupRoles: {},
       selectedAccountId: null,
       loading: false,
       error: null,
       accountsLastUpdated: null,
       relatedAccountsLastUpdated: {},
       relatedListingsLastUpdated: {},
+      groupRolesLastUpdated: {},
     });
 
     return {

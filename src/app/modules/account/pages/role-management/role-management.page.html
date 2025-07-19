@@ -1,0 +1,30 @@
+<!-- role-management.page.html -->
+<ion-header>
+  <app-header [title]="'Group Roles'" [defaultHref]="'../'"></app-header>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item *ngFor="let role of roles$ | async">
+      <ion-label>
+        <h2>{{ role.name }}</h2>
+        <p>{{ role.description }}</p>
+      </ion-label>
+      <ion-button slot="end" color="danger" (click)="deleteRole(role)">
+        Delete
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
+  <ion-item>
+    <ion-input
+      placeholder="Role name"
+      [(ngModel)]="newRole.name"
+    ></ion-input>
+    <ion-input
+      placeholder="Description"
+      [(ngModel)]="newRole.description"
+    ></ion-input>
+    <ion-button (click)="addRole()">Add</ion-button>
+  </ion-item>
+</ion-content>

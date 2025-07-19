@@ -26,9 +26,11 @@ import {Observable, combineLatest, of} from "rxjs";
 import {map} from "rxjs/operators";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {Account, RelatedAccount} from "@shared/models/account.model";
+import {GroupRole} from "@shared/models/group-role.model";
 import {
   selectAccountById,
   selectRelatedAccountsByAccountId,
+  selectGroupRolesByGroupId,
 } from "../../../../../state/selectors/account.selectors";
 import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../../state/actions/account.actions";
@@ -56,6 +58,7 @@ export class ListPage implements OnInit {
   isGroupAdmin$!: Observable<boolean>;
   showEditControls$!: Observable<boolean>;
   roleOptions = ["admin", "moderator", "member"] as const;
+  customRoles$!: Observable<GroupRole[]>;
   relationshipOptions = [
     "admin",
     "friend",
@@ -170,6 +173,13 @@ export class ListPage implements OnInit {
             (isAdmin || user.uid === account.id),
         ),
       );
+
+      this.customRoles$ = this.store.select(
+        selectGroupRolesByGroupId(this.accountId),
+      );
+      this.store.dispatch(
+        AccountActions.loadGroupRoles({groupId: this.accountId}),
+      );
     }
   }
 
@@ -272,13 +282,16 @@ export class ListPage implements OnInit {
     );
   }
 
-  updateRole(request: Partial<RelatedAccount>, role: string) {
+  updateRole(request: Partial<RelatedAccount>, roleId: string) {
     this.currentUser$.pipe(take(1)).subscribe((authUser) => {
       if (!authUser?.uid || !request.id || !this.accountId) return;
       const updated: RelatedAccount = {
         ...(request as RelatedAccount),
         accountId: this.accountId,
-        role: role as "admin" | "moderator" | "member",
+        roleId,
+        role: this.roleOptions.includes(roleId as any)
+          ? (roleId as any)
+          : request.role,
         lastModifiedBy: authUser.uid,
       };
       this.store.dispatch(

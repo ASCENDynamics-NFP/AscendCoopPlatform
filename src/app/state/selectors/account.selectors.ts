@@ -140,6 +140,18 @@ export const selectRelatedListingsLastUpdated = (accountId: string) =>
     (state) => state.relatedListingsLastUpdated[accountId] || null,
   );
 
+export const selectGroupRolesByGroupId = (groupId: string) =>
+  createSelector(
+    selectAccountState,
+    (state) => state.groupRoles[groupId] || [],
+  );
+
+export const selectGroupRolesLastUpdated = (groupId: string) =>
+  createSelector(
+    selectAccountState,
+    (state) => state.groupRolesLastUpdated[groupId] || null,
+  );
+
 export const selectAreAccountsFresh = createSelector(
   selectAccountsLastUpdated,
   (accountsLastUpdated) => !isStale(accountsLastUpdated, ACCOUNTS_TTL),
@@ -157,4 +169,10 @@ export const selectAreRelatedListingsFresh = (accountId: string) =>
     selectRelatedListingsLastUpdated(accountId),
     (relatedListingsLastUpdated) =>
       !isStale(relatedListingsLastUpdated, RELATED_LISTINGS_TTL),
+  );
+
+export const selectAreGroupRolesFresh = (groupId: string) =>
+  createSelector(
+    selectGroupRolesLastUpdated(groupId),
+    (groupRolesLastUpdated) => !isStale(groupRolesLastUpdated, ACCOUNTS_TTL),
   );

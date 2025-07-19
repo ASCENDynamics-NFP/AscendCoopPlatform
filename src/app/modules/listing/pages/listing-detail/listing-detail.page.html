@@ -22,6 +22,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 </ion-header>
 
 <ion-content>
+  <ng-container *ngIf="loading$ | async">
+    <ion-spinner name="crescent"></ion-spinner>
+  </ng-container>
   <ng-container *ngIf="listing$ | async as listing">
     <app-hero
       [listing]="listing"

@@ -28,7 +28,10 @@ import {Listing} from "@shared/models/listing.model";
 import * as ListingsActions from "../../../../state/actions/listings.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {AppState} from "../../../../state/app.state";
-import {selectListingById} from "../../../../state/selectors/listings.selectors";
+import {
+  selectListingById,
+  selectLoading,
+} from "../../../../state/selectors/listings.selectors";
 import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
@@ -40,6 +43,7 @@ export class ListingDetailPage implements OnInit {
   private subscription: Subscription | null = null;
   listing$: Observable<Listing | undefined>;
   isOwner$: Observable<boolean>;
+  loading$: Observable<boolean>;
   private listingId: string;
 
   constructor(
@@ -49,6 +53,7 @@ export class ListingDetailPage implements OnInit {
   ) {
     this.listingId = this.route.snapshot.paramMap.get("id") || "";
     this.listing$ = this.store.select(selectListingById(this.listingId));
+    this.loading$ = this.store.select(selectLoading);
 
     // Determine if current user is the listing creator
     this.isOwner$ = combineLatest([

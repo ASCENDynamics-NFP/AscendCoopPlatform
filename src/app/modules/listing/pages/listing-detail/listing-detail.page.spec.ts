@@ -38,13 +38,17 @@ import {Listing} from "@shared/models/listing.model";
 import * as ListingsActions from "../../../../state/actions/listings.actions";
 import {Timestamp} from "firebase/firestore";
 import {TimestampPipe} from "../../../../shared/pipes/timestamp.pipe";
-import {selectListingById} from "../../../../state/selectors/listings.selectors";
+import {
+  selectListingById,
+  selectLoading,
+} from "../../../../state/selectors/listings.selectors";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {AppState} from "../../../../state/app.state";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {Store} from "@ngrx/store";
 import {Location} from "@angular/common";
 import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
+import {By} from "@angular/platform-browser";
 
 describe("ListingDetailPage", () => {
   let component: ListingDetailPage;
@@ -177,6 +181,7 @@ describe("ListingDetailPage", () => {
     // Override selectors
     store.overrideSelector(selectListingById("123"), mockListing);
     store.overrideSelector(selectAuthUser, mockAuthUser);
+    store.overrideSelector(selectLoading, false);
 
     fixture.detectChanges();
   });
@@ -191,6 +196,15 @@ describe("ListingDetailPage", () => {
     expect(store.dispatch).toHaveBeenCalledWith(
       ListingsActions.loadListingById({id: "123"}),
     );
+  });
+
+  it("should display loading spinner when loading is true", () => {
+    store.overrideSelector(selectLoading, true);
+    store.refreshState();
+    fixture.detectChanges();
+
+    const spinner = fixture.debugElement.query(By.css("ion-spinner"));
+    expect(spinner).toBeTruthy();
   });
 
   // it("should display listing details", (done) => {

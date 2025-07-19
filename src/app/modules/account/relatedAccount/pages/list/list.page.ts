@@ -21,7 +21,7 @@
 
 import {Component, OnInit} from "@angular/core";
 import {Store} from "@ngrx/store";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, combineLatest, of} from "rxjs";
 import {map} from "rxjs/operators";
 import {AuthUser} from "@shared/models/auth-user.model";
@@ -75,6 +75,7 @@ export class ListPage implements OnInit {
 
   constructor(
     private activatedRoute: ActivatedRoute,
+    private router: Router,
     private metaService: MetaService,
     private store: Store,
   ) {
@@ -365,5 +366,15 @@ export class ListPage implements OnInit {
    */
   trackById(index: number, item: Partial<RelatedAccount>): string {
     return item.id ? item.id : index.toString();
+  }
+
+  /**
+   * Navigates to the selected related account.
+   * @param id The account ID to navigate to.
+   */
+  goToRelatedAccount(id: string | null | undefined) {
+    if (id) {
+      this.router.navigate([`/account/${id}`]);
+    }
   }
 }

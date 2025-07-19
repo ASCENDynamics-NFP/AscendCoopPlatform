@@ -48,8 +48,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             <ion-list>
               <ion-item
                 *ngFor="let relatedAccount of currentList; trackBy: trackById"
-                [routerLink]="getOtherId(relatedAccount) ? '/account/' + getOtherId(relatedAccount) : '#' "
                 button
+                (click)="goToRelatedAccount(getOtherId(relatedAccount))"
               >
                 <ion-thumbnail slot="start">
                   <img
@@ -128,8 +128,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               <ion-list>
                 <ion-item
                   *ngFor="let relatedAccount of pendingList; trackBy: trackById"
-                  [routerLink]="getOtherId(relatedAccount) ? '/account/' + getOtherId(relatedAccount) : '#' "
                   button
+                  (click)="goToRelatedAccount(getOtherId(relatedAccount))"
                 >
                   <ion-thumbnail slot="start">
                     <img

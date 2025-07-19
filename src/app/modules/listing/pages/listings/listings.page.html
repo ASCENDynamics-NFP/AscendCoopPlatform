@@ -42,7 +42,18 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </ion-refresher>
 
   <ng-container *ngIf="loading$ | async">
-    <ion-skeleton-text animated></ion-skeleton-text>
+    <ion-list>
+      <ion-item *ngFor="let i of [1,2,3,4,5]">
+        <ion-thumbnail slot="start">
+          <ion-skeleton-text animated style="width: 64px; height: 64px"></ion-skeleton-text>
+        </ion-thumbnail>
+        <ion-label>
+          <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 40%"></ion-skeleton-text>
+        </ion-label>
+      </ion-item>
+    </ion-list>
   </ng-container>
 
   <ng-container *ngIf="error$ | async as error">
@@ -75,6 +86,16 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-label>
     </ion-item>
   </ion-list>
+  <ion-text
+    class="ion-padding"
+    *ngIf="
+      (paginatedListings$ | async)?.length === 0 &&
+      !(loading$ | async) &&
+      !(error$ | async)
+    "
+  >
+    No listings found.
+  </ion-text>
 
   <ion-fab
     vertical="bottom"

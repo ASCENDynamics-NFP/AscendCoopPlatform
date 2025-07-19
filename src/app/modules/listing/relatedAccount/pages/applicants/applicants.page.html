@@ -76,6 +76,16 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-button> -->
     </ion-item>
   </ion-list>
+  <ion-text
+    class="ion-padding"
+    *ngIf="
+      (relatedAccounts$ | async)?.length === 0 &&
+      !(loading$ | async) &&
+      !(error$ | async)
+    "
+  >
+    No applicants found.
+  </ion-text>
 
   <ion-text color="danger" *ngIf="error$ | async as error">
     {{ error }}

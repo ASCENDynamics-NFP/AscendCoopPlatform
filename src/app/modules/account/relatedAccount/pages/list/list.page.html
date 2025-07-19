@@ -66,6 +66,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   <ion-select
                     [value]="relatedAccount.role"
                     interface="popover"
+                    placeholder="Role"
                     (click)="$event.stopPropagation()"
                     (ionChange)="updateRole(relatedAccount, $event.detail.value)"
                     style="max-width: 110px; margin-right: 8px"
@@ -80,6 +81,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   <ion-select
                     [value]="relatedAccount.relationship"
                     interface="popover"
+                    placeholder="Relationship"
                     (click)="$event.stopPropagation()"
                     (ionChange)="
                       updateRelationship(relatedAccount, $event.detail.value)
@@ -146,6 +148,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                     <ion-select
                       [value]="relatedAccount.role"
                       interface="popover"
+                      placeholder="Role"
                       (click)="$event.stopPropagation()"
                       (ionChange)="updateRole(relatedAccount, $event.detail.value)"
                       style="max-width: 110px; margin-right: 8px"
@@ -159,6 +162,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                     <ion-select
                       [value]="relatedAccount.relationship"
                       interface="popover"
+                      placeholder="Relationship"
                       (click)="$event.stopPropagation()"
                       (ionChange)="
                         updateRelationship(relatedAccount, $event.detail.value)

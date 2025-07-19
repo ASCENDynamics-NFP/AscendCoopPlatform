@@ -162,8 +162,12 @@ export class ListPage implements OnInit {
         this.currentUser$,
         this.isGroupAdmin$,
       ]).pipe(
-        map(([account, user, isAdmin]) =>
-          !!account && account.type === "group" && (!!user && (isAdmin || user.uid === account.id)),
+        map(
+          ([account, user, isAdmin]) =>
+            !!account &&
+            account.type === "group" &&
+            !!user &&
+            (isAdmin || user.uid === account.id),
         ),
       );
     }
@@ -272,7 +276,7 @@ export class ListPage implements OnInit {
     this.currentUser$.pipe(take(1)).subscribe((authUser) => {
       if (!authUser?.uid || !request.id || !this.accountId) return;
       const updated: RelatedAccount = {
-        id: request.id,
+        ...(request as RelatedAccount),
         accountId: this.accountId,
         role: role as "admin" | "moderator" | "member",
         lastModifiedBy: authUser.uid,
@@ -290,7 +294,7 @@ export class ListPage implements OnInit {
     this.currentUser$.pipe(take(1)).subscribe((authUser) => {
       if (!authUser?.uid || !request.id || !this.accountId) return;
       const updated: RelatedAccount = {
-        id: request.id,
+        ...(request as RelatedAccount),
         accountId: this.accountId,
         relationship: relationship as any,
         lastModifiedBy: authUser.uid,

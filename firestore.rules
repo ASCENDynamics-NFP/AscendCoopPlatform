@@ -39,6 +39,14 @@ service cloud.firestore {
         return request.auth != null && request.auth.uid == accountId;
       }
 
+      function isGroupAdmin() {
+        return request.auth != null &&
+          exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted' &&
+          (get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.role == 'admin' ||
+           get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.role == 'moderator');
+      }
+
       // Friends-only access
       function isAcceptedFriend() {
         return (request.auth != null && exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid))
@@ -66,13 +74,14 @@ service cloud.firestore {
       // Allow read if the user is accessing their own account
       allow read: if (isAccountOwner() || isAcceptedFriend() || isAcceptedGroup() || isPublicGroup() || isPublicUser());
 
-      // General write rule (customize as needed)
-      allow create, write: if isAccountOwner();
+      // General write rule allows owners or group admins/moderators
+      allow create, write: if isAccountOwner() || isGroupAdmin();
     }
 
     // Rules for relatedAccount
     match /accounts/{accountId}/relatedAccounts/{relatedAccountId} {
-      allow create, read, write, delete: if request.auth.uid != null;  // Only authenticated users
+      allow read: if request.auth.uid != null;
+      allow create, write, delete: if isAccountOwner() || isGroupAdmin();
     }
 
     match /accounts/{accountId}/relatedListings/{listingId} {

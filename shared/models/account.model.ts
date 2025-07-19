@@ -240,7 +240,22 @@ export interface RelatedAccount extends BaseDocument {
   tagline?: string; // Tagline or short description
   type?: "user" | "group"; // Type of the related account
   status?: "pending" | "accepted" | "rejected" | "blocked"; // Relationship status
-  relationship?: "admin" | "friend" | "member" | "partner"; // Details about the relationship (e.g., 'friend', 'member')
+  relationship?:
+    | "admin"
+    | "friend"
+    | "member"
+    | "partner"
+    | "family"
+    | "parent"
+    | "child"
+    | "boss"
+    | "employee"
+    | "volunteer"
+    | "sibling"
+    | "parent-org"
+    | "child-org"
+    | "external"; // Details about the relationship (e.g., 'friend', 'member')
+  role?: "admin" | "moderator" | "member"; // Role within a group
   initiatorId?: string; // ID of the account who initiated the request
   targetId?: string; // ID of the account who received the request
   canAccessContactInfo?: boolean; // Whether the related account can access the contact information

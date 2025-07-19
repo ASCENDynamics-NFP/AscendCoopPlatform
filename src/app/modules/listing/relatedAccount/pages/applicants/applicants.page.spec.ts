@@ -117,7 +117,7 @@ describe("ApplicantsPage", () => {
         get: () => mockListingId,
       },
     },
-  } as ActivatedRoute;
+  } as unknown as ActivatedRoute;
 
   beforeEach(async () => {
     modalController = jasmine.createSpyObj("ModalController", ["create"]);

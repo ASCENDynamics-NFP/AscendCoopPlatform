@@ -1,27 +1,32 @@
 /*******************************************************************************
-****************
-* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
-* Copyright (C) 2023  ASCENDynamics NFP
-*
-* This file is part of Nonprofit Social Networking Platform.
-*
-* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Affero General Public License as published
-* by the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Affero General Public License for more details.
-*
-* You should have received a copy of the GNU Affero General Public License
-* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
-********************************************************************************
-***************/
+ ****************
+ * Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+ * Copyright (C) 2023  ASCENDynamics NFP
+ *
+ * This file is part of Nonprofit Social Networking Platform.
+ *
+ * Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+ ********************************************************************************
+ ***************/
 // src/app/modules/listing/relatedAccount/pages/applicants/applicants.page.spec.ts
 
-import {ComponentFixture, TestBed, fakeAsync, tick} from "@angular/core/testing";
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from "@angular/core/testing";
 import {ApplicantsPage} from "./applicants.page";
 import {IonicModule, ModalController} from "@ionic/angular";
 import {RouterTestingModule} from "@angular/router/testing";
@@ -30,12 +35,15 @@ import {provideMockStore, MockStore} from "@ngrx/store/testing";
 import {AppState} from "../../../../../state/app.state";
 import * as ListingsActions from "../../../../../state/actions/listings.actions";
 import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
+
 import {
-  selectListingById,
-  selectRelatedAccountsByListingId,
-  selectLoading,
-  selectError,
-} from "../../../../../state/selectors/listings.selectors";
+  listingsAdapter,
+  ListingsState,
+} from "../../../../../state/reducers/listings.reducer";
+import {
+  accountAdapter,
+  AccountState,
+} from "../../../../../state/reducers/account.reducer";
 import {ActivatedRoute, Router} from "@angular/router";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {Listing} from "@shared/models/listing.model";
@@ -98,18 +106,21 @@ describe("ApplicantsPage", () => {
     settings: {language: "en", theme: "light"},
   };
 
-  const mockAccounts: ListingRelatedAccount[] = Array.from({length: 35}, (_, i) => ({
-    id: `account${i}`,
-    accountId: `account${i}`,
-    listingId: mockListingId,
-    firstName: `First${i}`,
-    lastName: `Last${i}`,
-    name: `User ${i}`,
-    email: `user${i}@example.com`,
-    status: "applied",
-    applicationDate: Timestamp.fromDate(new Date()),
-    iconImage: "",
-  }));
+  const mockAccounts: ListingRelatedAccount[] = Array.from(
+    {length: 35},
+    (_, i) => ({
+      id: `account${i}`,
+      accountId: `account${i}`,
+      listingId: mockListingId,
+      firstName: `First${i}`,
+      lastName: `Last${i}`,
+      name: `User ${i}`,
+      email: `user${i}@example.com`,
+      status: "applied",
+      applicationDate: Timestamp.fromDate(new Date()),
+      iconImage: "",
+    }),
+  );
 
   const routeStub = {
     snapshot: {
@@ -119,16 +130,52 @@ describe("ApplicantsPage", () => {
     },
   } as unknown as ActivatedRoute;
 
+  function createState(ownerId = "ownerUser"): AppState {
+    const listing: Listing = {...mockListing, createdBy: ownerId};
+    const listingsState: ListingsState = listingsAdapter.addOne(
+      listing,
+      listingsAdapter.getInitialState({
+        relatedAccounts: {[mockListingId]: mockAccounts},
+        selectedListingId: null,
+        loading: false,
+        error: null,
+        filterType: "all",
+        searchQuery: "",
+        listingsLastUpdated: null,
+        relatedAccountsLastUpdated: {},
+      }),
+    );
+
+    const accountsState: AccountState = accountAdapter.getInitialState({
+      relatedAccounts: {},
+      relatedListings: {},
+      selectedAccountId: null,
+      loading: false,
+      error: null,
+      accountsLastUpdated: null,
+      relatedAccountsLastUpdated: {},
+      relatedListingsLastUpdated: {},
+    });
+
+    return {
+      listings: listingsState,
+      auth: {user: mockAuthUser, error: null, loading: false},
+      accounts: accountsState,
+    };
+  }
+
   beforeEach(async () => {
     modalController = jasmine.createSpyObj("ModalController", ["create"]);
     router = jasmine.createSpyObj("Router", ["navigate"]);
-    const metaServiceSpy = jasmine.createSpyObj("MetaService", ["updateMetaTags"]);
+    const metaServiceSpy = jasmine.createSpyObj("MetaService", [
+      "updateMetaTags",
+    ]);
 
     await TestBed.configureTestingModule({
       declarations: [ApplicantsPage],
       imports: [IonicModule.forRoot(), RouterTestingModule],
       providers: [
-        provideMockStore(),
+        provideMockStore({initialState: createState()}),
         {provide: ActivatedRoute, useValue: routeStub},
         {provide: ModalController, useValue: modalController},
         {provide: Router, useValue: router},
@@ -138,11 +185,6 @@ describe("ApplicantsPage", () => {
     }).compileComponents();
 
     store = TestBed.inject(Store) as MockStore<AppState>;
-    store.overrideSelector(selectListingById(mockListingId), mockListing);
-    store.overrideSelector(selectRelatedAccountsByListingId(mockListingId), mockAccounts);
-    store.overrideSelector(selectAuthUser, mockAuthUser);
-    store.overrideSelector(selectLoading, false);
-    store.overrideSelector(selectError, null);
 
     fixture = TestBed.createComponent(ApplicantsPage);
     component = fixture.componentInstance;
@@ -196,20 +238,18 @@ describe("ApplicantsPage", () => {
     expect(router.navigate).not.toHaveBeenCalled();
   }));
 
-  it("should navigate to account page if user is not owner", () => {
-    store.overrideSelector(selectListingById(mockListingId), {
-      ...mockListing,
-      createdBy: "anotherUser",
-    });
+  it("should navigate to account page if user is not owner", fakeAsync(() => {
+    store.setState(createState("anotherUser"));
     store.refreshState();
     component.ionViewWillEnter();
 
     const selectedAccount = mockAccounts[0];
     component.openApplicantDetailsModal(selectedAccount);
+    tick();
 
     expect(router.navigate).toHaveBeenCalledWith([
       "/account",
       selectedAccount.id,
     ]);
-  });
+  }));
 });

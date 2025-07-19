@@ -21,6 +21,7 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {ListingFormComponent} from "./listing-form.component";
 import {IonicModule} from "@ionic/angular";
 import {ReactiveFormsModule, FormBuilder} from "@angular/forms";
+import {By} from "@angular/platform-browser";
 import {Store} from "@ngrx/store";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {Timestamp} from "firebase/firestore";
@@ -182,4 +183,59 @@ describe("ListingFormComponent", () => {
     component.removeArrayItem("contactInformation.emails", 0);
     expect(component.getFormArray("contactInformation.emails").length).toBe(0);
   });
+
+  it("should display title validation message when invalid", () => {
+    const titleControl = component.listingForm.get("title");
+    titleControl?.setValue("");
+    titleControl?.markAsTouched();
+    fixture.detectChanges();
+    const notes = fixture.debugElement.queryAll(By.css("ion-note"));
+    const hasError = notes.some((n) =>
+      n.nativeElement.textContent.includes("Title is required."),
+    );
+    expect(hasError).toBeTrue();
+  });
+
+  it("should display description validation message when invalid", () => {
+    const descControl = component.listingForm.get("description");
+    descControl?.setValue("");
+    descControl?.markAsTouched();
+    fixture.detectChanges();
+    const notes = fixture.debugElement.queryAll(By.css("ion-note"));
+    const hasError = notes.some((n) =>
+      n.nativeElement.textContent.includes("Description is required."),
+    );
+    expect(hasError).toBeTrue();
+  });
+
+  it("should display organization validation message when invalid", () => {
+    const orgControl = component.listingForm.get("organization");
+    orgControl?.setValue("");
+    orgControl?.markAsTouched();
+    fixture.detectChanges();
+    const notes = fixture.debugElement.queryAll(By.css("ion-note"));
+    const hasError = notes.some((n) =>
+      n.nativeElement.textContent.includes("Organization is required."),
+    );
+    expect(hasError).toBeTrue();
+  });
+
+  // it("should display contact email validation message when invalid", () => {
+  //   component.addEmail();
+  //   fixture.detectChanges();
+
+  //   const emailGroup = component
+  //     .getFormArray("contactInformation.emails")
+  //     .at(0);
+
+  //   emailGroup.get("email")?.setValue("");
+  //   emailGroup.markAllAsTouched();
+  //   fixture.detectChanges();
+
+  //   const notes = fixture.debugElement.queryAll(By.css("ion-note"));
+  //   const hasError = notes.some((n) =>
+  //     n.nativeElement.textContent.includes("Email is required."),
+  //   );
+  //   expect(hasError).toBeTrue();
+  // });
 });

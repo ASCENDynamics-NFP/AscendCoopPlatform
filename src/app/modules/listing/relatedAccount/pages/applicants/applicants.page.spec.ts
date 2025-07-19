@@ -1,292 +1,258 @@
-/***********************************************************************************************
-* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
-* Copyright (C) 2023  ASCENDynamics NFP
-*
-* This file is part of Nonprofit Social Networking Platform.
-*
-* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Affero General Public License as published
-* by the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
+/*******************************************************************************
+ ****************
+ * Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+ * Copyright (C) 2023  ASCENDynamics NFP
+ *
+ * This file is part of Nonprofit Social Networking Platform.
+ *
+ * Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+ ********************************************************************************
+ ***************/
+// src/app/modules/listing/relatedAccount/pages/applicants/applicants.page.spec.ts
 
-* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Affero General Public License for more details.
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from "@angular/core/testing";
+import {ApplicantsPage} from "./applicants.page";
+import {IonicModule, ModalController} from "@ionic/angular";
+import {RouterTestingModule} from "@angular/router/testing";
+import {Store} from "@ngrx/store";
+import {provideMockStore, MockStore} from "@ngrx/store/testing";
+import {AppState} from "../../../../../state/app.state";
+import * as ListingsActions from "../../../../../state/actions/listings.actions";
+import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
 
-* You should have received a copy of the GNU Affero General Public License
-* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
-***********************************************************************************************/
-// import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
-// import {ApplicantsPage} from "./applicants.page";
-// import {IonicModule, ModalController} from "@ionic/angular";
-// import {RouterTestingModule} from "@angular/router/testing";
-// import {Store} from "@ngrx/store";
-// import {provideMockStore, MockStore} from "@ngrx/store/testing";
-// import {AppState} from "../../../../../state/app.state";
-// import * as ListingsActions from "../../../../../state/actions/listings.actions";
-// import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
-// import {
-//   selectListingById,
-//   selectRelatedAccountsByListingId,
-// } from "../../../../../state/selectors/listings.selectors";
-// import {ActivatedRoute, Router} from "@angular/router";
-// import {AuthUser} from "@shared/models/auth-user.model";
-// import {Listing} from "@shared/models/listing.model";
-// import {ListingRelatedAccount} from "@shared/models/listing-related-account.model";
-// import {of} from "rxjs";
-// import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
-// import {ApplicantDetailsModalComponent} from "./components/applicant-details-modal/applicant-details-modal.component";
-// import {Timestamp} from "firebase/firestore";
+import {
+  listingsAdapter,
+  ListingsState,
+} from "../../../../../state/reducers/listings.reducer";
+import {
+  accountAdapter,
+  AccountState,
+} from "../../../../../state/reducers/account.reducer";
+import {ActivatedRoute, Router} from "@angular/router";
+import {AuthUser} from "@shared/models/auth-user.model";
+import {Listing} from "@shared/models/listing.model";
+import {ListingRelatedAccount} from "@shared/models/listing-related-account.model";
+import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
+import {ApplicantDetailsModalComponent} from "./components/applicant-details-modal/applicant-details-modal.component";
+import {MetaService} from "../../../../../core/services/meta.service";
+import {Timestamp} from "firebase/firestore";
 
-// // Create selectors for loading and error to avoid inline arrows
-// import {createSelector} from "@ngrx/store";
+describe("ApplicantsPage", () => {
+  let component: ApplicantsPage;
+  let fixture: ComponentFixture<ApplicantsPage>;
+  let store: MockStore<AppState>;
+  let router: jasmine.SpyObj<Router>;
+  let modalController: jasmine.SpyObj<ModalController>;
 
-// export const selectListingsState = (state: AppState) => state.listings;
-// export const selectListingsLoading = createSelector(
-//   selectListingsState,
-//   (state) => state.loading,
-// );
-// export const selectListingsError = createSelector(
-//   selectListingsState,
-//   (state) => state.error,
-// );
+  const mockListingId = "listing123";
+  const mockListing: Listing = {
+    id: mockListingId,
+    title: "Test Listing",
+    description: "Test Description",
+    type: "job",
+    organization: "Test Org",
+    remote: false,
+    contactInformation: {
+      emails: [],
+      phoneNumbers: [],
+      addresses: [],
+      preferredMethodOfContact: "Email",
+    },
+    timeCommitment: {
+      hoursPerWeek: 1,
+      duration: "3 months",
+      schedule: "Flexible",
+      startDate: Timestamp.fromDate(new Date()),
+      endDate: Timestamp.fromDate(new Date()),
+      isFlexible: true,
+    },
+    skills: [],
+    requirements: [],
+    responsibilities: [],
+    benefits: [],
+    status: "active",
+    createdBy: "ownerUser",
+  };
 
-// describe("ApplicantsPage", () => {
-//   let component: ApplicantsPage;
-//   let fixture: ComponentFixture<ApplicantsPage>;
-//   let store: MockStore<AppState>;
-//   let router: Router;
-//   let modalController: jasmine.SpyObj<ModalController>;
+  const mockAuthUser: AuthUser = {
+    uid: "ownerUser",
+    email: "owner@example.com",
+    displayName: "Owner User",
+    iconImage: null,
+    emailVerified: true,
+    heroImage: null,
+    tagline: null,
+    type: "user",
+    createdAt: new Date(),
+    lastLoginAt: new Date(),
+    phoneNumber: null,
+    providerData: [],
+    settings: {language: "en", theme: "light"},
+  };
 
-//   const mockListingId = "listing123";
-//   const mockListing: Listing = {
-//     id: mockListingId,
-//     title: "Test Listing",
-//     description: "Test Description",
-//     type: "job",
-//     organization: "Test Org",
-//     remote: false,
-//     contactInformation: {
-//       emails: [{name: "John Doe", email: "john@example.com"}],
-//       phoneNumbers: [],
-//       addresses: [],
-//       preferredMethodOfContact: "Email",
-//     },
-//     timeCommitment: {
-//       hoursPerWeek: 10,
-//       duration: "3 months",
-//       schedule: "Flexible",
-//       startDate: Timestamp.fromDate(new Date()),
-//       endDate: Timestamp.fromDate(new Date()),
-//       isFlexible: true,
-//     },
-//     skills: [],
-//     requirements: [],
-//     responsibilities: [],
-//     benefits: [],
-//     status: "active",
-//     createdBy: "user-123",
-//   };
+  const mockAccounts: ListingRelatedAccount[] = Array.from(
+    {length: 35},
+    (_, i) => ({
+      id: `account${i}`,
+      accountId: `account${i}`,
+      listingId: mockListingId,
+      firstName: `First${i}`,
+      lastName: `Last${i}`,
+      name: `User ${i}`,
+      email: `user${i}@example.com`,
+      status: "applied",
+      applicationDate: Timestamp.fromDate(new Date()),
+      iconImage: "",
+    }),
+  );
 
-//   const mockAuthUser: AuthUser = {
-//     uid: "user-123",
-//     email: "user@example.com",
-//     displayName: "Owner User",
-//     iconImage: null,
-//     emailVerified: true,
-//     heroImage: null,
-//     tagline: null,
-//     type: "user",
-//     createdAt: new Date(),
-//     lastLoginAt: new Date(),
-//     phoneNumber: null,
-//     providerData: [],
-//     settings: {language: "en", theme: "light"},
-//   };
+  const routeStub = {
+    snapshot: {
+      paramMap: {
+        get: () => mockListingId,
+      },
+    },
+  } as unknown as ActivatedRoute;
 
-//   // Include required fields for ListingRelatedAccount
-//   const mockAccounts: ListingRelatedAccount[] = Array.from(
-//     {length: 35},
-//     (_, i) => ({
-//       id: `account${i}`,
-//       listingId: mockListingId,
-//       firstName: `FirstName${i}`,
-//       lastName: `LastName${i}`,
-//       email: `user${i}@example.com`,
-//       phone: "1234567890",
-//       notes: "",
-//       resumeFile: null,
-//       coverLetterFile: null,
-//       accountId: `user-${i}`,
-//       name: `User ${i}`,
-//       iconImage: "",
-//       heroImage: "",
-//       type: "application",
-//       status: "applied",
-//       applicationDate: Timestamp.fromDate(new Date()), // Added required field
-//     }),
-//   );
+  function createState(ownerId = "ownerUser"): AppState {
+    const listing: Listing = {...mockListing, createdBy: ownerId};
+    const listingsState: ListingsState = listingsAdapter.addOne(
+      listing,
+      listingsAdapter.getInitialState({
+        relatedAccounts: {[mockListingId]: mockAccounts},
+        selectedListingId: null,
+        loading: false,
+        error: null,
+        filterType: "all",
+        searchQuery: "",
+        listingsLastUpdated: null,
+        relatedAccountsLastUpdated: {},
+      }),
+    );
 
-//   const routeStub = {
-//     snapshot: {
-//       paramMap: {
-//         get: () => mockListingId,
-//       },
-//     },
-//   };
+    const accountsState: AccountState = accountAdapter.getInitialState({
+      relatedAccounts: {},
+      relatedListings: {},
+      selectedAccountId: null,
+      loading: false,
+      error: null,
+      accountsLastUpdated: null,
+      relatedAccountsLastUpdated: {},
+      relatedListingsLastUpdated: {},
+    });
 
-//   const initialListingsState = {
-//     entities: {[mockListingId]: mockListing}, // Add the mock listing here
-//     relatedAccounts: {[mockListingId]: mockAccounts}, // Add your mock accounts here
-//     selectedListingId: null,
-//     loading: false,
-//     error: null,
-//     filterType: "all",
-//     searchQuery: "",
-//     listingsLastUpdated: null,
-//     relatedAccountsLastUpdated: {},
-//   };
+    return {
+      listings: listingsState,
+      auth: {user: mockAuthUser, error: null, loading: false},
+      accounts: accountsState,
+    };
+  }
 
-//   const initialState: Partial<AppState> = {
-//     listings: initialListingsState,
-//     // ... If you have other state slices, include them here
-//   } as Partial<AppState>;
+  beforeEach(async () => {
+    modalController = jasmine.createSpyObj("ModalController", ["create"]);
+    router = jasmine.createSpyObj("Router", ["navigate"]);
+    const metaServiceSpy = jasmine.createSpyObj("MetaService", [
+      "updateMetaTags",
+    ]);
 
-//   beforeEach(waitForAsync(() => {
-//     const modalControllerSpy = jasmine.createSpyObj("ModalController", [
-//       "create",
-//     ]);
-//     const routerStub = {
-//       navigate: jasmine.createSpy("navigate"),
-//     };
+    await TestBed.configureTestingModule({
+      declarations: [ApplicantsPage],
+      imports: [IonicModule.forRoot(), RouterTestingModule],
+      providers: [
+        provideMockStore({initialState: createState()}),
+        {provide: ActivatedRoute, useValue: routeStub},
+        {provide: ModalController, useValue: modalController},
+        {provide: Router, useValue: router},
+        {provide: MetaService, useValue: metaServiceSpy},
+      ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
+    }).compileComponents();
 
-//     TestBed.configureTestingModule({
-//       declarations: [ApplicantsPage],
-//       imports: [IonicModule.forRoot(), RouterTestingModule],
-//       providers: [
-//         provideMockStore({initialState}), // Pass your initialState here
-//         {provide: ActivatedRoute, useValue: routeStub},
-//         {provide: ModalController, useValue: modalControllerSpy},
-//         {provide: Router, useValue: routerStub},
-//       ],
-//       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-//     }).compileComponents();
+    store = TestBed.inject(Store) as MockStore<AppState>;
 
-//     store = TestBed.inject(Store) as MockStore<AppState>;
-//     modalController = TestBed.inject(
-//       ModalController,
-//     ) as jasmine.SpyObj<ModalController>;
-//     router = TestBed.inject(Router);
+    fixture = TestBed.createComponent(ApplicantsPage);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-//     // Mock selectors
-//     store.overrideSelector(selectListingById(mockListingId), mockListing);
-//     store.overrideSelector(selectAuthUser, mockAuthUser);
-//     store.overrideSelector(
-//       selectRelatedAccountsByListingId(mockListingId),
-//       mockAccounts,
-//     );
+  it("should create the component", () => {
+    expect(component).toBeTruthy();
+  });
 
-//     // Mock loading & error using defined selectors (not inline functions)
-//     store.overrideSelector(selectListingsLoading, false);
-//     store.overrideSelector(selectListingsError, null);
+  it("should dispatch loadListingRelatedAccounts on ionViewWillEnter", () => {
+    spyOn(store, "dispatch");
+    component.ionViewWillEnter();
+    expect(store.dispatch).toHaveBeenCalledWith(
+      ListingsActions.loadListingRelatedAccounts({listingId: mockListingId}),
+    );
+  });
 
-//     fixture = TestBed.createComponent(ApplicantsPage);
-//     component = fixture.componentInstance;
-//     fixture.detectChanges();
-//   }));
+  it("should calculate pages and paginate accounts", fakeAsync(() => {
+    component.ionViewWillEnter();
+    tick();
+    let pages: number | undefined;
+    component.totalPages$.subscribe((p) => (pages = p));
+    tick();
+    expect(pages).toBe(2);
 
-//   it("should create the component", () => {
-//     expect(component).toBeTruthy();
-//   });
+    let firstPage: ListingRelatedAccount[] | undefined;
+    component.paginatedAccounts$.subscribe((a) => (firstPage = a));
+    tick();
+    expect(firstPage?.length).toBe(20);
 
-// it("should dispatch loadListingRelatedAccounts on init", () => {
-//   spyOn(store, "dispatch");
-//   component.ngOnInit();
-//   expect(store.dispatch).toHaveBeenCalledWith(
-//     ListingsActions.loadListingRelatedAccounts({listingId: mockListingId}),
-//   );
-// });
+    component.nextPage();
+    let secondPage: ListingRelatedAccount[] | undefined;
+    component.paginatedAccounts$.subscribe((a) => (secondPage = a));
+    tick();
+    expect(secondPage?.length).toBe(15);
+  }));
 
-// it("should calculate total items and pages correctly", (done) => {
-//   component.totalItems$.subscribe((total) => {
-//     expect(total).toBe(35);
-//   });
+  // it("should open applicant details modal if user is owner", fakeAsync(() => {
+  //   component.ionViewWillEnter();
+  //   tick();
+  //   const selectedAccount = mockAccounts[0];
+  //   const modalSpy = jasmine.createSpyObj("HTMLIonModalElement", ["present"]);
+  //   modalController.create.and.returnValue(Promise.resolve(modalSpy));
 
-//   component.totalPages$.subscribe((pages) => {
-//     // With 35 items and pageSize=20, we get 2 pages total
-//     expect(pages).toBe(2);
-//     done();
-//   });
-// });
+  //   component.openApplicantDetailsModal(selectedAccount);
+  //   tick();
 
-// it("should paginate accounts correctly (first page)", (done) => {
-//   component.paginatedAccounts$.subscribe((accounts) => {
-//     expect(accounts.length).toBe(20); // First page: 20 items
-//     done();
-//   });
-// });
+  //   expect(modalController.create).toHaveBeenCalledWith({
+  //     component: ApplicantDetailsModalComponent,
+  //     componentProps: {relatedAccount: selectedAccount, isOwner: true},
+  //   });
+  //   expect(router.navigate).not.toHaveBeenCalled();
+  // }));
 
-// it("should go to next page and show remaining items (second page)", (done) => {
-//   component.nextPage();
-//   component.paginatedAccounts$.subscribe((accounts) => {
-//     // On second page, 35 total - 20 = 15 items left
-//     if (component["currentPageSubject"].value === 2) {
-//       expect(accounts.length).toBe(15);
-//       done();
-//     }
-//   });
-// });
+  it("should navigate to account page if user is not owner", fakeAsync(() => {
+    store.setState(createState("anotherUser"));
+    store.refreshState();
+    component.ionViewWillEnter();
+    tick();
 
-// it("should open applicant details modal if user is owner", waitForAsync(() => {
-//   const selectedAccount = mockAccounts[0];
-//   const modalSpy = jasmine.createSpyObj("HTMLIonModalElement", ["present"]);
-//   modalController.create.and.returnValue(Promise.resolve(modalSpy));
+    const selectedAccount = mockAccounts[0];
+    component.openApplicantDetailsModal(selectedAccount);
+    tick();
 
-//   component.openApplicantDetailsModal(selectedAccount);
-//   // Wait for ownership check
-//   fixture.whenStable().then(() => {
-//     expect(modalController.create).toHaveBeenCalledWith({
-//       component: ApplicantDetailsModalComponent,
-//       componentProps: {relatedAccount: selectedAccount},
-//     });
-//   });
-// }));
-
-// it("should navigate to account page if user is not owner", (done) => {
-//   // Override auth user to simulate non-owner
-//   store.overrideSelector(selectAuthUser, {
-//     ...mockAuthUser,
-//     uid: "some-other-user",
-//   });
-//   store.refreshState();
-//   fixture.detectChanges();
-
-//   const selectedAccount = mockAccounts[0];
-//   component.openApplicantDetailsModal(selectedAccount);
-
-//   component.isOwner$.subscribe((isOwner) => {
-//     if (!isOwner) {
-//       expect(router.navigate).toHaveBeenCalledWith([
-//         "/account",
-//         selectedAccount.accountId,
-//       ]);
-//       done();
-//     }
-//   });
-// });
-
-// it("should update currentPage when goToPage is called", () => {
-//   component.goToPage(2);
-//   expect(component["currentPageSubject"].value).toBe(2);
-// });
-
-// it("should update currentPage when nextPage and previousPage are called", () => {
-//   component.goToPage(1);
-//   component.nextPage();
-//   expect(component["currentPageSubject"].value).toBe(2);
-
-//   component.previousPage();
-//   expect(component["currentPageSubject"].value).toBe(1);
-// });
-// });
+    expect(router.navigate).toHaveBeenCalledWith([
+      "/account",
+      selectedAccount.id,
+    ]);
+  }));
+});

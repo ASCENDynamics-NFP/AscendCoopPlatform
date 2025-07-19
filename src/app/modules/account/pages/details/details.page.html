@@ -107,7 +107,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 </ng-container>
 
 <ng-template #loadingOrPrivate>
-  <p *ngIf="error$ | async; else loading">This profile is private.</p>
+  <ng-container *ngIf="(error$ | async) as error; else loading">
+    <p *ngIf="error !== 'Account not found'">This profile is private.</p>
+  </ng-container>
   <ng-template #loading>
     <p>Loading account details...</p>
   </ng-template>

@@ -22,6 +22,7 @@
 import {Component, OnInit, ViewChild} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, Subscription, combineLatest} from "rxjs";
+import {Location} from "@angular/common";
 import {filter, map, take, tap} from "rxjs/operators";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {Store} from "@ngrx/store";
@@ -49,6 +50,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
   authUser$!: Observable<AuthUser | null>;
   account$!: Observable<Account | undefined>;
   private subscription: Subscription | null = null;
+  private errorSubscription: Subscription | null = null;
   relatedAccounts$!: Observable<RelatedAccount[]>;
   relatedListings$!: Observable<RelatedListing[]>;
   isProfileOwner$!: Observable<boolean>;
@@ -58,6 +60,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
     private metaService: MetaService,
     private route: ActivatedRoute,
     private router: Router,
+    private location: Location,
     private store: Store,
   ) {}
 
@@ -112,6 +115,14 @@ export class DetailsPage implements OnInit, ViewWillEnter {
 
         this.error$ = this.store.select(selectAccountError);
 
+        // Redirect back if the account does not exist
+        if (this.errorSubscription) {
+          this.errorSubscription.unsubscribe();
+        }
+        this.errorSubscription = this.error$
+          .pipe(filter((err) => err === "Account not found"))
+          .subscribe(() => this.location.back());
+
         // Determine if the current user is the profile owner
         this.isProfileOwner$ = combineLatest([
           this.authUser$,
@@ -143,6 +154,10 @@ export class DetailsPage implements OnInit, ViewWillEnter {
     if (this.subscription) {
       this.subscription.unsubscribe(); // Unsubscribe to prevent memory leaks
       this.subscription = null;
+    }
+    if (this.errorSubscription) {
+      this.errorSubscription.unsubscribe();
+      this.errorSubscription = null;
     }
   }
 

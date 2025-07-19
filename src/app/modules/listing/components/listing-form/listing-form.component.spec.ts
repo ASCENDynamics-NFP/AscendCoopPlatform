@@ -220,22 +220,22 @@ describe("ListingFormComponent", () => {
     expect(hasError).toBeTrue();
   });
 
-  // it("should display contact email validation message when invalid", () => {
-  //   component.addEmail();
-  //   fixture.detectChanges();
+  it("should display contact email validation message when invalid", () => {
+    component.addEmail();
+    fixture.detectChanges();
 
-  //   const emailGroup = component
-  //     .getFormArray("contactInformation.emails")
-  //     .at(0);
+    const emailGroup = component
+      .getFormArray("contactInformation.emails")
+      .at(0);
 
-  //   emailGroup.get("email")?.setValue("");
-  //   emailGroup.markAllAsTouched();
-  //   fixture.detectChanges();
+    emailGroup.get("email")?.setValue("");
+    emailGroup.markAllAsTouched();
+    fixture.detectChanges();
 
-  //   const notes = fixture.debugElement.queryAll(By.css("ion-note"));
-  //   const hasError = notes.some((n) =>
-  //     n.nativeElement.textContent.includes("Email is required."),
-  //   );
-  //   expect(hasError).toBeTrue();
-  // });
+    const notes = fixture.debugElement.queryAll(By.css("ion-note"));
+    const hasError = notes.some((n) =>
+      n.nativeElement.textContent.includes("Email is required."),
+    );
+    expect(hasError).toBeTrue();
+  });
 });

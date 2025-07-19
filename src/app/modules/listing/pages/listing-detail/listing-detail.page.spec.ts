@@ -207,17 +207,17 @@ describe("ListingDetailPage", () => {
     expect(spinner).toBeTruthy();
   });
 
-  // it("should display listing details", (done) => {
-  //   component.listing$.subscribe((listing) => {
-  //     expect(listing).toEqual(mockListing);
-  //     done();
-  //   });
-  // });
+  it("should display listing details", (done) => {
+    component.listing$.subscribe((listing) => {
+      expect(listing).toEqual(mockListing);
+      done();
+    });
+  });
 
-  // it("should determine if user is owner", (done) => {
-  //   component.isOwner$.subscribe((isOwner) => {
-  //     expect(isOwner).toBeTrue();
-  //     done();
-  //   });
-  // });
+  it("should determine if user is owner", (done) => {
+    component.isOwner$.subscribe((isOwner) => {
+      expect(isOwner).toBeTrue();
+      done();
+    });
+  });
 });

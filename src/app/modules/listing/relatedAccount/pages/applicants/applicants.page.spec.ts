@@ -223,22 +223,22 @@ describe("ApplicantsPage", () => {
     expect(secondPage?.length).toBe(15);
   }));
 
-  // it("should open applicant details modal if user is owner", fakeAsync(() => {
-  //   component.ionViewWillEnter();
-  //   tick();
-  //   const selectedAccount = mockAccounts[0];
-  //   const modalSpy = jasmine.createSpyObj("HTMLIonModalElement", ["present"]);
-  //   modalController.create.and.returnValue(Promise.resolve(modalSpy));
+  it("should open applicant details modal if user is owner", fakeAsync(() => {
+    component.ionViewWillEnter();
+    tick();
+    const selectedAccount = mockAccounts[0];
+    const modalSpy = jasmine.createSpyObj("HTMLIonModalElement", ["present"]);
+    modalController.create.and.returnValue(Promise.resolve(modalSpy));
 
-  //   component.openApplicantDetailsModal(selectedAccount);
-  //   tick();
+    component.openApplicantDetailsModal(selectedAccount);
+    tick();
 
-  //   expect(modalController.create).toHaveBeenCalledWith({
-  //     component: ApplicantDetailsModalComponent,
-  //     componentProps: {relatedAccount: selectedAccount, isOwner: true},
-  //   });
-  //   expect(router.navigate).not.toHaveBeenCalled();
-  // }));
+    expect(modalController.create).toHaveBeenCalledWith({
+      component: ApplicantDetailsModalComponent,
+      componentProps: {relatedAccount: selectedAccount, isOwner: true},
+    });
+    expect(router.navigate).not.toHaveBeenCalled();
+  }));
 
   it("should navigate to account page if user is not owner", fakeAsync(() => {
     store.setState(createState("anotherUser"));

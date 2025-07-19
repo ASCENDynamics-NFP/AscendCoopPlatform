@@ -35,7 +35,6 @@
 // import {By} from "@angular/platform-browser";
 // import * as AuthActions from "../../../state/actions/auth.actions";
 // import {FeedbackModalComponent} from "../feedback-modal/feedback-modal.component";
-// import {CreateGroupModalComponent} from "../../../modules/account/components/create-group-modal/create-group-modal.component";
 // import {TranslateModule, TranslateService} from "@ngx-translate/core";
 // import {AuthUser} from "@shared/models/auth-user.model";
 // import {of} from "rxjs";
@@ -61,7 +60,6 @@
 //       declarations: [
 //         MenuComponent,
 //         FeedbackModalComponent,
-//         CreateGroupModalComponent,
 //       ],
 //       imports: [
 //         ReactiveFormsModule,
@@ -184,7 +182,6 @@
 //     fixture.detectChanges();
 
 //     const createGroupMenuItem = component.menuPages.find(
-//       (p) => p.buttonLink === "create-group",
 //     );
 //     expect(createGroupMenuItem).toBeDefined();
 
@@ -201,11 +198,9 @@
 //       Promise.resolve(mockModal),
 //     );
 
-//     await component.handleButtonClick("create-group");
 //     tick();
 
 //     expect(modalController.create).toHaveBeenCalledWith({
-//       component: CreateGroupModalComponent,
 //     });
 //     expect(mockModal.present).toHaveBeenCalled();
 //     expect(router.navigate).toHaveBeenCalledWith(["/group123"]);

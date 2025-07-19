@@ -28,7 +28,6 @@ import {Subscription, combineLatest} from "rxjs";
 import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../../state/selectors/auth.selectors";
 import {FeedbackModalComponent} from "../feedback-modal/feedback-modal.component";
-import {CreateGroupModalComponent} from "../../../modules/account/components/create-group-modal/create-group-modal.component";
 
 import {MenuItem} from "../../../shared/interfaces/menu-item.interface";
 
@@ -160,8 +159,6 @@ export class MenuComponent implements OnInit, OnDestroy {
         url: "/account/group-list",
         icon: "business",
         // hasButton: true,
-        // buttonLink: "create-group",
-        // buttonText: this.translate.instant("menu.createGroup"),
         // buttonIcon: "add",
       },
       {
@@ -180,23 +177,6 @@ export class MenuComponent implements OnInit, OnDestroy {
       //   icon: "newspaper",
       // },
     ];
-  }
-
-  // Handle button clicks in menu items
-  async handleButtonClick(buttonLink: string) {
-    if (!buttonLink) return;
-
-    if (buttonLink === "create-group") {
-      const modal = await this.modalCtrl.create({
-        component: CreateGroupModalComponent,
-      });
-      await modal.present();
-
-      const {data, role} = await modal.onWillDismiss();
-      if (role === "confirm" && data) {
-        this.router.navigate([`/${data.groupId}`]);
-      }
-    }
   }
 
   // Show feedback modal

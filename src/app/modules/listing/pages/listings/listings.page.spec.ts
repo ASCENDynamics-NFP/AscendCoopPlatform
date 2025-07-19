@@ -19,7 +19,12 @@
 ***********************************************************************************************/
 // src/app/modules/listing/pages/listings/listings.page.spec.ts
 
-import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from "@angular/core/testing";
 import {ListingsPage} from "./listings.page";
 import {IonicModule, NavController} from "@ionic/angular";
 import {Store} from "@ngrx/store";
@@ -148,12 +153,32 @@ describe("ListingsPage", () => {
     );
   });
 
-  it("should search listings", () => {
+  it("should search listings after debounce", fakeAsync(() => {
     spyOn(store, "dispatch");
     const event = {detail: {value: "test"}};
     component.searchListings(event);
+    tick(300);
     expect(store.dispatch).toHaveBeenCalledWith(
       ListingsActions.searchListings({query: "test"}),
     );
-  });
+  }));
+
+  it("should debounce rapid search inputs", fakeAsync(() => {
+    spyOn(store, "dispatch");
+
+    component.searchListings({detail: {value: "t"}});
+    tick(100);
+    component.searchListings({detail: {value: "te"}});
+    tick(100);
+    component.searchListings({detail: {value: "tes"}});
+    tick(100);
+    component.searchListings({detail: {value: "test"}});
+
+    tick(300);
+
+    expect(store.dispatch).toHaveBeenCalledTimes(1);
+    expect(store.dispatch).toHaveBeenCalledWith(
+      ListingsActions.searchListings({query: "test"}),
+    );
+  }));
 });

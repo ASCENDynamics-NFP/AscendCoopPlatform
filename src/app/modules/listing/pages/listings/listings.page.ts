@@ -19,9 +19,16 @@
 ***********************************************************************************************/
 // src/app/modules/listing/pages/listings/listings.page.ts
 
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, OnDestroy} from "@angular/core";
 import {Store} from "@ngrx/store";
-import {Observable, BehaviorSubject, combineLatest, map} from "rxjs";
+import {
+  Observable,
+  BehaviorSubject,
+  combineLatest,
+  map,
+  Subject,
+  Subscription,
+} from "rxjs";
 import {NavController} from "@ionic/angular";
 import {Listing} from "@shared/models/listing.model";
 import * as ListingsActions from "../../../../state/actions/listings.actions";
@@ -34,19 +41,23 @@ import {
 import {AuthUser} from "@shared/models/auth-user.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {MetaService} from "../../../../core/services/meta.service";
+import {debounceTime, distinctUntilChanged} from "rxjs/operators";
 
 @Component({
   selector: "app-listings",
   templateUrl: "./listings.page.html",
   styleUrls: ["./listings.page.scss"],
 })
-export class ListingsPage implements OnInit {
+export class ListingsPage implements OnInit, OnDestroy {
   listings$: Observable<Listing[]>;
   paginatedListings$: Observable<Listing[]>;
   loading$: Observable<boolean>;
   error$: Observable<string | null>;
   authUser$: Observable<AuthUser | null>;
   listingTypes = ["all", "volunteer", "job", "internship", "gig"];
+
+  private searchSubject = new Subject<string>();
+  private searchSub?: Subscription;
 
   // Pagination State
   pageSize = 10;
@@ -111,6 +122,11 @@ export class ListingsPage implements OnInit {
 
   ngOnInit() {
     this.loadListings();
+    this.searchSub = this.searchSubject
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe((query) => {
+        this.store.dispatch(ListingsActions.searchListings({query}));
+      });
   }
 
   loadListings() {
@@ -132,7 +148,7 @@ export class ListingsPage implements OnInit {
 
   searchListings(event: any) {
     const query = event.detail.value;
-    this.store.dispatch(ListingsActions.searchListings({query}));
+    this.searchSubject.next(query);
   }
 
   doRefresh(event: any) {
@@ -168,5 +184,9 @@ export class ListingsPage implements OnInit {
 
   goToPage(pageNumber: number) {
     this.currentPageSubject.next(pageNumber);
+  }
+
+  ngOnDestroy() {
+    this.searchSub?.unsubscribe();
   }
 }

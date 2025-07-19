@@ -35,7 +35,7 @@ import {
 } from "../../../../state/selectors/account.selectors";
 import {selectAccountError} from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
-import {IonContent, ViewWillEnter} from "@ionic/angular";
+import {IonContent, ViewWillEnter, ToastController} from "@ionic/angular";
 import {RelatedListing} from "@shared/models/related-listing.model";
 import {MetaService} from "../../../../core/services/meta.service";
 
@@ -61,6 +61,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
     private route: ActivatedRoute,
     private router: Router,
     private location: Location,
+    private toastController: ToastController,
     private store: Store,
   ) {}
 
@@ -115,13 +116,18 @@ export class DetailsPage implements OnInit, ViewWillEnter {
 
         this.error$ = this.store.select(selectAccountError);
 
-        // Redirect back if the account does not exist
+        // Handle account load errors
         if (this.errorSubscription) {
           this.errorSubscription.unsubscribe();
         }
-        this.errorSubscription = this.error$
-          .pipe(filter((err) => err === "Account not found"))
-          .subscribe(() => this.location.back());
+        this.errorSubscription = this.error$.subscribe((err) => {
+          if (err === "Account not found") {
+            this.presentToast("Account not found");
+            this.location.back();
+          } else if (err) {
+            this.presentToast("This profile is private.");
+          }
+        });
 
         // Determine if the current user is the profile owner
         this.isProfileOwner$ = combineLatest([
@@ -166,6 +172,15 @@ export class DetailsPage implements OnInit, ViewWillEnter {
     if (yOffset !== undefined) {
       this.content.scrollToPoint(0, yOffset, 500);
     }
+  }
+
+  private async presentToast(message: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2000,
+      position: "top",
+    });
+    await toast.present();
   }
 
   private updateAccountMeta(account: Account) {

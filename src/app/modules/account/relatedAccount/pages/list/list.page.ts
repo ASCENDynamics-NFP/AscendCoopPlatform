@@ -53,6 +53,25 @@ export class ListPage implements OnInit {
   pendingRelatedAccountsList$!: Observable<Partial<RelatedAccount>[]>;
   isOwner$!: Observable<boolean>;
   title$!: Observable<string>;
+  isGroupAdmin$!: Observable<boolean>;
+  showEditControls$!: Observable<boolean>;
+  roleOptions = ["admin", "moderator", "member"] as const;
+  relationshipOptions = [
+    "admin",
+    "friend",
+    "member",
+    "partner",
+    "family",
+    "parent",
+    "child",
+    "boss",
+    "employee",
+    "volunteer",
+    "sibling",
+    "parent-org",
+    "child-org",
+    "external",
+  ] as const;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -120,6 +139,30 @@ export class ListPage implements OnInit {
           relatedAccounts.filter(
             (ra) => ra.type === this.listType && ra.status === "pending",
           ),
+        ),
+      );
+
+      this.isGroupAdmin$ = combineLatest([
+        this.currentUser$,
+        this.relatedAccounts$,
+      ]).pipe(
+        map(([currentUser, relatedAccounts]) => {
+          if (!currentUser) return false;
+          const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
+          return (
+            rel?.status === "accepted" &&
+            (rel.role === "admin" || rel.role === "moderator")
+          );
+        }),
+      );
+
+      this.showEditControls$ = combineLatest([
+        this.account$,
+        this.currentUser$,
+        this.isGroupAdmin$,
+      ]).pipe(
+        map(([account, user, isAdmin]) =>
+          !!account && account.type === "group" && (!!user && (isAdmin || user.uid === account.id)),
         ),
       );
     }
@@ -222,6 +265,42 @@ export class ListPage implements OnInit {
         relatedAccountId: request.id,
       }),
     );
+  }
+
+  updateRole(request: Partial<RelatedAccount>, role: string) {
+    this.currentUser$.pipe(take(1)).subscribe((authUser) => {
+      if (!authUser?.uid || !request.id || !this.accountId) return;
+      const updated: RelatedAccount = {
+        id: request.id,
+        accountId: this.accountId,
+        role: role as "admin" | "moderator" | "member",
+        lastModifiedBy: authUser.uid,
+      };
+      this.store.dispatch(
+        AccountActions.updateRelatedAccount({
+          accountId: this.accountId!,
+          relatedAccount: updated,
+        }),
+      );
+    });
+  }
+
+  updateRelationship(request: Partial<RelatedAccount>, relationship: string) {
+    this.currentUser$.pipe(take(1)).subscribe((authUser) => {
+      if (!authUser?.uid || !request.id || !this.accountId) return;
+      const updated: RelatedAccount = {
+        id: request.id,
+        accountId: this.accountId,
+        relationship: relationship as any,
+        lastModifiedBy: authUser.uid,
+      };
+      this.store.dispatch(
+        AccountActions.updateRelatedAccount({
+          accountId: this.accountId!,
+          relatedAccount: updated,
+        }),
+      );
+    });
   }
 
   /**

@@ -32,6 +32,7 @@ import {
   selectAccountById,
   selectRelatedListingsByAccountId,
 } from "../../../../state/selectors/account.selectors";
+import {selectAccountError} from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {IonContent, ViewWillEnter} from "@ionic/angular";
 import {RelatedListing} from "@shared/models/related-listing.model";
@@ -51,6 +52,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
   relatedAccounts$!: Observable<RelatedAccount[]>;
   relatedListings$!: Observable<RelatedListing[]>;
   isProfileOwner$!: Observable<boolean>;
+  error$!: Observable<any>;
 
   constructor(
     private metaService: MetaService,
@@ -107,6 +109,8 @@ export class DetailsPage implements OnInit, ViewWillEnter {
               listings.filter((listing) => listing.status === "active"),
             ),
           );
+
+        this.error$ = this.store.select(selectAccountError);
 
         // Determine if the current user is the profile owner
         this.isProfileOwner$ = combineLatest([

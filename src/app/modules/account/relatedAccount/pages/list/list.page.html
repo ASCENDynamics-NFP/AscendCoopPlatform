@@ -64,7 +64,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 </ion-label>
                 <ng-container *ngIf="showEditControls$ | async">
                   <ion-select
-                    [value]="relatedAccount.roleId"
+                    [value]="relatedAccount.roleId || relatedAccount.access"
                     interface="popover"
                     placeholder="Role"
                     (click)="$event.stopPropagation()"
@@ -72,7 +72,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                     style="max-width: 110px; margin-right: 8px"
                   >
                     <ion-select-option
-                      *ngFor="let role of roleOptions"
+                      *ngFor="let role of accessOptions"
                       [value]="role"
                     >
                       {{ role }}
@@ -152,7 +152,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   </ion-label>
                   <ng-container *ngIf="showEditControls$ | async">
                     <ion-select
-                      [value]="relatedAccount.roleId"
+                      [value]="relatedAccount.roleId || relatedAccount.access"
                       interface="popover"
                       placeholder="Role"
                       (click)="$event.stopPropagation()"
@@ -160,7 +160,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                       style="max-width: 110px; margin-right: 8px"
                     >
                       <ion-select-option
-                        *ngFor="let role of roleOptions"
+                        *ngFor="let role of accessOptions"
                         [value]="role"
                         >{{ role }}</ion-select-option
                       >

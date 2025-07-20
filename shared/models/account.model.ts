@@ -260,7 +260,14 @@ export interface RelatedAccount extends BaseDocument {
     | "parent-org"
     | "child-org"
     | "external"; // Details about the relationship (e.g., 'friend', 'member')
-  role?: "admin" | "moderator" | "member"; // Role within a group
+  /**
+   * Built-in access level within a group
+   */
+  access?: "admin" | "moderator" | "member";
+  /**
+   * Optional custom role name
+   */
+  role?: string;
   /**
    * Reference to a custom group role defined in the parent group
    */

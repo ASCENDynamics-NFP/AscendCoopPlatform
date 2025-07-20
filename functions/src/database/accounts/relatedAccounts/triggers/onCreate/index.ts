@@ -98,8 +98,8 @@ export const onCreateRelatedAccount = onDocumentCreated(
         targetData?.type,
       );
 
-      const role =
-        requestData?.role ??
+      const access =
+        requestData?.access ??
         (relationship === "member" || relationship === "partner"
           ? "member"
           : undefined);
@@ -118,7 +118,7 @@ export const onCreateRelatedAccount = onDocumentCreated(
           type: initiatorData?.type,
           status: "pending",
           relationship,
-          role,
+          access,
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
           createdBy: accountId,
           lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),

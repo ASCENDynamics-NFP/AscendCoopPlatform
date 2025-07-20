@@ -57,7 +57,7 @@ export class ListPage implements OnInit {
   title$!: Observable<string>;
   isGroupAdmin$!: Observable<boolean>;
   showEditControls$!: Observable<boolean>;
-  roleOptions = ["admin", "moderator", "member"] as const;
+  accessOptions = ["admin", "moderator", "member"] as const;
   customRoles$!: Observable<GroupRole[]>;
   relationshipOptions = [
     "admin",
@@ -155,7 +155,7 @@ export class ListPage implements OnInit {
           const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
           return (
             rel?.status === "accepted" &&
-            (rel.role === "admin" || rel.role === "moderator")
+            (rel.access === "admin" || rel.access === "moderator")
           );
         }),
       );
@@ -282,16 +282,16 @@ export class ListPage implements OnInit {
     );
   }
 
-  updateRole(request: Partial<RelatedAccount>, roleId: string) {
+  updateRole(request: Partial<RelatedAccount>, roleValue: string) {
     this.currentUser$.pipe(take(1)).subscribe((authUser) => {
       if (!authUser?.uid || !request.id || !this.accountId) return;
+      const isAccess = this.accessOptions.includes(roleValue as any);
       const updated: RelatedAccount = {
         ...(request as RelatedAccount),
         accountId: this.accountId,
-        roleId,
-        role: this.roleOptions.includes(roleId as any)
-          ? (roleId as any)
-          : request.role,
+        roleId: isAccess ? undefined : roleValue,
+        access: isAccess ? (roleValue as any) : request.access,
+        role: request.role,
         lastModifiedBy: authUser.uid,
       };
       this.store.dispatch(

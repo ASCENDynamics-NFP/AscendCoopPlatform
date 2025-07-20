@@ -282,16 +282,31 @@ export class ListPage implements OnInit {
     );
   }
 
-  updateRole(request: Partial<RelatedAccount>, roleValue: string) {
+  updateAccess(request: Partial<RelatedAccount>, access: "admin" | "moderator" | "member") {
     this.currentUser$.pipe(take(1)).subscribe((authUser) => {
       if (!authUser?.uid || !request.id || !this.accountId) return;
-      const isAccess = this.accessOptions.includes(roleValue as any);
       const updated: RelatedAccount = {
         ...(request as RelatedAccount),
         accountId: this.accountId,
-        roleId: isAccess ? undefined : roleValue,
-        access: isAccess ? (roleValue as any) : request.access,
-        role: request.role,
+        access: access,
+        lastModifiedBy: authUser.uid,
+      };
+      this.store.dispatch(
+        AccountActions.updateRelatedAccount({
+          accountId: this.accountId!,
+          relatedAccount: updated,
+        }),
+      );
+    });
+  }
+
+  updateRole(request: Partial<RelatedAccount>, roleId: string) {
+    this.currentUser$.pipe(take(1)).subscribe((authUser) => {
+      if (!authUser?.uid || !request.id || !this.accountId) return;
+      const updated: RelatedAccount = {
+        ...(request as RelatedAccount),
+        accountId: this.accountId,
+        roleId,
         lastModifiedBy: authUser.uid,
       };
       this.store.dispatch(

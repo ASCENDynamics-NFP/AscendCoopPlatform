@@ -56,6 +56,7 @@ export class ListPage implements OnInit {
   isOwner$!: Observable<boolean>;
   title$!: Observable<string>;
   isGroupAdmin$!: Observable<boolean>;
+  canManageRoles$!: Observable<boolean>;
   showEditControls$!: Observable<boolean>;
   accessOptions = ["admin", "moderator", "member"] as const;
   customRoles$!: Observable<GroupRole[]>;
@@ -159,6 +160,11 @@ export class ListPage implements OnInit {
           );
         }),
       );
+
+      this.canManageRoles$ = combineLatest([
+        this.isGroupAdmin$,
+        this.isOwner$,
+      ]).pipe(map(([admin, owner]) => admin || owner));
 
       this.showEditControls$ = combineLatest([
         this.account$,

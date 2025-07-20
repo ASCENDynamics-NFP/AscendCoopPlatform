@@ -29,7 +29,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
 <ion-content [fullscreen]="true">
   <ion-button
-    *ngIf="(isGroupAdmin$ | async)"
+    *ngIf="(canManageRoles$ | async)"
     [routerLink]="['../roles']"
     style="float: right; margin: 8px"
   >
@@ -47,7 +47,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               async)?.toLowerCase() }}
             </ion-card-subtitle>
             <ion-button
-              *ngIf="(isGroupAdmin$ | async)"
+              *ngIf="(canManageRoles$ | async)"
               slot="end"
               fill="clear"
               size="small"

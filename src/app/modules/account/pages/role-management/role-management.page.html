@@ -38,6 +38,9 @@
             {{ parent.name }}
           </ion-select-option>
         </ion-select>
+        <ion-button slot="end" color="primary" (click)="updateRole(role)">
+          Save
+        </ion-button>
         <ion-button slot="end" color="danger" (click)="deleteRole(role)">
           Delete
         </ion-button>

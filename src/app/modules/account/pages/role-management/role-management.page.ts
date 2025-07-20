@@ -89,14 +89,17 @@ export class RoleManagementPage implements OnInit {
     return parent?.name;
   }
 
-  isDescendant(childId: string, ancestorId: string, roles: GroupRole[]): boolean {
-    let current = roles.find((r) => r.id === childId);
-    while (current?.parentRoleId) {
-      if (current.parentRoleId === ancestorId) {
-        return true;
-      }
-      current = roles.find((r) => r.id === current!.parentRoleId);
-    }
-    return false;
+  isDescendant(
+    childId: string,
+    ancestorId: string,
+    roles: GroupRole[],
+    visited: Set<string> = new Set(),
+  ): boolean {
+    if (visited.has(childId)) return false;
+    visited.add(childId);
+    const child = roles.find((r) => r.id === childId);
+    if (!child || !child.parentRoleId) return false;
+    if (child.parentRoleId === ancestorId) return true;
+    return this.isDescendant(child.parentRoleId, ancestorId, roles, visited);
   }
 }

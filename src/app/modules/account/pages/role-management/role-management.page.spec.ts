@@ -58,4 +58,16 @@ describe("RoleManagementPage", () => {
       }),
     );
   });
+
+  it("should dispatch updateGroupRole on updateRole", () => {
+    const store = TestBed.inject(Store);
+    spyOn(store, "dispatch");
+    const role = {id: "1", name: "Test"};
+    component.updateRole(role as any);
+    expect(store.dispatch).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        type: AccountActions.updateGroupRole.type,
+      }),
+    );
+  });
 });

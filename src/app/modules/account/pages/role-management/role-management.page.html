@@ -4,27 +4,59 @@
 </ion-header>
 
 <ion-content>
-  <ion-list>
-    <ion-item *ngFor="let role of roles$ | async">
-      <ion-label>
-        <h2>{{ role.name }}</h2>
-        <p>{{ role.description }}</p>
-      </ion-label>
-      <ion-button slot="end" color="danger" (click)="deleteRole(role)">
-        Delete
-      </ion-button>
-    </ion-item>
-  </ion-list>
+  <ng-container *ngIf="roles$ | async as roles">
+    <ion-list>
+      <ion-item *ngFor="let role of roles">
+        <ion-label style="min-width: 60px" slot="start">{{ role.id }}</ion-label>
+        <ion-input
+          [(ngModel)]="role.name"
+          placeholder="Name"
+          (ionBlur)="updateRole(role)"
+        ></ion-input>
+        <ion-input
+          [(ngModel)]="role.description"
+          placeholder="Description"
+          (ionBlur)="updateRole(role)"
+        ></ion-input>
+        <ion-select
+          [(ngModel)]="role.parentRoleId"
+          placeholder="Parent"
+          (ionChange)="updateRole(role)"
+        >
+          <ion-select-option [value]="undefined">None</ion-select-option>
+          <ion-select-option
+            *ngFor="let parent of roles"
+            [value]="parent.id"
+            [disabled]="parent.id === role.id"
+          >
+            {{ parent.name }}
+          </ion-select-option>
+        </ion-select>
+        <ion-button slot="end" color="danger" (click)="deleteRole(role)">
+          Delete
+        </ion-button>
+      </ion-item>
+    </ion-list>
 
-  <ion-item>
-    <ion-input
-      placeholder="Role name"
-      [(ngModel)]="newRole.name"
-    ></ion-input>
-    <ion-input
-      placeholder="Description"
-      [(ngModel)]="newRole.description"
-    ></ion-input>
-    <ion-button (click)="addRole()">Add</ion-button>
-  </ion-item>
+    <ion-item>
+      <ion-input
+        placeholder="Role name"
+        [(ngModel)]="newRole.name"
+      ></ion-input>
+      <ion-input
+        placeholder="Description"
+        [(ngModel)]="newRole.description"
+      ></ion-input>
+      <ion-select [(ngModel)]="newRole.parentRoleId" placeholder="Parent">
+        <ion-select-option [value]="undefined">None</ion-select-option>
+        <ion-select-option
+          *ngFor="let parent of roles"
+          [value]="parent.id"
+        >
+          {{ parent.name }}
+        </ion-select-option>
+      </ion-select>
+      <ion-button (click)="addRole()">Add</ion-button>
+    </ion-item>
+  </ng-container>
 </ion-content>

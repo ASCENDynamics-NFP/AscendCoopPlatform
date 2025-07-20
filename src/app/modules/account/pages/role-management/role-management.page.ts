@@ -40,7 +40,7 @@ export class RoleManagementPage implements OnInit {
   roles$!: Observable<GroupRole[]>;
   loading$ = this.store.select(selectAccountLoading);
 
-  newRole: Partial<GroupRole> = {name: ""};
+  newRole: Partial<GroupRole> = {name: "", parentRoleId: undefined};
 
   constructor(
     private route: ActivatedRoute,
@@ -60,11 +60,18 @@ export class RoleManagementPage implements OnInit {
       id: Date.now().toString(),
       name: this.newRole.name!,
       description: this.newRole.description,
+      parentRoleId: this.newRole.parentRoleId,
     };
     this.store.dispatch(
       AccountActions.createGroupRole({groupId: this.groupId, role}),
     );
-    this.newRole = {name: ""};
+    this.newRole = {name: "", parentRoleId: undefined};
+  }
+
+  updateRole(role: GroupRole) {
+    this.store.dispatch(
+      AccountActions.updateGroupRole({groupId: this.groupId, role}),
+    );
   }
 
   deleteRole(role: GroupRole) {

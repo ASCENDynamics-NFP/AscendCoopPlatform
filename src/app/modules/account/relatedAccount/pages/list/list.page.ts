@@ -60,22 +60,7 @@ export class ListPage implements OnInit {
   showEditControls$!: Observable<boolean>;
   accessOptions = ["admin", "moderator", "member"] as const;
   customRoles$!: Observable<GroupRole[]>;
-  relationshipOptions = [
-    "admin",
-    "friend",
-    "member",
-    "partner",
-    "family",
-    "parent",
-    "child",
-    "boss",
-    "employee",
-    "volunteer",
-    "sibling",
-    "parent-org",
-    "child-org",
-    "external",
-  ] as const;
+  relationshipOptions = ["friend", "member", "partner", "family"] as const;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -288,7 +273,10 @@ export class ListPage implements OnInit {
     );
   }
 
-  updateAccess(request: Partial<RelatedAccount>, access: "admin" | "moderator" | "member") {
+  updateAccess(
+    request: Partial<RelatedAccount>,
+    access: "admin" | "moderator" | "member",
+  ) {
     this.currentUser$.pipe(take(1)).subscribe((authUser) => {
       if (!authUser?.uid || !request.id || !this.accountId) return;
       const updated: RelatedAccount = {
@@ -413,6 +401,15 @@ export class ListPage implements OnInit {
   goToRelatedAccount(id: string | null | undefined) {
     if (id) {
       this.router.navigate([`/account/${id}`]);
+    }
+  }
+
+  /**
+   * Navigates to the roles management page.
+   */
+  navigateToRoles() {
+    if (this.accountId) {
+      this.router.navigate([`/account/${this.accountId}/roles`]);
     }
   }
 }

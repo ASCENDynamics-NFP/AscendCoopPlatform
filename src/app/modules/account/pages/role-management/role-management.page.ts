@@ -23,6 +23,7 @@ import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {Store} from "@ngrx/store";
 import {Observable} from "rxjs";
+import {map} from "rxjs/operators";
 import {GroupRole} from "@shared/models/group-role.model";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {
@@ -38,7 +39,8 @@ import {
 export class RoleManagementPage implements OnInit {
   groupId!: string;
   roles$!: Observable<GroupRole[]>;
-  loading$ = this.store.select(selectAccountLoading);
+  editableRoles$!: Observable<GroupRole[]>;
+  loading$!: Observable<boolean>;
 
   newRole: Partial<GroupRole> = {name: "", parentRoleId: undefined};
 
@@ -51,6 +53,10 @@ export class RoleManagementPage implements OnInit {
 
   ngOnInit() {
     this.roles$ = this.store.select(selectGroupRolesByGroupId(this.groupId));
+    this.editableRoles$ = this.roles$.pipe(
+      map((roles) => roles.map((role) => ({...role}))),
+    );
+    this.loading$ = this.store.select(selectAccountLoading);
     this.store.dispatch(AccountActions.loadGroupRoles({groupId: this.groupId}));
   }
 
@@ -69,8 +75,12 @@ export class RoleManagementPage implements OnInit {
   }
 
   updateRole(role: GroupRole) {
+    const updatedRole = {...role};
     this.store.dispatch(
-      AccountActions.updateGroupRole({groupId: this.groupId, role}),
+      AccountActions.updateGroupRole({
+        groupId: this.groupId,
+        role: updatedRole,
+      }),
     );
   }
 
@@ -83,7 +93,10 @@ export class RoleManagementPage implements OnInit {
     );
   }
 
-  getParentName(parentId: string | undefined, roles: GroupRole[]): string | undefined {
+  getParentName(
+    parentId: string | undefined,
+    roles: GroupRole[],
+  ): string | undefined {
     if (!parentId) return undefined;
     const parent = roles.find((r) => r.id === parentId);
     return parent?.name;

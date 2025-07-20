@@ -4,68 +4,121 @@
 </ion-header>
 
 <ion-content>
-  <ng-container *ngIf="roles$ | async as roles">
-    <ion-list>
-      <ion-item *ngFor="let role of roles">
-        <ion-label class="ion-text-wrap" slot="start">
-          <h3>{{ role.name }}</h3>
-          <p>
-            Parent: {{ getParentName(role.parentRoleId, roles) || 'None' }}<br />
-            {{ role.description }}
-          </p>
-        </ion-label>
-        <ion-input
-          [(ngModel)]="role.name"
-          placeholder="Name"
-          (ionBlur)="updateRole(role)"
-        ></ion-input>
-        <ion-input
-          [(ngModel)]="role.description"
-          placeholder="Description"
-          (ionBlur)="updateRole(role)"
-        ></ion-input>
-        <ion-select
-          [(ngModel)]="role.parentRoleId"
-          placeholder="Parent"
-          (ionChange)="updateRole(role)"
-        >
-          <ion-select-option [value]="undefined">None</ion-select-option>
-          <ion-select-option
-            *ngFor="let parent of roles"
-            [value]="parent.id"
-            [disabled]="parent.id === role.id || isDescendant(parent.id, role.id, roles)"
+  <ng-container *ngIf="editableRoles$ | async as roles">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Existing Roles</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Column Headers -->
+        <ion-grid>
+          <ion-row
+            class="ion-text-center"
+            style="
+              font-weight: bold;
+              border-bottom: 1px solid var(--ion-color-medium);
+              padding-bottom: 8px;
+              margin-bottom: 8px;
+              color: var(--ion-color-dark);
+            "
           >
-            {{ parent.name }}
-          </ion-select-option>
-        </ion-select>
-        <ion-button slot="end" color="primary" (click)="updateRole(role)">
-          Save
-        </ion-button>
-        <ion-button slot="end" color="danger" (click)="deleteRole(role)">
-          Delete
-        </ion-button>
-      </ion-item>
-    </ion-list>
+            <ion-col align="left" size="4">Current Info</ion-col>
+            <ion-col align="left" size="2">Name</ion-col>
+            <ion-col align="left" size="2">Description</ion-col>
+            <ion-col align="left" size="2">Parent Role</ion-col>
+            <ion-col align="left" size="2">Actions</ion-col>
+          </ion-row>
+        </ion-grid>
 
-    <ion-item>
-      <ion-input
-        placeholder="Role name"
-        [(ngModel)]="newRole.name"
-      ></ion-input>
-      <ion-input
-        placeholder="Description"
-        [(ngModel)]="newRole.description"
-      ></ion-input>
-      <ion-select [(ngModel)]="newRole.parentRoleId" placeholder="Parent">
-        <ion-select-option [value]="undefined">None</ion-select-option>
-        <ion-select-option
-          *ngFor="let parent of roles"
-          [value]="parent.id"
-        >
-          {{ parent.name }}
-        </ion-select-option>
-      </ion-select>
-      <ion-button (click)="addRole()">Add</ion-button>
-    </ion-item>
+        <ion-grid *ngFor="let role of roles">
+          <ion-row style="color: var(--ion-color-dark)">
+            <ion-col size="4">
+              <h3 style="font-weight: bold; color: var(--ion-color-primary)">
+                {{ role.name }}
+              </h3>
+              <p style="color: var(--ion-color-secondary)">
+                Parent: {{ getParentName(role.parentRoleId, roles) || 'None'
+                }}<br />
+                {{ role.description }}
+              </p>
+            </ion-col>
+            <ion-col size="2">
+              <ion-input
+                [(ngModel)]="role.name"
+                placeholder="Name"
+                maxlength="50"
+                (ionBlur)="updateRole(role)"
+              ></ion-input>
+            </ion-col>
+            <ion-col size="2">
+              <ion-input
+                [(ngModel)]="role.description"
+                placeholder="Description"
+                maxlength="150"
+                (ionBlur)="updateRole(role)"
+              ></ion-input>
+            </ion-col>
+            <ion-col size="2">
+              <ion-select
+                [(ngModel)]="role.parentRoleId"
+                placeholder="Parent"
+                (ionChange)="updateRole(role)"
+              >
+                <ion-select-option [value]="undefined">None</ion-select-option>
+                <ion-select-option
+                  *ngFor="let parent of roles"
+                  [value]="parent.id"
+                  [disabled]="parent.id === role.id || isDescendant(parent.id, role.id, roles)"
+                >
+                  {{ parent.name }}
+                </ion-select-option>
+              </ion-select>
+            </ion-col>
+            <ion-col size="2">
+              <ion-button color="danger" (click)="deleteRole(role)">
+                Delete
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Add New Role</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="stacked">Role Name</ion-label>
+          <ion-input
+            placeholder="Enter role name"
+            maxlength="50"
+            [(ngModel)]="newRole.name"
+          ></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Description</ion-label>
+          <ion-input
+            placeholder="Enter role description"
+            maxlength="150"
+            [(ngModel)]="newRole.description"
+          ></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Parent Role</ion-label>
+          <ion-select
+            [(ngModel)]="newRole.parentRoleId"
+            placeholder="Select parent role"
+          >
+            <ion-select-option [value]="undefined">None</ion-select-option>
+            <ion-select-option *ngFor="let parent of roles" [value]="parent.id">
+              {{ parent.name }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-button expand="block" (click)="addRole()">Add Role</ion-button>
+      </ion-card-content>
+    </ion-card>
   </ng-container>
 </ion-content>

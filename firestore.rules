@@ -80,8 +80,25 @@ service cloud.firestore {
 
     // Rules for relatedAccount
     match /accounts/{accountId}/relatedAccounts/{relatedAccountId} {
+      function isAccountOwner() {
+        return request.auth != null && request.auth.uid == accountId;
+      }
+
+      function isGroupAdmin() {
+        return request.auth != null &&
+          exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted' &&
+          (get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.access == 'admin' ||
+           get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.access == 'moderator');
+      }
+
+      function isRelatedToAccount() {
+        return request.auth != null &&
+          (request.auth.uid == accountId || request.auth.uid == relatedAccountId);
+      }
+
       allow read: if request.auth.uid != null;
-      allow create, write, delete: if isAccountOwner() || isGroupAdmin();
+      allow create, write, delete: if isAccountOwner() || isGroupAdmin() || isRelatedToAccount();
     }
 
     match /accounts/{accountId}/relatedListings/{listingId} {

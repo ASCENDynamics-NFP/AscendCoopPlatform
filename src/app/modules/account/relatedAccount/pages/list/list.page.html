@@ -28,6 +28,13 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  <ion-button
+    *ngIf="(isGroupAdmin$ | async)"
+    [routerLink]="['../roles']"
+    style="float: right; margin: 8px"
+  >
+    Manage Roles
+  </ion-button>
   <ion-grid>
     <ion-row>
       <ion-col>

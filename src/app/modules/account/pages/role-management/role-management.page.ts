@@ -82,4 +82,21 @@ export class RoleManagementPage implements OnInit {
       }),
     );
   }
+
+  getParentName(parentId: string | undefined, roles: GroupRole[]): string | undefined {
+    if (!parentId) return undefined;
+    const parent = roles.find((r) => r.id === parentId);
+    return parent?.name;
+  }
+
+  isDescendant(childId: string, ancestorId: string, roles: GroupRole[]): boolean {
+    let current = roles.find((r) => r.id === childId);
+    while (current?.parentRoleId) {
+      if (current.parentRoleId === ancestorId) {
+        return true;
+      }
+      current = roles.find((r) => r.id === current!.parentRoleId);
+    }
+    return false;
+  }
 }

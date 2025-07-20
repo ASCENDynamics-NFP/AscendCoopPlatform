@@ -7,7 +7,13 @@
   <ng-container *ngIf="roles$ | async as roles">
     <ion-list>
       <ion-item *ngFor="let role of roles">
-        <ion-label style="min-width: 60px" slot="start">{{ role.id }}</ion-label>
+        <ion-label class="ion-text-wrap" slot="start">
+          <h3>{{ role.name }}</h3>
+          <p>
+            Parent: {{ getParentName(role.parentRoleId, roles) || 'None' }}<br />
+            {{ role.description }}
+          </p>
+        </ion-label>
         <ion-input
           [(ngModel)]="role.name"
           placeholder="Name"
@@ -27,7 +33,7 @@
           <ion-select-option
             *ngFor="let parent of roles"
             [value]="parent.id"
-            [disabled]="parent.id === role.id"
+            [disabled]="parent.id === role.id || isDescendant(parent.id, role.id, roles)"
           >
             {{ parent.name }}
           </ion-select-option>

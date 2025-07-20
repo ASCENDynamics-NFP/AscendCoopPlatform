@@ -26,9 +26,11 @@ import {Observable, combineLatest, of} from "rxjs";
 import {map} from "rxjs/operators";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {Account, RelatedAccount} from "@shared/models/account.model";
+import {GroupRole} from "@shared/models/group-role.model";
 import {
   selectAccountById,
   selectRelatedAccountsByAccountId,
+  selectGroupRolesByGroupId,
 } from "../../../../../state/selectors/account.selectors";
 import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../../state/actions/account.actions";
@@ -54,24 +56,12 @@ export class ListPage implements OnInit {
   isOwner$!: Observable<boolean>;
   title$!: Observable<string>;
   isGroupAdmin$!: Observable<boolean>;
-  showEditControls$!: Observable<boolean>;
-  roleOptions = ["admin", "moderator", "member"] as const;
-  relationshipOptions = [
-    "admin",
-    "friend",
-    "member",
-    "partner",
-    "family",
-    "parent",
-    "child",
-    "boss",
-    "employee",
-    "volunteer",
-    "sibling",
-    "parent-org",
-    "child-org",
-    "external",
-  ] as const;
+  canManageRoles$!: Observable<boolean>;
+  showAccessControls$!: Observable<boolean>;
+  showRoleControls$!: Observable<boolean>;
+  accessOptions = ["admin", "moderator", "member"] as const;
+  customRoles$!: Observable<GroupRole[]>;
+  relationshipOptions = ["friend", "member", "partner", "family"] as const;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -152,12 +142,17 @@ export class ListPage implements OnInit {
           const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
           return (
             rel?.status === "accepted" &&
-            (rel.role === "admin" || rel.role === "moderator")
+            (rel.access === "admin" || rel.access === "moderator")
           );
         }),
       );
 
-      this.showEditControls$ = combineLatest([
+      this.canManageRoles$ = combineLatest([
+        this.isGroupAdmin$,
+        this.isOwner$,
+      ]).pipe(map(([admin, owner]) => admin || owner));
+
+      this.showAccessControls$ = combineLatest([
         this.account$,
         this.currentUser$,
         this.isGroupAdmin$,
@@ -169,6 +164,22 @@ export class ListPage implements OnInit {
             !!user &&
             (isAdmin || user.uid === account.id),
         ),
+      );
+
+      this.showRoleControls$ = combineLatest([
+        this.account$,
+        this.currentUser$,
+      ]).pipe(
+        map(
+          ([account, user]) => !!account && !!user && user.uid === account.id,
+        ),
+      );
+
+      this.customRoles$ = this.store.select(
+        selectGroupRolesByGroupId(this.accountId),
+      );
+      this.store.dispatch(
+        AccountActions.loadGroupRoles({groupId: this.accountId}),
       );
     }
   }
@@ -272,13 +283,34 @@ export class ListPage implements OnInit {
     );
   }
 
-  updateRole(request: Partial<RelatedAccount>, role: string) {
+  updateAccess(
+    request: Partial<RelatedAccount>,
+    access: "admin" | "moderator" | "member",
+  ) {
     this.currentUser$.pipe(take(1)).subscribe((authUser) => {
       if (!authUser?.uid || !request.id || !this.accountId) return;
       const updated: RelatedAccount = {
         ...(request as RelatedAccount),
         accountId: this.accountId,
-        role: role as "admin" | "moderator" | "member",
+        access: access,
+        lastModifiedBy: authUser.uid,
+      };
+      this.store.dispatch(
+        AccountActions.updateRelatedAccount({
+          accountId: this.accountId!,
+          relatedAccount: updated,
+        }),
+      );
+    });
+  }
+
+  updateRole(request: Partial<RelatedAccount>, roleId: string) {
+    this.currentUser$.pipe(take(1)).subscribe((authUser) => {
+      if (!authUser?.uid || !request.id || !this.accountId) return;
+      const updated: RelatedAccount = {
+        ...(request as RelatedAccount),
+        accountId: this.accountId,
+        roleId,
         lastModifiedBy: authUser.uid,
       };
       this.store.dispatch(
@@ -379,6 +411,15 @@ export class ListPage implements OnInit {
   goToRelatedAccount(id: string | null | undefined) {
     if (id) {
       this.router.navigate([`/account/${id}`]);
+    }
+  }
+
+  /**
+   * Navigates to the roles management page.
+   */
+  navigateToRoles() {
+    if (this.accountId) {
+      this.router.navigate([`/account/${this.accountId}/roles`]);
     }
   }
 }

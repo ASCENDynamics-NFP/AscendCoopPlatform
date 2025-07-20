@@ -22,7 +22,7 @@
 import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
 import * as AccountActions from "../actions/account.actions";
-import {EMPTY, from, of} from "rxjs";
+import {EMPTY, from, of, firstValueFrom} from "rxjs";
 import {
   switchMap,
   map,
@@ -38,6 +38,7 @@ import {AccountsService} from "../../core/services/accounts.service";
 import {ListingsService} from "../../core/services/listings.service";
 import {StorageService} from "../../core/services/storage.service";
 import {Account} from "@shared/models/account.model";
+import {GroupRole} from "@shared/models/group-role.model";
 import {RelatedListing} from "@shared/models/related-listing.model";
 import {selectAuthUser} from "../selectors/auth.selectors";
 import {Store} from "@ngrx/store";
@@ -52,6 +53,7 @@ import {
   selectAreAccountsFresh,
   selectAreRelatedAccountsFresh,
   selectAreRelatedListingsFresh,
+  selectAreGroupRolesFresh,
 } from "../selectors/account.selectors";
 
 @Injectable()
@@ -478,6 +480,101 @@ export class AccountEffects {
       ),
     ),
   );
+
+  // Load Group Roles if not fresh
+  loadGroupRoles$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AccountActions.loadGroupRoles),
+      mergeMap(({groupId}) =>
+        this.store.select(selectAreGroupRolesFresh(groupId)).pipe(
+          take(1),
+          filter((fresh) => !fresh),
+          switchMap(() =>
+            this.firestoreService.getDocument<Account>('accounts', groupId).pipe(
+              map((account) =>
+                AccountActions.loadGroupRolesSuccess({
+                  groupId,
+                  roles: account?.roles || [],
+                }),
+              ),
+              catchError((error) =>
+                of(
+                  AccountActions.loadGroupRolesFailure({
+                    error: error.message,
+                  }),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  createGroupRole$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AccountActions.createGroupRole),
+      switchMap(({groupId, role}) =>
+        from(this.updateRoles(groupId, (roles) => [...roles, role])).pipe(
+          map(() => AccountActions.createGroupRoleSuccess({groupId, role})),
+          catchError((error) =>
+            of(AccountActions.createGroupRoleFailure({error: error.message})),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  updateGroupRole$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AccountActions.updateGroupRole),
+      switchMap(({groupId, role}) =>
+        from(
+          this.updateRoles(groupId, (roles) =>
+            roles.map((r) => (r.id === role.id ? role : r)),
+          ),
+        ).pipe(
+          map(() => AccountActions.updateGroupRoleSuccess({groupId, role})),
+          catchError((error) =>
+            of(AccountActions.updateGroupRoleFailure({error: error.message})),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  deleteGroupRole$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AccountActions.deleteGroupRole),
+      switchMap(({groupId, roleId}) =>
+        from(
+          this.updateRoles(groupId, (roles) =>
+            roles.filter((r) => r.id !== roleId),
+          ),
+        ).pipe(
+          map(() => AccountActions.deleteGroupRoleSuccess({groupId, roleId})),
+          catchError((error) =>
+            of(AccountActions.deleteGroupRoleFailure({error: error.message})),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  private async updateRoles(
+    groupId: string,
+    modifier: (roles: GroupRole[]) => GroupRole[],
+  ): Promise<GroupRole[]> {
+    const account = await firstValueFrom(
+      this.firestoreService.getDocument<Account>('accounts', groupId),
+    );
+    const currentRoles = account?.roles || [];
+    const updatedRoles = modifier(currentRoles);
+    await this.firestoreService.updateDocument('accounts', groupId, {
+      roles: updatedRoles,
+    });
+    return updatedRoles;
+  }
 
   private async createAccountWithResume(account: Account): Promise<Account> {
     const newAccount: any = {

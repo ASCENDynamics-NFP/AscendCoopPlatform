@@ -55,6 +55,7 @@ import {UsersPage} from "./pages/users/users.page";
 import {ListPage} from "./relatedAccount/pages/list/list.page";
 import {RelatedListingsComponent} from "./pages/details/components/related-listings/related-listings.component";
 import {ListingsListPage} from "./relatedListings/pages/listings-list/listings-list.page";
+import {RoleManagementPage} from "./pages/role-management/role-management.page";
 
 @NgModule({
   declarations: [
@@ -84,6 +85,7 @@ import {ListingsListPage} from "./relatedListings/pages/listings-list/listings-l
     ListingsListPage,
     ListPage,
     RelatedListingsComponent,
+    RoleManagementPage,
   ],
   imports: [
     AccountRoutingModule,

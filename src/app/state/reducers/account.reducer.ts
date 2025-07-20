@@ -23,6 +23,7 @@ import {createReducer, on} from "@ngrx/store";
 import {createEntityAdapter, EntityAdapter, EntityState} from "@ngrx/entity";
 import * as AccountActions from "../actions/account.actions";
 import {Account, RelatedAccount} from "@shared/models/account.model";
+import {GroupRole} from "@shared/models/group-role.model";
 import {RelatedListing} from "@shared/models/related-listing.model";
 
 export const accountAdapter: EntityAdapter<Account> =
@@ -31,6 +32,7 @@ export const accountAdapter: EntityAdapter<Account> =
 export interface AccountState extends EntityState<Account> {
   relatedAccounts: {[accountId: string]: RelatedAccount[]};
   relatedListings: {[accountId: string]: RelatedListing[]};
+  groupRoles: {[groupId: string]: GroupRole[]};
   selectedAccountId: string | null;
   loading: boolean;
   error: any;
@@ -39,11 +41,13 @@ export interface AccountState extends EntityState<Account> {
   accountsLastUpdated: number | null;
   relatedAccountsLastUpdated: {[accountId: string]: number | null};
   relatedListingsLastUpdated: {[accountId: string]: number | null};
+  groupRolesLastUpdated: {[groupId: string]: number | null};
 }
 
 export const initialState: AccountState = accountAdapter.getInitialState({
   relatedAccounts: {},
   relatedListings: {},
+  groupRoles: {},
   selectedAccountId: null,
   loading: false,
   error: null,
@@ -51,6 +55,7 @@ export const initialState: AccountState = accountAdapter.getInitialState({
   accountsLastUpdated: null,
   relatedAccountsLastUpdated: {},
   relatedListingsLastUpdated: {},
+  groupRolesLastUpdated: {},
 });
 
 export const accountReducer = createReducer(
@@ -92,6 +97,18 @@ export const accountReducer = createReducer(
       selectedAccountId: account.id,
       loading: false,
       error: null,
+      groupRoles: {
+        ...state.groupRoles,
+        ...(account.type === "group" && account.roles
+          ? {[account.id]: account.roles}
+          : {}),
+      },
+      groupRolesLastUpdated: {
+        ...state.groupRolesLastUpdated,
+        ...(account.type === "group" && account.roles
+          ? {[account.id]: Date.now()}
+          : {}),
+      },
     }),
   ),
   on(AccountActions.loadAccountFailure, (state, {error}) => ({
@@ -222,5 +239,56 @@ export const accountReducer = createReducer(
     ...state,
     error,
     loading: false,
+  })),
+
+  // Load Group Roles
+  on(AccountActions.loadGroupRoles, (state) => ({
+    ...state,
+    loading: true,
+  })),
+  on(AccountActions.loadGroupRolesSuccess, (state, {groupId, roles}) => ({
+    ...state,
+    groupRoles: {
+      ...state.groupRoles,
+      [groupId]: roles,
+    },
+    groupRolesLastUpdated: {
+      ...state.groupRolesLastUpdated,
+      [groupId]: Date.now(),
+    },
+    loading: false,
+  })),
+  on(AccountActions.loadGroupRolesFailure, (state, {error}) => ({
+    ...state,
+    error,
+    loading: false,
+  })),
+
+  on(AccountActions.createGroupRoleSuccess, (state, {groupId, role}) => ({
+    ...state,
+    groupRoles: {
+      ...state.groupRoles,
+      [groupId]: [...(state.groupRoles[groupId] || []), role],
+    },
+  })),
+
+  on(AccountActions.updateGroupRoleSuccess, (state, {groupId, role}) => ({
+    ...state,
+    groupRoles: {
+      ...state.groupRoles,
+      [groupId]: (state.groupRoles[groupId] || []).map((r) =>
+        r.id === role.id ? role : r,
+      ),
+    },
+  })),
+
+  on(AccountActions.deleteGroupRoleSuccess, (state, {groupId, roleId}) => ({
+    ...state,
+    groupRoles: {
+      ...state.groupRoles,
+      [groupId]: (state.groupRoles[groupId] || []).filter(
+        (r) => r.id !== roleId,
+      ),
+    },
   })),
 );

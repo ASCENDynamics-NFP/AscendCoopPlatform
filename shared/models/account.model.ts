@@ -19,6 +19,7 @@
 ***********************************************************************************************/
 import {BaseDocument} from "./base-document";
 import {GeoPoint, Timestamp} from "firebase/firestore";
+import {GroupRole} from "./group-role.model";
 
 // Define a type for optional and nullable fields
 type Nullable<T> = T | null;
@@ -209,6 +210,10 @@ interface Group {
     groupAdminsManagers: string[]; // Assign initial administrators or managers for the group
     notificationPreferences?: string; // e.g., "Email notifications for new posts, member requests"
   };
+  /**
+   * Custom roles that can be assigned to related accounts
+   */
+  roles?: GroupRole[];
 }
 
 export interface Account extends BaseDocument, Group, User {
@@ -254,7 +259,18 @@ export interface RelatedAccount extends BaseDocument {
     | "parent-org"
     | "child-org"
     | "external"; // Details about the relationship (e.g., 'friend', 'member')
-  role?: "admin" | "moderator" | "member"; // Role within a group
+  /**
+   * Built-in access level within a group
+   */
+  access?: "admin" | "moderator" | "member";
+  /**
+   * Optional custom role name
+   */
+  role?: string;
+  /**
+   * Reference to a custom group role defined in the parent group
+   */
+  roleId?: string;
   initiatorId?: string; // ID of the account who initiated the request
   targetId?: string; // ID of the account who received the request
   canAccessContactInfo?: boolean; // Whether the related account can access the contact information

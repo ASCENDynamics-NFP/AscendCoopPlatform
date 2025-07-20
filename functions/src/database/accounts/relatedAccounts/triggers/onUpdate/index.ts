@@ -55,7 +55,7 @@ export const onUpdateRelatedAccount = onDocumentUpdated(
         // If the status or relationship has changed, update the reciprocal related account document (prevents infinite loop on lastModifiedAt update)
         before.status !== after.status ||
         before.relationship !== after.relationship ||
-        before.role !== after.role
+        before.access !== after.access
       ) {
         const reciprocalRelatedAccountRef = db
           .collection("accounts")
@@ -70,14 +70,14 @@ export const onUpdateRelatedAccount = onDocumentUpdated(
           reciprocalData &&
           (reciprocalData.status !== after.status ||
             reciprocalData.relationship !== after.relationship ||
-            reciprocalData.role !== after.role)
+            reciprocalData.access !== after.access)
         ) {
           await reciprocalRelatedAccountRef.update({
             id: accountId,
             accountId: relatedAccountId,
             relationship: after.relationship,
             status: after.status,
-            role: after.role,
+            access: after.access,
             lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
             lastModifiedBy: accountId,
           });

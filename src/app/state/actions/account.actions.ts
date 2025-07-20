@@ -21,6 +21,7 @@
 
 import {createAction, props} from "@ngrx/store";
 import {Account, RelatedAccount} from "@shared/models/account.model";
+import {GroupRole} from "@shared/models/group-role.model";
 import {RelatedListing} from "@shared/models/related-listing.model";
 
 export const clearAccountsState = createAction("[Account] Clear Accounts");
@@ -218,5 +219,66 @@ export const deleteRelatedListingSuccess = createAction(
 
 export const deleteRelatedListingFailure = createAction(
   "[Account] Delete Related Listing Failure",
+  props<{error: any}>(),
+);
+
+// Group Roles Management
+export const loadGroupRoles = createAction(
+  "[Account] Load Group Roles",
+  props<{groupId: string}>(),
+);
+
+export const loadGroupRolesSuccess = createAction(
+  "[Account] Load Group Roles Success",
+  props<{groupId: string; roles: GroupRole[]}>(),
+);
+
+export const loadGroupRolesFailure = createAction(
+  "[Account] Load Group Roles Failure",
+  props<{error: any}>(),
+);
+
+export const createGroupRole = createAction(
+  "[Account] Create Group Role",
+  props<{groupId: string; role: GroupRole}>(),
+);
+
+export const createGroupRoleSuccess = createAction(
+  "[Account] Create Group Role Success",
+  props<{groupId: string; role: GroupRole}>(),
+);
+
+export const createGroupRoleFailure = createAction(
+  "[Account] Create Group Role Failure",
+  props<{error: any}>(),
+);
+
+export const updateGroupRole = createAction(
+  "[Account] Update Group Role",
+  props<{groupId: string; role: GroupRole}>(),
+);
+
+export const updateGroupRoleSuccess = createAction(
+  "[Account] Update Group Role Success",
+  props<{groupId: string; role: GroupRole}>(),
+);
+
+export const updateGroupRoleFailure = createAction(
+  "[Account] Update Group Role Failure",
+  props<{error: any}>(),
+);
+
+export const deleteGroupRole = createAction(
+  "[Account] Delete Group Role",
+  props<{groupId: string; roleId: string}>(),
+);
+
+export const deleteGroupRoleSuccess = createAction(
+  "[Account] Delete Group Role Success",
+  props<{groupId: string; roleId: string}>(),
+);
+
+export const deleteGroupRoleFailure = createAction(
+  "[Account] Delete Group Role Failure",
   props<{error: any}>(),
 );

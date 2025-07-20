@@ -9,6 +9,7 @@
     "target": "es2017",
     "baseUrl": "./",
     "esModuleInterop": true,
+    "skipLibCheck": true,
     "types": ["node"],
     "paths": {
       "@shared/*": ["../shared/*"],

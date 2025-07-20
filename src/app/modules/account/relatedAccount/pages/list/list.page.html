@@ -70,7 +70,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   <h3>{{ relatedAccount.name }}</h3>
                   <p>{{ relatedAccount.tagline }}</p>
                 </ion-label>
-                <ng-container *ngIf="showEditControls$ | async">
+                <ng-container *ngIf="showAccessControls$ | async">
                   <ion-select
                     [value]="relatedAccount.access"
                     interface="popover"
@@ -86,6 +86,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                       {{ role }}
                     </ion-select-option>
                   </ion-select>
+                </ng-container>
+                <ng-container *ngIf="showAccessControls$ | async">
                   <ion-select
                     [value]="relatedAccount.roleId"
                     interface="popover"
@@ -101,25 +103,25 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                       {{ role.name }}
                     </ion-select-option>
                   </ion-select>
-                  <ion-select
-                    disabled="true"
-                    [value]="relatedAccount.relationship"
-                    interface="popover"
-                    placeholder="Relationship"
-                    (click)="$event.stopPropagation()"
-                    (ionChange)="
+                </ng-container>
+                <ion-select
+                  disabled="true"
+                  [value]="relatedAccount.relationship"
+                  interface="popover"
+                  placeholder="Relationship"
+                  (click)="$event.stopPropagation()"
+                  (ionChange)="
                       updateRelationship(relatedAccount, $event.detail.value)
                     "
-                    style="max-width: 130px"
+                  style="max-width: 130px"
+                >
+                  <ion-select-option
+                    *ngFor="let rel of relationshipOptions"
+                    [value]="rel"
                   >
-                    <ion-select-option
-                      *ngFor="let rel of relationshipOptions"
-                      [value]="rel"
-                    >
-                      {{ rel }}
-                    </ion-select-option>
-                  </ion-select>
-                </ng-container>
+                    {{ rel }}
+                  </ion-select-option>
+                </ion-select>
                 <ion-button
                   slot="end"
                   expand="block"
@@ -168,7 +170,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                     <h3>{{ relatedAccount.name }}</h3>
                     <p>{{ relatedAccount.tagline }}</p>
                   </ion-label>
-                  <ng-container *ngIf="showEditControls$ | async">
+                  <ng-container *ngIf="showAccessControls$ | async">
                     <ion-select
                       [value]="relatedAccount.access"
                       interface="popover"
@@ -183,6 +185,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                         >{{ role }}</ion-select-option
                       >
                     </ion-select>
+                  </ng-container>
+                  <ng-container *ngIf="showRoleControls$ | async">
                     <ion-select
                       [value]="relatedAccount.roleId"
                       interface="popover"
@@ -197,24 +201,24 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                         >{{ role.name }}</ion-select-option
                       >
                     </ion-select>
-                    <ion-select
-                      disabled="true"
-                      [value]="relatedAccount.relationship"
-                      interface="popover"
-                      placeholder="Relationship"
-                      (click)="$event.stopPropagation()"
-                      (ionChange)="
+                  </ng-container>
+                  <ion-select
+                    disabled="true"
+                    [value]="relatedAccount.relationship"
+                    interface="popover"
+                    placeholder="Relationship"
+                    (click)="$event.stopPropagation()"
+                    (ionChange)="
                         updateRelationship(relatedAccount, $event.detail.value)
                       "
-                      style="max-width: 130px"
+                    style="max-width: 130px"
+                  >
+                    <ion-select-option
+                      *ngFor="let rel of relationshipOptions"
+                      [value]="rel"
+                      >{{ rel }}</ion-select-option
                     >
-                      <ion-select-option
-                        *ngFor="let rel of relationshipOptions"
-                        [value]="rel"
-                        >{{ rel }}</ion-select-option
-                      >
-                    </ion-select>
-                  </ng-container>
+                  </ion-select>
                   <ion-button
                     slot="end"
                     expand="block"

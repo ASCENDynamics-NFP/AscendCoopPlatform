@@ -22,6 +22,8 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {RoleManagementPage} from "./role-management.page";
 import {provideMockStore} from "@ngrx/store/testing";
+import {Store} from "@ngrx/store";
+import * as AccountActions from "../../../../state/actions/account.actions";
 import {RouterTestingModule} from "@angular/router/testing";
 import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 
@@ -43,5 +45,17 @@ describe("RoleManagementPage", () => {
 
   it("should create", () => {
     expect(component).toBeTruthy();
+  });
+
+  it("should dispatch createGroupRole on addRole", () => {
+    const store = TestBed.inject(Store);
+    spyOn(store, "dispatch");
+    component.newRole = {name: "Test"};
+    component.addRole();
+    expect(store.dispatch).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        type: AccountActions.createGroupRole.type,
+      }),
+    );
   });
 });

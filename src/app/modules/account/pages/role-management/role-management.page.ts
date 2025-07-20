@@ -62,14 +62,14 @@ export class RoleManagementPage implements OnInit {
       description: this.newRole.description,
     };
     this.store.dispatch(
-      AccountActions.createGroupRoleSuccess({groupId: this.groupId, role}),
+      AccountActions.createGroupRole({groupId: this.groupId, role}),
     );
     this.newRole = {name: ""};
   }
 
   deleteRole(role: GroupRole) {
     this.store.dispatch(
-      AccountActions.deleteGroupRoleSuccess({
+      AccountActions.deleteGroupRole({
         groupId: this.groupId,
         roleId: role.id,
       }),

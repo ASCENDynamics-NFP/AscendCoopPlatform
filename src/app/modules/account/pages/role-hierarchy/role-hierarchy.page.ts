@@ -57,7 +57,11 @@ export class RoleHierarchyPage implements OnInit {
       roleMap.set(role.id, {role, children: [], accounts: []});
     });
 
-    const root: TreeNode = {children: [], accounts: []};
+    const root: TreeNode = {
+      role: {id: "root", name: "None"},
+      children: [],
+      accounts: [],
+    };
 
     roles.forEach((role) => {
       const node = roleMap.get(role.id)!;

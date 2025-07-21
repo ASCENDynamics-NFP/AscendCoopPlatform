@@ -10,9 +10,7 @@
 
   <div [ngClass]="orientation" class="tree-container" *ngIf="tree$ | async as tree">
     <ul class="tree">
-      <ng-container *ngFor="let child of tree.children">
-        <ng-container *ngTemplateOutlet="nodeTemplate; context: {node: child}"></ng-container>
-      </ng-container>
+      <ng-container *ngTemplateOutlet="nodeTemplate; context: {node: tree}"></ng-container>
     </ul>
   </div>
 

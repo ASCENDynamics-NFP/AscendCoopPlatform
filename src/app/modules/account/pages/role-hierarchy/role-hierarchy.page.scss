@@ -37,6 +37,11 @@
   height: 1rem;
 }
 
+.tree > li::before,
+.tree > li::after {
+  display: none;
+}
+
 .node {
   background: var(--ion-color-light);
   border: 1px solid var(--ion-color-medium);

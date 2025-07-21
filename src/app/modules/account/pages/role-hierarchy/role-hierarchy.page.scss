@@ -1,0 +1,33 @@
+/* role-hierarchy.page.scss */
+.tree-container {
+  padding: 1rem;
+}
+
+.tree {
+  list-style: none;
+  padding-left: 1rem;
+}
+
+.tree li {
+  margin: 0.5rem 0;
+  position: relative;
+}
+
+.node {
+  background: var(--ion-color-light);
+  border: 1px solid var(--ion-color-medium);
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.horizontal .tree {
+  display: flex;
+}
+
+.horizontal .tree ul {
+  display: flex;
+}
+
+.horizontal .tree li {
+  margin-right: 1rem;
+}

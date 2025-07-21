@@ -1,0 +1,39 @@
+<!-- role-hierarchy.page.html -->
+<ion-header>
+  <app-header [title]="'Role Hierarchy'" [defaultHref]="'../'"></app-header>
+</ion-header>
+
+<ion-content>
+  <ion-button expand="block" (click)="toggleOrientation()">
+    Toggle Orientation
+  </ion-button>
+
+  <div [ngClass]="orientation" class="tree-container" *ngIf="tree$ | async as tree">
+    <ul class="tree">
+      <ng-container *ngFor="let child of tree.children">
+        <ng-container *ngTemplateOutlet="nodeTemplate; context: {node: child}"></ng-container>
+      </ng-container>
+    </ul>
+  </div>
+
+  <ng-template #nodeTemplate let-node="node">
+    <li>
+      <div class="node">
+        {{ node.role?.name || 'None' }}
+        <div class="accounts" *ngIf="node.accounts.length">
+          <ion-chip *ngFor="let acc of node.accounts" (click)="goToAccount(acc.id)">
+            <ion-avatar *ngIf="acc.iconImage" slot="start">
+              <img [src]="acc.iconImage" />
+            </ion-avatar>
+            <ion-label>{{ acc.name }}</ion-label>
+          </ion-chip>
+        </div>
+      </div>
+      <ul *ngIf="node.children.length">
+        <ng-container *ngFor="let child of node.children">
+          <ng-container *ngTemplateOutlet="nodeTemplate; context: {node: child}"></ng-container>
+        </ng-container>
+      </ul>
+    </li>
+  </ng-template>
+</ion-content>

@@ -163,6 +163,7 @@ describe("ApplicantsPage", () => {
       listings: listingsState,
       auth: {user: mockAuthUser, error: null, loading: false},
       accounts: accountsState,
+      time: {ids: [], entities: {}, loading: false, error: null},
     };
   }
 

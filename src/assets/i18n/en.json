@@ -20,7 +20,8 @@
     "profile": "Profile",
     "users": "Users",
     "settings": "Settings",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "timeTracking": "Time Tracking"
   },
   "user": {
     "login": {

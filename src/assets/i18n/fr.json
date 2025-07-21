@@ -20,7 +20,8 @@
     "profile": "Profil",
     "users": "Utilisateurs",
     "settings": "Paramètres",
-    "dashboard": "Tableau de bord"
+    "dashboard": "Tableau de bord",
+    "timeTracking": "Suivi du temps"
   },
   "user": {
     "login": {

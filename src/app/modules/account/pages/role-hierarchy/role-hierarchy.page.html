@@ -25,7 +25,12 @@
             <ion-avatar *ngIf="acc.iconImage" slot="start">
               <img [src]="acc.iconImage" />
             </ion-avatar>
-            <ion-label>{{ acc.name }}</ion-label>
+            <ion-label>
+              {{ acc.name }}
+              <ion-note class="role-name" *ngIf="acc.role || node.role?.name"
+                >{{ acc.role || node.role?.name }}</ion-note
+              >
+            </ion-label>
           </ion-chip>
         </div>
       </div>

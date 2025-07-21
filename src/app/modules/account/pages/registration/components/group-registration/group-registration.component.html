@@ -106,14 +106,24 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                     <ion-select-option value="Government"
                       >Government</ion-select-option
                     >
-                    <ion-select-option value="Other">Other</ion-select-option>
-                  </ion-select>
-                </ion-col>
-              </ion-row>
+                <ion-select-option value="Other">Other</ion-select-option>
+              </ion-select>
             </ion-col>
+          </ion-row>
+          <ion-row>
             <ion-col>
-              <ion-row>
-                <ion-col>
+              <ion-input
+                label="Google Calendar URL"
+                label-placement="stacked"
+                formControlName="googleCalendarUrl"
+                fill="outline"
+              ></ion-input>
+            </ion-col>
+          </ion-row>
+        </ion-col>
+        <ion-col>
+          <ion-row>
+            <ion-col>
                   <!-- <ion-label position="stacked">Description</ion-label> -->
                   <ion-textarea
                     label="Description"

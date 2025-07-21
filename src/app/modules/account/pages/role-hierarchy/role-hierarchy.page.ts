@@ -3,7 +3,8 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
 import {Observable, combineLatest, of} from "rxjs";
 import {map} from "rxjs/operators";
-import {GroupRole, RelatedAccount} from "@shared/models/account.model";
+import {RelatedAccount} from "@shared/models/account.model";
+import {GroupRole} from "@shared/models/group-role.model";
 import {
   selectGroupRolesByGroupId,
   selectRelatedAccountsByAccountId,

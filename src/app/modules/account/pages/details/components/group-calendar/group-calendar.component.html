@@ -1,0 +1,15 @@
+<ion-card class="calendar-card" *ngIf="calendarUrl">
+  <ion-card-header>
+    <ion-card-title>Upcoming Events</ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <iframe
+      [src]="calendarUrl | safeUrl"
+      style="border:0"
+      width="100%"
+      height="600"
+      frameborder="0"
+      scrolling="no"
+    ></iframe>
+  </ion-card-content>
+</ion-card>

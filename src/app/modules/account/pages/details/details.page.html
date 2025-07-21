@@ -66,6 +66,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         id="contact"
         [account]="account"
       ></app-contact-information>
+      <app-group-calendar
+        *ngIf="account.type === 'group'"
+        [account]="account"
+      ></app-group-calendar>
       <app-professional-info
         id="professional"
         *ngIf="account.type === 'user'"

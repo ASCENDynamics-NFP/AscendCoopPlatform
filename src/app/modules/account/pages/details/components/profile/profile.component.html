@@ -58,19 +58,5 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         </ion-col>
       </ion-row>
     </ion-grid>
-    <div
-      class="info-block"
-      *ngIf="account.type === 'group' && account.groupDetails?.googleCalendarUrl"
-    >
-      <h2>Upcoming Events</h2>
-      <iframe
-        [src]="account.groupDetails?.googleCalendarUrl | safeUrl"
-        style="border:0"
-        width="100%"
-        height="600"
-        frameborder="0"
-        scrolling="no"
-      ></iframe>
-    </div>
   </ion-card-content>
 </ion-card>

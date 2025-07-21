@@ -57,6 +57,7 @@ import {RelatedListingsComponent} from "./pages/details/components/related-listi
 import {ListingsListPage} from "./relatedListings/pages/listings-list/listings-list.page";
 import {RoleManagementPage} from "./pages/role-management/role-management.page";
 import {SafeUrlPipe} from "../../shared/pipes/safe-url.pipe";
+import {GroupCalendarComponent} from "./pages/details/components/group-calendar/group-calendar.component";
 
 @NgModule({
   declarations: [
@@ -87,6 +88,7 @@ import {SafeUrlPipe} from "../../shared/pipes/safe-url.pipe";
     ListPage,
     RelatedListingsComponent,
     RoleManagementPage,
+    GroupCalendarComponent,
     SafeUrlPipe,
   ],
   imports: [

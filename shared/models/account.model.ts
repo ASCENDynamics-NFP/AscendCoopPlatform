@@ -60,6 +60,8 @@ interface GroupSpecific {
   groupType?: string;
   groupObjectivesMissionStatement?: string;
   groupHistoryBackground?: string;
+  /** Public Google Calendar embed or share URL */
+  googleCalendarUrl?: string;
   // faqs?: string[]; // Optional, for common queries related to the group
 }
 

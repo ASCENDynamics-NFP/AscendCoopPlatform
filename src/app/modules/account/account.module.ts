@@ -57,6 +57,8 @@ import {RelatedListingsComponent} from "./pages/details/components/related-listi
 import {ListingsListPage} from "./relatedListings/pages/listings-list/listings-list.page";
 import {RoleManagementPage} from "./pages/role-management/role-management.page";
 import {RoleHierarchyPage} from "./pages/role-hierarchy/role-hierarchy.page";
+import {SafeUrlPipe} from "../../shared/pipes/safe-url.pipe";
+import {GroupCalendarComponent} from "./pages/details/components/group-calendar/group-calendar.component";
 
 @NgModule({
   declarations: [
@@ -88,6 +90,8 @@ import {RoleHierarchyPage} from "./pages/role-hierarchy/role-hierarchy.page";
     RelatedListingsComponent,
     RoleManagementPage,
     RoleHierarchyPage,
+    GroupCalendarComponent,
+    SafeUrlPipe,
   ],
   imports: [
     AccountRoutingModule,

@@ -89,6 +89,16 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           </ion-select>
         </ion-col>
       </ion-row>
+      <ion-row *ngIf="account?.type === 'group'" formGroupName="groupDetails">
+        <ion-col>
+          <ion-input
+            label="Google Calendar URL"
+            label-placement="stacked"
+            formControlName="googleCalendarUrl"
+            fill="outline"
+          ></ion-input>
+        </ion-col>
+      </ion-row>
       <ion-row>
         <ion-col>
           <!-- <ion-label position="stacked">Description</ion-label> -->

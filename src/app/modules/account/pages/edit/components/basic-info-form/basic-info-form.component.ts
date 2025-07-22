@@ -47,6 +47,7 @@ export class BasicInfoFormComponent implements OnChanges {
       webLinks: this.fb.array([this.createWebLinkFormGroup()]),
       groupDetails: this.fb.group({
         groupType: [""],
+        googleCalendarUrl: [""],
       }),
     });
   }
@@ -142,6 +143,9 @@ export class BasicInfoFormComponent implements OnChanges {
       name: this.account.name,
       description: this.account.description,
       tagline: this.account.tagline,
+      groupDetails: {
+        googleCalendarUrl: this.account.groupDetails?.googleCalendarUrl,
+      },
     });
 
     if (
@@ -151,6 +155,9 @@ export class BasicInfoFormComponent implements OnChanges {
       this.basicInfoForm
         .get("groupDetails.groupType")
         ?.setValue(this.account.groupDetails?.groupType);
+      this.basicInfoForm
+        .get("groupDetails.googleCalendarUrl")
+        ?.setValue(this.account.groupDetails?.googleCalendarUrl);
     }
   }
 

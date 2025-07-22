@@ -13,23 +13,25 @@
 
   <ng-template #recursiveList let-nodes="nodes">
     <ion-list>
-      <ion-item *ngFor="let node of nodes">
-        <ion-label class="ion-text-wrap">
-          <h2>{{ node.role.name }}</h2>
-          <p>{{ node.role.description }}</p>
-          <div *ngIf="node.accounts.length">
-            <strong>Accounts:</strong>
-            <span *ngFor="let acc of node.accounts; let last = last">
-              {{ acc.name || acc.id }}<span *ngIf="!last">, </span>
-            </span>
-          </div>
-        </ion-label>
-      </ion-item>
-      <ng-container *ngIf="node.children.length">
-        <ng-template
-          [ngTemplateOutlet]="recursiveList"
-          [ngTemplateOutletContext]="{ nodes: node.children }"
-        ></ng-template>
+      <ng-container *ngFor="let node of nodes">
+        <ion-item>
+          <ion-label class="ion-text-wrap">
+            <h2>{{ node.role.name }}</h2>
+            <p>{{ node.role.description }}</p>
+            <div *ngIf="node.accounts.length">
+              <strong>Accounts:</strong>
+              <span *ngFor="let acc of node.accounts; let last = last">
+                {{ acc.name || acc.id }}<span *ngIf="!last">, </span>
+              </span>
+            </div>
+          </ion-label>
+        </ion-item>
+        <ng-container *ngIf="node.children.length">
+          <ng-template
+            [ngTemplateOutlet]="recursiveList"
+            [ngTemplateOutletContext]="{ nodes: node.children }"
+          ></ng-template>
+        </ng-container>
       </ng-container>
     </ion-list>
   </ng-template>

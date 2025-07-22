@@ -22,6 +22,7 @@
 import {Component, OnInit} from "@angular/core";
 import {Store} from "@ngrx/store";
 import {Observable} from "rxjs";
+import {take} from "rxjs/operators";
 import {TimeEntry} from "@shared/models/time-entry.model";
 import * as TimeActions from "../../../../state/actions/time.actions";
 import {
@@ -48,12 +49,10 @@ export class EntriesPage implements OnInit {
   }
 
   ngOnInit() {
-    this.authUser$
-      .subscribe((user) => {
-        if (user) {
-          this.store.dispatch(TimeActions.loadEntries({userId: user.uid}));
-        }
-      })
-      .unsubscribe();
+    this.authUser$.pipe(take(1)).subscribe((user) => {
+      if (user) {
+        this.store.dispatch(TimeActions.loadEntries({userId: user.uid}));
+      }
+    });
   }
 }

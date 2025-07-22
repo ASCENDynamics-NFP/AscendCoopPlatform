@@ -24,6 +24,7 @@ import {Store} from "@ngrx/store";
 import * as TimeActions from "../../../../state/actions/time.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {Observable} from "rxjs";
+import {take} from "rxjs/operators";
 import {AuthUser} from "@shared/models/auth-user.model";
 
 @Component({
@@ -40,31 +41,27 @@ export class TimerPage {
   }
 
   start() {
-    this.authUser$
-      .subscribe((user) => {
-        if (user) {
-          this.store.dispatch(
-            TimeActions.startEntry({userId: user.uid, entry: {}}),
-          );
-        }
-      })
-      .unsubscribe();
+    this.authUser$.pipe(take(1)).subscribe((user) => {
+      if (user) {
+        this.store.dispatch(
+          TimeActions.startEntry({userId: user.uid, entry: {}}),
+        );
+      }
+    });
   }
 
   stop() {
     if (!this.runningEntryId) return;
-    this.authUser$
-      .subscribe((user) => {
-        if (user) {
-          this.store.dispatch(
-            TimeActions.stopEntry({
-              userId: user.uid,
-              entryId: this.runningEntryId!,
-            }),
-          );
-          this.runningEntryId = null;
-        }
-      })
-      .unsubscribe();
+    this.authUser$.pipe(take(1)).subscribe((user) => {
+      if (user) {
+        this.store.dispatch(
+          TimeActions.stopEntry({
+            userId: user.uid,
+            entryId: this.runningEntryId!,
+          }),
+        );
+        this.runningEntryId = null;
+      }
+    });
   }
 }

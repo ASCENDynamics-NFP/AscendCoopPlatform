@@ -1,0 +1,44 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<ion-header>
+  <app-header [title]="'Role Hierarchy'" [defaultHref]="'../'"></app-header>
+</ion-header>
+
+<ion-content>
+  <ng-container *ngIf="roleTree$ | async as tree">
+    <ng-container *ngTemplateOutlet="nodeList; context:{ nodes: tree }"></ng-container>
+  </ng-container>
+
+  <ng-template #nodeList let-nodes="nodes">
+    <ion-list>
+      <ng-container *ngFor="let node of nodes">
+        <ion-item lines="none">
+          <ion-label class="ion-text-wrap">
+            <h2>{{ node.role.name }}</h2>
+            <p *ngFor="let acc of node.relatedAccounts">{{ acc.name }}</p>
+          </ion-label>
+        </ion-item>
+        <div class="child-nodes" *ngIf="node.children.length > 0" style="padding-left: 16px;">
+          <ng-container *ngTemplateOutlet="nodeList; context:{ nodes: node.children }"></ng-container>
+        </div>
+      </ng-container>
+    </ion-list>
+  </ng-template>
+</ion-content>

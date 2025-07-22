@@ -62,6 +62,7 @@ We look forward to your contributions and engaging discussions!
   - Real-time data to address issues
   - Collaboration features, such as event proposals, voting, and commenting
   - Landing page lead form to collect inquiries
+  - [Role hierarchy view](docs/role-hierarchy.md)
 
 - Utopian Think Tank
   - Collaborate with organizations and research

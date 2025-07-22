@@ -3,6 +3,7 @@
 Ascend Co-op Platform is an open-source platform built using Ionic and Firebase, aimed at fostering collaboration and growth for worker-owned cooperatives, nonprofit organizations, and private organizations. It offers features like user profiles, group management, real-time data, and collaboration tools to address various challenges and facilitate communication between organizations.
 
 For a deeper look at the application layout and how the frontend communicates with Firebase, see [docs/architecture.md](docs/architecture.md).
+To learn about the new role hierarchy view, read [docs/role-hierarchy.md](docs/role-hierarchy.md).
 
 
 ## Development

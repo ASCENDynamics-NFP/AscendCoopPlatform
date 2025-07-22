@@ -1,0 +1,48 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<!-- src/app/modules/account/pages/role-hierarchy/role-hierarchy.page.html -->
+
+<ion-header>
+  <app-header [title]="'Role Hierarchy'" [defaultHref]="'../'"></app-header>
+</ion-header>
+
+<ion-content>
+  <ng-container *ngIf="roleTree$ | async as tree">
+    <ul>
+      <ng-template #recursiveList let-nodes>
+        <li *ngFor="let node of nodes">
+          <strong>{{ node.role.name }}</strong>
+          <span *ngIf="node.role.description">- {{ node.role.description }}</span>
+          <ul>
+            <li *ngFor="let account of node.relatedAccounts">
+              {{ account.name || account.id }}
+            </li>
+          </ul>
+          <ul *ngIf="node.children.length">
+            <ng-container
+              *ngTemplateOutlet="recursiveList; context: { $implicit: node.children }"
+            ></ng-container>
+          </ul>
+        </li>
+      </ng-template>
+      <ng-container *ngTemplateOutlet="recursiveList; context: { $implicit: tree }"></ng-container>
+    </ul>
+  </ng-container>
+</ion-content>

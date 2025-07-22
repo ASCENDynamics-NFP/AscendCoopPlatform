@@ -26,6 +26,7 @@ import {Store} from "@ngrx/store";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {RouterTestingModule} from "@angular/router/testing";
 import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
+import {AngularFirestore} from "@angular/fire/compat/firestore";
 
 describe("RoleManagementPage", () => {
   let component: RoleManagementPage;
@@ -35,7 +36,17 @@ describe("RoleManagementPage", () => {
     await TestBed.configureTestingModule({
       declarations: [RoleManagementPage],
       imports: [RouterTestingModule],
-      providers: [provideMockStore({})],
+      providers: [
+        provideMockStore({}),
+        {
+          provide: AngularFirestore,
+          useValue: {
+            createId: jasmine
+              .createSpy("createId")
+              .and.returnValue("generatedId"),
+          },
+        },
+      ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
 
@@ -50,11 +61,19 @@ describe("RoleManagementPage", () => {
   it("should dispatch createGroupRole on addRole", () => {
     const store = TestBed.inject(Store);
     spyOn(store, "dispatch");
+    const afs = TestBed.inject(AngularFirestore);
+    (afs.createId as jasmine.Spy).and.returnValue("generatedId");
     component.newRole = {name: "Test"};
     component.addRole();
     expect(store.dispatch).toHaveBeenCalledWith(
-      jasmine.objectContaining({
-        type: AccountActions.createGroupRole.type,
+      AccountActions.createGroupRole({
+        groupId: component.groupId,
+        role: {
+          id: "generatedId",
+          name: "Test",
+          description: undefined,
+          parentRoleId: undefined,
+        },
       }),
     );
   });

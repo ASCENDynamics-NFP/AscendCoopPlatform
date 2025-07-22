@@ -25,6 +25,7 @@ import {Store} from "@ngrx/store";
 import {Observable} from "rxjs";
 import {map} from "rxjs/operators";
 import {GroupRole} from "@shared/models/group-role.model";
+import {AngularFirestore} from "@angular/fire/compat/firestore";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {
   selectGroupRolesByGroupId,
@@ -47,6 +48,7 @@ export class RoleManagementPage implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private store: Store,
+    private afs: AngularFirestore,
   ) {
     this.groupId = this.route.snapshot.paramMap.get("accountId") || "";
   }
@@ -63,7 +65,7 @@ export class RoleManagementPage implements OnInit {
   addRole() {
     if (!this.newRole.name) return;
     const role: GroupRole = {
-      id: Date.now().toString(),
+      id: this.afs.createId(),
       name: this.newRole.name!,
       description: this.newRole.description,
       parentRoleId: this.newRole.parentRoleId,

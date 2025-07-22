@@ -72,6 +72,7 @@ export class GroupRegistrationComponent implements OnChanges {
       }),
       groupDetails: this.fb.group({
         groupType: [],
+        googleCalendarUrl: [],
       }),
     });
   }
@@ -279,6 +280,10 @@ export class GroupRegistrationComponent implements OnChanges {
         addresses: this.account.contactInformation?.addresses || [
           this.createAddressFormGroup(),
         ],
+      },
+      groupDetails: {
+        groupType: this.account.groupDetails?.groupType,
+        googleCalendarUrl: this.account.groupDetails?.googleCalendarUrl,
       },
     });
   }

@@ -37,6 +37,16 @@ You can view the latest version of the application in the development environmen
 
 We welcome QA contributions, bug reports, and discussions. Please feel free to create issues and discussions in this GitHub repository if you find any problems or have suggestions for improvements.
 
+## Viewing Role Hierarchy
+
+Use the role hierarchy page to visualize group roles and which accounts belong to each role. Navigate to:
+
+```
+/account/<accountId>/role-hierarchy
+```
+
+The hierarchy is built from the parent-child relationships of roles and lists the related accounts assigned to each role.
+
 ## Connect With Us
 
 Join our community and participate in discussions about the Ascend Co-op Platform. We have active communities on the following platforms:

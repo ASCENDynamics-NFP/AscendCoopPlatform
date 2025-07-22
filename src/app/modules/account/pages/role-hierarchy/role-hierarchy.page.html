@@ -19,17 +19,23 @@
       <div class="node">
         {{ node.role?.name || 'None' }}
         <div class="accounts" *ngIf="node.accounts.length">
-          <ion-chip *ngFor="let acc of node.accounts" (click)="goToAccount(acc.id)">
-            <ion-avatar *ngIf="acc.iconImage" slot="start">
-              <img [src]="acc.iconImage" />
-            </ion-avatar>
-            <ion-label>
-              {{ acc.name }}
-              <ion-note class="role-name" *ngIf="acc.role || node.role?.name"
-                >{{ acc.role || node.role?.name }}</ion-note
-              >
-            </ion-label>
-          </ion-chip>
+          <ion-list>
+            <ion-item
+              *ngFor="let acc of node.accounts"
+              button
+              detail="false"
+              (click)="goToAccount(acc.id)"
+            >
+              <ion-thumbnail slot="start" *ngIf="acc.iconImage">
+                <img [src]="acc.iconImage" [alt]="acc.name" />
+              </ion-thumbnail>
+              <ion-label>
+                <h3>{{ acc.name }}</h3>
+                <p>{{ acc.tagline }}</p>
+              </ion-label>
+              <ion-note slot="end" class="role-name">{{ acc.roleName }}</ion-note>
+            </ion-item>
+          </ion-list>
         </div>
       </div>
       <ul *ngIf="node.children.length">

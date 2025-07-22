@@ -69,10 +69,31 @@
 
 .horizontal .tree li {
   margin-right: 1rem;
-  position: static;
+  position: relative;
+  padding-top: 1rem;
 }
 
-.horizontal .tree li::before,
+.horizontal .tree li::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 1rem;
+  background: var(--ion-color-medium);
+}
+
 .horizontal .tree li::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--ion-color-medium);
+}
+
+.horizontal .tree > li::before,
+.horizontal .tree > li::after {
   display: none;
 }

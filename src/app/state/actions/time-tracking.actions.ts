@@ -23,7 +23,10 @@ import {createAction, props} from "@ngrx/store";
 import {Project} from "@shared/models/project.model";
 import {TimeEntry} from "@shared/models/time-entry.model";
 
-export const loadProjects = createAction("[Time Tracking] Load Projects");
+export const loadProjects = createAction(
+  "[Time Tracking] Load Projects",
+  props<{accountId: string}>(),
+);
 
 export const loadProjectsSuccess = createAction(
   "[Time Tracking] Load Projects Success",

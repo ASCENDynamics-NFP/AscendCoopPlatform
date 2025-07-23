@@ -38,6 +38,8 @@ export class TimesheetPage implements OnInit {
 
   ngOnInit() {
     this.projects$ = this.store.select((state) => state.timeTracking.projects);
-    this.store.dispatch(TimeTrackingActions.loadProjects());
+    this.store.dispatch(
+      TimeTrackingActions.loadProjects({accountId: this.accountId}),
+    );
   }
 }

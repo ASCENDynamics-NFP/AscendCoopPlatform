@@ -135,8 +135,15 @@ service cloud.firestore {
 
       allow read: if isGroupAccount() && isGroupMember();
       allow create: if isGroupAccount() && request.auth.uid == request.resource.data.userId && isGroupMember();
-      allow update: if isGroupAccount() && request.auth.uid == request.resource.data.userId && isGroupMember() &&
-        (request.resource.data.status == 'approved' ? isGroupAdmin() : true);
+      allow update: if isGroupAccount() && isGroupMember() &&
+        (
+          isGroupAdmin() ||
+          (
+            request.auth.uid == resource.data.userId &&
+            request.auth.uid == request.resource.data.userId &&
+            resource.data.status != 'approved'
+          )
+        );
       allow delete: if false;
     }
     

@@ -6,9 +6,15 @@
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <td>Example Project</td>
-      <td *ngFor="let day of days"></td>
+    <tr *ngFor="let project of projects">
+      <td>{{ project.name }}</td>
+      <td *ngFor="let day of days">
+        <input
+          type="number"
+          [value]="getEntry(project.id, day)?.hours"
+          (change)="onHoursChange(project, day, $event.target.value)"
+        />
+      </td>
     </tr>
   </tbody>
 </table>

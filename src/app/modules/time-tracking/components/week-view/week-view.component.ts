@@ -20,6 +20,11 @@
 // src/app/modules/time-tracking/components/week-view/week-view.component.ts
 
 import {Component, Input, OnInit} from "@angular/core";
+import {Store} from "@ngrx/store";
+import {Timestamp} from "firebase/firestore";
+import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
+import {Project} from "@shared/models/project.model";
+import {TimeEntry} from "@shared/models/time-entry.model";
 
 @Component({
   selector: "app-week-view",
@@ -28,7 +33,12 @@ import {Component, Input, OnInit} from "@angular/core";
 })
 export class WeekViewComponent implements OnInit {
   @Input() weekStart: Date = new Date();
+  @Input() projects: Project[] = [];
+  @Input() entries: TimeEntry[] = [];
+
   days: Date[] = [];
+
+  constructor(private store: Store) {}
 
   ngOnInit() {
     const start = new Date(this.weekStart);
@@ -38,5 +48,31 @@ export class WeekViewComponent implements OnInit {
       day.setDate(start.getDate() + i);
       this.days.push(day);
     }
+  }
+
+  getEntry(projectId: string, day: Date): TimeEntry | undefined {
+    return this.entries.find((e) => {
+      return (
+        e.projectId === projectId &&
+        e.date.toDate().toDateString() === day.toDateString()
+      );
+    });
+  }
+
+  onHoursChange(project: Project, day: Date, value: string) {
+    const hours = Number(value);
+    if (isNaN(hours)) {
+      return;
+    }
+    const existing = this.getEntry(project.id, day);
+    const entry: TimeEntry = {
+      id: existing ? existing.id : "",
+      projectId: project.id,
+      userId: existing ? existing.userId : "",
+      date: existing ? existing.date : Timestamp.fromDate(day),
+      hours,
+      notes: existing?.notes,
+    };
+    this.store.dispatch(TimeTrackingActions.saveTimeEntry({entry}));
   }
 }

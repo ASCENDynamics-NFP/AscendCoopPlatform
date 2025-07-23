@@ -1,0 +1,10 @@
+.week-grid {
+  width: 100%;
+  border-collapse: collapse;
+}
+.week-grid th,
+.week-grid td {
+  border: 1px solid #ccc;
+  text-align: center;
+  padding: 8px;
+}

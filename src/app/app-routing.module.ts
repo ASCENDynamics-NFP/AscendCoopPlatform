@@ -49,6 +49,13 @@ export const routes: Routes = [
       import("./modules/listing/listing.module").then((m) => m.ListingModule),
   },
   {
+    path: "time-tracking",
+    loadChildren: () =>
+      import("./modules/time-tracking/time-tracking.module").then(
+        (m) => m.TimeTrackingModule,
+      ),
+  },
+  {
     path: "info", // Used to organize routes in "/info" folder.
     loadChildren: () =>
       import("./modules/info/info.module").then((m) => m.InfoModule),

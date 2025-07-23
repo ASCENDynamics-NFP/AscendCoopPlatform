@@ -1,0 +1,49 @@
+/*******************************************************************************
+ * Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+ * Copyright (C) 2023  ASCENDynamics NFP
+ *
+ * This file is part of Nonprofit Social Networking Platform.
+ *
+ * Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+ ********************************************************************************/
+// src/app/modules/time-tracking/time-tracking.module.ts
+
+import {NgModule} from "@angular/core";
+import {CommonModule} from "@angular/common";
+import {FormsModule} from "@angular/forms";
+import {IonicModule} from "@ionic/angular";
+import {RouterModule} from "@angular/router";
+import {StoreModule} from "@ngrx/store";
+import {EffectsModule} from "@ngrx/effects";
+import {TimeTrackingRoutingModule} from "./time-tracking-routing.module";
+import {TimesheetPage} from "./pages/timesheet/timesheet.page";
+import {WeekViewComponent} from "./components/week-view/week-view.component";
+import {timeTrackingReducer} from "../../state/reducers/time-tracking.reducer";
+import {TimeTrackingEffects} from "../../state/effects/time-tracking.effects";
+import {SharedModule} from "../../shared/shared.module";
+
+@NgModule({
+  declarations: [TimesheetPage, WeekViewComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    RouterModule,
+    SharedModule,
+    TimeTrackingRoutingModule,
+    StoreModule.forFeature("timeTracking", timeTrackingReducer),
+    EffectsModule.forFeature([TimeTrackingEffects]),
+  ],
+})
+export class TimeTrackingModule {}

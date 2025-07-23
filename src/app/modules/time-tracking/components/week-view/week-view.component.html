@@ -1,0 +1,14 @@
+<table class="week-grid">
+  <thead>
+    <tr>
+      <th>Project</th>
+      <th *ngFor="let day of days">{{ day | date:'EEE MM/dd' }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Example Project</td>
+      <td *ngFor="let day of days"></td>
+    </tr>
+  </tbody>
+</table>

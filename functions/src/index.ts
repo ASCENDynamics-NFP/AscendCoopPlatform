@@ -57,6 +57,8 @@ export {onCreateListing} from "./database/listings/triggers/onCreate";
 export {onDeleteListing} from "./database/listings/triggers/onDelete";
 export {onUpdateListing} from "./database/listings/triggers/onUpdate";
 // Time entry triggers
+export {onCreateTimeEntry} from "./database/timeEntries/triggers/onCreate";
+export {onDeleteTimeEntry} from "./database/timeEntries/triggers/onDelete";
 export {onUpdateTimeEntry} from "./database/timeEntries/triggers/onUpdate";
 
 // Listings related accounts triggers

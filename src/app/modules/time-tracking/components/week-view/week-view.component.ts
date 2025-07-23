@@ -82,6 +82,7 @@ export class WeekViewComponent implements OnInit {
       userId: existing ? existing.userId : this.userId,
       date: existing ? existing.date : Timestamp.fromDate(day),
       hours,
+      status: existing ? existing.status : "pending",
       notes: existing?.notes,
     };
     this.store.dispatch(TimeTrackingActions.saveTimeEntry({entry}));

@@ -29,5 +29,11 @@ export interface TimeEntry extends BaseDocument {
   userId: string;
   date: Timestamp;
   hours: number;
+  /**
+   * Approval status of the time entry. Newly created entries should be
+   * saved with 'pending' status and may later transition to 'approved'
+   * or 'rejected'.
+   */
+  status?: "pending" | "approved" | "rejected";
   notes?: string;
 }

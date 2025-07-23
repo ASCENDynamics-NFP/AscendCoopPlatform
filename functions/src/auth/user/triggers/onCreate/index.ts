@@ -67,6 +67,7 @@ async function saveAccountToFirestore(
     },
     email: user.email,
     privacy: "public",
+    totalHours: 0,
     legalAgreements: {
       termsOfService: {
         accepted: true,

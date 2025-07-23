@@ -235,6 +235,10 @@ export interface Account extends BaseDocument, Group, User {
   webLinks: WebLink[]; // Links to social media, personal websites, etc.
   lastLoginAt: Timestamp;
   email: string;
+  /**
+   * Total volunteer hours logged for this account
+   */
+  totalHours?: number;
   settings?: Settings; // User-specific settings
 }
 

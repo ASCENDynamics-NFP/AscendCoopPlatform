@@ -490,21 +490,23 @@ export class AccountEffects {
           take(1),
           filter((fresh) => !fresh),
           switchMap(() =>
-            this.firestoreService.getDocument<Account>('accounts', groupId).pipe(
-              map((account) =>
-                AccountActions.loadGroupRolesSuccess({
-                  groupId,
-                  roles: account?.roles || [],
-                }),
-              ),
-              catchError((error) =>
-                of(
-                  AccountActions.loadGroupRolesFailure({
-                    error: error.message,
+            this.firestoreService
+              .getDocument<Account>("accounts", groupId)
+              .pipe(
+                map((account) =>
+                  AccountActions.loadGroupRolesSuccess({
+                    groupId,
+                    roles: account?.roles || [],
                   }),
                 ),
+                catchError((error) =>
+                  of(
+                    AccountActions.loadGroupRolesFailure({
+                      error: error.message,
+                    }),
+                  ),
+                ),
               ),
-            ),
           ),
         ),
       ),
@@ -566,11 +568,11 @@ export class AccountEffects {
     modifier: (roles: GroupRole[]) => GroupRole[],
   ): Promise<GroupRole[]> {
     const account = await firstValueFrom(
-      this.firestoreService.getDocument<Account>('accounts', groupId),
+      this.firestoreService.getDocument<Account>("accounts", groupId),
     );
     const currentRoles = account?.roles || [];
     const updatedRoles = modifier(currentRoles);
-    await this.firestoreService.updateDocument('accounts', groupId, {
+    await this.firestoreService.updateDocument("accounts", groupId, {
       roles: updatedRoles,
     });
     return updatedRoles;
@@ -579,6 +581,7 @@ export class AccountEffects {
   private async createAccountWithResume(account: Account): Promise<Account> {
     const newAccount: any = {
       ...account,
+      totalHours: account.totalHours ?? 0,
       createdAt: serverTimestamp(),
       lastModifiedAt: serverTimestamp(),
     };

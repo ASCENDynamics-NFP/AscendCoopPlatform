@@ -37,6 +37,7 @@ export class WeekViewComponent implements OnInit {
   @Input() availableProjects: Project[] = [];
   @Input() entries: TimeEntry[] = [];
   @Input() accountId: string = "";
+  @Input() userId: string = "";
 
   days: Date[] = [];
   dropdownOpen = false;
@@ -78,7 +79,7 @@ export class WeekViewComponent implements OnInit {
       id: existing ? existing.id : "",
       accountId: this.accountId,
       projectId: project.id,
-      userId: existing ? existing.userId : "", // You'll need to get current user ID
+      userId: existing ? existing.userId : this.userId,
       date: existing ? existing.date : Timestamp.fromDate(day),
       hours,
       notes: existing?.notes,

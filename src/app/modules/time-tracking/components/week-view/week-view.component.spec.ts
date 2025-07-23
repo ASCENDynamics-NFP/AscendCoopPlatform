@@ -19,6 +19,8 @@ describe("WeekViewComponent", () => {
     fixture = TestBed.createComponent(WeekViewComponent);
     component = fixture.componentInstance;
 
+    component.userId = "test";
+
     component.projects = [
       {id: "p1", name: "Project 1"} as any,
       {id: "p2", name: "Project 2"} as any,
@@ -60,6 +62,22 @@ describe("WeekViewComponent", () => {
     expect(store.dispatch).toHaveBeenCalledWith(
       jasmine.objectContaining({
         type: TimeTrackingActions.saveTimeEntry.type,
+      }),
+    );
+  });
+
+
+  it("should include userId when creating new entry", () => {
+    const nextDay = new Date(component.weekStart);
+    nextDay.setDate(nextDay.getDate() + 1);
+    component.onHoursChange(component.projects[0], nextDay, {
+      target: {value: "3"},
+    } as any);
+
+    expect(store.dispatch).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        type: TimeTrackingActions.saveTimeEntry.type,
+        entry: jasmine.objectContaining({userId: "test"}),
       }),
     );
   });

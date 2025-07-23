@@ -29,6 +29,7 @@ describe("UserRegistrationComponent", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
+      declarations: [UserRegistrationComponent],
       imports: [IonicModule.forRoot()],
       providers: [provideMockStore()],
       schemas: [NO_ERRORS_SCHEMA],

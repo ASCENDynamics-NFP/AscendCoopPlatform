@@ -22,9 +22,11 @@
 import {AccountState} from "./reducers/account.reducer";
 import {AuthState} from "./reducers/auth.reducer";
 import {ListingsState} from "./reducers/listings.reducer";
+import {TimeTrackingState} from "./reducers/time-tracking.reducer";
 
 export interface AppState {
   accounts: AccountState;
   auth: AuthState;
   listings: ListingsState;
+  timeTracking: TimeTrackingState;
 }

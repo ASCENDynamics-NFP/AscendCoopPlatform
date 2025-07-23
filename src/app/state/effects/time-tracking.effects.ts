@@ -25,7 +25,6 @@ import {mergeMap, map, catchError} from "rxjs/operators";
 import {of, from} from "rxjs";
 import {TimeTrackingService} from "../../core/services/time-tracking.service";
 import * as TimeTrackingActions from "../actions/time-tracking.actions";
-import {TimeEntry} from "@shared/models/time-entry.model";
 
 @Injectable()
 export class TimeTrackingEffects {
@@ -54,7 +53,7 @@ export class TimeTrackingEffects {
     this.actions$.pipe(
       ofType(TimeTrackingActions.saveTimeEntry),
       mergeMap(({entry}) =>
-        from(this.service.addTimeEntry(entry as TimeEntry)).pipe(
+        from(this.service.addTimeEntry(entry)).pipe(
           map((id) =>
             TimeTrackingActions.saveTimeEntrySuccess({
               entry: {...entry, id},

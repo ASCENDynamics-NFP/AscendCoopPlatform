@@ -41,7 +41,6 @@ export class TimesheetPage implements OnInit {
 
   ngOnInit() {
     this.projects$ = this.store.select((state) => state.timeTracking.projects);
-    this.store.dispatch(TimeTrackingActions.loadProjects());
 
     this.store
       .select(selectAuthUser)
@@ -49,5 +48,9 @@ export class TimesheetPage implements OnInit {
       .subscribe((user) => {
         this.userId = user?.uid ?? "";
       });
+
+    this.store.dispatch(
+      TimeTrackingActions.loadProjects({accountId: this.accountId}),
+    );
   }
 }

@@ -23,6 +23,8 @@ import {BaseDocument} from "./base-document";
 
 export interface Project extends BaseDocument {
   name: string;
+  /** The account/group this project belongs to */
+  accountId: string;
   color?: string;
   clientId?: string;
   archived?: boolean;

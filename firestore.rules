@@ -18,6 +18,21 @@ service cloud.firestore {
       allow create, read, write, delete: if request.auth.uid != null; // Only authenticated users
     }
 
+    // Helper to check if user is an admin of the given account
+    function isAccountAdmin(accId) {
+      return request.auth != null && (
+        request.auth.uid == accId ||
+        (
+          exists(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted' &&
+          (
+            get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.access == 'admin' ||
+            get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.access == 'moderator'
+          )
+        )
+      );
+    }
+
     // Projects collection rules
     match /projects {
       allow list: if request.auth != null;
@@ -25,7 +40,8 @@ service cloud.firestore {
 
     match /projects/{projectId} {
       allow read: if request.auth != null;
-      allow create, update, delete: if request.auth != null;
+      allow create: if isAccountAdmin(request.resource.data.accountId);
+      allow update, delete: if isAccountAdmin(resource.data.accountId);
     }
 
     match /accounts {
@@ -135,8 +151,15 @@ service cloud.firestore {
 
       allow read: if isGroupAccount() && isGroupMember();
       allow create: if isGroupAccount() && request.auth.uid == request.resource.data.userId && isGroupMember();
-      allow update: if isGroupAccount() && request.auth.uid == request.resource.data.userId && isGroupMember() &&
-        (request.resource.data.status == 'approved' ? isGroupAdmin() : true);
+      allow update: if isGroupAccount() && isGroupMember() &&
+        (
+          isGroupAdmin() ||
+          (
+            request.auth.uid == resource.data.userId &&
+            request.auth.uid == request.resource.data.userId &&
+            resource.data.status != 'approved'
+          )
+        );
       allow delete: if false;
     }
     

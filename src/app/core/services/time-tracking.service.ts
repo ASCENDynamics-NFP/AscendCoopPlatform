@@ -36,9 +36,11 @@ export class TimeTrackingService {
     private firestore: FirestoreService,
   ) {}
 
-  getProjects(): Observable<Project[]> {
+  getProjects(accountId: string): Observable<Project[]> {
     return this.afs
-      .collection<Project>("projects")
+      .collection<Project>("projects", (ref) =>
+        ref.where("accountId", "==", accountId),
+      )
       .snapshotChanges()
       .pipe(
         map((actions) =>

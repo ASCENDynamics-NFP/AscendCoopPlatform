@@ -25,6 +25,10 @@ describe("WeekViewComponent", () => {
       {id: "p1", name: "Project 1"} as any,
       {id: "p2", name: "Project 2"} as any,
     ];
+    component.availableProjects = [
+      ...component.projects,
+      {id: "p3", name: "Project 3"} as any,
+    ];
 
     const today = new Date();
     component.weekStart = today;
@@ -62,6 +66,7 @@ describe("WeekViewComponent", () => {
     );
   });
 
+
   it("should include userId when creating new entry", () => {
     const nextDay = new Date(component.weekStart);
     nextDay.setDate(nextDay.getDate() + 1);
@@ -75,5 +80,25 @@ describe("WeekViewComponent", () => {
         entry: jasmine.objectContaining({userId: "test"}),
       }),
     );
+  });
+
+  it("should add a row when a project is added", () => {
+    component.addProjectById("p3");
+    fixture.detectChanges();
+    const rows = fixture.nativeElement.querySelectorAll("tbody tr");
+    expect(rows.length).toBe(3);
+  });
+
+  it("should not dispatch when hours empty for new entry", () => {
+    component.addProjectById("p3");
+    fixture.detectChanges();
+    store.dispatch.calls.reset();
+    const inputs = fixture.nativeElement.querySelectorAll(
+      "tbody tr:last-child input",
+    );
+    const input = inputs[0] as HTMLInputElement;
+    input.value = "";
+    input.dispatchEvent(new Event("change"));
+    expect(store.dispatch).not.toHaveBeenCalled();
   });
 });

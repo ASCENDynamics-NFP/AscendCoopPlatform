@@ -34,11 +34,13 @@ import {TimeEntry} from "@shared/models/time-entry.model";
 export class WeekViewComponent implements OnInit {
   @Input() weekStart: Date = new Date();
   @Input() projects: Project[] = [];
+  @Input() availableProjects: Project[] = [];
   @Input() entries: TimeEntry[] = [];
   @Input() accountId: string = "";
   @Input() userId: string = "";
 
   days: Date[] = [];
+  dropdownOpen = false;
 
   constructor(private store: Store) {}
 
@@ -70,6 +72,9 @@ export class WeekViewComponent implements OnInit {
       return;
     }
     const existing = this.getEntry(project.id, day);
+    if (!existing && (!target.value || hours === 0)) {
+      return;
+    }
     const entry: TimeEntry = {
       id: existing ? existing.id : "",
       accountId: this.accountId,
@@ -80,5 +85,21 @@ export class WeekViewComponent implements OnInit {
       notes: existing?.notes,
     };
     this.store.dispatch(TimeTrackingActions.saveTimeEntry({entry}));
+  }
+
+  toggleProjectDropdown() {
+    this.dropdownOpen = !this.dropdownOpen;
+  }
+
+  isSelected(id: string): boolean {
+    return this.projects.some((p) => p.id === id);
+  }
+
+  addProjectById(id: string) {
+    const project = this.availableProjects.find((p) => p.id === id);
+    if (project && !this.isSelected(id)) {
+      this.projects.push(project);
+    }
+    this.dropdownOpen = false;
   }
 }

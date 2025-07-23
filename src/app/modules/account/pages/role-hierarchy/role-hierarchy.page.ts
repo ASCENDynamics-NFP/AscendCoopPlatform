@@ -3,6 +3,7 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
 import {Observable, combineLatest} from "rxjs";
 import {map} from "rxjs/operators";
+import {Dictionary} from "@ngrx/entity";
 import {Account, RelatedAccount} from "@shared/models/account.model";
 import {GroupRole} from "@shared/models/group-role.model";
 import {
@@ -57,7 +58,11 @@ export class RoleHierarchyPage implements OnInit {
       AccountActions.loadRelatedAccounts({accountId: this.groupId}),
     );
 
-    this.tree$ = combineLatest([roles$, relatedAccounts$, accountEntities$]).pipe(
+    this.tree$ = combineLatest([
+      roles$,
+      relatedAccounts$,
+      accountEntities$,
+    ]).pipe(
       map(([roles, related, entities]) =>
         this.buildTree(roles, related, entities),
       ),
@@ -67,7 +72,7 @@ export class RoleHierarchyPage implements OnInit {
   buildTree(
     roles: GroupRole[],
     related: Partial<RelatedAccount>[],
-    entities: {[id: string]: Account},
+    entities: Dictionary<Account>,
   ): TreeNode {
     const roleMap = new Map<string, TreeNode>();
     roles.forEach((role) => {
@@ -75,7 +80,7 @@ export class RoleHierarchyPage implements OnInit {
     });
 
     const root: TreeNode = {
-      role: {id: "root", name: "None"},
+      role: undefined,
       children: [],
       accounts: [],
     };
@@ -92,10 +97,10 @@ export class RoleHierarchyPage implements OnInit {
     });
 
     related
-      .filter((ra) => ra.status === "accepted" && ra.roleId)
+      .filter((ra) => ra.status === "accepted" && ra.roleId && ra.id)
       .forEach((ra) => {
         const node = roleMap.get(ra.roleId!);
-        if (!node) return;
+        if (!node || !ra.id) return;
         const account = entities[ra.id];
         const display: DisplayAccount = {
           id: ra.id,

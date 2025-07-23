@@ -1,6 +1,9 @@
 <!-- role-hierarchy.page.html -->
 <ion-header>
-  <app-header [title]="'Role Hierarchy'" [defaultHref]="'../'"></app-header>
+  <app-header
+    [title]="'Role Hierarchy'"
+    [defaultHref]="'account/'+groupId"
+  ></app-header>
 </ion-header>
 
 <ion-content>
@@ -8,16 +11,22 @@
     Toggle Orientation
   </ion-button>
 
-  <div [ngClass]="orientation" class="tree-container" *ngIf="tree$ | async as tree">
+  <div
+    [ngClass]="orientation"
+    class="tree-container"
+    *ngIf="tree$ | async as tree"
+  >
     <ul class="tree">
-      <ng-container *ngTemplateOutlet="nodeTemplate; context: {node: tree}"></ng-container>
+      <ng-container
+        *ngTemplateOutlet="nodeTemplate; context: {node: tree}"
+      ></ng-container>
     </ul>
   </div>
 
   <ng-template #nodeTemplate let-node="node">
     <li>
-      <div class="node">
-        {{ node.role?.name || 'None' }}
+      <div class="node" *ngIf="node.role">
+        {{ node.role.name }}
         <div class="accounts" *ngIf="node.accounts.length">
           <ion-list>
             <ion-item
@@ -33,14 +42,16 @@
                 <h3>{{ acc.name }}</h3>
                 <p>{{ acc.tagline }}</p>
               </ion-label>
-              <ion-note slot="end" class="role-name">{{ acc.roleName }}</ion-note>
+              <!-- <ion-note slot="end" class="role-name">{{ acc.roleName }}</ion-note> -->
             </ion-item>
           </ion-list>
         </div>
       </div>
       <ul *ngIf="node.children.length">
         <ng-container *ngFor="let child of node.children">
-          <ng-container *ngTemplateOutlet="nodeTemplate; context: {node: child}"></ng-container>
+          <ng-container
+            *ngTemplateOutlet="nodeTemplate; context: {node: child}"
+          ></ng-container>
         </ng-container>
       </ul>
     </li>

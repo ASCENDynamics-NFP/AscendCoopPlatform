@@ -51,23 +51,36 @@ describe("TimeTrackingService", () => {
   });
 
   it("should retrieve projects from Firestore", (done) => {
-    const mockProjects: Project[] = [{id: "1", name: "Proj"} as Project];
+    const accountId = "account1";
+    const mockProjects: Project[] = [
+      {id: "1", name: "Proj", accountId} as Project,
+    ];
     const snapshotActions = [
       {
         payload: {
-          doc: {data: () => ({name: "Proj"}), id: "1"},
+          doc: {data: () => ({name: "Proj", accountId}), id: "1"},
         },
       },
     ];
-    (afsSpy.collection as any).and.returnValue({
-      snapshotChanges: () => of(snapshotActions as any),
-    } as any);
+    const whereSpy = jasmine.createSpy("where").and.returnValue({} as any);
+    (afsSpy.collection as any).and.callFake((name: string, fn?: any) => {
+      if (fn) {
+        fn({where: whereSpy});
+      }
+      return {
+        snapshotChanges: () => of(snapshotActions as any),
+      } as any;
+    });
 
-    service.getProjects().subscribe((projects) => {
+    service.getProjects(accountId).subscribe((projects) => {
       expect(projects).toEqual(mockProjects);
       done();
     });
-    expect(afsSpy.collection).toHaveBeenCalledWith("projects" as any);
+    expect(afsSpy.collection).toHaveBeenCalledWith(
+      "projects" as any,
+      jasmine.any(Function),
+    );
+    expect(whereSpy).toHaveBeenCalledWith("accountId", "==", accountId);
   });
 
   it("should retrieve user time entries", (done) => {
@@ -111,7 +124,10 @@ describe("TimeTrackingService", () => {
 
     const result = await service.addTimeEntry(entry);
 
-    expect(firestoreSpy.addDocument).toHaveBeenCalledWith(`accounts/${entry.accountId}/timeEntries`, entry);
+    expect(firestoreSpy.addDocument).toHaveBeenCalledWith(
+      `accounts/${entry.accountId}/timeEntries`,
+      entry,
+    );
     expect(result).toBe("e1");
   });
 

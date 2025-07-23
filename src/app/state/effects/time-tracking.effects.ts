@@ -36,8 +36,8 @@ export class TimeTrackingEffects {
   loadProjects$ = createEffect(() =>
     this.actions$.pipe(
       ofType(TimeTrackingActions.loadProjects),
-      mergeMap(() =>
-        this.service.getProjects().pipe(
+      mergeMap(({accountId}) =>
+        this.service.getProjects(accountId).pipe(
           map((projects) =>
             TimeTrackingActions.loadProjectsSuccess({projects}),
           ),

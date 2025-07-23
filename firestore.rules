@@ -104,6 +104,31 @@ service cloud.firestore {
     match /accounts/{accountId}/relatedListings/{listingId} {
       allow create, read, write, delete: if request.auth.uid != null;  // Only authenticated users
     }
+
+    // Time entries within group accounts
+    match /accounts/{accountId}/timeEntries/{entryId} {
+      function isGroupAccount() {
+        return get(/databases/$(database)/documents/accounts/$(accountId)).data.type == 'group';
+      }
+
+      function isGroupMember() {
+        return request.auth != null &&
+          exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
+      }
+
+      function isGroupAdmin() {
+        return request.auth != null &&
+          exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.access == 'admin';
+      }
+
+      allow read: if isGroupAccount() && isGroupMember();
+      allow create: if isGroupAccount() && request.auth.uid == request.resource.data.userId && isGroupMember();
+      allow update: if isGroupAccount() && request.auth.uid == request.resource.data.userId && isGroupMember() &&
+        (request.resource.data.status == 'approved' ? isGroupAdmin() : true);
+      allow delete: if false;
+    }
     
     // Rules for AppFeedback
     match /feedback/{accountId} {

@@ -35,6 +35,7 @@ export class WeekViewComponent implements OnInit {
   @Input() weekStart: Date = new Date();
   @Input() projects: Project[] = [];
   @Input() entries: TimeEntry[] = [];
+  @Input() accountId: string = "";
 
   days: Date[] = [];
 
@@ -59,16 +60,20 @@ export class WeekViewComponent implements OnInit {
     });
   }
 
-  onHoursChange(project: Project, day: Date, value: string) {
-    const hours = Number(value);
+  onHoursChange(project: Project, day: Date, event: Event) {
+    const target = event.target as HTMLInputElement;
+    if (!target) return;
+    
+    const hours = Number(target.value);
     if (isNaN(hours)) {
       return;
     }
     const existing = this.getEntry(project.id, day);
     const entry: TimeEntry = {
       id: existing ? existing.id : "",
+      accountId: this.accountId,
       projectId: project.id,
-      userId: existing ? existing.userId : "",
+      userId: existing ? existing.userId : "", // You'll need to get current user ID
       date: existing ? existing.date : Timestamp.fromDate(day),
       hours,
       notes: existing?.notes,

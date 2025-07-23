@@ -32,6 +32,7 @@ import * as TimeTrackingActions from "../../../../state/actions/time-tracking.ac
 })
 export class TimesheetPage implements OnInit {
   projects$!: Observable<Project[]>;
+  accountId: string = ""; // You'll need to get this from route params or auth service
 
   constructor(private store: Store<{timeTracking: {projects: Project[]}}>) {}
 

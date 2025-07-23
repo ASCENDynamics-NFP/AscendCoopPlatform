@@ -2,7 +2,7 @@
   <thead>
     <tr>
       <th>Project</th>
-      <th *ngFor="let day of days">{{ day | date:'EEE MM/dd' }}</th>
+      <th *ngFor="let day of days">{{ day | date: "EEE MM/dd" }}</th>
     </tr>
   </thead>
   <tbody>
@@ -12,7 +12,7 @@
         <input
           type="number"
           [value]="getEntry(project.id, day)?.hours"
-          (change)="onHoursChange(project, day, $event.target.value)"
+          (change)="onHoursChange(project, day, $event)"
         />
       </td>
     </tr>

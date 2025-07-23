@@ -72,6 +72,7 @@ describe("TimeTrackingService", () => {
 
   it("should retrieve user time entries", (done) => {
     const userId = "user123";
+    const accountId = "accountId";
     const mockEntries: TimeEntry[] = [
       {
         id: "e1",
@@ -92,36 +93,36 @@ describe("TimeTrackingService", () => {
       } as any;
     });
 
-    service.getUserEntries(userId).subscribe((entries) => {
+    service.getUserEntries(accountId, userId).subscribe((entries) => {
       expect(entries).toEqual(mockEntries);
       done();
     });
 
     expect(afsSpy.collection).toHaveBeenCalledWith(
-      "timeEntries" as any,
+      `accounts/${accountId}/timeEntries` as any,
       jasmine.any(Function),
     );
     expect(whereSpy).toHaveBeenCalledWith("userId", "==", userId);
   });
 
   it("should add a time entry using FirestoreService", async () => {
-    const entry = {id: "e1"} as TimeEntry;
+    const entry = {id: "e1", accountId: "testAccountId"} as TimeEntry;
     firestoreSpy.addDocument.and.returnValue(Promise.resolve("e1"));
 
     const result = await service.addTimeEntry(entry);
 
-    expect(firestoreSpy.addDocument).toHaveBeenCalledWith("timeEntries", entry);
+    expect(firestoreSpy.addDocument).toHaveBeenCalledWith(`accounts/${entry.accountId}/timeEntries`, entry);
     expect(result).toBe("e1");
   });
 
   it("should update a time entry using FirestoreService", async () => {
-    const entry = {id: "e1"} as TimeEntry;
+    const entry = {id: "e1", accountId: "testAccountId"} as TimeEntry;
     firestoreSpy.updateDocument.and.returnValue(Promise.resolve());
 
     await service.updateTimeEntry(entry);
 
     expect(firestoreSpy.updateDocument).toHaveBeenCalledWith(
-      "timeEntries",
+      `accounts/${entry.accountId}/timeEntries`,
       entry.id,
       entry,
     );

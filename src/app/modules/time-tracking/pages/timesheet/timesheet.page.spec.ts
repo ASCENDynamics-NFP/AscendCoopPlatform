@@ -1,6 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
 import {TimesheetPage} from "./timesheet.page";
+import {provideMockStore} from "@ngrx/store/testing";
 
 describe("TimesheetPage", () => {
   let component: TimesheetPage;
@@ -10,6 +11,7 @@ describe("TimesheetPage", () => {
     await TestBed.configureTestingModule({
       declarations: [TimesheetPage],
       imports: [IonicModule.forRoot()],
+      providers: [provideMockStore()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TimesheetPage);

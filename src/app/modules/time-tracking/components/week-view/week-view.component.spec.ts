@@ -39,6 +39,7 @@ describe("WeekViewComponent", () => {
         userId: "u1",
         date: Timestamp.fromDate(today),
         hours: 1,
+        status: "pending",
       } as any,
     ];
 
@@ -65,7 +66,6 @@ describe("WeekViewComponent", () => {
       }),
     );
   });
-
 
   it("should include userId when creating new entry", () => {
     const nextDay = new Date(component.weekStart);

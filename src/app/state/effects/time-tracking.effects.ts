@@ -52,18 +52,19 @@ export class TimeTrackingEffects {
   saveEntry$ = createEffect(() =>
     this.actions$.pipe(
       ofType(TimeTrackingActions.saveTimeEntry),
-      mergeMap(({entry}) =>
-        from(this.service.addTimeEntry(entry)).pipe(
+      mergeMap(({entry}) => {
+        const save$ = entry.id
+          ? from(this.service.updateTimeEntry(entry)).pipe(map(() => entry.id))
+          : from(this.service.addTimeEntry(entry));
+        return save$.pipe(
           map((id) =>
-            TimeTrackingActions.saveTimeEntrySuccess({
-              entry: {...entry, id},
-            }),
+            TimeTrackingActions.saveTimeEntrySuccess({entry: {...entry, id}}),
           ),
           catchError((error) =>
             of(TimeTrackingActions.saveTimeEntryFailure({error})),
           ),
-        ),
-      ),
+        );
+      }),
     ),
   );
 }

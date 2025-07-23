@@ -422,4 +422,13 @@ export class ListPage implements OnInit {
       this.router.navigate([`/account/${this.accountId}/roles`]);
     }
   }
+
+  /**
+   * Navigates to the hierarchy true page.
+   */
+  navigateToHierarchy() {
+    if (this.accountId) {
+      this.router.navigate([`/account/${this.accountId}/hierarchy`]);
+    }
+  }
 }

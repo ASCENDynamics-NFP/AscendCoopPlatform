@@ -1,0 +1,99 @@
+/* role-hierarchy.page.scss */
+.tree-container {
+  padding: 1rem;
+}
+
+.tree {
+  list-style: none;
+  padding-left: 1rem;
+  position: relative;
+}
+
+.tree li {
+  margin: 0.5rem 0;
+  position: relative;
+}
+
+.tree li::before {
+  content: "";
+  position: absolute;
+  top: 1rem;
+  left: -0.75rem;
+  width: 0.75rem;
+  height: 100%;
+  border-left: 1px solid var(--ion-color-medium);
+}
+
+.tree li::after {
+  content: "";
+  position: absolute;
+  top: 1rem;
+  left: -0.75rem;
+  width: 0.75rem;
+  border-top: 1px solid var(--ion-color-medium);
+}
+
+.tree li:last-child::before {
+  height: 1rem;
+}
+
+.tree > li::before,
+.tree > li::after {
+  display: none;
+}
+
+.node {
+  background: var(--ion-color-light);
+  border: 1px solid var(--ion-color-medium);
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.accounts {
+  margin-top: 0.5rem;
+}
+
+.role-name {
+  margin-left: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+}
+
+.horizontal .tree {
+  display: flex;
+}
+
+.horizontal .tree ul {
+  display: flex;
+}
+
+.horizontal .tree li {
+  margin-right: 1rem;
+  position: relative;
+  padding-top: 1rem;
+}
+
+.horizontal .tree li::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 1rem;
+  background: var(--ion-color-medium);
+}
+
+.horizontal .tree li::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--ion-color-medium);
+}
+
+.horizontal .tree > li::before,
+.horizontal .tree > li::after {
+  display: none;
+}

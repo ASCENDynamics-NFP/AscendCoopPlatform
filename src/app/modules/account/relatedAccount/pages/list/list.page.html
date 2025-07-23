@@ -39,14 +39,25 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               {{ (currentRelatedAccountsList$ | async)?.length }} {{ (title$ |
               async)?.toLowerCase() }}
             </ion-card-subtitle>
-            <ion-button
-              *ngIf="(canManageRoles$ | async)"
-              fill="clear"
-              size="small"
-              (click)="navigateToRoles()"
-            >
-              Manage Roles
-            </ion-button>
+            <ion-buttons class="ion-padding-top">
+              <ion-button
+                *ngIf="(canManageRoles$ | async)"
+                color="primary"
+                fill="outline"
+                size="small"
+                (click)="navigateToRoles()"
+              >
+                Manage Roles
+              </ion-button>
+              <ion-button
+                color="primary"
+                fill="outline"
+                size="small"
+                (click)="navigateToHierarchy()"
+              >
+                Hierarchy Tree
+              </ion-button>
+            </ion-buttons>
           </ion-card-header>
 
           <!-- Unwrap currentRelatedAccountsList$ -->

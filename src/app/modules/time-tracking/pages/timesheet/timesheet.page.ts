@@ -22,8 +22,10 @@
 import {Component, OnInit} from "@angular/core";
 import {Store} from "@ngrx/store";
 import {Observable} from "rxjs";
+import {first} from "rxjs/operators";
 import {Project} from "@shared/models/project.model";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 
 @Component({
   selector: "app-timesheet",
@@ -33,11 +35,19 @@ import * as TimeTrackingActions from "../../../../state/actions/time-tracking.ac
 export class TimesheetPage implements OnInit {
   projects$!: Observable<Project[]>;
   accountId: string = ""; // You'll need to get this from route params or auth service
+  userId: string = "";
 
   constructor(private store: Store<{timeTracking: {projects: Project[]}}>) {}
 
   ngOnInit() {
     this.projects$ = this.store.select((state) => state.timeTracking.projects);
     this.store.dispatch(TimeTrackingActions.loadProjects());
+
+    this.store
+      .select(selectAuthUser)
+      .pipe(first())
+      .subscribe((user) => {
+        this.userId = user?.uid ?? "";
+      });
   }
 }

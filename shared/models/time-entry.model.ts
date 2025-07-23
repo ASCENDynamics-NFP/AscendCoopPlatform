@@ -23,6 +23,8 @@ import {Timestamp} from "firebase/firestore";
 import {BaseDocument} from "./base-document";
 
 export interface TimeEntry extends BaseDocument {
+  /** The account/group this entry belongs to */
+  accountId: string;
   projectId: string;
   userId: string;
   date: Timestamp;

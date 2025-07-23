@@ -55,9 +55,9 @@ export class TimeTrackingService {
       );
   }
 
-  getUserEntries(userId: string): Observable<TimeEntry[]> {
+  getUserEntries(accountId: string, userId: string): Observable<TimeEntry[]> {
     return this.afs
-      .collection<TimeEntry>("timeEntries", (ref) =>
+      .collection<TimeEntry>(`accounts/${accountId}/timeEntries`, (ref) =>
         ref.where("userId", "==", userId),
       )
       .snapshotChanges()
@@ -77,10 +77,17 @@ export class TimeTrackingService {
   }
 
   addTimeEntry(entry: TimeEntry): Promise<string> {
-    return this.firestore.addDocument("timeEntries", entry);
+    return this.firestore.addDocument(
+      `accounts/${entry.accountId}/timeEntries`,
+      entry,
+    );
   }
 
   updateTimeEntry(entry: TimeEntry): Promise<void> {
-    return this.firestore.updateDocument("timeEntries", entry.id, entry);
+    return this.firestore.updateDocument(
+      `accounts/${entry.accountId}/timeEntries`,
+      entry.id,
+      entry,
+    );
   }
 }

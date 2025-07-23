@@ -70,3 +70,75 @@ describe("onUpdateTimeEntry", () => {
   });
 });
 
+describe("onCreateTimeEntry", () => {
+  function setupCreate() {
+    const updateStub = sinon.stub().resolves();
+    const docStub = sinon.stub().returns({update: updateStub});
+    const incrementStub = sinon.stub().returnsArg(0);
+
+    const firestoreFn: any = sinon.stub().returns({doc: docStub});
+    firestoreFn.FieldValue = {increment: incrementStub};
+
+    const adminStub = {firestore: firestoreFn};
+
+    let handler: any;
+    proxyquire("../src/database/timeEntries/triggers/onCreate", {
+      "../../../../utils/firebase": {admin: adminStub},
+      "firebase-functions/logger": {info: sinon.stub(), error: sinon.stub()},
+      "firebase-functions/v2/firestore": {
+        onDocumentCreated: (_cfg: any, fn: any) => {
+          handler = fn;
+          return fn;
+        },
+      },
+    });
+
+    return {handler, updateStub, incrementStub, docStub};
+  }
+
+  it("increments hours when approved on create", async () => {
+    const {handler, updateStub, incrementStub, docStub} = setupCreate();
+    const snapshot = {data: () => ({status: "approved", userId: "u", hours: 4})};
+    await handler({data: snapshot, params: {accountId: "a", entryId: "e"}});
+    expect(docStub.calledWith("accounts/u")).to.be.true;
+    expect(incrementStub.calledWith(4)).to.be.true;
+    expect(updateStub.calledOnce).to.be.true;
+  });
+});
+
+describe("onDeleteTimeEntry", () => {
+  function setupDelete() {
+    const updateStub = sinon.stub().resolves();
+    const docStub = sinon.stub().returns({update: updateStub});
+    const incrementStub = sinon.stub().returnsArg(0);
+
+    const firestoreFn: any = sinon.stub().returns({doc: docStub});
+    firestoreFn.FieldValue = {increment: incrementStub};
+
+    const adminStub = {firestore: firestoreFn};
+
+    let handler: any;
+    proxyquire("../src/database/timeEntries/triggers/onDelete", {
+      "../../../../utils/firebase": {admin: adminStub},
+      "firebase-functions/logger": {info: sinon.stub(), error: sinon.stub()},
+      "firebase-functions/v2/firestore": {
+        onDocumentDeleted: (_cfg: any, fn: any) => {
+          handler = fn;
+          return fn;
+        },
+      },
+    });
+
+    return {handler, updateStub, incrementStub, docStub};
+  }
+
+  it("decrements hours when approved entry deleted", async () => {
+    const {handler, updateStub, incrementStub, docStub} = setupDelete();
+    const snapshot = {data: () => ({status: "approved", userId: "u", hours: 2})};
+    await handler({data: snapshot, params: {accountId: "a", entryId: "e"}});
+    expect(docStub.calledWith("accounts/u")).to.be.true;
+    expect(incrementStub.calledWith(-2)).to.be.true;
+    expect(updateStub.calledOnce).to.be.true;
+  });
+});
+

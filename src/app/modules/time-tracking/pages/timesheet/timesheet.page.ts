@@ -44,6 +44,7 @@ export class TimesheetPage implements OnInit {
   entries$!: Observable<TimeEntry[]>;
   accountId: string = "";
   userId: string = "";
+  currentWeekStart: Date = this.startOfWeek(new Date());
 
   constructor(
     private store: Store<AppState>,
@@ -74,5 +75,25 @@ export class TimesheetPage implements OnInit {
     this.store.dispatch(
       TimeTrackingActions.loadProjects({accountId: this.accountId}),
     );
+  }
+
+  startOfWeek(date: Date): Date {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    const day = d.getDay();
+    d.setDate(d.getDate() - day);
+    return d;
+  }
+
+  previousWeek() {
+    const prev = new Date(this.currentWeekStart);
+    prev.setDate(prev.getDate() - 7);
+    this.currentWeekStart = prev;
+  }
+
+  nextWeek() {
+    const next = new Date(this.currentWeekStart);
+    next.setDate(next.getDate() + 7);
+    this.currentWeekStart = next;
   }
 }

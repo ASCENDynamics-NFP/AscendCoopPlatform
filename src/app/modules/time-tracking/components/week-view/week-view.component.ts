@@ -19,7 +19,7 @@
  ********************************************************************************/
 // src/app/modules/time-tracking/components/week-view/week-view.component.ts
 
-import {Component, Input, OnInit} from "@angular/core";
+import {Component, Input, OnInit, OnChanges, SimpleChanges} from "@angular/core";
 import {Store} from "@ngrx/store";
 import {Timestamp} from "firebase/firestore";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
@@ -31,7 +31,7 @@ import {TimeEntry} from "@shared/models/time-entry.model";
   templateUrl: "./week-view.component.html",
   styleUrls: ["./week-view.component.scss"],
 })
-export class WeekViewComponent implements OnInit {
+export class WeekViewComponent implements OnInit, OnChanges {
   @Input() weekStart: Date = new Date();
   @Input() projects: Project[] = [];
   @Input() availableProjects: Project[] = [];
@@ -45,6 +45,17 @@ export class WeekViewComponent implements OnInit {
   constructor(private store: Store) {}
 
   ngOnInit() {
+    this.calculateDays();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes["weekStart"]) {
+      this.calculateDays();
+    }
+  }
+
+  private calculateDays() {
+    this.days = [];
     const start = new Date(this.weekStart);
     start.setHours(0, 0, 0, 0);
     for (let i = 0; i < 7; i++) {

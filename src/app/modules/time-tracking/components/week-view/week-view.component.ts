@@ -96,7 +96,11 @@ export class WeekViewComponent implements OnInit {
     return this.projects.some((p) => p.id === id);
   }
 
-  addProjectById(id: string) {
+  addProjectById(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    if (!target) return;
+    
+    const id = target.value;
     const project = this.availableProjects.find((p) => p.id === id);
     if (project && !this.isSelected(id)) {
       this.projects.push(project);

@@ -83,14 +83,16 @@ describe("WeekViewComponent", () => {
   });
 
   it("should add a row when a project is added", () => {
-    component.addProjectById("p3");
+    const mockEvent = { target: { value: "p3" } } as any;
+    component.addProjectById(mockEvent);
     fixture.detectChanges();
     const rows = fixture.nativeElement.querySelectorAll("tbody tr");
     expect(rows.length).toBe(3);
   });
 
   it("should not dispatch when hours empty for new entry", () => {
-    component.addProjectById("p3");
+    const mockEvent = { target: { value: "p3" } } as any;
+    component.addProjectById(mockEvent);
     fixture.detectChanges();
     store.dispatch.calls.reset();
     const inputs = fixture.nativeElement.querySelectorAll(

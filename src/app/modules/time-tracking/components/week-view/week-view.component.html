@@ -1,5 +1,5 @@
 <button (click)="toggleProjectDropdown()">Add Project</button>
-<select *ngIf="dropdownOpen" (change)="addProjectById($event.target.value)">
+<select *ngIf="dropdownOpen" (change)="addProjectById($event)">
   <option value="">Select...</option>
   <option
     *ngFor="let proj of availableProjects"

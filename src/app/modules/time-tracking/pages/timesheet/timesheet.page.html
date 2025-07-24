@@ -7,7 +7,8 @@
 <ion-content>
   <app-week-view
     [accountId]="accountId"
-    [availableProjects]="projects$ | async"
     [userId]="userId"
+    [entries]="(entries$ | async) || []"
+    [availableProjects]="(projects$ | async) || []"
   ></app-week-view>
 </ion-content>

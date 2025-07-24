@@ -67,4 +67,20 @@ export class TimeTrackingEffects {
       }),
     ),
   );
+
+  loadEntries$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(TimeTrackingActions.loadTimeEntries),
+      mergeMap(({accountId, userId}) =>
+        this.service.getUserEntries(accountId, userId).pipe(
+          map((entries) =>
+            TimeTrackingActions.loadTimeEntriesSuccess({entries}),
+          ),
+          catchError((error) =>
+            of(TimeTrackingActions.loadTimeEntriesFailure({error})),
+          ),
+        ),
+      ),
+    ),
+  );
 }

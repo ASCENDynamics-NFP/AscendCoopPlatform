@@ -22,5 +22,6 @@
     [projects]="(projects$ | async) || []"
     [entries]="(entries$ | async) || []"
     [availableProjects]="(projects$ | async) || []"
+    [weekStart]="currentWeekStart"
   ></app-week-view>
 </ion-content>

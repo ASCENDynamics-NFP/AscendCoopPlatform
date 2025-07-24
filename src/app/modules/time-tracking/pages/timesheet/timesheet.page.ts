@@ -98,4 +98,23 @@ export class TimesheetPage implements OnInit {
     this.currentWeekStart.setDate(this.currentWeekStart.getDate() - 7);
     this.loadEntries();
   }
+//   startOfWeek(date: Date): Date {
+//     const d = new Date(date);
+//     d.setHours(0, 0, 0, 0);
+//     const day = d.getDay();
+//     d.setDate(d.getDate() - day);
+//     return d;
+//   }
+
+//   previousWeek() {
+//     const prev = new Date(this.currentWeekStart);
+//     prev.setDate(prev.getDate() - 7);
+//     this.currentWeekStart = prev;
+//   }
+
+//   nextWeek() {
+//     const next = new Date(this.currentWeekStart);
+//     next.setDate(next.getDate() + 7);
+//     this.currentWeekStart = next;
+//   }
 }

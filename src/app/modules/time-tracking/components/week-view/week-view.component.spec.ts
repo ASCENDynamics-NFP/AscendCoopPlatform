@@ -3,6 +3,7 @@ import {WeekViewComponent} from "./week-view.component";
 import {Store} from "@ngrx/store";
 import {Timestamp} from "firebase/firestore";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
+import {SimpleChange} from "@angular/core";
 
 describe("WeekViewComponent", () => {
   let component: WeekViewComponent;
@@ -120,5 +121,22 @@ describe("WeekViewComponent", () => {
     expect(component.rowTotals["p1"]).toBe(5);
     expect(component.columnTotals[0]).toBe(5);
     expect(component.totalHours).toBe(5);
+  });
+
+  it("should update header dates when weekStart changes", () => {
+    const initialHeader: string = fixture.nativeElement.querySelectorAll(
+      "thead th",
+    )[1].textContent.trim();
+    const nextWeek = new Date(component.weekStart);
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    component.weekStart = nextWeek;
+    component.ngOnChanges({
+      weekStart: new SimpleChange(null, nextWeek, false),
+    });
+    fixture.detectChanges();
+    const newHeader: string = fixture.nativeElement.querySelectorAll(
+      "thead th",
+    )[1].textContent.trim();
+    expect(newHeader).not.toBe(initialHeader);
   });
 });

@@ -71,11 +71,20 @@ export class TimeTrackingEffects {
   loadEntries$ = createEffect(() =>
     this.actions$.pipe(
       ofType(TimeTrackingActions.loadTimeEntries),
-      mergeMap(({accountId, userId}) =>
+      mergeMap(({accountId, userId, weekStart}) =>
         this.service.getUserEntries(accountId, userId).pipe(
-          map((entries) =>
-            TimeTrackingActions.loadTimeEntriesSuccess({entries}),
-          ),
+          map((entries) => {
+            const start = new Date(weekStart);
+            const end = new Date(start);
+            end.setDate(start.getDate() + 7);
+            const filtered = entries.filter((e) => {
+              const d = e.date.toDate();
+              return d >= start && d < end;
+            });
+            return TimeTrackingActions.loadTimeEntriesSuccess({
+              entries: filtered,
+            });
+          }),
           catchError((error) =>
             of(TimeTrackingActions.loadTimeEntriesFailure({error})),
           ),

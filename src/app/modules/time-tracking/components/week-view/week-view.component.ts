@@ -55,6 +55,17 @@ export class WeekViewComponent implements OnInit, OnChanges {
   constructor(private store: Store) {}
 
   ngOnInit() {
+    this.calculateDays();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes["weekStart"]) {
+      this.calculateDays();
+    }
+  }
+
+  private calculateDays() {
+    this.days = [];
     const start = new Date(this.weekStart);
     start.setHours(0, 0, 0, 0);
     for (let i = 0; i < 7; i++) {

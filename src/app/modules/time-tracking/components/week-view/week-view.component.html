@@ -1,3 +1,4 @@
+<h2>Week of {{ weekStart | date: 'MMM d' }}</h2>
 <button (click)="toggleProjectDropdown()">Add Project</button>
 <select *ngIf="dropdownOpen" (change)="addProjectById($event)">
   <option value="">Select...</option>
@@ -15,6 +16,7 @@
     <tr>
       <th>Project</th>
       <th *ngFor="let day of days">{{ day | date: "EEE MM/dd" }}</th>
+      <th>Total</th>
     </tr>
   </thead>
   <tbody>
@@ -27,6 +29,14 @@
           (change)="onHoursChange(project, day, $event)"
         />
       </td>
+      <td>{{ rowTotals[project.id] || 0 }}</td>
     </tr>
   </tbody>
+  <tfoot>
+    <tr>
+      <td>Total</td>
+      <td *ngFor="let total of columnTotals">{{ total }}</td>
+      <td>{{ totalHours }}</td>
+    </tr>
+  </tfoot>
 </table>

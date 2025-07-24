@@ -19,7 +19,13 @@
  ********************************************************************************/
 // src/app/modules/time-tracking/components/week-view/week-view.component.ts
 
-import {Component, Input, OnInit} from "@angular/core";
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+} from "@angular/core";
 import {Store} from "@ngrx/store";
 import {Timestamp} from "firebase/firestore";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
@@ -31,7 +37,7 @@ import {TimeEntry} from "@shared/models/time-entry.model";
   templateUrl: "./week-view.component.html",
   styleUrls: ["./week-view.component.scss"],
 })
-export class WeekViewComponent implements OnInit {
+export class WeekViewComponent implements OnInit, OnChanges {
   @Input() weekStart: Date = new Date();
   @Input() projects: Project[] = [];
   @Input() availableProjects: Project[] = [];
@@ -42,6 +48,10 @@ export class WeekViewComponent implements OnInit {
   days: Date[] = [];
   dropdownOpen = false;
 
+  rowTotals: {[projectId: string]: number} = {};
+  columnTotals: number[] = [];
+  totalHours = 0;
+
   constructor(private store: Store) {}
 
   ngOnInit() {
@@ -51,6 +61,13 @@ export class WeekViewComponent implements OnInit {
       const day = new Date(start);
       day.setDate(start.getDate() + i);
       this.days.push(day);
+    }
+    this.updateTotals();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes["entries"]) {
+      this.updateTotals();
     }
   }
 
@@ -85,6 +102,12 @@ export class WeekViewComponent implements OnInit {
       status: existing ? existing.status : "pending",
       notes: existing?.notes,
     };
+    if (existing) {
+      existing.hours = hours;
+    } else {
+      this.entries.push(entry);
+    }
+    this.updateTotals();
     this.store.dispatch(TimeTrackingActions.saveTimeEntry({entry}));
   }
 
@@ -99,12 +122,31 @@ export class WeekViewComponent implements OnInit {
   addProjectById(event: Event) {
     const target = event.target as HTMLSelectElement;
     if (!target) return;
-    
+
     const id = target.value;
     const project = this.availableProjects.find((p) => p.id === id);
     if (project && !this.isSelected(id)) {
       this.projects.push(project);
     }
     this.dropdownOpen = false;
+  }
+
+  private updateTotals() {
+    this.rowTotals = {};
+    this.columnTotals = new Array(this.days.length).fill(0);
+    this.totalHours = 0;
+
+    for (const project of this.projects) {
+      let rowSum = 0;
+      for (let i = 0; i < this.days.length; i++) {
+        const day = this.days[i];
+        const entry = this.getEntry(project.id, day);
+        const hrs = entry ? entry.hours : 0;
+        rowSum += hrs;
+        this.columnTotals[i] += hrs;
+      }
+      this.rowTotals[project.id] = rowSum;
+      this.totalHours += rowSum;
+    }
   }
 }

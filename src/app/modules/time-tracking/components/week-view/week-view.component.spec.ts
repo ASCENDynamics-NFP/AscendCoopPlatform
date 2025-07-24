@@ -83,7 +83,7 @@ describe("WeekViewComponent", () => {
   });
 
   it("should add a row when a project is added", () => {
-    const mockEvent = { target: { value: "p3" } } as any;
+    const mockEvent = {target: {value: "p3"}} as any;
     component.addProjectById(mockEvent);
     fixture.detectChanges();
     const rows = fixture.nativeElement.querySelectorAll("tbody tr");
@@ -91,7 +91,7 @@ describe("WeekViewComponent", () => {
   });
 
   it("should not dispatch when hours empty for new entry", () => {
-    const mockEvent = { target: { value: "p3" } } as any;
+    const mockEvent = {target: {value: "p3"}} as any;
     component.addProjectById(mockEvent);
     fixture.detectChanges();
     store.dispatch.calls.reset();
@@ -102,5 +102,23 @@ describe("WeekViewComponent", () => {
     input.value = "";
     input.dispatchEvent(new Event("change"));
     expect(store.dispatch).not.toHaveBeenCalled();
+  });
+
+  it("should calculate initial totals", () => {
+    expect(component.rowTotals["p1"]).toBe(1);
+    expect(component.rowTotals["p2"]).toBe(0);
+    expect(component.columnTotals[0]).toBe(1);
+    expect(component.totalHours).toBe(1);
+  });
+
+  it("should update totals when hours change", () => {
+    const input: HTMLInputElement =
+      fixture.nativeElement.querySelector("tbody tr input");
+    input.value = "5";
+    input.dispatchEvent(new Event("change"));
+    fixture.detectChanges();
+    expect(component.rowTotals["p1"]).toBe(5);
+    expect(component.columnTotals[0]).toBe(5);
+    expect(component.totalHours).toBe(5);
   });
 });

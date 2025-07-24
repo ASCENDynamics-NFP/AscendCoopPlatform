@@ -26,6 +26,8 @@ import {first} from "rxjs/operators";
 import {Project} from "@shared/models/project.model";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {TimeEntry} from "@shared/models/time-entry.model";
+import {AppState} from "../../../../state/app.state";
 
 @Component({
   selector: "app-timesheet",
@@ -34,19 +36,29 @@ import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 })
 export class TimesheetPage implements OnInit {
   projects$!: Observable<Project[]>;
+  entries$!: Observable<TimeEntry[]>;
   accountId: string = ""; // You'll need to get this from route params or auth service
   userId: string = "";
 
-  constructor(private store: Store<{timeTracking: {projects: Project[]}}>) {}
+  constructor(private store: Store<AppState>) {}
 
   ngOnInit() {
     this.projects$ = this.store.select((state) => state.timeTracking.projects);
+    this.entries$ = this.store.select((state) => state.timeTracking.entries);
 
     this.store
       .select(selectAuthUser)
       .pipe(first())
       .subscribe((user) => {
         this.userId = user?.uid ?? "";
+        if (this.userId) {
+          this.store.dispatch(
+            TimeTrackingActions.loadTimeEntries({
+              accountId: this.accountId,
+              userId: this.userId,
+            }),
+          );
+        }
       });
 
     this.store.dispatch(

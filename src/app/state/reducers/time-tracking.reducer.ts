@@ -22,15 +22,18 @@
 import {createReducer, on} from "@ngrx/store";
 import * as TimeTrackingActions from "../actions/time-tracking.actions";
 import {Project} from "@shared/models/project.model";
+import {TimeEntry} from "@shared/models/time-entry.model";
 
 export interface TimeTrackingState {
   projects: Project[];
+  entries: TimeEntry[];
   loading: boolean;
   error: any;
 }
 
 export const initialState: TimeTrackingState = {
   projects: [],
+  entries: [],
   loading: false,
   error: null,
 };
@@ -62,6 +65,21 @@ export const timeTrackingReducer = createReducer(
     error: null,
   })),
   on(TimeTrackingActions.saveTimeEntryFailure, (state, {error}) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
+  on(TimeTrackingActions.loadTimeEntries, (state) => ({
+    ...state,
+    loading: true,
+  })),
+  on(TimeTrackingActions.loadTimeEntriesSuccess, (state, {entries}) => ({
+    ...state,
+    entries,
+    loading: false,
+    error: null,
+  })),
+  on(TimeTrackingActions.loadTimeEntriesFailure, (state, {error}) => ({
     ...state,
     loading: false,
     error,

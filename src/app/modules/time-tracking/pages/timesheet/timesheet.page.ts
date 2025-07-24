@@ -21,11 +21,16 @@
 
 import {Component, OnInit} from "@angular/core";
 import {Store} from "@ngrx/store";
+import {ActivatedRoute} from "@angular/router";
 import {Observable} from "rxjs";
 import {first} from "rxjs/operators";
 import {Project} from "@shared/models/project.model";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {
+  selectEntries,
+  selectProjects,
+} from "../../../../state/selectors/time-tracking.selectors";
 import {TimeEntry} from "@shared/models/time-entry.model";
 import {AppState} from "../../../../state/app.state";
 
@@ -37,14 +42,19 @@ import {AppState} from "../../../../state/app.state";
 export class TimesheetPage implements OnInit {
   projects$!: Observable<Project[]>;
   entries$!: Observable<TimeEntry[]>;
-  accountId: string = ""; // You'll need to get this from route params or auth service
+  accountId: string = "";
   userId: string = "";
 
-  constructor(private store: Store<AppState>) {}
+  constructor(
+    private store: Store<AppState>,
+    private route: ActivatedRoute,
+  ) {}
 
   ngOnInit() {
-    this.projects$ = this.store.select((state) => state.timeTracking.projects);
-    this.entries$ = this.store.select((state) => state.timeTracking.entries);
+    this.accountId = this.route.snapshot.paramMap.get("accountId") ?? "";
+
+    this.projects$ = this.store.select(selectProjects);
+    this.entries$ = this.store.select(selectEntries);
 
     this.store
       .select(selectAuthUser)

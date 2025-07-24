@@ -150,7 +150,7 @@ service cloud.firestore {
       }
 
       allow read: if isGroupAccount() && isGroupMember();
-      allow create: if isGroupAccount() && request.auth.uid == request.resource.data.userId && isGroupMember();
+      allow create: if isGroupAccount() && request.auth.uid == request.resource.data.userId && isGroupMember() && (isGroupAdmin() || request.resource.data.status == 'pending');
       allow update: if isGroupAccount() && isGroupMember() &&
         (
           isGroupAdmin() ||

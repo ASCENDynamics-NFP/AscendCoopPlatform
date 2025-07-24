@@ -38,9 +38,7 @@ export class TimeTrackingService {
 
   getProjects(accountId: string): Observable<Project[]> {
     return this.afs
-      .collection<Project>("projects", (ref) =>
-        ref.where("accountId", "==", accountId),
-      )
+      .collection<Project>(`accounts/${accountId}/projects`)
       .snapshotChanges()
       .pipe(
         map((actions) =>

@@ -62,11 +62,7 @@ describe("TimeTrackingService", () => {
         },
       },
     ];
-    const whereSpy = jasmine.createSpy("where").and.returnValue({} as any);
-    (afsSpy.collection as any).and.callFake((name: string, fn?: any) => {
-      if (fn) {
-        fn({where: whereSpy});
-      }
+    (afsSpy.collection as any).and.callFake((name: string) => {
       return {
         snapshotChanges: () => of(snapshotActions as any),
       } as any;
@@ -77,10 +73,8 @@ describe("TimeTrackingService", () => {
       done();
     });
     expect(afsSpy.collection).toHaveBeenCalledWith(
-      "projects" as any,
-      jasmine.any(Function),
+      `accounts/${accountId}/projects` as any,
     );
-    expect(whereSpy).toHaveBeenCalledWith("accountId", "==", accountId);
   });
 
   it("should retrieve user time entries", (done) => {

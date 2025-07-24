@@ -33,6 +33,13 @@
         {"fieldPath": "accountId", "order": "ASCENDING"},
         {"fieldPath": "status", "order": "ASCENDING"}
       ]
+    },
+    {
+      "collectionGroup": "projects",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "accountId", "order": "ASCENDING"}
+      ]
     }
   ],
   "fieldOverrides": []

@@ -5,11 +5,20 @@
 </ion-header>
 
 <ion-content>
-  <ion-button (click)="previousWeek()">Previous Week</ion-button>
-  <ion-button (click)="nextWeek()">Next Week</ion-button>
+  <ion-grid>
+    <ion-row class="ion-justify-content-between ion-padding">
+      <ion-col size="auto">
+        <ion-button fill="clear" (click)="previousWeek()">Prev</ion-button>
+      </ion-col>
+      <ion-col size="auto">
+        <ion-button fill="clear" (click)="nextWeek()">Next</ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
   <app-week-view
     [accountId]="accountId"
     [userId]="userId"
+    [weekStart]="currentWeekStart"
     [projects]="(projects$ | async) || []"
     [entries]="(entries$ | async) || []"
     [availableProjects]="(projects$ | async) || []"

@@ -55,7 +55,7 @@ export const saveTimeEntryFailure = createAction(
 
 export const loadTimeEntries = createAction(
   "[Time Tracking] Load Time Entries",
-  props<{accountId: string; userId: string}>(),
+  props<{accountId: string; userId: string; weekStart: Date}>(),
 );
 
 export const loadTimeEntriesSuccess = createAction(

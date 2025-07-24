@@ -8,6 +8,7 @@ import {
   selectEntries,
   selectProjects,
 } from "../../../../state/selectors/time-tracking.selectors";
+import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
 
 describe("TimesheetPage", () => {
   let component: TimesheetPage;
@@ -31,6 +32,8 @@ describe("TimesheetPage", () => {
     store.overrideSelector(selectAuthUser, {uid: "test"} as any);
     store.overrideSelector(selectProjects, []);
     store.overrideSelector(selectEntries, []);
+
+    spyOn(store, "dispatch").and.callThrough();
 
     fixture = TestBed.createComponent(TimesheetPage);
     component = fixture.componentInstance;
@@ -56,6 +59,12 @@ describe("TimesheetPage", () => {
     });
   });
 
+  it("should dispatch load entries on init", () => {
+    const action = (store.dispatch as jasmine.Spy).calls.mostRecent().args[0];
+    expect(action.type).toBe(TimeTrackingActions.loadTimeEntries.type);
+    expect(action.weekStart).toEqual(component.currentWeekStart);
+  });
+  
   it("should advance to the next week", () => {
     const start = new Date(component.currentWeekStart);
     component.nextWeek();

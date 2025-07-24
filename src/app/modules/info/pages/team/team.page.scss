@@ -86,7 +86,15 @@
 }
 
 p {
-  color: #fff;
+  color: var(--ion-text-color);
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+
+ion-card-title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 /* Responsive Styles */

@@ -44,6 +44,12 @@ export class TimesheetPage implements OnInit {
   entries$!: Observable<TimeEntry[]>;
   accountId: string = "";
   userId: string = "";
+  currentWeekStart: Date = (() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - d.getDay());
+    return d;
+  })();
 
   constructor(
     private store: Store<AppState>,
@@ -62,17 +68,34 @@ export class TimesheetPage implements OnInit {
       .subscribe((user) => {
         this.userId = user?.uid ?? "";
         if (this.userId) {
-          this.store.dispatch(
-            TimeTrackingActions.loadTimeEntries({
-              accountId: this.accountId,
-              userId: this.userId,
-            }),
-          );
+          this.loadEntries();
         }
       });
 
     this.store.dispatch(
       TimeTrackingActions.loadProjects({accountId: this.accountId}),
     );
+  }
+
+  private loadEntries() {
+    this.store.dispatch(
+      TimeTrackingActions.loadTimeEntries({
+        accountId: this.accountId,
+        userId: this.userId,
+        weekStart: this.currentWeekStart,
+      }),
+    );
+  }
+
+  nextWeek() {
+    this.currentWeekStart = new Date(this.currentWeekStart);
+    this.currentWeekStart.setDate(this.currentWeekStart.getDate() + 7);
+    this.loadEntries();
+  }
+
+  previousWeek() {
+    this.currentWeekStart = new Date(this.currentWeekStart);
+    this.currentWeekStart.setDate(this.currentWeekStart.getDate() - 7);
+    this.loadEntries();
   }
 }

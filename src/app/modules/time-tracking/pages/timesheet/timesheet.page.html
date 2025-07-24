@@ -5,9 +5,10 @@
 </ion-header>
 
 <ion-content>
-  <app-week-view [accountId]="accountId" [userId]="userId"></app-week-view>
   <app-week-view
     [accountId]="accountId"
+    [userId]="userId"
+    [entries]="(entries$ | async) || []"
     [availableProjects]="(projects$ | async) || []"
   ></app-week-view>
 </ion-content>

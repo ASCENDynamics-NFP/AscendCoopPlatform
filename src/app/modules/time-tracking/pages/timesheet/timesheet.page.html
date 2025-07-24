@@ -5,11 +5,14 @@
 </ion-header>
 
 <ion-content>
+  <ion-button (click)="previousWeek()">Previous Week</ion-button>
+  <ion-button (click)="nextWeek()">Next Week</ion-button>
   <app-week-view
     [accountId]="accountId"
     [userId]="userId"
     [projects]="(projects$ | async) || []"
     [entries]="(entries$ | async) || []"
     [availableProjects]="(projects$ | async) || []"
+    [weekStart]="currentWeekStart"
   ></app-week-view>
 </ion-content>

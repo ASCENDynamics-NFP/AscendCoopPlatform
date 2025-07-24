@@ -55,4 +55,20 @@ describe("TimesheetPage", () => {
       done();
     });
   });
+
+  it("should advance to the next week", () => {
+    const start = new Date(component.currentWeekStart);
+    component.nextWeek();
+    expect(+component.currentWeekStart).toBe(
+      +start + 7 * 24 * 60 * 60 * 1000,
+    );
+  });
+
+  it("should go back to the previous week", () => {
+    const start = new Date(component.currentWeekStart);
+    component.previousWeek();
+    expect(+component.currentWeekStart).toBe(
+      +start - 7 * 24 * 60 * 60 * 1000,
+    );
+  });
 });

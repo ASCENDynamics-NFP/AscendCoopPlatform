@@ -15,6 +15,8 @@ describe("timeEntries create rules", () => {
     testEnv = await initializeTestEnvironment({
       projectId: "rules-test",
       firestore: {
+        host: "127.0.0.1",
+        port: 8080,
         rules: fs.readFileSync(
           path.join(__dirname, "..", "..", "firestore.rules"),
           "utf8",
@@ -24,12 +26,14 @@ describe("timeEntries create rules", () => {
   });
 
   after(async () => {
-    await testEnv.cleanup();
+    if (testEnv) {
+      await testEnv.cleanup();
+    }
   });
 
   beforeEach(async () => {
     await testEnv.clearFirestore();
-    await testEnv.withSecurityRulesDisabled(async (context) => {
+    await testEnv.withSecurityRulesDisabled(async (context: any) => {
       const db = context.firestore();
       // Create group account and related user documents
       await setDoc(doc(db, "accounts/group1"), {type: "group"});

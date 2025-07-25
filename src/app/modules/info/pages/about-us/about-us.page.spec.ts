@@ -1,6 +1,7 @@
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
 import {RouterTestingModule} from "@angular/router/testing";
+import {SharedModule} from "../../../../shared/shared.module";
 import {AboutUsPage} from "./about-us.page";
 
 describe("AboutUsPage", () => {
@@ -10,7 +11,7 @@ describe("AboutUsPage", () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [AboutUsPage],
-      imports: [IonicModule.forRoot(), RouterTestingModule],
+      imports: [IonicModule.forRoot(), RouterTestingModule, SharedModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AboutUsPage);

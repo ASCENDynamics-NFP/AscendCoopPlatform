@@ -17,7 +17,10 @@ export const onCreateTimeEntry = onDocumentCreated(
 /**
  * Handle creation of a new time entry document.
  *
- * @param event - Firestore event containing the time entry data and params.
+ * @param {FirestoreEvent<
+ *   QueryDocumentSnapshot | undefined,
+ *   {accountId: string; entryId: string}
+ * >} event - Firestore event containing the time entry data and params.
  */
 async function handleTimeEntryCreate(
   event: FirestoreEvent<

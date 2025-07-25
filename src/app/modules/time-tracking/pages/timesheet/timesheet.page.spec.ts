@@ -1,6 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
 import {TimesheetPage} from "./timesheet.page";
+import {WeekViewComponent} from "../../components/week-view/week-view.component";
 import {provideMockStore, MockStore} from "@ngrx/store/testing";
 import {ActivatedRoute} from "@angular/router";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
@@ -15,10 +16,14 @@ describe("TimesheetPage", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [TimesheetPage],
+      declarations: [TimesheetPage, WeekViewComponent],
       imports: [IonicModule.forRoot()],
       providers: [
-        provideMockStore(),
+        provideMockStore({
+          initialState: {
+            timeTracking: {entities: {}, loading: false, error: null},
+          },
+        }),
         {
           provide: ActivatedRoute,
           useValue: {snapshot: {paramMap: {get: () => "acc1"}}},

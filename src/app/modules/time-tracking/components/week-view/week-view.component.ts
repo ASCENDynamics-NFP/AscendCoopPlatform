@@ -103,14 +103,15 @@ export class WeekViewComponent implements OnInit, OnChanges {
 
   onHoursChange(rowIndex: number, day: Date, event: Event) {
     const target = event.target as HTMLInputElement;
-    if (!target || !project || !project.id) return;
+    if (!target) return;
+
+    const projectId = this.rows[rowIndex]?.projectId;
+    if (!projectId) {
+      return;
+    }
 
     const hours = Number(target.value);
     if (isNaN(hours) || hours < 0 || hours > 24) {
-      return;
-    }
-    const projectId = this.rows[rowIndex].projectId;
-    if (!projectId) {
       return;
     }
     const existing = this.getEntry(projectId, day);

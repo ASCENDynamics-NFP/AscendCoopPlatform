@@ -43,6 +43,7 @@ export class WeekViewComponent implements OnInit, OnChanges {
   @Input() entries: TimeEntry[] = [];
   @Input() accountId: string = "";
   @Input() userId: string = "";
+  @Input() initialRows: {projectId: string | null}[] = [];
 
   /** Selected rows referencing project ids */
   rows: {projectId: string | null}[] = [];
@@ -58,7 +59,9 @@ export class WeekViewComponent implements OnInit, OnChanges {
   ngOnInit() {
     this.calculateDays();
     if (this.rows.length === 0) {
-      if (this.availableProjects.length === 1) {
+      if (this.initialRows && this.initialRows.length > 0) {
+        this.rows = [...this.initialRows];
+      } else if (this.availableProjects.length === 1) {
         this.rows.push({projectId: this.availableProjects[0].id});
       } else {
         this.rows.push({projectId: null});
@@ -73,7 +76,14 @@ export class WeekViewComponent implements OnInit, OnChanges {
     if (changes["weekStart"]) {
       this.calculateDays();
     }
-    if (changes["availableProjects"] && this.rows.length === 0) {
+    if (changes["initialRows"] && this.rows.length === 0) {
+      const rows: {projectId: string | null}[] =
+        changes["initialRows"].currentValue;
+      if (rows && rows.length > 0) {
+        this.rows = [...rows];
+        this.updateTotals();
+      }
+    } else if (changes["availableProjects"] && this.rows.length === 0) {
       if (this.availableProjects.length === 1) {
         this.rows.push({projectId: this.availableProjects[0].id});
       }
@@ -103,7 +113,7 @@ export class WeekViewComponent implements OnInit, OnChanges {
 
   onHoursChange(rowIndex: number, day: Date, event: Event) {
     const target = event.target as HTMLInputElement;
-    if (!target || !project || !project.id) return;
+    if (!target) return;
 
     const hours = Number(target.value);
     if (isNaN(hours) || hours < 0 || hours > 24) {

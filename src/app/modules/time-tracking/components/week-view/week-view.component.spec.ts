@@ -117,10 +117,10 @@ describe("WeekViewComponent", () => {
 
   it("should not dispatch when hours are outside 0-24", () => {
     store.dispatch.calls.reset();
-    component.onHoursChange(component.projects[0], component.weekStart, {
+    component.onHoursChange(0, component.weekStart, {
       target: {value: "-1"},
     } as any);
-    component.onHoursChange(component.projects[0], component.weekStart, {
+    component.onHoursChange(0, component.weekStart, {
       target: {value: "25"},
     } as any);
     expect(store.dispatch).not.toHaveBeenCalled();

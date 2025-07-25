@@ -42,9 +42,9 @@ import {AppState} from "../../../../state/app.state";
 export class TimesheetPage implements OnInit {
   projects$!: Observable<Project[]>;
   entries$!: Observable<TimeEntry[]>;
-  projects: Project[] = [];
   availableProjects: Project[] = [];
   entries: TimeEntry[] = [];
+  initialRows: {projectId: string}[] = [];
   accountId: string = "";
   userId: string = "";
   currentWeekStart: Date = (() => {
@@ -72,14 +72,7 @@ export class TimesheetPage implements OnInit {
     this.entries$.subscribe((entries) => {
       this.entries = entries;
       const ids = new Set(entries.map((e) => e.projectId));
-      for (const id of Array.from(ids)) {
-        if (!this.projects.some((p) => p.id === id)) {
-          const proj = this.availableProjects.find((p) => p.id === id);
-          if (proj) {
-            this.projects.push(proj);
-          }
-        }
-      }
+      this.initialRows = Array.from(ids).map((id) => ({projectId: id}));
     });
 
     this.store

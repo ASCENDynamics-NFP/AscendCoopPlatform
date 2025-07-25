@@ -31,7 +31,6 @@ import {ListPage} from "./relatedAccount/pages/list/list.page";
 import {ListingsListPage} from "./relatedListings/pages/listings-list/listings-list.page";
 import {RoleManagementPage} from "./pages/role-management/role-management.page";
 import {RoleHierarchyPage} from "./pages/role-hierarchy/role-hierarchy.page";
-import {ManageProjectsPage} from "./pages/manage-projects/manage-projects.page";
 import {ProjectsPage} from "./pages/projects/projects.page";
 
 const routes: Routes = [
@@ -52,7 +51,7 @@ const routes: Routes = [
   {
     path: ":accountId/projects",
     component: ProjectsPage,
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, AdminGuard],
   },
   {
     path: "registration/:accountId",
@@ -88,11 +87,6 @@ const routes: Routes = [
     path: ":accountId/hierarchy",
     component: RoleHierarchyPage,
     canActivate: [AuthGuard],
-  },
-  {
-    path: ":accountId/manage-projects",
-    component: ManageProjectsPage,
-    canActivate: [AuthGuard, AdminGuard],
   },
 ];
 

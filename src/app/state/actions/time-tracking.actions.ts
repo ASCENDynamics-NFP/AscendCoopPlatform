@@ -53,21 +53,6 @@ export const saveTimeEntryFailure = createAction(
   props<{error: any}>(),
 );
 
-export const deleteTimeEntry = createAction(
-  "[Time Tracking] Delete Time Entry",
-  props<{entry: TimeEntry}>(),
-);
-
-export const deleteTimeEntrySuccess = createAction(
-  "[Time Tracking] Delete Time Entry Success",
-  props<{entryId: string}>(),
-);
-
-export const deleteTimeEntryFailure = createAction(
-  "[Time Tracking] Delete Time Entry Failure",
-  props<{error: any}>(),
-);
-
 export const loadTimeEntries = createAction(
   "[Time Tracking] Load Time Entries",
   props<{accountId: string; userId: string; weekStart: Date}>(),

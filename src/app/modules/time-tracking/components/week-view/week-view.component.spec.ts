@@ -140,10 +140,23 @@ describe("WeekViewComponent", () => {
 
   it("should not dispatch when project is undefined", () => {
     store.dispatch.calls.reset();
-    component.rows[0].projectId = null;
-    component.onHoursChange(0, component.weekStart, {
+    component.rows.push({projectId: null});
+    const index = component.rows.length - 1;
+    component.onHoursChange(index, component.weekStart, {
       target: {value: "1"},
     } as any);
+    expect(store.dispatch).not.toHaveBeenCalled();
+  });
+
+  it("should skip validation when project is not selected", () => {
+    store.dispatch.calls.reset();
+    component.rows.push({projectId: null});
+    const index = component.rows.length - 1;
+    spyOn(component, "getEntry");
+    component.onHoursChange(index, component.weekStart, {
+      target: {value: "5"},
+    } as any);
+    expect(component.getEntry).not.toHaveBeenCalled();
     expect(store.dispatch).not.toHaveBeenCalled();
   });
 

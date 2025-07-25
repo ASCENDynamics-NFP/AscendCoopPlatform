@@ -124,20 +124,4 @@ export class TimeTrackingEffects {
       ),
     ),
   );
-
-  deleteEntry$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(TimeTrackingActions.deleteTimeEntry),
-      mergeMap(({entry}) =>
-        from(this.service.deleteTimeEntry(entry)).pipe(
-          map(() =>
-            TimeTrackingActions.deleteTimeEntrySuccess({entryId: entry.id}),
-          ),
-          catchError((error) =>
-            of(TimeTrackingActions.deleteTimeEntryFailure({error})),
-          ),
-        ),
-      ),
-    ),
-  );
 }

@@ -21,40 +21,22 @@
 
 import {createReducer, on} from "@ngrx/store";
 import * as TimeTrackingActions from "../actions/time-tracking.actions";
-import {Project} from "@shared/models/project.model";
 import {TimeEntry} from "@shared/models/time-entry.model";
 
-export interface TimeTrackingState {
-  projects: Project[];
-  entries: TimeEntry[];
+export interface TimeEntriesState {
+  entities: {[accountUser: string]: TimeEntry[]};
   loading: boolean;
-  error: any;
+  error?: any;
 }
 
-export const initialState: TimeTrackingState = {
-  projects: [],
-  entries: [],
+export const initialState: TimeEntriesState = {
+  entities: {},
   loading: false,
   error: null,
 };
 
 export const timeTrackingReducer = createReducer(
   initialState,
-  on(TimeTrackingActions.loadProjects, (state) => ({
-    ...state,
-    loading: true,
-  })),
-  on(TimeTrackingActions.loadProjectsSuccess, (state, {projects}) => ({
-    ...state,
-    projects,
-    loading: false,
-    error: null,
-  })),
-  on(TimeTrackingActions.loadProjectsFailure, (state, {error}) => ({
-    ...state,
-    loading: false,
-    error,
-  })),
   on(TimeTrackingActions.saveTimeEntry, (state) => ({
     ...state,
     loading: true,
@@ -73,12 +55,18 @@ export const timeTrackingReducer = createReducer(
     ...state,
     loading: true,
   })),
-  on(TimeTrackingActions.loadTimeEntriesSuccess, (state, {entries}) => ({
-    ...state,
-    entries,
-    loading: false,
-    error: null,
-  })),
+  on(
+    TimeTrackingActions.loadTimeEntriesSuccess,
+    (state, {accountId, userId, entries}) => ({
+      ...state,
+      entities: {
+        ...state.entities,
+        [`${accountId}_${userId}`]: entries,
+      },
+      loading: false,
+      error: null,
+    }),
+  ),
   on(TimeTrackingActions.loadTimeEntriesFailure, (state, {error}) => ({
     ...state,
     loading: false,
@@ -90,7 +78,13 @@ export const timeTrackingReducer = createReducer(
   })),
   on(TimeTrackingActions.deleteTimeEntrySuccess, (state, {entryId}) => ({
     ...state,
-    entries: state.entries.filter((e) => e.id !== entryId),
+    entities: Object.keys(state.entities).reduce(
+      (acc, key) => ({
+        ...acc,
+        [key]: state.entities[key].filter((e) => e.id !== entryId),
+      }),
+      {},
+    ),
     loading: false,
     error: null,
   })),

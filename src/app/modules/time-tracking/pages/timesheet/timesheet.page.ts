@@ -45,6 +45,7 @@ export class TimesheetPage implements OnInit, OnDestroy {
   entries: TimeEntry[] = [];
   initialRows: {projectId: string}[] = [];
   private subscriptions = new Subscription();
+  private entriesSub?: Subscription;
   accountId: string = "";
   userId: string = "";
   currentWeekStart: Date = (() => {
@@ -65,19 +66,11 @@ export class TimesheetPage implements OnInit, OnDestroy {
     this.projects$ = this.store.select(
       selectActiveProjectsByAccount(this.accountId),
     );
-    this.entries$ = this.store.select(selectEntries);
 
     const projSub = this.projects$.subscribe((projects) => {
       this.availableProjects = projects;
     });
     this.subscriptions.add(projSub);
-
-    const entriesSub = this.entries$.subscribe((entries) => {
-      this.entries = entries;
-      const ids = new Set(entries.map((e) => e.projectId));
-      this.initialRows = Array.from(ids).map((id) => ({projectId: id}));
-    });
-    this.subscriptions.add(entriesSub);
 
     const authSub = this.store
       .select(selectAuthUser)
@@ -85,6 +78,7 @@ export class TimesheetPage implements OnInit, OnDestroy {
       .subscribe((user) => {
         this.userId = user?.uid ?? "";
         if (this.userId) {
+          this.updateEntriesObservable();
           this.loadEntries();
         }
       });
@@ -105,15 +99,33 @@ export class TimesheetPage implements OnInit, OnDestroy {
     );
   }
 
+  private updateEntriesObservable() {
+    if (this.entriesSub) {
+      this.subscriptions.remove(this.entriesSub);
+      this.entriesSub.unsubscribe();
+    }
+    this.entries$ = this.store.select(
+      selectEntries(this.accountId, this.userId, this.currentWeekStart),
+    );
+    this.entriesSub = this.entries$.subscribe((entries) => {
+      this.entries = entries;
+      const ids = new Set(entries.map((e) => e.projectId));
+      this.initialRows = Array.from(ids).map((id) => ({projectId: id}));
+    });
+    this.subscriptions.add(this.entriesSub);
+  }
+
   nextWeek() {
     this.currentWeekStart = new Date(this.currentWeekStart);
     this.currentWeekStart.setDate(this.currentWeekStart.getDate() + 7);
+    this.updateEntriesObservable();
     this.loadEntries();
   }
 
   previousWeek() {
     this.currentWeekStart = new Date(this.currentWeekStart);
     this.currentWeekStart.setDate(this.currentWeekStart.getDate() - 7);
+    this.updateEntriesObservable();
     this.loadEntries();
   }
 

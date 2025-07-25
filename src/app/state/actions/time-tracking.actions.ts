@@ -60,12 +60,22 @@ export const loadTimeEntries = createAction(
 
 export const loadTimeEntriesSuccess = createAction(
   "[Time Tracking] Load Time Entries Success",
-  props<{entries: TimeEntry[]}>(),
+  props<{
+    accountId: string;
+    userId: string;
+    weekStart: Date;
+    entries: TimeEntry[];
+  }>(),
 );
 
 export const loadTimeEntriesFailure = createAction(
   "[Time Tracking] Load Time Entries Failure",
-  props<{error: any}>(),
+  props<{
+    accountId: string;
+    userId: string;
+    weekStart: Date;
+    error: any;
+  }>(),
 );
 
 export const deleteTimeEntry = createAction(

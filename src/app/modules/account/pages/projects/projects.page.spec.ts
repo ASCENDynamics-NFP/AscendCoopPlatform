@@ -126,7 +126,13 @@ describe("ProjectsPage", () => {
     tick();
 
     expect(alertController.create).toHaveBeenCalled();
-    expect(serviceSpy.setArchived).toHaveBeenCalledWith("acc1", "p1", true);
+    expect(store.dispatch).toHaveBeenCalledWith(
+      ProjectsActions.updateProject({
+        accountId: "acc1",
+        projectId: "p1",
+        changes: {archived: true},
+      }),
+    );
   }));
 
   it("should not archive the last active project", fakeAsync(() => {
@@ -144,7 +150,13 @@ describe("ProjectsPage", () => {
     tick();
 
     expect(alertController.create).toHaveBeenCalled();
-    expect(serviceSpy.setArchived).not.toHaveBeenCalled();
+    expect(store.dispatch).not.toHaveBeenCalledWith(
+      ProjectsActions.updateProject({
+        accountId: "acc1",
+        projectId: "p1",
+        changes: {archived: true},
+      }),
+    );
     expect(errorHandler.handleFirebaseAuthError).toHaveBeenCalled();
   }));
 });

@@ -131,11 +131,21 @@ export class TimeTrackingEffects {
               return d >= start && d < end;
             });
             return TimeTrackingActions.loadTimeEntriesSuccess({
+              accountId,
+              userId,
+              weekStart,
               entries: filtered,
             });
           }),
           catchError((error) =>
-            of(TimeTrackingActions.loadTimeEntriesFailure({error})),
+            of(
+              TimeTrackingActions.loadTimeEntriesFailure({
+                accountId,
+                userId,
+                weekStart,
+                error,
+              }),
+            ),
           ),
         ),
       ),

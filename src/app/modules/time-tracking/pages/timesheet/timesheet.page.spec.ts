@@ -29,7 +29,13 @@ describe("TimesheetPage", () => {
     store = TestBed.inject(MockStore);
     store.overrideSelector(selectAuthUser, {uid: "test"} as any);
     store.overrideSelector(selectActiveProjectsByAccount("acc1"), []);
-    store.overrideSelector(selectEntries, []);
+    const weekStart = (() => {
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() - d.getDay());
+      return d;
+    })();
+    store.overrideSelector(selectEntries("acc1", "test", weekStart), []);
 
     spyOn(store, "dispatch").and.callThrough();
 

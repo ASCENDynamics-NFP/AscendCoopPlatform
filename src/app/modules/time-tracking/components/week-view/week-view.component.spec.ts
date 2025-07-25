@@ -117,10 +117,10 @@ describe("WeekViewComponent", () => {
 
   it("should not dispatch when hours are outside 0-24", () => {
     store.dispatch.calls.reset();
-    component.onHoursChange(component.projects[0], component.weekStart, {
+    component.onHoursChange(0, component.weekStart, {
       target: {value: "-1"},
     } as any);
-    component.onHoursChange(component.projects[0], component.weekStart, {
+    component.onHoursChange(0, component.weekStart, {
       target: {value: "25"},
     } as any);
     expect(store.dispatch).not.toHaveBeenCalled();
@@ -128,9 +128,23 @@ describe("WeekViewComponent", () => {
 
   it("should not dispatch when project is undefined", () => {
     store.dispatch.calls.reset();
-    component.onHoursChange(undefined as any, component.weekStart, {
+    component.rows.push({projectId: null});
+    const index = component.rows.length - 1;
+    component.onHoursChange(index, component.weekStart, {
       target: {value: "1"},
     } as any);
+    expect(store.dispatch).not.toHaveBeenCalled();
+  });
+
+  it("should skip validation when project is not selected", () => {
+    store.dispatch.calls.reset();
+    component.rows.push({projectId: null});
+    const index = component.rows.length - 1;
+    spyOn(component, "getEntry");
+    component.onHoursChange(index, component.weekStart, {
+      target: {value: "5"},
+    } as any);
+    expect(component.getEntry).not.toHaveBeenCalled();
     expect(store.dispatch).not.toHaveBeenCalled();
   });
 

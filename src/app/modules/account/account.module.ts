@@ -29,6 +29,7 @@ import {RouterModule} from "@angular/router";
 import {EffectsModule} from "@ngrx/effects";
 import {StoreModule} from "@ngrx/store";
 import {AccountEffects} from "../../state/effects/account.effects";
+import {ProjectsEffects} from "../../state/effects/projects.effects";
 import {accountReducer} from "../../state/reducers/account.reducer";
 import {ContactInformationComponent} from "./pages/details/components/contact-information/contact-information.component";
 import {HeroComponent} from "./pages/details/components/hero/hero.component";
@@ -105,7 +106,7 @@ import {GroupCalendarComponent} from "./pages/details/components/group-calendar/
     TranslateModule,
     ReactiveFormsModule,
     StoreModule.forFeature("accounts", accountReducer),
-    EffectsModule.forFeature([AccountEffects]),
+    EffectsModule.forFeature([AccountEffects, ProjectsEffects]),
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

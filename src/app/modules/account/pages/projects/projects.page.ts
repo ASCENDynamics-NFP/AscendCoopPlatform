@@ -7,7 +7,13 @@ import {AlertController} from "@ionic/angular";
 import {Project} from "@shared/models/project.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectRelatedAccountsByAccountId} from "../../../../state/selectors/account.selectors";
-import {ProjectService} from "../../../../core/services/project.service";
+import * as ProjectsActions from "../../../../state/actions/projects.actions";
+import {
+  selectProjectsByAccount,
+  selectActiveProjectsByAccount,
+  selectProjectsLoading,
+  selectProjectsError,
+} from "../../../../state/selectors/projects.selectors";
 import {MetaService} from "../../../../core/services/meta.service";
 import {SuccessHandlerService} from "../../../../core/services/success-handler.service";
 import {ErrorHandlerService} from "../../../../core/services/error-handler.service";
@@ -22,6 +28,8 @@ export class ProjectsPage implements OnInit {
   projects$!: Observable<Project[]>;
   activeProjects$!: Observable<Project[]>;
   archivedProjects$!: Observable<Project[]>;
+  loading$!: Observable<boolean>;
+  error$!: Observable<any>;
   isGroupAdmin$!: Observable<boolean>;
   newProjectName = "";
   /** Lower-cased names of active projects for quick duplicate checks */
@@ -30,7 +38,6 @@ export class ProjectsPage implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private store: Store,
-    private projectService: ProjectService,
     private metaService: MetaService,
     private successHandler: SuccessHandlerService,
     private errorHandler: ErrorHandlerService,
@@ -78,9 +85,9 @@ export class ProjectsPage implements OnInit {
   }
 
   private loadProjects() {
-    this.projects$ = this.projectService.getProjects(this.accountId);
-    this.activeProjects$ = this.projects$.pipe(
-      map((projects) => projects.filter((p) => !p.archived)),
+    this.projects$ = this.store.select(selectProjectsByAccount(this.accountId));
+    this.activeProjects$ = this.store.select(
+      selectActiveProjectsByAccount(this.accountId),
     );
     this.activeProjects$.subscribe((projects) => {
       this.activeProjectNames = projects.map((p) =>
@@ -89,6 +96,12 @@ export class ProjectsPage implements OnInit {
     });
     this.archivedProjects$ = this.projects$.pipe(
       map((projects) => projects.filter((p) => p.archived)),
+    );
+    this.loading$ = this.store.select(selectProjectsLoading);
+    this.error$ = this.store.select(selectProjectsError);
+
+    this.store.dispatch(
+      ProjectsActions.loadProjects({accountId: this.accountId}),
     );
   }
 
@@ -104,13 +117,11 @@ export class ProjectsPage implements OnInit {
       return;
     }
     const project: Project = {name, accountId: this.accountId} as Project;
-    this.projectService
-      .createProject(this.accountId, project)
-      .then(() => {
-        this.newProjectName = "";
-        this.successHandler.handleSuccess("Project created!");
-      })
-      .catch((error) => this.errorHandler.handleFirebaseAuthError(error));
+    this.store.dispatch(
+      ProjectsActions.createProject({accountId: this.accountId, project}),
+    );
+    this.newProjectName = "";
+    this.successHandler.handleSuccess("Project created!");
   }
 
   updateProject(project: Project, name: string) {
@@ -125,15 +136,19 @@ export class ProjectsPage implements OnInit {
       });
       return;
     }
-    this.projectService
-      .updateProject(this.accountId, project.id, {name: trimmed})
-      .then(() => this.successHandler.handleSuccess("Project updated!"))
-      .catch((error) => this.errorHandler.handleFirebaseAuthError(error));
+    this.store.dispatch(
+      ProjectsActions.updateProject({
+        accountId: this.accountId,
+        projectId: project.id,
+        changes: {name: trimmed},
+      }),
+    );
+    this.successHandler.handleSuccess("Project updated!");
   }
 
   async toggleArchive(project: Project, archived: boolean) {
     if (!project.id) return;
-
+    
     if (archived) {
       const alert = await this.alertController.create({
         header: "Archive Project?",
@@ -155,15 +170,17 @@ export class ProjectsPage implements OnInit {
         return;
       }
     }
-
-    this.projectService
-      .setArchived(this.accountId, project.id, archived)
-      .then(() =>
-        this.successHandler.handleSuccess(
-          archived ? "Project archived" : "Project restored",
-        ),
-      )
-      .catch((error) => this.errorHandler.handleFirebaseAuthError(error));
+    
+    this.store.dispatch(
+      ProjectsActions.updateProject({
+        accountId: this.accountId,
+        projectId: project.id,
+        changes: {archived},
+      }),
+    );
+    this.successHandler.handleSuccess(
+      archived ? "Project archived" : "Project restored",
+    );
   }
 
   trackById(_: number, proj: Project) {

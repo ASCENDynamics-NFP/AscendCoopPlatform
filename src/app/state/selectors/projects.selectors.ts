@@ -36,3 +36,13 @@ export const selectActiveProjectsByAccount = (accountId: string) =>
   createSelector(selectProjectsByAccount(accountId), (projects: Project[]) =>
     projects.filter((p) => !p.archived),
   );
+
+export const selectProjectsLoading = createSelector(
+  selectProjectsState,
+  (state: ProjectsState) => state.loading,
+);
+
+export const selectProjectsError = createSelector(
+  selectProjectsState,
+  (state: ProjectsState) => state.error,
+);

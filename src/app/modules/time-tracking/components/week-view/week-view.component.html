@@ -1,15 +1,5 @@
 <h2>Week of {{ weekStart | date: 'MMM d' }}</h2>
-<button (click)="toggleProjectDropdown()">Add Project</button>
-<select *ngIf="dropdownOpen" (change)="addProjectById($event)">
-  <option value="">Select...</option>
-  <option
-    *ngFor="let proj of availableProjects"
-    [value]="proj.id"
-    [disabled]="isSelected(proj.id)"
-  >
-    {{ proj.name }}
-  </option>
-</select>
+<button (click)="addRow()">Add Row</button>
 
 <table class="week-grid">
   <thead>
@@ -20,16 +10,34 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let project of projects">
-      <td>{{ project.name }}</td>
+    <tr *ngFor="let row of rows; let i = index">
+      <td>
+        <ng-container *ngIf="availableProjects.length > 1; else single">
+          <select [value]="row.projectId" (change)="addProjectById(i, $event)">
+            <option value="">Select...</option>
+            <option
+              *ngFor="let proj of availableProjects"
+              [value]="proj.id"
+              [disabled]="isSelected(proj.id, i)"
+            >
+              {{ proj.name }}
+            </option>
+          </select>
+        </ng-container>
+        <ng-template #single>
+          {{ availableProjects[0]?.name }}
+        </ng-template>
+        <button (click)="removeRow(i)">Remove</button>
+      </td>
       <td *ngFor="let day of days">
         <input
           type="number"
-          [value]="getEntry(project.id, day)?.hours"
-          (change)="onHoursChange(project, day, $event)"
+          [value]="row.projectId ? getEntry(row.projectId, day)?.hours : ''"
+          (change)="onHoursChange(i, day, $event)"
+          [disabled]="!row.projectId"
         />
       </td>
-      <td>{{ rowTotals[project.id] || 0 }}</td>
+      <td>{{ rowTotals[i] || 0 }}</td>
     </tr>
   </tbody>
   <tfoot>

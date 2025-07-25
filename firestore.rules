@@ -33,12 +33,24 @@ service cloud.firestore {
       );
     }
 
+    function isAcceptedFriend(accId) {
+      return request.auth != null && exists(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.type == 'user' &&
+        get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
+    }
+
+    function isAcceptedGroup(accId) {
+      return request.auth != null && exists(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.type == 'group' &&
+        get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
+    }
+
     // Project subcollections within accounts
     match /accounts/{accountId}/projects {
-      allow list: if request.auth != null;
+      allow list: if isAcceptedGroup(accountId) || isAcceptedFriend(accountId);
     }
     match /accounts/{accountId}/projects/{projectId} {
-      allow read: if request.auth != null;
+      allow read: if isAcceptedGroup(accountId) || isAcceptedFriend(accountId);
       allow create, update, delete: if isAccountAdmin(accountId);
     }
 
@@ -147,9 +159,17 @@ service cloud.firestore {
           get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.access == 'admin';
       }
 
+      function hasValidProject() {
+        return exists(/databases/$(database)/documents/accounts/$(accountId)/projects/$(request.resource.data.projectId)) &&
+          get(/databases/$(database)/documents/accounts/$(accountId)/projects/$(request.resource.data.projectId)).data.archived != true;
+      }
+
       allow read: if isGroupAccount() && isGroupMember();
-      allow create: if isGroupAccount() && request.auth.uid == request.resource.data.userId && isGroupMember() && (isGroupAdmin() || request.resource.data.status == 'pending');
-      allow update: if isGroupAccount() && isGroupMember() &&
+      allow create: if isGroupAccount() && request.auth.uid == request.resource.data.userId &&
+        isGroupMember() &&
+        (isGroupAdmin() || request.resource.data.status == 'pending') &&
+        hasValidProject();
+      allow update: if isGroupAccount() && isGroupMember() && hasValidProject() &&
         (
           isGroupAdmin() ||
           (

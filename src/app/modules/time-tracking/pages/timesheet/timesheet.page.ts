@@ -19,10 +19,10 @@
  ********************************************************************************/
 // src/app/modules/time-tracking/pages/timesheet/timesheet.page.ts
 
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, OnDestroy} from "@angular/core";
 import {Store} from "@ngrx/store";
 import {ActivatedRoute} from "@angular/router";
-import {Observable} from "rxjs";
+import {Observable, Subscription} from "rxjs";
 import {first} from "rxjs/operators";
 import {Project} from "@shared/models/project.model";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
@@ -39,12 +39,13 @@ import {AppState} from "../../../../state/app.state";
   templateUrl: "./timesheet.page.html",
   styleUrls: ["./timesheet.page.scss"],
 })
-export class TimesheetPage implements OnInit {
+export class TimesheetPage implements OnInit, OnDestroy {
   projects$!: Observable<Project[]>;
   entries$!: Observable<TimeEntry[]>;
   availableProjects: Project[] = [];
   entries: TimeEntry[] = [];
   initialRows: {projectId: string}[] = [];
+  private subscriptions = new Subscription();
   accountId: string = "";
   userId: string = "";
   currentWeekStart: Date = (() => {
@@ -65,17 +66,19 @@ export class TimesheetPage implements OnInit {
     this.projects$ = this.store.select(selectProjects);
     this.entries$ = this.store.select(selectEntries);
 
-    this.projects$.subscribe((projects) => {
+    const projSub = this.projects$.subscribe((projects) => {
       this.availableProjects = projects;
     });
+    this.subscriptions.add(projSub);
 
-    this.entries$.subscribe((entries) => {
+    const entriesSub = this.entries$.subscribe((entries) => {
       this.entries = entries;
       const ids = new Set(entries.map((e) => e.projectId));
       this.initialRows = Array.from(ids).map((id) => ({projectId: id}));
     });
+    this.subscriptions.add(entriesSub);
 
-    this.store
+    const authSub = this.store
       .select(selectAuthUser)
       .pipe(first())
       .subscribe((user) => {
@@ -84,6 +87,7 @@ export class TimesheetPage implements OnInit {
           this.loadEntries();
         }
       });
+    this.subscriptions.add(authSub);
 
     this.store.dispatch(
       TimeTrackingActions.loadProjects({accountId: this.accountId}),
@@ -110,6 +114,10 @@ export class TimesheetPage implements OnInit {
     this.currentWeekStart = new Date(this.currentWeekStart);
     this.currentWeekStart.setDate(this.currentWeekStart.getDate() - 7);
     this.loadEntries();
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
   //   startOfWeek(date: Date): Date {
   //     const d = new Date(date);

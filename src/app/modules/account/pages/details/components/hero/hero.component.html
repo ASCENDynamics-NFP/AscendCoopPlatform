@@ -63,6 +63,15 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         Donate</ion-button
       >
       <ion-button
+        *ngIf="isGroupAdmin"
+        color="primary"
+        fill="outline"
+        size="small"
+        [routerLink]="'/account/' + account.id + '/projects'"
+      >
+        <ion-icon name="folder-open"></ion-icon> Projects
+      </ion-button>
+      <ion-button
         *ngIf="isProfileOwner"
         color="primary"
         fill="outline"

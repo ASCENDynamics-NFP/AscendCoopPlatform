@@ -30,6 +30,7 @@ import {ListPage} from "./relatedAccount/pages/list/list.page";
 import {ListingsListPage} from "./relatedListings/pages/listings-list/listings-list.page";
 import {RoleManagementPage} from "./pages/role-management/role-management.page";
 import {RoleHierarchyPage} from "./pages/role-hierarchy/role-hierarchy.page";
+import {ProjectsPage} from "./pages/projects/projects.page";
 
 const routes: Routes = [
   {
@@ -44,6 +45,11 @@ const routes: Routes = [
   {
     path: "users",
     component: UsersPage,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: ":accountId/projects",
+    component: ProjectsPage,
     canActivate: [AuthGuard],
   },
   {

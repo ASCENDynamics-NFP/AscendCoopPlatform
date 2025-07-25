@@ -137,4 +137,18 @@ describe("TimeTrackingService", () => {
       entry,
     );
   });
+
+  it("should delete a time entry using FirestoreService", async () => {
+    const entry = {id: "e1", accountId: "testAccountId"} as TimeEntry;
+    firestoreSpy.deleteDocument = jasmine
+      .createSpy()
+      .and.returnValue(Promise.resolve());
+
+    await service.deleteTimeEntry(entry);
+
+    expect(firestoreSpy.deleteDocument).toHaveBeenCalledWith(
+      `accounts/${entry.accountId}/timeEntries`,
+      entry.id,
+    );
+  });
 });

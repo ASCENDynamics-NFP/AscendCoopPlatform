@@ -55,6 +55,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
   relatedListings$!: Observable<RelatedListing[]>;
   isProfileOwner$!: Observable<boolean>;
   isGroupAdmin$!: Observable<boolean>;
+  isGroupMember$!: Observable<boolean>;
   error$!: Observable<any>;
 
   constructor(
@@ -157,6 +158,24 @@ export class DetailsPage implements OnInit, ViewWillEnter {
               account?.type === "group" &&
               account.createdBy === currentUser.uid;
             return isAdmin || isOwner;
+          }),
+        );
+
+        this.isGroupMember$ = combineLatest([
+          this.authUser$,
+          this.relatedAccounts$,
+          this.account$,
+        ]).pipe(
+          map(([currentUser, relatedAccounts, account]) => {
+            if (!currentUser) return false;
+            // Check if user is the group owner
+            const isOwner =
+              account?.type === "group" &&
+              account.createdBy === currentUser.uid;
+            // Check if user is an accepted member
+            const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
+            const isMember = rel?.status === "accepted";
+            return isOwner || isMember;
           }),
         );
       }

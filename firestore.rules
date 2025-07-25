@@ -161,10 +161,18 @@ service cloud.firestore {
         return get(/databases/$(database)/documents/accounts/$(accountId)).data.type == 'group';
       }
 
+      function isGroupOwner() {
+        return request.auth != null && request.auth.uid == accountId;
+      }
+
       function isGroupMember() {
         return request.auth != null &&
           exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
           get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
+      }
+
+      function isGroupMemberOrOwner() {
+        return isGroupOwner() || isGroupMember();
       }
 
       function isGroupAdmin() {
@@ -180,12 +188,12 @@ service cloud.firestore {
           get(/databases/$(database)/documents/accounts/$(accountId)/projects/$(request.resource.data.projectId)).data.archived != true;
       }
 
-      allow read: if isGroupAccount() && isGroupMember();
+      allow read: if isGroupAccount() && isGroupMemberOrOwner();
       allow create: if isGroupAccount() && request.auth.uid == request.resource.data.userId &&
-        isGroupMember() &&
+        isGroupMemberOrOwner() &&
         (isGroupAdmin() || request.resource.data.status == 'pending') &&
         hasValidProject();
-      allow update: if isGroupAccount() && isGroupMember() && hasValidProject() &&
+      allow update: if isGroupAccount() && isGroupMemberOrOwner() && hasValidProject() &&
         (
           isGroupAdmin() ||
           (
@@ -194,7 +202,14 @@ service cloud.firestore {
             resource.data.status != 'approved'
           )
         );
-      allow delete: if false;
+      allow delete: if isGroupAccount() && isGroupMemberOrOwner() &&
+        (
+          isGroupAdmin() ||
+          (
+            request.auth.uid == resource.data.userId &&
+            resource.data.status != 'approved'
+          )
+        );
     }
     
     // Rules for AppFeedback

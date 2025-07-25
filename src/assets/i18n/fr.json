@@ -10,6 +10,9 @@
   "Profile": "Profil",
   "Settings": "Paramètres",
   "Dashboard": "Tableau de bord",
+  "EnterTime": "Saisir le temps",
+  "ApproveTime": "Approuver le temps",
+  "Projects": "Projets",
   "menu": {
     "title": "ASCENDynamics NFP",
     "login": "Connexion",
@@ -21,7 +24,8 @@
     "users": "Utilisateurs",
     "settings": "Paramètres",
     "dashboard": "Tableau de bord",
-    "manage_projects": "Gérer les projets"
+    "manage_projects": "Gérer les projets",
+    "time_tracking": "Suivi du temps"
   },
   "user": {
     "login": {

@@ -41,11 +41,38 @@ export const timeTrackingReducer = createReducer(
     ...state,
     loading: true,
   })),
-  on(TimeTrackingActions.saveTimeEntrySuccess, (state) => ({
-    ...state,
-    loading: false,
-    error: null,
-  })),
+  on(TimeTrackingActions.saveTimeEntrySuccess, (state, {entry}) => {
+    const key = `${entry.accountId}_${entry.userId}`;
+    const existingEntries = state.entities[key] || [];
+
+    // Check if this is an update (entry has ID and exists) or a new entry
+    const existingIndex = existingEntries.findIndex(
+      (e) => e.id === entry.id && entry.id !== "",
+    );
+
+    let updatedEntries;
+    if (existingIndex >= 0) {
+      // Update existing entry
+      updatedEntries = [
+        ...existingEntries.slice(0, existingIndex),
+        entry,
+        ...existingEntries.slice(existingIndex + 1),
+      ];
+    } else {
+      // Add new entry
+      updatedEntries = [...existingEntries, entry];
+    }
+
+    return {
+      ...state,
+      entities: {
+        ...state.entities,
+        [key]: updatedEntries,
+      },
+      loading: false,
+      error: null,
+    };
+  }),
   on(TimeTrackingActions.saveTimeEntryFailure, (state, {error}) => ({
     ...state,
     loading: false,
@@ -93,6 +120,86 @@ export const timeTrackingReducer = createReducer(
     loading: false,
     error,
   })),
+
+  // Load all time entries for account (for approvals)
+  on(TimeTrackingActions.loadAllTimeEntriesForAccount, (state) => ({
+    ...state,
+    loading: true,
+  })),
+  on(
+    TimeTrackingActions.loadAllTimeEntriesForAccountSuccess,
+    (state, {accountId, entries}) => ({
+      ...state,
+      entities: {
+        ...state.entities,
+        [`${accountId}_all`]: entries,
+      },
+      loading: false,
+      error: null,
+    }),
+  ),
+  on(
+    TimeTrackingActions.loadAllTimeEntriesForAccountFailure,
+    (state, {error}) => ({
+      ...state,
+      loading: false,
+      error,
+    }),
+  ),
+
+  // Update time entry (for approvals)
+  on(TimeTrackingActions.updateTimeEntry, (state) => ({
+    ...state,
+    loading: true,
+  })),
+  on(TimeTrackingActions.updateTimeEntrySuccess, (state, {entry}) => {
+    const updatedEntities = {...state.entities};
+
+    // Update the entry in all relevant entity keys
+    Object.keys(updatedEntities).forEach((key) => {
+      const entryIndex = updatedEntities[key].findIndex(
+        (e) => e.id === entry.id,
+      );
+      if (entryIndex !== -1) {
+        updatedEntities[key] = [
+          ...updatedEntities[key].slice(0, entryIndex),
+          entry,
+          ...updatedEntities[key].slice(entryIndex + 1),
+        ];
+      }
+    });
+
+    return {
+      ...state,
+      entities: updatedEntities,
+      loading: false,
+      error: null,
+    };
+  }),
+  on(TimeTrackingActions.updateTimeEntryFailure, (state, {error}) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
+
+  // Submit timesheet for approval
+  on(TimeTrackingActions.submitTimesheetForApproval, (state) => ({
+    ...state,
+    loading: true,
+  })),
+  on(TimeTrackingActions.submitTimesheetForApprovalSuccess, (state) => ({
+    ...state,
+    loading: false,
+    error: null,
+  })),
+  on(
+    TimeTrackingActions.submitTimesheetForApprovalFailure,
+    (state, {error}) => ({
+      ...state,
+      loading: false,
+      error,
+    }),
+  ),
 
   on(TimeTrackingActions.clearTimeTrackingSubscriptions, () => ({
     ...initialState,

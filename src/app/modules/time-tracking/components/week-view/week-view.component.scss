@@ -1,10 +1,400 @@
+.week-view-container {
+  padding: 16px;
+
+  .week-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+
+    h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    ion-button {
+      margin-left: 16px;
+
+      @media (max-width: 768px) {
+        margin-left: 0;
+        margin-top: 8px;
+        width: 100%;
+      }
+    }
+  }
+}
+
+// Desktop/Tablet View
+.desktop-view {
+  display: block;
+  overflow-x: auto;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
 .week-grid {
   width: 100%;
   border-collapse: collapse;
+  margin-bottom: 20px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  th {
+    background-color: var(--ion-color-primary, #3880ff);
+    color: white;
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+
+    &.project-column {
+      min-width: 200px;
+      text-align: left;
+    }
+
+    &.day-column {
+      min-width: 100px;
+    }
+
+    &.total-column {
+      min-width: 80px;
+    }
+  }
+
+  td {
+    padding: 8px;
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: middle;
+
+    &.project-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 200px;
+
+      ion-select {
+        flex: 1;
+        min-width: 0;
+        --color: #000000 !important;
+        --background: #ffffff;
+        --border-color: var(--ion-color-medium, #ccc);
+        --border-width: 1px;
+        --border-style: solid;
+        --border-radius: 4px;
+        --padding-start: 12px;
+        --padding-end: 12px;
+        color: #000000 !important;
+      }
+
+      .single-project {
+        flex: 1;
+        font-weight: 500;
+      }
+
+      .remove-btn {
+        flex-shrink: 0;
+        --padding-start: 8px;
+        --padding-end: 8px;
+      }
+    }
+
+    &.hours-cell {
+      text-align: center;
+
+      .hours-input {
+        max-width: 80px;
+        --padding-start: 8px;
+        --padding-end: 8px;
+        text-align: center;
+        --color: #000000 !important;
+        --background: #ffffff;
+        --border-color: var(--ion-color-medium, #ccc);
+        --border-width: 1px;
+        --border-style: solid;
+        --border-radius: 4px;
+        color: #000000 !important;
+
+        input {
+          color: #000000 !important;
+          background: #ffffff !important;
+        }
+      }
+    }
+
+    &.total-cell {
+      text-align: center;
+      font-weight: 500;
+      color: #000000 !important;
+    }
+  }
+
+  .totals-row {
+    background-color: #f5f5f5;
+    font-weight: 600;
+    color: #000000 !important;
+
+    td {
+      border-bottom: none;
+      padding: 12px 8px;
+      color: #000000 !important;
+    }
+  }
 }
-.week-grid th,
-.week-grid td {
-  border: 1px solid #ccc;
-  text-align: center;
-  padding: 8px;
+
+// Mobile View
+.mobile-view {
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
+}
+
+.project-card {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+
+  .project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+
+    .project-selector {
+      flex: 1;
+      margin-right: 12px;
+
+      ion-select {
+        width: 100%;
+        --color: #000000 !important;
+        --background: #ffffff;
+        --border-color: var(--ion-color-medium, #ccc);
+        --border-width: 1px;
+        --border-style: solid;
+        --border-radius: 6px;
+        --padding-start: 12px;
+        --padding-end: 12px;
+        color: #000000 !important;
+      }
+
+      h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--ion-color-primary);
+      }
+    }
+  }
+
+  .row-total {
+    color: var(--ion-color-medium);
+    font-size: 0.9rem;
+  }
+
+  .hours-grid {
+    padding: 0;
+
+    .day-row {
+      align-items: center;
+      padding: 4px 0;
+      border-bottom: 1px solid #f0f0f0;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      ion-col {
+        padding: 8px 4px;
+
+        &:first-child {
+          ion-label {
+            font-weight: 500;
+            color: var(--ion-color-dark);
+          }
+        }
+      }
+
+      .mobile-hours-input {
+        --padding-start: 12px;
+        --padding-end: 12px;
+        text-align: center;
+        --color: #000000 !important;
+        --background: #ffffff;
+        --border-color: var(--ion-color-medium, #ccc);
+        --border-width: 1px;
+        --border-style: solid;
+        --border-radius: 6px;
+        color: #000000 !important;
+
+        input {
+          color: #000000 !important;
+          background: #ffffff !important;
+        }
+      }
+    }
+  }
+}
+
+.totals-card {
+  margin-top: 20px;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    var(--ion-color-primary-tint),
+    var(--ion-color-primary)
+  );
+
+  ion-card-header {
+    color: white;
+
+    ion-card-title {
+      color: white;
+      font-weight: 600;
+    }
+  }
+
+  ion-card-content {
+    background: white;
+    border-radius: 0 0 12px 12px;
+
+    .total-row {
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+
+      &:last-child:not(.grand-total) {
+        border-bottom: none;
+      }
+
+      ion-col {
+        padding: 4px 8px;
+        color: #000000 !important;
+
+        ion-label {
+          color: #000000 !important;
+        }
+
+        &:last-child {
+          text-align: right;
+          color: var(--ion-color-primary) !important;
+          font-weight: 600;
+        }
+      }
+    }
+
+    .grand-total {
+      border-top: 2px solid var(--ion-color-primary);
+      background: var(--ion-color-primary-tint);
+      border-radius: 8px;
+      margin-top: 8px;
+      padding: 8px 0;
+
+      ion-col {
+        padding: 8px;
+
+        ion-label,
+        strong {
+          color: #000000 !important;
+          font-size: 1.1rem;
+          font-weight: 700;
+        }
+
+        &:last-child {
+          text-align: right;
+
+          strong {
+            color: var(--ion-color-primary) !important;
+            font-weight: 700;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 480px) {
+  .week-view-container {
+    padding: 12px;
+  }
+
+  .week-header {
+    flex-direction: column;
+    align-items: stretch;
+
+    h2 {
+      text-align: center;
+      margin-bottom: 12px;
+      font-size: 1.3rem;
+    }
+  }
+
+  .project-card {
+    margin-bottom: 12px;
+
+    ion-card-header {
+      padding: 12px;
+    }
+
+    ion-card-content {
+      padding: 8px 12px;
+    }
+  }
+}
+
+// Accessibility improvements
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+// High contrast mode
+@media (prefers-contrast: high) {
+  .week-grid {
+    border: 2px solid black;
+
+    th,
+    td {
+      border: 1px solid black;
+    }
+  }
+
+  .project-card,
+  .totals-card {
+    border: 2px solid black;
+  }
+
+  .hours-input,
+  .mobile-hours-input {
+    --border-color: black !important;
+    --border-width: 2px !important;
+  }
+
+  ion-select {
+    --border-color: black !important;
+    --border-width: 2px !important;
+  }
+}
+
+// Better focus states for inputs
+.hours-input:focus-within,
+.mobile-hours-input:focus-within {
+  --border-color: var(--ion-color-primary) !important;
+  --border-width: 2px !important;
+  box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.2);
+}
+
+ion-select:focus-within {
+  --border-color: var(--ion-color-primary) !important;
+  --border-width: 2px !important;
+  box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.2);
 }

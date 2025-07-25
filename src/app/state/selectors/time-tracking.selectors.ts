@@ -32,3 +32,14 @@ export const selectTimeTrackingError = createSelector(
   selectTimeTrackingState,
   (state) => state.error,
 );
+
+export const selectAllEntriesForAccount = (accountId: string) =>
+  createSelector(selectTimeTrackingState, (state: TimeEntriesState) => {
+    const allEntries: any[] = [];
+    Object.keys(state.entities).forEach((key) => {
+      if (key.startsWith(`${accountId}_`)) {
+        allEntries.push(...state.entities[key]);
+      }
+    });
+    return allEntries;
+  });

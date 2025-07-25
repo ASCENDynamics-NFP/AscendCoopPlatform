@@ -67,32 +67,46 @@ export class WeekViewComponent implements OnInit, OnChanges {
     if (this.rows.length === 0) {
       if (this.initialRows && this.initialRows.length > 0) {
         this.rows = [...this.initialRows];
-      } else if (this.availableProjects.length === 1) {
-        this.rows.push({projectId: this.availableProjects[0].id});
       } else {
-        this.rows.push({projectId: null});
+        this.initializeEmptyRows();
       }
     }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes["entries"]) {
+      // Update totals when entries change from parent component
       this.updateTotals();
     }
     if (changes["weekStart"]) {
       this.calculateDays();
     }
-    if (changes["initialRows"] && this.rows.length === 0) {
+    if (changes["initialRows"]) {
       const rows: {projectId: string | null}[] =
         changes["initialRows"].currentValue;
       if (rows && rows.length > 0) {
+        // Always update rows when initialRows changes, regardless of current row state
         this.rows = [...rows];
         this.updateTotals();
+      } else if (this.rows.length === 0) {
+        // Only add empty row if we don't have any rows and no initialRows
+        this.initializeEmptyRows();
       }
     } else if (changes["availableProjects"] && this.rows.length === 0) {
-      if (this.availableProjects.length === 1) {
-        this.rows.push({projectId: this.availableProjects[0].id});
-      }
+      this.initializeEmptyRows();
+    }
+
+    // Ensure there's always at least one row for user input
+    if (this.rows.length === 0) {
+      this.initializeEmptyRows();
+    }
+  }
+
+  private initializeEmptyRows() {
+    if (this.availableProjects.length === 1) {
+      this.rows.push({projectId: this.availableProjects[0].id});
+    } else {
+      this.rows.push({projectId: null});
     }
   }
 
@@ -135,14 +149,14 @@ export class WeekViewComponent implements OnInit, OnChanges {
       return;
     }
     if (existing && hours === 0) {
-      this.entries = this.entries.filter((e) => e !== existing);
-      this.updateTotals();
+      // Delete the entry
       this.store.dispatch(
         TimeTrackingActions.deleteTimeEntry({entry: existing}),
       );
       this.successHandler.handleSuccess("Time entry deleted!");
       return;
     }
+
     const entry: TimeEntry = {
       id: existing ? existing.id : "",
       accountId: this.accountId,
@@ -150,17 +164,15 @@ export class WeekViewComponent implements OnInit, OnChanges {
       userId: existing ? existing.userId : this.userId,
       date: existing ? existing.date : Timestamp.fromDate(day),
       hours,
-      status: existing ? existing.status : "pending",
-      notes: existing?.notes,
+      status: existing?.status || "pending",
+      notes: existing?.notes || "",
     };
-    if (existing) {
-      existing.hours = hours;
-    } else {
-      this.entries.push(entry);
-    }
-    this.updateTotals();
+
+    // Always dispatch the save action and let the store handle the state
     this.store.dispatch(TimeTrackingActions.saveTimeEntry({entry}));
-    this.successHandler.handleSuccess("Time entry saved!");
+    this.successHandler.handleSuccess(
+      existing ? "Time entry updated!" : "Time entry saved!",
+    );
   }
 
   isSelected(id: string, excludeIndex?: number): boolean {
@@ -185,22 +197,23 @@ export class WeekViewComponent implements OnInit, OnChanges {
   }
 
   addProjectById(index: number, event: Event) {
-    const target = event.target as HTMLSelectElement;
-    if (!target) return;
+    let id: string;
 
-    const id = target.value;
+    // Handle both regular select and ion-select events
+    if ("detail" in event && (event as any).detail) {
+      // ion-select event
+      id = (event as any).detail.value;
+    } else {
+      // regular select event
+      const target = event.target as HTMLSelectElement;
+      if (!target) return;
+      id = target.value;
+    }
+
     if (this.isSelected(id, index)) return;
     const project = this.availableProjects.find((p) => p.id === id);
     if (project) {
       this.rows[index].projectId = project.id;
-      // If there are still unselected projects, add a new row
-      const selectedIds = this.rows.map((r) => r.projectId).filter(Boolean);
-      const unselectedProjects = this.availableProjects.filter(
-        (p) => !selectedIds.includes(p.id),
-      );
-      if (unselectedProjects.length > 0) {
-        this.rows.push({projectId: null});
-      }
     }
     this.updateTotals();
   }

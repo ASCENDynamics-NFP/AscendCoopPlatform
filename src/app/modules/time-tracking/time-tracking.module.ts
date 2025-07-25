@@ -28,13 +28,14 @@ import {StoreModule} from "@ngrx/store";
 import {EffectsModule} from "@ngrx/effects";
 import {TimeTrackingRoutingModule} from "./time-tracking-routing.module";
 import {TimesheetPage} from "./pages/timesheet/timesheet.page";
+import {ApprovalsPage} from "./pages/approvals/approvals.page";
 import {WeekViewComponent} from "./components/week-view/week-view.component";
 import {timeTrackingReducer} from "../../state/reducers/time-tracking.reducer";
 import {TimeTrackingEffects} from "../../state/effects/time-tracking.effects";
 import {SharedModule} from "../../shared/shared.module";
 
 @NgModule({
-  declarations: [TimesheetPage, WeekViewComponent],
+  declarations: [TimesheetPage, ApprovalsPage, WeekViewComponent],
   imports: [
     CommonModule,
     FormsModule,

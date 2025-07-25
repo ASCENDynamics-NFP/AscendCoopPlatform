@@ -26,7 +26,11 @@ export interface TimeEntry extends BaseDocument {
   /** The account/group this entry belongs to */
   accountId: string;
   projectId: string;
+  /** The project name for display purposes */
+  projectName?: string;
   userId: string;
+  /** The user's display name for approval workflows */
+  userName?: string;
   date: Timestamp;
   hours: number;
   /**
@@ -36,4 +40,24 @@ export interface TimeEntry extends BaseDocument {
    */
   status?: "pending" | "approved" | "rejected";
   notes?: string;
+
+  // Audit fields for approval workflow
+  /** ID of the user who approved/rejected this entry */
+  approvedBy?: string;
+  /** Name of the user who approved/rejected this entry */
+  approvedByName?: string;
+  /** Timestamp when the approval/rejection occurred */
+  approvedAt?: Timestamp;
+  /** Reason for rejection (if applicable) */
+  rejectionReason?: string;
+  /** Original submitted hours (in case of modifications during approval) */
+  originalHours?: number;
+  /** History of status changes for audit trail */
+  statusHistory?: {
+    status: "pending" | "approved" | "rejected";
+    changedBy: string;
+    changedByName: string;
+    changedAt: Timestamp;
+    reason?: string;
+  }[];
 }

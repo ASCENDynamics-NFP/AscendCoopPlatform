@@ -158,4 +158,93 @@ export class TimeTrackingEffects {
       }),
     ),
   );
+
+  // Load all time entries for account (for approvals)
+  loadAllTimeEntriesForAccount$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(TimeTrackingActions.loadAllTimeEntriesForAccount),
+      mergeMap(({accountId}) => {
+        return this.afs
+          .collection<TimeEntry>(`accounts/${accountId}/timeEntries`)
+          .snapshotChanges()
+          .pipe(
+            takeUntil(
+              this.actions$.pipe(
+                ofType(TimeTrackingActions.clearTimeTrackingSubscriptions),
+              ),
+            ),
+            map((actions) => {
+              const entries = actions.map((a) => {
+                const data = a.payload.doc.data() as TimeEntry;
+                const id = a.payload.doc.id;
+                return {...data, id};
+              });
+              return TimeTrackingActions.loadAllTimeEntriesForAccountSuccess({
+                accountId,
+                entries,
+              });
+            }),
+            catchError((error) => {
+              console.error("Error loading all time entries:", error);
+              return of(
+                TimeTrackingActions.loadAllTimeEntriesForAccountFailure({
+                  accountId,
+                  error,
+                }),
+              );
+            }),
+          );
+      }),
+    ),
+  );
+
+  // Update time entry (for approvals)
+  updateTimeEntry$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(TimeTrackingActions.updateTimeEntry),
+      mergeMap(({entry}) =>
+        from(this.service.updateTimeEntry(entry)).pipe(
+          map(() => TimeTrackingActions.updateTimeEntrySuccess({entry})),
+          catchError((error) => {
+            console.error("Error updating time entry:", error);
+            return of(TimeTrackingActions.updateTimeEntryFailure({error}));
+          }),
+        ),
+      ),
+    ),
+  );
+
+  // Submit timesheet for approval
+  submitTimesheetForApproval$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(TimeTrackingActions.submitTimesheetForApproval),
+      mergeMap(({accountId, userId, weekStart, entries}) => {
+        // Update all entries to have pending status
+        const updatePromises = entries.map((entry) =>
+          this.service.updateTimeEntry({...entry, status: "pending"}),
+        );
+
+        return from(Promise.all(updatePromises)).pipe(
+          map(() =>
+            TimeTrackingActions.submitTimesheetForApprovalSuccess({
+              accountId,
+              userId,
+              weekStart,
+            }),
+          ),
+          catchError((error) => {
+            console.error("Error submitting timesheet for approval:", error);
+            return of(
+              TimeTrackingActions.submitTimesheetForApprovalFailure({
+                accountId,
+                userId,
+                weekStart,
+                error,
+              }),
+            );
+          }),
+        );
+      }),
+    ),
+  );
 }

@@ -1,3 +1,222 @@
 :host {
   display: block;
 }
+
+.timesheet-content {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 20px;
+  --padding-bottom: 0;
+}
+
+.content-container {
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: 24px; /* Extra space to account for header */
+}
+
+.week-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: var(--ion-color-primary-tint, #e6f2ff);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  gap: 16px;
+  border: 1px solid var(--ion-color-primary-shade, #3171e0);
+
+  .nav-button {
+    flex-shrink: 0;
+    --border-radius: 8px;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --color: var(--ion-color-primary);
+    --border-color: var(--ion-color-primary);
+
+    .nav-text {
+      margin: 0 4px;
+      font-weight: 500;
+    }
+
+    @media (max-width: 480px) {
+      --padding-start: 12px;
+      --padding-end: 12px;
+
+      .nav-text {
+        display: none;
+      }
+    }
+  }
+
+  .current-week {
+    flex: 1;
+    text-align: center;
+
+    h2 {
+      margin: 0 0 4px 0;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--ion-color-dark, #333);
+    }
+
+    .week-subtitle {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--ion-color-medium-shade, #666);
+      font-weight: 500;
+    }
+
+    @media (max-width: 480px) {
+      h2 {
+        font-size: 1.1rem;
+      }
+
+      .week-subtitle {
+        font-size: 0.8rem;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 12px;
+    margin-bottom: 16px;
+    gap: 12px;
+  }
+}
+
+.week-view-container {
+  margin-bottom: 24px;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+  margin-bottom: 24px;
+
+  .save-button,
+  .submit-button {
+    --border-radius: 8px;
+    --padding-top: 14px;
+    --padding-bottom: 14px;
+    font-weight: 600;
+
+    ion-icon {
+      margin-right: 8px;
+    }
+  }
+
+  .save-button {
+    --background: var(--ion-color-primary);
+    --color: white;
+  }
+
+  .submit-button {
+    --border-color: var(--ion-color-secondary);
+    --color: var(--ion-color-secondary);
+  }
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: center;
+    gap: 16px;
+
+    .save-button,
+    .submit-button {
+      flex: 0 1 300px;
+      max-width: 300px;
+    }
+  }
+
+  // Mobile-specific spacing to ensure buttons are visible
+  @media (max-width: 768px) {
+    margin-bottom: max(32px, env(safe-area-inset-bottom, 32px));
+    padding-bottom: 16px;
+  }
+}
+
+// Mobile-specific adjustments
+@media (max-width: 768px) {
+  .content-container {
+    padding: 12px;
+    padding-top: max(24px, env(safe-area-inset-top, 24px));
+    padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));
+  }
+}
+
+@media (max-width: 480px) {
+  .content-container {
+    padding: 8px;
+    padding-bottom: max(32px, env(safe-area-inset-bottom, 32px));
+  }
+
+  .week-navigation {
+    flex-direction: column;
+    gap: 8px;
+
+    .current-week {
+      order: -1;
+      margin-bottom: 8px;
+    }
+
+    .nav-button {
+      width: 48px;
+      height: 48px;
+      --border-radius: 50%;
+    }
+
+    .nav-buttons-container {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 200px;
+    }
+  }
+}
+
+// Loading and empty states
+.loading-container,
+.empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+
+  ion-icon {
+    font-size: 48px;
+    color: var(--ion-color-medium);
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    color: var(--ion-color-medium);
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    margin: 0;
+  }
+}
+
+// Accessibility improvements
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+// Focus styles for keyboard navigation
+.nav-button:focus-visible,
+.save-button:focus-visible,
+.submit-button:focus-visible {
+  outline: 2px solid var(--ion-color-primary);
+  outline-offset: 2px;
+}

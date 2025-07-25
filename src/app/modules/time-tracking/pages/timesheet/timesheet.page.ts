@@ -133,6 +133,103 @@ export class TimesheetPage implements OnInit, OnDestroy {
     this.store.dispatch(TimeTrackingActions.clearTimeTrackingSubscriptions());
     this.subscriptions.unsubscribe();
   }
+
+  getCurrentWeekLabel(): string {
+    const options: Intl.DateTimeFormatOptions = {
+      month: "long",
+      year: "numeric",
+    };
+    return this.currentWeekStart.toLocaleDateString("en-US", options);
+  }
+
+  getCurrentWeekRange(): string {
+    const endDate = new Date(this.currentWeekStart);
+    endDate.setDate(endDate.getDate() + 6);
+
+    const startOptions: Intl.DateTimeFormatOptions = {
+      month: "short",
+      day: "numeric",
+    };
+    const endOptions: Intl.DateTimeFormatOptions = {
+      month: "short",
+      day: "numeric",
+    };
+
+    const startStr = this.currentWeekStart.toLocaleDateString(
+      "en-US",
+      startOptions,
+    );
+    const endStr = endDate.toLocaleDateString("en-US", endOptions);
+
+    return `${startStr} - ${endStr}`;
+  }
+
+  saveTimesheet() {
+    // TODO: Implement save functionality
+    console.log("Saving timesheet...");
+  }
+
+  submitForApproval() {
+    if (this.entries.length === 0) {
+      this.showToast("No time entries to submit", "warning");
+      return;
+    }
+
+    // Get current user info for display in approval process
+    this.store
+      .select(selectAuthUser)
+      .pipe(first())
+      .subscribe((user) => {
+        if (!user) {
+          this.showToast("User information not available", "danger");
+          return;
+        }
+
+        // Get user display name (prefer displayName, fall back to name or email)
+        const userName =
+          user.displayName || user.name || user.email || "Unknown User";
+
+        // Update all entries with user name, project name, and status
+        const pendingEntries = this.entries.map((entry) => {
+          // Find the project for this entry to get the project name
+          const project = this.availableProjects.find(
+            (p) => p.id === entry.projectId,
+          );
+          const projectName = project?.name || "Unknown Project";
+
+          return {
+            ...entry,
+            status: "pending" as const,
+            userName: userName,
+            projectName: projectName,
+          };
+        });
+
+        // Dispatch action to submit timesheet
+        this.store.dispatch(
+          TimeTrackingActions.submitTimesheetForApproval({
+            accountId: this.accountId,
+            userId: this.userId,
+            weekStart: this.currentWeekStart,
+            entries: pendingEntries,
+          }),
+        );
+
+        this.showToast("Timesheet submitted for approval", "success");
+      });
+  }
+
+  private async showToast(message: string, color: string = "primary") {
+    const {ToastController} = await import("@ionic/angular");
+    const toastController = new ToastController();
+    const toast = await toastController.create({
+      message,
+      duration: 3000,
+      color,
+      position: "top",
+    });
+    await toast.present();
+  }
   //   startOfWeek(date: Date): Date {
   //     const d = new Date(date);
   //     d.setHours(0, 0, 0, 0);

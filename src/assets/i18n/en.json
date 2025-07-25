@@ -10,6 +10,9 @@
   "Profile": "Profile",
   "Settings": "Settings",
   "Dashboard": "Dashboard",
+  "EnterTime": "Enter Time",
+  "ApproveTime": "Approve Time",
+  "Projects": "Projects",
   "menu": {
     "title": "ASCENDynamics NFP",
     "listings": "Listings",
@@ -21,7 +24,8 @@
     "users": "Users",
     "settings": "Settings",
     "dashboard": "Dashboard",
-    "manage_projects": "Manage Projects"
+    "manage_projects": "Manage Projects",
+    "time_tracking": "Time Tracking"
   },
   "user": {
     "login": {

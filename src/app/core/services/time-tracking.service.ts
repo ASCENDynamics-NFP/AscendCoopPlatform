@@ -79,18 +79,32 @@ export class TimeTrackingService {
   }
 
   addTimeEntry(entry: TimeEntry): Promise<string> {
+    // Sanitize the entry to ensure no undefined values
+    const sanitizedEntry = this.sanitizeTimeEntry(entry);
     return this.firestore.addDocument(
       `accounts/${entry.accountId}/timeEntries`,
-      entry,
+      sanitizedEntry,
     );
   }
 
   updateTimeEntry(entry: TimeEntry): Promise<void> {
+    // Sanitize the entry to ensure no undefined values
+    const sanitizedEntry = this.sanitizeTimeEntry(entry);
     return this.firestore.updateDocument(
       `accounts/${entry.accountId}/timeEntries`,
       entry.id,
-      entry,
+      sanitizedEntry,
     );
+  }
+
+  private sanitizeTimeEntry(entry: TimeEntry): TimeEntry {
+    return {
+      ...entry,
+      status: entry.status || "pending",
+      notes: entry.notes || "",
+      userName: entry.userName || "",
+      projectName: entry.projectName || "",
+    };
   }
 
   deleteTimeEntry(entry: TimeEntry): Promise<void> {

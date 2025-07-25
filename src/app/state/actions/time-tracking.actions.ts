@@ -96,3 +96,56 @@ export const deleteTimeEntryFailure = createAction(
 export const clearTimeTrackingSubscriptions = createAction(
   "[Time Tracking] Clear Subscriptions",
 );
+
+// Load all time entries for an account (for approvals)
+export const loadAllTimeEntriesForAccount = createAction(
+  "[Time Tracking] Load All Time Entries For Account",
+  props<{accountId: string}>(),
+);
+
+export const loadAllTimeEntriesForAccountSuccess = createAction(
+  "[Time Tracking] Load All Time Entries For Account Success",
+  props<{accountId: string; entries: TimeEntry[]}>(),
+);
+
+export const loadAllTimeEntriesForAccountFailure = createAction(
+  "[Time Tracking] Load All Time Entries For Account Failure",
+  props<{accountId: string; error: any}>(),
+);
+
+// Update time entry (for approvals)
+export const updateTimeEntry = createAction(
+  "[Time Tracking] Update Time Entry",
+  props<{entry: TimeEntry}>(),
+);
+
+export const updateTimeEntrySuccess = createAction(
+  "[Time Tracking] Update Time Entry Success",
+  props<{entry: TimeEntry}>(),
+);
+
+export const updateTimeEntryFailure = createAction(
+  "[Time Tracking] Update Time Entry Failure",
+  props<{error: any}>(),
+);
+
+// Submit timesheet for approval
+export const submitTimesheetForApproval = createAction(
+  "[Time Tracking] Submit Timesheet For Approval",
+  props<{
+    accountId: string;
+    userId: string;
+    weekStart: Date;
+    entries: TimeEntry[];
+  }>(),
+);
+
+export const submitTimesheetForApprovalSuccess = createAction(
+  "[Time Tracking] Submit Timesheet For Approval Success",
+  props<{accountId: string; userId: string; weekStart: Date}>(),
+);
+
+export const submitTimesheetForApprovalFailure = createAction(
+  "[Time Tracking] Submit Timesheet For Approval Failure",
+  props<{accountId: string; userId: string; weekStart: Date; error: any}>(),
+);

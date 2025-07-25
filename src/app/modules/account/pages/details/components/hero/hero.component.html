@@ -62,14 +62,39 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       >
         Donate</ion-button
       >
+      <!-- Projects: Only group admins/owners can manage projects for group accounts -->
       <ion-button
-        *ngIf="isGroupAdmin"
+        *ngIf="account.type === 'group' && isGroupAdmin"
         color="primary"
         fill="outline"
         size="small"
         [routerLink]="'/account/' + account.id + '/projects'"
       >
         <ion-icon name="folder-open"></ion-icon> Projects
+      </ion-button>
+      <!-- Time Tracking: Only users (type 'user') can enter time for group accounts they're members of -->
+      <ion-button
+        *ngIf="
+          account.type === 'group' &&
+          currentUserType === 'user' &&
+          isGroupMember
+        "
+        color="secondary"
+        fill="outline"
+        size="small"
+        [routerLink]="'/account/' + account.id + '/time-tracking'"
+      >
+        <ion-icon name="time"></ion-icon> Enter Time
+      </ion-button>
+      <!-- Time Approval: Only group admins/owners can approve time for group accounts -->
+      <ion-button
+        *ngIf="account.type === 'group' && isGroupAdmin"
+        color="tertiary"
+        fill="outline"
+        size="small"
+        [routerLink]="'/account/' + account.id + '/time-tracking/approvals'"
+      >
+        <ion-icon name="checkmark-circle"></ion-icon> Approve Time
       </ion-button>
       <ion-button
         *ngIf="isProfileOwner"

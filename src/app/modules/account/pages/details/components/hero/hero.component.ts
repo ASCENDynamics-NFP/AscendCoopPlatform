@@ -33,6 +33,8 @@ export class HeroComponent {
   @Input() account!: Account; // Changed from Partial<Account> to Account to ensure properties are defined
   @Input() isProfileOwner: boolean = false;
   @Input() isGroupAdmin = false;
+  @Input() isGroupMember = false;
+  @Input() currentUserType: string | null = null;
 
   constructor(private modalController: ModalController) {}
 

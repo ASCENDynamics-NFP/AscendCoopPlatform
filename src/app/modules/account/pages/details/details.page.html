@@ -30,6 +30,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       [account]="account"
       [isProfileOwner]="(isProfileOwner$ | async) ?? false"
       [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+      [isGroupMember]="(isGroupMember$ | async) ?? false"
+      [currentUserType]="(authUser$ | async)?.type ?? null"
     ></app-hero>
 
     <div class="tabs">

@@ -22,12 +22,18 @@
 import {NgModule} from "@angular/core";
 import {RouterModule, Routes} from "@angular/router";
 import {TimesheetPage} from "./pages/timesheet/timesheet.page";
+import {ApprovalsPage} from "./pages/approvals/approvals.page";
 import {AuthGuard} from "../../core/guards/auth.guard";
 
 const routes: Routes = [
   {
     path: "",
     component: TimesheetPage,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: "approvals",
+    component: ApprovalsPage,
     canActivate: [AuthGuard],
   },
 ];

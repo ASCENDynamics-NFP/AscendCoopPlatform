@@ -4,6 +4,8 @@ import {Store} from "@ngrx/store";
 import {Timestamp} from "firebase/firestore";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
 import {SimpleChange} from "@angular/core";
+import {SuccessHandlerService} from "../../../../core/services/success-handler.service";
+import {ErrorHandlerService} from "../../../../core/services/error-handler.service";
 
 describe("WeekViewComponent", () => {
   let component: WeekViewComponent;
@@ -14,7 +16,17 @@ describe("WeekViewComponent", () => {
     store = jasmine.createSpyObj("Store", ["dispatch"]);
     await TestBed.configureTestingModule({
       declarations: [WeekViewComponent],
-      providers: [{provide: Store, useValue: store}],
+      providers: [
+        {provide: Store, useValue: store},
+        {
+          provide: SuccessHandlerService,
+          useValue: {handleSuccess: jasmine.createSpy("handleSuccess")},
+        },
+        {
+          provide: ErrorHandlerService,
+          useValue: {handleFirebaseAuthError: jasmine.createSpy("handleError")},
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(WeekViewComponent);

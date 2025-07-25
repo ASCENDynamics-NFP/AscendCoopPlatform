@@ -8,6 +8,8 @@ import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectRelatedAccountsByAccountId} from "../../../../state/selectors/account.selectors";
 import {ProjectService} from "../../../../core/services/project.service";
 import {MetaService} from "../../../../core/services/meta.service";
+import {SuccessHandlerService} from "../../../../core/services/success-handler.service";
+import {ErrorHandlerService} from "../../../../core/services/error-handler.service";
 
 @Component({
   selector: "app-projects",
@@ -27,6 +29,8 @@ export class ProjectsPage implements OnInit {
     private store: Store,
     private projectService: ProjectService,
     private metaService: MetaService,
+    private successHandler: SuccessHandlerService,
+    private errorHandler: ErrorHandlerService,
   ) {}
 
   ngOnInit() {
@@ -85,17 +89,31 @@ export class ProjectsPage implements OnInit {
     const project: Project = {name, accountId: this.accountId} as Project;
     this.projectService
       .createProject(this.accountId, project)
-      .then(() => (this.newProjectName = ""));
+      .then(() => {
+        this.newProjectName = "";
+        this.successHandler.handleSuccess("Project created!");
+      })
+      .catch((error) => this.errorHandler.handleFirebaseAuthError(error));
   }
 
   updateProject(project: Project, name: string) {
     if (!project.id) return;
-    this.projectService.updateProject(this.accountId, project.id, {name});
+    this.projectService
+      .updateProject(this.accountId, project.id, {name})
+      .then(() => this.successHandler.handleSuccess("Project updated!"))
+      .catch((error) => this.errorHandler.handleFirebaseAuthError(error));
   }
 
   toggleArchive(project: Project, archived: boolean) {
     if (!project.id) return;
-    this.projectService.setArchived(this.accountId, project.id, archived);
+    this.projectService
+      .setArchived(this.accountId, project.id, archived)
+      .then(() =>
+        this.successHandler.handleSuccess(
+          archived ? "Project archived" : "Project restored",
+        ),
+      )
+      .catch((error) => this.errorHandler.handleFirebaseAuthError(error));
   }
 
   trackById(_: number, proj: Project) {

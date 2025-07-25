@@ -21,16 +21,18 @@
 
 import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
-import {mergeMap, map, catchError} from "rxjs/operators";
+import {mergeMap, map, catchError, tap} from "rxjs/operators";
 import {of, from} from "rxjs";
 import {TimeTrackingService} from "../../core/services/time-tracking.service";
 import * as TimeTrackingActions from "../actions/time-tracking.actions";
+import {ErrorHandlerService} from "../../core/services/error-handler.service";
 
 @Injectable()
 export class TimeTrackingEffects {
   constructor(
     private actions$: Actions,
     private service: TimeTrackingService,
+    private errorHandler: ErrorHandlerService,
   ) {}
 
   loadProjects$ = createEffect(() =>
@@ -68,6 +70,36 @@ export class TimeTrackingEffects {
     ),
   );
 
+  deleteEntry$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(TimeTrackingActions.deleteTimeEntry),
+      mergeMap(({entry}) =>
+        from(this.service.deleteTimeEntry(entry)).pipe(
+          map(() =>
+            TimeTrackingActions.deleteTimeEntrySuccess({entryId: entry.id}),
+          ),
+          catchError((error) =>
+            of(TimeTrackingActions.deleteTimeEntryFailure({error})),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  showErrors$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(
+          TimeTrackingActions.loadProjectsFailure,
+          TimeTrackingActions.saveTimeEntryFailure,
+          TimeTrackingActions.deleteTimeEntryFailure,
+          TimeTrackingActions.loadTimeEntriesFailure,
+        ),
+        tap(({error}) => this.errorHandler.handleFirebaseAuthError(error)),
+      ),
+    {dispatch: false},
+  );
+
   loadEntries$ = createEffect(() =>
     this.actions$.pipe(
       ofType(TimeTrackingActions.loadTimeEntries),
@@ -87,22 +119,6 @@ export class TimeTrackingEffects {
           }),
           catchError((error) =>
             of(TimeTrackingActions.loadTimeEntriesFailure({error})),
-          ),
-        ),
-      ),
-    ),
-  );
-
-  deleteEntry$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(TimeTrackingActions.deleteTimeEntry),
-      mergeMap(({entry}) =>
-        from(this.service.deleteTimeEntry(entry)).pipe(
-          map(() =>
-            TimeTrackingActions.deleteTimeEntrySuccess({entryId: entry.id}),
-          ),
-          catchError((error) =>
-            of(TimeTrackingActions.deleteTimeEntryFailure({error})),
           ),
         ),
       ),

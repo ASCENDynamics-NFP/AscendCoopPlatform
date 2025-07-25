@@ -4,6 +4,8 @@ import {ProjectsPage} from "./projects.page";
 import {provideMockStore, MockStore} from "@ngrx/store/testing";
 import {ActivatedRoute} from "@angular/router";
 import {ProjectService} from "../../../../core/services/project.service";
+import {SuccessHandlerService} from "../../../../core/services/success-handler.service";
+import {ErrorHandlerService} from "../../../../core/services/error-handler.service";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectRelatedAccountsByAccountId} from "../../../../state/selectors/account.selectors";
 import {of} from "rxjs";
@@ -28,6 +30,14 @@ describe("ProjectsPage", () => {
       providers: [
         provideMockStore(),
         {provide: ProjectService, useValue: serviceSpy},
+        {
+          provide: SuccessHandlerService,
+          useValue: {handleSuccess: jasmine.createSpy("handleSuccess")},
+        },
+        {
+          provide: ErrorHandlerService,
+          useValue: {handleFirebaseAuthError: jasmine.createSpy("handleError")},
+        },
         {
           provide: ActivatedRoute,
           useValue: {snapshot: {paramMap: {get: () => "acc1"}}},

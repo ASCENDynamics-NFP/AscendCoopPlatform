@@ -4,10 +4,8 @@ import {TimesheetPage} from "./timesheet.page";
 import {provideMockStore, MockStore} from "@ngrx/store/testing";
 import {ActivatedRoute} from "@angular/router";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
-import {
-  selectEntries,
-  selectProjects,
-} from "../../../../state/selectors/time-tracking.selectors";
+import {selectEntries} from "../../../../state/selectors/time-tracking.selectors";
+import {selectActiveProjectsByAccount} from "../../../../state/selectors/projects.selectors";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
 
 describe("TimesheetPage", () => {
@@ -30,7 +28,7 @@ describe("TimesheetPage", () => {
 
     store = TestBed.inject(MockStore);
     store.overrideSelector(selectAuthUser, {uid: "test"} as any);
-    store.overrideSelector(selectProjects, []);
+    store.overrideSelector(selectActiveProjectsByAccount("acc1"), []);
     store.overrideSelector(selectEntries, []);
 
     spyOn(store, "dispatch").and.callThrough();

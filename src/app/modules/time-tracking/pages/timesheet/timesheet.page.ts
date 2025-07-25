@@ -26,11 +26,10 @@ import {Observable, Subscription} from "rxjs";
 import {first} from "rxjs/operators";
 import {Project} from "@shared/models/project.model";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
+import * as ProjectsActions from "../../../../state/actions/projects.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
-import {
-  selectEntries,
-  selectProjects,
-} from "../../../../state/selectors/time-tracking.selectors";
+import {selectEntries} from "../../../../state/selectors/time-tracking.selectors";
+import {selectActiveProjectsByAccount} from "../../../../state/selectors/projects.selectors";
 import {TimeEntry} from "@shared/models/time-entry.model";
 import {AppState} from "../../../../state/app.state";
 
@@ -63,7 +62,9 @@ export class TimesheetPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.accountId = this.route.snapshot.paramMap.get("accountId") ?? "";
 
-    this.projects$ = this.store.select(selectProjects);
+    this.projects$ = this.store.select(
+      selectActiveProjectsByAccount(this.accountId),
+    );
     this.entries$ = this.store.select(selectEntries);
 
     const projSub = this.projects$.subscribe((projects) => {
@@ -90,7 +91,7 @@ export class TimesheetPage implements OnInit, OnDestroy {
     this.subscriptions.add(authSub);
 
     this.store.dispatch(
-      TimeTrackingActions.loadProjects({accountId: this.accountId}),
+      ProjectsActions.loadProjects({accountId: this.accountId}),
     );
   }
 

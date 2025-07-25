@@ -4,7 +4,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
-import {setDoc, doc} from "firebase/firestore";
+import {setDoc, doc, getDoc} from "firebase/firestore";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -80,6 +80,60 @@ describe("timeEntries create rules", () => {
         userId: "admin1",
         status: "approved",
       }),
+    );
+  });
+});
+
+describe("project read rules", () => {
+  let testEnv: RulesTestEnvironment;
+
+  before(async () => {
+    testEnv = await initializeTestEnvironment({
+      projectId: "rules-test",
+      firestore: {
+        host: "127.0.0.1",
+        port: 8080,
+        rules: fs.readFileSync(
+          path.join(__dirname, "..", "..", "firestore.rules"),
+          "utf8",
+        ),
+      },
+    });
+  });
+
+  after(async () => {
+    if (testEnv) {
+      await testEnv.cleanup();
+    }
+  });
+
+  beforeEach(async () => {
+    await testEnv.clearFirestore();
+    await testEnv.withSecurityRulesDisabled(async (context: any) => {
+      const db = context.firestore();
+      await setDoc(doc(db, "accounts/group1"), {type: "group"});
+      await setDoc(doc(db, "accounts/group1/relatedAccounts/user1"), {
+        status: "accepted",
+        access: "user",
+        type: "user",
+      });
+      await setDoc(doc(db, "accounts/group1/projects/project1"), {name: "p"});
+    });
+  });
+
+  it("allows accepted member to read project", async () => {
+    const ctx = testEnv.authenticatedContext("user1");
+    const db = ctx.firestore();
+    await assertSucceeds(
+      getDoc(doc(db, "accounts/group1/projects/project1")),
+    );
+  });
+
+  it("denies read to unrelated user", async () => {
+    const ctx = testEnv.authenticatedContext("outsider");
+    const db = ctx.firestore();
+    await assertFails(
+      getDoc(doc(db, "accounts/group1/projects/project1")),
     );
   });
 });

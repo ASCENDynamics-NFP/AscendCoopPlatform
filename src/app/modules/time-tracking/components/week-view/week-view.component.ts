@@ -39,16 +39,17 @@ import {TimeEntry} from "@shared/models/time-entry.model";
 })
 export class WeekViewComponent implements OnInit, OnChanges {
   @Input() weekStart: Date = new Date();
-  @Input() projects: Project[] = [];
   @Input() availableProjects: Project[] = [];
   @Input() entries: TimeEntry[] = [];
   @Input() accountId: string = "";
   @Input() userId: string = "";
 
-  days: Date[] = [];
-  dropdownOpen = false;
+  /** Selected rows referencing project ids */
+  rows: {projectId: string | null}[] = [];
 
-  rowTotals: {[projectId: string]: number} = {};
+  days: Date[] = [];
+
+  rowTotals: number[] = [];
   columnTotals: number[] = [];
   totalHours = 0;
 
@@ -56,6 +57,13 @@ export class WeekViewComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.calculateDays();
+    if (this.rows.length === 0) {
+      if (this.availableProjects.length === 1) {
+        this.rows.push({projectId: this.availableProjects[0].id});
+      } else {
+        this.rows.push({projectId: null});
+      }
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -64,6 +72,11 @@ export class WeekViewComponent implements OnInit, OnChanges {
     }
     if (changes["weekStart"]) {
       this.calculateDays();
+    }
+    if (changes["availableProjects"] && this.rows.length === 0) {
+      if (this.availableProjects.length === 1) {
+        this.rows.push({projectId: this.availableProjects[0].id});
+      }
     }
   }
 
@@ -88,7 +101,7 @@ export class WeekViewComponent implements OnInit, OnChanges {
     });
   }
 
-  onHoursChange(project: Project, day: Date, event: Event) {
+  onHoursChange(rowIndex: number, day: Date, event: Event) {
     const target = event.target as HTMLInputElement;
     if (!target) return;
 
@@ -96,14 +109,18 @@ export class WeekViewComponent implements OnInit, OnChanges {
     if (isNaN(hours)) {
       return;
     }
-    const existing = this.getEntry(project.id, day);
+    const projectId = this.rows[rowIndex].projectId;
+    if (!projectId) {
+      return;
+    }
+    const existing = this.getEntry(projectId, day);
     if (!existing && (!target.value || hours === 0)) {
       return;
     }
     const entry: TimeEntry = {
       id: existing ? existing.id : "",
       accountId: this.accountId,
-      projectId: project.id,
+      projectId,
       userId: existing ? existing.userId : this.userId,
       date: existing ? existing.date : Timestamp.fromDate(day),
       hours,
@@ -119,42 +136,58 @@ export class WeekViewComponent implements OnInit, OnChanges {
     this.store.dispatch(TimeTrackingActions.saveTimeEntry({entry}));
   }
 
-  toggleProjectDropdown() {
-    this.dropdownOpen = !this.dropdownOpen;
+  isSelected(id: string, excludeIndex?: number): boolean {
+    return this.rows.some(
+      (r, idx) => r.projectId === id && idx !== excludeIndex,
+    );
   }
 
-  isSelected(id: string): boolean {
-    return this.projects.some((p) => p.id === id);
+  addRow() {
+    this.rows.push({
+      projectId:
+        this.availableProjects.length === 1
+          ? this.availableProjects[0].id
+          : null,
+    });
+    this.updateTotals();
   }
 
-  addProjectById(event: Event) {
+  removeRow(index: number) {
+    this.rows.splice(index, 1);
+    this.updateTotals();
+  }
+
+  addProjectById(index: number, event: Event) {
     const target = event.target as HTMLSelectElement;
     if (!target) return;
 
     const id = target.value;
+    if (this.isSelected(id, index)) return;
     const project = this.availableProjects.find((p) => p.id === id);
-    if (project && !this.isSelected(id)) {
-      this.projects.push(project);
+    if (project) {
+      this.rows[index].projectId = project.id;
     }
-    this.dropdownOpen = false;
+    this.updateTotals();
   }
 
   private updateTotals() {
-    this.rowTotals = {};
+    this.rowTotals = [];
     this.columnTotals = new Array(this.days.length).fill(0);
     this.totalHours = 0;
 
-    for (const project of this.projects) {
+    this.rows.forEach((row, rowIdx) => {
       let rowSum = 0;
-      for (let i = 0; i < this.days.length; i++) {
-        const day = this.days[i];
-        const entry = this.getEntry(project.id, day);
-        const hrs = entry ? entry.hours : 0;
-        rowSum += hrs;
-        this.columnTotals[i] += hrs;
+      if (row.projectId) {
+        for (let i = 0; i < this.days.length; i++) {
+          const day = this.days[i];
+          const entry = this.getEntry(row.projectId, day);
+          const hrs = entry ? entry.hours : 0;
+          rowSum += hrs;
+          this.columnTotals[i] += hrs;
+        }
       }
-      this.rowTotals[project.id] = rowSum;
+      this.rowTotals[rowIdx] = rowSum;
       this.totalHours += rowSum;
-    }
+    });
   }
 }

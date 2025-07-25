@@ -66,6 +66,18 @@ describe("WeekViewComponent", () => {
     );
   });
 
+  it("should dispatch delete action when hours set to 0", () => {
+    const input: HTMLInputElement =
+      fixture.nativeElement.querySelector("tbody tr input");
+    input.value = "0";
+    input.dispatchEvent(new Event("change"));
+    expect(store.dispatch).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        type: TimeTrackingActions.deleteTimeEntry.type,
+      }),
+    );
+  });
+
   it("should include userId when creating new entry", () => {
     const nextDay = new Date(component.weekStart);
     nextDay.setDate(nextDay.getDate() + 1);

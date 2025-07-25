@@ -37,6 +37,7 @@ describe("TimeTrackingService", () => {
     firestoreSpy = jasmine.createSpyObj("FirestoreService", [
       "addDocument",
       "updateDocument",
+      "deleteDocument",
     ]);
 
     TestBed.configureTestingModule({
@@ -148,10 +149,8 @@ describe("TimeTrackingService", () => {
   });
 
   it("should delete a time entry using FirestoreService", async () => {
-    const entry = {id: "e1", accountId: "testAccountId"} as TimeEntry;
-    firestoreSpy.deleteDocument = jasmine
-      .createSpy()
-      .and.returnValue(Promise.resolve());
+    const entry = {id: "e1", accountId: "acct"} as TimeEntry;
+    firestoreSpy.deleteDocument.and.returnValue(Promise.resolve());
 
     await service.deleteTimeEntry(entry);
 

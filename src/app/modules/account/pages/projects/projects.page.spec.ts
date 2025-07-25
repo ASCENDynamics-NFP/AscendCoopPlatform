@@ -15,6 +15,7 @@ describe("ProjectsPage", () => {
   let fixture: ComponentFixture<ProjectsPage>;
   let store: MockStore;
   let serviceSpy: jasmine.SpyObj<ProjectService>;
+  let errorHandler: {handleFirebaseAuthError: jasmine.Spy};
 
   beforeEach(async () => {
     serviceSpy = jasmine.createSpyObj("ProjectService", [
@@ -49,6 +50,7 @@ describe("ProjectsPage", () => {
     store.overrideSelector(selectAuthUser, {uid: "u1"} as any);
     store.overrideSelector(selectRelatedAccountsByAccountId("acc1"), []);
     serviceSpy.getProjects.and.returnValue(of([]));
+    errorHandler = TestBed.inject(ErrorHandlerService) as any;
 
     fixture = TestBed.createComponent(ProjectsPage);
     component = fixture.componentInstance;
@@ -61,5 +63,36 @@ describe("ProjectsPage", () => {
 
   it("should load projects for account", () => {
     expect(serviceSpy.getProjects).toHaveBeenCalledWith("acc1");
+  });
+
+  it("should show error when adding a project with duplicate name", () => {
+    // simulate existing active project
+    serviceSpy.getProjects.and.returnValue(
+      of([{id: "p1", name: "Alpha"} as any]),
+    );
+    fixture = TestBed.createComponent(ProjectsPage);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    component.newProjectName = " alpha ";
+    component.addProject();
+
+    expect(errorHandler.handleFirebaseAuthError).toHaveBeenCalled();
+    expect(serviceSpy.createProject).not.toHaveBeenCalled();
+  });
+
+  it("should show error when updating to a duplicate name", () => {
+    serviceSpy.getProjects.and.returnValue(
+      of([{id: "p1", name: "Alpha"} as any, {id: "p2", name: "Beta"} as any]),
+    );
+    fixture = TestBed.createComponent(ProjectsPage);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const project = {id: "p2", name: "Beta"} as any;
+    component.updateProject(project, " alpha ");
+
+    expect(errorHandler.handleFirebaseAuthError).toHaveBeenCalled();
+    expect(serviceSpy.updateProject).not.toHaveBeenCalled();
   });
 });

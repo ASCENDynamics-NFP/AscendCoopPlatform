@@ -23,6 +23,7 @@ import {ActionReducerMap} from "@ngrx/store";
 import {authReducer} from "./auth.reducer";
 import {accountReducer} from "./account.reducer";
 import {listingsReducer} from "./listings.reducer";
+import {projectsReducer} from "./projects.reducer";
 import {timeTrackingReducer} from "./time-tracking.reducer";
 import {AppState} from "../app.state";
 
@@ -30,5 +31,6 @@ export const reducers: ActionReducerMap<AppState> = {
   auth: authReducer,
   accounts: accountReducer,
   listings: listingsReducer,
+  projects: projectsReducer,
   timeTracking: timeTrackingReducer,
 };

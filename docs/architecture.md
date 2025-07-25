@@ -57,3 +57,29 @@ frontend → FirestoreService → Firestore
 3. **Store updates** via Firestore real‑time streams and components react to the new listing information.
 
 The same pattern is used for other account and listing operations ensuring Firestore, Functions and the client stay synchronized.
+
+## Firestore Document Structure
+
+Data in Firestore is organized under each account. Two commonly used collections are `projects` and `timeEntries`.
+
+### Projects
+
+`accounts/{accountId}/projects/{projectId}`
+
+Fields:
+
+- `name` – name of the project.
+- `archived` – whether the project is archived.
+
+### Time Entries
+
+`accounts/{accountId}/timeEntries/{entryId}`
+
+Fields:
+
+- `userId` – ID of the user logging time.
+- `projectId` – ID of the related project (required).
+- `date` – entry date.
+- `hours` – hours recorded.
+
+Each time entry must reference an existing project through its `projectId` field.

@@ -25,15 +25,18 @@ import {
 } from "firebase-functions/v2/firestore";
 import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
-import {QueryDocumentSnapshot} from "firebase-admin/firestore";
-
-const db = admin.firestore();
+import {QueryDocumentSnapshot, DocumentData} from "firebase-admin/firestore";
 
 export const onCreateAccount = onDocumentCreated(
   {document: "accounts/{accountId}", region: "us-central1"},
   handleAccountCreate,
 );
 
+/**
+ * Handle creation of a new account document.
+ *
+ * @param event - Firestore event containing the new account data and params.
+ */
 async function handleAccountCreate(
   event: FirestoreEvent<QueryDocumentSnapshot | undefined, {accountId: string}>,
 ) {
@@ -44,7 +47,7 @@ async function handleAccountCreate(
     return;
   }
 
-  const account = snapshot.data() as any;
+  const account = snapshot.data() as DocumentData;
   const groupType = account.groupDetails?.groupType;
   if (groupType !== "Nonprofit" && groupType !== "Community") {
     logger.info(`No volunteer project needed for groupType ${groupType}`);

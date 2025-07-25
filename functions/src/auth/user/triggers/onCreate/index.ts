@@ -59,6 +59,7 @@ async function saveAccountToFirestore(
       user.photoURL ||
       "assets/image/logo/ASCENDynamics NFP-logos_transparent.png",
     heroImage: "assets/image/userhero.png",
+    type: "new", // New accounts need to complete registration
     contactInformation: {
       privacy: "private",
       emails: [{email: user.email}],

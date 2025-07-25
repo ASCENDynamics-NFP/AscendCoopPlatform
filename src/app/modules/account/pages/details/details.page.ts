@@ -74,7 +74,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         filter((user): user is AuthUser => user !== null),
         take(1),
         tap((user) => {
-          if (!user.type) {
+          if (!user.type || user.type === "new") {
             this.router.navigate([`/account/registration/${user.uid}`]);
           }
         }),

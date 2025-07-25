@@ -1,5 +1,10 @@
-import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {IonicModule} from "@ionic/angular";
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from "@angular/core/testing";
+import {AlertController, IonicModule} from "@ionic/angular";
 import {ProjectsPage} from "./projects.page";
 import {provideMockStore, MockStore} from "@ngrx/store/testing";
 import {ActivatedRoute} from "@angular/router";
@@ -19,6 +24,7 @@ describe("ProjectsPage", () => {
   let fixture: ComponentFixture<ProjectsPage>;
   let store: MockStore;
   let errorHandler: {handleFirebaseAuthError: jasmine.Spy};
+  let alertController: jasmine.SpyObj<AlertController>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -38,6 +44,7 @@ describe("ProjectsPage", () => {
           provide: ActivatedRoute,
           useValue: {snapshot: {paramMap: {get: () => "acc1"}}},
         },
+        {provide: AlertController, useValue: alertController},
       ],
     }).compileComponents();
 
@@ -50,6 +57,9 @@ describe("ProjectsPage", () => {
     spyOn(store, "dispatch").and.callThrough();
 
     errorHandler = TestBed.inject(ErrorHandlerService) as any;
+    alertController = TestBed.inject(
+      AlertController,
+    ) as jasmine.SpyObj<AlertController>;
 
     fixture = TestBed.createComponent(ProjectsPage);
     component = fixture.componentInstance;
@@ -100,4 +110,41 @@ describe("ProjectsPage", () => {
       jasmine.objectContaining({type: ProjectsActions.updateProject.type}),
     );
   });
+
+  it("should confirm before archiving a project", fakeAsync(() => {
+    const alertSpy = jasmine.createSpyObj("HTMLIonAlertElement", [
+      "present",
+      "onDidDismiss",
+    ]);
+    alertSpy.onDidDismiss.and.returnValue(Promise.resolve({role: "confirm"}));
+    alertController.create.and.returnValue(Promise.resolve(alertSpy));
+
+    (component as any).activeProjectNames = ["alpha", "beta"];
+    const project = {id: "p1", name: "Alpha"} as any;
+
+    component.toggleArchive(project, true);
+    tick();
+
+    expect(alertController.create).toHaveBeenCalled();
+    expect(serviceSpy.setArchived).toHaveBeenCalledWith("acc1", "p1", true);
+  }));
+
+  it("should not archive the last active project", fakeAsync(() => {
+    const alertSpy = jasmine.createSpyObj("HTMLIonAlertElement", [
+      "present",
+      "onDidDismiss",
+    ]);
+    alertSpy.onDidDismiss.and.returnValue(Promise.resolve({role: "confirm"}));
+    alertController.create.and.returnValue(Promise.resolve(alertSpy));
+
+    (component as any).activeProjectNames = ["alpha"];
+    const project = {id: "p1", name: "Alpha"} as any;
+
+    component.toggleArchive(project, true);
+    tick();
+
+    expect(alertController.create).toHaveBeenCalled();
+    expect(serviceSpy.setArchived).not.toHaveBeenCalled();
+    expect(errorHandler.handleFirebaseAuthError).toHaveBeenCalled();
+  }));
 });

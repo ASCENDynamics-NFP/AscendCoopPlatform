@@ -3,6 +3,7 @@ import {ActivatedRoute} from "@angular/router";
 import {Observable, combineLatest} from "rxjs";
 import {map} from "rxjs/operators";
 import {Store} from "@ngrx/store";
+import {AlertController} from "@ionic/angular";
 import {Project} from "@shared/models/project.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectRelatedAccountsByAccountId} from "../../../../state/selectors/account.selectors";
@@ -40,6 +41,7 @@ export class ProjectsPage implements OnInit {
     private metaService: MetaService,
     private successHandler: SuccessHandlerService,
     private errorHandler: ErrorHandlerService,
+    private alertController: AlertController,
   ) {}
 
   ngOnInit() {
@@ -144,8 +146,31 @@ export class ProjectsPage implements OnInit {
     this.successHandler.handleSuccess("Project updated!");
   }
 
-  toggleArchive(project: Project, archived: boolean) {
+  async toggleArchive(project: Project, archived: boolean) {
     if (!project.id) return;
+    
+    if (archived) {
+      const alert = await this.alertController.create({
+        header: "Archive Project?",
+        message: "Are you sure you want to archive this project?",
+        buttons: [
+          {text: "Cancel", role: "cancel"},
+          {text: "Archive", role: "confirm"},
+        ],
+      });
+      await alert.present();
+      const result = await alert.onDidDismiss();
+      if (result.role !== "confirm") return;
+
+      if (this.activeProjectNames.length <= 1) {
+        this.errorHandler.handleFirebaseAuthError({
+          code: "last-active-project",
+          message: "You must have at least one active project.",
+        });
+        return;
+      }
+    }
+    
     this.store.dispatch(
       ProjectsActions.updateProject({
         accountId: this.accountId,

@@ -21,7 +21,7 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {IonicModule, ModalController} from "@ionic/angular";
 import {LandingPage} from "./landing.page";
 import {MetaService} from "../../../../core/services/meta.service";
-import {ElementRef} from "@angular/core";
+import {ElementRef, CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
 
 describe("LandingPage", () => {
@@ -41,6 +41,7 @@ describe("LandingPage", () => {
         {provide: MetaService, useValue: metaSpy},
         {provide: ModalController, useValue: modalSpy},
       ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
 
     metaServiceSpy = TestBed.inject(MetaService) as jasmine.SpyObj<MetaService>;

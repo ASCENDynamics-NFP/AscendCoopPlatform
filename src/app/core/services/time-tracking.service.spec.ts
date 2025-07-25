@@ -54,7 +54,7 @@ describe("TimeTrackingService", () => {
   it("should retrieve projects from Firestore", (done) => {
     const accountId = "account1";
     const mockProjects: Project[] = [
-      {id: "1", name: "Proj", accountId} as Project,
+      {id: "1", name: "Proj", accountId, archived: false} as Project,
     ];
     const snapshotActions = [
       {

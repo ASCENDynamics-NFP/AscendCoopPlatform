@@ -19,6 +19,7 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
+import {CommonModule} from "@angular/common";
 import {ProfileComponent} from "./profile.component";
 
 describe("ProfileComponent", () => {
@@ -27,8 +28,8 @@ describe("ProfileComponent", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [],
-      imports: [IonicModule.forRoot()],
+      declarations: [ProfileComponent],
+      imports: [IonicModule.forRoot(), CommonModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProfileComponent);

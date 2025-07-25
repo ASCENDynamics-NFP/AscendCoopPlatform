@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
-
+import {CommonModule} from "@angular/common";
 import {ContactInfoFormComponent} from "./contact-info-form.component";
 import {provideMockStore} from "@ngrx/store/testing";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
@@ -30,8 +30,8 @@ describe("ContactInfoComponent", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [],
-      imports: [IonicModule.forRoot()],
+      declarations: [ContactInfoFormComponent],
+      imports: [IonicModule.forRoot(), CommonModule],
       providers: [provideMockStore({})],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();

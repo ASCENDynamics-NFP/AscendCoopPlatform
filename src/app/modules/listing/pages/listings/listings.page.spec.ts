@@ -38,6 +38,7 @@ import {
   selectError,
 } from "../../../../state/selectors/listings.selectors";
 import {AppState} from "../../../../state/app.state";
+import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 
 describe("ListingsPage", () => {
   let component: ListingsPage;
@@ -103,6 +104,7 @@ describe("ListingsPage", () => {
         provideMockStore(),
         {provide: NavController, useValue: navCtrlSpy},
       ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
 
     store = TestBed.inject(Store) as MockStore<AppState>;

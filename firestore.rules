@@ -34,13 +34,15 @@ service cloud.firestore {
     }
 
     function isAcceptedFriend(accId) {
-      return request.auth != null && exists(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)) &&
+      return request.auth != null && 
+        exists(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.type == 'user' &&
         get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
     }
 
     function isAcceptedGroup(accId) {
-      return request.auth != null && exists(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)) &&
+      return request.auth != null && 
+        exists(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.type == 'group' &&
         get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
     }
@@ -85,16 +87,18 @@ service cloud.firestore {
 
       // Friends-only access
       function isAcceptedFriend() {
-        return (request.auth != null && exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid))
-          && get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.type == 'user'
-          && get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted');
+        return request.auth != null && 
+          exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.type == 'user' &&
+          get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
       }
 
       // Groups-only access
       function isAcceptedGroup() {
-        return (request.auth != null && exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid))
-          && get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.type == 'group'
-          && get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted');
+        return request.auth != null && 
+          exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.type == 'group' &&
+          get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
       }
 
       // Public Group access

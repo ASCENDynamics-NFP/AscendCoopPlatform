@@ -1,6 +1,7 @@
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
 import {ThinkTankPage} from "./think-tank.page";
+import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 
 describe("ThinkTankPage", () => {
   let component: ThinkTankPage;
@@ -10,6 +11,7 @@ describe("ThinkTankPage", () => {
     TestBed.configureTestingModule({
       declarations: [ThinkTankPage],
       imports: [IonicModule.forRoot()],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ThinkTankPage);

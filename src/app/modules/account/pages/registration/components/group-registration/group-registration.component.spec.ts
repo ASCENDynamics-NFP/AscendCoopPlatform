@@ -19,6 +19,7 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
+import {CommonModule} from "@angular/common";
 import {GroupRegistrationComponent} from "./group-registration.component";
 import {provideMockStore} from "@ngrx/store/testing";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
@@ -29,7 +30,8 @@ describe("GroupRegistrationComponent", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [IonicModule.forRoot()],
+      declarations: [GroupRegistrationComponent],
+      imports: [IonicModule.forRoot(), CommonModule],
       providers: [provideMockStore()],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();

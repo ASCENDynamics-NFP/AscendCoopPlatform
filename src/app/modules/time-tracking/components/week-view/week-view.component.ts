@@ -193,6 +193,14 @@ export class WeekViewComponent implements OnInit, OnChanges {
     const project = this.availableProjects.find((p) => p.id === id);
     if (project) {
       this.rows[index].projectId = project.id;
+      // If there are still unselected projects, add a new row
+      const selectedIds = this.rows.map((r) => r.projectId).filter(Boolean);
+      const unselectedProjects = this.availableProjects.filter(
+        (p) => !selectedIds.includes(p.id),
+      );
+      if (unselectedProjects.length > 0) {
+        this.rows.push({projectId: null});
+      }
     }
     this.updateTotals();
   }

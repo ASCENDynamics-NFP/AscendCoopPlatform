@@ -60,6 +60,10 @@ async function handleAccountCreate(
       (account.groupType === "Nonprofit" || account.groupType === "Community")
     ) {
       try {
+        if (!event.data) {
+          logger.error("No document data found in create event");
+          return;
+        }
         await event.data.ref.collection("projects").add({
           name: "Volunteer",
           accountId,

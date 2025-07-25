@@ -29,7 +29,7 @@ describe("onCreateAccount", () => {
     const collectionStub = sinon.stub().returns({add: addStub});
 
     let handler: any;
-    proxyquire("../src/database/accounts/triggers/onCreate", {
+    proxyquire("../src/database/accounts/triggers/onCreate/index", {
       "firebase-functions/logger": {info: sinon.stub(), error: sinon.stub()},
       "firebase-functions/v2/firestore": {
         onDocumentCreated: (_cfg: any, fn: any) => {
@@ -45,7 +45,11 @@ describe("onCreateAccount", () => {
   it("creates a Volunteer project for qualifying accounts", async () => {
     const {handler, addStub, collectionStub} = setup();
     const snapshot = {
-      data: () => ({type: "group", groupType: "Nonprofit"}),
+      data: () => ({
+        type: "group",
+        groupType: "Nonprofit",
+        groupDetails: {groupType: "Nonprofit"},
+      }),
       ref: {collection: collectionStub},
     };
     await handler({data: snapshot, params: {accountId: "a"}});

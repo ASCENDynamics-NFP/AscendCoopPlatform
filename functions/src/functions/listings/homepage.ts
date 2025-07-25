@@ -195,18 +195,24 @@ export const getHomepageListings = onRequest(
       });
 
       let listings = snapshot.docs.map((doc) => ({
-        id: doc.id,
         ...(doc.data() as Listing),
+        id: doc.id,
       }));
 
       // ✅ Apply Geolocation Filtering and Remote Inclusion
       listings = listings
         .filter(
           (listing: Listing) =>
-            listing.contactInformation?.addresses?.length > 0,
+            listing.contactInformation?.addresses &&
+            listing.contactInformation.addresses.length > 0,
         )
         .map((listing: Listing) => {
-          const addresses = listing.contactInformation.addresses;
+          const addresses = (listing.contactInformation.addresses || [])
+            .filter((addr): addr is NonNullable<typeof addr> => addr !== null)
+            .map((addr) => ({
+              remote: addr.remote ?? undefined,
+              geopoint: addr.geopoint ?? undefined,
+            }));
           const closestDistance = getClosestGeopoint(
             addresses,
             queryLatitude || 0,

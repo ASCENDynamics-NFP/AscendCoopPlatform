@@ -28,6 +28,7 @@ import {StoreModule, Store} from "@ngrx/store";
 import {authReducer} from "../../../../state/reducers/auth.reducer";
 import {By} from "@angular/platform-browser";
 import * as AuthActions from "../../../../state/actions/auth.actions";
+import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 import {of} from "rxjs";
 import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
 import {selectAuthLoading} from "../../../../state/selectors/auth.selectors";
@@ -57,6 +58,7 @@ describe("SignupPage", () => {
         {provide: Router, useValue: routerSpy},
         {provide: ModalController, useValue: modalControllerSpy},
       ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
 
     store = TestBed.inject(Store);

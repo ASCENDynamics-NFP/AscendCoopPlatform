@@ -33,6 +33,7 @@ import {Store} from "@ngrx/store";
 import {Router} from "@angular/router";
 import {of} from "rxjs";
 import * as AuthActions from "../../../../state/actions/auth.actions";
+import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 
 describe("LoginPage", () => {
   let component: LoginPage;
@@ -57,6 +58,7 @@ describe("LoginPage", () => {
         {provide: Router, useValue: routerMock},
         {provide: AlertController, useValue: alertControllerMock},
       ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LoginPage);

@@ -28,6 +28,7 @@ import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {Timestamp} from "firebase/firestore";
 import {BehaviorSubject} from "rxjs";
 import {Listing} from "@shared/models/listing.model";
+import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 
 describe("ListingCreatePage", () => {
   let component: ListingCreatePage;
@@ -71,6 +72,7 @@ describe("ListingCreatePage", () => {
         {provide: Router, useValue: routerSpy},
         {provide: NavController, useValue: navCtrlMock},
       ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
 
     store = TestBed.inject(MockStore);

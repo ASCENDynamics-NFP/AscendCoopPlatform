@@ -29,7 +29,7 @@ export const selectProjectsState =
 export const selectProjectsByAccount = (accountId: string) =>
   createSelector(
     selectProjectsState,
-    (state: ProjectsState): Project[] => state.entities[accountId] || [],
+    (state: ProjectsState): Project[] => state?.entities?.[accountId] || [],
   );
 
 export const selectActiveProjectsByAccount = (accountId: string) =>
@@ -39,10 +39,10 @@ export const selectActiveProjectsByAccount = (accountId: string) =>
 
 export const selectProjectsLoading = createSelector(
   selectProjectsState,
-  (state: ProjectsState) => state.loading,
+  (state: ProjectsState) => state?.loading || false,
 );
 
 export const selectProjectsError = createSelector(
   selectProjectsState,
-  (state: ProjectsState) => state.error,
+  (state: ProjectsState) => state?.error,
 );

@@ -173,7 +173,7 @@ export class MenuComponent implements OnInit, OnDestroy {
       },
       {
         title: this.translate.instant("menu.manage_projects"),
-        url: `/account/${this.user?.uid}/manage-projects`,
+        url: `/account/${this.user?.uid}/projects`,
         icon: "folder-open",
       },
       // {

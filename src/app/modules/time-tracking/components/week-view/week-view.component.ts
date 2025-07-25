@@ -58,7 +58,10 @@ export class WeekViewComponent implements OnInit, OnChanges {
     this.calculateDays();
   }
 
-  ngOnChanges(changes: SimpleChanges) {
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes["entries"]) {
+      this.updateTotals();
+    }
     if (changes["weekStart"]) {
       this.calculateDays();
     }
@@ -74,12 +77,6 @@ export class WeekViewComponent implements OnInit, OnChanges {
       this.days.push(day);
     }
     this.updateTotals();
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes["entries"]) {
-      this.updateTotals();
-    }
   }
 
   getEntry(projectId: string, day: Date): TimeEntry | undefined {

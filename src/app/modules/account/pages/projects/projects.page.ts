@@ -136,8 +136,8 @@ export class ProjectsPage implements OnInit {
     this.successHandler.handleSuccess("Project created!");
   }
 
-  updateProject(project: Project, name: string) {
-    if (!project.id) return;
+  updateProject(project: Project, name: string | null | undefined) {
+    if (!project.id || !name) return;
     const trimmed = name.trim();
     const lower = trimmed.toLowerCase();
     const current = project.name.trim().toLowerCase();

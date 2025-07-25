@@ -82,3 +82,7 @@ export const deleteTimeEntryFailure = createAction(
   "[Time Tracking] Delete Time Entry Failure",
   props<{error: any}>(),
 );
+
+export const clearTimeTrackingSubscriptions = createAction(
+  "[Time Tracking] Clear Subscriptions",
+);

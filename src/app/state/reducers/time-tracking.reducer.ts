@@ -99,4 +99,8 @@ export const timeTrackingReducer = createReducer(
     loading: false,
     error,
   })),
+
+  on(TimeTrackingActions.clearTimeTrackingSubscriptions, () => ({
+    ...initialState,
+  })),
 );

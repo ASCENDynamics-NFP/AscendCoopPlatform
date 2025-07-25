@@ -19,7 +19,7 @@
  ********************************************************************************/
 // src/app/modules/time-tracking/pages/timesheet/timesheet.page.ts
 
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, OnDestroy} from "@angular/core";
 import {Store} from "@ngrx/store";
 import {ActivatedRoute} from "@angular/router";
 import {Observable} from "rxjs";
@@ -39,7 +39,7 @@ import {AppState} from "../../../../state/app.state";
   templateUrl: "./timesheet.page.html",
   styleUrls: ["./timesheet.page.scss"],
 })
-export class TimesheetPage implements OnInit {
+export class TimesheetPage implements OnInit, OnDestroy {
   projects$!: Observable<Project[]>;
   entries$!: Observable<TimeEntry[]>;
   availableProjects: Project[] = [];
@@ -110,6 +110,10 @@ export class TimesheetPage implements OnInit {
     this.currentWeekStart = new Date(this.currentWeekStart);
     this.currentWeekStart.setDate(this.currentWeekStart.getDate() - 7);
     this.loadEntries();
+  }
+
+  ngOnDestroy() {
+    this.store.dispatch(TimeTrackingActions.clearTimeTrackingSubscriptions());
   }
   //   startOfWeek(date: Date): Date {
   //     const d = new Date(date);

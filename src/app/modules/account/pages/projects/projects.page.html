@@ -5,19 +5,36 @@
 </ion-header>
 
 <ion-content>
+  <ion-loading
+    *ngIf="loading$ | async"
+    message="Loading projects..."
+  ></ion-loading>
+  <ion-text color="danger" *ngIf="error$ | async as error">
+    {{ error }}
+  </ion-text>
   <div *ngIf="(isGroupAdmin$ | async)">
     <ion-item>
-      <ion-input placeholder="New project" [(ngModel)]="newProjectName"></ion-input>
+      <ion-input
+        placeholder="New project"
+        [(ngModel)]="newProjectName"
+      ></ion-input>
       <ion-button (click)="addProject()">Add</ion-button>
     </ion-item>
   </div>
 
-  <ion-list>
+  <ion-list *ngIf="!(loading$ | async)">
     <ion-list-header>Active Projects</ion-list-header>
-    <ion-item *ngFor="let proj of (activeProjects$ | async); trackBy: trackById">
+    <ion-item
+      *ngFor="let proj of (activeProjects$ | async); trackBy: trackById"
+    >
       <ng-container *ngIf="(isGroupAdmin$ | async); else view">
-        <ion-input [value]="proj.name" (ionChange)="updateProject(proj, $event.detail.value)"></ion-input>
-        <ion-button slot="end" (click)="toggleArchive(proj, true)">Archive</ion-button>
+        <ion-input
+          [value]="proj.name"
+          (ionChange)="updateProject(proj, $event.detail.value)"
+        ></ion-input>
+        <ion-button slot="end" (click)="toggleArchive(proj, true)"
+          >Archive</ion-button
+        >
       </ng-container>
       <ng-template #view>
         <ion-label>{{proj.name}}</ion-label>
@@ -25,11 +42,18 @@
     </ion-item>
   </ion-list>
 
-  <ion-list>
+  <ion-list *ngIf="!(loading$ | async)">
     <ion-list-header>Archived Projects</ion-list-header>
-    <ion-item *ngFor="let proj of (archivedProjects$ | async); trackBy: trackById">
+    <ion-item
+      *ngFor="let proj of (archivedProjects$ | async); trackBy: trackById"
+    >
       <ion-label>{{proj.name}}</ion-label>
-      <ion-button *ngIf="(isGroupAdmin$ | async)" slot="end" (click)="toggleArchive(proj, false)">Unarchive</ion-button>
+      <ion-button
+        *ngIf="(isGroupAdmin$ | async)"
+        slot="end"
+        (click)="toggleArchive(proj, false)"
+        >Unarchive</ion-button
+      >
     </ion-item>
   </ion-list>
 </ion-content>

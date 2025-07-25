@@ -193,7 +193,6 @@ export class ApplyPage implements OnInit {
         "Application Submitted",
         "Your application has been submitted successfully!",
       );
-      console.log("Form Submitted!", relatedAccount);
     });
   }
 

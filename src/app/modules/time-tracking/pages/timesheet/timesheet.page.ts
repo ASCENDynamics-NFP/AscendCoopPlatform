@@ -22,7 +22,7 @@
 import {Component, OnInit, OnDestroy} from "@angular/core";
 import {Store} from "@ngrx/store";
 import {ActivatedRoute} from "@angular/router";
-import {Observable} from "rxjs";
+import {Observable, Subscription} from "rxjs";
 import {first} from "rxjs/operators";
 import {Project} from "@shared/models/project.model";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
@@ -45,6 +45,7 @@ export class TimesheetPage implements OnInit, OnDestroy {
   availableProjects: Project[] = [];
   entries: TimeEntry[] = [];
   initialRows: {projectId: string}[] = [];
+  private subscriptions = new Subscription();
   accountId: string = "";
   userId: string = "";
   currentWeekStart: Date = (() => {
@@ -65,17 +66,19 @@ export class TimesheetPage implements OnInit, OnDestroy {
     this.projects$ = this.store.select(selectProjects);
     this.entries$ = this.store.select(selectEntries);
 
-    this.projects$.subscribe((projects) => {
+    const projSub = this.projects$.subscribe((projects) => {
       this.availableProjects = projects;
     });
+    this.subscriptions.add(projSub);
 
-    this.entries$.subscribe((entries) => {
+    const entriesSub = this.entries$.subscribe((entries) => {
       this.entries = entries;
       const ids = new Set(entries.map((e) => e.projectId));
       this.initialRows = Array.from(ids).map((id) => ({projectId: id}));
     });
+    this.subscriptions.add(entriesSub);
 
-    this.store
+    const authSub = this.store
       .select(selectAuthUser)
       .pipe(first())
       .subscribe((user) => {
@@ -84,6 +87,7 @@ export class TimesheetPage implements OnInit, OnDestroy {
           this.loadEntries();
         }
       });
+    this.subscriptions.add(authSub);
 
     this.store.dispatch(
       TimeTrackingActions.loadProjects({accountId: this.accountId}),
@@ -114,6 +118,7 @@ export class TimesheetPage implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.store.dispatch(TimeTrackingActions.clearTimeTrackingSubscriptions());
+    this.subscriptions.unsubscribe();
   }
   //   startOfWeek(date: Date): Date {
   //     const d = new Date(date);

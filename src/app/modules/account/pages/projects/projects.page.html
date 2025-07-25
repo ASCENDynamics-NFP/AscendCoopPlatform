@@ -27,9 +27,20 @@
 
   <ion-list>
     <ion-list-header>Archived Projects</ion-list-header>
-    <ion-item *ngFor="let proj of (archivedProjects$ | async); trackBy: trackById">
-      <ion-label>{{proj.name}}</ion-label>
-      <ion-button *ngIf="(isGroupAdmin$ | async)" slot="end" (click)="toggleArchive(proj, false)">Unarchive</ion-button>
+    <ion-item
+      *ngFor="let proj of (archivedProjects$ | async); trackBy: trackById"
+      class="archived-item"
+    >
+      <ion-label>
+        {{proj.name}}
+        <ion-badge color="medium" class="archived-badge">Archived</ion-badge>
+      </ion-label>
+      <ion-button
+        *ngIf="(isGroupAdmin$ | async)"
+        slot="end"
+        (click)="toggleArchive(proj, false)"
+        >Unarchive</ion-button
+      >
     </ion-item>
   </ion-list>
 </ion-content>

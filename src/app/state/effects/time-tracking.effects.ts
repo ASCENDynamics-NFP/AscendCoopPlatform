@@ -30,6 +30,7 @@ import {
   takeUntil,
 } from "rxjs/operators";
 import {of, from} from "rxjs";
+import {AngularFirestore} from "@angular/fire/compat/firestore";
 import {TimeTrackingService} from "../../core/services/time-tracking.service";
 import * as TimeTrackingActions from "../actions/time-tracking.actions";
 import {ErrorHandlerService} from "../../core/services/error-handler.service";
@@ -38,6 +39,7 @@ import {ErrorHandlerService} from "../../core/services/error-handler.service";
 export class TimeTrackingEffects {
   constructor(
     private actions$: Actions,
+    private afs: AngularFirestore,
     private service: TimeTrackingService,
     private errorHandler: ErrorHandlerService,
   ) {}
@@ -115,40 +117,43 @@ export class TimeTrackingEffects {
   loadEntries$ = createEffect(() =>
     this.actions$.pipe(
       ofType(TimeTrackingActions.loadTimeEntries),
-      switchMap(({accountId, userId, weekStart}) =>
-        this.service.getUserEntries(accountId, userId).pipe(
-          takeUntil(
-            this.actions$.pipe(
-              ofType(TimeTrackingActions.clearTimeTrackingSubscriptions),
+      switchMap(({accountId, userId, weekStart}) => {
+        const start = new Date(weekStart);
+        const end = new Date(start);
+        end.setDate(start.getDate() + 7);
+        return this.afs
+          .collection(`accounts/${accountId}/timeEntries`, (ref) =>
+            ref
+              .where("userId", "==", userId)
+              .where("date", ">=", start)
+              .where("date", "<", end),
+          )
+          .valueChanges({idField: "id"})
+          .pipe(
+            takeUntil(
+              this.actions$.pipe(
+                ofType(TimeTrackingActions.clearTimeTrackingSubscriptions),
+              ),
             ),
-          ),
-          map((entries) => {
-            const start = new Date(weekStart);
-            const end = new Date(start);
-            end.setDate(start.getDate() + 7);
-            const filtered = entries.filter((e) => {
-              const d = e.date.toDate();
-              return d >= start && d < end;
-            });
-            return TimeTrackingActions.loadTimeEntriesSuccess({
-              accountId,
-              userId,
-              weekStart,
-              entries: filtered,
-            });
-          }),
-          catchError((error) =>
-            of(
-              TimeTrackingActions.loadTimeEntriesFailure({
+            map((entries) =>
+              TimeTrackingActions.loadTimeEntriesSuccess({
                 accountId,
                 userId,
-                weekStart,
-                error,
+                entries,
               }),
             ),
-          ),
-        ),
-      ),
+            catchError((error) =>
+              of(
+                TimeTrackingActions.loadTimeEntriesFailure({
+                  accountId,
+                  userId,
+                  weekStart,
+                  error,
+                }),
+              ),
+            ),
+          );
+      }),
     ),
   );
 }

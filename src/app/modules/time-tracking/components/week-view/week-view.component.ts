@@ -31,6 +31,8 @@ import {Timestamp} from "firebase/firestore";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
 import {Project} from "@shared/models/project.model";
 import {TimeEntry} from "@shared/models/time-entry.model";
+import {SuccessHandlerService} from "../../../../core/services/success-handler.service";
+import {ErrorHandlerService} from "../../../../core/services/error-handler.service";
 
 @Component({
   selector: "app-week-view",
@@ -53,7 +55,11 @@ export class WeekViewComponent implements OnInit, OnChanges {
   columnTotals: number[] = [];
   totalHours = 0;
 
-  constructor(private store: Store) {}
+  constructor(
+    private store: Store,
+    private successHandler: SuccessHandlerService,
+    private errorHandler: ErrorHandlerService,
+  ) {}
 
   ngOnInit() {
     this.calculateDays();
@@ -103,7 +109,7 @@ export class WeekViewComponent implements OnInit, OnChanges {
 
   onHoursChange(rowIndex: number, day: Date, event: Event) {
     const target = event.target as HTMLInputElement;
-    if (!target || !project || !project.id) return;
+    if (!target) return;
 
     const hours = Number(target.value);
     if (isNaN(hours) || hours < 0 || hours > 24) {
@@ -123,6 +129,7 @@ export class WeekViewComponent implements OnInit, OnChanges {
       this.store.dispatch(
         TimeTrackingActions.deleteTimeEntry({entry: existing}),
       );
+      this.successHandler.handleSuccess("Time entry deleted!");
       return;
     }
     const entry: TimeEntry = {
@@ -142,6 +149,7 @@ export class WeekViewComponent implements OnInit, OnChanges {
     }
     this.updateTotals();
     this.store.dispatch(TimeTrackingActions.saveTimeEntry({entry}));
+    this.successHandler.handleSuccess("Time entry saved!");
   }
 
   isSelected(id: string, excludeIndex?: number): boolean {

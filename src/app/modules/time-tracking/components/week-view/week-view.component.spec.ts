@@ -4,6 +4,8 @@ import {Store} from "@ngrx/store";
 import {Timestamp} from "firebase/firestore";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
 import {SimpleChange} from "@angular/core";
+import {SuccessHandlerService} from "../../../../core/services/success-handler.service";
+import {ErrorHandlerService} from "../../../../core/services/error-handler.service";
 
 describe("WeekViewComponent", () => {
   let component: WeekViewComponent;
@@ -14,7 +16,17 @@ describe("WeekViewComponent", () => {
     store = jasmine.createSpyObj("Store", ["dispatch"]);
     await TestBed.configureTestingModule({
       declarations: [WeekViewComponent],
-      providers: [{provide: Store, useValue: store}],
+      providers: [
+        {provide: Store, useValue: store},
+        {
+          provide: SuccessHandlerService,
+          useValue: {handleSuccess: jasmine.createSpy("handleSuccess")},
+        },
+        {
+          provide: ErrorHandlerService,
+          useValue: {handleFirebaseAuthError: jasmine.createSpy("handleError")},
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(WeekViewComponent);
@@ -117,10 +129,10 @@ describe("WeekViewComponent", () => {
 
   it("should not dispatch when hours are outside 0-24", () => {
     store.dispatch.calls.reset();
-    component.onHoursChange(component.projects[0], component.weekStart, {
+    component.onHoursChange(0, component.weekStart, {
       target: {value: "-1"},
     } as any);
-    component.onHoursChange(component.projects[0], component.weekStart, {
+    component.onHoursChange(0, component.weekStart, {
       target: {value: "25"},
     } as any);
     expect(store.dispatch).not.toHaveBeenCalled();
@@ -128,7 +140,8 @@ describe("WeekViewComponent", () => {
 
   it("should not dispatch when project is undefined", () => {
     store.dispatch.calls.reset();
-    component.onHoursChange(undefined as any, component.weekStart, {
+    component.rows[0].projectId = null;
+    component.onHoursChange(0, component.weekStart, {
       target: {value: "1"},
     } as any);
     expect(store.dispatch).not.toHaveBeenCalled();

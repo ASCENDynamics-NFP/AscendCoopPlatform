@@ -23,7 +23,6 @@ import {
   onDocumentCreated,
   FirestoreEvent,
 } from "firebase-functions/v2/firestore";
-import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {QueryDocumentSnapshot, DocumentData} from "firebase-admin/firestore";
 
@@ -35,7 +34,8 @@ export const onCreateAccount = onDocumentCreated(
 /**
  * Handle creation of a new account document.
  *
- * @param event - Firestore event containing the new account data and params.
+ * @param {FirestoreEvent<QueryDocumentSnapshot | undefined, {accountId: string}>} event -
+ *   Firestore event containing the new account data and params.
  */
 async function handleAccountCreate(
   event: FirestoreEvent<QueryDocumentSnapshot | undefined, {accountId: string}>,

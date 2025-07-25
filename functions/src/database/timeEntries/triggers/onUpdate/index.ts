@@ -42,7 +42,10 @@ export const onUpdateTimeEntry = onDocumentUpdated(
 /**
  * Handle update of a time entry document.
  *
- * @param event - Firestore event containing before and after snapshots and params.
+ * @param {FirestoreEvent<
+ *   Change<QueryDocumentSnapshot> | undefined,
+ *   {accountId: string; entryId: string}
+ * >} event - Firestore event containing before and after snapshots and params.
  */
 async function handleTimeEntryUpdate(
   event: FirestoreEvent<

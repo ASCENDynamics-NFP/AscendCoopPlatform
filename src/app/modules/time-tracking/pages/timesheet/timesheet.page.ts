@@ -42,6 +42,9 @@ import {AppState} from "../../../../state/app.state";
 export class TimesheetPage implements OnInit {
   projects$!: Observable<Project[]>;
   entries$!: Observable<TimeEntry[]>;
+  projects: Project[] = [];
+  availableProjects: Project[] = [];
+  entries: TimeEntry[] = [];
   accountId: string = "";
   userId: string = "";
   currentWeekStart: Date = (() => {
@@ -61,6 +64,23 @@ export class TimesheetPage implements OnInit {
 
     this.projects$ = this.store.select(selectProjects);
     this.entries$ = this.store.select(selectEntries);
+
+    this.projects$.subscribe((projects) => {
+      this.availableProjects = projects;
+    });
+
+    this.entries$.subscribe((entries) => {
+      this.entries = entries;
+      const ids = new Set(entries.map((e) => e.projectId));
+      for (const id of Array.from(ids)) {
+        if (!this.projects.some((p) => p.id === id)) {
+          const proj = this.availableProjects.find((p) => p.id === id);
+          if (proj) {
+            this.projects.push(proj);
+          }
+        }
+      }
+    });
 
     this.store
       .select(selectAuthUser)
@@ -98,23 +118,23 @@ export class TimesheetPage implements OnInit {
     this.currentWeekStart.setDate(this.currentWeekStart.getDate() - 7);
     this.loadEntries();
   }
-//   startOfWeek(date: Date): Date {
-//     const d = new Date(date);
-//     d.setHours(0, 0, 0, 0);
-//     const day = d.getDay();
-//     d.setDate(d.getDate() - day);
-//     return d;
-//   }
+  //   startOfWeek(date: Date): Date {
+  //     const d = new Date(date);
+  //     d.setHours(0, 0, 0, 0);
+  //     const day = d.getDay();
+  //     d.setDate(d.getDate() - day);
+  //     return d;
+  //   }
 
-//   previousWeek() {
-//     const prev = new Date(this.currentWeekStart);
-//     prev.setDate(prev.getDate() - 7);
-//     this.currentWeekStart = prev;
-//   }
+  //   previousWeek() {
+  //     const prev = new Date(this.currentWeekStart);
+  //     prev.setDate(prev.getDate() - 7);
+  //     this.currentWeekStart = prev;
+  //   }
 
-//   nextWeek() {
-//     const next = new Date(this.currentWeekStart);
-//     next.setDate(next.getDate() + 7);
-//     this.currentWeekStart = next;
-//   }
+  //   nextWeek() {
+  //     const next = new Date(this.currentWeekStart);
+  //     next.setDate(next.getDate() + 7);
+  //     this.currentWeekStart = next;
+  //   }
 }

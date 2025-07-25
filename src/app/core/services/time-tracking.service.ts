@@ -90,4 +90,11 @@ export class TimeTrackingService {
       entry,
     );
   }
+
+  deleteTimeEntry(entry: TimeEntry): Promise<void> {
+    return this.firestore.deleteDocument(
+      `accounts/${entry.accountId}/timeEntries`,
+      entry.id,
+    );
+  }
 }

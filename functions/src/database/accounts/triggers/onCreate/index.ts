@@ -22,25 +22,38 @@ import {
   onDocumentCreated,
   FirestoreEvent,
 } from "firebase-functions/v2/firestore";
+import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
 
+const db = admin.firestore();
+
 export const onCreateAccount = onDocumentCreated(
-  "accounts/{accountId}",
-  async (
-    event: FirestoreEvent<QueryDocumentSnapshot | undefined, {accountId: string}>,
-  ) => {
-    if (!event.data) {
-      logger.error("No document data found in create event");
-      return;
-    }
+  {document: "accounts/{accountId}", region: "us-central1"},
+  handleAccountCreate,
+);
 
-    const accountId = event.params.accountId;
-    const data = event.data.data();
+async function handleAccountCreate(
+  event: FirestoreEvent<QueryDocumentSnapshot | undefined, {accountId: string}>,
+) {
+  const snapshot = event.data;
+  const accountId = event.params.accountId;
+  if (!snapshot) {
+    logger.error("No document data found in create event");
+    return;
+  }
 
+  const account = snapshot.data() as any;
+  const groupType = account.groupDetails?.groupType;
+  if (groupType !== "Nonprofit" && groupType !== "Community") {
+    logger.info(`No volunteer project needed for groupType ${groupType}`);
+    return;
+  }
+
+  try {
     if (
-      data.type === "group" &&
-      (data.groupType === "Nonprofit" || data.groupType === "Community")
+      account.type === "group" &&
+      (account.groupType === "Nonprofit" || account.groupType === "Community")
     ) {
       try {
         await event.data.ref.collection("projects").add({
@@ -53,5 +66,8 @@ export const onCreateAccount = onDocumentCreated(
         logger.error("Error creating Volunteer project:", error);
       }
     }
-  },
-);
+    logger.info(`Volunteer project created for account ${accountId}`);
+  } catch (error) {
+    logger.error("Error creating volunteer project:", error);
+  }
+}

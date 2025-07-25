@@ -39,6 +39,11 @@ export const onUpdateTimeEntry = onDocumentUpdated(
   handleTimeEntryUpdate,
 );
 
+/**
+ * Handle update of a time entry document.
+ *
+ * @param event - Firestore event containing before and after snapshots and params.
+ */
 async function handleTimeEntryUpdate(
   event: FirestoreEvent<
     Change<QueryDocumentSnapshot> | undefined,
@@ -83,4 +88,3 @@ async function handleTimeEntryUpdate(
     logger.error("Error updating total hours:", error);
   }
 }
-

@@ -14,8 +14,16 @@ export const onDeleteTimeEntry = onDocumentDeleted(
   handleTimeEntryDelete,
 );
 
+/**
+ * Handle deletion of a time entry document.
+ *
+ * @param event - Firestore event containing the deleted time entry data and params.
+ */
 async function handleTimeEntryDelete(
-  event: FirestoreEvent<QueryDocumentSnapshot | undefined, {accountId: string; entryId: string}>,
+  event: FirestoreEvent<
+    QueryDocumentSnapshot | undefined,
+    {accountId: string; entryId: string}
+  >,
 ) {
   const snapshot = event.data;
   if (!snapshot) {

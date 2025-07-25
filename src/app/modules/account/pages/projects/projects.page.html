@@ -46,8 +46,12 @@
     <ion-list-header>Archived Projects</ion-list-header>
     <ion-item
       *ngFor="let proj of (archivedProjects$ | async); trackBy: trackById"
+      class="archived-item"
     >
-      <ion-label>{{proj.name}}</ion-label>
+      <ion-label>
+        {{proj.name}}
+        <ion-badge color="medium" class="archived-badge">Archived</ion-badge>
+      </ion-label>
       <ion-button
         *ngIf="(isGroupAdmin$ | async)"
         slot="end"

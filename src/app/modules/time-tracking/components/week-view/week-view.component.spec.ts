@@ -105,6 +105,25 @@ describe("WeekViewComponent", () => {
     expect(store.dispatch).not.toHaveBeenCalled();
   });
 
+  it("should not dispatch when hours are outside 0-24", () => {
+    store.dispatch.calls.reset();
+    component.onHoursChange(component.projects[0], component.weekStart, {
+      target: {value: "-1"},
+    } as any);
+    component.onHoursChange(component.projects[0], component.weekStart, {
+      target: {value: "25"},
+    } as any);
+    expect(store.dispatch).not.toHaveBeenCalled();
+  });
+
+  it("should not dispatch when project is undefined", () => {
+    store.dispatch.calls.reset();
+    component.onHoursChange(undefined as any, component.weekStart, {
+      target: {value: "1"},
+    } as any);
+    expect(store.dispatch).not.toHaveBeenCalled();
+  });
+
   it("should calculate initial totals", () => {
     expect(component.rowTotals["p1"]).toBe(1);
     expect(component.rowTotals["p2"]).toBe(0);
@@ -124,9 +143,9 @@ describe("WeekViewComponent", () => {
   });
 
   it("should update header dates when weekStart changes", () => {
-    const initialHeader: string = fixture.nativeElement.querySelectorAll(
-      "thead th",
-    )[1].textContent.trim();
+    const initialHeader: string = fixture.nativeElement
+      .querySelectorAll("thead th")[1]
+      .textContent.trim();
     const nextWeek = new Date(component.weekStart);
     nextWeek.setDate(nextWeek.getDate() + 7);
     component.weekStart = nextWeek;
@@ -134,9 +153,9 @@ describe("WeekViewComponent", () => {
       weekStart: new SimpleChange(null, nextWeek, false),
     });
     fixture.detectChanges();
-    const newHeader: string = fixture.nativeElement.querySelectorAll(
-      "thead th",
-    )[1].textContent.trim();
+    const newHeader: string = fixture.nativeElement
+      .querySelectorAll("thead th")[1]
+      .textContent.trim();
     expect(newHeader).not.toBe(initialHeader);
   });
 });

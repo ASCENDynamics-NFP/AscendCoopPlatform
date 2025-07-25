@@ -23,6 +23,8 @@ export class ProjectsPage implements OnInit {
   archivedProjects$!: Observable<Project[]>;
   isGroupAdmin$!: Observable<boolean>;
   newProjectName = "";
+  /** Lower-cased names of active projects for quick duplicate checks */
+  private activeProjectNames: string[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -78,6 +80,11 @@ export class ProjectsPage implements OnInit {
     this.activeProjects$ = this.projects$.pipe(
       map((projects) => projects.filter((p) => !p.archived)),
     );
+    this.activeProjects$.subscribe((projects) => {
+      this.activeProjectNames = projects.map((p) =>
+        p.name.trim().toLowerCase(),
+      );
+    });
     this.archivedProjects$ = this.projects$.pipe(
       map((projects) => projects.filter((p) => p.archived)),
     );
@@ -86,6 +93,14 @@ export class ProjectsPage implements OnInit {
   addProject() {
     const name = this.newProjectName.trim();
     if (!name) return;
+    const lower = name.toLowerCase();
+    if (this.activeProjectNames.includes(lower)) {
+      this.errorHandler.handleFirebaseAuthError({
+        code: "duplicate-project-name",
+        message: "A project with that name already exists.",
+      });
+      return;
+    }
     const project: Project = {name, accountId: this.accountId} as Project;
     this.projectService
       .createProject(this.accountId, project)
@@ -98,8 +113,18 @@ export class ProjectsPage implements OnInit {
 
   updateProject(project: Project, name: string) {
     if (!project.id) return;
+    const trimmed = name.trim();
+    const lower = trimmed.toLowerCase();
+    const current = project.name.trim().toLowerCase();
+    if (lower !== current && this.activeProjectNames.includes(lower)) {
+      this.errorHandler.handleFirebaseAuthError({
+        code: "duplicate-project-name",
+        message: "A project with that name already exists.",
+      });
+      return;
+    }
     this.projectService
-      .updateProject(this.accountId, project.id, {name})
+      .updateProject(this.accountId, project.id, {name: trimmed})
       .then(() => this.successHandler.handleSuccess("Project updated!"))
       .catch((error) => this.errorHandler.handleFirebaseAuthError(error));
   }

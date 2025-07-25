@@ -22,14 +22,12 @@ describe("WeekViewComponent", () => {
 
     component.userId = "test";
 
-    component.projects = [
+    component.availableProjects = [
       {id: "p1", name: "Project 1"} as any,
       {id: "p2", name: "Project 2"} as any,
-    ];
-    component.availableProjects = [
-      ...component.projects,
       {id: "p3", name: "Project 3"} as any,
     ];
+    component.rows = [{projectId: "p1"}, {projectId: "p2"}];
 
     const today = new Date();
     component.weekStart = today;
@@ -51,7 +49,7 @@ describe("WeekViewComponent", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should render a row for each project", () => {
+  it("should render a row for each configured row", () => {
     const rows = fixture.nativeElement.querySelectorAll("tbody tr");
     expect(rows.length).toBe(2);
   });
@@ -71,7 +69,7 @@ describe("WeekViewComponent", () => {
   it("should include userId when creating new entry", () => {
     const nextDay = new Date(component.weekStart);
     nextDay.setDate(nextDay.getDate() + 1);
-    component.onHoursChange(component.projects[0], nextDay, {
+    component.onHoursChange(0, nextDay, {
       target: {value: "3"},
     } as any);
 
@@ -85,7 +83,7 @@ describe("WeekViewComponent", () => {
 
   it("should add a row when a project is added", () => {
     const mockEvent = {target: {value: "p3"}} as any;
-    component.addProjectById(mockEvent);
+    component.addProjectById(1, mockEvent);
     fixture.detectChanges();
     const rows = fixture.nativeElement.querySelectorAll("tbody tr");
     expect(rows.length).toBe(3);
@@ -93,7 +91,7 @@ describe("WeekViewComponent", () => {
 
   it("should not dispatch when hours empty for new entry", () => {
     const mockEvent = {target: {value: "p3"}} as any;
-    component.addProjectById(mockEvent);
+    component.addProjectById(1, mockEvent);
     fixture.detectChanges();
     store.dispatch.calls.reset();
     const inputs = fixture.nativeElement.querySelectorAll(
@@ -125,8 +123,8 @@ describe("WeekViewComponent", () => {
   });
 
   it("should calculate initial totals", () => {
-    expect(component.rowTotals["p1"]).toBe(1);
-    expect(component.rowTotals["p2"]).toBe(0);
+    expect(component.rowTotals[0]).toBe(1);
+    expect(component.rowTotals[1]).toBe(0);
     expect(component.columnTotals[0]).toBe(1);
     expect(component.totalHours).toBe(1);
   });
@@ -137,7 +135,7 @@ describe("WeekViewComponent", () => {
     input.value = "5";
     input.dispatchEvent(new Event("change"));
     fixture.detectChanges();
-    expect(component.rowTotals["p1"]).toBe(5);
+    expect(component.rowTotals[0]).toBe(5);
     expect(component.columnTotals[0]).toBe(5);
     expect(component.totalHours).toBe(5);
   });

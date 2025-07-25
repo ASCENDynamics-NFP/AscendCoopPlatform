@@ -1,8 +1,5 @@
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
-import {RouterTestingModule} from "@angular/router/testing";
-import {SharedModule} from "../../../../shared/shared.module";
-import {provideMockStore} from "@ngrx/store/testing";
 import {TeamPage} from "./team.page";
 
 describe("TeamPage", () => {
@@ -12,15 +9,7 @@ describe("TeamPage", () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [TeamPage],
-      imports: [IonicModule.forRoot(), RouterTestingModule, SharedModule],
-      providers: [
-        provideMockStore({
-          initialState: {
-            auth: {user: null, loading: false, error: null},
-            projects: {entities: {}, loading: false, error: null},
-          },
-        }),
-      ],
+      imports: [IonicModule.forRoot()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TeamPage);

@@ -100,6 +100,14 @@ export class WeekViewComponent implements OnInit, OnChanges {
     if (!existing && (!target.value || hours === 0)) {
       return;
     }
+    if (existing && hours === 0) {
+      this.entries = this.entries.filter((e) => e !== existing);
+      this.updateTotals();
+      this.store.dispatch(
+        TimeTrackingActions.deleteTimeEntry({entry: existing}),
+      );
+      return;
+    }
     const entry: TimeEntry = {
       id: existing ? existing.id : "",
       accountId: this.accountId,

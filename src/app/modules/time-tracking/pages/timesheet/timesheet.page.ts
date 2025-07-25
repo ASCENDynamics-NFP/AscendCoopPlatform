@@ -117,6 +117,7 @@ export class TimesheetPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.store.dispatch(TimeTrackingActions.clearTimeTrackingSubscriptions());
     this.subscriptions.unsubscribe();
   }
   //   startOfWeek(date: Date): Date {

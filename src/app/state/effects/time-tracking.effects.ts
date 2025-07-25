@@ -21,7 +21,14 @@
 
 import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
-import {mergeMap, map, catchError, tap} from "rxjs/operators";
+import {
+  mergeMap,
+  map,
+  catchError,
+  tap,
+  switchMap,
+  takeUntil,
+} from "rxjs/operators";
 import {of, from} from "rxjs";
 import {TimeTrackingService} from "../../core/services/time-tracking.service";
 import * as TimeTrackingActions from "../actions/time-tracking.actions";
@@ -38,8 +45,13 @@ export class TimeTrackingEffects {
   loadProjects$ = createEffect(() =>
     this.actions$.pipe(
       ofType(TimeTrackingActions.loadProjects),
-      mergeMap(({accountId}) =>
+      switchMap(({accountId}) =>
         this.service.getProjects(accountId).pipe(
+          takeUntil(
+            this.actions$.pipe(
+              ofType(TimeTrackingActions.clearTimeTrackingSubscriptions),
+            ),
+          ),
           map((projects) =>
             TimeTrackingActions.loadProjectsSuccess({projects}),
           ),
@@ -103,8 +115,13 @@ export class TimeTrackingEffects {
   loadEntries$ = createEffect(() =>
     this.actions$.pipe(
       ofType(TimeTrackingActions.loadTimeEntries),
-      mergeMap(({accountId, userId, weekStart}) =>
+      switchMap(({accountId, userId, weekStart}) =>
         this.service.getUserEntries(accountId, userId).pipe(
+          takeUntil(
+            this.actions$.pipe(
+              ofType(TimeTrackingActions.clearTimeTrackingSubscriptions),
+            ),
+          ),
           map((entries) => {
             const start = new Date(weekStart);
             const end = new Date(start);

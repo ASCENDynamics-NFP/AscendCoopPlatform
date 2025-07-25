@@ -76,4 +76,11 @@ describe("TimesheetPage", () => {
     component.previousWeek();
     expect(+component.currentWeekStart).toBe(+start - 7 * 24 * 60 * 60 * 1000);
   });
+
+  it("should dispatch clear action on destroy", () => {
+    component.ngOnDestroy();
+    expect(store.dispatch).toHaveBeenCalledWith(
+      TimeTrackingActions.clearTimeTrackingSubscriptions(),
+    );
+  });
 });

@@ -20,6 +20,7 @@
 import {NgModule} from "@angular/core";
 import {RouterModule, Routes} from "@angular/router";
 import {AuthGuard} from "../../core/guards/auth.guard";
+import {AdminGuard} from "../../core/guards/admin.guard";
 import {DetailsPage} from "./pages/details/details.page";
 import {EditPage} from "./pages/edit/edit.page";
 import {RegistrationPage} from "./pages/registration/registration.page";
@@ -30,6 +31,8 @@ import {ListPage} from "./relatedAccount/pages/list/list.page";
 import {ListingsListPage} from "./relatedListings/pages/listings-list/listings-list.page";
 import {RoleManagementPage} from "./pages/role-management/role-management.page";
 import {RoleHierarchyPage} from "./pages/role-hierarchy/role-hierarchy.page";
+import {ManageProjectsPage} from "./pages/manage-projects/manage-projects.page";
+import {ProjectsPage} from "./pages/projects/projects.page";
 
 const routes: Routes = [
   {
@@ -44,6 +47,11 @@ const routes: Routes = [
   {
     path: "users",
     component: UsersPage,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: ":accountId/projects",
+    component: ProjectsPage,
     canActivate: [AuthGuard],
   },
   {
@@ -80,6 +88,11 @@ const routes: Routes = [
     path: ":accountId/hierarchy",
     component: RoleHierarchyPage,
     canActivate: [AuthGuard],
+  },
+  {
+    path: ":accountId/manage-projects",
+    component: ManageProjectsPage,
+    canActivate: [AuthGuard, AdminGuard],
   },
 ];
 

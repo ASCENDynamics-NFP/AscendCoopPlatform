@@ -69,6 +69,20 @@ export const timeTrackingReducer = createReducer(
     loading: false,
     error,
   })),
+  on(TimeTrackingActions.deleteTimeEntry, (state) => ({
+    ...state,
+    loading: true,
+  })),
+  on(TimeTrackingActions.deleteTimeEntrySuccess, (state) => ({
+    ...state,
+    loading: false,
+    error: null,
+  })),
+  on(TimeTrackingActions.deleteTimeEntryFailure, (state, {error}) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
   on(TimeTrackingActions.loadTimeEntries, (state) => ({
     ...state,
     loading: true,

@@ -19,9 +19,8 @@
     [accountId]="accountId"
     [userId]="userId"
     [weekStart]="currentWeekStart"
-    [projects]="(projects$ | async) || []"
-    [entries]="(entries$ | async) || []"
-    [availableProjects]="(projects$ | async) || []"
-    [weekStart]="currentWeekStart"
+    [projects]="projects"
+    [entries]="entries"
+    [availableProjects]="availableProjects"
   ></app-week-view>
 </ion-content>

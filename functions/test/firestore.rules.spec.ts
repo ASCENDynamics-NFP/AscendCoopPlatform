@@ -47,6 +47,9 @@ describe("timeEntries create rules", () => {
         access: "admin",
         type: "user",
       });
+      await setDoc(doc(db, "accounts/group1/projects/project1"), {
+        archived: false,
+      });
     });
   });
 
@@ -57,6 +60,7 @@ describe("timeEntries create rules", () => {
       setDoc(doc(db, "accounts/group1/timeEntries/entry1"), {
         userId: "user1",
         status: "pending",
+        projectId: "project1",
       }),
     );
   });
@@ -68,6 +72,7 @@ describe("timeEntries create rules", () => {
       setDoc(doc(db, "accounts/group1/timeEntries/entry1"), {
         userId: "user1",
         status: "approved",
+        projectId: "project1",
       }),
     );
   });
@@ -79,6 +84,81 @@ describe("timeEntries create rules", () => {
       setDoc(doc(db, "accounts/group1/timeEntries/entry1"), {
         userId: "admin1",
         status: "approved",
+        projectId: "project1",
+      }),
+    );
+  });
+
+  it("denies create with invalid projectId", async () => {
+    const ctx = testEnv.authenticatedContext("user1");
+    const db = ctx.firestore();
+    await assertFails(
+      setDoc(doc(db, "accounts/group1/timeEntries/entryInvalid"), {
+        userId: "user1",
+        status: "pending",
+        projectId: "bad",
+      }),
+    );
+  });
+});
+
+describe("timeEntries update rules", () => {
+  let testEnv: RulesTestEnvironment;
+
+  before(async () => {
+    testEnv = await initializeTestEnvironment({
+      projectId: "rules-test",
+      firestore: {
+        host: "127.0.0.1",
+        port: 8080,
+        rules: fs.readFileSync(
+          path.join(__dirname, "..", "..", "firestore.rules"),
+          "utf8",
+        ),
+      },
+    });
+  });
+
+  after(async () => {
+    if (testEnv) {
+      await testEnv.cleanup();
+    }
+  });
+
+  beforeEach(async () => {
+    await testEnv.clearFirestore();
+    await testEnv.withSecurityRulesDisabled(async (context: any) => {
+      const db = context.firestore();
+      await setDoc(doc(db, "accounts/group1"), {type: "group"});
+      await setDoc(doc(db, "accounts/group1/relatedAccounts/user1"), {
+        status: "accepted",
+        access: "user",
+        type: "user",
+      });
+      await setDoc(doc(db, "accounts/group1/relatedAccounts/admin1"), {
+        status: "accepted",
+        access: "admin",
+        type: "user",
+      });
+      await setDoc(doc(db, "accounts/group1/projects/project1"), {
+        archived: false,
+      });
+      await setDoc(doc(db, "accounts/group1/timeEntries/entry1"), {
+        userId: "user1",
+        status: "pending",
+        projectId: "project1",
+      });
+    });
+  });
+
+  it("denies update with invalid projectId", async () => {
+    const ctx = testEnv.authenticatedContext("admin1");
+    const db = ctx.firestore();
+    await assertFails(
+      setDoc(doc(db, "accounts/group1/timeEntries/entry1"), {
+        userId: "user1",
+        status: "pending",
+        projectId: "bad",
       }),
     );
   });

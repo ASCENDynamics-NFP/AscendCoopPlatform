@@ -58,11 +58,18 @@ describe("TimeTrackingService", () => {
     const snapshotActions = [
       {
         payload: {
-          doc: {data: () => ({name: "Proj", accountId}), id: "1"},
+          doc: {
+            data: () => ({name: "Proj", accountId, archived: false}),
+            id: "1",
+          },
         },
       },
     ];
-    (afsSpy.collection as any).and.callFake((name: string) => {
+    const whereSpy = jasmine.createSpy("where").and.returnValue({} as any);
+    (afsSpy.collection as any).and.callFake((name: string, fn?: any) => {
+      if (fn) {
+        fn({where: whereSpy});
+      }
       return {
         snapshotChanges: () => of(snapshotActions as any),
       } as any;
@@ -74,7 +81,9 @@ describe("TimeTrackingService", () => {
     });
     expect(afsSpy.collection).toHaveBeenCalledWith(
       `accounts/${accountId}/projects` as any,
+      jasmine.any(Function),
     );
+    expect(whereSpy).toHaveBeenCalledWith("archived", "==", false);
   });
 
   it("should retrieve user time entries", (done) => {

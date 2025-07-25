@@ -25,7 +25,7 @@
           </select>
         </ng-container>
         <ng-template #single>
-          {{ availableProjects[0]?.name }}
+          {{ availableProjects.length > 0 ? availableProjects[0].name : '' }}
         </ng-template>
         <button (click)="removeRow(i)">Remove</button>
       </td>

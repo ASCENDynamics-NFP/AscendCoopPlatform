@@ -5,8 +5,12 @@ import {map} from "rxjs/operators";
 import {Store} from "@ngrx/store";
 import {AlertController} from "@ionic/angular";
 import {Project} from "@shared/models/project.model";
+import {Account} from "@shared/models/account.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
-import {selectRelatedAccountsByAccountId} from "../../../../state/selectors/account.selectors";
+import {
+  selectRelatedAccountsByAccountId,
+  selectAccountById,
+} from "../../../../state/selectors/account.selectors";
 import * as ProjectsActions from "../../../../state/actions/projects.actions";
 import {
   selectProjectsByAccount,
@@ -28,6 +32,7 @@ export class ProjectsPage implements OnInit {
   projects$!: Observable<Project[]>;
   activeProjects$!: Observable<Project[]>;
   archivedProjects$!: Observable<Project[]>;
+  account$!: Observable<Account | undefined>;
   loading$!: Observable<boolean>;
   error$!: Observable<any>;
   isGroupAdmin$!: Observable<boolean>;
@@ -52,14 +57,21 @@ export class ProjectsPage implements OnInit {
     const relatedAccounts$ = this.store.select(
       selectRelatedAccountsByAccountId(this.accountId),
     );
-    this.isGroupAdmin$ = combineLatest([currentUser$, relatedAccounts$]).pipe(
-      map(([currentUser, relatedAccounts]) => {
+    this.account$ = this.store.select(selectAccountById(this.accountId));
+    this.isGroupAdmin$ = combineLatest([
+      currentUser$,
+      relatedAccounts$,
+      this.account$,
+    ]).pipe(
+      map(([currentUser, relatedAccounts, account]) => {
         if (!currentUser) return false;
         const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
-        return (
+        const isAdmin =
           rel?.status === "accepted" &&
-          (rel.access === "admin" || rel.access === "moderator")
-        );
+          (rel.access === "admin" || rel.access === "moderator");
+        const isOwner =
+          account?.type === "group" && account.createdBy === currentUser.uid;
+        return isAdmin || isOwner;
       }),
     );
 
@@ -148,7 +160,7 @@ export class ProjectsPage implements OnInit {
 
   async toggleArchive(project: Project, archived: boolean) {
     if (!project.id) return;
-    
+
     if (archived) {
       const alert = await this.alertController.create({
         header: "Archive Project?",
@@ -170,7 +182,7 @@ export class ProjectsPage implements OnInit {
         return;
       }
     }
-    
+
     this.store.dispatch(
       ProjectsActions.updateProject({
         accountId: this.accountId,

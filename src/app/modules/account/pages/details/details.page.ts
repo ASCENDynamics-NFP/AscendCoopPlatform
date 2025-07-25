@@ -145,14 +145,18 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         this.isGroupAdmin$ = combineLatest([
           this.authUser$,
           this.relatedAccounts$,
+          this.account$,
         ]).pipe(
-          map(([currentUser, relatedAccounts]) => {
+          map(([currentUser, relatedAccounts, account]) => {
             if (!currentUser) return false;
             const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
-            return (
+            const isAdmin =
               rel?.status === "accepted" &&
-              (rel.access === "admin" || rel.access === "moderator")
-            );
+              (rel.access === "admin" || rel.access === "moderator");
+            const isOwner =
+              account?.type === "group" &&
+              account.createdBy === currentUser.uid;
+            return isAdmin || isOwner;
           }),
         );
       }

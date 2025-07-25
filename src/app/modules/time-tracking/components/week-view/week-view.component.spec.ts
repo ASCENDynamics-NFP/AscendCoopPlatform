@@ -68,6 +68,18 @@ describe("WeekViewComponent", () => {
     );
   });
 
+  it("should dispatch delete action when hours set to 0", () => {
+    const input: HTMLInputElement =
+      fixture.nativeElement.querySelector("tbody tr input");
+    input.value = "0";
+    input.dispatchEvent(new Event("change"));
+    expect(store.dispatch).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        type: TimeTrackingActions.deleteTimeEntry.type,
+      }),
+    );
+  });
+
   it("should include userId when creating new entry", () => {
     const nextDay = new Date(component.weekStart);
     nextDay.setDate(nextDay.getDate() + 1);
@@ -124,9 +136,9 @@ describe("WeekViewComponent", () => {
   });
 
   it("should update header dates when weekStart changes", () => {
-    const initialHeader: string = fixture.nativeElement.querySelectorAll(
-      "thead th",
-    )[1].textContent.trim();
+    const initialHeader: string = fixture.nativeElement
+      .querySelectorAll("thead th")[1]
+      .textContent.trim();
     const nextWeek = new Date(component.weekStart);
     nextWeek.setDate(nextWeek.getDate() + 7);
     component.weekStart = nextWeek;
@@ -134,9 +146,9 @@ describe("WeekViewComponent", () => {
       weekStart: new SimpleChange(null, nextWeek, false),
     });
     fixture.detectChanges();
-    const newHeader: string = fixture.nativeElement.querySelectorAll(
-      "thead th",
-    )[1].textContent.trim();
+    const newHeader: string = fixture.nativeElement
+      .querySelectorAll("thead th")[1]
+      .textContent.trim();
     expect(newHeader).not.toBe(initialHeader);
   });
 });

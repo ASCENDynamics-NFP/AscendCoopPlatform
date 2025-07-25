@@ -43,6 +43,7 @@ export {onUserRecordDeletion} from "./auth/user/triggers/onDelete";
 
 // Account triggers
 export {onUpdateAccount} from "./database/accounts/triggers/onUpdate";
+export {onCreateAccount} from "./database/accounts/triggers/onCreate";
 
 // Related accounts triggers
 export {onCreateRelatedAccount} from "./database/accounts/relatedAccounts/triggers/onCreate";

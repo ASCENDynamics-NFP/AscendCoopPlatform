@@ -31,6 +31,7 @@ import {
 } from "rxjs/operators";
 import {of, from} from "rxjs";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
+import {TimeEntry} from "@shared/models/time-entry.model";
 import {TimeTrackingService} from "../../core/services/time-tracking.service";
 import * as TimeTrackingActions from "../actions/time-tracking.actions";
 import {ErrorHandlerService} from "../../core/services/error-handler.service";
@@ -122,7 +123,7 @@ export class TimeTrackingEffects {
         const end = new Date(start);
         end.setDate(start.getDate() + 7);
         return this.afs
-          .collection(`accounts/${accountId}/timeEntries`, (ref) =>
+          .collection<TimeEntry>(`accounts/${accountId}/timeEntries`, (ref) =>
             ref
               .where("userId", "==", userId)
               .where("date", ">=", start)
@@ -139,6 +140,7 @@ export class TimeTrackingEffects {
               TimeTrackingActions.loadTimeEntriesSuccess({
                 accountId,
                 userId,
+                weekStart,
                 entries,
               }),
             ),

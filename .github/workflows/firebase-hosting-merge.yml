@@ -43,7 +43,7 @@ jobs:
 
       # Run Angular tests first (don't need Firebase CLI)
       - name: Run Angular Tests
-        run: ng test --watch=false
+        run: npx ng test --watch=false
 
       # Set Environment Variables
       - name: Set Environment Variables
@@ -59,10 +59,6 @@ jobs:
           echo "FIREBASE_APP_ID=${{ secrets.DEV_FIREBASE_APP_ID }}" >> $GITHUB_ENV
           echo "FIREBASE_MEASUREMENT_ID=${{ secrets.DEV_FIREBASE_MEASUREMENT_ID }}" >> $GITHUB_ENV
           
-      # Generate environment file
-      - name: Generate Environment File
-        run: node generate-env.js
-
       # Install Firebase CLI for function tests
       - name: Install Firebase CLI
         run: |
@@ -81,7 +77,9 @@ jobs:
 
       # Build the project (Development)
       - name: Build Project
-        run: npm run build:dev
+        run: |
+          npm run generate-env:dev
+          npx ng build --configuration development
 
       # Authenticate to Google Cloud
       - name: Authenticate to Google Cloud
@@ -98,4 +96,7 @@ jobs:
 
       # Deploy to Firebase (Hosting Only)
       - name: Deploy to Firebase (Hosting Only)
-        run: firebase deploy --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}
+        run: |
+          echo "PATH: $PATH"
+          which firebase
+          firebase deploy --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} --only hosting

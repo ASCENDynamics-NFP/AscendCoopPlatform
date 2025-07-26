@@ -15,6 +15,20 @@
   </ion-header>
 
   <div class="content-container">
+    <!-- Status and Group Info -->
+    <div class="timesheet-info" *ngIf="account$ | async as account">
+      <div class="group-info">
+        <ion-icon name="business-outline"></ion-icon>
+        <span class="group-name">{{ account.name }}</span>
+      </div>
+      <div class="status-info">
+        <ion-badge [color]="getTimesheetStatusColor()">
+          <ion-icon [name]="getTimesheetStatusIcon()" slot="start"></ion-icon>
+          {{ getTimesheetStatusText() }}
+        </ion-badge>
+      </div>
+    </div>
+
     <!-- Week Navigation -->
     <div class="week-navigation">
       <ion-button

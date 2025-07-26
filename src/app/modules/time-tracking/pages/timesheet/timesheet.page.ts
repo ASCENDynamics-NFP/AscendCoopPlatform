@@ -24,13 +24,16 @@ import {Store} from "@ngrx/store";
 import {ActivatedRoute} from "@angular/router";
 import {Observable, Subscription} from "rxjs";
 import {first} from "rxjs/operators";
-import {Project} from "@shared/models/project.model";
+import {Project} from "../../../../../../shared/models/project.model";
+import {Account} from "../../../../../../shared/models/account.model";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
 import * as ProjectsActions from "../../../../state/actions/projects.actions";
+import * as AccountActions from "../../../../state/actions/account.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectEntries} from "../../../../state/selectors/time-tracking.selectors";
 import {selectActiveProjectsByAccount} from "../../../../state/selectors/projects.selectors";
-import {TimeEntry} from "@shared/models/time-entry.model";
+import {selectAccountById} from "../../../../state/selectors/account.selectors";
+import {TimeEntry} from "../../../../../../shared/models/time-entry.model";
 import {AppState} from "../../../../state/app.state";
 
 @Component({
@@ -41,6 +44,7 @@ import {AppState} from "../../../../state/app.state";
 export class TimesheetPage implements OnInit, OnDestroy {
   projects$!: Observable<Project[]>;
   entries$!: Observable<TimeEntry[]>;
+  account$!: Observable<Account | undefined>;
   availableProjects: Project[] = [];
   entries: TimeEntry[] = [];
   initialRows: {projectId: string}[] = [];
@@ -62,6 +66,12 @@ export class TimesheetPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.accountId = this.route.snapshot.paramMap.get("accountId") ?? "";
+
+    // Load account information
+    this.store.dispatch(
+      AccountActions.loadAccount({accountId: this.accountId}),
+    );
+    this.account$ = this.store.select(selectAccountById(this.accountId));
 
     this.projects$ = this.store.select(
       selectActiveProjectsByAccount(this.accountId),
@@ -199,7 +209,7 @@ export class TimesheetPage implements OnInit, OnDestroy {
 
           return {
             ...entry,
-            status: "pending" as const,
+            status: "pending" as const, // Change from draft to pending for approval
             userName: userName,
             projectName: projectName,
           };
@@ -217,6 +227,75 @@ export class TimesheetPage implements OnInit, OnDestroy {
 
         this.showToast("Timesheet submitted for approval", "success");
       });
+  }
+
+  getTimesheetStatusText(): string {
+    if (!this.entries || this.entries.length === 0) {
+      return "No Entries";
+    }
+
+    const statuses = this.entries.map((entry) => entry.status || "draft");
+    const uniqueStatuses = [...new Set(statuses)];
+
+    if (uniqueStatuses.length === 1) {
+      switch (uniqueStatuses[0]) {
+        case "draft":
+          return "Draft";
+        case "pending":
+          return "Pending Approval";
+        case "approved":
+          return "Approved";
+        case "rejected":
+          return "Rejected";
+        default:
+          return "Unknown";
+      }
+    } else {
+      // Mixed statuses
+      if (statuses.some((s) => s === "draft")) {
+        return "Draft (Mixed)";
+      } else if (statuses.some((s) => s === "pending")) {
+        return "Pending (Mixed)";
+      } else {
+        return "Mixed Status";
+      }
+    }
+  }
+
+  getTimesheetStatusColor(): string {
+    if (!this.entries || this.entries.length === 0) {
+      return "medium";
+    }
+
+    const statuses = this.entries.map((entry) => entry.status || "draft");
+
+    if (statuses.some((s) => s === "rejected")) {
+      return "danger";
+    } else if (statuses.every((s) => s === "approved")) {
+      return "success";
+    } else if (statuses.some((s) => s === "pending")) {
+      return "warning";
+    } else {
+      return "primary"; // draft
+    }
+  }
+
+  getTimesheetStatusIcon(): string {
+    if (!this.entries || this.entries.length === 0) {
+      return "document-outline";
+    }
+
+    const statuses = this.entries.map((entry) => entry.status || "draft");
+
+    if (statuses.some((s) => s === "rejected")) {
+      return "close-circle";
+    } else if (statuses.every((s) => s === "approved")) {
+      return "checkmark-circle";
+    } else if (statuses.some((s) => s === "pending")) {
+      return "time";
+    } else {
+      return "create"; // draft
+    }
   }
 
   private async showToast(message: string, color: string = "primary") {

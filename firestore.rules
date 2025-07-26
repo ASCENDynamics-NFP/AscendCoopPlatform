@@ -191,7 +191,7 @@ service cloud.firestore {
       allow read: if isGroupAccount() && isGroupMemberOrOwner();
       allow create: if isGroupAccount() && request.auth.uid == request.resource.data.userId &&
         isGroupMemberOrOwner() &&
-        (isGroupAdmin() || request.resource.data.status == 'pending') &&
+        (isGroupAdmin() || request.resource.data.status == 'pending' || request.resource.data.status == 'draft') &&
         hasValidProject();
       allow update: if isGroupAccount() && isGroupMemberOrOwner() && hasValidProject() &&
         (

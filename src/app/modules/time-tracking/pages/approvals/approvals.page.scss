@@ -6,7 +6,7 @@
   --padding-start: 0;
   --padding-end: 0;
   --padding-top: 20px;
-  --padding-bottom: 0;
+  --padding-bottom: 80px; // Add bottom padding to prevent cutoff
 }
 
 .content-container {
@@ -14,6 +14,8 @@
   max-width: 1200px;
   margin: 0 auto;
   padding-top: 24px;
+  padding-bottom: 60px; // Extra bottom padding for mobile devices
+  min-height: calc(100vh - 120px); // Ensure minimum height
 }
 
 .header-section {
@@ -107,6 +109,8 @@
 }
 
 .approvals-section {
+  margin-bottom: 40px; // Add bottom margin to prevent content cutoff
+
   .section-header {
     margin-bottom: 16px;
 
@@ -435,5 +439,23 @@ ion-button:focus-visible {
 
   .details-item {
     border-top: 2px solid var(--ion-color-dark);
+  }
+}
+
+// Mobile-specific spacing to prevent content cutoff
+@media (max-width: 768px) {
+  .content-container {
+    padding-bottom: 80px; // Extra bottom padding on mobile
+  }
+
+  .approvals-section {
+    margin-bottom: 60px; // Additional bottom margin on mobile
+  }
+}
+
+// Safe area support for devices with notches/home indicators
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .approvals-content {
+    --padding-bottom: calc(80px + env(safe-area-inset-bottom));
   }
 }

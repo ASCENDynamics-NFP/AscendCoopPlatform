@@ -35,10 +35,10 @@ export interface TimeEntry extends BaseDocument {
   hours: number;
   /**
    * Approval status of the time entry. Newly created entries should be
-   * saved with 'pending' status and may later transition to 'approved'
-   * or 'rejected'.
+   * saved with 'draft' status, then submitted as 'pending' for approval,
+   * and may later transition to 'approved' or 'rejected'.
    */
-  status?: "pending" | "approved" | "rejected";
+  status?: "draft" | "pending" | "approved" | "rejected";
   notes?: string;
 
   // Audit fields for approval workflow
@@ -54,7 +54,7 @@ export interface TimeEntry extends BaseDocument {
   originalHours?: number;
   /** History of status changes for audit trail */
   statusHistory?: {
-    status: "pending" | "approved" | "rejected";
+    status: "draft" | "pending" | "approved" | "rejected";
     changedBy: string;
     changedByName: string;
     changedAt: Timestamp;

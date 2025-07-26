@@ -24,7 +24,7 @@ import {Store} from "@ngrx/store";
 import {ActivatedRoute} from "@angular/router";
 import {Observable, Subscription, combineLatest, BehaviorSubject} from "rxjs";
 import {map, filter} from "rxjs/operators";
-import {Timestamp} from "firebase/firestore";
+import {Timestamp, deleteField} from "firebase/firestore";
 import {TimeEntry} from "@shared/models/time-entry.model";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {Account} from "@shared/models/account.model";
@@ -43,7 +43,7 @@ interface GroupedEntries {
   weekStart: Date;
   entries: TimeEntry[];
   totalHours: number;
-  status: "pending" | "approved" | "rejected";
+  status: "draft" | "pending" | "approved" | "rejected";
 }
 
 interface ProjectGroupedEntries {
@@ -55,7 +55,7 @@ interface ProjectGroupedEntries {
     userName: string;
     entries: TimeEntry[];
     totalHours: number;
-    status: "pending" | "approved" | "rejected";
+    status: "draft" | "pending" | "approved" | "rejected";
   }[];
 }
 
@@ -169,7 +169,12 @@ export class ApprovalsPage implements OnInit, OnDestroy {
   ): GroupedEntries[] {
     const grouped = new Map<string, GroupedEntries>();
 
-    entries.forEach((entry) => {
+    // Filter out draft entries as they shouldn't appear in approvals
+    const submittedEntries = entries.filter(
+      (entry) => entry.status !== "draft",
+    );
+
+    submittedEntries.forEach((entry) => {
       // Get the start of the week for this entry
       const entryDate = entry.date.toDate();
       const weekStart = this.getWeekStart(entryDate);
@@ -209,7 +214,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     return Array.from(grouped.values()).sort((a, b) => {
       // Sort by status (pending first), then by week start date
       if (a.status !== b.status) {
-        const statusOrder = {pending: 0, approved: 1, rejected: 2};
+        const statusOrder = {draft: 0, pending: 1, approved: 2, rejected: 3};
         return statusOrder[a.status] - statusOrder[b.status];
       }
       return b.weekStart.getTime() - a.weekStart.getTime();
@@ -242,7 +247,12 @@ export class ApprovalsPage implements OnInit, OnDestroy {
   ): ProjectGroupedEntries[] {
     const grouped = new Map<string, ProjectGroupedEntries>();
 
-    entries.forEach((entry) => {
+    // Filter out draft entries as they shouldn't appear in approvals
+    const submittedEntries = entries.filter(
+      (entry) => entry.status !== "draft",
+    );
+
+    submittedEntries.forEach((entry) => {
       const projectId = entry.projectId;
       const projectName = entry.projectName || "Unknown Project";
 
@@ -381,10 +391,11 @@ export class ApprovalsPage implements OnInit, OnDestroy {
             changedByName:
               currentUser!.displayName || currentUser!.email || "Unknown",
             changedAt: approvalTimestamp,
-            reason: notes,
+            ...(notes && {reason: notes}), // Only include reason if notes is provided
           };
 
-          const updatedEntry: TimeEntry = {
+          // Base entry without rejectionReason
+          const baseEntry: TimeEntry = {
             ...entry,
             status,
             // Audit fields
@@ -392,7 +403,6 @@ export class ApprovalsPage implements OnInit, OnDestroy {
             approvedByName:
               currentUser!.displayName || currentUser!.email || "Unknown",
             approvedAt: approvalTimestamp,
-            rejectionReason: status === "rejected" ? notes : undefined,
             originalHours: entry.originalHours || entry.hours, // Preserve original if not already set
             statusHistory: [...(entry.statusHistory || []), statusChange],
             // Update notes with rejection reason if applicable
@@ -401,6 +411,14 @@ export class ApprovalsPage implements OnInit, OnDestroy {
                 ? `${entry.notes || ""}\n\nRejection reason: ${notes}`.trim()
                 : entry.notes,
           };
+
+          // Handle rejectionReason separately to satisfy TypeScript
+          let updatedEntry: any = baseEntry;
+          if (status === "rejected" && notes) {
+            updatedEntry.rejectionReason = notes;
+          } else if (status === "approved") {
+            updatedEntry.rejectionReason = deleteField();
+          }
 
           this.store.dispatch(
             TimeTrackingActions.updateTimeEntry({entry: updatedEntry}),
@@ -430,6 +448,8 @@ export class ApprovalsPage implements OnInit, OnDestroy {
         return "success";
       case "rejected":
         return "danger";
+      case "draft":
+        return "medium";
       case "pending":
       default:
         return "warning";
@@ -442,6 +462,8 @@ export class ApprovalsPage implements OnInit, OnDestroy {
         return "checkmark-circle";
       case "rejected":
         return "close-circle";
+      case "draft":
+        return "create";
       case "pending":
       default:
         return "time";

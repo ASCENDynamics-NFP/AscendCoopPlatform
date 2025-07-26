@@ -164,7 +164,7 @@ export class WeekViewComponent implements OnInit, OnChanges {
       userId: existing ? existing.userId : this.userId,
       date: existing ? existing.date : Timestamp.fromDate(day),
       hours,
-      status: existing?.status || "pending",
+      status: existing?.status || "draft", // Save as draft until explicitly submitted
       notes: existing?.notes || "",
     };
 

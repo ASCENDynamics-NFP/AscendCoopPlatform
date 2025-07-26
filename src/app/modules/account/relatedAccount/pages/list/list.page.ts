@@ -349,12 +349,22 @@ export class ListPage implements OnInit {
     request: Partial<RelatedAccount>,
   ): Observable<boolean> {
     return combineLatest([this.isOwner$, this.currentUser$]).pipe(
-      map(
-        ([isOwner, currentUser]) =>
-          isOwner &&
-          request.status === "pending" &&
-          request.initiatorId !== currentUser?.uid,
-      ),
+      map(([isOwner, currentUser]) => {
+        if (!currentUser || request.status !== "pending") {
+          return false;
+        }
+
+        // Case 1: User/Group is requesting to join this account (current user is owner of target account)
+        // Show buttons if current user owns this account and didn't initiate the request
+        const canApproveAsOwner =
+          isOwner && request.initiatorId !== currentUser.uid;
+
+        // Case 2: This account invited the current user (current user is target of invitation)
+        // Show buttons if current user is the target of the invitation
+        const canApproveAsTarget = request.targetId === currentUser.uid;
+
+        return canApproveAsOwner || canApproveAsTarget;
+      }),
     );
   }
 

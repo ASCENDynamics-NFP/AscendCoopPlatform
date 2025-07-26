@@ -10,6 +10,9 @@ export const selectEntries = (
   weekStart?: Date,
 ) =>
   createSelector(selectTimeTrackingState, (state: TimeEntriesState) => {
+    if (!state || !state.entities) {
+      return [];
+    }
     const entries = state.entities[`${accountId}_${userId}`] || [];
     if (!weekStart) {
       return entries;
@@ -25,16 +28,19 @@ export const selectEntries = (
 
 export const selectTimeTrackingLoading = createSelector(
   selectTimeTrackingState,
-  (state) => state.loading,
+  (state) => state?.loading || false,
 );
 
 export const selectTimeTrackingError = createSelector(
   selectTimeTrackingState,
-  (state) => state.error,
+  (state) => state?.error || null,
 );
 
 export const selectAllEntriesForAccount = (accountId: string) =>
   createSelector(selectTimeTrackingState, (state: TimeEntriesState) => {
+    if (!state || !state.entities) {
+      return [];
+    }
     const allEntries: any[] = [];
     Object.keys(state.entities).forEach((key) => {
       if (key.startsWith(`${accountId}_`)) {

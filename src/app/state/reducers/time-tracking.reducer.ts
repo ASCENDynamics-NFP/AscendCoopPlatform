@@ -42,8 +42,10 @@ export const timeTrackingReducer = createReducer(
     loading: true,
   })),
   on(TimeTrackingActions.saveTimeEntrySuccess, (state, {entry}) => {
+    // Ensure state.entities exists
+    const entities = state.entities || {};
     const key = `${entry.accountId}_${entry.userId}`;
-    const existingEntries = state.entities[key] || [];
+    const existingEntries = entities[key] || [];
 
     // Check if this is an update (entry has ID and exists) or a new entry
     const existingIndex = existingEntries.findIndex(
@@ -66,7 +68,7 @@ export const timeTrackingReducer = createReducer(
     return {
       ...state,
       entities: {
-        ...state.entities,
+        ...entities,
         [key]: updatedEntries,
       },
       loading: false,
@@ -87,7 +89,7 @@ export const timeTrackingReducer = createReducer(
     (state, {accountId, userId, entries}) => ({
       ...state,
       entities: {
-        ...state.entities,
+        ...(state.entities || {}),
         [`${accountId}_${userId}`]: entries,
       },
       loading: false,
@@ -103,18 +105,21 @@ export const timeTrackingReducer = createReducer(
     ...state,
     loading: true,
   })),
-  on(TimeTrackingActions.deleteTimeEntrySuccess, (state, {entryId}) => ({
-    ...state,
-    entities: Object.keys(state.entities).reduce(
-      (acc, key) => ({
-        ...acc,
-        [key]: state.entities[key].filter((e) => e.id !== entryId),
-      }),
-      {},
-    ),
-    loading: false,
-    error: null,
-  })),
+  on(TimeTrackingActions.deleteTimeEntrySuccess, (state, {entryId}) => {
+    const entities = state.entities || {};
+    return {
+      ...state,
+      entities: Object.keys(entities).reduce(
+        (acc, key) => ({
+          ...acc,
+          [key]: (entities[key] || []).filter((e) => e.id !== entryId),
+        }),
+        {},
+      ),
+      loading: false,
+      error: null,
+    };
+  }),
   on(TimeTrackingActions.deleteTimeEntryFailure, (state, {error}) => ({
     ...state,
     loading: false,
@@ -131,7 +136,7 @@ export const timeTrackingReducer = createReducer(
     (state, {accountId, entries}) => ({
       ...state,
       entities: {
-        ...state.entities,
+        ...(state.entities || {}),
         [`${accountId}_all`]: entries,
       },
       loading: false,
@@ -153,18 +158,18 @@ export const timeTrackingReducer = createReducer(
     loading: true,
   })),
   on(TimeTrackingActions.updateTimeEntrySuccess, (state, {entry}) => {
-    const updatedEntities = {...state.entities};
+    const entities = state.entities || {};
+    const updatedEntities = {...entities};
 
     // Update the entry in all relevant entity keys
     Object.keys(updatedEntities).forEach((key) => {
-      const entryIndex = updatedEntities[key].findIndex(
-        (e) => e.id === entry.id,
-      );
+      const entryArray = updatedEntities[key] || [];
+      const entryIndex = entryArray.findIndex((e) => e.id === entry.id);
       if (entryIndex !== -1) {
         updatedEntities[key] = [
-          ...updatedEntities[key].slice(0, entryIndex),
+          ...entryArray.slice(0, entryIndex),
           entry,
-          ...updatedEntities[key].slice(entryIndex + 1),
+          ...entryArray.slice(entryIndex + 1),
         ];
       }
     });
@@ -200,7 +205,6 @@ export const timeTrackingReducer = createReducer(
       error,
     }),
   ),
-
   on(TimeTrackingActions.clearTimeTrackingSubscriptions, () => ({
     ...initialState,
   })),

@@ -41,9 +41,9 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      # Install Firebase CLI early for testing
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
+      # Run Angular tests first (don't need Firebase CLI)
+      - name: Run Angular Tests
+        run: ng test --watch=false
 
       # Set Environment Variables
       - name: Set Environment Variables
@@ -63,9 +63,21 @@ jobs:
       - name: Generate Environment File
         run: node generate-env.js
 
-      # Run tests (includes both Angular and Firebase function tests)
-      - name: Run Tests
-        run: npm test
+      # Install Firebase CLI for function tests
+      - name: Install Firebase CLI
+        run: |
+          npm install -g firebase-tools
+          echo "$(npm config get prefix)/bin" >> $GITHUB_PATH
+          firebase --version
+          which firebase
+
+      # Run Firebase function tests
+      - name: Run Firebase Function Tests
+        run: |
+          echo "PATH: $PATH"
+          which firebase || echo "Firebase CLI not found in PATH"
+          firebase --version || echo "Firebase CLI version check failed"
+          npm --prefix functions test
 
       # Build the project (Development)
       - name: Build Project

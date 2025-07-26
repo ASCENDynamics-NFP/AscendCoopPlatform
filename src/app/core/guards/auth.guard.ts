@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 // src/app/guards/auth.guard.ts
 import {Injectable} from "@angular/core";
-import {Router} from "@angular/router";
+import {Router, ActivatedRouteSnapshot} from "@angular/router";
 import {firstValueFrom} from "rxjs";
 import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../state/selectors/auth.selectors";
@@ -34,7 +34,7 @@ export class AuthGuard {
     private router: Router,
   ) {}
 
-  async canActivate(): Promise<boolean> {
+  async canActivate(route?: ActivatedRouteSnapshot): Promise<boolean> {
     const authUser = await firstValueFrom(this.store.select(selectAuthUser));
 
     if (!authUser) {
@@ -52,6 +52,60 @@ export class AuthGuard {
       this.store.dispatch(AuthActions.signOut());
       return false;
     }
+
+    // Check registration completion for specific routes
+    if (route && this.requiresCompletedRegistration(route)) {
+      const accountId = route.paramMap.get("accountId");
+      const isOwnProfile = accountId === authUser.uid;
+      const hasCompletedRegistration = authUser.type && authUser.type !== "new";
+
+      if (isOwnProfile && !hasCompletedRegistration) {
+        // Redirect to registration if viewing own profile and haven't completed registration
+        this.router.navigate(["/account/registration", authUser.uid]);
+        return false;
+      }
+    }
+
+    // Prevent access to registration page if user has already completed registration
+    if (route && this.isRegistrationRoute(route)) {
+      const accountId = route.paramMap.get("accountId");
+      const isOwnRegistration = accountId === authUser.uid;
+      const hasCompletedRegistration = authUser.type && authUser.type !== "new";
+
+      if (!isOwnRegistration) {
+        // Prevent access to other users' registration pages
+        this.router.navigate(["/account", authUser.uid]);
+        return false;
+      }
+
+      if (hasCompletedRegistration) {
+        // Redirect to user's profile if they try to access registration after completing it
+        this.router.navigate(["/account", authUser.uid]);
+        return false;
+      }
+    }
+
     return true;
+  }
+
+  private requiresCompletedRegistration(
+    route: ActivatedRouteSnapshot,
+  ): boolean {
+    // Define which routes require completed registration
+    const routesRequiringRegistration = [
+      ":accountId", // Profile details page
+      ":accountId/edit", // Profile edit page
+      "settings", // Settings page
+      // Add other routes that should require completed registration
+    ];
+
+    const currentPath = route.routeConfig?.path || "";
+    return routesRequiringRegistration.includes(currentPath);
+  }
+
+  private isRegistrationRoute(route: ActivatedRouteSnapshot): boolean {
+    // Check if the current route is the registration route
+    const currentPath = route.routeConfig?.path || "";
+    return currentPath === "registration/:accountId";
   }
 }

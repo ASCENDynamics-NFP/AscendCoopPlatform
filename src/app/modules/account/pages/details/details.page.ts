@@ -23,7 +23,7 @@ import {Component, OnInit, ViewChild} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, Subscription, combineLatest} from "rxjs";
 import {Location} from "@angular/common";
-import {filter, map, take, tap} from "rxjs/operators";
+import {map} from "rxjs/operators";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {Store} from "@ngrx/store";
 import {Account, RelatedAccount} from "@shared/models/account.model";
@@ -69,18 +69,6 @@ export class DetailsPage implements OnInit, ViewWillEnter {
 
   ngOnInit(): void {
     this.authUser$ = this.store.select(selectAuthUser);
-
-    this.authUser$
-      .pipe(
-        filter((user): user is AuthUser => user !== null),
-        take(1),
-        tap((user) => {
-          if (!user.type || user.type === "new") {
-            this.router.navigate([`/account/registration/${user.uid}`]);
-          }
-        }),
-      )
-      .subscribe();
   }
 
   ionViewWillEnter() {
@@ -122,12 +110,23 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         if (this.errorSubscription) {
           this.errorSubscription.unsubscribe();
         }
-        this.errorSubscription = this.error$.subscribe((err) => {
-          if (err === "Account not found") {
+        this.errorSubscription = combineLatest([
+          this.error$,
+          this.authUser$,
+        ]).subscribe(([err, authUser]) => {
+          if (
+            err &&
+            err === "Account not found" &&
+            authUser &&
+            authUser.uid &&
+            this.accountId !== authUser.uid
+          ) {
             this.presentToast("Account not found", true);
           } else if (err) {
+            // Only show "private profile" message if viewing someone else's profile
             this.presentToast("This profile is private.");
           }
+          // If it's their own profile with an error, let the AuthGuard handle the redirect
         });
 
         // Determine if the current user is the profile owner

@@ -49,8 +49,7 @@ import {ProfessionalInfoFormComponent} from "./pages/edit/components/professiona
 import {VolunteerPreferenceInfoFormComponent} from "./pages/edit/components/volunteer-preference-info-form/volunteer-preference-info-form.component";
 import {AccountRoutingModule} from "./account-routing.module";
 import {RegistrationPage} from "./pages/registration/registration.page";
-import {GroupRegistrationComponent} from "./pages/registration/components/group-registration/group-registration.component";
-import {UserRegistrationComponent} from "./pages/registration/components/user-registration/user-registration.component";
+import {UnifiedRegistrationComponent} from "./pages/registration/components/unified-registration/unified-registration.component";
 import {GroupListPage} from "./pages/group-list/group-list.page";
 import {UsersPage} from "./pages/users/users.page";
 import {ListPage} from "./relatedAccount/pages/list/list.page";
@@ -83,8 +82,7 @@ import {GroupCalendarComponent} from "./pages/details/components/group-calendar/
     ProfileComponent,
     MutualAidCommunityInfoComponent,
     RegistrationPage,
-    GroupRegistrationComponent,
-    UserRegistrationComponent,
+    UnifiedRegistrationComponent,
     GroupListPage,
     UsersPage,
     ListingsListPage,

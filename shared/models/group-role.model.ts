@@ -19,10 +19,13 @@
  *******************************************************************************/
 // shared/models/group-role.model.ts
 
+export type RoleType = "user" | "organization";
+
 export interface GroupRole {
   id: string;
   name: string;
   description?: string;
   parentRoleId?: string;
   permissions?: string[];
+  roleType?: RoleType;
 }

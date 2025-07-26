@@ -124,19 +124,35 @@ describe("TimeTrackingService", () => {
 
   it("should add a time entry using FirestoreService", async () => {
     const entry = {id: "e1", accountId: "testAccountId"} as TimeEntry;
+    const expectedSanitizedEntry = {
+      id: "e1",
+      accountId: "testAccountId",
+      status: "pending",
+      notes: "",
+      userName: "",
+      projectName: "",
+    } as TimeEntry;
     firestoreSpy.addDocument.and.returnValue(Promise.resolve("e1"));
 
     const result = await service.addTimeEntry(entry);
 
     expect(firestoreSpy.addDocument).toHaveBeenCalledWith(
       `accounts/${entry.accountId}/timeEntries`,
-      entry,
+      expectedSanitizedEntry,
     );
     expect(result).toBe("e1");
   });
 
   it("should update a time entry using FirestoreService", async () => {
     const entry = {id: "e1", accountId: "testAccountId"} as TimeEntry;
+    const expectedSanitizedEntry = {
+      id: "e1",
+      accountId: "testAccountId",
+      status: "pending",
+      notes: "",
+      userName: "",
+      projectName: "",
+    } as TimeEntry;
     firestoreSpy.updateDocument.and.returnValue(Promise.resolve());
 
     await service.updateTimeEntry(entry);
@@ -144,7 +160,7 @@ describe("TimeTrackingService", () => {
     expect(firestoreSpy.updateDocument).toHaveBeenCalledWith(
       `accounts/${entry.accountId}/timeEntries`,
       entry.id,
-      entry,
+      expectedSanitizedEntry,
     );
   });
 

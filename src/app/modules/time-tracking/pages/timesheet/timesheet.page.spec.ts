@@ -8,6 +8,7 @@ import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectEntries} from "../../../../state/selectors/time-tracking.selectors";
 import {selectActiveProjectsByAccount} from "../../../../state/selectors/projects.selectors";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
+import {FormsModule} from "@angular/forms";
 
 describe("TimesheetPage", () => {
   let component: TimesheetPage;
@@ -17,11 +18,39 @@ describe("TimesheetPage", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [TimesheetPage, WeekViewComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [IonicModule.forRoot(), FormsModule],
       providers: [
         provideMockStore({
           initialState: {
-            timeTracking: {entities: {}, loading: false, error: null},
+            accounts: {
+              ids: [],
+              entities: {},
+              loading: false,
+              error: null,
+            },
+            auth: {
+              user: null,
+              loading: false,
+              error: null,
+            },
+            listings: {
+              ids: [],
+              entities: {},
+              loading: false,
+              error: null,
+            },
+            projects: {
+              ids: [],
+              entities: {},
+              loading: false,
+              error: null,
+            },
+            timeTracking: {
+              ids: [],
+              entities: {},
+              loading: false,
+              error: null,
+            },
           },
         }),
         {
@@ -68,11 +97,26 @@ describe("TimesheetPage", () => {
     });
   });
 
-  // it("should dispatch load entries on init", () => {
-  //   const action = (store.dispatch as jasmine.Spy).calls.mostRecent().args[0];
-  //   expect(action.type).toBe(TimeTrackingActions.loadTimeEntries.type);
-  //   expect(action.weekStart).toEqual(component.currentWeekStart);
-  // });
+  it("should dispatch load entries on init", (done) => {
+    // The loadTimeEntries action is dispatched after auth user is available
+    // Check that it was called during component initialization
+    setTimeout(() => {
+      const dispatchCalls = (store.dispatch as jasmine.Spy).calls.all();
+      const loadEntriesCall = dispatchCalls.find(
+        (call) =>
+          call.args[0].type === TimeTrackingActions.loadTimeEntries.type,
+      );
+      expect(loadEntriesCall).toBeTruthy();
+      if (loadEntriesCall) {
+        expect(loadEntriesCall.args[0].accountId).toBe("acc1");
+        expect(loadEntriesCall.args[0].userId).toBe("test");
+        expect(loadEntriesCall.args[0].weekStart).toEqual(
+          component.currentWeekStart,
+        );
+      }
+      done();
+    }, 100);
+  });
 
   it("should advance to the next week", () => {
     const start = new Date(component.currentWeekStart);

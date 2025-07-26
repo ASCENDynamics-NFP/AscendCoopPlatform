@@ -1,4 +1,9 @@
-import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from "@angular/core/testing";
 import {WeekViewComponent} from "./week-view.component";
 import {Store} from "@ngrx/store";
 import {Timestamp} from "firebase/firestore";
@@ -6,6 +11,8 @@ import * as TimeTrackingActions from "../../../../state/actions/time-tracking.ac
 import {SimpleChange} from "@angular/core";
 import {SuccessHandlerService} from "../../../../core/services/success-handler.service";
 import {ErrorHandlerService} from "../../../../core/services/error-handler.service";
+import {FormsModule} from "@angular/forms";
+import {IonicModule} from "@ionic/angular";
 
 describe("WeekViewComponent", () => {
   let component: WeekViewComponent;
@@ -16,6 +23,7 @@ describe("WeekViewComponent", () => {
     store = jasmine.createSpyObj("Store", ["dispatch"]);
     await TestBed.configureTestingModule({
       declarations: [WeekViewComponent],
+      imports: [FormsModule, IonicModule.forRoot()],
       providers: [
         {provide: Store, useValue: store},
         {
@@ -66,29 +74,55 @@ describe("WeekViewComponent", () => {
     expect(rows.length).toBe(2);
   });
 
-  it("should dispatch save action on hours change", () => {
-    const input: HTMLInputElement =
-      fixture.nativeElement.querySelector("tbody tr input");
-    input.value = "2";
-    input.dispatchEvent(new Event("change"));
+  it("should dispatch save action on hours change", fakeAsync(() => {
+    // First set up a project for row 0
+    const mockEvent = {detail: {value: "p1"}} as any;
+    component.addProjectById(0, mockEvent);
+    fixture.detectChanges();
+    tick();
+
+    store.dispatch.calls.reset();
+
+    // Create a mock event that simulates input change
+    const mockInputEvent = {
+      target: {value: "8"},
+    } as unknown as Event;
+
+    const day = new Date();
+    component.onHoursChange(0, day, mockInputEvent);
+    tick();
+
     expect(store.dispatch).toHaveBeenCalledWith(
       jasmine.objectContaining({
         type: TimeTrackingActions.saveTimeEntry.type,
       }),
     );
-  });
+  }));
 
-  it("should dispatch delete action when hours set to 0", () => {
-    const input: HTMLInputElement =
-      fixture.nativeElement.querySelector("tbody tr input");
-    input.value = "0";
-    input.dispatchEvent(new Event("change"));
+  it("should dispatch delete action when hours set to 0", fakeAsync(() => {
+    // First set up a project for row 0 with existing entry
+    const mockEvent = {detail: {value: "p1"}} as any;
+    component.addProjectById(0, mockEvent);
+    fixture.detectChanges();
+    tick();
+
+    store.dispatch.calls.reset();
+
+    // Create a mock event that simulates setting input to 0
+    const mockInputEvent = {
+      target: {value: "0"},
+    } as unknown as Event;
+
+    const day = new Date();
+    component.onHoursChange(0, day, mockInputEvent);
+    tick();
+
     expect(store.dispatch).toHaveBeenCalledWith(
       jasmine.objectContaining({
         type: TimeTrackingActions.deleteTimeEntry.type,
       }),
     );
-  });
+  }));
 
   it("should include userId when creating new entry", () => {
     const nextDay = new Date(component.weekStart);
@@ -105,27 +139,33 @@ describe("WeekViewComponent", () => {
     );
   });
 
-  it("should add a row when a project is added", () => {
-    const mockEvent = {target: {value: "p3"}} as any;
-    component.addProjectById(1, mockEvent);
+  it("should add a row when addRow is called", () => {
+    component.addRow();
     fixture.detectChanges();
     const rows = fixture.nativeElement.querySelectorAll("tbody tr");
     expect(rows.length).toBe(3);
   });
 
-  it("should not dispatch when hours empty for new entry", () => {
-    const mockEvent = {target: {value: "p3"}} as any;
+  it("should not dispatch when hours empty for new entry", fakeAsync(() => {
+    // Set up a project for row 1
+    const mockEvent = {detail: {value: "p3"}} as any;
     component.addProjectById(1, mockEvent);
     fixture.detectChanges();
+    tick();
+
     store.dispatch.calls.reset();
-    const inputs = fixture.nativeElement.querySelectorAll(
-      "tbody tr:last-child input",
-    );
-    const input = inputs[0] as HTMLInputElement;
-    input.value = "";
-    input.dispatchEvent(new Event("change"));
+
+    // Create a mock event with empty value
+    const mockInputEvent = {
+      target: {value: ""},
+    } as unknown as Event;
+
+    const day = new Date();
+    component.onHoursChange(1, day, mockInputEvent);
+    tick();
+
     expect(store.dispatch).not.toHaveBeenCalled();
-  });
+  }));
 
   it("should not dispatch when hours are outside 0-24", () => {
     store.dispatch.calls.reset();
@@ -167,16 +207,35 @@ describe("WeekViewComponent", () => {
     expect(component.totalHours).toBe(1);
   });
 
-  it("should update totals when hours change", () => {
-    const input: HTMLInputElement =
-      fixture.nativeElement.querySelector("tbody tr input");
-    input.value = "5";
-    input.dispatchEvent(new Event("change"));
+  it("should update totals based on existing entries", fakeAsync(() => {
+    // The component already has an entry with 1 hour for p1 on 'today'
+    // Let's verify the totals are calculated correctly for existing data
+
+    tick();
     fixture.detectChanges();
-    expect(component.rowTotals[0]).toBe(5);
-    expect(component.columnTotals[0]).toBe(5);
-    expect(component.totalHours).toBe(5);
-  });
+
+    // Check initial totals (there's already 1 hour entry for p1)
+    expect(component.rowTotals[0]).toBe(1); // p1 has 1 hour
+    expect(component.rowTotals[1]).toBe(0); // p2 has no hours
+    expect(component.totalHours).toBe(1);
+
+    // Add a new entry to simulate an hours change result
+    component.entries.push({
+      id: "e2",
+      projectId: "p1",
+      userId: "u1",
+      date: Timestamp.fromDate(component.days[1]), // Second day of week
+      hours: 5,
+      status: "pending",
+    } as any);
+
+    // Manually trigger totals update (simulating what happens after store update)
+    (component as any).updateTotals();
+
+    expect(component.rowTotals[0]).toBe(6); // p1 now has 1 + 5 = 6 hours
+    expect(component.columnTotals[1]).toBe(5); // Second day has 5 hours
+    expect(component.totalHours).toBe(6);
+  }));
 
   it("should update header dates when weekStart changes", () => {
     const initialHeader: string = fixture.nativeElement

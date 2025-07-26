@@ -32,6 +32,7 @@ import {of, Subject} from "rxjs";
 import {Account} from "@shared/models/account.model";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {AuthUser} from "@shared/models/auth-user.model";
+import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 
 describe("RegistrationPage", () => {
   let component: RegistrationPage;
@@ -58,6 +59,7 @@ describe("RegistrationPage", () => {
           },
         },
       ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
 
     store = TestBed.inject(Store) as jasmine.SpyObj<Store<any>>;

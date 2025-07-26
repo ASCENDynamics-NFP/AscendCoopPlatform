@@ -20,6 +20,7 @@
 // src/app/modules/account/pages/group-list/group-list.page.ts
 
 import {Component, OnInit} from "@angular/core";
+import {Router} from "@angular/router";
 import {Subject, Observable, BehaviorSubject, combineLatest} from "rxjs";
 import {
   debounceTime,
@@ -66,6 +67,7 @@ export class GroupListPage implements OnInit, ViewWillEnter {
   constructor(
     private metaService: MetaService,
     private store: Store,
+    private router: Router,
   ) {
     this.loading$ = this.store.select(selectAccountLoading);
   }
@@ -160,6 +162,13 @@ export class GroupListPage implements OnInit, ViewWillEnter {
         return;
       }
 
+      // If account type is "new", redirect to registration
+      if (account.type === "new") {
+        // Navigate to registration page
+        this.router.navigate([`/account/registration/${account.id}`]);
+        return;
+      }
+
       const newRelatedAccount: RelatedAccount = {
         id: account.id,
         accountId: authUser.uid,
@@ -197,6 +206,11 @@ export class GroupListPage implements OnInit, ViewWillEnter {
       ),
       map(({authUser, relatedAccounts}) => {
         if (authUser.uid === item.id) {
+          return false;
+        }
+
+        // Don't show request button for accounts with "new" type
+        if (item.type === "new") {
           return false;
         }
 

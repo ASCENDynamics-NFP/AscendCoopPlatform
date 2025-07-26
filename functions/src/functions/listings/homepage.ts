@@ -22,6 +22,7 @@
 import {onRequest} from "firebase-functions/v2/https";
 import {admin} from "../../utils/firebase";
 import * as logger from "firebase-functions/logger";
+import {Listing} from "@shared/models/listing.model";
 
 /**
  * Calculate distance between two latitude/longitude points using the Haversine formula.
@@ -194,18 +195,24 @@ export const getHomepageListings = onRequest(
       });
 
       let listings = snapshot.docs.map((doc) => ({
+        ...(doc.data() as Listing),
         id: doc.id,
-        ...doc.data(),
       }));
 
       // ✅ Apply Geolocation Filtering and Remote Inclusion
       listings = listings
         .filter(
-          (listing) =>
-            (listing as any).contactInformation?.addresses?.length > 0,
+          (listing: Listing) =>
+            listing.contactInformation?.addresses &&
+            listing.contactInformation.addresses.length > 0,
         )
-        .map((listing) => {
-          const addresses = (listing as any).contactInformation.addresses;
+        .map((listing: Listing) => {
+          const addresses = (listing.contactInformation.addresses || [])
+            .filter((addr): addr is NonNullable<typeof addr> => addr !== null)
+            .map((addr) => ({
+              remote: addr.remote ?? undefined,
+              geopoint: addr.geopoint ?? undefined,
+            }));
           const closestDistance = getClosestGeopoint(
             addresses,
             queryLatitude || 0,

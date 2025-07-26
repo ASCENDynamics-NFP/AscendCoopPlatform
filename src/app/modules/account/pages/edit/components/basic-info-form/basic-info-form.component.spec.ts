@@ -19,9 +19,10 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
-
+import {CommonModule} from "@angular/common";
 import {BasicInfoFormComponent} from "./basic-info-form.component";
 import {provideMockStore} from "@ngrx/store/testing";
+import {NO_ERRORS_SCHEMA} from "@angular/core";
 
 describe("BasicInfoComponent", () => {
   let component: BasicInfoFormComponent;
@@ -29,9 +30,10 @@ describe("BasicInfoComponent", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [],
-      imports: [IonicModule.forRoot()],
+      declarations: [BasicInfoFormComponent],
+      imports: [IonicModule.forRoot(), CommonModule],
       providers: [provideMockStore({})],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(BasicInfoFormComponent);

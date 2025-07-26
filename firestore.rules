@@ -18,6 +18,50 @@ service cloud.firestore {
       allow create, read, write, delete: if request.auth.uid != null; // Only authenticated users
     }
 
+    // Helper to check if user is the owner of the given account
+    function isAccountOwner(accId) {
+      return request.auth != null && request.auth.uid == accId;
+    }
+
+    // Helper to check if user is an admin of the given account (only for group accounts)
+    function isAccountAdmin(accId) {
+      return request.auth != null && 
+        get(/databases/$(database)/documents/accounts/$(accId)).data.type == 'group' && (
+        request.auth.uid == accId ||
+        (
+          exists(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted' &&
+          (
+            get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.access == 'admin' ||
+            get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.access == 'moderator'
+          )
+        )
+      );
+    }
+
+    function isAcceptedFriend(accId) {
+      return request.auth != null && 
+        exists(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.type == 'user' &&
+        get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
+    }
+
+    function isAcceptedGroup(accId) {
+      return request.auth != null && 
+        exists(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.type == 'group' &&
+        get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
+    }
+
+    // Project subcollections within accounts
+    match /accounts/{accountId}/projects {
+      allow list: if isAccountOwner(accountId) || isAcceptedGroup(accountId) || isAcceptedFriend(accountId);
+    }
+    match /accounts/{accountId}/projects/{projectId} {
+      allow read: if isAccountOwner(accountId) || isAcceptedGroup(accountId) || isAcceptedFriend(accountId);
+      allow create, update, delete: if isAccountAdmin(accountId);
+    }
+
     match /accounts {
       allow list: if isPublicUser() || isPublicGroup();
 
@@ -41,24 +85,28 @@ service cloud.firestore {
 
       function isGroupAdmin() {
         return request.auth != null &&
-          exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
-          get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted' &&
-          (get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.access == 'admin' ||
-           get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.access == 'moderator');
+          get(/databases/$(database)/documents/accounts/$(accountId)).data.type == 'group' &&
+          (request.auth.uid == accountId || // Group owner has admin access
+           (exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
+            get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted' &&
+            (get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.access == 'admin' ||
+             get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.access == 'moderator')));
       }
 
       // Friends-only access
       function isAcceptedFriend() {
-        return (request.auth != null && exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid))
-          && get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.type == 'user'
-          && get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted');
+        return request.auth != null && 
+          exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.type == 'user' &&
+          get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
       }
 
       // Groups-only access
       function isAcceptedGroup() {
-        return (request.auth != null && exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid))
-          && get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.type == 'group'
-          && get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted');
+        return request.auth != null && 
+          exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.type == 'group' &&
+          get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
       }
 
       // Public Group access
@@ -86,10 +134,12 @@ service cloud.firestore {
 
       function isGroupAdmin() {
         return request.auth != null &&
-          exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
-          get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted' &&
-          (get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.access == 'admin' ||
-           get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.access == 'moderator');
+          get(/databases/$(database)/documents/accounts/$(accountId)).data.type == 'group' &&
+          (request.auth.uid == accountId || // Group owner has admin access
+           (exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
+            get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted' &&
+            (get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.access == 'admin' ||
+             get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.access == 'moderator')));
       }
 
       function isRelatedToAccount() {
@@ -103,6 +153,63 @@ service cloud.firestore {
 
     match /accounts/{accountId}/relatedListings/{listingId} {
       allow create, read, write, delete: if request.auth.uid != null;  // Only authenticated users
+    }
+
+    // Time entries within group accounts
+    match /accounts/{accountId}/timeEntries/{entryId} {
+      function isGroupAccount() {
+        return get(/databases/$(database)/documents/accounts/$(accountId)).data.type == 'group';
+      }
+
+      function isGroupOwner() {
+        return request.auth != null && request.auth.uid == accountId;
+      }
+
+      function isGroupMember() {
+        return request.auth != null &&
+          exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
+      }
+
+      function isGroupMemberOrOwner() {
+        return isGroupOwner() || isGroupMember();
+      }
+
+      function isGroupAdmin() {
+        return request.auth != null &&
+          get(/databases/$(database)/documents/accounts/$(accountId)).data.type == 'group' &&
+          (request.auth.uid == accountId || // Group owner has admin access
+           (exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
+            get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.access == 'admin'));
+      }
+
+      function hasValidProject() {
+        return exists(/databases/$(database)/documents/accounts/$(accountId)/projects/$(request.resource.data.projectId)) &&
+          get(/databases/$(database)/documents/accounts/$(accountId)/projects/$(request.resource.data.projectId)).data.archived != true;
+      }
+
+      allow read: if isGroupAccount() && isGroupMemberOrOwner();
+      allow create: if isGroupAccount() && request.auth.uid == request.resource.data.userId &&
+        isGroupMemberOrOwner() &&
+        (isGroupAdmin() || request.resource.data.status == 'pending' || request.resource.data.status == 'draft') &&
+        hasValidProject();
+      allow update: if isGroupAccount() && isGroupMemberOrOwner() && hasValidProject() &&
+        (
+          isGroupAdmin() ||
+          (
+            request.auth.uid == resource.data.userId &&
+            request.auth.uid == request.resource.data.userId &&
+            resource.data.status != 'approved'
+          )
+        );
+      allow delete: if isGroupAccount() && isGroupMemberOrOwner() &&
+        (
+          isGroupAdmin() ||
+          (
+            request.auth.uid == resource.data.userId &&
+            resource.data.status != 'approved'
+          )
+        );
     }
     
     // Rules for AppFeedback

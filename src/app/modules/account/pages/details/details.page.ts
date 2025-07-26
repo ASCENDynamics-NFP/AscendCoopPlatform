@@ -54,6 +54,8 @@ export class DetailsPage implements OnInit, ViewWillEnter {
   relatedAccounts$!: Observable<RelatedAccount[]>;
   relatedListings$!: Observable<RelatedListing[]>;
   isProfileOwner$!: Observable<boolean>;
+  isGroupAdmin$!: Observable<boolean>;
+  isGroupMember$!: Observable<boolean>;
   error$!: Observable<any>;
 
   constructor(
@@ -73,7 +75,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         filter((user): user is AuthUser => user !== null),
         take(1),
         tap((user) => {
-          if (!user.type) {
+          if (!user.type || user.type === "new") {
             this.router.navigate([`/account/registration/${user.uid}`]);
           }
         }),
@@ -138,6 +140,42 @@ export class DetailsPage implements OnInit, ViewWillEnter {
               return account.id === authUser.uid;
             }
             return false;
+          }),
+        );
+
+        this.isGroupAdmin$ = combineLatest([
+          this.authUser$,
+          this.relatedAccounts$,
+          this.account$,
+        ]).pipe(
+          map(([currentUser, relatedAccounts, account]) => {
+            if (!currentUser) return false;
+            const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
+            const isAdmin =
+              rel?.status === "accepted" &&
+              (rel.access === "admin" || rel.access === "moderator");
+            const isOwner =
+              account?.type === "group" &&
+              account.createdBy === currentUser.uid;
+            return isAdmin || isOwner;
+          }),
+        );
+
+        this.isGroupMember$ = combineLatest([
+          this.authUser$,
+          this.relatedAccounts$,
+          this.account$,
+        ]).pipe(
+          map(([currentUser, relatedAccounts, account]) => {
+            if (!currentUser) return false;
+            // Check if user is the group owner
+            const isOwner =
+              account?.type === "group" &&
+              account.createdBy === currentUser.uid;
+            // Check if user is an accepted member
+            const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
+            const isMember = rel?.status === "accepted";
+            return isOwner || isMember;
           }),
         );
       }

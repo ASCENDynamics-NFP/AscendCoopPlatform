@@ -1,0 +1,191 @@
+<div class="week-view-container">
+  <div class="week-header">
+    <h2>Week of {{ weekStart | date: "MMM d" }}</h2>
+    <ion-button (click)="addRow()" fill="outline" size="small">
+      <ion-icon name="add" slot="start"></ion-icon>
+      Add Row
+    </ion-button>
+  </div>
+
+  <!-- Desktop/Tablet View -->
+  <div class="desktop-view">
+    <table class="week-grid">
+      <thead>
+        <tr>
+          <th class="project-column">Project</th>
+          <th *ngFor="let day of days" class="day-column">
+            {{ day | date: "EEE MM/dd" }}
+          </th>
+          <th class="total-column">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows; let i = index">
+          <td class="project-cell">
+            <ng-container *ngIf="availableProjects.length > 1; else single">
+              <ion-select
+                [value]="row.projectId"
+                (ionChange)="addProjectById(i, $event)"
+                placeholder="Select Project"
+                interface="popover"
+              >
+                <ion-select-option value="">Select...</ion-select-option>
+                <ion-select-option
+                  *ngFor="let proj of availableProjects"
+                  [value]="proj.id"
+                  [disabled]="isSelected(proj.id, i)"
+                >
+                  {{ proj.name }}
+                </ion-select-option>
+              </ion-select>
+            </ng-container>
+            <ng-template #single>
+              <span class="single-project">{{
+                availableProjects.length > 0 ? availableProjects[0].name : ""
+              }}</span>
+            </ng-template>
+            <ion-button
+              (click)="removeRow(i)"
+              fill="clear"
+              size="small"
+              color="danger"
+              class="remove-btn"
+            >
+              <ion-icon name="close" slot="icon-only"></ion-icon>
+            </ion-button>
+          </td>
+          <td *ngFor="let day of days" class="hours-cell">
+            <ion-input
+              type="number"
+              [value]="row.projectId ? getEntry(row.projectId, day)?.hours : ''"
+              (ionChange)="onHoursChange(i, day, $event)"
+              [disabled]="!row.projectId"
+              placeholder="0"
+              class="hours-input"
+            ></ion-input>
+          </td>
+          <td class="total-cell">{{ rowTotals[i] || 0 }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="totals-row">
+          <td class="project-cell"><strong>Total</strong></td>
+          <td *ngFor="let total of columnTotals" class="total-cell">
+            <strong>{{ total }}</strong>
+          </td>
+          <td class="total-cell">
+            <strong>{{ totalHours }}</strong>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- Mobile View -->
+  <div class="mobile-view">
+    <ion-card *ngFor="let row of rows; let i = index" class="project-card">
+      <ion-card-header>
+        <div class="project-header">
+          <div class="project-selector">
+            <ng-container
+              *ngIf="availableProjects.length > 1; else singleMobile"
+            >
+              <ion-select
+                [value]="row.projectId"
+                (ionChange)="addProjectById(i, $event)"
+                placeholder="Select Project"
+                interface="popover"
+                fill="outline"
+              >
+                <ion-select-option value="">Select...</ion-select-option>
+                <ion-select-option
+                  *ngFor="let proj of availableProjects"
+                  [value]="proj.id"
+                  [disabled]="isSelected(proj.id, i)"
+                >
+                  {{ proj.name }}
+                </ion-select-option>
+              </ion-select>
+            </ng-container>
+            <ng-template #singleMobile>
+              <h3>
+                {{
+                  availableProjects.length > 0
+                    ? availableProjects[0].name
+                    : "No Project"
+                }}
+              </h3>
+            </ng-template>
+          </div>
+          <ion-button
+            (click)="removeRow(i)"
+            fill="clear"
+            size="small"
+            color="danger"
+          >
+            <ion-icon name="close" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+        <div class="row-total">
+          Total: <strong>{{ rowTotals[i] || 0 }} hours</strong>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <ion-grid class="hours-grid">
+          <ion-row
+            *ngFor="let day of days; let dayIndex = index"
+            class="day-row"
+          >
+            <ion-col size="6">
+              <ion-label>{{ day | date: "EEE MM/dd" }}</ion-label>
+            </ion-col>
+            <ion-col size="6">
+              <ion-input
+                type="number"
+                [value]="
+                  row.projectId ? getEntry(row.projectId, day)?.hours : ''
+                "
+                (ionChange)="onHoursChange(i, day, $event)"
+                [disabled]="!row.projectId"
+                placeholder="0"
+                fill="outline"
+                class="mobile-hours-input"
+              ></ion-input>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Mobile Totals Card -->
+    <ion-card class="totals-card">
+      <ion-card-header>
+        <ion-card-title>Daily Totals</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row
+            *ngFor="let day of days; let dayIndex = index"
+            class="total-row"
+          >
+            <ion-col size="6">
+              <ion-label>{{ day | date: "EEE MM/dd" }}</ion-label>
+            </ion-col>
+            <ion-col size="6">
+              <strong>{{ columnTotals[dayIndex] || 0 }} hours</strong>
+            </ion-col>
+          </ion-row>
+          <ion-row class="grand-total">
+            <ion-col size="6">
+              <ion-label><strong>Week Total</strong></ion-label>
+            </ion-col>
+            <ion-col size="6">
+              <strong>{{ totalHours }} hours</strong>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</div>

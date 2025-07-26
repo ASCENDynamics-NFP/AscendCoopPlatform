@@ -25,6 +25,7 @@ import {
   fakeAsync,
   tick,
 } from "@angular/core/testing";
+import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 import {EditPage} from "./edit.page";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
@@ -53,6 +54,7 @@ describe("EditPage", () => {
 
     await TestBed.configureTestingModule({
       declarations: [EditPage],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
         {provide: Store, useValue: storeSpy},
         {provide: Router, useValue: routerSpy},

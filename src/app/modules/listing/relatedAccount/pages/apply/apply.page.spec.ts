@@ -38,6 +38,7 @@ import {AuthUser} from "@shared/models/auth-user.model";
 import {Listing} from "@shared/models/listing.model";
 import {Timestamp} from "firebase/firestore";
 import * as ListingsActions from "../../../../../state/actions/listings.actions";
+import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 
 describe("ApplyPage", () => {
   let component: ApplyPage;
@@ -118,6 +119,7 @@ describe("ApplyPage", () => {
         {provide: ActivatedRoute, useValue: routeStub},
         {provide: AlertController, useValue: alertController},
       ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
   });
 

@@ -1,0 +1,97 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Timesheet</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="timesheet-content">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Timesheet</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="content-container">
+    <!-- Status and Group Info -->
+    <div class="timesheet-info" *ngIf="account$ | async as account">
+      <div class="group-info">
+        <ion-icon name="business-outline"></ion-icon>
+        <span class="group-name">{{ account.name }}</span>
+      </div>
+      <div class="status-info">
+        <ion-badge [color]="getTimesheetStatusColor()">
+          <ion-icon [name]="getTimesheetStatusIcon()" slot="start"></ion-icon>
+          {{ getTimesheetStatusText() }}
+        </ion-badge>
+      </div>
+    </div>
+
+    <!-- Week Navigation -->
+    <div class="week-navigation">
+      <ion-button
+        (click)="previousWeek()"
+        fill="outline"
+        size="default"
+        class="nav-button"
+      >
+        <ion-icon name="chevron-back" slot="start"></ion-icon>
+        <span class="nav-text">Previous</span>
+      </ion-button>
+
+      <div class="current-week">
+        <h2>{{ getCurrentWeekLabel() }}</h2>
+        <p class="week-subtitle">{{ getCurrentWeekRange() }}</p>
+      </div>
+
+      <ion-button
+        (click)="nextWeek()"
+        fill="outline"
+        size="default"
+        class="nav-button"
+      >
+        <span class="nav-text">Next</span>
+        <ion-icon name="chevron-forward" slot="end"></ion-icon>
+      </ion-button>
+    </div>
+
+    <!-- Week View Component -->
+    <div class="week-view-container">
+      <app-week-view
+        [weekStart]="currentWeekStart"
+        [availableProjects]="availableProjects"
+        [entries]="entries"
+        [accountId]="accountId"
+        [userId]="userId"
+        [initialRows]="initialRows"
+      >
+      </app-week-view>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <ion-button
+        expand="block"
+        color="primary"
+        (click)="saveTimesheet()"
+        class="save-button"
+      >
+        <ion-icon name="save" slot="start"></ion-icon>
+        Save Timesheet
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        fill="outline"
+        color="secondary"
+        (click)="submitForApproval()"
+        class="submit-button"
+      >
+        <ion-icon name="send" slot="start"></ion-icon>
+        Submit for Approval
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

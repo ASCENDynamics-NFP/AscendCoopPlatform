@@ -1,7 +1,7 @@
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
-import {RouterTestingModule} from "@angular/router/testing";
 import {EventCalendarPage} from "./event-calendar.page";
+import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 
 describe("EventCalendarPage", () => {
   let component: EventCalendarPage;
@@ -10,7 +10,8 @@ describe("EventCalendarPage", () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [EventCalendarPage],
-      imports: [IonicModule.forRoot(), RouterTestingModule],
+      imports: [IonicModule.forRoot()],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(EventCalendarPage);

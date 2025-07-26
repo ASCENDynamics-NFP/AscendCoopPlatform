@@ -224,7 +224,7 @@ export interface Account extends BaseDocument, Group, User {
     | "accepted-users-only"
     | "accepted-groups-only"
     | "private"; // Privacy setting
-  type: "user" | "group";
+  type: "user" | "group" | "new"; // Account type: user, group, or new (needs registration)
   name: string;
   tagline: string;
   description: string;
@@ -235,6 +235,10 @@ export interface Account extends BaseDocument, Group, User {
   webLinks: WebLink[]; // Links to social media, personal websites, etc.
   lastLoginAt: Timestamp;
   email: string;
+  /**
+   * Total volunteer hours logged for this account
+   */
+  totalHours?: number;
   settings?: Settings; // User-specific settings
 }
 
@@ -244,23 +248,9 @@ export interface RelatedAccount extends BaseDocument {
   name?: string; // Name of the related user or group
   iconImage?: string; // URL or path to the icon image
   tagline?: string; // Tagline or short description
-  type?: "user" | "group"; // Type of the related account
+  type?: "user" | "group"; // Type of the related account (new accounts are filtered out)
   status?: "pending" | "accepted" | "rejected" | "blocked"; // Relationship status
-  relationship?:
-    | "admin"
-    | "friend"
-    | "member"
-    | "partner"
-    | "family"
-    | "parent"
-    | "child"
-    | "boss"
-    | "employee"
-    | "volunteer"
-    | "sibling"
-    | "parent-org"
-    | "child-org"
-    | "external"; // Details about the relationship (e.g., 'friend', 'member')
+  relationship?: "friend" | "member" | "partner" | "family"; // Details about the relationship (e.g., 'friend', 'member')
   /**
    * Built-in access level within a group
    */

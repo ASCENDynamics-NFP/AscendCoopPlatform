@@ -7,7 +7,7 @@
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
-    "test": "TS_NODE_PROJECT=tsconfig.test.json mocha -r ts-node/register test/**/*.spec.ts",
+    "test": "firebase emulators:exec 'TS_NODE_PROJECT=tsconfig.test.json mocha -r ts-node/register test/**/*.spec.ts' --only firestore",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log"
   },
@@ -17,12 +17,13 @@
   "main": "lib/functions/src/index.js",
   "dependencies": {
     "cors": "^2.8.5",
+    "firebase": "^10.13.1",
     "firebase-admin": "^12.7.0",
     "firebase-functions": "^6.3.2",
-    "nodemailer": "^6.10.0",
-    "firebase": "^10.13.1"
+    "nodemailer": "^6.10.0"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^3.0.4",
     "@types/chai": "^4.3.5",
     "@types/mocha": "^10.0.2",
     "@types/node": "^20.13.0",

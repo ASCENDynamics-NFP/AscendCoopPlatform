@@ -29,9 +29,7 @@ import {RegistrationPage} from "./registration.page";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
 import {of, Subject} from "rxjs";
-import {Account} from "@shared/models/account.model";
 import * as AccountActions from "../../../../state/actions/account.actions";
-import {AuthUser} from "@shared/models/auth-user.model";
 import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 
 describe("RegistrationPage", () => {
@@ -85,8 +83,8 @@ describe("RegistrationPage", () => {
   });
 
   it("should not navigate if account does not have type", fakeAsync(() => {
-    const account: Account = {id: "test-account-id"} as Account;
-    const accountSubject = new Subject<Account | undefined>();
+    const account = {id: "test-account-id"} as any;
+    const accountSubject = new Subject<any>();
     store.select.and.returnValue(accountSubject.asObservable());
 
     component.ngOnInit();
@@ -99,6 +97,10 @@ describe("RegistrationPage", () => {
   }));
 
   it("should update selectedType when selectType is called", () => {
+    store.select.and.returnValue(of(undefined));
+
+    component.ngOnInit(); // Initialize the component properly
+
     component.selectType("user");
     expect(component.selectedType).toBe("user");
   });

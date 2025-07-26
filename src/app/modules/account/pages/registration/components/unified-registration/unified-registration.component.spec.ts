@@ -20,20 +20,38 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {ReactiveFormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
+import {Router} from "@angular/router";
+import {Store} from "@ngrx/store";
+import {of} from "rxjs";
 import {UnifiedRegistrationComponent} from "./unified-registration.component";
 
 describe("UnifiedRegistrationComponent", () => {
   let component: UnifiedRegistrationComponent;
   let fixture: ComponentFixture<UnifiedRegistrationComponent>;
+  let mockStore: jasmine.SpyObj<Store>;
+  let mockRouter: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
+    const storeSpy = jasmine.createSpyObj("Store", ["dispatch", "select"]);
+    const routerSpy = jasmine.createSpyObj("Router", ["navigate"]);
+
     await TestBed.configureTestingModule({
       declarations: [UnifiedRegistrationComponent],
       imports: [ReactiveFormsModule, IonicModule.forRoot()],
+      providers: [
+        {provide: Store, useValue: storeSpy},
+        {provide: Router, useValue: routerSpy},
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(UnifiedRegistrationComponent);
     component = fixture.componentInstance;
+    mockStore = TestBed.inject(Store) as jasmine.SpyObj<Store>;
+    mockRouter = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+
+    // Setup store spy to return observables
+    mockStore.select.and.returnValue(of(null));
+
     fixture.detectChanges();
   });
 

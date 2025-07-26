@@ -116,11 +116,15 @@ export class RegistrationPage implements OnInit {
 
   selectType(type: "user" | "group") {
     // Reload account data when user selects a type to ensure fresh data is available
-    this.accountId$.pipe(take(1)).subscribe((accountId) => {
-      if (accountId) {
-        this.store.dispatch(AccountActions.loadAccount({accountId}));
-      }
-    });
+    // Only if accountId$ is initialized
+    if (this.accountId$) {
+      this.accountId$.pipe(take(1)).subscribe((accountId) => {
+        if (accountId) {
+          this.store.dispatch(AccountActions.loadAccount({accountId}));
+        }
+      });
+    }
+
     this.selectedType = type;
   }
 }

@@ -46,6 +46,7 @@ export class WeekViewComponent implements OnInit, OnChanges {
   @Input() accountId: string = "";
   @Input() userId: string = "";
   @Input() initialRows: {projectId: string | null}[] = [];
+  @Input() readonly: boolean = false;
 
   /** Selected rows referencing project ids */
   rows: {projectId: string | null}[] = [];

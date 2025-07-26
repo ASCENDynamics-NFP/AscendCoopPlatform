@@ -270,3 +270,51 @@
   outline: 2px solid var(--ion-color-primary);
   outline-offset: 2px;
 }
+
+// Return to current week button
+.return-current-week-btn {
+  margin-top: 8px;
+  --font-size: 12px;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 4px;
+  --padding-bottom: 4px;
+  --border-radius: 6px;
+
+  ion-icon {
+    font-size: 14px;
+  }
+}
+
+// Approved message styling
+.approved-message {
+  margin: 16px 0;
+
+  .approved-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    ion-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    div {
+      flex: 1;
+
+      h3 {
+        margin: 0 0 4px 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--ion-color-success);
+      }
+
+      p {
+        margin: 0;
+        font-size: 14px;
+        color: var(--ion-color-medium-shade);
+      }
+    }
+  }
+}

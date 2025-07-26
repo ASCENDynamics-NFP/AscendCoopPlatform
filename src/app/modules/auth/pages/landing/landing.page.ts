@@ -100,24 +100,29 @@ export class LandingPage {
 
   features = [
     {
+      icon: "git-branch-outline",
+      title: "Open-Source Innovation",
+      description:
+        "Our community-driven platform is transparent and scalable, allowing nonprofits and cooperatives to share tools and ideas freely.",
+    },
+    {
       icon: "people-outline",
-      title: "User Profiles",
+      title: "Volunteer Engagement",
       description:
-        "Create personalized profiles to showcase your skills and volunteer history.",
+        "Built-in volunteer management features help recruit, track volunteer involvement, and celebrate contributions, turning compassion into measurable impact.",
     },
     {
-      icon: "briefcase-outline",
-      title: "Volunteer Opportunities",
+      icon: "flash-outline",
+      title: "Real-Time Collaboration",
       description:
-        "Discover and apply for volunteer positions that match your interests and skills.",
+        "From project management to communication tools, we enable teams across organizations to coordinate instantly and achieve goals faster.",
     },
     {
-      icon: "analytics-outline",
-      title: "Analytics & Tracking",
+      icon: "business-outline",
+      title: "Cooperative Empowerment",
       description:
-        "Track your volunteer hours and impact with our analytics tools.",
+        "As an incubator for worker-owned cooperatives, we provide mentorship and resources, with a focus on uplifting entrepreneurs in underserved communities.",
     },
-    // Add more features as needed
   ];
 
   roadmap = [

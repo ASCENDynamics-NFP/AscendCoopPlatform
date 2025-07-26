@@ -11,6 +11,7 @@ describe("TeamPage", () => {
   beforeEach(waitForAsync(() => {
     const metaServiceSpy = jasmine.createSpyObj("MetaService", [
       "updateMetaTags",
+      "addStructuredData",
     ]);
     const modalControllerSpy = jasmine.createSpyObj("ModalController", [
       "create",

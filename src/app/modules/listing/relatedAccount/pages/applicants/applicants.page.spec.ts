@@ -173,6 +173,7 @@ describe("ApplicantsPage", () => {
     router = jasmine.createSpyObj("Router", ["navigate"]);
     const metaServiceSpy = jasmine.createSpyObj("MetaService", [
       "updateMetaTags",
+      "addStructuredData",
     ]);
 
     await TestBed.configureTestingModule({

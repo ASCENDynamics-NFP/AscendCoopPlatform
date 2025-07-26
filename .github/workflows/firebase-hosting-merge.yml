@@ -105,9 +105,9 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
 
-      # Deploy to Firebase (Hosting Only)
-      - name: Deploy to Firebase (Hosting Only)
+      # Deploy to Firebase
+      - name: Deploy to Firebase
         run: |
           echo "PATH: $PATH"
           which firebase
-          firebase deploy --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} --only hosting
+          firebase deploy --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} 

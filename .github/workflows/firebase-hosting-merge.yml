@@ -37,13 +37,20 @@ jobs:
         with:
           node-version: '20'
 
+      # Set up Java for Firebase emulators
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
       # Install dependencies
       - name: Install Dependencies
         run: npm ci
 
       # Run Angular tests first (don't need Firebase CLI)
       - name: Run Angular Tests
-        run: ng test --watch=false
+        run: npx ng test --watch=false
 
       # Set Environment Variables
       - name: Set Environment Variables
@@ -59,10 +66,6 @@ jobs:
           echo "FIREBASE_APP_ID=${{ secrets.DEV_FIREBASE_APP_ID }}" >> $GITHUB_ENV
           echo "FIREBASE_MEASUREMENT_ID=${{ secrets.DEV_FIREBASE_MEASUREMENT_ID }}" >> $GITHUB_ENV
           
-      # Generate environment file
-      - name: Generate Environment File
-        run: node generate-env.js
-
       # Install Firebase CLI for function tests
       - name: Install Firebase CLI
         run: |
@@ -70,6 +73,10 @@ jobs:
           echo "$(npm config get prefix)/bin" >> $GITHUB_PATH
           firebase --version
           which firebase
+
+      # Install Functions Dependencies
+      - name: Install Functions Dependencies
+        run: npm ci --prefix functions
 
       # Run Firebase function tests
       - name: Run Firebase Function Tests
@@ -81,7 +88,9 @@ jobs:
 
       # Build the project (Development)
       - name: Build Project
-        run: npm run build:dev
+        run: |
+          npm run generate-env:dev
+          npx ng build --configuration development
 
       # Authenticate to Google Cloud
       - name: Authenticate to Google Cloud
@@ -98,4 +107,7 @@ jobs:
 
       # Deploy to Firebase (Hosting Only)
       - name: Deploy to Firebase (Hosting Only)
-        run: firebase deploy --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }}
+        run: |
+          echo "PATH: $PATH"
+          which firebase
+          firebase deploy --project ${{ secrets.DEV_FIREBASE_PROJECT_ID }} --only hosting

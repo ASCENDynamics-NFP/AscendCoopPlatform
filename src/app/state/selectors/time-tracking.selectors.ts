@@ -41,11 +41,10 @@ export const selectAllEntriesForAccount = (accountId: string) =>
     if (!state || !state.entities) {
       return [];
     }
-    const allEntries: TimeEntry[] = [];
+    const allEntries: any[] = [];
     Object.keys(state.entities).forEach((key) => {
       if (key.startsWith(`${accountId}_`)) {
-        const entries = state.entities[key] as TimeEntry[]; // Ensure type safety
-        allEntries.push(...entries);
+        allEntries.push(...state.entities[key]);
       }
     });
     return allEntries;

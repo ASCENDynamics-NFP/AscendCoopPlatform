@@ -59,6 +59,25 @@ export class EventCalendarPage implements OnInit {
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
       },
     );
+
+    // Add structured data for events page
+    this.metaService.addStructuredData({
+      "@context": "https://schema.org",
+      "@type": "EventSeries",
+      name: "ASCENDynamics NFP Community Events",
+      description:
+        "Community events and SEO workshops hosted by ASCENDynamics NFP",
+      url: "https://app.ASCENDynamics.org/info/event-calendar",
+      organizer: {
+        "@type": "Organization",
+        name: "ASCENDynamics NFP",
+        url: "https://app.ASCENDynamics.org",
+      },
+      location: {
+        "@type": "VirtualLocation",
+        url: "https://app.ASCENDynamics.org",
+      },
+    });
   }
 
   async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {

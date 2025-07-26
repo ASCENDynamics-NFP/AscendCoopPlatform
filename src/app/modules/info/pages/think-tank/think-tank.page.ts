@@ -59,6 +59,25 @@ export class ThinkTankPage implements OnInit {
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
       },
     );
+
+    // Add structured data for think tank
+    this.metaService.addStructuredData({
+      "@context": "https://schema.org",
+      "@type": "ResearchProject",
+      name: "ASCENDynamics NFP Think Tank",
+      description:
+        "Research and SEO strategies for cooperative development and community projects.",
+      url: "https://app.ASCENDynamics.org/info/think-tank",
+      fundedItem: {
+        "@type": "Organization",
+        name: "ASCENDynamics NFP",
+      },
+      about: [
+        "Cooperative Development",
+        "SEO Strategies",
+        "Community Research",
+      ],
+    });
   }
 
   async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {

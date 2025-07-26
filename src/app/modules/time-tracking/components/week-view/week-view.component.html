@@ -1,10 +1,19 @@
 <div class="week-view-container">
   <div class="week-header">
     <h2>Week of {{ weekStart | date: "MMM d" }}</h2>
-    <ion-button (click)="addRow()" fill="outline" size="small">
+    <ion-button
+      *ngIf="!readonly"
+      (click)="addRow()"
+      fill="outline"
+      size="small"
+    >
       <ion-icon name="add" slot="start"></ion-icon>
       Add Row
     </ion-button>
+    <ion-badge *ngIf="readonly" color="success" class="readonly-badge">
+      <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+      Approved Week
+    </ion-badge>
   </div>
 
   <!-- Desktop/Tablet View -->
@@ -26,6 +35,7 @@
               <ion-select
                 [value]="row.projectId"
                 (ionChange)="addProjectById(i, $event)"
+                [disabled]="readonly"
                 placeholder="Select Project"
                 interface="popover"
               >
@@ -45,6 +55,7 @@
               }}</span>
             </ng-template>
             <ion-button
+              *ngIf="!readonly"
               (click)="removeRow(i)"
               fill="clear"
               size="small"
@@ -59,9 +70,10 @@
               type="number"
               [value]="row.projectId ? getEntry(row.projectId, day)?.hours : ''"
               (ionChange)="onHoursChange(i, day, $event)"
-              [disabled]="!row.projectId"
+              [disabled]="!row.projectId || readonly"
+              [readonly]="readonly"
               placeholder="0"
-              class="hours-input"
+              class="hours-input no-spinners"
             ></ion-input>
           </td>
           <td class="total-cell">{{ rowTotals[i] || 0 }}</td>
@@ -93,6 +105,7 @@
               <ion-select
                 [value]="row.projectId"
                 (ionChange)="addProjectById(i, $event)"
+                [disabled]="readonly"
                 placeholder="Select Project"
                 interface="popover"
                 fill="outline"
@@ -118,6 +131,7 @@
             </ng-template>
           </div>
           <ion-button
+            *ngIf="!readonly"
             (click)="removeRow(i)"
             fill="clear"
             size="small"
@@ -147,10 +161,11 @@
                   row.projectId ? getEntry(row.projectId, day)?.hours : ''
                 "
                 (ionChange)="onHoursChange(i, day, $event)"
-                [disabled]="!row.projectId"
+                [disabled]="!row.projectId || readonly"
+                [readonly]="readonly"
                 placeholder="0"
                 fill="outline"
-                class="mobile-hours-input"
+                class="mobile-hours-input no-spinners"
               ></ion-input>
             </ion-col>
           </ion-row>

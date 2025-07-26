@@ -73,6 +73,7 @@ describe("RoleManagementPage", () => {
           name: "Test",
           description: undefined,
           parentRoleId: undefined,
+          roleType: "organization",
         },
       }),
     );

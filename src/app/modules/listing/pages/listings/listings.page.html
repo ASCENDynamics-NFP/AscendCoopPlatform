@@ -41,11 +41,16 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <ng-container *ngIf="loading$ | async">
+  <ng-container
+    *ngIf="(loading$ | async) && !(paginatedListings$ | async)?.length; else content"
+  >
     <ion-list>
       <ion-item *ngFor="let i of [1,2,3,4,5]">
         <ion-thumbnail slot="start">
-          <ion-skeleton-text animated style="width: 64px; height: 64px"></ion-skeleton-text>
+          <ion-skeleton-text
+            animated
+            style="width: 64px; height: 64px"
+          ></ion-skeleton-text>
         </ion-thumbnail>
         <ion-label>
           <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
@@ -56,65 +61,67 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     </ion-list>
   </ng-container>
 
-  <ng-container *ngIf="error$ | async as error">
-    <ion-text color="danger">
-      <p>{{ error }}</p>
-    </ion-text>
-  </ng-container>
+  <ng-template #content>
+    <ng-container *ngIf="error$ | async as error">
+      <ion-text color="danger">
+        <p>{{ error }}</p>
+      </ion-text>
+    </ng-container>
 
-  <ion-list>
-    <ion-item
-      *ngFor="let listing of paginatedListings$ | async"
-      [routerLink]="['/listings', listing.id]"
-    >
-      <ion-thumbnail slot="start">
-        <ion-img
-          [src]="listing.iconImage || 'assets/image/logo/ASCENDynamics NFP-logos_transparent.png'"
-        ></ion-img>
-      </ion-thumbnail>
-      <ion-label>
-        <h2>{{ listing.title }}</h2>
-        <h3>{{ listing.organization }}</h3>
-        <p>{{ listing.description | slice:0:100 }}...</p>
-        <ion-badge color="primary">{{ listing.type | titlecase }}</ion-badge>
-        <ion-badge *ngIf="listing.remote" color="success">Remote</ion-badge>
-        <p *ngIf="!listing.remote">{{ getListingLocation(listing) }}</p>
-        <ion-note>
-          <ion-icon name="time-outline"></ion-icon>
-          {{ listing.timeCommitment.hoursPerWeek }} hrs/week
-        </ion-note>
-      </ion-label>
-    </ion-item>
-  </ion-list>
-  <ion-text
-    class="ion-padding"
-    *ngIf="
+    <ion-list>
+      <ion-item
+        *ngFor="let listing of paginatedListings$ | async"
+        [routerLink]="['/listings', listing.id]"
+      >
+        <ion-thumbnail slot="start">
+          <ion-img
+            [src]="listing.iconImage || 'assets/image/logo/ASCENDynamics NFP-logos_transparent.png'"
+          ></ion-img>
+        </ion-thumbnail>
+        <ion-label>
+          <h2>{{ listing.title }}</h2>
+          <h3>{{ listing.organization }}</h3>
+          <p>{{ listing.description | slice:0:100 }}...</p>
+          <ion-badge color="primary">{{ listing.type | titlecase }}</ion-badge>
+          <ion-badge *ngIf="listing.remote" color="success">Remote</ion-badge>
+          <p *ngIf="!listing.remote">{{ getListingLocation(listing) }}</p>
+          <ion-note>
+            <ion-icon name="time-outline"></ion-icon>
+            {{ listing.timeCommitment.hoursPerWeek }} hrs/week
+          </ion-note>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+    <ion-text
+      class="ion-padding"
+      *ngIf="
       (paginatedListings$ | async)?.length === 0 &&
       !(loading$ | async) &&
       !(error$ | async)
     "
-  >
-    No listings found.
-  </ion-text>
+    >
+      No listings found.
+    </ion-text>
 
-  <ion-fab
-    vertical="bottom"
-    horizontal="end"
-    slot="fixed"
-    *ngIf="authUser$ | async"
-  >
-    <ion-fab-button routerLink="/listings/create">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+    <ion-fab
+      vertical="bottom"
+      horizontal="end"
+      slot="fixed"
+      *ngIf="authUser$ | async"
+    >
+      <ion-fab-button routerLink="/listings/create">
+        <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
 
-  <!-- Pagination Component -->
-  <ion-footer>
-    <app-pagination
-      [totalItems]="(listings$ | async)?.length || 0"
-      [pageSize]="pageSize"
-      [maxVisiblePages]="5"
-      (pageChange)="goToPage($event)"
-    ></app-pagination>
-  </ion-footer>
+    <!-- Pagination Component -->
+    <ion-footer>
+      <app-pagination
+        [totalItems]="(listings$ | async)?.length || 0"
+        [pageSize]="pageSize"
+        [maxVisiblePages]="5"
+        (pageChange)="goToPage($event)"
+      ></app-pagination>
+    </ion-footer>
+  </ng-template>
 </ion-content>

@@ -23,10 +23,20 @@ import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Account} from "@shared/models/account.model";
 import {Store} from "@ngrx/store";
-import {selectAccountById} from "../../../../state/selectors/account.selectors";
+import {
+  selectAccountById,
+  selectAccountLoading,
+} from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
-import {Observable} from "rxjs";
-import {tap, switchMap, filter, map, shareReplay} from "rxjs/operators";
+import {Observable, combineLatest} from "rxjs";
+import {
+  switchMap,
+  filter,
+  map,
+  shareReplay,
+  startWith,
+  take,
+} from "rxjs/operators";
 import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
@@ -35,8 +45,10 @@ import {MetaService} from "../../../../core/services/meta.service";
   styleUrls: ["./registration.page.scss"],
 })
 export class RegistrationPage implements OnInit {
-  public selectedType: string = "";
+  public selectedType: "user" | "group" | "" = "";
   public account$!: Observable<Account | undefined>;
+  public loading$!: Observable<boolean>;
+  public isDataReady$!: Observable<boolean>;
   private accountId$!: Observable<string>;
 
   constructor(
@@ -59,14 +71,19 @@ export class RegistrationPage implements OnInit {
       this.store.dispatch(AccountActions.loadAccount({accountId}));
     });
 
+    // Select the account loading state
+    this.loading$ = this.store.select(selectAccountLoading);
+
     // Select the account from the store
     this.account$ = this.accountId$.pipe(
       switchMap((accountId) => this.store.select(selectAccountById(accountId))),
-      tap((account) => {
-        if (account?.type) {
-          this.router.navigate([`/account/${account.id}`]);
-        }
-      }),
+    );
+
+    // For registration page, show content immediately after initial setup
+    // Use a timeout to give the observables time to initialize
+    this.isDataReady$ = this.accountId$.pipe(
+      map(() => true), // Once we have accountId, we're ready
+      startWith(false), // Brief initial loading state
     );
   }
 
@@ -95,7 +112,17 @@ export class RegistrationPage implements OnInit {
     );
   }
 
-  selectType(type: string) {
+  selectType(type: "user" | "group") {
+    // Reload account data when user selects a type to ensure fresh data is available
+    // Only if accountId$ is initialized
+    if (this.accountId$) {
+      this.accountId$.pipe(take(1)).subscribe((accountId) => {
+        if (accountId) {
+          this.store.dispatch(AccountActions.loadAccount({accountId}));
+        }
+      });
+    }
+
     this.selectedType = type;
   }
 }

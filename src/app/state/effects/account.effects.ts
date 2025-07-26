@@ -433,6 +433,29 @@ export class AccountEffects {
     ),
   );
 
+  // Sync Auth User with Account after a successful update
+  syncAuthUserWithAccountUpdate$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AccountActions.updateAccountSuccess),
+      withLatestFrom(this.store.select(selectAuthUser)),
+      map(([{account}, authUser]) => {
+        if (authUser?.uid && account.id && authUser.uid === account.id) {
+          return AuthActions.updateAuthUser({
+            user: {
+              displayName: account.name,
+              heroImage: account.heroImage,
+              iconImage: account.iconImage,
+              tagline: account.tagline,
+              type: account.type,
+              settings: account.settings,
+            },
+          });
+        }
+        return {type: "[Account] No Action"};
+      }),
+    ),
+  );
+
   // Set Selected Account
   setSelectedAccount$ = createEffect(() =>
     this.actions$.pipe(

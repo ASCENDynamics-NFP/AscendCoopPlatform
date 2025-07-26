@@ -17,3 +17,39 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// src/app/core/guards/time-tracking-access.guard.ts
+import {Injectable} from "@angular/core";
+import {ActivatedRouteSnapshot, Router} from "@angular/router";
+import {firstValueFrom} from "rxjs";
+import {Store} from "@ngrx/store";
+import {selectAuthUser} from "../../state/selectors/auth.selectors";
+
+@Injectable({
+  providedIn: "root",
+})
+export class TimeTrackingAccessGuard {
+  constructor(
+    private store: Store,
+    private router: Router,
+  ) {}
+
+  async canActivate(route: ActivatedRouteSnapshot): Promise<boolean> {
+    const authUser = await firstValueFrom(this.store.select(selectAuthUser));
+    const accountId = route.paramMap.get("accountId");
+
+    if (!authUser) {
+      // If no authenticated user, redirect to login
+      this.router.navigate(["/auth/login"]);
+      return false;
+    }
+
+    if (accountId === authUser.uid) {
+      // Prevent owners from accessing their own time-tracking
+      // Redirect to the account details page instead
+      this.router.navigate(["/account", accountId]);
+      return false;
+    }
+
+    return true;
+  }
+}

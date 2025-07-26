@@ -118,6 +118,27 @@ export class ListingsPage implements OnInit, OnDestroy {
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
+
+    // Add structured data for volunteer listings page
+    this.metaService.addStructuredData({
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: "Volunteer Listings | ASCENDynamics NFP",
+      description:
+        "Explore volunteering opportunities available on ASCENDynamics NFP to make an impact in your community.",
+      url: "https://app.ASCENDynamics.org/listings",
+      isPartOf: {
+        "@type": "WebSite",
+        name: "ASCENDynamics NFP",
+        url: "https://app.ASCENDynamics.org",
+      },
+      mainEntity: {
+        "@type": "ItemList",
+        name: "Volunteer Opportunities",
+        description:
+          "Browse and apply for volunteer roles with nonprofit organizations",
+      },
+    });
   }
 
   ngOnInit() {

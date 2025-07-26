@@ -72,6 +72,25 @@ export class LoginPage implements OnInit {
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
+
+    // Add structured data for login page
+    this.metaService.addStructuredData({
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "Login | ASCENDynamics NFP",
+      description:
+        "Log in to your ASCENDynamics NFP account to track volunteer hours, find opportunities, and connect with nonprofits.",
+      url: "https://app.ASCENDynamics.org/login",
+      isPartOf: {
+        "@type": "WebSite",
+        name: "ASCENDynamics NFP",
+        url: "https://app.ASCENDynamics.org",
+      },
+      potentialAction: {
+        "@type": "LoginAction",
+        target: "https://app.ASCENDynamics.org/login",
+      },
+    });
   }
 
   // Runs when the component is initialized

@@ -87,6 +87,28 @@ export class LandingPage {
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
+
+    // Add structured data for the main landing page (nonprofit organization)
+    this.metaService.addStructuredData({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: "ASCENDynamics NFP",
+      alternateName: "ASCENDynamics Nonprofit",
+      url: "https://app.ASCENDynamics.org",
+      logo: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+      description:
+        "A nonprofit platform connecting volunteers with organizations to create positive community impact through collaborative volunteering opportunities.",
+      foundingDate: "2023",
+      organizationType: "Nonprofit",
+      areaServed: "Global",
+      knowsAbout: [
+        "Volunteer Management",
+        "Nonprofit Collaboration",
+        "Community Impact",
+        "Social Networking",
+      ],
+      sameAs: ["https://app.ASCENDynamics.org"],
+    });
   }
 
   // Open the legal modal (Privacy Policy or Terms of Use)

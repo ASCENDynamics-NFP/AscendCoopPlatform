@@ -28,10 +28,14 @@ import {Title, Meta} from "@angular/platform-browser";
   providedIn: "root",
 })
 export class MetaService {
+  private document: Document;
+
   constructor(
     private titleService: Title,
     private metaService: Meta,
-  ) {}
+  ) {
+    this.document = document;
+  }
 
   /**
    * Updates meta tags for a page
@@ -122,5 +126,33 @@ export class MetaService {
     metaTags.forEach((tag) => {
       this.metaService.removeTag(`name='${tag}', property='${tag}'`);
     });
+  }
+
+  /**
+   * Adds structured data (JSON-LD) to the page
+   * @param structuredData - The JSON-LD structured data object
+   */
+  addStructuredData(structuredData: any): void {
+    // Remove existing structured data
+    this.removeStructuredData();
+
+    // Create new script element
+    const script = this.document.createElement("script");
+    script.type = "application/ld+json";
+    script.text = JSON.stringify(structuredData);
+    script.id = "structured-data";
+
+    // Add to head
+    this.document.head.appendChild(script);
+  }
+
+  /**
+   * Removes structured data from the page
+   */
+  removeStructuredData(): void {
+    const existingScript = this.document.getElementById("structured-data");
+    if (existingScript) {
+      existingScript.remove();
+    }
   }
 }

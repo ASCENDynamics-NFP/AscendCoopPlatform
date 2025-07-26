@@ -60,6 +60,13 @@ jobs:
         with:
           node-version: '20'
 
+      # Step 2.5: Set up Java for Firebase emulators
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
       # Step 3: Cache node modules
       - name: Cache node modules
         uses: actions/cache@v3
@@ -78,9 +85,10 @@ jobs:
           npm ci                            # Install root project dependencies
           npm --prefix functions ci         # Install functions dependencies
 
-      - name: Install Angular CLI and Chrome
+      - name: Install Angular CLI, Firebase CLI and Chrome
         run: |
           npm install -g @angular/cli
+          npm install -g firebase-tools
           sudo apt-get update
           sudo apt-get install -y chromium-browser
 

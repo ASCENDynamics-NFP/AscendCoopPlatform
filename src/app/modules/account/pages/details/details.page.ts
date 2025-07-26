@@ -23,7 +23,7 @@ import {Component, OnInit, ViewChild} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, Subscription, combineLatest} from "rxjs";
 import {Location} from "@angular/common";
-import {filter, map, take, tap} from "rxjs/operators";
+import {map} from "rxjs/operators";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {Store} from "@ngrx/store";
 import {Account, RelatedAccount} from "@shared/models/account.model";
@@ -69,18 +69,6 @@ export class DetailsPage implements OnInit, ViewWillEnter {
 
   ngOnInit(): void {
     this.authUser$ = this.store.select(selectAuthUser);
-
-    this.authUser$
-      .pipe(
-        filter((user): user is AuthUser => user !== null),
-        take(1),
-        tap((user) => {
-          if (!user.type || user.type === "new") {
-            this.router.navigate([`/account/registration/${user.uid}`]);
-          }
-        }),
-      )
-      .subscribe();
   }
 
   ionViewWillEnter() {
@@ -122,12 +110,23 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         if (this.errorSubscription) {
           this.errorSubscription.unsubscribe();
         }
-        this.errorSubscription = this.error$.subscribe((err) => {
-          if (err === "Account not found") {
+        this.errorSubscription = combineLatest([
+          this.error$,
+          this.authUser$,
+        ]).subscribe(([err, authUser]) => {
+          if (
+            err &&
+            err === "Account not found" &&
+            authUser &&
+            authUser.uid &&
+            this.accountId !== authUser.uid
+          ) {
             this.presentToast("Account not found", true);
           } else if (err) {
+            // Only show "private profile" message if viewing someone else's profile
             this.presentToast("This profile is private.");
           }
+          // If it's their own profile with an error, let the AuthGuard handle the redirect
         });
 
         // Determine if the current user is the profile owner
@@ -259,6 +258,46 @@ export class DetailsPage implements OnInit, ViewWillEnter {
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
+
+    // Add structured data for profile/group pages
+    if (account.type === "user") {
+      this.metaService.addStructuredData({
+        "@context": "https://schema.org",
+        "@type": "Person",
+        name: account.name,
+        description:
+          account.description ||
+          `${account.name}'s profile on ASCENDynamics NFP`,
+        url: `https://app.ASCENDynamics.org/account/${account.id}`,
+        image:
+          account.iconImage ||
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        memberOf: {
+          "@type": "Organization",
+          name: "ASCENDynamics NFP",
+        },
+        knowsAbout: ["Volunteering", "Community Service", "Nonprofit Work"],
+      });
+    } else {
+      this.metaService.addStructuredData({
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        name: account.name,
+        description:
+          account.description ||
+          `${account.name} organization on ASCENDynamics NFP`,
+        url: `https://app.ASCENDynamics.org/account/${account.id}`,
+        logo:
+          account.iconImage ||
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        parentOrganization: {
+          "@type": "Organization",
+          name: "ASCENDynamics NFP",
+        },
+        areaServed: "Global",
+        knowsAbout: ["Volunteering", "Community Service", "Nonprofit Work"],
+      });
+    }
   }
 
   private setDefaultMeta() {
@@ -283,5 +322,24 @@ export class DetailsPage implements OnInit, ViewWillEnter {
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
+
+    // Add structured data for default profile page
+    this.metaService.addStructuredData({
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "Profile | ASCENDynamics NFP",
+      description:
+        "View and manage your profile details, volunteering history, and preferences on ASCENDynamics NFP.",
+      url: "https://app.ASCENDynamics.org/profile",
+      isPartOf: {
+        "@type": "WebSite",
+        name: "ASCENDynamics NFP",
+        url: "https://app.ASCENDynamics.org",
+      },
+      potentialAction: {
+        "@type": "ViewAction",
+        target: "https://app.ASCENDynamics.org/profile",
+      },
+    });
   }
 }

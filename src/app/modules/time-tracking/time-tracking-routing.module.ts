@@ -24,17 +24,18 @@ import {RouterModule, Routes} from "@angular/router";
 import {TimesheetPage} from "./pages/timesheet/timesheet.page";
 import {ApprovalsPage} from "./pages/approvals/approvals.page";
 import {AuthGuard} from "../../core/guards/auth.guard";
+import {TimeTrackingAccessGuard} from "../../core/guards/time-tracking-access.guard";
 
 const routes: Routes = [
   {
     path: "",
     component: TimesheetPage,
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, TimeTrackingAccessGuard],
   },
   {
     path: "approvals",
     component: ApprovalsPage,
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, TimeTrackingAccessGuard],
   },
 ];
 

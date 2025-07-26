@@ -398,3 +398,71 @@ ion-select:focus-within {
   --border-width: 2px !important;
   box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.2);
 }
+
+// Readonly badge styling
+.readonly-badge {
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: 6px;
+  --padding-bottom: 6px;
+  font-size: 14px;
+  font-weight: 500;
+
+  ion-icon {
+    margin-right: 4px;
+    font-size: 16px;
+  }
+}
+
+/* Remove number input spinners */
+.no-spinners {
+  /* For Firefox */
+  -moz-appearance: textfield;
+  appearance: textfield;
+
+  /* For Chrome, Safari, Edge, Opera */
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+    display: none;
+  }
+
+  // Target the inner input element in Ionic
+  input {
+    -moz-appearance: textfield;
+    appearance: textfield;
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+      display: none;
+    }
+  }
+
+  // More specific targeting for nested elements
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+      display: none;
+    }
+  }
+}
+
+// Global targeting for any number inputs within this component
+ion-input[type="number"] {
+  input {
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+      display: none;
+    }
+  }
+}

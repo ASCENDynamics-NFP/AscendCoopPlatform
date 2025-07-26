@@ -58,6 +58,23 @@ export class TeamPage implements OnInit {
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
       },
     );
+
+    // Add structured data for team page
+    this.metaService.addStructuredData({
+      "@context": "https://schema.org",
+      "@type": "AboutPage",
+      name: "Our Team | ASCENDynamics NFP",
+      description:
+        "Meet the volunteers, developers, and SEO experts behind ASCENDynamics NFP.",
+      url: "https://app.ASCENDynamics.org/info/team",
+      mainEntity: {
+        "@type": "Organization",
+        name: "ASCENDynamics NFP",
+        url: "https://app.ASCENDynamics.org",
+        description:
+          "Team of volunteers and SEO specialists supporting cooperative development",
+      },
+    });
   }
 
   async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {

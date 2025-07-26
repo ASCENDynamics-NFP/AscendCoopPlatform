@@ -44,6 +44,19 @@
       <div class="current-week">
         <h2>{{ getCurrentWeekLabel() }}</h2>
         <p class="week-subtitle">{{ getCurrentWeekRange() }}</p>
+
+        <!-- Return to Current Week Button -->
+        <ion-button
+          *ngIf="!isViewingCurrentWeek()"
+          (click)="returnToCurrentWeek()"
+          fill="outline"
+          size="small"
+          color="primary"
+          class="return-current-week-btn"
+        >
+          <ion-icon name="calendar" slot="start"></ion-icon>
+          Return to Current Week
+        </ion-button>
       </div>
 
       <ion-button
@@ -66,6 +79,7 @@
         [accountId]="accountId"
         [userId]="userId"
         [initialRows]="initialRows"
+        [readonly]="isCurrentWeekApproved()"
       >
       </app-week-view>
     </div>
@@ -73,6 +87,7 @@
     <!-- Action Buttons -->
     <div class="action-buttons">
       <ion-button
+        *ngIf="!isCurrentWeekApproved()"
         expand="block"
         color="primary"
         (click)="saveTimesheet()"
@@ -83,6 +98,7 @@
       </ion-button>
 
       <ion-button
+        *ngIf="!isCurrentWeekApproved()"
         expand="block"
         fill="outline"
         color="secondary"
@@ -92,6 +108,21 @@
         <ion-icon name="send" slot="start"></ion-icon>
         Submit for Approval
       </ion-button>
+
+      <!-- Message for approved weeks -->
+      <ion-card *ngIf="isCurrentWeekApproved()" class="approved-message">
+        <ion-card-content>
+          <div class="approved-content">
+            <ion-icon name="checkmark-circle" color="success"></ion-icon>
+            <div>
+              <h3>Week Approved</h3>
+              <p>
+                This week's timesheet has been approved and cannot be modified.
+              </p>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
     </div>
   </div>
 </ion-content>

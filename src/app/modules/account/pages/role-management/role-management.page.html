@@ -22,25 +22,47 @@
               color: var(--ion-color-dark);
             "
           >
-            <ion-col align="left" size="4">Current Info</ion-col>
+            <ion-col align="left" size="3">Current Info</ion-col>
             <ion-col align="left" size="2">Name</ion-col>
             <ion-col align="left" size="2">Description</ion-col>
-            <ion-col align="left" size="2">Parent Role</ion-col>
+            <ion-col align="left" size="1.5">Type</ion-col>
+            <ion-col align="left" size="1.5">Parent Role</ion-col>
             <ion-col align="left" size="2">Actions</ion-col>
           </ion-row>
         </ion-grid>
 
         <ion-grid *ngFor="let role of roles">
           <ion-row style="color: var(--ion-color-dark)">
-            <ion-col size="4">
-              <h3 style="font-weight: bold; color: var(--ion-color-primary)">
-                {{ role.name }}
-              </h3>
-              <p style="color: var(--ion-color-secondary)">
-                Parent: {{ getParentName(role.parentRoleId, roles) || 'None'
-                }}<br />
-                {{ role.description }}
-              </p>
+            <ion-col size="3">
+              <div style="display: flex; align-items: center; gap: 8px">
+                <ion-icon
+                  [name]="getRoleIcon(role)"
+                  style="font-size: 24px; color: var(--ion-color-primary)"
+                ></ion-icon>
+                <div>
+                  <h3
+                    style="
+                      font-weight: bold;
+                      color: var(--ion-color-primary);
+                      margin: 0;
+                    "
+                  >
+                    {{ role.name }}
+                  </h3>
+                  <p
+                    style="
+                      color: var(--ion-color-secondary);
+                      margin: 4px 0 0 0;
+                      font-size: 0.9rem;
+                    "
+                  >
+                    Parent: {{ getParentName(role.parentRoleId, roles) || 'None'
+                    }}<br />
+                    Type: {{ role.roleType || 'organization' | titlecase }}<br />
+                    {{ role.description }}
+                  </p>
+                </div>
+              </div>
             </ion-col>
             <ion-col size="2">
               <ion-input
@@ -58,7 +80,19 @@
                 (ionBlur)="updateRole(role)"
               ></ion-input>
             </ion-col>
-            <ion-col size="2">
+            <ion-col size="1.5">
+              <ion-select
+                [(ngModel)]="role.roleType"
+                placeholder="Type"
+                (ionChange)="updateRole(role)"
+              >
+                <ion-select-option value="organization"
+                  >Organization</ion-select-option
+                >
+                <ion-select-option value="user">User</ion-select-option>
+              </ion-select>
+            </ion-col>
+            <ion-col size="1.5">
               <ion-select
                 [(ngModel)]="role.parentRoleId"
                 placeholder="Parent"
@@ -104,6 +138,18 @@
             maxlength="150"
             [(ngModel)]="newRole.description"
           ></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Role Type</ion-label>
+          <ion-select
+            [(ngModel)]="newRole.roleType"
+            placeholder="Select role type"
+          >
+            <ion-select-option value="organization"
+              >Organization</ion-select-option
+            >
+            <ion-select-option value="user">User</ion-select-option>
+          </ion-select>
         </ion-item>
         <ion-item>
           <ion-label position="stacked">Parent Role</ion-label>

@@ -59,6 +59,24 @@ export class AboutUsPage implements OnInit {
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
       },
     );
+
+    // Add structured data for the organization
+    this.metaService.addStructuredData({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: "ASCENDynamics NFP",
+      url: "https://app.ASCENDynamics.org",
+      logo: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+      description:
+        "ASCENDynamics NFP is a cooperative incubator that empowers worker-owned cooperatives through SEO-focused strategies and community resources.",
+      foundingDate: "2023",
+      sameAs: ["https://app.ASCENDynamics.org/info/about-us"],
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "customer service",
+        url: "https://app.ASCENDynamics.org",
+      },
+    });
   }
 
   async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {

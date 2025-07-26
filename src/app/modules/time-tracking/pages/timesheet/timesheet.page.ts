@@ -59,6 +59,14 @@ export class TimesheetPage implements OnInit, OnDestroy {
     return d;
   })();
 
+  // Store the actual current week for "return to current week" functionality
+  private todaysWeekStart: Date = (() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - d.getDay());
+    return d;
+  })();
+
   constructor(
     private store: Store<AppState>,
     private route: ActivatedRoute,
@@ -172,6 +180,34 @@ export class TimesheetPage implements OnInit, OnDestroy {
     const endStr = endDate.toLocaleDateString("en-US", endOptions);
 
     return `${startStr} - ${endStr}`;
+  }
+
+  /**
+   * Check if the current week's entries are approved (cannot be edited)
+   */
+  isCurrentWeekApproved(): boolean {
+    if (!this.entries || this.entries.length === 0) {
+      return false;
+    }
+
+    const statuses = this.entries.map((entry) => entry.status || "draft");
+    return statuses.every((status) => status === "approved");
+  }
+
+  /**
+   * Check if the user is viewing the current week
+   */
+  isViewingCurrentWeek(): boolean {
+    return this.currentWeekStart.getTime() === this.todaysWeekStart.getTime();
+  }
+
+  /**
+   * Return to the current week (today's week)
+   */
+  returnToCurrentWeek(): void {
+    this.currentWeekStart = new Date(this.todaysWeekStart);
+    this.updateEntriesObservable();
+    this.loadEntries();
   }
 
   saveTimesheet() {

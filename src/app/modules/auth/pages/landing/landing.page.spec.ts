@@ -31,7 +31,10 @@ describe("LandingPage", () => {
   let modalControllerSpy: jasmine.SpyObj<ModalController>;
 
   beforeEach(async () => {
-    const metaSpy = jasmine.createSpyObj("MetaService", ["updateMetaTags"]);
+    const metaSpy = jasmine.createSpyObj("MetaService", [
+      "updateMetaTags",
+      "addStructuredData",
+    ]);
     const modalSpy = jasmine.createSpyObj("ModalController", ["create"]);
 
     await TestBed.configureTestingModule({
@@ -71,6 +74,9 @@ describe("LandingPage", () => {
       jasmine.any(String),
       jasmine.any(String),
       jasmine.any(Object),
+      jasmine.any(Object),
+    );
+    expect(metaServiceSpy.addStructuredData).toHaveBeenCalledWith(
       jasmine.any(Object),
     );
   });

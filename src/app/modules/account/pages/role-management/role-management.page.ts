@@ -24,7 +24,7 @@ import {ActivatedRoute} from "@angular/router";
 import {Store} from "@ngrx/store";
 import {Observable} from "rxjs";
 import {map} from "rxjs/operators";
-import {GroupRole} from "@shared/models/group-role.model";
+import {GroupRole, RoleType} from "@shared/models/group-role.model";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {
@@ -43,7 +43,11 @@ export class RoleManagementPage implements OnInit {
   editableRoles$!: Observable<GroupRole[]>;
   loading$!: Observable<boolean>;
 
-  newRole: Partial<GroupRole> = {name: "", parentRoleId: undefined};
+  newRole: Partial<GroupRole> = {
+    name: "",
+    parentRoleId: undefined,
+    roleType: "organization",
+  };
 
   constructor(
     private route: ActivatedRoute,
@@ -69,11 +73,16 @@ export class RoleManagementPage implements OnInit {
       name: this.newRole.name!,
       description: this.newRole.description,
       parentRoleId: this.newRole.parentRoleId,
+      roleType: this.newRole.roleType || "organization",
     };
     this.store.dispatch(
       AccountActions.createGroupRole({groupId: this.groupId, role}),
     );
-    this.newRole = {name: "", parentRoleId: undefined};
+    this.newRole = {
+      name: "",
+      parentRoleId: undefined,
+      roleType: "organization",
+    };
   }
 
   updateRole(role: GroupRole) {
@@ -116,5 +125,9 @@ export class RoleManagementPage implements OnInit {
     if (!child || !child.parentRoleId) return false;
     if (child.parentRoleId === ancestorId) return true;
     return this.isDescendant(child.parentRoleId, ancestorId, roles, visited);
+  }
+
+  getRoleIcon(role: GroupRole): string {
+    return role.roleType === "user" ? "people" : "business";
   }
 }

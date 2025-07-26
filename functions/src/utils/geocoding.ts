@@ -50,11 +50,19 @@ export async function geocodeAddress(
   }
 
   try {
-    const apiKey = googleApiKey.value();
+    // Try to get API key from secret first, fall back to environment variable
+    let apiKey: string | undefined;
+
+    try {
+      apiKey = googleApiKey.value();
+    } catch (error) {
+      // Secret might not be accessible (e.g., in CI), try environment variable
+      apiKey = process.env.GOOGLE_API_KEY;
+    }
 
     if (!apiKey) {
       logger.error(
-        "Google API key is missing. Please set GOOGLE_API_KEY secret.",
+        "Google API key is missing. Please set GOOGLE_API_KEY secret or environment variable.",
       );
       return null;
     }

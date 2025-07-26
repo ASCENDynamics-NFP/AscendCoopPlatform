@@ -79,13 +79,11 @@ export class RegistrationPage implements OnInit {
       switchMap((accountId) => this.store.select(selectAccountById(accountId))),
     );
 
-    // Combine loading state and account data to determine when data is ready
-    this.isDataReady$ = combineLatest([this.loading$, this.account$]).pipe(
-      map(([loading, account]) => {
-        // Data is ready when not loading (regardless of account existence)
-        return !loading;
-      }),
-      startWith(false), // Start with false to show loading initially
+    // For registration page, show content immediately after initial setup
+    // Use a timeout to give the observables time to initialize
+    this.isDataReady$ = this.accountId$.pipe(
+      map(() => true), // Once we have accountId, we're ready
+      startWith(false), // Brief initial loading state
     );
   }
 

@@ -23,7 +23,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div *ngIf="account$ | async as account; else loading">
+  <div *ngIf="isDataReady$ | async; else loading">
     <!-- Only show content if account exists -->
     <!-- <ion-header collapse="condense">
       <ion-toolbar>
@@ -38,7 +38,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-text>
     </div>
 
-    <ion-grid *ngIf="account$ | async as account">
+    <ion-grid>
       <ion-row>
         <ion-col size-md="6">
           <ion-card
@@ -70,7 +70,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <div *ngIf="selectedType">
             <!-- Unified Registration Component -->
             <app-unified-registration
-              [account]="account"
+              [account]="(account$ | async) || undefined"
               [accountType]="selectedType"
               [redirectSubmit]="true"
             >

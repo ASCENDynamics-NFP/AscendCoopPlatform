@@ -205,9 +205,8 @@ export class UnifiedRegistrationComponent implements OnChanges {
             take(1),
           )
           .subscribe(() => {
-            const redirectPath = this.isGroupRegistration
-              ? `/account/${this.account!.id}`
-              : `/account/registration/${this.account!.id}`;
+            // Both user and group registrations should redirect to the profile page
+            const redirectPath = `/account/${this.account!.id}`;
             this.router.navigateByUrl(redirectPath);
           });
       }

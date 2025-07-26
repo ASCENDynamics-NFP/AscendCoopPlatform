@@ -82,6 +82,25 @@ export class SignupPage implements OnInit {
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
+
+    // Add structured data for signup page
+    this.metaService.addStructuredData({
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "Sign Up | ASCENDynamics NFP",
+      description:
+        "Create an account on ASCENDynamics NFP to find volunteer opportunities and connect with nonprofits.",
+      url: "https://app.ASCENDynamics.org/signup",
+      isPartOf: {
+        "@type": "WebSite",
+        name: "ASCENDynamics NFP",
+        url: "https://app.ASCENDynamics.org",
+      },
+      potentialAction: {
+        "@type": "RegisterAction",
+        target: "https://app.ASCENDynamics.org/signup",
+      },
+    });
   }
 
   // Initialize form and state selectors in ngOnInit

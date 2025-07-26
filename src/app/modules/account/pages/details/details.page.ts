@@ -259,6 +259,46 @@ export class DetailsPage implements OnInit, ViewWillEnter {
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
+
+    // Add structured data for profile/group pages
+    if (account.type === "user") {
+      this.metaService.addStructuredData({
+        "@context": "https://schema.org",
+        "@type": "Person",
+        name: account.name,
+        description:
+          account.description ||
+          `${account.name}'s profile on ASCENDynamics NFP`,
+        url: `https://app.ASCENDynamics.org/account/${account.id}`,
+        image:
+          account.iconImage ||
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        memberOf: {
+          "@type": "Organization",
+          name: "ASCENDynamics NFP",
+        },
+        knowsAbout: ["Volunteering", "Community Service", "Nonprofit Work"],
+      });
+    } else {
+      this.metaService.addStructuredData({
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        name: account.name,
+        description:
+          account.description ||
+          `${account.name} organization on ASCENDynamics NFP`,
+        url: `https://app.ASCENDynamics.org/account/${account.id}`,
+        logo:
+          account.iconImage ||
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        parentOrganization: {
+          "@type": "Organization",
+          name: "ASCENDynamics NFP",
+        },
+        areaServed: "Global",
+        knowsAbout: ["Volunteering", "Community Service", "Nonprofit Work"],
+      });
+    }
   }
 
   private setDefaultMeta() {
@@ -283,5 +323,24 @@ export class DetailsPage implements OnInit, ViewWillEnter {
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
+
+    // Add structured data for default profile page
+    this.metaService.addStructuredData({
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "Profile | ASCENDynamics NFP",
+      description:
+        "View and manage your profile details, volunteering history, and preferences on ASCENDynamics NFP.",
+      url: "https://app.ASCENDynamics.org/profile",
+      isPartOf: {
+        "@type": "WebSite",
+        name: "ASCENDynamics NFP",
+        url: "https://app.ASCENDynamics.org",
+      },
+      potentialAction: {
+        "@type": "ViewAction",
+        target: "https://app.ASCENDynamics.org/profile",
+      },
+    });
   }
 }

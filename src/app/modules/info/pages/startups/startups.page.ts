@@ -59,6 +59,26 @@ export class StartupsPage implements OnInit {
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
       },
     );
+
+    // Add structured data for startup resources
+    this.metaService.addStructuredData({
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "Startup Resources | ASCENDynamics NFP",
+      description:
+        "Launch your cooperative with ASCENDynamics NFP and learn SEO fundamentals.",
+      url: "https://app.ASCENDynamics.org/info/startups",
+      mainEntity: {
+        "@type": "Service",
+        name: "Cooperative Startup Support",
+        provider: {
+          "@type": "Organization",
+          name: "ASCENDynamics NFP",
+        },
+        description:
+          "Resources, tools, and SEO advice for worker-owned startups and cooperatives",
+      },
+    });
   }
 
   async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {

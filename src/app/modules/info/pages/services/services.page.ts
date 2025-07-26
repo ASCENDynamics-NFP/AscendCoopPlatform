@@ -59,6 +59,27 @@ export class ServicesPage implements OnInit {
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
       },
     );
+
+    // Add structured data for services
+    this.metaService.addStructuredData({
+      "@context": "https://schema.org",
+      "@type": "Service",
+      serviceType: "Business Consulting",
+      provider: {
+        "@type": "Organization",
+        name: "ASCENDynamics NFP",
+        url: "https://app.ASCENDynamics.org",
+      },
+      name: "Cooperative Development Services",
+      description:
+        "Technical assistance, development, and SEO-driven marketing services for cooperatives and nonprofits.",
+      url: "https://app.ASCENDynamics.org/info/services",
+      offers: {
+        "@type": "Offer",
+        description:
+          "Comprehensive support including funding assistance, networking opportunities, and SEO expertise.",
+      },
+    });
   }
 
   async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {

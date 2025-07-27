@@ -111,15 +111,6 @@ jobs:
       - name: Generate environment file
         run: node generate-env.js
 
-      # Step 6.5: Authenticate to Google Cloud for Secret Manager access
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v1
-        with:
-          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}'
-          project_id: '${{ secrets.DEV_FIREBASE_PROJECT_ID }}'
-          export_environment_variables: true
-          create_credentials_file: true
-
       # Step 7: Build the project (Development)
       - name: Build Project
         run: npm run build

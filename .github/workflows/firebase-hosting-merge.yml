@@ -78,6 +78,15 @@ jobs:
       - name: Install Functions Dependencies
         run: npm ci --prefix functions
 
+      # Authenticate to Google Cloud (BEFORE function tests)
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}'
+          project_id: '${{ secrets.DEV_FIREBASE_PROJECT_ID }}'
+          export_environment_variables: true
+          create_credentials_file: true
+
       # Run Firebase function tests
       - name: Run Firebase Function Tests
         run: |
@@ -91,15 +100,6 @@ jobs:
         run: |
           npm run generate-env:dev
           npx ng build --configuration development
-
-      # Authenticate to Google Cloud
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v1
-        with:
-          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASCENDCOOPPLATFORM_DEV }}'
-          project_id: '${{ secrets.DEV_FIREBASE_PROJECT_ID }}'
-          export_environment_variables: true
-          create_credentials_file: true
 
       # Set up Cloud SDK
       - name: Set up Cloud SDK

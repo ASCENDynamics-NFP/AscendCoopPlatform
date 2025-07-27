@@ -37,8 +37,35 @@
 //   logger.info("Hello logs!", {structuredData: true});
 //   response.send("Hello from Firebase!");
 // });
-export * from "./auth/user/triggers/onCreate"; // triggers
-export * from "./auth/user/triggers/onDelete"; // triggers
-export * from "./database/accounts/relatedAccounts/triggers/onCreate"; // triggers
-export * from "./database/accounts/relatedAccounts/triggers/onDelete"; // triggers
-export * from "./database/accounts/relatedAccounts/triggers/onUpdate"; // triggers
+// Auth triggers
+export {createUserProfile} from "./auth/user/triggers/onCreate";
+export {onUserRecordDeletion} from "./auth/user/triggers/onDelete";
+
+// Account triggers
+export {onCreateAccount} from "./database/accounts/triggers/onCreate";
+export {onUpdateAccount} from "./database/accounts/triggers/onUpdate";
+
+// Related accounts triggers
+export {onCreateRelatedAccount} from "./database/accounts/relatedAccounts/triggers/onCreate";
+export {onDeleteRelatedAccount} from "./database/accounts/relatedAccounts/triggers/onDelete";
+export {onUpdateRelatedAccount} from "./database/accounts/relatedAccounts/triggers/onUpdate";
+
+// Related listings triggers
+export {onDeleteAccountsRelatedListing} from "./database/accounts/relatedListings/triggers/onDelete";
+
+// Listing triggers
+export {onCreateListing} from "./database/listings/triggers/onCreate";
+export {onDeleteListing} from "./database/listings/triggers/onDelete";
+export {onUpdateListing} from "./database/listings/triggers/onUpdate";
+// Time entry triggers
+export {onCreateTimeEntry} from "./database/timeEntries/triggers/onCreate";
+export {onDeleteTimeEntry} from "./database/timeEntries/triggers/onDelete";
+export {onUpdateTimeEntry} from "./database/timeEntries/triggers/onUpdate";
+
+// Listings related accounts triggers
+export {onCreateListingsRelatedAccount} from "./database/listings/relatedAccounts/triggers/onCreate";
+export {onUpdateListingsRelatedAccount} from "./database/listings/relatedAccounts/triggers/onUpdate";
+
+// HTTP functions
+export {getHomepageListings} from "./functions/listings/homepage";
+export {submitLead} from "./functions/contactform";

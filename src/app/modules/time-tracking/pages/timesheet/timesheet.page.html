@@ -1,0 +1,128 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Timesheet</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="timesheet-content">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Timesheet</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="content-container">
+    <!-- Status and Group Info -->
+    <div class="timesheet-info" *ngIf="account$ | async as account">
+      <div class="group-info">
+        <ion-icon name="business-outline"></ion-icon>
+        <span class="group-name">{{ account.name }}</span>
+      </div>
+      <div class="status-info">
+        <ion-badge [color]="getTimesheetStatusColor()">
+          <ion-icon [name]="getTimesheetStatusIcon()" slot="start"></ion-icon>
+          {{ getTimesheetStatusText() }}
+        </ion-badge>
+      </div>
+    </div>
+
+    <!-- Week Navigation -->
+    <div class="week-navigation">
+      <ion-button
+        (click)="previousWeek()"
+        fill="outline"
+        size="default"
+        class="nav-button"
+      >
+        <ion-icon name="chevron-back" slot="start"></ion-icon>
+        <span class="nav-text">Previous</span>
+      </ion-button>
+
+      <div class="current-week">
+        <h2>{{ getCurrentWeekLabel() }}</h2>
+        <p class="week-subtitle">{{ getCurrentWeekRange() }}</p>
+
+        <!-- Return to Current Week Button -->
+        <ion-button
+          *ngIf="!isViewingCurrentWeek()"
+          (click)="returnToCurrentWeek()"
+          fill="outline"
+          size="small"
+          color="primary"
+          class="return-current-week-btn"
+        >
+          <ion-icon name="calendar" slot="start"></ion-icon>
+          Return to Current Week
+        </ion-button>
+      </div>
+
+      <ion-button
+        (click)="nextWeek()"
+        fill="outline"
+        size="default"
+        class="nav-button"
+      >
+        <span class="nav-text">Next</span>
+        <ion-icon name="chevron-forward" slot="end"></ion-icon>
+      </ion-button>
+    </div>
+
+    <!-- Week View Component -->
+    <div class="week-view-container">
+      <app-week-view
+        [weekStart]="currentWeekStart"
+        [availableProjects]="availableProjects"
+        [entries]="entries"
+        [accountId]="accountId"
+        [userId]="userId"
+        [initialRows]="initialRows"
+        [readonly]="isCurrentWeekApproved()"
+      >
+      </app-week-view>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <ion-button
+        *ngIf="!isCurrentWeekApproved()"
+        expand="block"
+        color="primary"
+        (click)="saveTimesheet()"
+        class="save-button"
+      >
+        <ion-icon name="save" slot="start"></ion-icon>
+        Save Timesheet
+      </ion-button>
+
+      <ion-button
+        *ngIf="!isCurrentWeekApproved()"
+        expand="block"
+        fill="outline"
+        color="secondary"
+        (click)="submitForApproval()"
+        class="submit-button"
+      >
+        <ion-icon name="send" slot="start"></ion-icon>
+        Submit for Approval
+      </ion-button>
+
+      <!-- Message for approved weeks -->
+      <ion-card *ngIf="isCurrentWeekApproved()" class="approved-message">
+        <ion-card-content>
+          <div class="approved-content">
+            <ion-icon name="checkmark-circle" color="success"></ion-icon>
+            <div>
+              <h3>Week Approved</h3>
+              <p>
+                This week's timesheet has been approved and cannot be modified.
+              </p>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+</ion-content>

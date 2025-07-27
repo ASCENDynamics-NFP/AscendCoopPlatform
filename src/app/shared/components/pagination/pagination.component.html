@@ -1,0 +1,76 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<ion-toolbar class="pagination-toolbar">
+  <ng-container
+    class="pagination-range"
+    *ngIf="currentPageRange$ | async as range"
+  >
+    <ion-text>
+      {{ range.start }}-{{ range.end }} of {{ range.total }}
+    </ion-text>
+  </ng-container>
+
+  <ng-container *ngIf="pagination$ | async as pageData">
+    <div class="pagination-controls">
+      <ion-button
+        fill="clear"
+        (click)="previousPage()"
+        [disabled]="pageData.currentPage === 1"
+      >
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </ion-button>
+
+      <ion-button
+        *ngFor="let page of pageData.pageNumbers"
+        fill="clear"
+        [color]="pageData.currentPage === page ? 'primary' : 'medium'"
+        (click)="goToPage(page)"
+      >
+        {{ page }}
+      </ion-button>
+
+      <ng-container
+        *ngIf="
+          pageData.totalPages > maxVisiblePages &&
+          pageData.pageNumbers.length &&
+          pageData.pageNumbers[pageData.pageNumbers.length - 1] <
+            pageData.totalPages
+        "
+      >
+        <ion-text>...</ion-text>
+        <ion-button
+          fill="clear"
+          (click)="goToPage(pageData.totalPages)"
+          [disabled]="pageData.currentPage === pageData.totalPages"
+        >
+          {{ pageData.totalPages }}
+        </ion-button>
+      </ng-container>
+
+      <ion-button
+        fill="clear"
+        (click)="nextPage()"
+        [disabled]="pageData.currentPage === pageData.totalPages"
+      >
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+      </ion-button>
+    </div>
+  </ng-container>
+</ion-toolbar>

@@ -1,0 +1,167 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Projects</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Loading State -->
+  <ion-loading
+    *ngIf="loading$ | async"
+    message="Loading projects..."
+  ></ion-loading>
+
+  <!-- Error State -->
+  <ion-item *ngIf="error$ | async as error" class="error-item">
+    <ion-icon name="alert-circle" slot="start" color="danger"></ion-icon>
+    <ion-label>
+      <h3>Error</h3>
+      <p>{{ error }}</p>
+    </ion-label>
+  </ion-item>
+
+  <!-- Add New Project (Admin Only) -->
+  <ion-card *ngIf="(isGroupAdmin$ | async)" class="add-project-card">
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="add-circle" class="title-icon"></ion-icon>
+        Add New Project
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item lines="none">
+        <ion-input
+          placeholder="Enter project name..."
+          [(ngModel)]="newProjectName"
+          (keyup.enter)="addProject()"
+          clearInput="true"
+        ></ion-input>
+        <ion-button
+          slot="end"
+          (click)="addProject()"
+          [disabled]="!newProjectName.trim()"
+          fill="solid"
+          size="small"
+        >
+          <ion-icon name="add" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Active Projects Section -->
+  <ion-card *ngIf="!(loading$ | async)" class="projects-section">
+    <ion-card-header class="section-header">
+      <ion-card-title>
+        <ion-icon name="folder-open" class="title-icon"></ion-icon>
+        Active Projects
+        <ion-badge color="primary" class="count-badge">
+          {{ (activeProjects$ | async)?.length || 0 }}
+        </ion-badge>
+      </ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content class="no-padding">
+      <div *ngIf="(activeProjects$ | async)?.length === 0" class="empty-state">
+        <ion-icon name="folder-open-outline" class="empty-icon"></ion-icon>
+        <p>No active projects yet</p>
+        <p class="empty-subtitle" *ngIf="!(isGroupAdmin$ | async)">
+          Contact your group admin to create projects
+        </p>
+      </div>
+
+      <ion-list *ngIf="(activeProjects$ | async)?.length! > 0" lines="none">
+        <ion-item
+          *ngFor="let proj of (activeProjects$ | async); trackBy: trackById"
+          class="project-item active-project"
+        >
+          <ion-icon
+            name="radio-button-on"
+            slot="start"
+            color="success"
+          ></ion-icon>
+
+          <div class="project-content">
+            <ng-container *ngIf="(isGroupAdmin$ | async); else viewProject">
+              <ion-input
+                [value]="proj.name"
+                (ionChange)="updateProject(proj, $event.detail.value)"
+                class="project-name-input"
+              ></ion-input>
+            </ng-container>
+
+            <ng-template #viewProject>
+              <ion-label class="project-name">{{ proj.name }}</ion-label>
+            </ng-template>
+          </div>
+
+          <div
+            slot="end"
+            class="project-actions"
+            *ngIf="(isGroupAdmin$ | async)"
+          >
+            <ion-button
+              fill="clear"
+              size="small"
+              (click)="toggleArchive(proj, true)"
+              color="medium"
+            >
+              <ion-icon name="archive" slot="icon-only"></ion-icon>
+            </ion-button>
+          </div>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Archived Projects Section -->
+  <ion-card
+    *ngIf="!(loading$ | async) && (archivedProjects$ | async)?.length! > 0"
+    class="projects-section archived-section"
+  >
+    <ion-card-header class="section-header">
+      <ion-card-title>
+        <ion-icon name="archive" class="title-icon"></ion-icon>
+        Archived Projects
+        <ion-badge color="medium" class="count-badge">
+          {{ (archivedProjects$ | async)?.length || 0 }}
+        </ion-badge>
+      </ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content class="no-padding">
+      <ion-list lines="none">
+        <ion-item
+          *ngFor="let proj of (archivedProjects$ | async); trackBy: trackById"
+          class="project-item archived-project"
+        >
+          <ion-icon name="archive" slot="start" color="medium"></ion-icon>
+
+          <div class="project-content">
+            <ion-label class="project-name">
+              {{ proj.name }}
+              <ion-badge color="medium" class="archived-badge"
+                >Archived</ion-badge
+              >
+            </ion-label>
+          </div>
+
+          <div
+            slot="end"
+            class="project-actions"
+            *ngIf="(isGroupAdmin$ | async)"
+          >
+            <ion-button
+              fill="clear"
+              size="small"
+              (click)="toggleArchive(proj, false)"
+              color="primary"
+            >
+              <ion-icon name="arrow-undo" slot="icon-only"></ion-icon>
+            </ion-button>
+          </div>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

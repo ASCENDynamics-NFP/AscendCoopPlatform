@@ -1,0 +1,248 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<!-- src/app/modules/listings/pages/apply/apply.page.html -->
+
+<ion-header>
+  <app-header
+    [defaultHref]="'/listings/' + listingId"
+    [title]="'Apply for ' + (listing$ | async)?.title"
+  ></app-header>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="applyForm" (ngSubmit)="onSubmit()">
+    <ion-grid>
+      <!-- Application Details Card -->
+      <ion-row>
+        <ion-col size="12">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Apply to this Opportunity</ion-card-title>
+              <ion-card-subtitle>
+                Please complete the form below to apply to this position
+              </ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content
+              ><ion-grid>
+                <!-- First Name -->
+                <ion-row>
+                  <ion-col size="12">
+                    <ion-item lines="none">
+                      <ion-input
+                        formControlName="firstName"
+                        label="First Name"
+                        label-placement="floating"
+                        fill="outline"
+                        placeholder="Enter your first name"
+                      ></ion-input>
+                    </ion-item>
+                    <ion-note
+                      *ngIf="applyForm.get('firstName')?.touched && applyForm.get('firstName')?.errors?.['required']"
+                      color="danger"
+                    >
+                      First Name is required.
+                    </ion-note>
+                    <ion-note
+                      *ngIf="applyForm.get('firstName')?.touched && applyForm.get('firstName')?.errors?.['minlength']"
+                      color="danger"
+                    >
+                      First Name must be at least 2 characters long.
+                    </ion-note>
+                  </ion-col>
+                </ion-row>
+
+                <!-- Last Name -->
+                <ion-row>
+                  <ion-col size="12">
+                    <ion-item lines="none">
+                      <ion-input
+                        formControlName="lastName"
+                        label="Last Name"
+                        label-placement="floating"
+                        fill="outline"
+                        placeholder="Enter your last name"
+                      ></ion-input>
+                    </ion-item>
+                    <ion-note
+                      *ngIf="applyForm.get('lastName')?.touched && applyForm.get('lastName')?.errors?.['required']"
+                      color="danger"
+                    >
+                      Last Name is required.
+                    </ion-note>
+                    <ion-note
+                      *ngIf="applyForm.get('lastName')?.touched && applyForm.get('lastName')?.errors?.['minlength']"
+                      color="danger"
+                    >
+                      Last Name must be at least 2 characters long.
+                    </ion-note>
+                  </ion-col>
+                </ion-row>
+
+                <!-- Email -->
+                <ion-row>
+                  <ion-col size="12">
+                    <ion-item lines="none">
+                      <ion-input
+                        formControlName="email"
+                        type="email"
+                        label="Email Address"
+                        label-placement="floating"
+                        fill="outline"
+                        placeholder="Enter your email address"
+                      ></ion-input>
+                    </ion-item>
+                    <ion-note
+                      *ngIf="applyForm.get('email')?.touched && applyForm.get('email')?.errors?.['required']"
+                      color="danger"
+                    >
+                      Email is required.
+                    </ion-note>
+                    <ion-note
+                      *ngIf="applyForm.get('email')?.touched && applyForm.get('email')?.errors?.['email']"
+                      color="danger"
+                    >
+                      Please enter a valid email address.
+                    </ion-note>
+                  </ion-col>
+                </ion-row>
+
+                <!-- Phone -->
+                <ion-row>
+                  <ion-col size="12">
+                    <ion-item lines="none">
+                      <ion-input
+                        formControlName="phone"
+                        type="tel"
+                        label="Phone Number"
+                        label-placement="floating"
+                        fill="outline"
+                        placeholder="Enter your phone number"
+                        (ionInput)="formatPhoneNumber($event)"
+                      ></ion-input>
+                    </ion-item>
+                    <ion-note
+                      *ngIf="applyForm.get('phone')?.touched && applyForm.get('phone')?.errors?.['required']"
+                      color="danger"
+                    >
+                      Phone Number is required.
+                    </ion-note>
+                    <ion-note
+                      *ngIf="applyForm.get('phone')?.touched && applyForm.get('phone')?.errors?.['minlength']"
+                      color="danger"
+                    >
+                      Phone Number must be at least 7 characters long.
+                    </ion-note>
+                  </ion-col>
+                </ion-row>
+
+                <!-- Notes Textarea -->
+                <ion-row>
+                  <ion-col size="12">
+                    <ion-item lines="none">
+                      <ion-textarea
+                        formControlName="notes"
+                        label="Notes"
+                        label-placement="floating"
+                        fill="outline"
+                        placeholder="Enter any additional information"
+                        auto-grow="true"
+                      ></ion-textarea>
+                    </ion-item>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
+      <!-- Resume Upload -->
+      <ion-row>
+        <ion-col size="12">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Resume (if applicable)</ion-card-title>
+              <ion-card-subtitle>
+                Resume must be uploaded in PDF format (Max 10 MB)
+              </ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item lines="none">
+                <ion-label>Upload Resume</ion-label>
+                <ion-button fill="outline" (click)="resumeInput.click()">
+                  Choose File
+                </ion-button>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  (change)="onFileSelect($event, 'resume')"
+                  #resumeInput
+                  hidden
+                />
+              </ion-item>
+              <ion-text *ngIf="resumeFileName">
+                Selected File: {{ resumeFileName }}
+              </ion-text>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
+      <!-- Cover Letter Upload -->
+      <ion-row>
+        <ion-col size="12">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Cover Letter (if applicable)</ion-card-title>
+              <ion-card-subtitle>Maximum size: 10 MB</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item lines="none">
+                <ion-label>Upload Cover Letter</ion-label>
+                <ion-button fill="outline" (click)="coverLetterInput.click()">
+                  Choose File
+                </ion-button>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  (change)="onFileSelect($event, 'coverLetter')"
+                  #coverLetterInput
+                  hidden
+                />
+              </ion-item>
+              <ion-text *ngIf="coverLetterFileName">
+                Selected File: {{ coverLetterFileName }}
+              </ion-text>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
+      <!-- Submit Button -->
+      <ion-row>
+        <ion-col>
+          <ion-button expand="block" color="primary" type="submit">
+            Submit
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </form>
+</ion-content>

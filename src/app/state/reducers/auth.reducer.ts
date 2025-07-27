@@ -21,7 +21,7 @@
 
 import {createReducer, on} from "@ngrx/store";
 import * as AuthActions from "../actions/auth.actions";
-import {AuthUser} from "../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 
 export interface AuthState {
   user: AuthUser | null;
@@ -49,6 +49,7 @@ export const authReducer = createReducer(
     AuthActions.confirmSignInWithEmailLink,
     AuthActions.processSignInLink,
     AuthActions.initializeAuth,
+    AuthActions.updateAuthUser,
     (state) => ({
       ...state,
       loading: true,
@@ -59,10 +60,10 @@ export const authReducer = createReducer(
   // Success Actions
   on(
     AuthActions.signUpSuccess,
-    AuthActions.signInSuccess,
     AuthActions.signInWithGoogleSuccess,
     AuthActions.confirmSignInWithEmailLinkSuccess,
     AuthActions.processSignInLinkSuccess,
+    AuthActions.updateAuthUserSuccess,
     (state, {user}) => ({
       ...state,
       user,
@@ -70,6 +71,12 @@ export const authReducer = createReducer(
       error: null,
     }),
   ),
+
+  on(AuthActions.signInSuccess, (state) => ({
+    ...state,
+    error: null,
+    loading: false,
+  })),
 
   on(AuthActions.signOutSuccess, () => ({
     ...initialState,
@@ -95,6 +102,7 @@ export const authReducer = createReducer(
     AuthActions.sendSignInLinkToEmailFailure,
     AuthActions.confirmSignInWithEmailLinkFailure,
     AuthActions.processSignInLinkFailure,
+    AuthActions.updateAuthUserFailure,
     (state, {error}) => ({
       ...state,
       loading: false,

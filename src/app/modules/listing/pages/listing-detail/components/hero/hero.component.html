@@ -1,0 +1,103 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<div class="header-image">
+  <img
+    [src]="listing.heroImage || 'assets/image/orghero.png'"
+    alt="Header Background"
+  />
+</div>
+
+<div class="listing-header">
+  <div class="listing-info">
+    <div class="title-section">
+      <div class="hero-image-small" *ngIf="listing.iconImage">
+        <img [src]="listing.iconImage" alt="Listing Hero" />
+      </div>
+      <div class="title-content">
+        <h2>{{ listing.title }}</h2>
+        <h3>{{ listing.organization }}</h3>
+      </div>
+    </div>
+
+    <div class="details-icons">
+      <div class="detail-item">
+        <ion-icon name="heart-outline" color="primary"></ion-icon>
+        <span>{{ listing.type | titlecase }}</span>
+      </div>
+      <div class="detail-item">
+        <ion-icon
+          [name]="listing.remote ? 'cloud-outline' : 'business-outline'"
+          color="primary"
+        ></ion-icon>
+        <span>{{ listing.remote ? "Remote" : "On-site" }}</span>
+      </div>
+      <div class="detail-item">
+        <ion-icon name="location-outline" color="primary"></ion-icon>
+        <span>{{ getCities() }}</span>
+      </div>
+      <div class="detail-item">
+        <ion-icon name="time-outline" color="primary"></ion-icon>
+        <span>{{ listing.timeCommitment.hoursPerWeek }} hrs/week</span>
+      </div>
+      <div class="detail-item">
+        <ion-icon name="briefcase-outline" color="primary"></ion-icon>
+        <span>{{ listing.status | titlecase }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="listing-actions" *ngIf="showButtons">
+    <ion-button
+      *ngIf="!isOwner"
+      fill="outline"
+      [disabled]="listing.status !== 'active'"
+      [routerLink]="['/listings', listing.id, 'apply']"
+    >
+      Apply Now
+    </ion-button>
+    <ion-button
+      *ngIf="isOwner"
+      fill="outline"
+      size="small"
+      [routerLink]="['/listings', listing.id, 'applicants']"
+    >
+      <ion-icon name="people-outline"></ion-icon> View Applicants
+    </ion-button>
+    <ion-button *ngIf="isOwner" (click)="togglePublishStatus()" color="primary">
+      <ion-icon
+        [name]="
+          listing.status === 'active'
+            ? 'pencil-outline'
+            : 'cloud-upload-outline'
+        "
+        slot="start"
+      ></ion-icon>
+      {{ listing.status === "active" ? "Unpublish" : "Publish" }} Listing
+    </ion-button>
+    <ion-button
+      *ngIf="isOwner"
+      fill="outline"
+      size="small"
+      [routerLink]="['/listings', listing.id, 'edit']"
+    >
+      <ion-icon name="pencil-outline"></ion-icon> Edit
+    </ion-button>
+  </div>
+</div>

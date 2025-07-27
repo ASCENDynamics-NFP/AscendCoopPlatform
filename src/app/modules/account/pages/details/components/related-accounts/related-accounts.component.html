@@ -21,13 +21,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <ion-card-header>
     <ion-card-title>{{ title }}</ion-card-title>
     <ion-card-subtitle
-      >{{ relatedAccounts.length }} {{ title.toLowerCase() }}</ion-card-subtitle
+      >{{ filteredRelatedAccounts.length }}
+      {{ title.toLowerCase() }}</ion-card-subtitle
     >
   </ion-card-header>
   <ion-card-content>
     <ion-list>
       <ion-item
-        *ngFor="let account of relatedAccounts | slice: 0 : 4"
+        *ngFor="let account of filteredRelatedAccounts | slice: 0 : 4"
         button
         (click)="goToRelatedAccount(account.id)"
       >

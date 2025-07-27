@@ -1,0 +1,125 @@
+<ion-header [translucent]="true">
+  <app-header title="Event Calendar"></app-header>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- <ion-header collapse="condense">
+    <app-header title="Event Calendar"></app-header>
+  </ion-header> -->
+  <ion-grid fixed>
+    <ion-card class="ion-margin">
+      <ion-card-header>
+        <ion-card-title>Explore Our Upcoming Events</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          Stay engaged with our community through events and workshops. Join us
+          in making a difference by participating in our upcoming trainings,
+          networking events, and collaborative workshops. Our event calendar is
+          your gateway to opportunities where you can learn, connect, and
+          contribute to our mission in real time.
+        </p>
+        <p>
+          Whether you're a volunteer looking to build your skills, a nonprofit
+          professional seeking partnerships, or a donor interested in our
+          impact, there's an event for you. We host sessions on topics like
+          open-source technology for nonprofits, volunteer management and
+          tracking, fundraising strategies, and SEO best practices for
+          cooperatives. Many events are interactive, giving you a chance to
+          share ideas and forge new collaborations.
+        </p>
+        <p>
+          Check out the calendar below for our latest schedule. Don't miss out –
+          mark your calendar and be part of our next event! We look forward to
+          collaborating with you at an upcoming workshop, webinar, or community
+          gathering.
+        </p>
+      </ion-card-content>
+    </ion-card>
+    <!-- Content section-->
+    <ion-card class="ion-margin">
+      <iframe
+        src="https://calendar.google.com/calendar/embed?src=c_2fe7a9f24d9592ffd143dcecc2aaaef9d7ce7ef2c65ee0abcff57155a83caa99%40group.calendar.google.com&ctz=America%2FIndiana%2FKnox"
+        style="border: 0"
+        width="100%"
+        height="600"
+        frameborder="0"
+        scrolling="no"
+      ></iframe>
+    </ion-card>
+    <!-- Content section-->
+    <!-- <section class="py-5">
+        <div class="container my-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <h2>Social Media</h2>
+                    <p class="lead">Follow us on social media to stay updated on the latest news and events.</p>
+                    <p class="mb-0"><a href="https://www.facebook.com/ASCENDynamicsNFP" target="_blank">Facebook</a></p>
+                    <p class="mb-0"><a href="https://www.linkedin.com/company/ascendynamics-nfp"
+                            target="_blank">LinkedIn</a></p>
+                </div>
+            </div>
+        </div>
+    </section> -->
+    <!-- Content section-->
+    <!-- <section class="py-5">
+            <div class="container my-5">
+                <div class="row justify-content-center">
+                    <div class="col-lg-6">
+                        <h2>Map</h2>
+                        <p class="lead">Visit us at our office. You can find us at the following location:</p>
+                        <p class="mb-0">Map: A map showing the location of ASCENDynamics' office.</p>
+                    </div>
+                </div>
+            </div>
+        </section> -->
+  </ion-grid>
+  <ion-footer>
+    <div class="footer">
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" size-md="4" class="footer-logo">
+            <img
+              src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
+              alt="ASCENDynamics Logo"
+            />
+          </ion-col>
+          <ion-col size="12" size-md="4" class="footer-nav">
+            <h3>Quick Links</h3>
+            <ul>
+              <li>
+                <a (click)="openLegalModal('privacyPolicy')">Privacy Policy</a>
+              </li>
+              <li>
+                <a (click)="openLegalModal('termsOfUse')">Terms of Service</a>
+              </li>
+            </ul>
+          </ion-col>
+          <ion-col size="12" size-md="4" class="footer-social">
+            <h3>Follow Us</h3>
+            <ion-buttons class="social-buttons">
+              <ion-button
+                href="https://github.com/ASCENDynamics-NFP"
+                target="_blank"
+                ><ion-icon slot="icon-only" name="logo-github"></ion-icon
+              ></ion-button>
+              <ion-button
+                href="https://www.facebook.com/ASCENDynamicsNFP"
+                target="_blank"
+                ><ion-icon slot="icon-only" name="logo-facebook"></ion-icon
+              ></ion-button>
+              <ion-button
+                href="https://www.linkedin.com/company/ascendynamics-nfp"
+                target="_blank"
+                ><ion-icon slot="icon-only" name="logo-linkedin"></ion-icon
+              ></ion-button>
+            </ion-buttons>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+      <div class="footer-bottom">
+        <p>&copy; {{ currentYear }} ASCENDynamics NFP. All rights reserved.</p>
+      </div>
+    </div>
+  </ion-footer>
+</ion-content>

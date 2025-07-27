@@ -20,15 +20,16 @@
 // src/app/modules/account/pages/edit/edit.page.ts
 
 import {Component, OnInit} from "@angular/core";
-import {Account} from "../../../../models/account.model";
+import {Account} from "@shared/models/account.model";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, combineLatest} from "rxjs";
-import {map, tap} from "rxjs/operators";
-import {AuthUser} from "../../../../models/auth-user.model";
+import {map, tap, filter, switchMap, shareReplay, take} from "rxjs/operators";
+import {AuthUser} from "@shared/models/auth-user.model";
 import {Store} from "@ngrx/store";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
+import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
   selector: "app-edit",
@@ -40,42 +41,72 @@ export class EditPage implements OnInit {
   account$!: Observable<Account | undefined>;
   authUser$!: Observable<AuthUser | null>;
   isProfileOwner$!: Observable<boolean>;
-  private accountId: string | null = null;
 
   constructor(
     private activatedRoute: ActivatedRoute,
+    private metaService: MetaService,
     private router: Router,
     private store: Store,
-  ) {
-    this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
+  ) {}
+
+  ionViewWillEnter() {
+    this.metaService.updateMetaTags(
+      "Account | ASCENDynamics NFP",
+      "Manage your account details, preferences, and activities on ASCENDynamics NFP.",
+      "account, profile, settings, volunteer",
+      {
+        title: "Account | ASCENDynamics NFP",
+        description:
+          "Access and manage your account details on ASCENDynamics NFP.",
+        url: "https://app.ASCENDynamics.org/account",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+      },
+      {
+        card: "summary",
+        title: "Account | ASCENDynamics NFP",
+        description:
+          "Update your account details and settings on ASCENDynamics NFP.",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+      },
+    );
   }
 
   ngOnInit(): void {
     this.authUser$ = this.store.select(selectAuthUser);
 
-    if (this.accountId) {
-      // Dispatch the action to load the account
-      this.store.dispatch(
-        AccountActions.loadAccount({accountId: this.accountId}),
-      );
+    const accountId$ = this.activatedRoute.paramMap.pipe(
+      map((params) => params.get("accountId")),
+      filter((accountId): accountId is string => accountId !== null),
+      tap((accountId) => {
+        // Dispatch actions to load and select the account
+        this.store.dispatch(AccountActions.loadAccount({accountId}));
+      }),
+      shareReplay(1),
+    );
 
-      // Select the account based on the accountId
-      this.account$ = this.store.select(selectAccountById(this.accountId));
+    this.account$ = accountId$.pipe(
+      switchMap((accountId) => this.store.select(selectAccountById(accountId))),
+    );
 
-      // Check if the user is the profile owner
-      this.isProfileOwner$ = combineLatest([
-        this.authUser$,
-        this.account$,
-      ]).pipe(
-        map(([authUser, account]) => authUser?.uid === account?.id),
-        tap((isOwner) => {
-          if (!isOwner) {
+    // Check if the user is the profile owner
+    combineLatest([this.authUser$, this.account$])
+      .pipe(
+        take(1),
+        tap(([authUser, account]) => {
+          if (authUser && account && authUser.uid !== account.id) {
             // Redirect to unauthorized page if not the profile owner
-            this.router.navigate(["/" + this.accountId]);
+            this.router.navigate(["/account/" + account.id]);
           }
         }),
-      );
-    }
+      )
+      .subscribe();
+
+    // Observable to determine if the current user is the profile owner
+    this.isProfileOwner$ = combineLatest([this.authUser$, this.account$]).pipe(
+      map(([authUser, account]) => authUser?.uid === account?.id),
+    );
   }
 
   onItemSelected(form: string): void {

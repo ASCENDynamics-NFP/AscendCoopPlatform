@@ -22,13 +22,12 @@
 import {Component, OnDestroy, OnInit} from "@angular/core";
 import {Router} from "@angular/router";
 import {ModalController} from "@ionic/angular";
-import {AuthUser} from "../../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 import {TranslateService} from "@ngx-translate/core";
 import {Subscription, combineLatest} from "rxjs";
 import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../../state/selectors/auth.selectors";
 import {FeedbackModalComponent} from "../feedback-modal/feedback-modal.component";
-import {CreateGroupModalComponent} from "../../../modules/account/components/create-group-modal/create-group-modal.component";
 
 import {MenuItem} from "../../../shared/interfaces/menu-item.interface";
 
@@ -42,6 +41,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   user: AuthUser | null = null;
   menuPages: MenuItem[] = [];
   project: MenuItem[] = [];
+  infoPages: MenuItem[] = [];
 
   constructor(
     private store: Store,
@@ -53,11 +53,6 @@ export class MenuComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // Initialize project links
     this.project = [
-      {
-        title: "ASCENDynamics NFP",
-        url: "https://ascendynamics.org",
-        icon: "globe-outline",
-      },
       {
         title: "LinkedIn",
         url: "https://www.linkedin.com/company/ascendynamics-nfp",
@@ -90,6 +85,17 @@ export class MenuComponent implements OnInit, OnDestroy {
       },
     ];
 
+    // Initialize informational page links
+    this.infoPages = [
+      {title: "Home", url: "", icon: "globe-outline"},
+      {title: "About Us", url: "/info/about-us", icon: "information-circle"},
+      {title: "Services", url: "/info/services", icon: "construct"},
+      {title: "Startups", url: "/info/startups", icon: "rocket"},
+      {title: "Event Calendar", url: "/info/event-calendar", icon: "calendar"},
+      {title: "Our Team", url: "/info/team", icon: "people"},
+      {title: "Think Tank", url: "/info/think-tank", icon: "bulb"},
+    ];
+
     // Combine authUser and language change observables
     const authUser$ = this.store.select(selectAuthUser);
     const langChange$ = this.translate.onLangChange;
@@ -116,19 +122,19 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.menuPages = [
       {
         title: this.translate.instant("menu.login"),
-        url: "/login",
+        url: "/auth/login",
         icon: "log-in",
       },
       {
         title: this.translate.instant("menu.signup"),
-        url: "/signup",
+        url: "/auth/signup",
         icon: "person-add",
       },
-      {
-        title: this.translate.instant("menu.groups"),
-        url: "/group-list",
-        icon: "business",
-      },
+      // {
+      //   title: this.translate.instant("menu.groups"),
+      //   url: "/account/group-list",
+      //   icon: "business",
+      // },
     ];
   }
 
@@ -136,26 +142,33 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.menuPages = [
       {
         title: this.translate.instant("menu.profile"),
-        url: `/${this.user?.uid}`,
+        url: `/account/${this.user?.uid}`,
         icon: "person",
       },
       {
+        title: this.translate.instant("menu.listings"),
+        url: "/listings",
+        icon: "list",
+        hasButton: true,
+        buttonLink: "/listings/create",
+        buttonText: this.translate.instant("menu.create"),
+        buttonIcon: "add",
+      },
+      {
         title: this.translate.instant("menu.groups"),
-        url: "group-list",
+        url: "/account/group-list",
         icon: "business",
         // hasButton: true,
-        // buttonLink: "create-group",
-        // buttonText: this.translate.instant("menu.createGroup"),
         // buttonIcon: "add",
       },
       {
         title: this.translate.instant("menu.users"),
-        url: "users",
+        url: "/account/users",
         icon: "people",
       },
       {
         title: this.translate.instant("menu.settings"),
-        url: "settings",
+        url: "/account/settings",
         icon: "settings",
       },
       // {
@@ -164,23 +177,6 @@ export class MenuComponent implements OnInit, OnDestroy {
       //   icon: "newspaper",
       // },
     ];
-  }
-
-  // Handle button clicks in menu items
-  async handleButtonClick(buttonLink: string) {
-    if (!buttonLink) return;
-
-    if (buttonLink === "create-group") {
-      const modal = await this.modalCtrl.create({
-        component: CreateGroupModalComponent,
-      });
-      await modal.present();
-
-      const {data, role} = await modal.onWillDismiss();
-      if (role === "confirm" && data) {
-        this.router.navigate([`/${data.groupId}`]);
-      }
-    }
   }
 
   // Show feedback modal

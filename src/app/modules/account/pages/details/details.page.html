@@ -19,18 +19,22 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <!-- src/app/modules/account/pages/details/details.page.html -->
 
-<ng-container *ngIf="fullAccount$ | async as account; else loading">
-  <app-header [title]="account.name"></app-header>
+<ng-container *ngIf="account$ | async as account; else loadingOrPrivate">
+  <ion-header>
+    <app-header [title]="account.name"></app-header>
+  </ion-header>
 
   <ion-content [fullscreen]="true">
     <app-hero
       id="profile"
       [account]="account"
       [isProfileOwner]="(isProfileOwner$ | async) ?? false"
+      [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+      [isGroupMember]="(isGroupMember$ | async) ?? false"
+      [currentUserType]="(authUser$ | async)?.type ?? null"
     ></app-hero>
 
     <div class="tabs">
-      <a (click)="scrollToSection('profile')" class="tab-link">Profile</a>
       <a (click)="scrollToSection('contact')" class="tab-link"
         >Contact Information</a
       >
@@ -56,29 +60,45 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         class="tab-link"
         >Mutual Aid</a
       >
+      <a (click)="scrollToSection('listings')" class="tab-link">Listings</a>
     </div>
 
     <div>
-      <app-profile id="profile" [account]="account"></app-profile>
+      <app-profile [account]="account"></app-profile>
       <app-contact-information
         id="contact"
         [account]="account"
       ></app-contact-information>
+      <app-group-calendar
+        *ngIf="account.type === 'group'"
+        [account]="account"
+      ></app-group-calendar>
       <app-professional-info
         id="professional"
         *ngIf="account.type === 'user'"
         [professionalInfo]="account.professionalInformation"
       ></app-professional-info>
+
       <app-related-accounts
         id="users"
         [account]="account"
+        [relatedAccounts]="(relatedAccounts$ | async) ?? []"
         type="user"
       ></app-related-accounts>
+
       <app-related-accounts
         id="groups"
         [account]="account"
+        [relatedAccounts]="(relatedAccounts$ | async) ?? []"
         type="group"
       ></app-related-accounts>
+      <app-related-listings
+        id="listings"
+        [account]="account"
+        [relatedListings]="(relatedListings$ | async) ?? []"
+        relationship="owner"
+      ></app-related-listings>
+
       <app-volunteer-preference-info
         id="volunteer"
         *ngIf="account.type === 'user'"
@@ -93,6 +113,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </ion-content>
 </ng-container>
 
-<ng-template #loading>
-  <p>Loading account details...</p>
+<ng-template #loadingOrPrivate>
+  <ng-container *ngIf="(error$ | async) as error; else loading">
+    <p *ngIf="error !== 'Account not found'">This profile is private.</p>
+  </ng-container>
+  <ng-template #loading>
+    <p>Loading account details...</p>
+  </ng-template>
 </ng-template>

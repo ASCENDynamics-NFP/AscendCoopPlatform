@@ -17,23 +17,21 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import * as functions from "firebase-functions/v1";
+import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {Timestamp} from "firebase-admin/firestore";
 
-// Initialize the Firebase admin SDK
-if (!admin.apps.length) {
-  admin.initializeApp();
-}
-
-// Reference to the Firestore database
+// Firestore database reference
 const db = admin.firestore();
 
 // Triggered when a new user is created in Firebase Authentication
-export const createUserProfile = functions.auth
-  .user()
-  .onCreate(async (user) => {
+// Note: Firebase Functions v2 doesn't have a direct equivalent for auth user creation
+// so we keep this as v1
+export const createUserProfile = functions
+  .region("us-central1")
+  .auth.user()
+  .onCreate(async (user: admin.auth.UserRecord) => {
     try {
       await saveAccountToFirestore(user);
       logger.info(`User profile for ${user.uid} saved successfully.`);
@@ -44,10 +42,9 @@ export const createUserProfile = functions.auth
   });
 
 /**
- * Saves an account to Firestore in the 'accounts' collection.
- * @param {admin.auth.UserRecord} user - The user record from Firebase Authentication.
- * @param {string} type - The type of the account ('user' or 'group').
- * @return {Promise<void>} - A promise that resolves when the operation is complete.
+ * Saves a new user account document to Firestore in the 'accounts' collection.
+ * @param {admin.auth.UserRecord} user - User record from Firebase Authentication.
+ * @return {Promise<void>} - Resolves when the document is created.
  */
 async function saveAccountToFirestore(
   user: admin.auth.UserRecord,
@@ -62,13 +59,16 @@ async function saveAccountToFirestore(
       user.photoURL ||
       "assets/image/logo/ASCENDynamics NFP-logos_transparent.png",
     heroImage: "assets/image/userhero.png",
+    type: "new", // New accounts need to complete registration
     contactInformation: {
       privacy: "private",
       emails: [{email: user.email}],
       phoneNumbers: [],
+      addresses: [],
     },
     email: user.email,
     privacy: "public",
+    totalHours: 0,
     legalAgreements: {
       termsOfService: {
         accepted: true,

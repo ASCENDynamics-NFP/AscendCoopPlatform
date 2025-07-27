@@ -6,8 +6,16 @@
     "outDir": "lib",
     "sourceMap": true,
     "strict": true,
-    "target": "es2017"
+    "target": "es2017",
+    "baseUrl": "./",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "paths": {
+      "@shared/*": ["../shared/*"],
+      "firebase/*": ["node_modules/firebase/*"]
+    }
   },
   "compileOnSave": true,
-  "include": ["src", "src/**/**/*"]
+  "include": ["src", "src/**/**/*", "../shared/**/*.ts"]
 }

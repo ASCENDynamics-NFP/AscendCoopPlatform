@@ -17,38 +17,35 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import * as functions from "firebase-functions/v1";
+import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 
-// Initialize the Firebase admin SDK if not already done
-if (!admin.apps.length) {
-  admin.initializeApp();
-}
-// Reference to the Firestore database
+// Firestore database reference
 const db = admin.firestore();
-// Triggered when a user is deleted from Firebase Authentication (i.e. deleted their account) and deletes the user's document from Firestore.
-export const onUserRecordDeletion = functions.auth
-  .user()
-  .onDelete(async (user) => {
+
+// Triggered when a user is deleted from Firebase Authentication
+// Note: Firebase Functions v2 doesn't have an equivalent for auth user deletion
+// so we keep this as v1
+export const onUserRecordDeletion = functions
+  .region("us-central1")
+  .auth.user()
+  .onDelete(async (user: admin.auth.UserRecord) => {
     try {
       await deleteAccountDocument(user.uid);
       logger.info(`Account document for ${user.uid} deleted successfully.`);
     } catch (error) {
       logger.error(`Error deleting account document for ${user.uid}:`, error);
-      // Just log the error. Throwing an error in a Firebase Authentication trigger won't propagate it to the client.
+      // Log the error, as throwing won't affect Firebase's handling of the deletion
     }
   });
 
 /**
- * Deletes the account's document from Firestore.
+ * Deletes a user's account document from Firestore.
  * @param {string} accountId - The ID of the user whose document needs to be deleted.
- * @return {Promise<void>} - A promise that resolves when the operation is complete.
+ * @return {Promise<void>} - Resolves when the document is deleted.
  */
 async function deleteAccountDocument(accountId: string): Promise<void> {
-  // Reference to the account's document in Firestore
   const accountRef = db.collection("accounts").doc(accountId);
-
-  // Delete the account document from Firestore
   await accountRef.delete();
 }

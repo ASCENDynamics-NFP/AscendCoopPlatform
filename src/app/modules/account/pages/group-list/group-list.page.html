@@ -18,65 +18,59 @@ You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <!-- src/app/modules/account/pages/group-list/group-list.page.html -->
-
-<app-header [title]="'Search Groups'"></app-header>
+<ion-header>
+  <app-header [title]="'Search Groups'"></app-header>
+  <ion-toolbar>
+    <ion-searchbar [debounce]="300" (ionInput)="search($event)"></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-grid>
-    <ion-row>
-      <ion-col>
-        <ion-card>
-          <ion-card-header>
-            <ion-searchbar
-              [debounce]="300"
-              (ionInput)="search($event)"
-            ></ion-searchbar>
-          </ion-card-header>
-          <ion-list>
-            <ng-container
-              *ngIf="(accountList$ | async)?.length; else noResultsTemplate"
-            >
-              <ion-item
-                *ngFor="let item of accountList$ | async; let i = index"
-                [routerLink]="['/', item.id]"
-                button
-              >
-                <ion-thumbnail slot="start">
-                  <img
-                    *ngIf="item.iconImage"
-                    [alt]="item.name"
-                    [src]="item.iconImage"
-                  />
-                </ion-thumbnail>
-                <ion-label>
-                  <h3>{{ item?.name }}</h3>
-                  <p>{{ item?.tagline }}</p>
-                </ion-label>
-                <ion-button
-                  *ngIf="showRequestButton(item) | async"
-                  slot="end"
-                  mode="md"
-                  expand="block"
-                  (click)="
-                    $event.stopPropagation();
-                    $event.preventDefault();
-                    sendRequest(item);
-                  "
-                >
-                  Send Request
-                </ion-button>
-              </ion-item>
-            </ng-container>
-          </ion-list>
-          <ng-template #noResultsTemplate>
-            <ion-item>
-              <ion-label class="ion-text-center">
-                No groups found. Try a different search term.
-              </ion-label>
-            </ion-item>
-          </ng-template>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+  <ion-list>
+    <ng-container
+      *ngIf="(paginatedAccounts$ | async)?.length; else noResultsTemplate"
+    >
+      <ion-item
+        *ngFor="let item of paginatedAccounts$ | async"
+        [routerLink]="['/account/', item.id]"
+        button
+      >
+        <ion-thumbnail slot="start">
+          <img
+            *ngIf="item.iconImage"
+            [alt]="item.name"
+            [src]="item.iconImage"
+          />
+        </ion-thumbnail>
+        <ion-label>
+          <h3>{{ item?.name }}</h3>
+          <p>{{ item?.tagline }}</p>
+        </ion-label>
+        <ion-button
+          *ngIf="showRequestButton(item) | async"
+          slot="end"
+          mode="md"
+          expand="block"
+          (click)="$event.stopPropagation();$event.preventDefault();sendRequest(item);"
+        >
+          Send Request
+        </ion-button>
+      </ion-item>
+    </ng-container>
+  </ion-list>
+
+  <app-pagination
+    [totalItems]="(totalItems$ | async) || 0"
+    [pageSize]="pageSize"
+    [maxVisiblePages]="5"
+    (pageChange)="goToPage($event)"
+  ></app-pagination>
+
+  <ng-template #noResultsTemplate>
+    <ion-item>
+      <ion-label class="ion-text-center">
+        No groups found. Try a different search term.
+      </ion-label>
+    </ion-item>
+  </ng-template>
 </ion-content>

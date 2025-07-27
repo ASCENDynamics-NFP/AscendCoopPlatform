@@ -1,0 +1,156 @@
+<!-- role-hierarchy.page.html -->
+<ion-header>
+  <app-header
+    [title]="'Role Hierarchy'"
+    [defaultHref]="'account/'+groupId"
+  ></app-header>
+</ion-header>
+
+<ion-content>
+  <!-- Controls Section -->
+  <div class="controls-section">
+    <ion-card>
+      <ion-card-content>
+        <div class="controls-row">
+          <ion-button fill="outline" size="small" (click)="toggleOrientation()">
+            <ion-icon
+              [name]="orientation === 'vertical' ? 'swap-horizontal' : 'swap-vertical'"
+              slot="start"
+            ></ion-icon>
+            {{ orientation === 'vertical' ? 'Horizontal' : 'Vertical' }} View
+          </ion-button>
+
+          <ion-button fill="outline" size="small" (click)="expandAll()">
+            <ion-icon name="expand" slot="start"></ion-icon>
+            Expand All
+          </ion-button>
+
+          <ion-button fill="outline" size="small" (click)="collapseAll()">
+            <ion-icon name="contract" slot="start"></ion-icon>
+            Collapse All
+          </ion-button>
+        </div>
+
+        <!-- Search Bar -->
+        <ion-searchbar
+          placeholder="Search roles or members..."
+          (ionInput)="onSearchChange($event)"
+          debounce="300"
+          class="hierarchy-search"
+        ></ion-searchbar>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Hierarchy Tree -->
+  <div
+    [ngClass]="orientation"
+    class="tree-container"
+    *ngIf="filteredTree$ | async as tree"
+  >
+    <ul class="tree">
+      <ng-container
+        *ngTemplateOutlet="nodeTemplate; context: {node: tree}"
+      ></ng-container>
+    </ul>
+  </div>
+
+  <ng-template #nodeTemplate let-node="node">
+    <li class="tree-node" [class.has-children]="node.children.length > 0">
+      <div class="role-card" *ngIf="node.role">
+        <div class="role-header">
+          <div class="role-info">
+            <ion-icon
+              [name]="getRoleIcon(node.role)"
+              class="role-icon"
+            ></ion-icon>
+            <div class="role-details">
+              <h3 class="role-title">{{ node.role.name }}</h3>
+              <p class="role-subtitle" *ngIf="node.role.description">
+                {{ node.role.description }}
+              </p>
+            </div>
+          </div>
+
+          <div class="role-controls">
+            <div class="role-stats" *ngIf="node.accounts.length > 0">
+              <ion-chip color="primary" outline="true">
+                <ion-icon name="people" size="small"></ion-icon>
+                <ion-label>{{ node.accounts.length }}</ion-label>
+              </ion-chip>
+            </div>
+
+            <ion-button
+              *ngIf="node.accounts.length > 0"
+              fill="clear"
+              size="small"
+              (click)="toggleAccountsForRole(node)"
+              class="expand-button"
+            >
+              <ion-icon
+                [name]="node.accountsExpanded ? 'chevron-up' : 'chevron-down'"
+                slot="icon-only"
+              ></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+
+        <!-- Accounts Section -->
+        <div
+          class="accounts-section"
+          *ngIf="node.accounts.length > 0 && node.accountsExpanded"
+        >
+          <div class="accounts-grid">
+            <div
+              class="account-card"
+              *ngFor="let acc of node.accounts"
+              (click)="goToAccount(acc.id)"
+            >
+              <div class="account-avatar">
+                <img
+                  *ngIf="acc.iconImage; else defaultAvatar"
+                  [src]="acc.iconImage"
+                  [alt]="acc.name"
+                  class="avatar-image"
+                />
+                <ng-template #defaultAvatar>
+                  <ion-icon
+                    name="person-circle"
+                    class="default-avatar"
+                  ></ion-icon>
+                </ng-template>
+              </div>
+
+              <div class="account-info">
+                <h4 class="account-name">{{ acc.name }}</h4>
+                <p class="account-tagline" *ngIf="acc.tagline">
+                  {{ acc.tagline }}
+                </p>
+                <ion-badge
+                  color="secondary"
+                  class="role-badge"
+                  *ngIf="acc.roleName"
+                >
+                  {{ acc.roleName }}
+                </ion-badge>
+              </div>
+
+              <ion-button fill="clear" size="small" class="account-action">
+                <ion-icon name="chevron-forward" slot="icon-only"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Children Nodes -->
+      <ul class="children-tree" *ngIf="node.children.length > 0">
+        <ng-container *ngFor="let child of node.children">
+          <ng-container
+            *ngTemplateOutlet="nodeTemplate; context: {node: child}"
+          ></ng-container>
+        </ng-container>
+      </ul>
+    </li>
+  </ng-template>
+</ion-content>

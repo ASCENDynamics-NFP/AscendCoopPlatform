@@ -17,18 +17,25 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// src/app/core/services/firestore.service.ts
 import {Injectable} from "@angular/core";
 import {Observable, of} from "rxjs";
 import {map, catchError} from "rxjs/operators";
 import {FirebaseError} from "firebase/app";
-import {Account, RelatedAccount} from "../../models/account.model";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
 
 @Injectable({
   providedIn: "root",
 })
 export class FirestoreService {
-  constructor(private afs: AngularFirestore) {}
+  constructor(
+    private afs: AngularFirestore,
+  ) {}
+
+  // Helper to ensure documents have an id property
+  private populateId<T>(data: T, id: string): T {
+    return {...data, id} as T;
+  }
 
   // Firebase Query Logic (Start) //
 
@@ -46,8 +53,14 @@ export class FirestoreService {
     return this.afs
       .collection<T>(collectionName)
       .doc<T>(documentId)
-      .valueChanges({idField: "id"})
-      .pipe(map((data) => data ?? null));
+      .valueChanges()
+      .pipe(
+        map((data) => (data ? this.populateId(data, documentId) : null)), // Populate id
+        catchError((error) => {
+          console.error("Error retrieving document:", error);
+          return of(null);
+        }),
+      );
   }
 
   /**
@@ -159,145 +172,17 @@ export class FirestoreService {
   }
 
   /**
-   * Deletes a document at the given path in Firestore.
-   *
-   * @param {string} docPath - The full path to the document, including its ID.
+   * Deletes a document at a specific Firestore path.
+   * @param fullPath The full Firestore path to the document (e.g., 'listings/{listingId}/relatedAccounts/{relatedAccountId}').
    * @returns {Promise<void>}
    */
-  async deleteDocumentAtPath(docPath: string): Promise<void> {
+  async deleteDocumentAtPath(fullPath: string): Promise<void> {
     try {
-      await this.afs.doc(docPath).delete();
+      await this.afs.doc(fullPath).delete();
     } catch (error) {
-      throw new FirebaseError(
-        "delete-document-at-path-error",
-        `Error deleting document at path ${docPath}: ${error}`,
-      );
+      console.error(`Error deleting document at path: ${fullPath}`, error);
+      throw error;
     }
   }
 
-  /**
-   * Retrieves documents from a collection based on a specified condition in real-time.
-   *
-   * @param {string} collectionName - Name of the collection.
-   * @param {string} field - Field name to apply the condition on.
-   * @param {any} condition - Condition to apply.
-   * @param {any} value - Value to match against.
-   * @returns {Observable<T[]>} - Returns an Observable of an array of documents that match the condition.
-   */
-  getCollectionWithCondition<T>(
-    collectionName: string,
-    field: string,
-    condition: any,
-    value: any,
-  ): Observable<T[]> {
-    const collectionRef = this.afs.collection<T>(collectionName, (ref) =>
-      ref.where(field, condition, value),
-    );
-    return collectionRef.valueChanges({idField: "id"}).pipe(
-      catchError((error) => {
-        console.error("Error retrieving collection:", error);
-        return of([]);
-      }),
-    );
-  }
-
-  /**
-   * Searches for documents in a collection based on a name field in real-time.
-   *
-   * @param {string} collectionName - Name of the collection.
-   * @param {string} searchTerm - Term to search for.
-   * @param {string} [userId] - Current user Id (optional).
-   * @returns {Observable<Account[]>} - Returns an Observable of an array of accounts that match the search term.
-   */
-  searchAccountByName(
-    collectionName: string,
-    searchTerm: string,
-  ): Observable<Account[]> {
-    const collectionRef = this.afs.collection<Account>(
-      collectionName,
-      (ref) => {
-        let queryRef = ref
-          .where("privacy", "==", "public")
-          .where("type", "in", ["user", "group"]);
-
-        // Firestore does not support OR queries directly, but we can perform multiple queries and combine the results
-        // For simplicity, we'll only handle the search term as-is
-        queryRef = queryRef
-          .orderBy("name")
-          .startAt(searchTerm)
-          .endAt(searchTerm + "\uf8ff");
-
-        return queryRef;
-      },
-    );
-
-    return collectionRef.valueChanges({idField: "id"}).pipe(
-      catchError((error) => {
-        console.error("Error searching accounts:", error);
-        return of([]);
-      }),
-    );
-  }
-
-  /**
-   * Retrieves a document by its ID as an Observable.
-   *
-   * @param {string} collectionName - Name of the collection.
-   * @param {string} docId - ID of the document.
-   * @returns {Observable<T | null>}
-   */
-  getDocById<T>(collectionName: string, docId: string): Observable<T | null> {
-    return this.afs
-      .collection<T>(collectionName)
-      .doc<T>(docId)
-      .valueChanges({idField: "id"})
-      .pipe(
-        map((data) => data ?? null), // Map undefined to null
-        catchError((error) => {
-          console.error("Error getting document by ID:", error);
-          return of(null);
-        }),
-      );
-  }
-
-  /**
-   * Retrieves documents from a relatedAccounts sub-collection for a given account in real-time.
-   *
-   * @param {string} accountId - ID of the account.
-   * @returns {Observable<RelatedAccount[]>} - Returns an Observable of an array of related accounts.
-   */
-  getRelatedAccounts(accountId: string): Observable<RelatedAccount[]> {
-    const relatedAccountsRef = this.afs.collection<RelatedAccount>(
-      `accounts/${accountId}/relatedAccounts`,
-    );
-
-    return relatedAccountsRef.valueChanges({idField: "id"}).pipe(
-      catchError((error) => {
-        console.error("Error getting related accounts:", error);
-        return of([]);
-      }),
-    );
-  }
-
-  /**
-   * Retrieves all public user or group accounts from the 'accounts' collection in real-time.
-   * @returns {Observable<Account[]>} - Returns an Observable of an array of account documents.
-   */
-  getAllAccounts(): Observable<Account[]> {
-    return this.afs
-      .collection<Account>("accounts", (ref) =>
-        ref
-          .where("privacy", "==", "public")
-          .where("type", "in", ["user", "group"]),
-      )
-      .valueChanges({idField: "id"})
-      .pipe(
-        catchError((error) => {
-          console.error("Error getting accounts:", error);
-          return of([]);
-        }),
-      );
-  }
-
-  // Firebase Query Logic (Ends) //
 }

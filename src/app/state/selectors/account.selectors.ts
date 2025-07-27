@@ -20,46 +20,73 @@
 // src/app/state/selectors/account.selectors.ts
 
 import {createFeatureSelector, createSelector} from "@ngrx/store";
-import {AccountState} from "../reducers/account.reducer";
-import {Account, RelatedAccount} from "../../models/account.model";
+import {AccountState, accountAdapter} from "../reducers/account.reducer";
+import {Account} from "@shared/models/account.model";
 
+// TTL Configuration
+const ACCOUNTS_TTL = 5 * 60 * 1000; // 5 minutes
+const RELATED_LISTINGS_TTL = 10 * 60 * 1000; // 10 minutes
+
+// Utility: Check if data is stale
+function isStale(lastUpdated: number | null, ttl: number): boolean {
+  if (!lastUpdated) return true; // If never updated, consider it stale
+  const now = Date.now();
+  return now - lastUpdated > ttl;
+}
+
+// Feature Selector
 export const selectAccountState =
-  createFeatureSelector<AccountState>("account");
+  createFeatureSelector<AccountState>("accounts");
 
-export const selectAccounts = createSelector(
+// Entity Selectors
+const {
+  selectAll: selectAllAccountsArray,
+  selectEntities: selectAccountEntityMap,
+} = accountAdapter.getSelectors();
+
+export const selectAccountEntities = createSelector(
   selectAccountState,
-  (state) => state.accounts,
+  selectAccountEntityMap,
 );
 
-// Selector to get all related accounts from the state
-// export const selectAllRelatedAccounts = (state: AppState) =>
-//   state.accounts.relatedAccounts;
-
-// Selector to get related accounts by accountId (initiatorId or targetId matches accountId)
-export const selectRelatedAccountsByAccountId = (accountId: string) =>
-  createSelector(
-    selectRelatedAccounts,
-    (relatedAccounts: Partial<RelatedAccount>[]) =>
-      relatedAccounts.filter(
-        (ra) => ra.initiatorId === accountId || ra.targetId === accountId,
-      ),
-  );
+export const selectAllAccounts = createSelector(
+  selectAccountState,
+  selectAllAccountsArray,
+);
 
 export const selectAccountById = (accountId: string) =>
-  createSelector(selectAccounts, (accounts: Account[]): Account | undefined =>
-    accounts.find((account) => account.id === accountId),
+  createSelector(
+    selectAccountEntities,
+    (entities): Account | undefined => entities[accountId],
   );
 
+// Selected Account Selectors
+export const selectSelectedAccountId = createSelector(
+  selectAccountState,
+  (state) => state.selectedAccountId,
+);
+
 export const selectSelectedAccount = createSelector(
-  selectAccountState,
-  (state) => state.selectedAccount,
+  selectAccountEntities,
+  selectSelectedAccountId,
+  (entities, selectedAccountId) =>
+    selectedAccountId ? entities[selectedAccountId] : null,
 );
 
-export const selectRelatedAccounts = createSelector(
-  selectAccountState,
-  (state) => state.relatedAccounts,
-);
+// Related Data Selectors
+export const selectRelatedAccountsByAccountId = (accountId: string) =>
+  createSelector(
+    selectAccountState,
+    (state) => state.relatedAccounts[accountId] || [],
+  );
 
+export const selectRelatedListingsByAccountId = (accountId: string) =>
+  createSelector(
+    selectAccountState,
+    (state) => state.relatedListings[accountId] || [],
+  );
+
+// Loading and Error Selectors
 export const selectAccountLoading = createSelector(
   selectAccountState,
   (state) => state.loading,
@@ -70,17 +97,17 @@ export const selectAccountError = createSelector(
   (state) => state.error,
 );
 
-// Select Filtered Accounts
+// Filtered Accounts Selector
 export const selectFilteredAccounts = (
   searchTerm: string,
   accountType: string,
 ) =>
-  createSelector(selectAccounts, (accounts: Account[]) => {
+  createSelector(selectAllAccounts, (accounts: Account[]) => {
     const normalizeString = (str: string) =>
       str
         .toLowerCase()
-        .replace(/\s+/g, "") // Remove all whitespace
-        .replace(/[^a-z0-9]/gi, ""); // Remove non-alphanumeric characters
+        .replace(/\s+/g, "")
+        .replace(/[^a-z0-9]/gi, "");
 
     const normalizedSearchTerm = normalizeString(searchTerm);
 
@@ -94,3 +121,58 @@ export const selectFilteredAccounts = (
       })
       .sort((a, b) => (a.name && b.name ? a.name.localeCompare(b.name) : 0));
   });
+
+// Cache and Freshness Selectors
+export const selectAccountsLastUpdated = createSelector(
+  selectAccountState,
+  (state) => state.accountsLastUpdated,
+);
+
+export const selectRelatedAccountsLastUpdated = (accountId: string) =>
+  createSelector(
+    selectAccountState,
+    (state) => state.relatedAccountsLastUpdated[accountId] || null,
+  );
+
+export const selectRelatedListingsLastUpdated = (accountId: string) =>
+  createSelector(
+    selectAccountState,
+    (state) => state.relatedListingsLastUpdated[accountId] || null,
+  );
+
+export const selectGroupRolesByGroupId = (groupId: string) =>
+  createSelector(
+    selectAccountState,
+    (state) => state.groupRoles[groupId] || [],
+  );
+
+export const selectGroupRolesLastUpdated = (groupId: string) =>
+  createSelector(
+    selectAccountState,
+    (state) => state.groupRolesLastUpdated[groupId] || null,
+  );
+
+export const selectAreAccountsFresh = createSelector(
+  selectAccountsLastUpdated,
+  (accountsLastUpdated) => !isStale(accountsLastUpdated, ACCOUNTS_TTL),
+);
+
+export const selectAreRelatedAccountsFresh = (accountId: string) =>
+  createSelector(
+    selectRelatedAccountsLastUpdated(accountId),
+    (relatedAccountsLastUpdated) =>
+      !isStale(relatedAccountsLastUpdated, ACCOUNTS_TTL),
+  );
+
+export const selectAreRelatedListingsFresh = (accountId: string) =>
+  createSelector(
+    selectRelatedListingsLastUpdated(accountId),
+    (relatedListingsLastUpdated) =>
+      !isStale(relatedListingsLastUpdated, RELATED_LISTINGS_TTL),
+  );
+
+export const selectAreGroupRolesFresh = (groupId: string) =>
+  createSelector(
+    selectGroupRolesLastUpdated(groupId),
+    (groupRolesLastUpdated) => !isStale(groupRolesLastUpdated, ACCOUNTS_TTL),
+  );

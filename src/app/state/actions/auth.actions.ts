@@ -20,7 +20,7 @@
 // src/app/core/store/auth/auth.actions.ts
 
 import {createAction, props} from "@ngrx/store";
-import {AuthUser} from "../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 
 export const initializeAuth = createAction("[Auth] Initialize Auth");
 
@@ -60,7 +60,7 @@ export const signIn = createAction(
 
 export const signInSuccess = createAction(
   "[Auth] Sign In Success",
-  props<{user: AuthUser}>(),
+  props<{uid: string}>(),
 );
 
 export const signInFailure = createAction(
@@ -145,5 +145,20 @@ export const processSignInLinkSuccess = createAction(
 
 export const processSignInLinkFailure = createAction(
   "[Auth] Process Sign-In Link Failure",
+  props<{error: any}>(),
+);
+
+export const updateAuthUser = createAction(
+  "[Auth] Update Auth User",
+  props<{user: Partial<AuthUser>}>(),
+);
+
+export const updateAuthUserSuccess = createAction(
+  "[Auth] Update Auth User Success",
+  props<{user: AuthUser}>(),
+);
+
+export const updateAuthUserFailure = createAction(
+  "[Auth] Update Auth User Failure",
   props<{error: any}>(),
 );

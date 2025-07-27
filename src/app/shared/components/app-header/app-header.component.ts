@@ -17,71 +17,53 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, Input, OnDestroy, OnInit} from "@angular/core";
+import {Component, Input} from "@angular/core";
 import {PopoverController} from "@ionic/angular";
-import {Subscription, combineLatest} from "rxjs";
-import {Account} from "../../../models/account.model";
 import {UserMenuComponent} from "../user-menu/user-menu.component";
 import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../../state/selectors/auth.selectors";
-import {selectAccounts} from "../../../state/selectors/account.selectors";
+import {map, Observable} from "rxjs";
+import {AuthUser} from "@shared/models/auth-user.model";
 
 @Component({
   selector: "app-header",
   templateUrl: "./app-header.component.html",
   styleUrls: ["./app-header.component.scss"],
 })
-export class AppHeaderComponent implements OnInit, OnDestroy {
-  @Input() title?: string;
-  private account?: Account;
-  private subscriptions = new Subscription();
+export class AppHeaderComponent {
+  @Input() title?: string = "ASCENDynamics NFP";
+  @Input() defaultHref?: string;
+  @Input() showLogo?: boolean = false;
+
+  authUser$: Observable<AuthUser | null>; // Declare type for clarity
   public popoverEvent: any;
 
   constructor(
     private popoverController: PopoverController,
     private store: Store,
-  ) {}
+  ) {
+    // Initialize authUser$ after store is available
+    this.authUser$ = this.store.select(selectAuthUser);
+  }
 
   get image() {
-    return this.account?.iconImage || "assets/avatar/male2.png";
-  }
-
-  ngOnInit() {
-    this.initiateSubscribers();
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
-
-  initiateSubscribers() {
-    this.subscriptions.add(
-      combineLatest([
-        this.store.select(selectAuthUser),
-        this.store.select(selectAccounts),
-      ]).subscribe(([authUser, accounts]) => {
-        if (authUser) {
-          this.account = accounts.find(
-            (account) => account.id === authUser.uid,
-          );
-        } else {
-          this.account = undefined;
-        }
-      }),
-    );
+    return this.authUser$?.pipe(map((user) => user?.iconImage));
   }
 
   async presentPopover(ev: any) {
     this.popoverEvent = ev;
     const popover = await this.popoverController.create({
       component: UserMenuComponent,
+      componentProps: {
+        authUser$: this.authUser$, // Pass authUser$ as before
+      },
       event: ev,
       translucent: true,
     });
     return popover.present();
   }
 
-  onPopoverDismiss(event: any) {
+  onPopoverDismiss(_event: any) {
     // Handle popover dismiss if needed
   }
 }

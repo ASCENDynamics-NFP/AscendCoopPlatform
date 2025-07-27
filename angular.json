@@ -8,7 +8,8 @@
       "schematics": {
         "@ionic/angular-toolkit:page": {
           "styleext": "scss",
-          "standalone": true
+          "standalone": false,
+          "module": "app-routing.module.ts"
         }
       },
       "root": "",
@@ -18,13 +19,19 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "www",
+            "allowedCommonJsDependencies": ["deepmerge"],
+            "outputPath": "public",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
+              "src/favicon.ico",
+              "src/funding.json",
+              "src/manifest.json",
+              "src/robots.txt",
+              "src/sitemap.xml",
               {
                 "glob": "**/*",
                 "input": "src/assets",
@@ -49,8 +56,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "4kb",
+                  "maximumError": "6kb"
                 }
               ],
               "fileReplacements": [
@@ -79,15 +86,12 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "app:build:production",
               "buildTarget": "app:build:production"
             },
             "development": {
               "buildTarget": "app:build:development"
             },
-            "ci": {
-              "progress": false
-            }
+            "ci": {}
           },
           "defaultConfiguration": "development"
         },
@@ -145,7 +149,9 @@
       "styleext": "scss"
     },
     "@ionic/angular-toolkit:page": {
-      "styleext": "scss"
+      "styleext": "scss",
+      "standalone": false,
+      "module": "app-routing.module.ts"
     },
     "@angular-eslint/schematics:application": {
       "setParserOptionsProject": true

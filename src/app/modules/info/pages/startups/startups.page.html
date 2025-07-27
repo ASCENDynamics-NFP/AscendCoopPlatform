@@ -1,0 +1,178 @@
+<ion-header [translucent]="true">
+  <app-header title="Startups"></app-header>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- <ion-header collapse="condense">
+    <app-header title="Startups"></app-header>
+  </ion-header> -->
+  <ion-grid fixed>
+    <!-- Content section-->
+    <section class="py-5">
+      <div class="container my-5">
+        <div class="row justify-content-center">
+          <div class="col-lg-6">
+            <ion-card class="ion-margin">
+              <ion-card-header>
+                <ion-card-title>Startup Incubator</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <p>
+                  Our Startup Incubator program mentors and supports
+                  entrepreneurs launching worker-owned cooperative businesses.
+                  We provide end-to-end assistance – from technical development
+                  and business planning to securing funding and building
+                  partnerships. The incubator is especially committed to
+                  founders from underserved communities, ensuring they have the
+                  guidance and resources to build sustainable, community-owned
+                  startups. With ASCENDynamics' mentorship and tools (including
+                  training in SEO and digital outreach), new cooperatives can
+                  get off the ground and thrive.
+                </p>
+              </ion-card-content>
+            </ion-card>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Image element - set the background image for the header in the line below-->
+    <ion-img
+      class="content-image"
+      style="
+        margin-bottom: 1rem;
+        max-height: 300px;
+        object-fit: cover;
+        object-position: 50% 50%;
+        overflow: hidden;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      "
+      src="assets/image/pexels-kindel-media-7688161.jpg"
+    ></ion-img>
+    <!-- Content section-->
+    <section class="py-5">
+      <div class="container my-5">
+        <div class="row justify-content-center">
+          <div class="col-lg-6">
+            <ion-card class="ion-margin">
+              <ion-card-header>
+                <ion-card-title>Success Stories</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <p>
+                  Wondering what's possible with the right support? Explore our
+                  success stories to see how collaboration fuels success.
+                  ASCENDynamics has helped launch and grow multiple cooperative
+                  startups and nonprofit initiatives. Learn about these
+                  organizations' journeys – their initial challenges, the
+                  innovative solutions they implemented, and the social impact
+                  they're making in their communities. These stories highlight
+                  how our network of experts, volunteers, and partners came
+                  together to turn ideas into reality.
+                </p>
+              </ion-card-content>
+            </ion-card>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Image element - set the background image for the header in the line below-->
+    <ion-img
+      class="content-image"
+      style="
+        margin-bottom: 1rem;
+        max-height: 300px;
+        object-fit: cover;
+        object-position: 50% 50%;
+        overflow: hidden;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      "
+      src="assets/image/pexels-nataliya-vaitkevich-7172856.jpg"
+    ></ion-img>
+    <!-- Content section-->
+    <section class="py-5">
+      <div class="container my-5">
+        <div class="row justify-content-center">
+          <div class="col-lg-6">
+            <ion-card class="ion-margin">
+              <ion-card-header>
+                <ion-card-title>Resources for Startups</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <p>
+                  We offer a rich library of resources and tools to help your
+                  venture succeed. Access free guides, templates, and how-to
+                  articles on starting and managing a cooperative or nonprofit
+                  project. From business model templates and marketing
+                  checklists to open-source software recommendations, our
+                  Resources section is a DIY toolkit for emerging social
+                  entrepreneurs. We continuously update these resources to share
+                  best practices and the latest insights in cooperative
+                  development and nonprofit management.
+                </p>
+                <p>
+                  Have a cooperative startup idea? Apply to our incubator or
+                  reach out to us to see how we can help turn your vision into
+                  reality. Together, let's launch the next great cooperative for
+                  social good.
+                </p>
+              </ion-card-content>
+            </ion-card>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Image element - set the background image for the header in the line below-->
+  </ion-grid>
+  <ion-footer>
+    <div class="footer">
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" size-md="4" class="footer-logo">
+            <img
+              src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
+              alt="ASCENDynamics Logo"
+            />
+          </ion-col>
+          <ion-col size="12" size-md="4" class="footer-nav">
+            <h3>Quick Links</h3>
+            <ul>
+              <li>
+                <a (click)="openLegalModal('privacyPolicy')">Privacy Policy</a>
+              </li>
+              <li>
+                <a (click)="openLegalModal('termsOfUse')">Terms of Service</a>
+              </li>
+            </ul>
+          </ion-col>
+          <ion-col size="12" size-md="4" class="footer-social">
+            <h3>Follow Us</h3>
+            <ion-buttons class="social-buttons">
+              <ion-button
+                href="https://github.com/ASCENDynamics-NFP"
+                target="_blank"
+                ><ion-icon slot="icon-only" name="logo-github"></ion-icon
+              ></ion-button>
+              <ion-button
+                href="https://www.facebook.com/ASCENDynamicsNFP"
+                target="_blank"
+                ><ion-icon slot="icon-only" name="logo-facebook"></ion-icon
+              ></ion-button>
+              <ion-button
+                href="https://www.linkedin.com/company/ascendynamics-nfp"
+                target="_blank"
+                ><ion-icon slot="icon-only" name="logo-linkedin"></ion-icon
+              ></ion-button>
+            </ion-buttons>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+      <div class="footer-bottom">
+        <p>&copy; {{ currentYear }} ASCENDynamics NFP. All rights reserved.</p>
+      </div>
+    </div>
+  </ion-footer>
+</ion-content>

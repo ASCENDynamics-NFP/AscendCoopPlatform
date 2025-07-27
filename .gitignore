@@ -1,41 +1,44 @@
 # Specifies intentionally untracked files to ignore when using Git
-# http://git-scm.com/docs/gitignore
+# Documentation: http://git-scm.com/docs/gitignore
 
+# === General ===
 *~
 *.sw[mnpcod]
 .tmp
 *.tmp
 *.tmp.*
-UserInterfaceState.xcuserstate
-$RECYCLE.BIN/
-
 *.log
 log.txt
-
-
+.history/*
 /.sourcemaps
 /.versions
 /coverage
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+.DS_Store
+Thumbs.db
+$RECYCLE.BIN/
 
-# Ionic
-/.ionic
-/www
-/platforms
-/plugins
+# === Environment Variables ===
+.env.development
+.env.production
 
-# Compiled output
+# === Compiled Output ===
 /dist
 /tmp
 /out-tsc
 /bazel-out
 
-# Node
+# === Node ===
 /node_modules
 npm-debug.log
 yarn-error.log
-package-lock.json // need this file for faster ci/cd with GitHub Actions
+# package-lock.json // need this file for faster ci/cd with GitHub Actions
 
-# IDEs and editors
+# === IDEs and Editors ===
 .idea/
 .project
 .classpath
@@ -45,35 +48,28 @@ package-lock.json // need this file for faster ci/cd with GitHub Actions
 *.sublime-project
 *.sublime-workspace
 
-# Visual Studio Code
+# === Visual Studio Code ===
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-.history/*
+UserInterfaceState.xcuserstate
 
-
-# Miscellaneous
+# === Angular ===
 /.angular
 /.angular/cache
 .sass-cache/
-/connect.lock
-/coverage
-/libpeerconnection.log
-testem.log
-/typings
 
-# System files
-.DS_Store
-Thumbs.db
+# === Ionic ===
+/.ionic
+/www
+/platforms
+/plugins
+/public
 
-# Environment Variable files
-.env.development
-.env.production
-
-# Firebase
+# === Firebase ===
 .firebase
 
-#Salesforce
+# === Salesforce ===
 .sfdx

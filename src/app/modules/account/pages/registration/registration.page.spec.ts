@@ -17,128 +17,91 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// import {ComponentFixture, TestBed} from "@angular/core/testing";
-// import {RegistrationPage} from "./registration.page";
-// import {ActivatedRoute, Router} from "@angular/router";
-// import {Store, StoreModule} from "@ngrx/store";
-// import {NO_ERRORS_SCHEMA} from "@angular/core";
-// import {of} from "rxjs";
-// import {Account} from "../../../../models/account.model";
-// import * as AccountActions from "../../../../state/actions/account.actions";
-// import {selectAccountById} from "../../../../state/selectors/account.selectors";
-// import { Timestamp } from "firebase/firestore";
+// src/app/modules/account/pages/registration/registration.page.spec.ts
 
-// describe("RegistrationPage", () => {
-//   let component: RegistrationPage;
-//   let fixture: ComponentFixture<RegistrationPage>;
-//   let mockActivatedRoute: any;
-//   let mockRouter: any;
-//   let mockStore: any;
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from "@angular/core/testing";
+import {RegistrationPage} from "./registration.page";
+import {ActivatedRoute, Router} from "@angular/router";
+import {Store} from "@ngrx/store";
+import {of, Subject} from "rxjs";
+import * as AccountActions from "../../../../state/actions/account.actions";
+import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 
-//   const mockAccountId = "12345";
-//   const mockAccount: Account = {
-//     id: "12345",
-//     name: "Test Account",
-//     type: "user",
-//     privacy: "public",
-//     relatedAccounts: [],
-//     tagline: "",
-//     description: "",
-//     iconImage: "",
-//     heroImage: "",
-//     legalAgreements: {
-//       termsOfService: {
-//         accepted: false,
-//         datetime: new Timestamp(0, 0),
-//         version: "",
-//       },
-//       privacyPolicy: {
-//         accepted: false,
-//         datetime: new Timestamp(0, 0),
-//         version: "",
-//       },
-//     },
-//     webLinks: [],
-//     lastLoginAt: new Timestamp(0, 0),
-//     email: "",
-//   };
+describe("RegistrationPage", () => {
+  let component: RegistrationPage;
+  let fixture: ComponentFixture<RegistrationPage>;
+  let store: jasmine.SpyObj<Store<any>>;
+  let router: jasmine.SpyObj<Router>;
+  let activatedRoute: ActivatedRoute;
 
-//   beforeEach(async () => {
-//     mockActivatedRoute = {
-//       snapshot: {
-//         paramMap: {
-//           get: jasmine.createSpy().and.returnValue(mockAccountId),
-//         },
-//       },
-//     };
+  beforeEach(async () => {
+    const storeSpy = jasmine.createSpyObj("Store", ["dispatch", "select"]);
+    const routerSpy = jasmine.createSpyObj("Router", ["navigate"]);
 
-//     mockRouter = {
-//       navigate: jasmine.createSpy("navigate"),
-//     };
+    await TestBed.configureTestingModule({
+      declarations: [RegistrationPage],
+      providers: [
+        {provide: Store, useValue: storeSpy},
+        {provide: Router, useValue: routerSpy},
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: of({
+              get: (key: string) => "test-account-id",
+            }),
+          },
+        },
+      ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
+    }).compileComponents();
 
-//     mockStore = {
-//       dispatch: jasmine.createSpy("dispatch"),
-//       select: jasmine.createSpy("select"),
-//     };
+    store = TestBed.inject(Store) as jasmine.SpyObj<Store<any>>;
+    router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    activatedRoute = TestBed.inject(ActivatedRoute);
 
-//     await TestBed.configureTestingModule({
-//       declarations: [RegistrationPage],
-//       providers: [
-//         {provide: ActivatedRoute, useValue: mockActivatedRoute},
-//         {provide: Router, useValue: mockRouter},
-//         {provide: Store, useValue: mockStore},
-//       ],
-//       imports: [StoreModule.forRoot({})],
-//       schemas: [NO_ERRORS_SCHEMA],
-//     }).compileComponents();
-//   });
+    fixture = TestBed.createComponent(RegistrationPage);
+    component = fixture.componentInstance;
+  });
 
-//   beforeEach(() => {
-//     fixture = TestBed.createComponent(RegistrationPage);
-//     component = fixture.componentInstance;
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
 
-//     // Set up default store selector return values
-//     mockStore.select
-//       .withArgs(selectAccountById(mockAccountId))
-//       .and.returnValue(of(mockAccount));
+  it("should dispatch loadAccount action on init", () => {
+    store.select.and.returnValue(of(undefined));
 
-//     fixture.detectChanges();
-//   });
+    component.ngOnInit();
 
-//   it("should create the component", () => {
-//     expect(component).toBeTruthy();
-//   });
+    expect(store.dispatch).toHaveBeenCalledWith(
+      AccountActions.loadAccount({accountId: "test-account-id"}),
+    );
+  });
 
-//   it("should set accountId from route parameters", () => {
-//     expect(component.accountId).toBe(mockAccountId);
-//   });
+  it("should not navigate if account does not have type", fakeAsync(() => {
+    const account = {id: "test-account-id"} as any;
+    const accountSubject = new Subject<any>();
+    store.select.and.returnValue(accountSubject.asObservable());
 
-//   it("should dispatch loadAccount action on ngOnInit if accountId is present", () => {
-//     component.ngOnInit();
-//     expect(mockStore.dispatch).toHaveBeenCalledWith(
-//       AccountActions.loadAccount({accountId: mockAccountId}),
-//     );
-//   });
+    component.ngOnInit();
 
-//   it("should select the account and navigate if account type is defined", () => {
-//     component.ngOnInit();
-//     component.account$?.subscribe(() => {
-//       expect(mockRouter.navigate).toHaveBeenCalledWith([`/${mockAccountId}`]);
-//     });
-//   });
+    // Emit the account without type
+    accountSubject.next(account);
+    tick();
 
-//   it("should not navigate if account type is not defined", () => {
-//     mockStore.select
-//       .withArgs(selectAccountById(mockAccountId))
-//       .and.returnValue(of({...mockAccount, type: undefined}));
-//     component.ngOnInit();
-//     component.account$?.subscribe(() => {
-//       expect(mockRouter.navigate).not.toHaveBeenCalled();
-//     });
-//   });
+    expect(router.navigate).not.toHaveBeenCalled();
+  }));
 
-//   it("should update selectedType when selectType is called", () => {
-//     component.selectType("group");
-//     expect(component.selectedType).toBe("group");
-//   });
-// });
+  it("should update selectedType when selectType is called", () => {
+    store.select.and.returnValue(of(undefined));
+
+    component.ngOnInit(); // Initialize the component properly
+
+    component.selectType("user");
+    expect(component.selectedType).toBe("user");
+  });
+});

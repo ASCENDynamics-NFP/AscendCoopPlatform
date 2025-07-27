@@ -19,38 +19,34 @@
 ***********************************************************************************************/
 // src/app/modules/account/pages/settings/settings.page.ts
 
-import {Component, OnInit} from "@angular/core";
+import {Component} from "@angular/core";
 import {Observable} from "rxjs";
-import {AuthUser} from "../../../../models/auth-user.model";
-import {Account} from "../../../../models/account.model";
+import {AuthUser} from "@shared/models/auth-user.model";
+import {Account} from "@shared/models/account.model";
 import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
-import * as AccountActions from "../../../../state/actions/account.actions";
-import {switchMap, tap} from "rxjs/operators";
+import {switchMap} from "rxjs/operators";
+import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
   selector: "app-settings",
   templateUrl: "./settings.page.html",
   styleUrls: ["./settings.page.scss"],
 })
-export class SettingsPage implements OnInit {
+export class SettingsPage {
   authUser$: Observable<AuthUser | null>;
   account$: Observable<Account | undefined>;
 
-  constructor(private store: Store) {
+  constructor(
+    private metaService: MetaService,
+    private store: Store,
+  ) {
     // Get the authUser observable
     this.authUser$ = this.store.select(selectAuthUser);
 
     // Use switchMap to load the account and select the account observable based on authUser
     this.account$ = this.authUser$.pipe(
-      tap((authUser) => {
-        if (authUser?.uid) {
-          this.store.dispatch(
-            AccountActions.loadAccount({accountId: authUser.uid}),
-          );
-        }
-      }),
       switchMap((authUser) => {
         if (authUser?.uid) {
           return this.store.select(selectAccountById(authUser.uid));
@@ -60,5 +56,27 @@ export class SettingsPage implements OnInit {
     );
   }
 
-  ngOnInit() {}
+  ionViewWillEnter() {
+    this.metaService.updateMetaTags(
+      "Settings | ASCENDynamics NFP",
+      "Customize your settings and preferences on ASCENDynamics NFP.",
+      "settings, preferences, account, customization",
+      {
+        title: "Settings | ASCENDynamics NFP",
+        description:
+          "Manage your preferences and account settings on ASCENDynamics NFP.",
+        url: "https://app.ASCENDynamics.org/settings",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+      },
+      {
+        card: "summary",
+        title: "Settings | ASCENDynamics NFP",
+        description:
+          "Update your account preferences and settings on ASCENDynamics NFP.",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+      },
+    );
+  }
 }

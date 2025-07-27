@@ -21,17 +21,21 @@
 
 import {Component, OnInit} from "@angular/core";
 import {Store} from "@ngrx/store";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, combineLatest, of} from "rxjs";
 import {map} from "rxjs/operators";
-import {AuthUser} from "../../../../../models/auth-user.model";
-import {Account, RelatedAccount} from "../../../../../models/account.model";
+import {AuthUser} from "@shared/models/auth-user.model";
+import {Account, RelatedAccount} from "@shared/models/account.model";
+import {GroupRole} from "@shared/models/group-role.model";
 import {
   selectAccountById,
   selectRelatedAccountsByAccountId,
+  selectGroupRolesByGroupId,
 } from "../../../../../state/selectors/account.selectors";
 import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../../state/actions/account.actions";
+import {take} from "rxjs/operators";
+import {MetaService} from "../../../../../core/services/meta.service";
 
 @Component({
   selector: "app-list",
@@ -51,9 +55,18 @@ export class ListPage implements OnInit {
   pendingRelatedAccountsList$!: Observable<Partial<RelatedAccount>[]>;
   isOwner$!: Observable<boolean>;
   title$!: Observable<string>;
+  isGroupAdmin$!: Observable<boolean>;
+  canManageRoles$!: Observable<boolean>;
+  showAccessControls$!: Observable<boolean>;
+  showRoleControls$!: Observable<boolean>;
+  accessOptions = ["admin", "moderator", "member"] as const;
+  customRoles$!: Observable<GroupRole[]>;
+  relationshipOptions = ["friend", "member", "partner", "family"] as const;
 
   constructor(
     private activatedRoute: ActivatedRoute,
+    private router: Router,
+    private metaService: MetaService,
     private store: Store,
   ) {
     // Extract route parameters
@@ -119,7 +132,92 @@ export class ListPage implements OnInit {
           ),
         ),
       );
+
+      this.isGroupAdmin$ = combineLatest([
+        this.currentUser$,
+        this.relatedAccounts$,
+      ]).pipe(
+        map(([currentUser, relatedAccounts]) => {
+          if (!currentUser) return false;
+          const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
+          return (
+            rel?.status === "accepted" &&
+            (rel.access === "admin" || rel.access === "moderator")
+          );
+        }),
+      );
+
+      this.canManageRoles$ = combineLatest([
+        this.isGroupAdmin$,
+        this.isOwner$,
+      ]).pipe(map(([admin, owner]) => admin || owner));
+
+      this.showAccessControls$ = combineLatest([
+        this.account$,
+        this.currentUser$,
+        this.isGroupAdmin$,
+      ]).pipe(
+        map(
+          ([account, user, isAdmin]) =>
+            !!account &&
+            account.type === "group" &&
+            !!user &&
+            (isAdmin || user.uid === account.id),
+        ),
+      );
+
+      this.showRoleControls$ = combineLatest([
+        this.account$,
+        this.currentUser$,
+      ]).pipe(
+        map(
+          ([account, user]) => !!account && !!user && user.uid === account.id,
+        ),
+      );
+
+      this.customRoles$ = this.store.select(
+        selectGroupRolesByGroupId(this.accountId),
+      );
+      this.store.dispatch(
+        AccountActions.loadGroupRoles({groupId: this.accountId}),
+      );
     }
+  }
+
+  ionViewWillEnter() {
+    this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
+    this.listType = this.activatedRoute.snapshot.paramMap.get("listType");
+    // Dynamic Meta Tags
+    const isUserList = this.listType === "user";
+    const title = isUserList
+      ? "Users | ASCENDynamics NFP"
+      : "Organizations | ASCENDynamics NFP";
+    const description = isUserList
+      ? "Explore a diverse list of users contributing to the ASCENDynamics NFP community."
+      : "Discover organizations making an impact through volunteering and community efforts on ASCENDynamics NFP.";
+    const keywords = isUserList
+      ? "users, profiles, volunteer"
+      : "organizations, nonprofits, community";
+
+    this.metaService.updateMetaTags(
+      title,
+      description,
+      keywords,
+      {
+        title: title,
+        description: description,
+        url: `https://app.ASCENDynamics.org/account/${this.accountId}/related/${this.listType}`,
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+      },
+      {
+        card: "summary_large_image",
+        title: title,
+        description: description,
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+      },
+    );
   }
 
   /**
@@ -128,20 +226,29 @@ export class ListPage implements OnInit {
    * @param status The new status to set.
    */
   updateStatus(request: Partial<RelatedAccount>, status: string) {
-    if (!this.accountId || !request.id) return;
+    this.currentUser$.pipe(take(1)).subscribe((authUser) => {
+      if (!authUser?.uid || !request.id) {
+        console.error("User ID or Account ID is missing");
+        return;
+      }
 
-    const updatedRelatedAccount: RelatedAccount = {
-      id: request.id,
-      status: status as "pending" | "accepted" | "rejected" | "blocked",
-    };
+      if (!this.accountId || !request.id) return;
 
-    // Dispatch an action to update the related account's status
-    this.store.dispatch(
-      AccountActions.updateRelatedAccount({
-        accountId: this.accountId,
-        relatedAccount: updatedRelatedAccount,
-      }),
-    );
+      const updatedRelatedAccount: RelatedAccount = {
+        id: request.id,
+        accountId: request.accountId || this.accountId,
+        status: status as "pending" | "accepted" | "rejected" | "blocked",
+        lastModifiedBy: authUser.uid,
+      };
+
+      // Dispatch an action to update the related account's status
+      this.store.dispatch(
+        AccountActions.updateRelatedAccount({
+          accountId: this.accountId,
+          relatedAccount: updatedRelatedAccount,
+        }),
+      );
+    });
   }
 
   /**
@@ -176,6 +283,63 @@ export class ListPage implements OnInit {
     );
   }
 
+  updateAccess(
+    request: Partial<RelatedAccount>,
+    access: "admin" | "moderator" | "member",
+  ) {
+    this.currentUser$.pipe(take(1)).subscribe((authUser) => {
+      if (!authUser?.uid || !request.id || !this.accountId) return;
+      const updated: RelatedAccount = {
+        ...(request as RelatedAccount),
+        accountId: this.accountId,
+        access: access,
+        lastModifiedBy: authUser.uid,
+      };
+      this.store.dispatch(
+        AccountActions.updateRelatedAccount({
+          accountId: this.accountId!,
+          relatedAccount: updated,
+        }),
+      );
+    });
+  }
+
+  updateRole(request: Partial<RelatedAccount>, roleId: string) {
+    this.currentUser$.pipe(take(1)).subscribe((authUser) => {
+      if (!authUser?.uid || !request.id || !this.accountId) return;
+      const updated: RelatedAccount = {
+        ...(request as RelatedAccount),
+        accountId: this.accountId,
+        roleId,
+        lastModifiedBy: authUser.uid,
+      };
+      this.store.dispatch(
+        AccountActions.updateRelatedAccount({
+          accountId: this.accountId!,
+          relatedAccount: updated,
+        }),
+      );
+    });
+  }
+
+  updateRelationship(request: Partial<RelatedAccount>, relationship: string) {
+    this.currentUser$.pipe(take(1)).subscribe((authUser) => {
+      if (!authUser?.uid || !request.id || !this.accountId) return;
+      const updated: RelatedAccount = {
+        ...(request as RelatedAccount),
+        accountId: this.accountId,
+        relationship: relationship as any,
+        lastModifiedBy: authUser.uid,
+      };
+      this.store.dispatch(
+        AccountActions.updateRelatedAccount({
+          accountId: this.accountId!,
+          relatedAccount: updated,
+        }),
+      );
+    });
+  }
+
   /**
    * Determines whether to show accept/reject buttons for a related account.
    * @param request The related account request.
@@ -185,12 +349,22 @@ export class ListPage implements OnInit {
     request: Partial<RelatedAccount>,
   ): Observable<boolean> {
     return combineLatest([this.isOwner$, this.currentUser$]).pipe(
-      map(
-        ([isOwner, currentUser]) =>
-          isOwner &&
-          request.status === "pending" &&
-          request.initiatorId !== currentUser?.uid,
-      ),
+      map(([isOwner, currentUser]) => {
+        if (!currentUser || request.status !== "pending") {
+          return false;
+        }
+
+        // Case 1: User/Group is requesting to join this account (current user is owner of target account)
+        // Show buttons if current user owns this account and didn't initiate the request
+        const canApproveAsOwner =
+          isOwner && request.initiatorId !== currentUser.uid;
+
+        // Case 2: This account invited the current user (current user is target of invitation)
+        // Show buttons if current user is the target of the invitation
+        const canApproveAsTarget = request.targetId === currentUser.uid;
+
+        return canApproveAsOwner || canApproveAsTarget;
+      }),
     );
   }
 
@@ -238,5 +412,33 @@ export class ListPage implements OnInit {
    */
   trackById(index: number, item: Partial<RelatedAccount>): string {
     return item.id ? item.id : index.toString();
+  }
+
+  /**
+   * Navigates to the selected related account.
+   * @param id The account ID to navigate to.
+   */
+  goToRelatedAccount(id: string | null | undefined) {
+    if (id) {
+      this.router.navigate([`/account/${id}`]);
+    }
+  }
+
+  /**
+   * Navigates to the roles management page.
+   */
+  navigateToRoles() {
+    if (this.accountId) {
+      this.router.navigate([`/account/${this.accountId}/roles`]);
+    }
+  }
+
+  /**
+   * Navigates to the hierarchy true page.
+   */
+  navigateToHierarchy() {
+    if (this.accountId) {
+      this.router.navigate([`/account/${this.accountId}/hierarchy`]);
+    }
   }
 }

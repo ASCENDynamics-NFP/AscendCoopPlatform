@@ -1,0 +1,190 @@
+<ion-header [translucent]="true">
+  <app-header title="Services"></app-header>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- <ion-header collapse="condense">
+    <app-header title="Services"></app-header>
+  </ion-header> -->
+  <ion-grid fixed>
+    <!-- Content section-->
+    <ion-card class="ion-margin">
+      <ion-card-header>
+        <ion-card-title>Technical Assistance</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          We help nonprofits and cooperative startups overcome technical
+          challenges with hands-on support. Our team offers training workshops,
+          open-source tools, and one-on-one IT consulting to ensure
+          organizations can leverage technology effectively. From setting up
+          collaborative software to building an online presence, we provide the
+          technical assistance needed to strengthen your mission.
+        </p>
+      </ion-card-content>
+    </ion-card>
+    <!-- Image element - set the background image for the header in the line below-->
+    <ion-img
+      class="content-image"
+      style="
+        margin-bottom: 1rem;
+        max-height: 300px;
+        object-fit: cover;
+        object-position: 50% 50%;
+        overflow: hidden;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      "
+      src="assets/image/pexels-shvets-production-7176305.jpg"
+    ></ion-img>
+    <!-- Content section-->
+    <ion-card class="ion-margin">
+      <ion-card-header>
+        <ion-card-title>Development Support</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          From fundraising to organizational development, we guide you in
+          growing your impact. Our development support includes assistance with
+          grant writing, strategic planning, and building sustainable revenue
+          models. We help nonprofits and cooperatives access funding
+          opportunities and refine their business plans, positioning them to
+          scale and serve their communities better.
+        </p>
+      </ion-card-content>
+    </ion-card>
+    <!-- Image element - set the background image for the header in the line below-->
+    <ion-img
+      class="content-image"
+      style="
+        margin-bottom: 1rem;
+        max-height: 300px;
+        object-fit: cover;
+        object-position: 50% 50%;
+        overflow: hidden;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      "
+      src="assets/image/pexels-alex-green-5699424.jpg"
+    ></ion-img>
+    <!-- Content section-->
+    <ion-card class="ion-margin">
+      <ion-card-header>
+        <ion-card-title>Marketing Support</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          We empower organizations to tell their story and reach a wider
+          audience. Our marketing support team advises on branding, digital
+          marketing, and social media engagement. We also share SEO best
+          practices to boost your online visibility, ensuring that your cause
+          attracts the supporters and volunteers it needs. From crafting
+          campaigns to managing outreach, we help you connect with your
+          community.
+        </p>
+      </ion-card-content>
+    </ion-card>
+    <!-- Image element - set the background image for the header in the line below-->
+    <ion-img
+      class="content-image"
+      style="
+        margin-bottom: 1rem;
+        max-height: 300px;
+        object-fit: cover;
+        object-position: 50% 50%;
+        overflow: hidden;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      "
+      src="assets/image/pexels-kampus-production-7551607.jpg"
+    ></ion-img>
+    <!-- Content section-->
+    <ion-card class="ion-margin">
+      <ion-card-header>
+        <ion-card-title>Networking Resources</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          Collaboration is at the heart of ASCENDynamics. We provide networking
+          resources that link you to potential partners, mentors, and
+          supporters. Through networking events and matchmaking services, we
+          connect nonprofits, mutual aid groups, cooperative startups,
+          volunteers, and funders who can collaborate on projects or share
+          knowledge. By expanding your network, we help you build alliances that
+          propel your mission forward.
+        </p>
+        <p>
+          Ready to grow your cooperative or nonprofit? Contact us to learn how
+          our services can support and elevate your organization. We're here to
+          help you succeed at every step.
+        </p>
+      </ion-card-content>
+    </ion-card>
+    <!-- Image element - set the background image for the header in the line below-->
+    <ion-img
+      class="content-image"
+      style="
+        margin-bottom: 1rem;
+        max-height: 300px;
+        object-fit: cover;
+        object-position: 50% 50%;
+        overflow: hidden;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      "
+      src="assets/image/pexels-rfstudio-3810793.jpg"
+    ></ion-img>
+  </ion-grid>
+  <ion-footer>
+    <div class="footer">
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" size-md="4" class="footer-logo">
+            <img
+              src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
+              alt="ASCENDynamics Logo"
+            />
+          </ion-col>
+          <ion-col size="12" size-md="4" class="footer-nav">
+            <h3>Quick Links</h3>
+            <ul>
+              <li>
+                <a (click)="openLegalModal('privacyPolicy')">Privacy Policy</a>
+              </li>
+              <li>
+                <a (click)="openLegalModal('termsOfUse')">Terms of Service</a>
+              </li>
+            </ul>
+          </ion-col>
+          <ion-col size="12" size-md="4" class="footer-social">
+            <h3>Follow Us</h3>
+            <ion-buttons class="social-buttons">
+              <ion-button
+                href="https://github.com/ASCENDynamics-NFP"
+                target="_blank"
+                ><ion-icon slot="icon-only" name="logo-github"></ion-icon
+              ></ion-button>
+              <ion-button
+                href="https://www.facebook.com/ASCENDynamicsNFP"
+                target="_blank"
+                ><ion-icon slot="icon-only" name="logo-facebook"></ion-icon
+              ></ion-button>
+              <ion-button
+                href="https://www.linkedin.com/company/ascendynamics-nfp"
+                target="_blank"
+                ><ion-icon slot="icon-only" name="logo-linkedin"></ion-icon
+              ></ion-button>
+            </ion-buttons>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+      <div class="footer-bottom">
+        <p>&copy; {{ currentYear }} ASCENDynamics NFP. All rights reserved.</p>
+      </div>
+    </div>
+  </ion-footer>
+</ion-content>

@@ -1,0 +1,123 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ relatedAccount.name }} Application Details</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content *ngIf="isOwner">
+  <!-- Applicant Information -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Applicant Information</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p><strong>First Name:</strong> {{ relatedAccount.firstName }}</p>
+      <p><strong>Last Name:</strong> {{ relatedAccount.lastName }}</p>
+      <p><strong>Email Address:</strong> {{ relatedAccount.email }}</p>
+      <p *ngIf="relatedAccount.phone">
+        <strong>Phone Number:</strong> {{ relatedAccount.phone }}
+      </p>
+      <p *ngIf="relatedAccount.notes">
+        <strong>Notes:</strong> {{ relatedAccount.notes }}
+      </p>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Resume -->
+  <ion-card *ngIf="relatedAccount?.resumeFile">
+    <!-- <ion-card-header>
+      <ion-card-title>Resume</ion-card-title>
+    </ion-card-header> -->
+    <ion-card-content>
+      <ion-item>
+        <ion-icon name="document-outline" slot="start"></ion-icon>
+        <ion-label>Resume</ion-label>
+        <ion-button
+          fill="clear"
+          href="{{ relatedAccount.resumeFile }}"
+          target="_blank"
+        >
+          Download
+        </ion-button>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Cover Letter -->
+  <ion-card *ngIf="relatedAccount?.coverLetterFile">
+    <!-- <ion-card-header>
+      <ion-card-title>Cover Letter</ion-card-title>
+    </ion-card-header> -->
+    <ion-card-content>
+      <ion-item>
+        <ion-icon name="document-outline" slot="start"></ion-icon>
+        <ion-label>Cover Letter</ion-label>
+        <ion-button
+          fill="clear"
+          href="{{ relatedAccount.coverLetterFile }}"
+          target="_blank"
+        >
+          Download
+        </ion-button>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
+
+<ion-footer>
+  <!-- Action Buttons -->
+  <ion-grid>
+    <ion-row>
+      <ion-col size="6">
+        <ion-button expand="block" color="medium" (click)="copyEmail()">
+          Copy Email
+        </ion-button>
+      </ion-col>
+      <ion-col size="6">
+        <ion-button expand="block" color="primary" (click)="viewProfile()">
+          View Profile
+        </ion-button>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="6">
+        <ion-button
+          expand="block"
+          color="success"
+          (click)="acceptApplication()"
+        >
+          Accept
+        </ion-button>
+      </ion-col>
+      <ion-col size="6">
+        <ion-button expand="block" color="danger" (click)="rejectApplication()">
+          Reject
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-footer>

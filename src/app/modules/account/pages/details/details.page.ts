@@ -21,48 +21,57 @@
 
 import {Component, OnInit, ViewChild} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
-import {Observable, combineLatest} from "rxjs";
-import {map, tap} from "rxjs/operators";
-import {AuthUser} from "../../../../models/auth-user.model";
+import {Observable, Subscription, combineLatest} from "rxjs";
+import {Location} from "@angular/common";
+import {map} from "rxjs/operators";
+import {AuthUser} from "@shared/models/auth-user.model";
 import {Store} from "@ngrx/store";
-
-import {Account} from "../../../../models/account.model";
+import {Account, RelatedAccount} from "@shared/models/account.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {
-  selectSelectedAccount,
-  selectRelatedAccounts,
+  selectRelatedAccountsByAccountId,
+  selectAccountById,
+  selectRelatedListingsByAccountId,
 } from "../../../../state/selectors/account.selectors";
+import {selectAccountError} from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
-import {IonContent} from "@ionic/angular";
+import {IonContent, ViewWillEnter, ToastController} from "@ionic/angular";
+import {RelatedListing} from "@shared/models/related-listing.model";
+import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
   selector: "app-details",
   templateUrl: "./details.page.html",
   styleUrls: ["./details.page.scss"],
 })
-export class DetailsPage implements OnInit {
-  @ViewChild(IonContent, {static: false}) content!: IonContent; // Get reference to ion-content
-  public accountId: string | null;
+export class DetailsPage implements OnInit, ViewWillEnter {
+  @ViewChild(IonContent, {static: false}) content!: IonContent;
+  public accountId: string | null = null;
   authUser$!: Observable<AuthUser | null>;
-  fullAccount$!: Observable<Account | null>;
+  account$!: Observable<Account | undefined>;
+  private subscription: Subscription | null = null;
+  private errorSubscription: Subscription | null = null;
+  relatedAccounts$!: Observable<RelatedAccount[]>;
+  relatedListings$!: Observable<RelatedListing[]>;
   isProfileOwner$!: Observable<boolean>;
+  isGroupAdmin$!: Observable<boolean>;
+  isGroupMember$!: Observable<boolean>;
+  error$!: Observable<any>;
 
   constructor(
+    private metaService: MetaService,
     private route: ActivatedRoute,
     private router: Router,
+    private location: Location,
+    private toastController: ToastController,
     private store: Store,
-  ) {
-    this.accountId = this.route.snapshot.paramMap.get("accountId");
-  }
-
-  scrollToSection(sectionId: string): void {
-    const yOffset = document.getElementById(sectionId)?.offsetTop;
-    if (yOffset !== undefined) {
-      this.content.scrollToPoint(0, yOffset, 500);
-    }
-  }
+  ) {}
 
   ngOnInit(): void {
+    this.authUser$ = this.store.select(selectAuthUser);
+  }
+
+  ionViewWillEnter() {
     // Initialize authUser$ observable
     this.authUser$ = this.store.select(selectAuthUser);
 
@@ -75,57 +84,262 @@ export class DetailsPage implements OnInit {
         this.store.dispatch(
           AccountActions.loadAccount({accountId: this.accountId}),
         );
-
-        // Dispatch setSelectedAccount action
-        this.store.dispatch(
-          AccountActions.setSelectedAccount({accountId: this.accountId}),
-        );
-
-        // Dispatch loadRelatedAccounts to ensure related accounts are available on navigation
         this.store.dispatch(
           AccountActions.loadRelatedAccounts({accountId: this.accountId}),
         );
+        this.store.dispatch(
+          AccountActions.loadRelatedListings({accountId: this.accountId}),
+        );
 
         // Select account and related accounts from the store
-        const selectedAccount$ = this.store.select(selectSelectedAccount);
-        const relatedAccounts$ = this.store.select(selectRelatedAccounts);
-
-        // Combine the account and related accounts into one observable without mutating
-        this.fullAccount$ = combineLatest([
-          selectedAccount$,
-          relatedAccounts$,
-        ]).pipe(
-          tap(([account]) => {
-            if (account && !account.type) {
-              this.router.navigate([`/registration/${this.accountId}`]);
-            }
-          }),
-          map(([account, relatedAccounts]) => {
-            if (account) {
-              return {
-                ...account, // Clone the account object
-                relatedAccounts: relatedAccounts, // Assign relatedAccounts without mutation
-              };
-            } else {
-              return null;
-            }
-          }),
+        this.account$ = this.store.select(selectAccountById(this.accountId));
+        this.relatedAccounts$ = this.store.select(
+          selectRelatedAccountsByAccountId(this.accountId),
         );
+        this.relatedListings$ = this.store
+          .select(selectRelatedListingsByAccountId(this.accountId))
+          .pipe(
+            map((listings) =>
+              listings.filter((listing) => listing.status === "active"),
+            ),
+          );
+
+        this.error$ = this.store.select(selectAccountError);
+
+        // Handle account load errors
+        if (this.errorSubscription) {
+          this.errorSubscription.unsubscribe();
+        }
+        this.errorSubscription = combineLatest([
+          this.error$,
+          this.authUser$,
+        ]).subscribe(([err, authUser]) => {
+          if (
+            err &&
+            err === "Account not found" &&
+            authUser &&
+            authUser.uid &&
+            this.accountId !== authUser.uid
+          ) {
+            this.presentToast("Account not found", true);
+          } else if (err) {
+            // Only show "private profile" message if viewing someone else's profile
+            this.presentToast("This profile is private.");
+          }
+          // If it's their own profile with an error, let the AuthGuard handle the redirect
+        });
 
         // Determine if the current user is the profile owner
         this.isProfileOwner$ = combineLatest([
           this.authUser$,
-          this.fullAccount$,
+          this.account$,
         ]).pipe(
           map(([authUser, account]) => {
-            // Ensure account and authUser are not null
             if (account && authUser) {
               return account.id === authUser.uid;
             }
-            return false; // Default to false if any are null
+            return false;
+          }),
+        );
+
+        this.isGroupAdmin$ = combineLatest([
+          this.authUser$,
+          this.relatedAccounts$,
+          this.account$,
+        ]).pipe(
+          map(([currentUser, relatedAccounts, account]) => {
+            if (!currentUser) return false;
+            const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
+            const isAdmin =
+              rel?.status === "accepted" &&
+              (rel.access === "admin" || rel.access === "moderator");
+            const isOwner =
+              account?.type === "group" &&
+              account.createdBy === currentUser.uid;
+            return isAdmin || isOwner;
+          }),
+        );
+
+        this.isGroupMember$ = combineLatest([
+          this.authUser$,
+          this.relatedAccounts$,
+          this.account$,
+        ]).pipe(
+          map(([currentUser, relatedAccounts, account]) => {
+            if (!currentUser) return false;
+            // Check if user is the group owner
+            const isOwner =
+              account?.type === "group" &&
+              account.createdBy === currentUser.uid;
+            // Check if user is an accepted member
+            const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
+            const isMember = rel?.status === "accepted";
+            return isOwner || isMember;
           }),
         );
       }
+    });
+
+    this.subscription = this.account$.subscribe({
+      next: (account) => {
+        if (account) {
+          this.updateAccountMeta(account);
+        }
+      },
+      error: () => {
+        this.setDefaultMeta();
+      },
+    });
+  }
+
+  ionViewWillLeave() {
+    if (this.subscription) {
+      this.subscription.unsubscribe(); // Unsubscribe to prevent memory leaks
+      this.subscription = null;
+    }
+    if (this.errorSubscription) {
+      this.errorSubscription.unsubscribe();
+      this.errorSubscription = null;
+    }
+  }
+
+  scrollToSection(sectionId: string): void {
+    const yOffset = document.getElementById(sectionId)?.offsetTop;
+    if (yOffset !== undefined) {
+      this.content.scrollToPoint(0, yOffset, 500);
+    }
+  }
+
+  private async presentToast(message: string, navigateBack = false) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2000,
+      position: "top",
+    });
+    await toast.present();
+    if (navigateBack) {
+      await toast.onDidDismiss();
+      this.location.back();
+    }
+  }
+
+  private updateAccountMeta(account: Account) {
+    const accountType =
+      account.type === "user"
+        ? "Profile"
+        : account.type.charAt(0).toUpperCase() + account.type.slice(1);
+    const descriptionPrefix =
+      account.type === "user"
+        ? `Explore ${account.name}'s profile. Learn about their volunteering efforts and achievements on ASCENDynamics NFP.`
+        : `Discover ${account.name}. Join their efforts to make a difference through volunteering.`;
+    const tags =
+      account.type === "user"
+        ? "profile, user, volunteer"
+        : "group, volunteer, community";
+
+    this.metaService.updateMetaTags(
+      `${account.name} | ASCENDynamics NFP`,
+      descriptionPrefix,
+      tags,
+      {
+        title: `${account.name} | ASCENDynamics NFP`,
+        description: descriptionPrefix,
+        url: `https://app.ASCENDynamics.org/account/${account.id}`,
+        image:
+          account.iconImage ||
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+      },
+      {
+        card: "summary_large_image",
+        title: `${account.name}`,
+        description: descriptionPrefix,
+        image:
+          account.iconImage ||
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+      },
+    );
+
+    // Add structured data for profile/group pages
+    if (account.type === "user") {
+      this.metaService.addStructuredData({
+        "@context": "https://schema.org",
+        "@type": "Person",
+        name: account.name,
+        description:
+          account.description ||
+          `${account.name}'s profile on ASCENDynamics NFP`,
+        url: `https://app.ASCENDynamics.org/account/${account.id}`,
+        image:
+          account.iconImage ||
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        memberOf: {
+          "@type": "Organization",
+          name: "ASCENDynamics NFP",
+        },
+        knowsAbout: ["Volunteering", "Community Service", "Nonprofit Work"],
+      });
+    } else {
+      this.metaService.addStructuredData({
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        name: account.name,
+        description:
+          account.description ||
+          `${account.name} organization on ASCENDynamics NFP`,
+        url: `https://app.ASCENDynamics.org/account/${account.id}`,
+        logo:
+          account.iconImage ||
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        parentOrganization: {
+          "@type": "Organization",
+          name: "ASCENDynamics NFP",
+        },
+        areaServed: "Global",
+        knowsAbout: ["Volunteering", "Community Service", "Nonprofit Work"],
+      });
+    }
+  }
+
+  private setDefaultMeta() {
+    this.metaService.updateMetaTags(
+      "Profile | ASCENDynamics NFP",
+      "View and manage your profile details, volunteering history, and preferences on ASCENDynamics NFP.",
+      "profile, volunteer, community, nonprofits",
+      {
+        title: "Profile | ASCENDynamics NFP",
+        description:
+          "Manage your profile and connect with volunteering opportunities on ASCENDynamics NFP.",
+        url: "https://app.ASCENDynamics.org/",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+      },
+      {
+        card: "summary",
+        title: "Profile | ASCENDynamics NFP",
+        description:
+          "Customize your profile and stay connected with your community.",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+      },
+    );
+
+    // Add structured data for default profile page
+    this.metaService.addStructuredData({
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "Profile | ASCENDynamics NFP",
+      description:
+        "View and manage your profile details, volunteering history, and preferences on ASCENDynamics NFP.",
+      url: "https://app.ASCENDynamics.org/profile",
+      isPartOf: {
+        "@type": "WebSite",
+        name: "ASCENDynamics NFP",
+        url: "https://app.ASCENDynamics.org",
+      },
+      potentialAction: {
+        "@type": "ViewAction",
+        target: "https://app.ASCENDynamics.org/profile",
+      },
     });
   }
 }

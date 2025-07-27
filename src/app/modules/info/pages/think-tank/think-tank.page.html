@@ -1,0 +1,163 @@
+<ion-header [translucent]="true">
+  <app-header title="Think Tank"></app-header>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- <ion-header collapse="condense">
+    <app-header title="Think Tank"></app-header>
+  </ion-header> -->
+  <ion-grid fixed>
+    <ion-card class="ion-margin">
+      <ion-card-header>
+        <ion-card-title>About the Think Tank</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          The ASCENDynamics Think Tank is our innovation hub for envisioning a
+          better future. It's a space for visionary thinking, strategizing, and
+          problem-solving around the challenges faced by cooperatives and
+          nonprofits. We bring together community leaders, volunteers, and
+          experts to explore creative solutions for economic empowerment and
+          social justice. In our Think Tank, big ideas flourish – from new
+          cooperative business models to SEO research that helps grassroots
+          movements amplify their voice online. Everything we learn and develop
+          here feeds back into our platform and community, fueling continuous
+          improvement and inspiration.
+        </p>
+      </ion-card-content>
+    </ion-card>
+    <ion-img
+      class="content-image"
+      style="
+        margin-bottom: 1rem;
+        max-height: 300px;
+        object-fit: cover;
+        object-position: 50% 50%;
+        overflow: hidden;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      "
+      src="assets/image/pexels-fauxels-3183197.jpg"
+    ></ion-img>
+    <ion-card class="ion-margin">
+      <ion-card-header>
+        <ion-card-title>Research</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          Our Think Tank spearheads research into topics that matter for
+          cooperative and nonprofit success. We publish insights on worker-owned
+          cooperative development, effective nonprofit collaboration strategies,
+          and technological innovations for social impact. Recent research
+          topics include open-source software tools for volunteer coordination,
+          digital marketing strategies for mutual aid groups, and case studies
+          on successful cooperative enterprises. All our research and
+          publications are openly shared, providing a knowledge base that anyone
+          can use to further their own mission. By turning research into action,
+          we help grassroots organizations stay informed and empowered with the
+          best practices available.
+        </p>
+      </ion-card-content>
+    </ion-card>
+    <ion-img
+      class="content-image"
+      style="
+        margin-bottom: 1rem;
+        max-height: 300px;
+        object-fit: cover;
+        object-position: 50% 50%;
+        overflow: hidden;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      "
+      src="assets/image/pexels-lukas-590022.jpg"
+    ></ion-img>
+    <ion-card class="ion-margin">
+      <ion-card-header>
+        <ion-card-title>Events & Workshops</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          Innovation doesn't happen in isolation – that's why our Think Tank
+          hosts events, workshops, and webinars to bring people together. Join
+          hackathons, panel discussions, and collaborative workshops where
+          like-minded nonprofit professionals, tech enthusiasts, and community
+          organizers brainstorm and build new solutions. For example, you might
+          participate in a hackathon to develop an open-source volunteer
+          tracking app, or attend a roundtable on improving nonprofit outreach
+          through technology. These events are designed to spark collaboration
+          and let participants share expertise.
+        </p>
+        <p>
+          Participate in our next Think Tank event to network with changemakers
+          and contribute your ideas. Together, we'll transform bold concepts
+          into real-world initiatives that uplift our communities.
+        </p>
+      </ion-card-content>
+    </ion-card>
+    <ion-img
+      class="content-image"
+      style="
+        margin-bottom: 1rem;
+        max-height: 300px;
+        object-fit: cover;
+        object-position: 50% 50%;
+        overflow: hidden;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      "
+      src="assets/image/jakob-dalbjorn-cuKJre3nyYc-unsplash.jpg"
+    ></ion-img>
+  </ion-grid>
+  <ion-footer>
+    <div class="footer">
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" size-md="4" class="footer-logo">
+            <img
+              src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
+              alt="ASCENDynamics Logo"
+            />
+          </ion-col>
+          <ion-col size="12" size-md="4" class="footer-nav">
+            <h3>Quick Links</h3>
+            <ul>
+              <li>
+                <a (click)="openLegalModal('privacyPolicy')">Privacy Policy</a>
+              </li>
+              <li>
+                <a (click)="openLegalModal('termsOfUse')">Terms of Service</a>
+              </li>
+            </ul>
+          </ion-col>
+          <ion-col size="12" size-md="4" class="footer-social">
+            <h3>Follow Us</h3>
+            <ion-buttons class="social-buttons">
+              <ion-button
+                href="https://github.com/ASCENDynamics-NFP"
+                target="_blank"
+                ><ion-icon slot="icon-only" name="logo-github"></ion-icon
+              ></ion-button>
+              <ion-button
+                href="https://www.facebook.com/ASCENDynamicsNFP"
+                target="_blank"
+                ><ion-icon slot="icon-only" name="logo-facebook"></ion-icon
+              ></ion-button>
+              <ion-button
+                href="https://www.linkedin.com/company/ascendynamics-nfp"
+                target="_blank"
+                ><ion-icon slot="icon-only" name="logo-linkedin"></ion-icon
+              ></ion-button>
+            </ion-buttons>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+      <div class="footer-bottom">
+        <p>&copy; {{ currentYear }} ASCENDynamics NFP. All rights reserved.</p>
+      </div>
+    </div>
+  </ion-footer>
+</ion-content>

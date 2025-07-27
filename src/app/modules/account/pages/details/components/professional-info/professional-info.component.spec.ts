@@ -19,8 +19,9 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
-
+import {CommonModule} from "@angular/common";
 import {ProfessionalInfoComponent} from "./professional-info.component";
+import {NO_ERRORS_SCHEMA} from "@angular/core";
 
 describe("ProfessionalInfoComponent", () => {
   let component: ProfessionalInfoComponent;
@@ -28,8 +29,9 @@ describe("ProfessionalInfoComponent", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [],
-      imports: [IonicModule.forRoot()],
+      declarations: [ProfessionalInfoComponent],
+      imports: [IonicModule.forRoot(), CommonModule],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProfessionalInfoComponent);

@@ -29,18 +29,25 @@ import {
   selectAuthError,
 } from "../../state/selectors/auth.selectors";
 import {AuthState} from "../../state/reducers/auth.reducer";
+import {Observable} from "rxjs";
+import {AuthUser} from "@shared/models/auth-user.model";
 
 @Injectable({
   providedIn: "root",
 })
 export class AuthService {
   // Observables for components to subscribe to
-  authUser$ = this.store.select(selectAuthUser);
-  isLoggedIn$ = this.store.select(selectIsLoggedIn);
-  loading$ = this.store.select(selectAuthLoading);
-  error$ = this.store.select(selectAuthError);
+  authUser$: Observable<AuthUser | null>;
+  isLoggedIn$: Observable<boolean>;
+  loading$: Observable<boolean>;
+  error$: Observable<string | null>;
 
-  constructor(private store: Store<AuthState>) {}
+  constructor(private store: Store<AuthState>) {
+    this.authUser$ = this.store.select(selectAuthUser);
+    this.isLoggedIn$ = this.store.select(selectIsLoggedIn);
+    this.loading$ = this.store.select(selectAuthLoading);
+    this.error$ = this.store.select(selectAuthError);
+  }
 
   // Sign-Up
   signUp(email: string, password: string): void {

@@ -21,12 +21,26 @@ module.exports = {
     "/lib/**/*", // Ignore built files.
     ".eslintrc.js" // Ignore ESLint config file.
   ],
+  overrides: [
+    {
+      files: ["test/**/*.ts"],
+      parserOptions: {
+        project: ["tsconfig.test.json"],
+      },
+      env: { mocha: true },
+      rules: {
+        "@typescript-eslint/no-var-requires": "off",
+        "require-jsdoc": "off",
+        "quote-props": "off", // Disable quote-props for test files
+      },
+    },
+  ],
   plugins: ["@typescript-eslint", "import"],
   rules: {
     "quotes": ["error", "double"],
     "import/no-unresolved": 0,
     "indent": ["warn", 2],
-    "max-len": ["warn", { "code": 120 }],
+    "max-len": ["warn", { "code": 150 }],
     "operator-linebreak": "off"
   },
 };

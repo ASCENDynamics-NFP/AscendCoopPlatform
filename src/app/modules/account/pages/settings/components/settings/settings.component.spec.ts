@@ -25,8 +25,8 @@
 // import {TranslateService} from "@ngx-translate/core";
 // import {Store, StoreModule} from "@ngrx/store";
 // import {NO_ERRORS_SCHEMA} from "@angular/core";
-// import {AuthUser} from "../../../../../../models/auth-user.model";
-// import {Account} from "../../../../../../models/account.model";
+// import {AuthUser} from "@shared/models/auth-user.model";
+// import {Account} from "@shared/models/account.model";
 // import * as AccountActions from "../../../../../../state/actions/account.actions";
 // import {By} from "@angular/platform-browser";
 // import {Timestamp} from "firebase/firestore";
@@ -52,7 +52,6 @@
 //     name: "Test Account",
 //     type: "user",
 //     privacy: "public",
-//     relatedAccounts: [],
 //     tagline: "",
 //     description: "",
 //     iconImage: "",

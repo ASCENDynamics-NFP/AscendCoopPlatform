@@ -24,7 +24,7 @@ import * as AuthActions from "../../state/actions/auth.actions";
 import {selectAuthUser} from "../../state/selectors/auth.selectors";
 import {RouterTestingModule} from "@angular/router/testing";
 import {provideMockStore, MockStore} from "@ngrx/store/testing";
-import {AuthUser} from "../../models/auth-user.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 
 describe("AuthGuard", () => {
   let guard: AuthGuard;
@@ -35,8 +35,19 @@ describe("AuthGuard", () => {
     uid: "12345",
     email: "test@example.com",
     displayName: null,
-    photoURL: null,
+    iconImage: null,
     emailVerified: false,
+    heroImage: null,
+    tagline: null,
+    type: null,
+    createdAt: null,
+    lastLoginAt: null,
+    phoneNumber: null,
+    providerData: [],
+    settings: {
+      language: "en",
+      theme: "light",
+    },
   };
 
   beforeEach(() => {
@@ -59,7 +70,7 @@ describe("AuthGuard", () => {
     const result = await guard.canActivate();
 
     expect(result).toBeFalse();
-    expect(router.navigate).toHaveBeenCalledWith(["/login"]);
+    expect(router.navigate).toHaveBeenCalledWith(["/auth/login"]);
   });
 
   it("should send verification email and redirect to login if user is not verified", async () => {
@@ -72,7 +83,7 @@ describe("AuthGuard", () => {
       AuthActions.sendVerificationMail({email: mockAuthUser.email!}),
     );
     expect(store.dispatch).toHaveBeenCalledWith(AuthActions.signOut());
-    // expect(router.navigate).toHaveBeenCalledWith(["/login"]);
+    // expect(router.navigate).toHaveBeenCalledWith(["/auth/login"]);
   });
   it("should allow navigation if user is authenticated and verified", async () => {
     // Set emailVerified to true to test the successful navigation

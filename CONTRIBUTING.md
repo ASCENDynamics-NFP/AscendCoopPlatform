@@ -24,7 +24,7 @@ By participating in this project, you are expected to uphold our [Code of Conduc
 
    This will allow you to pull changes from the main repository and keep your fork up-to-date.
 
-4. **Set up the development environment**: Follow the instructions in the [README.md](README.md) file to set up your local development environment.
+4. **Set up the development environment**: Follow the instructions in the [README.md](README.md) file to set up your local development environment. Installing dependencies (`npm install`) automatically sets up Git hooks. If you don't see them, run `npm run prepare`.
 
 ## Contributing Code
 

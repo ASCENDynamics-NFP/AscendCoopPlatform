@@ -1,0 +1,189 @@
+/*******************************************************************************
+****************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+*
+* This file is part of Nonprofit Social Networking Platform.
+*
+* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+*
+* You should have received a copy of the GNU Affero General Public License
+* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+*******************************************************************************/
+
+// Error item styling
+.error-item {
+  --background: rgba(var(--ion-color-danger-rgb), 0.1);
+  --border-color: var(--ion-color-danger);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+// Add project card
+.add-project-card {
+  margin-bottom: 20px;
+
+  .title-icon {
+    margin-right: 8px;
+    color: var(--ion-color-primary);
+  }
+
+  ion-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+  }
+
+  ion-input {
+    --padding-start: 12px;
+    --padding-end: 8px;
+  }
+}
+
+// Projects section cards
+.projects-section {
+  margin-bottom: 20px;
+
+  .section-header {
+    padding-bottom: 8px;
+
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .title-icon {
+      margin-right: 10px;
+      font-size: 1.3rem;
+    }
+
+    .count-badge {
+      margin-left: auto;
+      font-size: 0.8rem;
+      padding: 4px 8px;
+    }
+  }
+
+  .no-padding {
+    padding: 0;
+  }
+}
+
+// Project items
+.project-item {
+  --min-height: 60px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --inner-padding-end: 0;
+  margin-bottom: 1px;
+
+  .project-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    margin-left: 12px;
+  }
+
+  .project-name {
+    font-weight: 500;
+    font-size: 1rem;
+  }
+
+  .project-name-input {
+    --padding-start: 0;
+    --padding-end: 0;
+    font-weight: 500;
+    font-size: 1rem;
+  }
+
+  .project-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+// Active projects
+.active-project {
+  --background: rgba(var(--ion-color-success-rgb), 0.05);
+  border-left: 3px solid var(--ion-color-success);
+}
+
+// Archived projects
+.archived-section {
+  .section-header {
+    .title-icon {
+      color: var(--ion-color-medium);
+    }
+  }
+}
+
+.archived-project {
+  --background: rgba(var(--ion-color-medium-rgb), 0.05);
+  border-left: 3px solid var(--ion-color-medium);
+  opacity: 0.8;
+}
+
+.archived-badge {
+  margin-left: 8px;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+}
+
+// Empty state
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ion-color-medium);
+
+  .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  p {
+    margin: 8px 0;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .empty-subtitle {
+    font-size: 0.9rem;
+    font-weight: 400;
+    opacity: 0.8;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .project-item {
+    --min-height: 56px;
+    --padding-start: 12px;
+    --padding-end: 12px;
+
+    .project-name {
+      font-size: 0.95rem;
+    }
+
+    .project-name-input {
+      font-size: 0.95rem;
+    }
+  }
+
+  .add-project-card {
+    ion-card-header {
+      padding-bottom: 8px;
+    }
+  }
+}

@@ -2,9 +2,32 @@
 
 Ascend Co-op Platform is an open-source platform built using Ionic and Firebase, aimed at fostering collaboration and growth for worker-owned cooperatives, nonprofit organizations, and private organizations. It offers features like user profiles, group management, real-time data, and collaboration tools to address various challenges and facilitate communication between organizations.
 
+For a deeper look at the application layout and how the frontend communicates with Firebase, see [docs/architecture.md](docs/architecture.md).
+
+
 ## Development
 
 This project uses a continuous development process. As changes are made, they are immediately deployed to a development environment.
+
+### Running Tests
+
+To execute the unit tests for both the Angular application and Firebase functions run:
+
+```bash
+npm run test
+```
+
+This command will build the project and run all Jasmine and Mocha tests. Ensure
+`@angular/cli` is installed globally and that a headless Chrome binary is
+available so Karma can launch the browser.
+
+Example installation on Ubuntu:
+
+```bash
+npm install -g @angular/cli
+sudo apt-get update
+sudo apt-get install -y chromium-browser
+```
 
 ## Latest Development Environment
 
@@ -38,6 +61,7 @@ We look forward to your contributions and engaging discussions!
   - Group creation and management
   - Real-time data to address issues
   - Collaboration features, such as event proposals, voting, and commenting
+  - Landing page lead form to collect inquiries
 
 - Utopian Think Tank
   - Collaborate with organizations and research
@@ -55,10 +79,16 @@ We look forward to your contributions and engaging discussions!
 1. Install Node.js, npm, Ionic CLI, and Angular CLI on your development machine.
 2. Clone this repository: `git clone https://github.com/ASCENDynamics-NFP/AscendCoopPlatform.git`
 3. Change to the project directory: `cd AscendCoopPlatform`
-4. Install dependencies: `npm install`
-5. Add your Firebase configuration to the `src/environments/environment.ts` and `src/environments/environment.prod.ts` files.
-6. Run the development server: `ionic serve`
-7. Open your browser and navigate to `http://localhost:8100/` to view the app.
+4. Install dependencies: `npm install` (Git hooks are installed automatically). If you don't see them, run `npm run prepare`.
+5. Create `.env.development` (and optionally `.env.production`) with your Firebase credentials. The file should define variables such as `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_DATABASE_URL`, `FIREBASE_PROJECT_ID`, `FIREBASE_STORAGE_BUCKET`, `FIREBASE_MESSAGING_SENDER_ID`, `FIREBASE_APP_ID`, `FIREBASE_MEASUREMENT_ID`, and `FIREBASE_API_URL`.
+   The `FIREBASE_API_URL` value is required for submitting leads from the landing page form.
+6. Run `npm run generate-env:dev` (or `NODE_ENV=development node generate-env.js`) to generate `src/environments/environment.ts`. Use `npm run generate-env:prod` for production.
+7. Run the development server: `ionic serve`
+8. Open your browser and navigate to `http://localhost:8100/` to view the app.
+
+### Local environment variables
+
+The `generate-env.js` script reads values from `.env.development` when generating `src/environments/environment.ts`. Make sure your `.env.development` file exists locally and contains your Firebase keys. These `.env` files are ignored by Git so your credentials remain private. If `src/environments/environment.ts` is missing, re-run `npm run generate-env:dev` before starting the app.
 
 ## [Contributing](CONTRIBUTING.md)
 

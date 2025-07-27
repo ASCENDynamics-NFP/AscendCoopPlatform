@@ -17,9 +17,60 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+
+ion-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 8px; /* Add padding for spacing */
+}
+
+.toolbar-content {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Spacing between logo and title */
+  flex-grow: 1; /* Take up available space between start and end buttons */
+  color: var(--ion-color-primary);
+}
+
+.toolbar-logo {
+  height: 30px;
+  margin-right: -20px;
+}
+
+.header-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.0125em;
+  white-space: nowrap; /* Prevent text wrapping */
+  text-align: left;
+}
+
+.toolbar-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Spacing between buttons/avatars */
+}
+
 .padded-avatar {
   max-height: 40px;
   max-width: 40px;
   margin: 3px 15px 3px 3px;
   border: 2px solid #e87121;
+}
+
+ion-title {
+  margin: 0; /* Reset any default margins */
+}
+
+ion-buttons ion-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --border-radius: 20px;
+}
+
+@media (max-width: 500px) {
+  .toolbar-logo {
+    display: none;
+  }
 }

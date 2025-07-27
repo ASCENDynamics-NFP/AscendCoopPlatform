@@ -20,7 +20,8 @@
 // src/app/modules/account/pages/group-list/group-list.page.ts
 
 import {Component, OnInit} from "@angular/core";
-import {Subject, Observable, combineLatest, of} from "rxjs";
+import {Router} from "@angular/router";
+import {Subject, Observable, BehaviorSubject, combineLatest} from "rxjs";
 import {
   debounceTime,
   startWith,
@@ -28,51 +29,93 @@ import {
   map,
   distinctUntilChanged,
   take,
+  filter,
 } from "rxjs/operators";
 import {Store} from "@ngrx/store";
-import {AuthUser} from "../../../../models/auth-user.model";
-import {Account, RelatedAccount} from "../../../../models/account.model";
+import {AuthUser} from "@shared/models/auth-user.model";
+import {Account, RelatedAccount} from "@shared/models/account.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {
   selectFilteredAccounts,
   selectAccountLoading,
-  selectSelectedAccount,
-  selectRelatedAccounts,
+  selectRelatedAccountsByAccountId,
 } from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
+import {ViewWillEnter} from "@ionic/angular";
+import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
   selector: "app-group-list",
   templateUrl: "./group-list.page.html",
   styleUrls: ["./group-list.page.scss"],
 })
-export class GroupListPage implements OnInit {
+export class GroupListPage implements OnInit, ViewWillEnter {
   private searchTerms = new Subject<string>();
   authUser$!: Observable<AuthUser | null>;
   accountList$!: Observable<Account[]>;
-  selectedAccount$!: Observable<Account | undefined>;
-  searchedValue: string = "";
+  paginatedAccounts$!: Observable<Account[]>;
+  totalItems$!: Observable<number>;
   loading$: Observable<boolean>;
+  searchedValue: string = "";
 
-  constructor(private store: Store) {
+  // Pagination State
+  pageSize = 10; // Number of groups per page
+  currentPageSubject = new BehaviorSubject<number>(1);
+  currentPage$ = this.currentPageSubject.asObservable();
+  totalPages$!: Observable<number>;
+
+  constructor(
+    private metaService: MetaService,
+    private store: Store,
+    private router: Router,
+  ) {
     this.loading$ = this.store.select(selectAccountLoading);
+  }
+
+  ionViewWillEnter() {
+    this.loadRelatedAccountsForAuthUser();
+    this.metaService.updateMetaTags(
+      "Search NGOs | ASCENDynamics NFP",
+      "Find opportunities, groups, and profiles tailored to your interests on ASCENDynamics NFP.",
+      "search, opportunities, volunteer, nonprofits",
+      {
+        title: "Search NGOs | ASCENDynamics NFP",
+        description:
+          "Discover listings, profiles, and groups that match your search criteria.",
+        url: "https://app.ASCENDynamics.org/search",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+      },
+      {
+        card: "summary_large_image",
+        title: "Search Results",
+        description:
+          "Browse search results and find opportunities that match your interests.",
+        image:
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+      },
+    );
+  }
+
+  private loadRelatedAccountsForAuthUser() {
+    this.authUser$
+      .pipe(
+        filter((authUser): authUser is AuthUser => authUser !== null),
+        take(1),
+      )
+      .subscribe((authUser) => {
+        this.store.dispatch(
+          AccountActions.loadRelatedAccounts({accountId: authUser.uid}),
+        );
+      });
   }
 
   ngOnInit() {
     this.authUser$ = this.store.select(selectAuthUser);
 
-    this.selectedAccount$ = this.authUser$.pipe(
-      switchMap((authUser) => {
-        if (authUser?.uid) {
-          return this.store
-            .select(selectSelectedAccount)
-            .pipe(map((account) => account || undefined));
-        }
-        return of(undefined);
-      }),
-    );
+    this.store.dispatch(AccountActions.loadAccounts());
 
-    this.accountList$ = this.searchTerms.pipe(
+    const filteredAccounts$ = this.searchTerms.pipe(
       startWith(this.searchedValue),
       debounceTime(300),
       distinctUntilChanged(),
@@ -81,24 +124,35 @@ export class GroupListPage implements OnInit {
       ),
     );
 
-    this.store.dispatch(AccountActions.loadAccounts());
+    // Total Items for Pagination
+    this.totalItems$ = filteredAccounts$.pipe(
+      map((accounts) => accounts.length),
+    );
 
-    this.authUser$.pipe(take(1)).subscribe((authUser) => {
-      if (authUser?.uid) {
-        this.store.dispatch(
-          AccountActions.setSelectedAccount({accountId: authUser.uid}),
-        );
+    // Total Pages
+    this.totalPages$ = this.totalItems$.pipe(
+      map((totalItems) => Math.ceil(totalItems / this.pageSize)),
+    );
 
-        this.store.dispatch(
-          AccountActions.loadRelatedAccounts({accountId: authUser.uid}),
-        );
-      }
-    });
+    // Paginated Results
+    this.paginatedAccounts$ = combineLatest([
+      filteredAccounts$,
+      this.currentPage$,
+    ]).pipe(
+      map(([accounts, currentPage]) => {
+        const startIndex = (currentPage - 1) * this.pageSize;
+        return accounts.slice(startIndex, startIndex + this.pageSize);
+      }),
+    );
   }
 
   search(event: any) {
     const value = event.target.value;
     this.searchTerms.next(value);
+  }
+
+  goToPage(pageNumber: number) {
+    this.currentPageSubject.next(pageNumber);
   }
 
   sendRequest(account: Account) {
@@ -108,8 +162,16 @@ export class GroupListPage implements OnInit {
         return;
       }
 
+      // If account type is "new", redirect to registration
+      if (account.type === "new") {
+        // Navigate to registration page
+        this.router.navigate([`/account/registration/${account.id}`]);
+        return;
+      }
+
       const newRelatedAccount: RelatedAccount = {
         id: account.id,
+        accountId: authUser.uid,
         initiatorId: authUser.uid,
         targetId: account.id,
         type: account.type,
@@ -118,6 +180,8 @@ export class GroupListPage implements OnInit {
         tagline: account.tagline,
         name: account.name,
         iconImage: account.iconImage,
+        createdBy: authUser.uid,
+        lastModifiedBy: authUser.uid,
       };
 
       this.store.dispatch(
@@ -130,21 +194,30 @@ export class GroupListPage implements OnInit {
   }
 
   showRequestButton(item: Account): Observable<boolean> {
-    return combineLatest([
-      this.authUser$,
-      this.store.select(selectRelatedAccounts),
-    ]).pipe(
-      map(([authUser, relatedAccounts]) => {
-        const authUserId = authUser?.uid;
-        if (!authUserId || authUserId === item.id) {
+    return this.authUser$.pipe(
+      filter((authUser): authUser is AuthUser => authUser !== null),
+      switchMap((authUser) =>
+        this.store.select(selectRelatedAccountsByAccountId(authUser.uid)).pipe(
+          map((relatedAccounts) => ({
+            authUser,
+            relatedAccounts,
+          })),
+        ),
+      ),
+      map(({authUser, relatedAccounts}) => {
+        if (authUser.uid === item.id) {
           return false;
         }
 
-        // Check against the `relatedAccounts` from the state
+        // Don't show request button for accounts with "new" type
+        if (item.type === "new") {
+          return false;
+        }
+
         const shouldShowButton = !relatedAccounts.some(
           (ra) =>
-            ((ra.initiatorId === item.id && ra.targetId === authUserId) ||
-              (ra.initiatorId === authUserId && ra.targetId === item.id)) &&
+            ((ra.initiatorId === item.id && ra.targetId === authUser.uid) ||
+              (ra.initiatorId === authUser.uid && ra.targetId === item.id)) &&
             ra.status !== "rejected",
         );
 

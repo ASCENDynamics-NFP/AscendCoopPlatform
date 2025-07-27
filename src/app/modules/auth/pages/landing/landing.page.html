@@ -1,0 +1,238 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<!-- landing.page.html -->
+
+<ion-header>
+  <app-header title="Home" [showLogo]="true"></app-header>
+</ion-header>
+
+<ion-content fullscreen>
+  <!-- Hero Section -->
+  <section class="hero">
+    <ion-grid>
+      <ion-row class="ion-justify-content-center">
+        <ion-col
+          size="10"
+          size-md="8"
+          size-lg="8"
+          size-xl="8"
+          class="hero-text"
+        >
+          <!-- <h1>
+            <span style="color: #808080">Empowering</span> Worker-Owned
+            Cooperatives to Succeed
+          </h1>
+          <p>
+            Join us in transforming the future of work. Connect with nonprofits,
+            volunteer, and make an impact.
+          </p> -->
+          <h1>
+            <span style="color: var(--ion-color-primary)"
+              >ASCENDynamics NFP:</span
+            >
+            Open-Source Collaboration Platform
+          </h1>
+          <p>
+            ASCENDynamics is an open-source collaboration platform for
+            nonprofits, mutual aid groups, and cooperative startups. We bridge
+            these communities with volunteers and donors to innovate and drive
+            social impact through technology. By empowering organizations to
+            work together in real time, we help build stronger, more connected
+            networks dedicated to positive change.
+          </p>
+          <ion-button routerLink="/auth/signup" color="primary"
+            >Try Now</ion-button
+          >
+        </ion-col>
+        <ion-col size="12" size-md="12" class="hero-image">
+          <swiper-container
+            [slidesPerView]="2"
+            space-between="20"
+            #swiperElement
+            init="false"
+          >
+            <swiper-slide>
+              <img
+                src="assets/image/hero1.png"
+                alt="Two people collaborating on a computer project"
+              />
+            </swiper-slide>
+            <swiper-slide>
+              <img
+                src="assets/image/hero2.png"
+                alt="Volunteers engaged in a meeting to coordinate efforts"
+              />
+            </swiper-slide>
+          </swiper-container>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </section>
+  <!-- Features Section -->
+  <section class="">
+    <app-homepage-listings></app-homepage-listings>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features">
+    <h2>ASCENDynamics NFP Cooperative Platform Features</h2>
+    <ion-grid>
+      <ion-row>
+        <!-- Feature Card -->
+        <ion-col size="12" size-md="4" *ngFor="let feature of features">
+          <ion-card>
+            <ion-card-header>
+              <ion-icon [name]="feature.icon" size="large"></ion-icon>
+              <ion-card-title>{{ feature.title }}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content> {{ feature.description }} </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </section>
+
+  <!-- Roadmap Section -->
+  <section class="roadmap">
+    <figure>
+      <figcaption>Development Roadmap</figcaption>
+      <img src="assets/image/roadmap.png" alt="Development Roadmap Phases" />
+    </figure>
+    <!--    <ion-accordion-group>-->
+    <!--      &lt;!&ndash; Phases &ndash;&gt;-->
+    <!--      <ion-accordion *ngFor="let phase of roadmap" value="{{ phase.id }}">-->
+    <!--        <ion-item slot="header">-->
+    <!--          <ion-label>-->
+    <!--            <h3>{{ phase.title }}</h3>-->
+    <!--            <p>{{ phase.subtitle }}</p>-->
+    <!--          </ion-label>-->
+    <!--          <ion-badge slot="end" [color]="phase.statusColor"-->
+    <!--            >{{ phase.status }}</ion-badge-->
+    <!--          >-->
+    <!--        </ion-item>-->
+    <!--        <div class="ion-padding" slot="content">-->
+    <!--          <ul>-->
+    <!--            <li *ngFor="let item of phase.items">-->
+    <!--              {{ item.name }}-->
+    <!--              <ion-badge [color]="item.statusColor"-->
+    <!--                >{{ item.status }}</ion-badge-->
+    <!--              >-->
+    <!--            </li>-->
+    <!--          </ul>-->
+    <!--        </div>-->
+    <!--      </ion-accordion>-->
+    <!--    </ion-accordion-group>-->
+  </section>
+
+  <!-- Testimonials Section -->
+  <!-- <section class="testimonials">
+    <h2>What Our Volunteers Say</h2>
+    <ion-slides [options]="testimonialOptions">
+      <ion-slide *ngFor="let testimonial of testimonials">
+        <ion-card>
+          <ion-card-content>
+            <p>"{{ testimonial.message }}"</p>
+            <h4>- {{ testimonial.author }}</h4>
+          </ion-card-content>
+        </ion-card>
+      </ion-slide>
+    </ion-slides>
+  </section> -->
+
+  <!-- Call to Action -->
+  <section class="cta">
+    <ion-card>
+      <ion-card-content>
+        <h2 style="color: var(--ion-text-color)">Join ASCENDynamics Today</h2>
+        <p style="color: var(--ion-text-color)">
+          Whether you're a nonprofit leader, a passionate volunteer, or a
+          supportive donor. Together, we can collaborate on projects that change
+          lives and amplify community impact. Get started and help grow a new
+          collaborative community!
+        </p>
+        <ion-button routerLink="/auth/signup" color="primary"
+          >Get Started</ion-button
+        >
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <section class="lead-form-section">
+    <app-lead-form></app-lead-form>
+  </section>
+
+  <!-- Footer Section -->
+  <ion-footer>
+    <div class="footer">
+      <ion-grid>
+        <ion-row>
+          <!-- Logo and Description -->
+          <ion-col size="12" size-md="4" class="footer-logo">
+            <img
+              src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
+              alt="ASCENDynamics Logo"
+            />
+          </ion-col>
+
+          <!-- Navigation Links -->
+          <ion-col size="12" size-md="4" class="footer-nav">
+            <h3>Quick Links</h3>
+            <ul>
+              <li>
+                <a (click)="openLegalModal('privacyPolicy')">Privacy Policy</a>
+              </li>
+              <li>
+                <a (click)="openLegalModal('termsOfUse')">Terms of Service</a>
+              </li>
+            </ul>
+          </ion-col>
+
+          <!-- Social Media Links -->
+          <ion-col size="12" size-md="4" class="footer-social">
+            <h3>Follow Us</h3>
+            <ion-buttons class="social-buttons">
+              <ion-button
+                href="https://github.com/ASCENDynamics-NFP"
+                target="_blank"
+              >
+                <ion-icon slot="icon-only" name="logo-github"></ion-icon>
+              </ion-button>
+              <ion-button
+                href="https://www.facebook.com/ASCENDynamicsNFP"
+                target="_blank"
+              >
+                <ion-icon slot="icon-only" name="logo-facebook"></ion-icon>
+              </ion-button>
+              <ion-button
+                href="https://www.linkedin.com/company/ascendynamics-nfp"
+                target="_blank"
+              >
+                <ion-icon slot="icon-only" name="logo-linkedin"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+      <div class="footer-bottom">
+        <p>&copy; {{ currentYear }} ASCENDynamics NFP. All rights reserved.</p>
+      </div>
+    </div>
+  </ion-footer>
+</ion-content>

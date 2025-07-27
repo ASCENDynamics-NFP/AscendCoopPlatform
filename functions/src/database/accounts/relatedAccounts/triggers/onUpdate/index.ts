@@ -17,63 +17,76 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import {
+  onDocumentUpdated,
+  FirestoreEvent,
+  Change,
+} from "firebase-functions/v2/firestore";
+import {admin} from "../../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
-import {Change, EventContext} from "firebase-functions";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
 
 // Initialize the Firebase admin SDK
-if (!admin.apps.length) {
-  admin.initializeApp();
-}
 // Reference to the Firestore database
 const db = admin.firestore();
 
 /**
  * Cloud Function triggered when a document in the `relatedAccounts` sub-collection of an `accounts` document is updated.
  */
-export const onUpdateRelatedAccount = functions.firestore
-  .document("accounts/{accountId}/relatedAccounts/{relatedAccountId}")
-  .onUpdate(handleRelatedAccountUpdate);
+export const onUpdateRelatedAccount = onDocumentUpdated(
+  {
+    document: "accounts/{accountId}/relatedAccounts/{relatedAccountId}",
+    region: "us-central1",
+  },
+  async (event: FirestoreEvent<Change<QueryDocumentSnapshot> | undefined>) => {
+    const accountId = event.params.accountId;
+    const relatedAccountId = event.params.relatedAccountId;
 
-/**
- * Handles the update of a related account document, ensuring the corresponding reciprocal document is also updated.
- *
- * @param {Change<QueryDocumentSnapshot>} change - The change object representing the before and after state of the document.
- * @param {EventContext} context - The context of the event, providing parameters and identifiers.
- */
-async function handleRelatedAccountUpdate(
-  change: Change<QueryDocumentSnapshot>,
-  context: EventContext,
-) {
-  const accountId = context.params.accountId;
-  const relatedAccountId = context.params.relatedAccountId;
-  const after = change.after.data();
-  const before = change.before.data();
-
-  try {
-    if (
-      // If the status or relationship has changed, update the reciprocal related account document (prevents infinite loop on lastModifiedAt update)
-      before.status !== after.status ||
-      before.relationship !== after.relationship
-    ) {
-      const reciprocalRelatedAccountRef = db
-        .collection("accounts")
-        .doc(relatedAccountId)
-        .collection("relatedAccounts")
-        .doc(accountId);
-
-      await reciprocalRelatedAccountRef.update({
-        relationship: after.relationship,
-        status: after.status,
-        lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
-        lastModifiedBy: accountId,
-      });
-
-      logger.info("Related accounts updated successfully.");
+    if (!event.data?.after || !event.data?.before) {
+      logger.error("Missing before or after data in update event");
+      return;
     }
-  } catch (error) {
-    logger.error("Error updating related accounts: ", error);
-  }
-}
+
+    const after = event.data.after.data();
+    const before = event.data.before.data();
+
+    try {
+      if (
+        // If the status or relationship has changed, update the reciprocal related account document (prevents infinite loop on lastModifiedAt update)
+        before.status !== after.status ||
+        before.relationship !== after.relationship ||
+        before.access !== after.access
+      ) {
+        const reciprocalRelatedAccountRef = db
+          .collection("accounts")
+          .doc(relatedAccountId)
+          .collection("relatedAccounts")
+          .doc(accountId);
+
+        const reciprocalDoc = await reciprocalRelatedAccountRef.get();
+        const reciprocalData = reciprocalDoc.data();
+
+        if (
+          reciprocalData &&
+          (reciprocalData.status !== after.status ||
+            reciprocalData.relationship !== after.relationship ||
+            reciprocalData.access !== after.access)
+        ) {
+          await reciprocalRelatedAccountRef.update({
+            id: accountId,
+            accountId: relatedAccountId,
+            relationship: after.relationship,
+            status: after.status,
+            access: after.access,
+            lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+            lastModifiedBy: accountId,
+          });
+
+          logger.info("Related accounts updated successfully.");
+        }
+      }
+    } catch (error) {
+      logger.error("Error updating related accounts: ", error);
+    }
+  },
+);

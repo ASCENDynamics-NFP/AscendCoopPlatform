@@ -1,0 +1,461 @@
+:host {
+  display: block;
+}
+
+.approvals-content {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 20px;
+  --padding-bottom: 80px; // Add bottom padding to prevent cutoff
+}
+
+.content-container {
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: 24px;
+  padding-bottom: 60px; // Extra bottom padding for mobile devices
+  min-height: calc(100vh - 120px); // Ensure minimum height
+}
+
+.header-section {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: var(--ion-color-primary-tint, #e6f2ff);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--ion-color-primary-shade, #3171e0);
+
+  .account-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .account-avatar {
+      width: 64px;
+      height: 64px;
+      flex-shrink: 0;
+    }
+
+    .account-details {
+      flex: 1;
+
+      h1 {
+        margin: 0 0 4px 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--ion-color-primary-shade);
+      }
+
+      p {
+        margin: 0;
+        color: var(--ion-color-medium-shade);
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
+.controls-section {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  border: 1px solid var(--ion-color-medium-tint);
+
+  .week-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+
+    .current-period {
+      text-align: center;
+      flex: 1;
+
+      h3 {
+        margin: 0 0 4px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--ion-color-dark);
+      }
+
+      p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--ion-color-medium-shade);
+      }
+    }
+  }
+
+  .view-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    ion-segment {
+      flex: 1;
+      max-width: 400px;
+    }
+
+    ion-toggle {
+      --handle-background: var(--ion-color-primary);
+      --background: var(--ion-color-medium-tint);
+      --background-checked: var(--ion-color-primary-tint);
+      margin-left: auto;
+    }
+  }
+}
+
+.approvals-section {
+  margin-bottom: 40px; // Add bottom margin to prevent content cutoff
+
+  .section-header {
+    margin-bottom: 16px;
+
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 8px 0;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+
+      ion-icon {
+        font-size: 1.4rem;
+        color: var(--ion-color-primary);
+      }
+    }
+
+    .no-entries {
+      color: var(--ion-color-medium);
+      font-style: italic;
+      text-align: center;
+      padding: 40px 20px;
+      margin: 0;
+    }
+  }
+}
+
+.timesheet-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 16px;
+  --padding-bottom: 16px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  ion-label {
+    h2 {
+      margin: 0 0 4px 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+    }
+
+    h3 {
+      margin: 0 0 4px 0;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--ion-color-primary);
+    }
+
+    p {
+      margin: 0 0 8px 0;
+      color: var(--ion-color-medium);
+      font-size: 0.9rem;
+    }
+
+    .status-badge {
+      margin-top: 4px;
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 120px;
+
+    ion-button {
+      --height: 32px;
+      --padding-start: 12px;
+      --padding-end: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+
+      ion-icon {
+        font-size: 1rem;
+      }
+    }
+  }
+
+  .status-info {
+    display: flex;
+    align-items: center;
+
+    ion-chip {
+      --background: transparent;
+      --color: var(--ion-color-contrast);
+      font-weight: 500;
+    }
+  }
+}
+
+.details-item {
+  --padding-start: 48px;
+  --padding-end: 16px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  background: var(--ion-color-light, #f8f9fa);
+  border-top: 1px solid var(--ion-color-medium-tint);
+
+  .time-entries-details {
+    width: 100%;
+
+    h4 {
+      margin: 0 0 12px 0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--ion-color-medium-shade);
+    }
+
+    .entries-grid {
+      display: grid;
+      gap: 8px;
+
+      .entry-row {
+        display: grid;
+        grid-template-columns: 120px 1fr 60px auto;
+        gap: 12px;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--ion-color-light-shade);
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .date {
+          font-weight: 500;
+          color: var(--ion-color-dark);
+          font-size: 0.9rem;
+        }
+
+        .project {
+          font-weight: 500;
+          color: var(--ion-color-secondary);
+          font-size: 0.9rem;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .hours {
+          font-weight: 600;
+          color: var(--ion-color-primary);
+          text-align: right;
+          font-size: 0.9rem;
+        }
+
+        .notes {
+          color: var(--ion-color-medium-shade);
+          font-size: 0.85rem;
+          font-style: italic;
+        }
+      }
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+
+  ion-spinner {
+    margin-bottom: 16px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    margin: 0;
+    font-size: 1rem;
+  }
+}
+
+// Mobile adjustments
+@media (max-width: 768px) {
+  .content-container {
+    padding: 12px;
+  }
+
+  .header-section {
+    padding: 16px;
+
+    .account-info {
+      .account-avatar {
+        width: 48px;
+        height: 48px;
+      }
+
+      .account-details {
+        h1 {
+          font-size: 1.3rem;
+        }
+      }
+    }
+  }
+
+  .controls-section {
+    padding: 12px;
+
+    .week-navigation {
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+
+      .current-period {
+        order: -1;
+
+        h3 {
+          font-size: 1rem;
+        }
+
+        p {
+          font-size: 0.85rem;
+        }
+      }
+    }
+
+    .view-controls {
+      flex-direction: column;
+      gap: 12px;
+
+      ion-segment {
+        max-width: none;
+        font-size: 0.9rem;
+      }
+
+      ion-toggle {
+        margin-left: 0;
+        align-self: flex-start;
+      }
+    }
+  }
+
+  .timesheet-item {
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --padding-top: 12px;
+    --padding-bottom: 12px;
+
+    .action-buttons {
+      min-width: 100px;
+
+      ion-button {
+        --height: 28px;
+        font-size: 0.8rem;
+
+        ion-icon {
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+
+  .details-item {
+    --padding-start: 24px;
+    --padding-end: 12px;
+
+    .time-entries-details {
+      .entries-grid {
+        .entry-row {
+          grid-template-columns: 100px 120px 50px 1fr;
+          gap: 8px;
+          font-size: 0.85rem;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .timesheet-item {
+    .action-buttons {
+      flex-direction: row;
+      min-width: auto;
+      gap: 4px;
+
+      ion-button {
+        flex: 1;
+        --height: 32px;
+      }
+    }
+  }
+
+  .details-item {
+    .time-entries-details {
+      .entries-grid {
+        .entry-row {
+          grid-template-columns: 1fr;
+          gap: 4px;
+          text-align: left;
+
+          .date,
+          .project,
+          .hours {
+            text-align: left;
+          }
+
+          .project {
+            font-weight: 400;
+            color: var(--ion-color-secondary-shade);
+          }
+        }
+      }
+    }
+  }
+}
+
+// Focus styles for accessibility
+ion-button:focus-visible {
+  outline: 2px solid var(--ion-color-primary);
+  outline-offset: 2px;
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .timesheet-item,
+  .header-section {
+    border: 2px solid var(--ion-color-dark);
+  }
+
+  .details-item {
+    border-top: 2px solid var(--ion-color-dark);
+  }
+}
+
+// Mobile-specific spacing to prevent content cutoff
+@media (max-width: 768px) {
+  .content-container {
+    padding-bottom: 80px; // Extra bottom padding on mobile
+  }
+
+  .approvals-section {
+    margin-bottom: 60px; // Additional bottom margin on mobile
+  }
+}
+
+// Safe area support for devices with notches/home indicators
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .approvals-content {
+    --padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+}

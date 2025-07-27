@@ -20,79 +20,50 @@
 // src/app/state/reducers/account.reducer.ts
 
 import {createReducer, on} from "@ngrx/store";
+import {createEntityAdapter, EntityAdapter, EntityState} from "@ngrx/entity";
 import * as AccountActions from "../actions/account.actions";
-import {Account, RelatedAccount} from "../../models/account.model";
+import {Account, RelatedAccount} from "@shared/models/account.model";
+import {GroupRole} from "@shared/models/group-role.model";
+import {RelatedListing} from "@shared/models/related-listing.model";
 
-export interface AccountState {
-  accounts: Account[];
-  relatedAccounts: RelatedAccount[];
-  selectedAccount: Account | null;
+export const accountAdapter: EntityAdapter<Account> =
+  createEntityAdapter<Account>({selectId: (account) => account.id});
+
+export interface AccountState extends EntityState<Account> {
+  relatedAccounts: {[accountId: string]: RelatedAccount[]};
+  relatedListings: {[accountId: string]: RelatedListing[]};
+  groupRoles: {[groupId: string]: GroupRole[]};
+  selectedAccountId: string | null;
   loading: boolean;
   error: any;
+
+  // Timestamps for cache invalidation
+  accountsLastUpdated: number | null;
+  relatedAccountsLastUpdated: {[accountId: string]: number | null};
+  relatedListingsLastUpdated: {[accountId: string]: number | null};
+  groupRolesLastUpdated: {[groupId: string]: number | null};
 }
 
-export const initialState: AccountState = {
-  accounts: [],
-  relatedAccounts: [],
-  selectedAccount: null,
+export const initialState: AccountState = accountAdapter.getInitialState({
+  relatedAccounts: {},
+  relatedListings: {},
+  groupRoles: {},
+  selectedAccountId: null,
   loading: false,
   error: null,
-};
+  // Timestamps for cache invalidation
+  accountsLastUpdated: null,
+  relatedAccountsLastUpdated: {},
+  relatedListingsLastUpdated: {},
+  groupRolesLastUpdated: {},
+});
 
 export const accountReducer = createReducer(
   initialState,
 
   // Clear Account State
-  on(AccountActions.clearAccounts, () => ({
+  on(AccountActions.clearAccountsState, () => ({
     ...initialState,
-  })),
-
-  // Load Account
-  on(AccountActions.loadAccount, (state) => ({
-    ...state,
-    loading: true,
-    error: null,
-  })),
-  on(AccountActions.loadAccountSuccess, (state, {account}) => {
-    return {
-      ...state,
-      accounts: [
-        ...state.accounts.filter((acc) => acc.id !== account.id),
-        account,
-      ],
-      selectedAccount: account,
-      loading: false,
-      error: null,
-    };
-  }),
-  on(AccountActions.loadAccountFailure, (state, {error}) => {
-    return {
-      ...state,
-      loading: false,
-      error,
-    };
-  }),
-
-  // Create Account
-  on(AccountActions.createAccountSuccess, (state, {account}) => ({
-    ...state,
-    accounts: [...state.accounts, account],
-  })),
-
-  // Update Account
-  on(AccountActions.updateAccountSuccess, (state, {account}) => ({
-    ...state,
-    accounts: state.accounts.map((a) => (a.id === account.id ? account : a)),
-    selectedAccount:
-      account.id === state.selectedAccount?.id
-        ? account
-        : state.selectedAccount,
-  })),
-
-  // Delete Account
-  on(AccountActions.deleteAccountSuccess, (state, {accountId}) => ({
-    ...state,
-    accounts: state.accounts.filter((a) => a.id !== accountId),
   })),
 
   // Load Accounts
@@ -101,38 +72,78 @@ export const accountReducer = createReducer(
     loading: true,
     error: null,
   })),
-  on(AccountActions.loadAccountsSuccess, (state, {accounts}) => ({
-    ...state,
-    accounts,
-    filteredAccounts: accounts, // Initially, no filter applied
-    loading: false,
-  })),
+  on(AccountActions.loadAccountsSuccess, (state, {accounts}) =>
+    accountAdapter.setAll(accounts, {
+      ...state,
+      loading: false,
+      accountsLastUpdated: Date.now(),
+    }),
+  ),
   on(AccountActions.loadAccountsFailure, (state, {error}) => ({
     ...state,
     loading: false,
     error,
   })),
 
-  // Search Accounts
-  on(AccountActions.searchAccounts, (state) => ({
+  // Load Account
+  on(AccountActions.loadAccount, (state) => ({
     ...state,
     loading: true,
+    error: null,
   })),
-  on(AccountActions.searchAccountsSuccess, (state, {accounts}) => ({
+  on(AccountActions.loadAccountSuccess, (state, {account}) =>
+    accountAdapter.upsertOne(account, {
+      ...state,
+      selectedAccountId: account.id,
+      loading: false,
+      error: null,
+      groupRoles: {
+        ...state.groupRoles,
+        ...(account.type === "group" && account.roles
+          ? {[account.id]: account.roles}
+          : {}),
+      },
+      groupRolesLastUpdated: {
+        ...state.groupRolesLastUpdated,
+        ...(account.type === "group" && account.roles
+          ? {[account.id]: Date.now()}
+          : {}),
+      },
+    }),
+  ),
+  on(AccountActions.loadAccountFailure, (state, {error}) => ({
     ...state,
-    accounts: accounts,
     loading: false,
+    error,
   })),
-  on(AccountActions.searchAccountsFailure, (state, {error}) => ({
-    ...state,
-    error: error,
-    loading: false,
-  })),
+
+  // Create Account
+  on(AccountActions.createAccountSuccess, (state, {account}) =>
+    accountAdapter.addOne(account, state),
+  ),
+
+  // Update Account
+  on(AccountActions.updateAccountSuccess, (state, {account}) =>
+    accountAdapter.updateOne({id: account.id, changes: account}, state),
+  ),
+
+  // Delete Account
+  on(AccountActions.deleteAccountSuccess, (state, {accountId}) => {
+    const newState = accountAdapter.removeOne(accountId, state);
+    const {[accountId]: _ra, ...relatedAccounts} = newState.relatedAccounts;
+    const {[accountId]: _rl, ...relatedListings} = newState.relatedListings;
+
+    return {
+      ...newState,
+      relatedAccounts,
+      relatedListings,
+    };
+  }),
 
   // Set Selected Account
   on(AccountActions.setSelectedAccount, (state, {accountId}) => ({
     ...state,
-    selectedAccount: state.accounts.find((acc) => acc.id === accountId) || null,
+    selectedAccountId: accountId,
   })),
 
   // Load Related Accounts
@@ -140,81 +151,144 @@ export const accountReducer = createReducer(
     ...state,
     loading: true,
   })),
-  on(AccountActions.loadRelatedAccountsSuccess, (state, {relatedAccounts}) => ({
-    ...state,
-    relatedAccounts: relatedAccounts,
-    loading: false,
-  })),
+  on(
+    AccountActions.loadRelatedAccountsSuccess,
+    (state, {accountId, relatedAccounts}) => ({
+      ...state,
+      relatedAccounts: {
+        ...state.relatedAccounts,
+        [accountId]: relatedAccounts,
+      },
+      relatedAccountsLastUpdated: {
+        ...state.relatedAccountsLastUpdated,
+        [accountId]: Date.now(),
+      },
+      loading: false,
+    }),
+  ),
   on(AccountActions.loadRelatedAccountsFailure, (state, {error}) => ({
     ...state,
-    error: error,
+    error,
     loading: false,
   })),
 
-  // Handle createRelatedAccountSuccess to add the new related account to the state
-  on(AccountActions.createRelatedAccountSuccess, (state, {relatedAccount}) => {
-    const updatedAccounts = state.accounts.map((account) => {
-      if (account.id === relatedAccount.initiatorId) {
-        return {
-          ...account,
-          relatedAccounts: [...(account.relatedAccounts || []), relatedAccount],
-        };
-      }
-      return account;
-    });
-
-    return {
+  // Create Related Account
+  on(
+    AccountActions.createRelatedAccountSuccess,
+    (state, {accountId, relatedAccount}) => ({
       ...state,
-      accounts: updatedAccounts,
-    };
-  }),
+      relatedAccounts: {
+        ...state.relatedAccounts,
+        [accountId]: [
+          ...(state.relatedAccounts[accountId] || []),
+          relatedAccount,
+        ],
+      },
+    }),
+  ),
 
-  // Delete Related Account Success
+  // Update Related Account
+  on(
+    AccountActions.updateRelatedAccountSuccess,
+    (state, {accountId, relatedAccount}) => ({
+      ...state,
+      relatedAccounts: {
+        ...state.relatedAccounts,
+        [accountId]: state.relatedAccounts[accountId].map((ra) =>
+          ra.id === relatedAccount.id ? relatedAccount : ra,
+        ),
+      },
+    }),
+  ),
+
+  // Delete Related Account
   on(
     AccountActions.deleteRelatedAccountSuccess,
     (state, {accountId, relatedAccountId}) => ({
       ...state,
-      accounts: state.accounts.map((account) => {
-        if (account.id === accountId) {
-          return {
-            ...account,
-            relatedAccounts: (account.relatedAccounts || []).filter(
-              (ra) => ra.id !== relatedAccountId,
-            ),
-          };
-        }
-        return account;
-      }),
+      relatedAccounts: {
+        ...state.relatedAccounts,
+        [accountId]: state.relatedAccounts[accountId].filter(
+          (ra) => ra.id !== relatedAccountId,
+        ),
+      },
     }),
   ),
 
-  // Update Related Account Success
-  on(AccountActions.updateRelatedAccountSuccess, (state, {relatedAccount}) => {
-    const updatedAccounts = state.accounts.map((account) => {
-      if (account.id === relatedAccount.initiatorId) {
-        const relatedAccounts = account.relatedAccounts || [];
-
-        const exists = relatedAccounts.some(
-          (ra) => ra.id === relatedAccount.id,
-        );
-
-        const updatedRelatedAccounts = exists
-          ? relatedAccounts.map((ra) =>
-              ra.id === relatedAccount.id ? {...relatedAccount} : ra,
-            )
-          : [...relatedAccounts, relatedAccount];
-
-        return {
-          ...account,
-          relatedAccounts: updatedRelatedAccounts,
-        };
-      }
-      return account;
-    });
-
-    return {
+  // Load Related Listings
+  on(AccountActions.loadRelatedListings, (state) => ({
+    ...state,
+    loading: true,
+  })),
+  on(
+    AccountActions.loadRelatedListingsSuccess,
+    (state, {accountId, relatedListings}) => ({
       ...state,
-      accounts: updatedAccounts,
-    };
-  }),
+      relatedListings: {
+        ...state.relatedListings,
+        [accountId]: relatedListings,
+      },
+      relatedListingsLastUpdated: {
+        ...state.relatedListingsLastUpdated,
+        [accountId]: Date.now(),
+      },
+      loading: false,
+    }),
+  ),
+  on(AccountActions.loadRelatedListingsFailure, (state, {error}) => ({
+    ...state,
+    error,
+    loading: false,
+  })),
+
+  // Load Group Roles
+  on(AccountActions.loadGroupRoles, (state) => ({
+    ...state,
+    loading: true,
+  })),
+  on(AccountActions.loadGroupRolesSuccess, (state, {groupId, roles}) => ({
+    ...state,
+    groupRoles: {
+      ...state.groupRoles,
+      [groupId]: roles,
+    },
+    groupRolesLastUpdated: {
+      ...state.groupRolesLastUpdated,
+      [groupId]: Date.now(),
+    },
+    loading: false,
+  })),
+  on(AccountActions.loadGroupRolesFailure, (state, {error}) => ({
+    ...state,
+    error,
+    loading: false,
+  })),
+
+  on(AccountActions.createGroupRoleSuccess, (state, {groupId, role}) => ({
+    ...state,
+    groupRoles: {
+      ...state.groupRoles,
+      [groupId]: [...(state.groupRoles[groupId] || []), role],
+    },
+  })),
+
+  on(AccountActions.updateGroupRoleSuccess, (state, {groupId, role}) => ({
+    ...state,
+    groupRoles: {
+      ...state.groupRoles,
+      [groupId]: (state.groupRoles[groupId] || []).map((r) =>
+        r.id === role.id ? role : r,
+      ),
+    },
+  })),
+
+  on(AccountActions.deleteGroupRoleSuccess, (state, {groupId, roleId}) => ({
+    ...state,
+    groupRoles: {
+      ...state.groupRoles,
+      [groupId]: (state.groupRoles[groupId] || []).filter(
+        (r) => r.id !== roleId,
+      ),
+    },
+  })),
 );

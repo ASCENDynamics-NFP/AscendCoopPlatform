@@ -1,0 +1,193 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<!-- src/app/modules/account/pages/signup/signup.page.html -->
+
+<ion-header [translucent]="true">
+  <app-header [title]="'user.signup.title'"></app-header>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <app-header [title]="'user.signup.title'"></app-header>
+  </ion-header>
+
+  <ion-card-content class="content-center">
+    <ion-row>
+      <ion-col size="12" size-md="6" class="ion-text-center">
+        <div class="col-container ion-padding-bottom">
+          <img
+            width="100%"
+            src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
+            alt="ASCENDynamics NFP"
+            class="logo"
+          />
+        </div>
+      </ion-col>
+      <ion-col size="12" size-md="6">
+        <div class="col-container">
+          <form [formGroup]="signupForm" (ngSubmit)="signup()">
+            <ion-row>
+              <ion-col class="ion-text-center">
+                <!-- Loading Spinner -->
+                <!-- <ion-spinner *ngIf="(loading$ | async)" name="crescent"></ion-spinner> -->
+                <h1 class="ion-padding-bottom"><b>Sign Up</b></h1>
+                <h3 class="ion-padding-bottom">
+                  ASCENDynamics NFP is committed to creating a utopian society.
+                </h3>
+              </ion-col>
+            </ion-row>
+
+            <!-- Email Field -->
+            <ion-row>
+              <ion-col>
+                <ion-input
+                  label="Email"
+                  label-placement="floating"
+                  fill="outline"
+                  type="email"
+                  inputmode="email"
+                  formControlName="email"
+                  placeholder="email@domain.com"
+                ></ion-input>
+                <ion-note
+                  color="danger"
+                  *ngIf="
+                    (signupForm.get('email')?.dirty ||
+                      signupForm.get('email')?.touched) &&
+                    signupForm.get('email')?.errors
+                  "
+                >
+                  <span *ngIf="signupForm.get('email')?.errors?.['required']">
+                    Email is required.
+                  </span>
+                  <span *ngIf="signupForm.get('email')?.errors?.['email']">
+                    Please enter a valid email address.
+                  </span>
+                </ion-note>
+              </ion-col>
+            </ion-row>
+
+            <!-- Password Field -->
+            <ion-row>
+              <ion-col>
+                <ion-input
+                  label="Password"
+                  label-placement="floating"
+                  fill="outline"
+                  formControlName="password"
+                  type="password"
+                  placeholder="Password"
+                  minlength="8"
+                ></ion-input>
+                <ion-note
+                  color="danger"
+                  *ngIf="
+                    (signupForm.get('password')?.hasError('passwordStrength') ||
+                      signupForm.get('password')?.errors) &&
+                    (signupForm.get('password')?.dirty ||
+                      signupForm.get('password')?.touched)
+                  "
+                >
+                  Password must include at least one uppercase letter, one
+                  lowercase letter, one numeric digit, and one special
+                  character.
+                </ion-note>
+              </ion-col>
+            </ion-row>
+
+            <!-- Confirm Password Field -->
+            <ion-row>
+              <ion-col>
+                <ion-input
+                  label="Confirm Password"
+                  label-placement="floating"
+                  fill="outline"
+                  formControlName="confirmPassword"
+                  type="password"
+                  placeholder="Confirm Password"
+                  minlength="8"
+                ></ion-input>
+                <ion-note
+                  color="danger"
+                  *ngIf="
+                    signupForm.errors?.['passwordMismatch'] &&
+                    signupForm.get('confirmPassword')?.touched
+                  "
+                >
+                  Passwords do not match.
+                </ion-note>
+              </ion-col>
+            </ion-row>
+
+            <!-- Agree to Terms Checkbox -->
+            <ion-row>
+              <ion-col>
+                <ion-checkbox
+                  labelPlacement="end"
+                  formControlName="agreedToTerms"
+                >
+                </ion-checkbox>
+                <ion-text class="ion-padding">
+                  I have read and agree to the
+                  <a (click)="openLegalModal('privacyPolicy')"
+                    >Privacy Policy</a
+                  >
+                  and
+                  <a (click)="openLegalModal('termsOfUse')">Terms of Use</a>.
+                </ion-text>
+                <ion-note
+                  color="danger"
+                  *ngIf="
+                    signupForm.get('agreedToTerms')?.invalid &&
+                    (signupForm.get('agreedToTerms')?.dirty ||
+                      signupForm.get('agreedToTerms')?.touched)
+                  "
+                >
+                  You must agree to the terms and conditions.
+                </ion-note>
+              </ion-col>
+            </ion-row>
+
+            <!-- Submit Button and Navigation Link -->
+            <ion-row>
+              <ion-col>
+                <ion-button
+                  class="ion-margin-top"
+                  type="submit"
+                  expand="block"
+                  strong="true"
+                  [disabled]="signupForm.invalid"
+                  style="width: 100%"
+                  translate
+                >
+                  user.signup.submit
+                </ion-button>
+                <ion-text>
+                  Already have an account?
+                  <a (click)="goToLogin()" translate> user.signup.login </a>
+                </ion-text>
+              </ion-col>
+            </ion-row>
+          </form>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-card-content>
+</ion-content>

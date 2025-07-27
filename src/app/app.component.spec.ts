@@ -30,10 +30,10 @@ import {NO_ERRORS_SCHEMA} from "@angular/core";
 describe("AppComponent", () => {
   let component: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
-  let mockMenuController: any;
-  let mockTranslateService: any;
-  let mockStore: any;
-  let mockPlatform: any;
+  let mockMenuController: Partial<MenuController>;
+  let mockTranslateService: Partial<TranslateService>;
+  let mockStore: Partial<Store>;
+  let mockPlatform: Partial<Platform>;
 
   beforeEach(async () => {
     mockMenuController = {
@@ -80,7 +80,7 @@ describe("AppComponent", () => {
   });
 
   it("should initialize app on platform ready", async () => {
-    await mockPlatform.ready();
+    await mockPlatform.ready!();
     expect(mockTranslateService.setDefaultLang).toHaveBeenCalledWith("en");
     expect(mockTranslateService.getBrowserLang).toHaveBeenCalled();
     expect(mockTranslateService.use).toHaveBeenCalledWith("en");

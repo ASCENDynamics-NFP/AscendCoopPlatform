@@ -12,9 +12,10 @@
     "start": "npm run generate-env:dev && ng serve",
     "start:prod": "npm run generate-env:prod && ng serve --configuration production",
     "format": "prettier --write .",
+    "prepare": "husky install",
     "ng": "ng",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
+    "test": "ng test --watch=false && npm --prefix functions test",
     "test:watch": "ng test --watch",
     "lint": "ng lint",
     "clean": "rm -rf node_modules package-lock.json"
@@ -35,7 +36,8 @@
     "@capacitor/haptics": "^6.0.0",
     "@capacitor/keyboard": "^6.0.0",
     "@capacitor/status-bar": "^6.0.0",
-    "@ionic/angular": "^8.0.0",
+    "@ionic/angular": "^8.4.1",
+    "@ionic/cli": "^7.2.0",
     "@ionic/pwa-elements": "^3.1.1",
     "@ngrx/effects": "^17.2.0",
     "@ngrx/entity": "^17.2.0",
@@ -49,6 +51,7 @@
     "ngrx-store-localstorage": "^17.0.0",
     "rxfire": "^6.0.5",
     "rxjs": "~7.8.0",
+    "swiper": "^11.1.14",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.2"
   },
@@ -63,20 +66,21 @@
     "@angular/compiler-cli": "^17.0.2",
     "@angular/language-service": "^17.0.2",
     "@capacitor/cli": "^6.0.0",
-    "@ionic/angular-toolkit": "^11.0.1",
-    "@ngrx/eslint-plugin": "^17.2.0",
+    "@ionic/angular-toolkit": "^12.1.1",
+    "@ngrx/eslint-plugin": "^18.1.0",
     "@ngrx/schematics": "^17.2.0",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^20.13.0",
     "@typescript-eslint/eslint-plugin": "^8.9.0",
     "@typescript-eslint/parser": "^8.9.0",
-    "eslint": "^8.57.0",
+    "eslint": "^9.12.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jsdoc": "^50.4.1",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-prettier": "^5.2.1",
-    "husky": "^9.0.11",
+    "googleapis": "^150.0.1",
+    "husky": "^9.1.7",
     "jasmine-core": "~5.1.0",
     "jasmine-spec-reporter": "^7.0.0",
     "karma": "^6.4.4",
@@ -91,7 +95,8 @@
   },
   "overrides": {
     "inflight": "npm:lru-cache@latest",
-    "read-package-json": "@npmcli/package-json@latest"
+    "read-package-json": "@npmcli/package-json@latest",
+    "superagent": "npm:superagent@latest"
   },
   "description": "An open-source collaboration platform for worker-owned cooperatives, nonprofits, and private organizations, built with Ionic and Firebase, to foster growth, real-time data-driven decision-making, and address basic human needs through community-based solutions.",
   "prettier": {
@@ -101,11 +106,6 @@
     "bracketSpacing": false,
     "printWidth": 80,
     "tabWidth": 2
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,css,scss,md}": [

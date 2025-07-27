@@ -46,7 +46,7 @@ export class SecureInnerPagesGuard {
       if (this.router.getCurrentNavigation()?.previousNavigation) {
         this.navCtrl.back();
       } else {
-        this.navCtrl.navigateForward(`/${authUser?.uid}`);
+        this.navCtrl.navigateForward(`/account/${authUser?.uid}`);
       }
       return false;
     }

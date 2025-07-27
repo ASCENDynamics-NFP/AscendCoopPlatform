@@ -19,8 +19,9 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
-
+import {CommonModule} from "@angular/common";
 import {MutualAidCommunityInfoComponent} from "./mutual-aid-community-info.component";
+import {NO_ERRORS_SCHEMA} from "@angular/core";
 
 describe("MutualAidCommunityInfoComponent", () => {
   let component: MutualAidCommunityInfoComponent;
@@ -28,8 +29,9 @@ describe("MutualAidCommunityInfoComponent", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [],
-      imports: [IonicModule.forRoot()],
+      declarations: [MutualAidCommunityInfoComponent],
+      imports: [IonicModule.forRoot(), CommonModule],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MutualAidCommunityInfoComponent);

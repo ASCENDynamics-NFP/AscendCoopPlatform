@@ -64,6 +64,7 @@ export const authReducer = createReducer(
     AuthActions.confirmSignInWithEmailLinkSuccess,
     AuthActions.processSignInLinkSuccess,
     AuthActions.updateAuthUserSuccess,
+    AuthActions.refreshTokenSuccess,
     (state, {user}) => ({
       ...state,
       user,
@@ -103,6 +104,7 @@ export const authReducer = createReducer(
     AuthActions.confirmSignInWithEmailLinkFailure,
     AuthActions.processSignInLinkFailure,
     AuthActions.updateAuthUserFailure,
+    AuthActions.refreshTokenFailure,
     (state, {error}) => ({
       ...state,
       loading: false,

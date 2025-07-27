@@ -162,3 +162,18 @@ export const updateAuthUserFailure = createAction(
   "[Auth] Update Auth User Failure",
   props<{error: any}>(),
 );
+
+export const refreshToken = createAction(
+  "[Auth] Refresh Token",
+  props<{forceRefresh?: boolean}>(),
+);
+
+export const refreshTokenSuccess = createAction(
+  "[Auth] Refresh Token Success",
+  props<{user: AuthUser}>(),
+);
+
+export const refreshTokenFailure = createAction(
+  "[Auth] Refresh Token Failure",
+  props<{error: any}>(),
+);

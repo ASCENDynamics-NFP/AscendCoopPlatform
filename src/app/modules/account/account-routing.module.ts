@@ -20,6 +20,7 @@
 import {NgModule} from "@angular/core";
 import {RouterModule, Routes} from "@angular/router";
 import {AuthGuard} from "../../core/guards/auth.guard";
+import {RegistrationAuthGuard} from "../../core/guards/registration-auth.guard";
 import {AdminGroupOwnerGuard} from "../../core/guards/admin-group-owner.guard";
 import {DetailsPage} from "./pages/details/details.page";
 import {EditPage} from "./pages/edit/edit.page";
@@ -56,7 +57,7 @@ const routes: Routes = [
   {
     path: "registration/:accountId",
     component: RegistrationPage,
-    canActivate: [AuthGuard],
+    canActivate: [RegistrationAuthGuard],
   },
   {
     path: ":accountId",

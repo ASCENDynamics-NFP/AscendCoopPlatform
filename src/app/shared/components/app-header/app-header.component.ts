@@ -34,6 +34,7 @@ export class AppHeaderComponent {
   @Input() title?: string = "ASCENDynamics NFP";
   @Input() defaultHref?: string;
   @Input() showLogo?: boolean = false;
+  @Input() hideMenu?: boolean = false;
 
   authUser$: Observable<AuthUser | null>; // Declare type for clarity
   public popoverEvent: any;

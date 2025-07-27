@@ -61,7 +61,11 @@ export const onUpdateAccount = onDocumentUpdated(
           tagline: after.tagline,
           settings: after.settings,
         });
-        logger.info("User type custom claim updated successfully.");
+        logger.info(`Custom claims updated for user ${uid}:`, {
+          type: after.type,
+          displayName: after.name,
+          // Log other relevant fields for debugging
+        });
       }
 
       // 2) Check if addresses changed (simplified approach)

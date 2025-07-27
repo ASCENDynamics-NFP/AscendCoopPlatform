@@ -25,6 +25,7 @@ import {TimesheetPage} from "./pages/timesheet/timesheet.page";
 import {ApprovalsPage} from "./pages/approvals/approvals.page";
 import {AuthGuard} from "../../core/guards/auth.guard";
 import {TimeTrackingAccessGuard} from "../../core/guards/time-tracking-access.guard";
+import {AdminGroupOwnerGuard} from "../../core/guards/admin-group-owner.guard";
 
 const routes: Routes = [
   {
@@ -35,7 +36,7 @@ const routes: Routes = [
   {
     path: "approvals",
     component: ApprovalsPage,
-    canActivate: [AuthGuard, TimeTrackingAccessGuard],
+    canActivate: [AuthGuard, AdminGroupOwnerGuard],
   },
 ];
 

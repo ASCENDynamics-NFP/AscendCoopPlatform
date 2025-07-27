@@ -20,7 +20,7 @@
 import {NgModule} from "@angular/core";
 import {RouterModule, Routes} from "@angular/router";
 import {AuthGuard} from "../../core/guards/auth.guard";
-import {AdminGuard} from "../../core/guards/admin.guard";
+import {AdminGroupOwnerGuard} from "../../core/guards/admin-group-owner.guard";
 import {DetailsPage} from "./pages/details/details.page";
 import {EditPage} from "./pages/edit/edit.page";
 import {RegistrationPage} from "./pages/registration/registration.page";
@@ -51,7 +51,7 @@ const routes: Routes = [
   {
     path: ":accountId/projects",
     component: ProjectsPage,
-    canActivate: [AuthGuard, AdminGuard],
+    canActivate: [AuthGuard, AdminGroupOwnerGuard],
   },
   {
     path: "registration/:accountId",
@@ -87,6 +87,13 @@ const routes: Routes = [
     path: ":accountId/hierarchy",
     component: RoleHierarchyPage,
     canActivate: [AuthGuard],
+  },
+  {
+    path: ":accountId/time-tracking",
+    loadChildren: () =>
+      import("../time-tracking/time-tracking.module").then(
+        (m) => m.TimeTrackingModule,
+      ),
   },
 ];
 

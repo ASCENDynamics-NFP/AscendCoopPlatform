@@ -88,13 +88,6 @@ const routes: Routes = [
     component: RoleHierarchyPage,
     canActivate: [AuthGuard],
   },
-  {
-    path: ":accountId/time-tracking",
-    loadChildren: () =>
-      import("../time-tracking/time-tracking.module").then(
-        (m) => m.TimeTrackingModule,
-      ),
-  },
 ];
 
 @NgModule({

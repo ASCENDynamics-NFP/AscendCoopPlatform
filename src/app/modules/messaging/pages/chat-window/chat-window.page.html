@@ -1,0 +1,124 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button
+        (click)="goBack()"
+        defaultHref="/messaging/chats"
+      ></ion-back-button>
+    </ion-buttons>
+
+    <ion-title>{{ getChatDisplayName(chat$ | async) }}</ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button (click)="showChatOptions()" fill="clear">
+        <ion-icon name="ellipsis-vertical" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="chat-content">
+  <!-- Messages List -->
+  <div class="messages-container">
+    <div
+      *ngFor="let message of messages$ | async; trackBy: trackByMessageId"
+      class="message-wrapper"
+      [class.own-message]="isOwnMessage(message)"
+      [class.other-message]="!isOwnMessage(message)"
+    >
+      <!-- Message Bubble -->
+      <div class="message-bubble">
+        <!-- Sender name (for group chats and incoming messages) -->
+        <div *ngIf="!isOwnMessage(message)" class="sender-name">
+          {{ getSenderName(message) }}
+        </div>
+
+        <!-- Message Content -->
+        <div class="message-content">
+          <!-- Text Message -->
+          <div *ngIf="message.type === 'text'" class="text-message">
+            {{ message.text }}
+          </div>
+
+          <!-- Image Message -->
+          <div *ngIf="message.type === 'image'" class="image-message">
+            <img
+              [src]="message.fileUrl"
+              [alt]="message.fileName"
+              (click)="openImagePreview(message.fileUrl!)"
+            />
+          </div>
+
+          <!-- File Message -->
+          <div
+            *ngIf="message.type === 'file' || message.type === 'video' || message.type === 'audio'"
+            class="file-message"
+          >
+            <ion-icon name="document-outline"></ion-icon>
+            <div class="file-info">
+              <div class="file-name">{{ message.fileName }}</div>
+              <div class="file-size">
+                {{ formatFileSize(message.fileSize) }}
+              </div>
+            </div>
+            <ion-button
+              fill="clear"
+              size="small"
+              (click)="downloadFile(message.fileUrl!, message.fileName!)"
+            >
+              <ion-icon name="download-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+
+        <!-- Message Timestamp -->
+        <div class="message-time">
+          {{ formatMessageTime(message.timestamp) }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading indicator -->
+  <div *ngIf="isLoading" class="loading-message">
+    <ion-spinner name="dots"></ion-spinner>
+    <span>Sending...</span>
+  </div>
+</ion-content>
+
+<!-- Message Input Footer -->
+<ion-footer class="message-input-footer">
+  <ion-toolbar>
+    <ion-item fill="outline" class="message-input-item">
+      <ion-textarea
+        #messageInput
+        [(ngModel)]="newMessage"
+        placeholder="Type a message..."
+        rows="1"
+        autoGrow="true"
+        maxlength="1000"
+        (keypress)="onKeyPress($event)"
+        [disabled]="isLoading"
+      >
+      </ion-textarea>
+
+      <ion-button
+        slot="end"
+        fill="clear"
+        (click)="showAttachmentOptions()"
+        [disabled]="isLoading"
+      >
+        <ion-icon name="attach" slot="icon-only"></ion-icon>
+      </ion-button>
+
+      <ion-button
+        slot="end"
+        fill="clear"
+        (click)="sendMessage()"
+        [disabled]="!newMessage.trim() || isLoading"
+      >
+        <ion-icon name="send" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-toolbar>
+</ion-footer>

@@ -1,0 +1,186 @@
+// Chat Window Styling - WhatsApp-like design
+.chat-content {
+  --background: #f5f5f5;
+}
+
+.messages-container {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+// Message wrapper styling
+.message-wrapper {
+  display: flex;
+  margin-bottom: 0.5rem;
+
+  &.own-message {
+    justify-content: flex-end;
+
+    .message-bubble {
+      background: var(--ion-color-primary);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+  }
+
+  &.other-message {
+    justify-content: flex-start;
+
+    .message-bubble {
+      background: white;
+      color: var(--ion-color-dark);
+      border-bottom-left-radius: 4px;
+    }
+  }
+}
+
+// Message bubble styling
+.message-bubble {
+  max-width: 70%;
+  padding: 0.75rem;
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.sender-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ion-color-primary);
+  margin-bottom: 0.25rem;
+}
+
+// Message content styling
+.message-content {
+  .text-message {
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    line-height: 1.4;
+  }
+
+  .image-message {
+    img {
+      max-width: 200px;
+      max-height: 200px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.2s;
+
+      &:hover {
+        transform: scale(1.02);
+      }
+    }
+  }
+
+  .file-message {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+
+    ion-icon {
+      font-size: 1.5rem;
+      color: var(--ion-color-medium);
+    }
+
+    .file-info {
+      flex-grow: 1;
+
+      .file-name {
+        font-weight: 500;
+        font-size: 0.9rem;
+      }
+
+      .file-size {
+        font-size: 0.8rem;
+        color: var(--ion-color-medium);
+      }
+    }
+  }
+}
+
+.message-time {
+  font-size: 0.7rem;
+  margin-top: 0.25rem;
+  text-align: right;
+  opacity: 0.7;
+}
+
+// Loading message
+.loading-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  color: var(--ion-color-medium);
+  font-size: 0.9rem;
+}
+
+// Message input footer
+.message-input-footer {
+  ion-toolbar {
+    --background: white;
+    --border-width: 1px 0 0 0;
+    --border-color: var(--ion-color-light);
+    padding: 0.5rem;
+  }
+}
+
+.message-input-item {
+  --background: white;
+  --border-radius: 25px;
+  --border-width: 1px;
+  --border-color: var(--ion-color-light);
+  margin: 0;
+
+  ion-textarea {
+    --padding-start: 1rem;
+    --padding-end: 0.5rem;
+    max-height: 100px;
+  }
+
+  ion-button {
+    --padding-start: 0.5rem;
+    --padding-end: 0.5rem;
+
+    &[disabled] {
+      opacity: 0.5;
+    }
+  }
+}
+
+// Responsive design
+@media (min-width: 768px) {
+  .messages-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .message-input-footer {
+    ion-toolbar {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+  }
+}
+
+// Animation for new messages
+@keyframes slideInMessage {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-wrapper {
+  animation: slideInMessage 0.3s ease-out;
+}

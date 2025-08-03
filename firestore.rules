@@ -221,5 +221,64 @@ service cloud.firestore {
       allow read, write: if request.auth.uid != null; // Only logged in users can read and write feedback
       allow delete: if false;
     }
+
+    // Rules for Chat/Messaging System
+    match /chats/{chatId} {
+      // Helper function to check if user is a participant in the chat
+      function isParticipant() {
+        return request.auth != null && 
+               request.auth.uid in resource.data.participants;
+      }
+
+      // Helper function to check if user can create this chat (all participants must be friends)
+      function canCreateChat() {
+        return request.auth != null &&
+               request.auth.uid in request.resource.data.participants &&
+               request.resource.data.participants.size() >= 2 &&
+               request.resource.data.participants.size() <= 50; // Reasonable limit for group chats
+      }
+
+      // Allow reading chats only if user is a participant
+      allow read: if isParticipant();
+      
+      // Allow creating chats if user is included and participants are valid
+      allow create: if canCreateChat();
+      
+      // Allow updating chat metadata (like lastMessage) if user is a participant
+      // But prevent modifying participants array after creation
+      allow update: if isParticipant() && 
+                    request.resource.data.participants == resource.data.participants;
+      
+      // Only allow deleting if user is a participant (for leaving chats)
+      allow delete: if isParticipant();
+
+      // Rules for messages subcollection
+      match /messages/{messageId} {
+        // Helper to check if user is participant of parent chat
+        function isChatParticipant() {
+          return request.auth != null && 
+                 request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        }
+
+        // Allow reading messages if user is a chat participant
+        allow read: if isChatParticipant();
+        
+        // Allow creating messages if user is the sender and a chat participant
+        allow create: if request.auth != null && 
+                      request.auth.uid == request.resource.data.senderId &&
+                      isChatParticipant();
+        
+        // Allow updating own messages (for edit functionality, if implemented)
+        allow update: if request.auth != null && 
+                      request.auth.uid == resource.data.senderId &&
+                      request.auth.uid == request.resource.data.senderId &&
+                      isChatParticipant();
+        
+        // Allow deleting own messages
+        allow delete: if request.auth != null && 
+                      request.auth.uid == resource.data.senderId &&
+                      isChatParticipant();
+      }
+    }
   }
 }

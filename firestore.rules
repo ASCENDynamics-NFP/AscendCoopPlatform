@@ -184,10 +184,9 @@ service cloud.firestore {
       }
 
       function hasValidProject() {
-        return request.resource.data.keys().hasAll(['projectId']) &&
-          request.resource.data.projectId != null &&
-          request.resource.data.projectId is string &&
-          request.resource.data.projectId.size() > 0;
+        // Check that the project exists and is not archived
+        return exists(/databases/$(database)/documents/accounts/$(accountId)/projects/$(request.resource.data.projectId)) &&
+          get(/databases/$(database)/documents/accounts/$(accountId)/projects/$(request.resource.data.projectId)).data.archived != true;
       }
 
       allow read: if isGroupAccount() && isGroupMemberOrOwner();

@@ -1,7 +1,7 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {Observable, combineLatest} from "rxjs";
-import {map} from "rxjs/operators";
+import {map, first} from "rxjs/operators";
 import {Store} from "@ngrx/store";
 import {AlertController} from "@ionic/angular";
 import {Project} from "@shared/models/project.model";
@@ -128,12 +128,33 @@ export class ProjectsPage implements OnInit {
       });
       return;
     }
-    const project: Project = {name, accountId: this.accountId} as Project;
-    this.store.dispatch(
-      ProjectsActions.createProject({accountId: this.accountId, project}),
-    );
-    this.newProjectName = "";
-    this.successHandler.handleSuccess("Project created!");
+
+    // Get current user to set createdBy and lastModifiedBy
+    this.store
+      .select(selectAuthUser)
+      .pipe(first())
+      .subscribe((user: any) => {
+        if (!user) {
+          this.errorHandler.handleFirebaseAuthError({
+            code: "auth-required",
+            message: "Authentication required to create projects.",
+          });
+          return;
+        }
+
+        const project: Project = {
+          name,
+          accountId: this.accountId,
+          createdBy: user.uid,
+          lastModifiedBy: user.uid,
+        } as Project;
+
+        this.store.dispatch(
+          ProjectsActions.createProject({accountId: this.accountId, project}),
+        );
+        this.newProjectName = "";
+        this.successHandler.handleSuccess("Project created!");
+      });
   }
 
   updateProject(project: Project, name: string | null | undefined) {

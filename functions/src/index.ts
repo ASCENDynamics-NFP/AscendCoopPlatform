@@ -73,5 +73,35 @@ export {onUpdateListingsRelatedAccount} from "./database/listings/relatedAccount
 export {getHomepageListings} from "./functions/listings/homepage";
 export {submitLead} from "./functions/contactform";
 
+// Chat/Messaging functions
+export {
+  createGroupChat,
+  addUserToChat,
+  removeUserFromChat,
+} from "./functions/chats/groupManagement";
+export {
+  getMessages,
+  getUserChats,
+  searchMessages,
+} from "./functions/chats/pagination";
+
 // Chat/Messaging triggers
+export {onCreateChat} from "./database/chats/triggers/onCreate";
 export {onCreateMessage} from "./database/chats/messages/triggers/onCreate";
+export {onMessageValidation} from "./database/chats/messages/triggers/onValidation";
+
+// File processing
+export {onFileUpload} from "./storage/fileProcessing";
+export {
+  cleanupOrphanedFiles,
+  cleanupChatFiles,
+  getChatStorageStats,
+} from "./storage/cleanup";
+
+// Performance monitoring
+export {
+  collectPerformanceMetrics,
+  getPerformanceMetrics,
+  optimizeIndexes,
+  cleanupOldMetrics,
+} from "./monitoring/performance";

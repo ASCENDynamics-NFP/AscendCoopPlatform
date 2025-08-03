@@ -3,31 +3,91 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
+  gap: 0.25rem;
+
+  .timestamp {
+    color: var(--ion-color-medium);
+    font-size: 0.8rem;
+    margin: 0;
+  }
+
+  .unread-badge {
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
 }
 
-.timestamp {
-  font-size: 0.8rem;
-  color: var(--ion-color-medium);
-  margin: 0;
+// Total unread badge in header
+.total-unread-badge {
+  margin-left: 0.5rem;
+  font-size: 0.7rem;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
 }
 
-// Empty state styling
+// Chat item styling
+ion-item {
+  --inner-padding-end: 16px;
+  --padding-start: 16px;
+
+  ion-avatar {
+    width: 50px;
+    height: 50px;
+  }
+
+  ion-label {
+    h2 {
+      font-weight: 600;
+      color: var(--ion-color-dark);
+      margin-bottom: 4px;
+    }
+
+    p {
+      color: var(--ion-color-medium);
+      font-size: 0.9rem;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  // Highlight unread chats
+  &.has-unread {
+    --background: var(--ion-color-light-shade);
+
+    ion-label h2 {
+      font-weight: 700;
+      color: var(--ion-color-dark);
+    }
+  }
+
+  &:hover {
+    --background: var(--ion-color-light);
+  }
+}
+
+// Empty state
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 60vh;
+  height: 50vh;
   text-align: center;
   padding: 2rem;
 
   ion-icon {
+    font-size: 4rem;
     color: var(--ion-color-medium);
     margin-bottom: 1rem;
   }
 
-  h3 {
+  h2 {
     color: var(--ion-color-dark);
     margin-bottom: 0.5rem;
   }
@@ -36,34 +96,4 @@
     color: var(--ion-color-medium);
     margin-bottom: 1.5rem;
   }
-}
-
-// WhatsApp-like styling
-ion-item {
-  --padding-start: 16px;
-  --inner-padding-end: 16px;
-
-  ion-avatar {
-    margin-right: 12px;
-  }
-
-  ion-label {
-    h2 {
-      font-weight: 500;
-      margin-bottom: 4px;
-    }
-
-    p {
-      color: var(--ion-color-medium);
-      font-size: 0.9rem;
-    }
-  }
-}
-
-// Unread badge styling
-ion-badge {
-  font-size: 0.75rem;
-  min-width: 18px;
-  height: 18px;
-  border-radius: 9px;
 }

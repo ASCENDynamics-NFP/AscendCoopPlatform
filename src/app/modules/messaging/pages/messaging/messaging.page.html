@@ -1,0 +1,71 @@
+<ion-split-pane contentId="messaging-content" when="md">
+  <!-- Master: Chat List (always visible on desktop, full screen on mobile) -->
+  <ion-menu
+    contentId="messaging-content"
+    menuId="chat-list"
+    side="start"
+    type="push"
+  >
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Messages</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="onNewChat()" fill="clear">
+            <ion-icon name="add" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <!-- Chat List Component -->
+      <div class="chat-list-container">
+        <!-- This will be replaced with actual chat list component -->
+        <ion-item button (click)="onChatSelected('chat1')">
+          <ion-avatar slot="start">
+            <img src="https://via.placeholder.com/40" alt="User Avatar" />
+          </ion-avatar>
+          <ion-label>
+            <h2>John Doe</h2>
+            <p>Hey there! How are you doing?</p>
+            <ion-note slot="end">2:30 PM</ion-note>
+          </ion-label>
+        </ion-item>
+
+        <ion-item button (click)="onChatSelected('chat2')">
+          <ion-avatar slot="start">
+            <img src="https://via.placeholder.com/40" alt="User Avatar" />
+          </ion-avatar>
+          <ion-label>
+            <h2>Jane Smith</h2>
+            <p>Let's meet tomorrow for the project discussion</p>
+            <ion-note slot="end">1:15 PM</ion-note>
+          </ion-label>
+        </ion-item>
+
+        <ion-item button (click)="onChatSelected('chat3')">
+          <ion-avatar slot="start">
+            <img src="https://via.placeholder.com/40" alt="User Avatar" />
+          </ion-avatar>
+          <ion-label>
+            <h2>Team Group</h2>
+            <p>Mike: Great work everyone!</p>
+            <ion-note slot="end">11:30 AM</ion-note>
+          </ion-label>
+        </ion-item>
+      </div>
+    </ion-content>
+  </ion-menu>
+
+  <!-- Detail: Chat Window (hidden on mobile when no chat selected) -->
+  <ion-router-outlet id="messaging-content" main>
+    <!-- Chat content will be loaded here -->
+  </ion-router-outlet>
+</ion-split-pane>
+
+<!-- Mobile-only: Show placeholder when no chat is selected -->
+<div class="no-chat-selected" *ngIf="!selectedChatId && isDesktop">
+  <ion-icon name="chatbubbles-outline" size="large"></ion-icon>
+  <h2>Select a conversation</h2>
+  <p>Choose a chat from the list to start messaging</p>
+</div>

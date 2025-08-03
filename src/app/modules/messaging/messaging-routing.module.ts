@@ -19,13 +19,17 @@
 ***********************************************************************************************/
 import {NgModule} from "@angular/core";
 import {RouterModule, Routes} from "@angular/router";
+import {ChatAccessGuard} from "./guards/chat-access.guard";
 
 const routes: Routes = [
   {
     path: "",
-    redirectTo: "chats",
-    pathMatch: "full",
+    loadChildren: () =>
+      import("./pages/messaging/messaging.module").then(
+        (m) => m.MessagingPageModule,
+      ),
   },
+  // Legacy routes for direct access (mobile navigation)
   {
     path: "chats",
     loadChildren: () =>
@@ -35,6 +39,7 @@ const routes: Routes = [
   },
   {
     path: "chat/:id",
+    canActivate: [ChatAccessGuard],
     loadChildren: () =>
       import("./pages/chat-window/chat-window.module").then(
         (m) => m.ChatWindowPageModule,
@@ -45,6 +50,13 @@ const routes: Routes = [
     loadChildren: () =>
       import("./pages/new-chat/new-chat.module").then(
         (m) => m.NewChatPageModule,
+      ),
+  },
+  {
+    path: "blocked-users",
+    loadChildren: () =>
+      import("./pages/block-list/block-list.module").then(
+        (m) => m.BlockListPageModule,
       ),
   },
 ];

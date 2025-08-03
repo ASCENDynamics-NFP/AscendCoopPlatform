@@ -1,6 +1,15 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Messages</ion-title>
+    <ion-title>
+      Messages
+      <ion-badge
+        *ngIf="(totalUnreadCount$ | async) && (totalUnreadCount$ | async)! > 0"
+        color="danger"
+        class="total-unread-badge"
+      >
+        {{ totalUnreadCount$ | async }}
+      </ion-badge>
+    </ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="startNewChat()" fill="clear">
         <ion-icon name="create-outline" slot="icon-only"></ion-icon>
@@ -40,11 +49,13 @@
         <p class="timestamp">
           {{ getFormattedTime(chat.lastMessageTimestamp) }}
         </p>
+        <!-- Use notification service for unread counts -->
         <ion-badge
-          *ngIf="chat.unreadCount && chat.unreadCount[getCurrentUserId()] > 0"
+          *ngIf="(unreadCounts$ | async) && ((unreadCounts$ | async)?.[chat.id] || 0) > 0"
           color="primary"
+          class="unread-badge"
         >
-          {{ chat.unreadCount[getCurrentUserId()] }}
+          {{ (unreadCounts$ | async)?.[chat.id] }}
         </ion-badge>
       </div>
     </ion-item>

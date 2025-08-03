@@ -23,6 +23,7 @@ import {Observable, Subject} from "rxjs";
 import {takeUntil} from "rxjs/operators";
 import {Chat} from "../../models/chat.model";
 import {ChatService} from "../../services/chat.service";
+import {NotificationService} from "../../services/notification.service";
 
 @Component({
   selector: "app-chat-list",
@@ -31,13 +32,18 @@ import {ChatService} from "../../services/chat.service";
 })
 export class ChatListPage implements OnInit, OnDestroy {
   chats$: Observable<Chat[]>;
+  unreadCounts$: Observable<{[chatId: string]: number}>;
+  totalUnreadCount$: Observable<number>;
   private destroy$ = new Subject<void>();
 
   constructor(
     private chatService: ChatService,
+    private notificationService: NotificationService,
     private router: Router,
   ) {
     this.chats$ = this.chatService.getUserChats();
+    this.unreadCounts$ = this.notificationService.getUnreadCounts();
+    this.totalUnreadCount$ = this.notificationService.getTotalUnreadCount();
   }
 
   ngOnInit() {
@@ -61,6 +67,9 @@ export class ChatListPage implements OnInit, OnDestroy {
    * Navigate to chat window
    */
   openChat(chat: Chat) {
+    // Mark notifications as read for this chat
+    this.notificationService.markChatNotificationsAsRead(chat.id);
+
     this.router.navigate(["/messaging/chat", chat.id]);
   }
 
@@ -69,6 +78,17 @@ export class ChatListPage implements OnInit, OnDestroy {
    */
   startNewChat() {
     this.router.navigate(["/messaging/new-chat"]);
+  }
+
+  /**
+   * Get unread count for a specific chat
+   */
+  getUnreadCount(chatId: string): Observable<number> {
+    return new Observable((observer) => {
+      this.unreadCounts$.pipe(takeUntil(this.destroy$)).subscribe((counts) => {
+        observer.next(counts[chatId] || 0);
+      });
+    });
   }
 
   /**

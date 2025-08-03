@@ -154,6 +154,24 @@ export class RelationshipService {
   }
 
   /**
+   * Get all blocked relationships for user
+   */
+  getBlockedRelationships(userId: string): Observable<RelatedAccount[]> {
+    return this.firestore
+      .collection<RelatedAccount>(
+        `${this.ACCOUNTS_COLLECTION}/${userId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
+        (ref) => ref.where("status", "==", "blocked"),
+      )
+      .valueChanges({idField: "id"})
+      .pipe(
+        catchError((error) => {
+          console.error("Error fetching blocked relationships:", error);
+          return throwError(() => error);
+        }),
+      );
+  }
+
+  /**
    * Check if user is blocked
    */
   isUserBlocked(

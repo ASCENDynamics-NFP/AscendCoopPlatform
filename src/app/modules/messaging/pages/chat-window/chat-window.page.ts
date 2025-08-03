@@ -41,6 +41,7 @@ import {
 } from "../../models/chat.model";
 import {ChatService} from "../../services/chat.service";
 import {RelationshipService} from "../../services/relationship.service";
+import {NotificationService} from "../../services/notification.service";
 import {Store} from "@ngrx/store";
 import {AuthState} from "../../../../state/reducers/auth.reducer";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
@@ -71,6 +72,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     private router: Router,
     private chatService: ChatService,
     private relationshipService: RelationshipService,
+    private notificationService: NotificationService,
     private toastController: ToastController,
     private actionSheetController: ActionSheetController,
     private store: Store<{auth: AuthState}>,
@@ -100,6 +102,9 @@ export class ChatWindowPage implements OnInit, OnDestroy {
    * Initialize chat after getting current user ID
    */
   private initializeChat() {
+    // Mark notifications as read for this chat when entering
+    this.notificationService.markChatNotificationsAsRead(this.chatId);
+
     // Load chat first to validate access
     this.chat$ = this.chatService.getChat(this.chatId);
 

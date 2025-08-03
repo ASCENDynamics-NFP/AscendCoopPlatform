@@ -101,6 +101,8 @@ export const onFileUpload = onObjectFinalized(
 
 /**
  * Validates uploaded file type and size
+ * @param {string | undefined} contentType - The MIME type of the file to validate
+ * @param {string | undefined} size - The size of the file to validate
  */
 async function validateFile(
   contentType: string | undefined,
@@ -147,13 +149,17 @@ async function validateFile(
 
 /**
  * Generates thumbnail for image files
+ * @param {string} filePath - The path to the file to generate a thumbnail for
+ * @param {object} bucket - The storage bucket containing the file
  */
 async function generateThumbnail(
   filePath: string,
   bucket: any,
 ): Promise<string | null> {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const sharp = require("sharp");
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const path = require("path");
 
     const fileName = path.basename(filePath);
@@ -194,11 +200,14 @@ async function generateThumbnail(
 
 /**
  * Updates message document with file metadata
+ * @param {string} chatId - The ID of the chat containing the message
+ * @param {string} messageId - The ID of the message to update
+ * @param {object} fileData - The file metadata to update the message with
  */
 async function updateMessageWithFileData(
   chatId: string,
   messageId: string,
-  fileData: any,
+  fileData: FirebaseFirestore.DocumentData,
 ): Promise<void> {
   try {
     const messageRef = db
@@ -226,6 +235,9 @@ async function updateMessageWithFileData(
 
 /**
  * Updates message document with error information
+ * @param {string} chatId - The ID of the chat containing the message
+ * @param {string} messageId - The ID of the message to update with error
+ * @param {string} error - The error message to record
  */
 async function updateMessageWithError(
   chatId: string,
@@ -255,6 +267,7 @@ async function updateMessageWithError(
 
 /**
  * Deletes file from storage
+ * @param {string} filePath - The path of the file to delete from storage
  */
 async function deleteFile(filePath: string): Promise<void> {
   try {

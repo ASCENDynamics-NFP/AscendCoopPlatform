@@ -21,7 +21,7 @@ interface PaginatedMessagesRequest {
 }
 
 interface PaginatedMessagesResponse {
-  messages: any[];
+  messages: FirebaseFirestore.DocumentData[];
   hasMore: boolean;
   nextCursor?: string;
   totalCount?: number;
@@ -213,7 +213,7 @@ export const getUserChats = onCall(
         const doc = snapshot.docs[i];
         const chatData = doc.data();
 
-        let processedChat: any = {
+        const processedChat: FirebaseFirestore.DocumentData = {
           id: doc.id,
           ...chatData,
           lastMessageTimestamp:
@@ -387,8 +387,12 @@ export const searchMessages = onCall(
 
 /**
  * Helper function to get participant details for group chats
+ * @param {string[]} participantIds - Array of participant IDs to fetch details for
+ * @return {Promise<FirebaseFirestore.DocumentData[]>} Promise that resolves to participant details
  */
-async function getParticipantDetails(participantIds: string[]): Promise<any[]> {
+async function getParticipantDetails(
+  participantIds: string[],
+): Promise<FirebaseFirestore.DocumentData[]> {
   try {
     // Limit batch size to avoid Firestore limits
     const batchSize = 10;

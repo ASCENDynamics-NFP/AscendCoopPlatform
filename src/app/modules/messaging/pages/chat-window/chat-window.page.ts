@@ -237,7 +237,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     // Create optimistic message
     const optimisticMessage: Message = {
       id: `temp-${Date.now()}`, // Temporary ID
-      senderId: "current-user-id", // TODO: Get from auth service
+      senderId: this.currentUserId || "", // Get from current user ID
       text: messageText,
       type: MessageType.TEXT,
       status: MessageStatus.SENDING,
@@ -545,8 +545,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   }
 
   getCurrentUserId(): string {
-    // TODO: Get from auth service
-    return "current-user-id";
+    return this.currentUserId || "";
   }
 
   private async showErrorToast(message: string) {

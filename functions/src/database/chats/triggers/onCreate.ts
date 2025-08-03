@@ -36,7 +36,7 @@ interface Chat {
   isGroup: boolean;
   name?: string;
   groupName?: string;
-  createdAt: any;
+  createdAt: FirebaseFirestore.Timestamp;
   createdBy: string;
 }
 
@@ -45,7 +45,7 @@ interface RelatedAccount {
   status: "pending" | "accepted" | "blocked" | "declined";
   initiatorId: string;
   targetId: string;
-  createdAt: any;
+  createdAt: FirebaseFirestore.Timestamp;
   relationshipType?: string;
 }
 
@@ -113,6 +113,8 @@ export const onCreateChat = onDocumentCreated(
 
 /**
  * Validate that all participants have mutual accepted relationships
+ * @param {Chat} chatData - The chat data containing participants and metadata
+ * @return {Promise<boolean>} Promise that resolves to true if all relationships are valid
  */
 async function validateChatParticipants(chatData: Chat): Promise<boolean> {
   try {
@@ -156,6 +158,9 @@ async function validateChatParticipants(chatData: Chat): Promise<boolean> {
 
 /**
  * Check if two users have mutual accepted relationships
+ * @param {string} userId1 - The first user ID to check
+ * @param {string} userId2 - The second user ID to check
+ * @return {Promise<boolean>} Promise that resolves to true if relationship exists
  */
 async function checkMutualRelationship(
   userId1: string,
@@ -224,6 +229,10 @@ async function checkMutualRelationship(
 
 /**
  * Log chat validation violations for audit purposes
+ * @param {string} chatId - The ID of the chat with validation issues
+ * @param {Chat} chatData - The chat data that failed validation
+ * @param {string} reason - The reason for the validation failure
+ * @return {Promise<void>} Promise that resolves when violation is logged
  */
 async function logChatViolation(
   chatId: string,

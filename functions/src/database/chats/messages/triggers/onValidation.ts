@@ -38,7 +38,7 @@ interface Message {
   fileUrl?: string;
   fileName?: string;
   type: string;
-  timestamp: any;
+  timestamp: FirebaseFirestore.Timestamp;
   isValid?: boolean;
   validationError?: string;
 }
@@ -49,6 +49,8 @@ interface Chat {
   isGroup: boolean;
   name?: string;
   groupName?: string;
+  createdAt: FirebaseFirestore.Timestamp;
+  createdBy: string;
   isValid?: boolean;
 }
 
@@ -57,7 +59,7 @@ interface RelatedAccount {
   status: "pending" | "accepted" | "blocked" | "declined";
   initiatorId: string;
   targetId: string;
-  createdAt: any;
+  createdAt: FirebaseFirestore.Timestamp;
   relationshipType?: string;
 }
 
@@ -146,6 +148,9 @@ export const onMessageValidation = onDocumentWritten(
 
 /**
  * Validate message sending permissions
+ * @param {Chat} chatData - The chat data containing participant information
+ * @param {Message} messageData - The message data to validate
+ * @return {Promise<object>} Validation result with error details
  */
 async function validateMessagePermissions(
   chatData: Chat,
@@ -230,6 +235,9 @@ async function validateMessagePermissions(
 
 /**
  * Check if sender has permission to message a specific participant
+ * @param {string} senderId - The ID of the message sender
+ * @param {string} participantId - The ID of the participant to check permissions for
+ * @return {Promise<boolean>} Promise that resolves to true if messaging is allowed
  */
 async function checkMessagePermission(
   senderId: string,
@@ -293,6 +301,11 @@ async function checkMessagePermission(
 
 /**
  * Mark message as invalid and log violation
+ * @param {string} chatId - The ID of the chat containing the invalid message
+ * @param {string} messageId - The ID of the invalid message
+ * @param {string} error - The validation error description
+ * @param {Message} messageData - The message data that failed validation
+ * @return {Promise<void>} Promise that resolves when message is marked invalid
  */
 async function markMessageInvalid(
   chatId: string,

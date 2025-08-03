@@ -21,8 +21,11 @@ import {Injectable} from "@angular/core";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
 import {AngularFireStorage} from "@angular/fire/compat/storage";
 import {Observable, from, throwError, BehaviorSubject} from "rxjs";
-import {map, switchMap, catchError} from "rxjs/operators";
+import {map, switchMap, catchError, take} from "rxjs/operators";
 import firebase from "firebase/compat/app";
+import {Store} from "@ngrx/store";
+import {AuthState} from "../../../state/reducers/auth.reducer";
+import {selectAuthUser} from "../../../state/selectors/auth.selectors";
 import {
   Chat,
   Message,
@@ -43,19 +46,32 @@ export class ChatService {
   constructor(
     private firestore: AngularFirestore,
     private storage: AngularFireStorage,
+    private store: Store<{auth: AuthState}>,
   ) {}
 
-  // TODO: Replace with actual auth service integration
-  private getCurrentUserId(): string {
-    // For now, using a placeholder - this should be replaced with actual auth
-    return "current-user-id";
+  private getCurrentUserId(): Observable<string> {
+    return this.store.select(selectAuthUser).pipe(
+      map((user) => user?.uid || ""),
+      take(1),
+    );
+  }
+
+  private getCurrentUserIdSync(): string {
+    let currentUserId = "";
+    this.store
+      .select(selectAuthUser)
+      .pipe(take(1))
+      .subscribe((user) => {
+        currentUserId = user?.uid || "";
+      });
+    return currentUserId;
   }
 
   /**
    * Get user's chats with real-time updates
    */
   getUserChats(): Observable<Chat[]> {
-    const userId = this.getCurrentUserId();
+    const userId = this.getCurrentUserIdSync();
     return this.firestore
       .collection<any>(this.CHATS_COLLECTION, (ref) =>
         ref
@@ -123,7 +139,7 @@ export class ChatService {
    * Create a new chat
    */
   createChat(request: CreateChatRequest): Observable<string> {
-    const userId = this.getCurrentUserId();
+    const userId = this.getCurrentUserIdSync();
 
     // Ensure current user is in participants
     if (!request.participants.includes(userId)) {
@@ -154,7 +170,7 @@ export class ChatService {
    * Send a message in a chat
    */
   sendMessage(request: SendMessageRequest): Observable<string> {
-    const currentUserId = this.getCurrentUserId();
+    const currentUserId = this.getCurrentUserIdSync();
     const messageData: Partial<Message> = {
       senderId: currentUserId,
       text: request.text,

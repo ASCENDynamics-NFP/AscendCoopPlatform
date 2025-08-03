@@ -52,7 +52,7 @@ interface Chat {
   isGroup: boolean;
   name?: string;
   groupName?: string;
-  createdAt: any;
+  createdAt: FirebaseFirestore.Timestamp;
   createdBy: string;
   admins?: string[];
 }
@@ -62,7 +62,7 @@ interface RelatedAccount {
   status: "pending" | "accepted" | "blocked" | "declined";
   initiatorId: string;
   targetId: string;
-  createdAt: any;
+  createdAt: FirebaseFirestore.Timestamp;
   relationshipType?: string;
 }
 
@@ -375,6 +375,9 @@ export const removeUserFromChat = onCall(async (request) => {
 
 /**
  * Check if two users have an accepted relationship
+ * @param {string} userId1 - The first user ID to check
+ * @param {string} userId2 - The second user ID to check
+ * @return {Promise<boolean>} Promise that resolves to true if relationship exists
  */
 async function checkAcceptedRelationship(
   userId1: string,

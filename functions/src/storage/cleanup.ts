@@ -21,12 +21,13 @@ const storage = getStorage();
  */
 export const cleanupOrphanedFiles = onSchedule(
   {
-    schedule: "every day 02:00",
+    schedule: "0 2 * * *",
     timeZone: "America/New_York",
     region: "us-central1",
     memory: "512MiB",
     timeoutSeconds: 540, // 9 minutes
   },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (event) => {
     logger.info("Starting orphaned file cleanup");
 
@@ -173,6 +174,8 @@ export const cleanupChatFiles = onCall(
 
 /**
  * Check if a message document exists in Firestore
+ * @param {string} chatId - The ID of the chat containing the message
+ * @param {string} messageId - The ID of the message to check
  */
 async function checkMessageExists(
   chatId: string,

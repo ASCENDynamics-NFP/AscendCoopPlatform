@@ -38,7 +38,7 @@ interface Message {
   fileUrl?: string;
   fileName?: string;
   type: string;
-  timestamp: any;
+  timestamp: FirebaseFirestore.Timestamp;
 }
 
 interface Chat {
@@ -102,10 +102,15 @@ export const onCreateMessage = onDocumentCreated(
 
 /**
  * Update chat document with latest message metadata
+ * @param {string} chatId - The ID of the chat to update
+ * @param {Message} messageData - The message data containing metadata
+ * @param {Chat} chatData - The chat data (currently unused but kept for future use)
+ * @return {Promise<void>} Promise that resolves when update is complete
  */
 async function updateChatMetadata(
   chatId: string,
   messageData: Message,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   chatData: Chat,
 ): Promise<void> {
   try {
@@ -129,6 +134,9 @@ async function updateChatMetadata(
 
 /**
  * Send push notifications to all participants except the sender
+ * @param {Chat} chatData - The chat data containing participant information
+ * @param {Message} messageData - The message data for notification content
+ * @return {Promise<void>} Promise that resolves when notifications are sent
  */
 async function sendNotificationsToParticipants(
   chatData: Chat,
@@ -198,8 +206,15 @@ async function sendNotificationsToParticipants(
 
 /**
  * Get display name for notification title
+ * @param {Chat} chatData - The chat data containing name information
+ * @param {string} senderId - The ID of the message sender (currently unused)
+ * @return {string} The display name for the notification
  */
-function getChatDisplayName(chatData: Chat, senderId: string): string {
+function getChatDisplayName(
+  chatData: Chat,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  senderId: string,
+): string {
   if (chatData.isGroup) {
     return chatData.name || chatData.groupName || "Group Chat";
   }
@@ -211,6 +226,8 @@ function getChatDisplayName(chatData: Chat, senderId: string): string {
 
 /**
  * Get appropriate notification body text
+ * @param {Message} messageData - The message data to create notification body for
+ * @return {string} The notification body text
  */
 function getNotificationBody(messageData: Message): string {
   switch (messageData.type) {
@@ -231,6 +248,8 @@ function getNotificationBody(messageData: Message): string {
 
 /**
  * Get last message text for chat metadata
+ * @param {Message} messageData - The message data to extract text from
+ * @return {string} The formatted message text for chat metadata
  */
 function getLastMessageText(messageData: Message): string {
   switch (messageData.type) {

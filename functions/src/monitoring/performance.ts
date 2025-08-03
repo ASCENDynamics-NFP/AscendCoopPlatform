@@ -33,12 +33,13 @@ interface PerformanceMetrics {
  */
 export const collectPerformanceMetrics = onSchedule(
   {
-    schedule: "every 24 hours",
+    schedule: "0 0 * * *",
     timeZone: "America/New_York",
     region: "us-central1",
     memory: "512MiB",
     timeoutSeconds: 540,
   },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (event) => {
     logger.info("Starting performance metrics collection");
 
@@ -205,6 +206,7 @@ async function gatherSystemMetrics(): Promise<PerformanceMetrics> {
 
 /**
  * Check for performance alerts and log warnings
+ * @param {any} metrics - The performance metrics to check for alerts
  */
 async function checkPerformanceAlerts(
   metrics: PerformanceMetrics,
@@ -316,10 +318,11 @@ export const optimizeIndexes = onCall(
  */
 export const cleanupOldMetrics = onSchedule(
   {
-    schedule: "every 7 days",
+    schedule: "0 0 */7 * *",
     timeZone: "America/New_York",
     region: "us-central1",
   },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (event) => {
     logger.info("Starting cleanup of old metrics");
 

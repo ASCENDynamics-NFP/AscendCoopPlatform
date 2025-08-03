@@ -246,6 +246,18 @@ service cloud.firestore {
                request.auth.uid in resource.data.participants;
       }
 
+      // Helper function to check if user is a group admin for any participant accounts
+      function isGroupAdminOfParticipants() {
+        return request.auth != null &&
+               exists(/databases/$(database)/documents/accounts/$(request.auth.uid)) &&
+               get(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.type == 'group';
+      }
+
+      // Helper function to check if user can access chat (participant or group admin)
+      function canAccessChat() {
+        return isParticipant() || isGroupAdminOfParticipants();
+      }
+
       // Helper function to check if user can create this chat (all participants must be friends)
       function canCreateChat() {
         return request.auth != null &&
@@ -254,46 +266,56 @@ service cloud.firestore {
                request.resource.data.participants.size() <= 50; // Reasonable limit for group chats
       }
 
-      // Allow reading chats only if user is a participant
-      allow read: if isParticipant();
+      // Allow reading chats if user is a participant or group admin
+      allow read: if canAccessChat();
       
       // Allow creating chats if user is included and participants are valid
       allow create: if canCreateChat();
       
-      // Allow updating chat metadata (like lastMessage) if user is a participant
+      // Allow updating chat metadata (like lastMessage) if user has access
       // But prevent modifying participants array after creation
-      allow update: if isParticipant() && 
+      allow update: if canAccessChat() && 
                     request.resource.data.participants == resource.data.participants;
       
-      // Only allow deleting if user is a participant (for leaving chats)
-      allow delete: if isParticipant();
+      // Only allow deleting if user has access (for leaving chats)
+      allow delete: if canAccessChat();
 
       // Rules for messages subcollection
       match /messages/{messageId} {
-        // Helper to check if user is participant of parent chat
+        // Helper to check if user is participant of parent chat or group admin
         function isChatParticipant() {
           return request.auth != null && 
                  request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
         }
 
-        // Allow reading messages if user is a chat participant
-        allow read: if isChatParticipant();
+        function isGroupAdminForChat() {
+          return request.auth != null &&
+                 exists(/databases/$(database)/documents/accounts/$(request.auth.uid)) &&
+                 get(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.type == 'group';
+        }
+
+        function canAccessMessages() {
+          return isChatParticipant() || isGroupAdminForChat();
+        }
+
+        // Allow reading messages if user has access to the chat
+        allow read: if canAccessMessages();
         
-        // Allow creating messages if user is the sender and a chat participant
+        // Allow creating messages if user is the sender and has chat access
         allow create: if request.auth != null && 
                       request.auth.uid == request.resource.data.senderId &&
-                      isChatParticipant();
+                      canAccessMessages();
         
         // Allow updating own messages (for edit functionality, if implemented)
         allow update: if request.auth != null && 
                       request.auth.uid == resource.data.senderId &&
                       request.auth.uid == request.resource.data.senderId &&
-                      isChatParticipant();
+                      canAccessMessages();
         
         // Allow deleting own messages
         allow delete: if request.auth != null && 
                       request.auth.uid == resource.data.senderId &&
-                      isChatParticipant();
+                      canAccessMessages();
       }
     }
   }

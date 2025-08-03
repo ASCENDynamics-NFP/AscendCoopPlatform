@@ -154,8 +154,8 @@ export class ChatListPage implements OnInit, OnDestroy {
   }
 
   getCurrentUserId(): string {
-    // TODO: Get from auth service
-    return "current-user-id";
+    // Get user ID through chat service which has auth integration
+    return (this.chatService as any).getCurrentUserIdSync();
   }
 
   /**

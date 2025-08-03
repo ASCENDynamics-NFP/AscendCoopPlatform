@@ -162,7 +162,7 @@ service cloud.firestore {
       }
 
       function isGroupOwner() {
-        return request.auth != null && request.auth.uid == accountId;
+        return request.auth != null && request.auth.uid == accountId && isGroupAccount();
       }
 
       function isGroupMember() {
@@ -177,22 +177,22 @@ service cloud.firestore {
 
       function isGroupAdmin() {
         return request.auth != null &&
-          get(/databases/$(database)/documents/accounts/$(accountId)).data.type == 'group' &&
+          isGroupAccount() &&
           (request.auth.uid == accountId || // Group owner has admin access
            (exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
             get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.access == 'admin'));
       }
 
       function hasValidProject() {
-        return exists(/databases/$(database)/documents/accounts/$(accountId)/projects/$(request.resource.data.projectId)) &&
-          get(/databases/$(database)/documents/accounts/$(accountId)/projects/$(request.resource.data.projectId)).data.archived != true;
+        return request.resource.data.keys().hasAll(['projectId']) &&
+          request.resource.data.projectId != null &&
+          request.resource.data.projectId is string &&
+          request.resource.data.projectId.size() > 0;
       }
 
       allow read: if isGroupAccount() && isGroupMemberOrOwner();
-      allow create: if isGroupAccount() && request.auth.uid == request.resource.data.userId &&
-        isGroupMemberOrOwner() &&
-        (isGroupAdmin() || request.resource.data.status == 'pending' || request.resource.data.status == 'draft') &&
-        hasValidProject();
+      allow create: if isGroupAccount() && isGroupMemberOrOwner() && hasValidProject() && 
+        (request.resource.data.status == 'pending' || request.resource.data.status == 'draft');
       allow update: if isGroupAccount() && isGroupMemberOrOwner() && hasValidProject() &&
         (
           isGroupAdmin() ||

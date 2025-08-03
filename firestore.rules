@@ -184,33 +184,37 @@ service cloud.firestore {
       }
 
       function hasValidProject() {
-        // Check that the project exists and is not archived (optional check for flexibility)
+        // Allow entries without project or validate project exists and is not archived
         return request.resource.data.projectId == null ||
-               (exists(/databases/$(database)/documents/accounts/$(accountId)/projects/$(request.resource.data.projectId)) &&
-                get(/databases/$(database)/documents/accounts/$(accountId)/projects/$(request.resource.data.projectId)).data.archived != true);
+               exists(/databases/$(database)/documents/accounts/$(accountId)/projects/$(request.resource.data.projectId));
+      }
+
+      function canCreateEntry() {
+        return isGroupAccount() && isGroupMemberOrOwner() && hasValidProject();
+      }
+
+      function isValidStatus(status) {
+        return status == 'pending' || status == 'draft' || status == 'approved';
       }
 
       allow read: if isGroupAccount() && isGroupMemberOrOwner();
       
-      // Allow members to create time entries with 'pending' or 'draft' status
-      // Allow admins to create with any status including 'approved'
-      allow create: if isGroupAccount() && isGroupMemberOrOwner() && hasValidProject() && 
+      // Members can create with pending/draft, admins can create with any valid status
+      allow create: if canCreateEntry() && isValidStatus(request.resource.data.status) &&
         (
-          (request.resource.data.status == 'pending' || request.resource.data.status == 'draft') ||
-          (isGroupAdmin() && request.resource.data.status in ['pending', 'draft', 'approved'])
+          request.resource.data.status == 'pending' || 
+          request.resource.data.status == 'draft' ||
+          (isGroupAdmin() && request.resource.data.status == 'approved')
         );
         
-      // Allow updates with proper permission checks
-      allow update: if isGroupAccount() && isGroupMemberOrOwner() && hasValidProject() &&
+      // Updates: admins can update any, users can only update their own non-approved entries
+      allow update: if canCreateEntry() && isValidStatus(request.resource.data.status) &&
         (
-          // Admins can update any time entry and change status to approved
           isGroupAdmin() ||
-          // Users can only update their own entries if not yet approved
           (
             request.auth.uid == resource.data.userId &&
-            request.auth.uid == request.resource.data.userId &&
-            resource.data.status in ['pending', 'draft'] &&
-            request.resource.data.status in ['pending', 'draft']
+            resource.data.status != 'approved' &&
+            request.resource.data.status != 'approved'
           )
         );
       allow delete: if isGroupAccount() && isGroupMemberOrOwner() &&

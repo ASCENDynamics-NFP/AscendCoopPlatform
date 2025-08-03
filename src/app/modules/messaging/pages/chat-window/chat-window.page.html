@@ -21,7 +21,7 @@
   <!-- Messages List -->
   <div class="messages-container">
     <div
-      *ngFor="let message of messages$ | async; trackBy: trackByMessageId"
+      *ngFor="let message of messages; trackBy: trackByMessageId"
       class="message-wrapper"
       [class.own-message]="isOwnMessage(message)"
       [class.other-message]="!isOwnMessage(message)"
@@ -71,9 +71,43 @@
           </div>
         </div>
 
-        <!-- Message Timestamp -->
+        <!-- Message Timestamp and Status -->
         <div class="message-time">
           {{ formatMessageTime(message.timestamp) }}
+
+          <!-- Message Status (for own messages) -->
+          <span *ngIf="isOwnMessage(message)" class="message-status">
+            <ion-icon
+              *ngIf="message.status === 'sending'"
+              name="time-outline"
+              class="status-sending"
+            >
+            </ion-icon>
+            <ion-icon
+              *ngIf="message.status === 'sent'"
+              name="checkmark-outline"
+              class="status-sent"
+            >
+            </ion-icon>
+            <ion-icon
+              *ngIf="message.status === 'delivered'"
+              name="checkmark-done-outline"
+              class="status-delivered"
+            >
+            </ion-icon>
+            <ion-icon
+              *ngIf="message.status === 'read'"
+              name="checkmark-done-outline"
+              class="status-read"
+            >
+            </ion-icon>
+            <ion-icon
+              *ngIf="message.status === 'failed'"
+              name="warning-outline"
+              class="status-failed"
+            >
+            </ion-icon>
+          </span>
         </div>
       </div>
     </div>
@@ -86,8 +120,20 @@
   </div>
 </ion-content>
 
+<!-- Blocked Contact Notice -->
+<div *ngIf="isContactBlocked" class="blocked-notice">
+  <ion-icon name="ban-outline"></ion-icon>
+  <span>You have blocked this contact. Messages are disabled.</span>
+</div>
+
+<!-- Can't Send Messages Notice -->
+<div *ngIf="!canSendMessages && !isContactBlocked" class="blocked-notice">
+  <ion-icon name="warning-outline"></ion-icon>
+  <span>You can only message accepted friends.</span>
+</div>
+
 <!-- Message Input Footer -->
-<ion-footer class="message-input-footer">
+<ion-footer class="message-input-footer" *ngIf="canSendMessages">
   <ion-toolbar>
     <ion-item fill="outline" class="message-input-item">
       <ion-textarea
@@ -98,7 +144,7 @@
         autoGrow="true"
         maxlength="1000"
         (keypress)="onKeyPress($event)"
-        [disabled]="isLoading"
+        [disabled]="isLoading || !canSendMessages"
       >
       </ion-textarea>
 
@@ -106,7 +152,7 @@
         slot="end"
         fill="clear"
         (click)="showAttachmentOptions()"
-        [disabled]="isLoading"
+        [disabled]="isLoading || !canSendMessages"
       >
         <ion-icon name="attach" slot="icon-only"></ion-icon>
       </ion-button>
@@ -115,7 +161,7 @@
         slot="end"
         fill="clear"
         (click)="sendMessage()"
-        [disabled]="!newMessage.trim() || isLoading"
+        [disabled]="!newMessage.trim() || isLoading || !canSendMessages"
       >
         <ion-icon name="send" slot="icon-only"></ion-icon>
       </ion-button>

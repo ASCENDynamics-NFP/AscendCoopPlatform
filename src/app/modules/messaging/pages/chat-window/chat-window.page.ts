@@ -30,15 +30,20 @@ import {
   ToastController,
   ActionSheetController,
 } from "@ionic/angular";
-import {Observable, Subject, combineLatest} from "rxjs";
+import {Observable, Subject, combineLatest, forkJoin} from "rxjs";
 import {takeUntil, map} from "rxjs/operators";
 import {
   Chat,
   Message,
   MessageType,
+  MessageStatus,
   SendMessageRequest,
 } from "../../models/chat.model";
 import {ChatService} from "../../services/chat.service";
+import {RelationshipService} from "../../services/relationship.service";
+import {Store} from "@ngrx/store";
+import {AuthState} from "../../../../state/reducers/auth.reducer";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 
 @Component({
   selector: "app-chat-window",
@@ -52,16 +57,23 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   chatId!: string;
   chat$!: Observable<Chat | null>;
   messages$!: Observable<Message[]>;
+  messages: Message[] = []; // Local array for optimistic updates
   newMessage = "";
   isLoading = false;
+  currentUserId: string | null = null;
+  otherParticipantId: string | null = null;
+  isContactBlocked = false;
+  canSendMessages = true;
   private destroy$ = new Subject<void>();
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private chatService: ChatService,
+    private relationshipService: RelationshipService,
     private toastController: ToastController,
     private actionSheetController: ActionSheetController,
+    private store: Store<{auth: AuthState}>,
   ) {}
 
   ngOnInit() {
@@ -72,22 +84,125 @@ export class ChatWindowPage implements OnInit, OnDestroy {
       return;
     }
 
-    // Load chat and messages
-    this.chat$ = this.chatService.getChat(this.chatId);
-    this.messages$ = this.chatService.getChatMessages(this.chatId);
+    // Get current user ID from store
+    this.store
+      .select(selectAuthUser)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((user) => {
+        this.currentUserId = user?.uid || null;
+        if (this.currentUserId) {
+          this.initializeChat();
+        }
+      });
+  }
 
-    // Subscribe to messages for auto-scroll
-    this.messages$.pipe(takeUntil(this.destroy$)).subscribe({
-      next: (messages) => {
-        if (messages.length > 0) {
-          this.scrollToBottom();
+  /**
+   * Initialize chat after getting current user ID
+   */
+  private initializeChat() {
+    // Load chat first to validate access
+    this.chat$ = this.chatService.getChat(this.chatId);
+
+    // Validate user has permission to access this chat
+    this.chat$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (chat) => {
+        if (chat) {
+          this.validateChatAccess(chat);
+        } else {
+          this.showErrorToast("Chat not found");
+          this.router.navigate(["/messaging/chats"]);
         }
       },
       error: (error) => {
-        console.error("Error loading messages:", error);
-        this.showErrorToast("Failed to load messages");
+        console.error("Error loading chat:", error);
+        this.showErrorToast("Error loading chat");
+        this.router.navigate(["/messaging/chats"]);
       },
     });
+
+    // Load messages
+    this.messages$ = this.chatService.getChatMessages(this.chatId);
+
+    // Subscribe to messages and update local array
+    this.messages$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (messages) => {
+        // Merge server messages with local optimistic messages
+        this.messages = this.mergeMessages(messages);
+        setTimeout(() => this.scrollToBottom(), 100);
+      },
+      error: (error) => {
+        console.error("Error loading messages:", error);
+        this.showErrorToast("Error loading messages");
+      },
+    });
+  }
+
+  /**
+   * Validate user has access to this chat based on relationships
+   */
+  private async validateChatAccess(chat: Chat) {
+    try {
+      if (!this.currentUserId) {
+        this.showErrorToast("Authentication required");
+        this.router.navigate(["/messaging/chats"]);
+        return;
+      }
+
+      // Check if user is a participant
+      if (!chat.participants.includes(this.currentUserId)) {
+        this.showErrorToast("You don't have access to this chat");
+        this.router.navigate(["/messaging/chats"]);
+        return;
+      }
+
+      // For group chats, skip individual relationship validation
+      if (chat.isGroup) {
+        return;
+      }
+
+      // For 1-on-1 chats, validate relationship with the other participant
+      this.otherParticipantId =
+        chat.participants.find((p) => p !== this.currentUserId) || null;
+
+      if (this.otherParticipantId) {
+        // Check if contact is blocked
+        this.isContactBlocked =
+          (await this.relationshipService
+            .isUserBlocked(this.currentUserId, this.otherParticipantId)
+            .toPromise()) || false;
+
+        // Check if can message (for send functionality)
+        this.canSendMessages =
+          !this.isContactBlocked &&
+          ((await this.relationshipService
+            .canMessage(this.currentUserId, this.otherParticipantId)
+            .toPromise()) ||
+            false);
+
+        if (
+          !(await this.relationshipService
+            .canMessage(this.currentUserId, this.otherParticipantId)
+            .toPromise())
+        ) {
+          this.showErrorToast("You can only message accepted friends");
+          this.router.navigate(["/messaging/chats"]);
+          return;
+        }
+      }
+    } catch (error) {
+      console.error("Error validating chat access:", error);
+      this.showErrorToast("Error validating chat access");
+      this.router.navigate(["/messaging/chats"]);
+    }
+  }
+
+  /**
+   * Merge server messages with local optimistic messages
+   */
+  private mergeMessages(serverMessages: Message[]): Message[] {
+    // For now, just return server messages
+    // In a more sophisticated implementation, we'd merge with pending local messages
+    return serverMessages;
   }
 
   ngOnDestroy() {
@@ -96,14 +211,38 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Send a text message
+   * Send a text message with optimistic UI updates
    */
   async sendMessage() {
     if (!this.newMessage.trim() || this.isLoading) return;
 
+    // Check if user can send messages
+    if (!this.canSendMessages) {
+      if (this.isContactBlocked) {
+        this.showErrorToast("Cannot send messages to blocked contacts");
+      } else {
+        this.showErrorToast("You can only message accepted friends");
+      }
+      return;
+    }
+
     const messageText = this.newMessage.trim();
     this.newMessage = "";
-    this.isLoading = true;
+
+    // Create optimistic message
+    const optimisticMessage: Message = {
+      id: `temp-${Date.now()}`, // Temporary ID
+      senderId: "current-user-id", // TODO: Get from auth service
+      text: messageText,
+      type: MessageType.TEXT,
+      status: MessageStatus.SENDING,
+      timestamp: new Date() as any, // Use Date for local display
+      createdAt: new Date() as any,
+    };
+
+    // Add optimistic message to local array
+    this.messages = [...this.messages, optimisticMessage];
+    setTimeout(() => this.scrollToBottom(), 100);
 
     const request: SendMessageRequest = {
       chatId: this.chatId,
@@ -112,15 +251,24 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     };
 
     try {
-      await this.chatService.sendMessage(request).toPromise();
-      this.scrollToBottom();
+      const messageId = await this.chatService.sendMessage(request).toPromise();
+
+      // Update optimistic message status to sent
+      this.messages = this.messages.map((msg) =>
+        msg.id === optimisticMessage.id
+          ? {...msg, id: messageId || msg.id, status: MessageStatus.SENT}
+          : msg,
+      );
     } catch (error) {
       console.error("Error sending message:", error);
       this.showErrorToast("Failed to send message");
-      // Restore message text on error
-      this.newMessage = messageText;
-    } finally {
-      this.isLoading = false;
+
+      // Update optimistic message status to failed
+      this.messages = this.messages.map((msg) =>
+        msg.id === optimisticMessage.id
+          ? {...msg, status: MessageStatus.FAILED}
+          : msg,
+      );
     }
   }
 
@@ -223,31 +371,48 @@ export class ChatWindowPage implements OnInit, OnDestroy {
    * Show chat options (block, info, etc.)
    */
   async showChatOptions() {
-    const actionSheet = await this.actionSheetController.create({
-      header: "Chat Options",
-      buttons: [
-        {
-          text: "Chat Info",
-          icon: "information-circle-outline",
-          handler: () => {
-            // TODO: Navigate to chat info page
-            console.log("TODO: Show chat info");
-          },
+    const buttons: any[] = [
+      {
+        text: "Chat Info",
+        icon: "information-circle-outline",
+        handler: () => {
+          // TODO: Navigate to chat info page
+          console.log("TODO: Show chat info");
         },
-        {
+      },
+    ];
+
+    // Add block/unblock option for 1-on-1 chats
+    if (!this.chat$ || this.otherParticipantId) {
+      if (this.isContactBlocked) {
+        buttons.push({
+          text: "Unblock Contact",
+          icon: "checkmark-circle-outline",
+          handler: () => {
+            this.unblockContact();
+          },
+        });
+      } else {
+        buttons.push({
           text: "Block Contact",
           icon: "ban-outline",
           role: "destructive",
           handler: () => {
             this.blockContact();
           },
-        },
-        {
-          text: "Cancel",
-          icon: "close",
-          role: "cancel",
-        },
-      ],
+        });
+      }
+    }
+
+    buttons.push({
+      text: "Cancel",
+      icon: "close",
+      role: "cancel",
+    });
+
+    const actionSheet = await this.actionSheetController.create({
+      header: "Chat Options",
+      buttons,
     });
     await actionSheet.present();
   }
@@ -256,13 +421,43 @@ export class ChatWindowPage implements OnInit, OnDestroy {
    * Block the contact
    */
   private async blockContact() {
+    if (!this.currentUserId || !this.otherParticipantId) {
+      this.showErrorToast("Unable to block contact");
+      return;
+    }
+
     try {
-      // TODO: Implement blocking logic
-      console.log("TODO: Block contact");
+      await this.relationshipService
+        .blockUser(this.currentUserId, this.otherParticipantId)
+        .toPromise();
+      this.isContactBlocked = true;
+      this.canSendMessages = false;
       this.showSuccessToast("Contact blocked");
     } catch (error) {
       console.error("Error blocking contact:", error);
       this.showErrorToast("Failed to block contact");
+    }
+  }
+
+  /**
+   * Unblock the contact
+   */
+  private async unblockContact() {
+    if (!this.currentUserId || !this.otherParticipantId) {
+      this.showErrorToast("Unable to unblock contact");
+      return;
+    }
+
+    try {
+      await this.relationshipService
+        .unblockUser(this.currentUserId, this.otherParticipantId)
+        .toPromise();
+      this.isContactBlocked = false;
+      this.canSendMessages = true;
+      this.showSuccessToast("Contact unblocked");
+    } catch (error) {
+      console.error("Error unblocking contact:", error);
+      this.showErrorToast("Failed to unblock contact");
     }
   }
 

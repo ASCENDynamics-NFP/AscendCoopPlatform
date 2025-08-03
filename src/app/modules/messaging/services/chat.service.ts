@@ -47,7 +47,7 @@ export class ChatService {
 
   // TODO: Replace with actual auth service integration
   private getCurrentUserId(): string {
-    // This should be replaced with actual authentication service
+    // For now, using a placeholder - this should be replaced with actual auth
     return "current-user-id";
   }
 

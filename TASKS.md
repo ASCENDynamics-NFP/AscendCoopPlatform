@@ -71,7 +71,7 @@
   - Clear input on successful send
 
 #### Persistent History & Pagination
-- [ ] Implement message history management
+- [x] Implement message history management  ✅ **COMPLETED**
   - Load last 50 messages when opening chat
   - Add infinite scroll for older messages using Firestore query cursors
   - Maintain scroll position when prepending older messages
@@ -92,7 +92,7 @@
   - Handle proper subscription cleanup on navigation away
 
 #### Optimistic UI Updates
-- [ ] Enhance UX with immediate message display
+- [x] Enhance UX with immediate message display  ✅ **COMPLETED**
   - Show messages with "sending" indicator before Firestore confirmation
   - Update message status to "sent" or "failed" based on Promise result
   - Handle retry logic for failed messages
@@ -105,21 +105,23 @@
 
 ### Frontend Tasks - Message Blocking and Permissions Enforcement
 
-#### Friend Acceptance Check (Frontend)
-- [ ] Implement relationship validation
-  - Check `relatedAccounts` status before allowing chat creation
-  - Prevent navigation to chats with non-accepted contacts
-  - Show appropriate error messages for unauthorized access attempts
+## Phase 3: Friend System Integration
+
+### Friend Acceptance Check (Frontend)
+- [x] Create relationship validation service
+- [x] Check relatedAccounts status before allowing chat creation
+- [x] Prevent navigation to chats with non-accepted contacts
+- [x] Show appropriate error messages for unauthorized access attempts
 
 #### Block User Option
-- [ ] Add blocking functionality to chat interface
+- [x] Add blocking functionality to chat interface  ✅ **COMPLETED**
   - Create "Block Contact" action in chat header menu
   - Update `relatedAccounts` status to "blocked"
   - Disable message input and show blocked status message
   - Add "Unblock" option in same menu
 
 #### Enforce Blocking in UI
-- [ ] Implement blocking behavior throughout interface
+- [x] Implement blocking behavior throughout interface  ✅ **COMPLETED**
   - Hide/disable send functionality for blocked contacts
   - Filter out messages from blocked users (local UI filtering)
   - Handle group chat blocking scenarios appropriately

@@ -33,7 +33,7 @@
 
 - **Firestore Schema**: Optimized for messaging with proper indexing
 - **Security Rules**: Comprehensive participant-based access control
-- **Indexes**: 8 composite indexes for efficient queries
+- **Indexes**: 12 composite indexes for efficient queries (includes messaging + existing app features)
 - **Storage Rules**: Secure file access limited to chat participants
 
 ## 🎯 **READY FOR PRODUCTION**

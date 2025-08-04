@@ -94,8 +94,12 @@ export class ChatAccessGuard implements CanActivate {
           return of(this.router.createUrlTree(["/messaging/chats"]));
         }
 
-        // Check if user is a participant
-        if (!chat.participants.includes(currentUserId)) {
+        // Check if participants array exists and current user is in it
+        if (
+          !chat.participants ||
+          !Array.isArray(chat.participants) ||
+          !chat.participants.includes(currentUserId)
+        ) {
           this.showErrorToast("You don't have access to this chat");
           return of(this.router.createUrlTree(["/messaging/chats"]));
         }

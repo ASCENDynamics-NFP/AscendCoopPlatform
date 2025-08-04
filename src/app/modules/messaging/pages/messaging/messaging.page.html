@@ -18,41 +18,39 @@
     </ion-header>
 
     <ion-content>
-      <!-- Chat List Component -->
+      <!-- Chat List -->
       <div class="chat-list-container">
-        <!-- This will be replaced with actual chat list component -->
-        <ion-item button (click)="onChatSelected('chat1')">
-          <ion-avatar slot="start">
-            <img src="https://via.placeholder.com/40" alt="User Avatar" />
-          </ion-avatar>
-          <ion-label>
-            <h2>John Doe</h2>
-            <p>Hey there! How are you doing?</p>
-            <ion-note slot="end">2:30 PM</ion-note>
-          </ion-label>
-        </ion-item>
+        <!-- Empty state when no chats are available -->
+        <div class="empty-state" *ngIf="!hasChats">
+          <ion-icon name="chatbubbles-outline" size="large"></ion-icon>
+          <h3>No conversations yet</h3>
+          <p>Start a new conversation to begin messaging</p>
+          <ion-button (click)="onNewChat()" fill="outline">
+            <ion-icon name="add" slot="start"></ion-icon>
+            New Chat
+          </ion-button>
+        </div>
 
-        <ion-item button (click)="onChatSelected('chat2')">
-          <ion-avatar slot="start">
-            <img src="https://via.placeholder.com/40" alt="User Avatar" />
-          </ion-avatar>
-          <ion-label>
-            <h2>Jane Smith</h2>
-            <p>Let's meet tomorrow for the project discussion</p>
-            <ion-note slot="end">1:15 PM</ion-note>
-          </ion-label>
-        </ion-item>
-
-        <ion-item button (click)="onChatSelected('chat3')">
-          <ion-avatar slot="start">
-            <img src="https://via.placeholder.com/40" alt="User Avatar" />
-          </ion-avatar>
-          <ion-label>
-            <h2>Team Group</h2>
-            <p>Mike: Great work everyone!</p>
-            <ion-note slot="end">11:30 AM</ion-note>
-          </ion-label>
-        </ion-item>
+        <!-- Message indicating to create a real chat -->
+        <div class="info-message" *ngIf="!hasChats">
+          <ion-card>
+            <ion-card-content>
+              <h4>Getting Started with Messaging</h4>
+              <p>To see real conversations here, you'll need to:</p>
+              <ol>
+                <li>Click "New Chat" to start a conversation</li>
+                <li>
+                  Select contacts who have accepted relationship connections
+                </li>
+                <li>Send your first message</li>
+              </ol>
+              <p>
+                <strong>Note:</strong> You can only message users with whom you
+                have an accepted relationship connection.
+              </p>
+            </ion-card-content>
+          </ion-card>
+        </div>
       </div>
     </ion-content>
   </ion-menu>
@@ -64,7 +62,11 @@
 </ion-split-pane>
 
 <!-- Mobile-only: Show placeholder when no chat is selected -->
-<div class="no-chat-selected" *ngIf="!selectedChatId && isDesktop">
+<!-- Hide this placeholder when we're in any chat-related route -->
+<div
+  class="no-chat-selected"
+  *ngIf="!selectedChatId && isDesktop && !router.url.includes('/messaging/chat') && !router.url.includes('/messaging/new-chat')"
+>
   <ion-icon name="chatbubbles-outline" size="large"></ion-icon>
   <h2>Select a conversation</h2>
   <p>Choose a chat from the list to start messaging</p>

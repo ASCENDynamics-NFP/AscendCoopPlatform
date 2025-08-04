@@ -20,7 +20,7 @@
 import {Injectable} from "@angular/core";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
 import {AngularFireStorage} from "@angular/fire/compat/storage";
-import {Observable, from, throwError, BehaviorSubject} from "rxjs";
+import {Observable, from, throwError} from "rxjs";
 import {map, switchMap, catchError, take} from "rxjs/operators";
 import firebase from "firebase/compat/app";
 import {Store} from "@ngrx/store";
@@ -140,6 +140,13 @@ export class ChatService {
    */
   createChat(request: CreateChatRequest): Observable<string> {
     const userId = this.getCurrentUserIdSync();
+    console.log("Creating chat with user ID:", userId);
+    console.log("Chat request:", request);
+
+    if (!userId) {
+      console.error("Cannot create chat: user not authenticated");
+      return throwError(() => new Error("User not authenticated"));
+    }
 
     // Ensure current user is in participants
     if (!request.participants.includes(userId)) {
@@ -149,16 +156,25 @@ export class ChatService {
     const chatData: Partial<Chat> = {
       participants: request.participants,
       isGroup: request.isGroup || false,
-      name: request.name,
       createdBy: userId,
       createdAt: firebase.firestore.FieldValue.serverTimestamp() as any,
       lastModifiedAt: firebase.firestore.FieldValue.serverTimestamp() as any,
     };
 
+    // Only include name field if it has a value
+    if (request.name && request.name.trim()) {
+      chatData.name = request.name.trim();
+    }
+
+    console.log("Chat data to be saved:", chatData);
+
     return from(
       this.firestore.collection(this.CHATS_COLLECTION).add(chatData),
     ).pipe(
-      map((docRef) => docRef.id),
+      map((docRef) => {
+        console.log("Chat created successfully with ID:", docRef.id);
+        return docRef.id;
+      }),
       catchError((error) => {
         console.error("Error creating chat:", error);
         return throwError(() => error);
@@ -173,15 +189,25 @@ export class ChatService {
     const currentUserId = this.getCurrentUserIdSync();
     const messageData: Partial<Message> = {
       senderId: currentUserId,
-      text: request.text,
+      text: request.text || "", // Ensure text is never undefined
       type: request.type || MessageType.TEXT,
       status: MessageStatus.SENT,
       timestamp: firebase.firestore.FieldValue.serverTimestamp() as any,
-      fileUrl: request.fileUrl,
-      fileName: request.fileName,
-      fileSize: request.fileSize,
-      fileType: request.fileType,
     };
+
+    // Only include file-related fields if they have values
+    if (request.fileUrl) {
+      messageData.fileUrl = request.fileUrl;
+    }
+    if (request.fileName) {
+      messageData.fileName = request.fileName;
+    }
+    if (request.fileSize) {
+      messageData.fileSize = request.fileSize;
+    }
+    if (request.fileType) {
+      messageData.fileType = request.fileType;
+    }
 
     const messagesRef = this.firestore.collection(
       `${this.CHATS_COLLECTION}/${request.chatId}/${this.MESSAGES_COLLECTION}`,
@@ -190,8 +216,11 @@ export class ChatService {
     return from(messagesRef.add(messageData)).pipe(
       switchMap((docRef) => {
         // Update chat metadata
+        const lastMessageText =
+          request.text ||
+          (request.fileName ? `📎 ${request.fileName}` : "File attachment");
         const chatUpdateData = {
-          lastMessage: request.text,
+          lastMessage: lastMessageText,
           lastMessageTimestamp: firebase.firestore.FieldValue.serverTimestamp(),
           lastModifiedAt: firebase.firestore.FieldValue.serverTimestamp(),
         };
@@ -216,11 +245,10 @@ export class ChatService {
   uploadFile(file: File, chatId: string): Observable<string> {
     const fileName = `${Date.now()}_${file.name}`;
     const filePath = `${this.STORAGE_PATH}/${chatId}/${fileName}`;
-    const fileRef = this.storage.ref(filePath);
     const uploadTask = this.storage.upload(filePath, file);
 
-    return uploadTask.snapshotChanges().pipe(
-      switchMap(() => fileRef.getDownloadURL()),
+    return from(uploadTask).pipe(
+      switchMap(() => this.storage.ref(filePath).getDownloadURL()),
       catchError((error) => {
         console.error("Error uploading file:", error);
         return throwError(() => error);

@@ -594,6 +594,14 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Open file in new window
+   */
+  openFileInNewWindow(url: string, filename: string) {
+    // Open the file URL in a new window/tab
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
+  /**
    * Download file
    */
   downloadFile(url: string, filename: string) {

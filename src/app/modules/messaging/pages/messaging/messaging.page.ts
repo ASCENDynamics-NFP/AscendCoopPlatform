@@ -20,8 +20,10 @@
 import {Component, OnInit, OnDestroy} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Platform} from "@ionic/angular";
-import {Subject} from "rxjs";
-import {takeUntil} from "rxjs/operators";
+import {Subject, Observable} from "rxjs";
+import {takeUntil, map} from "rxjs/operators";
+import {ChatService} from "../../services/chat.service";
+import {Chat} from "../../models/chat.model";
 
 @Component({
   selector: "app-messaging",
@@ -31,13 +33,19 @@ import {takeUntil} from "rxjs/operators";
 export class MessagingPage implements OnInit, OnDestroy {
   selectedChatId: string | null = null;
   isDesktop = false;
+  hasChats = false;
+  chats$: Observable<Chat[]>;
   private destroy$ = new Subject<void>();
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
+    public router: Router,
     private platform: Platform,
-  ) {}
+    private chatService: ChatService,
+  ) {
+    // Initialize chats observable
+    this.chats$ = this.chatService.getUserChats();
+  }
 
   ngOnInit() {
     // Check if we're on desktop
@@ -53,6 +61,16 @@ export class MessagingPage implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((params) => {
         this.selectedChatId = params["id"] || null;
+      });
+
+    // Subscribe to chats to check if user has any conversations
+    this.chats$
+      .pipe(
+        takeUntil(this.destroy$),
+        map((chats) => chats.length > 0),
+      )
+      .subscribe((hasChats) => {
+        this.hasChats = hasChats;
       });
   }
 

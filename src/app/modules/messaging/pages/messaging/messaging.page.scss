@@ -96,3 +96,51 @@ ion-split-pane {
     border-right: 1px solid var(--ion-color-light);
   }
 }
+
+// Empty state styles
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  min-height: 300px;
+
+  ion-icon {
+    color: var(--ion-color-medium);
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    color: var(--ion-color-dark);
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    margin-bottom: 1.5rem;
+  }
+}
+
+.info-message {
+  padding: 1rem;
+
+  ion-card {
+    margin: 0;
+  }
+
+  h4 {
+    color: var(--ion-color-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  ol {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+  }
+
+  li {
+    margin-bottom: 0.5rem;
+  }
+}

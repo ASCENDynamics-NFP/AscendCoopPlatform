@@ -27,5 +27,6 @@ import {ChatListPage} from "./chat-list.page";
 @NgModule({
   imports: [CommonModule, FormsModule, IonicModule, ChatListPageRoutingModule],
   declarations: [ChatListPage],
+  exports: [ChatListPage], // Export the component for use in other modules
 })
 export class ChatListPageModule {}

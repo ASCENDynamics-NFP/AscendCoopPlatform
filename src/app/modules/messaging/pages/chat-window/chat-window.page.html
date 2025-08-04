@@ -56,7 +56,13 @@
           >
             <ion-icon name="document-outline"></ion-icon>
             <div class="file-info">
-              <div class="file-name">{{ message.fileName }}</div>
+              <div
+                class="file-name clickable-file-name"
+                (click)="openFileInNewWindow(message.fileUrl!, message.fileName!)"
+                title="Click to open file in new window"
+              >
+                {{ message.fileName }}
+              </div>
               <div class="file-size">
                 {{ formatFileSize(message.fileSize) }}
               </div>
@@ -65,6 +71,7 @@
               fill="clear"
               size="small"
               (click)="downloadFile(message.fileUrl!, message.fileName!)"
+              title="Download file"
             >
               <ion-icon name="download-outline" slot="icon-only"></ion-icon>
             </ion-button>
@@ -135,36 +142,40 @@
 <!-- Message Input Footer -->
 <ion-footer class="message-input-footer" *ngIf="canSendMessages">
   <ion-toolbar>
-    <ion-item fill="outline" class="message-input-item">
-      <ion-textarea
-        #messageInput
-        [(ngModel)]="newMessage"
-        placeholder="Type a message..."
-        rows="1"
-        autoGrow="true"
-        maxlength="1000"
-        (keypress)="onKeyPress($event)"
-        [disabled]="isLoading || !canSendMessages"
-      >
-      </ion-textarea>
+    <div style="display: flex; align-items: flex-end; gap: 8px">
+      <ion-item fill="outline" class="message-input-item" style="flex: 1">
+        <ion-textarea
+          #messageInput
+          [(ngModel)]="newMessage"
+          placeholder="Type a message..."
+          rows="1"
+          autoGrow="true"
+          maxlength="1000"
+          (keypress)="onKeyPress($event)"
+          [disabled]="isLoading || !canSendMessages"
+        >
+        </ion-textarea>
+      </ion-item>
 
-      <ion-button
-        slot="end"
-        fill="clear"
-        (click)="showAttachmentOptions()"
-        [disabled]="isLoading || !canSendMessages"
-      >
-        <ion-icon name="attach" slot="icon-only"></ion-icon>
-      </ion-button>
+      <div class="message-input-buttons">
+        <ion-button
+          class="attach-button"
+          fill="clear"
+          (click)="showAttachmentOptions()"
+          [disabled]="isLoading || !canSendMessages"
+        >
+          <ion-icon name="attach" slot="icon-only"></ion-icon>
+        </ion-button>
 
-      <ion-button
-        slot="end"
-        fill="clear"
-        (click)="sendMessage()"
-        [disabled]="!newMessage.trim() || isLoading || !canSendMessages"
-      >
-        <ion-icon name="send" slot="icon-only"></ion-icon>
-      </ion-button>
-    </ion-item>
+        <ion-button
+          class="send-button"
+          fill="solid"
+          (click)="sendMessage()"
+          [disabled]="!newMessage.trim() || isLoading || !canSendMessages"
+        >
+          <ion-icon name="send" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
   </ion-toolbar>
 </ion-footer>

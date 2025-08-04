@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 import {Component, OnInit, OnDestroy} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
-import {Platform} from "@ionic/angular";
+import {Platform, ActionSheetController} from "@ionic/angular";
 import {Subject, Observable, of} from "rxjs";
 import {takeUntil, map} from "rxjs/operators";
 import {Store} from "@ngrx/store";
@@ -48,6 +48,7 @@ export class MessagingPage implements OnInit, OnDestroy {
     private platform: Platform,
     private chatService: ChatService,
     private store: Store<{auth: AuthState}>,
+    private actionSheetController: ActionSheetController,
   ) {
     // Initialize chats observable
     this.chats$ = this.chatService.getUserChats();
@@ -121,6 +122,37 @@ export class MessagingPage implements OnInit, OnDestroy {
     } else {
       this.router.navigate(["/messaging/new-chat"]);
     }
+  }
+
+  /**
+   * Show messaging options menu
+   */
+  async showMessagingOptions() {
+    const actionSheet = await this.actionSheetController.create({
+      header: "Messaging Options",
+      buttons: [
+        {
+          text: "Blocked Users",
+          icon: "ban",
+          handler: () => {
+            this.router.navigate(["/messaging/blocked-users"]);
+          },
+        },
+        {
+          text: "Settings",
+          icon: "settings",
+          handler: () => {
+            this.router.navigate(["/account/settings"]);
+          },
+        },
+        {
+          text: "Cancel",
+          icon: "close",
+          role: "cancel",
+        },
+      ],
+    });
+    await actionSheet.present();
   }
 
   /**

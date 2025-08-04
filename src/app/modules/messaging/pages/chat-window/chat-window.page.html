@@ -26,6 +26,24 @@
       [class.own-message]="isOwnMessage(message)"
       [class.other-message]="!isOwnMessage(message)"
     >
+      <!-- User Avatar (for incoming messages) -->
+      <div
+        *ngIf="!isOwnMessage(message) && message?.senderId"
+        class="message-avatar"
+      >
+        <ion-avatar
+          (click)="showMessageOptions(message)"
+          class="clickable-avatar"
+        >
+          <img
+            [src]="getSenderAvatarUrl(message)"
+            [alt]="(getSenderName(message) || 'User') + ' avatar'"
+            (error)="setDefaultAvatar($event)"
+            loading="lazy"
+          />
+        </ion-avatar>
+      </div>
+
       <!-- Message Bubble -->
       <div class="message-bubble">
         <!-- Sender name (for group chats and incoming messages) -->

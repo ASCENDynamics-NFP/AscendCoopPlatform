@@ -111,20 +111,47 @@ export class RelationshipService {
   }
 
   /**
-   * Block a user (update relationship status)
+   * Block a user (update relationship status bidirectionally)
    */
   blockUser(currentUserId: string, targetUserId: string): Observable<void> {
-    return from(
-      this.firestore
-        .collection(
-          `${this.ACCOUNTS_COLLECTION}/${currentUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
-        )
-        .doc(targetUserId)
-        .update({
-          status: "blocked",
-          lastModifiedAt: new Date(),
-        }),
-    ).pipe(
+    // Create batch to update both directions of the relationship
+    const batch = this.firestore.firestore.batch();
+
+    // Block from current user's perspective
+    const currentUserRelationshipRef = this.firestore
+      .collection(
+        `${this.ACCOUNTS_COLLECTION}/${currentUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
+      )
+      .doc(targetUserId).ref;
+
+    // Block from target user's perspective
+    const targetUserRelationshipRef = this.firestore
+      .collection(
+        `${this.ACCOUNTS_COLLECTION}/${targetUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
+      )
+      .doc(currentUserId).ref;
+
+    const updateData = {
+      status: "blocked",
+      lastModifiedAt: new Date(),
+      initiatorId: currentUserId,
+      targetId: targetUserId,
+      createdAt: new Date(), // In case the relationship doesn't exist yet
+    };
+
+    const reverseUpdateData = {
+      status: "blocked",
+      lastModifiedAt: new Date(),
+      initiatorId: currentUserId, // Keep track of who initiated the block
+      targetId: currentUserId,
+      createdAt: new Date(),
+    };
+
+    // Use set with merge to create relationship if it doesn't exist
+    batch.set(currentUserRelationshipRef, updateData, {merge: true});
+    batch.set(targetUserRelationshipRef, reverseUpdateData, {merge: true});
+
+    return from(batch.commit()).pipe(
       map(() => void 0),
       catchError((error) => {
         console.error("Error blocking user:", error);
@@ -134,20 +161,41 @@ export class RelationshipService {
   }
 
   /**
-   * Unblock a user (update relationship status back to accepted)
+   * Unblock a user (update relationship status back to accepted bidirectionally)
    */
   unblockUser(currentUserId: string, targetUserId: string): Observable<void> {
-    return from(
-      this.firestore
-        .collection(
-          `${this.ACCOUNTS_COLLECTION}/${currentUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
-        )
-        .doc(targetUserId)
-        .update({
-          status: "accepted",
-          lastModifiedAt: new Date(),
-        }),
-    ).pipe(
+    // Create batch to update both directions of the relationship
+    const batch = this.firestore.firestore.batch();
+
+    // Unblock from current user's perspective
+    const currentUserRelationshipRef = this.firestore
+      .collection(
+        `${this.ACCOUNTS_COLLECTION}/${currentUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
+      )
+      .doc(targetUserId).ref;
+
+    // Unblock from target user's perspective
+    const targetUserRelationshipRef = this.firestore
+      .collection(
+        `${this.ACCOUNTS_COLLECTION}/${targetUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
+      )
+      .doc(currentUserId).ref;
+
+    const updateData = {
+      status: "accepted",
+      lastModifiedAt: new Date(),
+    };
+
+    const reverseUpdateData = {
+      status: "accepted",
+      lastModifiedAt: new Date(),
+    };
+
+    // Use set with merge in case relationship structure needs updating
+    batch.set(currentUserRelationshipRef, updateData, {merge: true});
+    batch.set(targetUserRelationshipRef, reverseUpdateData, {merge: true});
+
+    return from(batch.commit()).pipe(
       map(() => void 0),
       catchError((error) => {
         console.error("Error unblocking user:", error);

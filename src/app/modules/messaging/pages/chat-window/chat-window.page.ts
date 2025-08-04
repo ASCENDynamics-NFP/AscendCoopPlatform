@@ -30,8 +30,8 @@ import {
   ToastController,
   ActionSheetController,
 } from "@ionic/angular";
-import {Observable, Subject, combineLatest, forkJoin} from "rxjs";
-import {takeUntil, map} from "rxjs/operators";
+import {Observable, Subject, combineLatest, forkJoin, of} from "rxjs";
+import {takeUntil, map, catchError, take} from "rxjs/operators";
 import {
   Chat,
   Message,
@@ -45,6 +45,8 @@ import {NotificationService} from "../../services/notification.service";
 import {Store} from "@ngrx/store";
 import {AuthState} from "../../../../state/reducers/auth.reducer";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {selectAccountById} from "../../../../state/selectors/account.selectors";
+import * as AccountActions from "../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-chat-window",
@@ -133,12 +135,54 @@ export class ChatWindowPage implements OnInit, OnDestroy {
       next: (messages) => {
         // Merge server messages with local optimistic messages
         this.messages = this.mergeMessages(messages);
+
+        // Pre-load sender accounts for avatar display
+        this.preloadSenderAccounts(messages);
+
         setTimeout(() => this.scrollToBottom(), 100);
       },
       error: (error) => {
         console.error("Error loading messages:", error);
         this.showErrorToast("Error loading messages");
       },
+    });
+  }
+
+  /**
+   * Pre-load sender accounts for avatar display
+   */
+  private preloadSenderAccounts(messages: Message[]) {
+    const defaultImage =
+      "assets/image/logo/ASCENDynamics NFP-logos_transparent.png";
+    const senderIds = new Set<string>();
+
+    messages.forEach((message) => {
+      if (message.senderId && message.senderId !== this.currentUserId) {
+        senderIds.add(message.senderId);
+      }
+    });
+
+    // Dispatch actions to load all sender accounts and subscribe to updates
+    senderIds.forEach((senderId) => {
+      this.store.dispatch(AccountActions.loadAccount({accountId: senderId}));
+
+      // Subscribe to account updates to populate avatar cache
+      this.store
+        .select(selectAccountById(senderId))
+        .pipe(
+          takeUntil(this.destroy$),
+          take(1), // Only take the first emission to avoid signal write conflicts
+        )
+        .subscribe({
+          next: (account: any) => {
+            const avatarUrl = account?.iconImage || defaultImage;
+            this.senderAvatarCache.set(senderId, avatarUrl);
+          },
+          error: (error) => {
+            console.warn(`Error loading account ${senderId}:`, error);
+            this.senderAvatarCache.set(senderId, defaultImage);
+          },
+        });
     });
   }
 
@@ -214,6 +258,8 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+    // Clear avatar cache to prevent memory leaks
+    this.senderAvatarCache.clear();
   }
 
   /**
@@ -475,6 +521,19 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Navigate to user profile page
+   */
+  private navigateToUserProfile(userId: string) {
+    if (!userId) {
+      this.showErrorToast("User ID not available");
+      return;
+    }
+
+    // Navigate to the user profile page
+    this.router.navigate(["/account", userId]);
+  }
+
+  /**
    * Scroll to bottom of message list
    */
   private scrollToBottom() {
@@ -506,10 +565,21 @@ export class ChatWindowPage implements OnInit, OnDestroy {
    * Get display name for message sender
    */
   getSenderName(message: Message): string {
+    if (!message) {
+      return "Unknown User";
+    }
+
     if (message.senderName) {
       return message.senderName;
     }
-    return this.isOwnMessage(message) ? "You" : "User " + message.senderId;
+
+    if (this.isOwnMessage(message)) {
+      return "You";
+    }
+
+    return message.senderId
+      ? `User ${message.senderId.substring(0, 8)}...`
+      : "Unknown User";
   }
 
   /**
@@ -610,5 +680,317 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     link.href = url;
     link.download = filename;
     link.click();
+  }
+
+  /**
+   * Get sender avatar image
+   */
+  getSenderAvatar(message: Message): string {
+    if (!message.senderId || this.isOwnMessage(message)) {
+      return "assets/image/logo/ASCENDynamics NFP-logos_transparent.png";
+    }
+
+    // Load account if not already loaded
+    this.store.dispatch(
+      AccountActions.loadAccount({accountId: message.senderId}),
+    );
+
+    // Return default for now, the template will get updated via the selector
+    return "assets/image/logo/ASCENDynamics NFP-logos_transparent.png";
+  }
+
+  // Cache for sender avatars to prevent infinite observable chains
+  private senderAvatarCache = new Map<string, string>();
+
+  /**
+   * Get sender avatar URL synchronously for template use
+   */
+  getSenderAvatarUrl(message: Message): string {
+    // Default fallback image
+    const defaultImage =
+      "assets/image/logo/ASCENDynamics NFP-logos_transparent.png";
+
+    if (!message || !message.senderId || this.isOwnMessage(message)) {
+      return defaultImage;
+    }
+
+    // Check cache first
+    if (this.senderAvatarCache.has(message.senderId)) {
+      return this.senderAvatarCache.get(message.senderId)!;
+    }
+
+    // If not in cache, dispatch load action and return default
+    // The preloadSenderAccounts method will populate the cache
+    this.store.dispatch(
+      AccountActions.loadAccount({accountId: message.senderId}),
+    );
+
+    // Return default for now, cache will be updated by preloadSenderAccounts
+    this.senderAvatarCache.set(message.senderId, defaultImage);
+    return defaultImage;
+  }
+
+  /**
+   * Get sender avatar as Observable for template use (keeping for backward compatibility)
+   */
+  getSenderAvatarObservable(message: Message): Observable<string> {
+    return of(this.getSenderAvatarUrl(message));
+  }
+
+  /**
+   * Show message options when avatar is clicked
+   */
+  async showMessageOptions(message: Message) {
+    try {
+      console.log("showMessageOptions called with message:", message);
+
+      if (!message.senderId || this.isOwnMessage(message)) {
+        console.log("Skipping message options - no senderId or own message");
+        return;
+      }
+
+      if (!this.currentUserId) {
+        console.error("No current user ID available");
+        this.showErrorToast("User authentication required");
+        return;
+      }
+
+      // Load sender account if not already loaded
+      this.store.dispatch(
+        AccountActions.loadAccount({accountId: message.senderId}),
+      );
+
+      const buttons: any[] = [];
+
+      // Get sender name for display
+      let senderName = "User";
+      try {
+        const account = await this.store
+          .select(selectAccountById(message.senderId))
+          .pipe(
+            take(1), // Use take(1) instead of toPromise()
+            map((account) => account),
+          )
+          .toPromise();
+
+        if (account?.name) {
+          senderName = account.name;
+        }
+      } catch (error) {
+        console.warn("Could not get sender name:", error);
+      }
+
+      // Check if user is blocked
+      let isBlocked = false;
+      try {
+        isBlocked =
+          (await this.relationshipService
+            .isUserBlocked(this.currentUserId, message.senderId)
+            .pipe(take(1)) // Use take(1) instead of toPromise()
+            .toPromise()) || false;
+      } catch (error) {
+        console.warn("Could not check block status:", error);
+      }
+
+      console.log("Creating action sheet with buttons:", buttons.length);
+
+      // Add user info option
+      buttons.push({
+        text: `View ${senderName}'s Profile`,
+        icon: "person-outline",
+        handler: () => {
+          this.navigateToUserProfile(message.senderId!);
+        },
+      });
+
+      // Add block/unblock option
+      if (isBlocked) {
+        buttons.push({
+          text: `Unblock ${senderName}`,
+          icon: "checkmark-circle-outline",
+          handler: () => {
+            this.unblockUser(message.senderId!);
+          },
+        });
+      } else {
+        buttons.push({
+          text: `Block ${senderName}`,
+          icon: "ban-outline",
+          role: "destructive",
+          handler: () => {
+            this.blockUser(message.senderId!);
+          },
+        });
+      }
+
+      // Add edit message option (for own messages or if user has permission)
+      if (this.isOwnMessage(message) && message.type === "text") {
+        buttons.push({
+          text: "Edit Message",
+          icon: "create-outline",
+          handler: () => {
+            this.editMessage(message);
+          },
+        });
+      }
+
+      // Add delete message option (for own messages)
+      if (this.isOwnMessage(message)) {
+        buttons.push({
+          text: "Delete Message",
+          icon: "trash-outline",
+          role: "destructive",
+          handler: () => {
+            this.deleteMessage(message);
+          },
+        });
+      }
+
+      // Add copy text option for text messages
+      if (message.type === "text" && message.text) {
+        buttons.push({
+          text: "Copy Text",
+          icon: "copy-outline",
+          handler: () => {
+            this.copyMessageText(message.text!);
+          },
+        });
+      }
+
+      buttons.push({
+        text: "Cancel",
+        icon: "close",
+        role: "cancel",
+      });
+
+      console.log(
+        "About to present action sheet with",
+        buttons.length,
+        "buttons",
+      );
+
+      const actionSheet = await this.actionSheetController.create({
+        header: `Message from ${senderName}`,
+        buttons,
+      });
+
+      console.log("Action sheet created, presenting...");
+      await actionSheet.present();
+      console.log("Action sheet presented");
+    } catch (error) {
+      console.error("Error in showMessageOptions:", error);
+      this.showErrorToast("Failed to show message options");
+    }
+  }
+
+  /**
+   * Block user from message context
+   */
+  private async blockUser(userId: string) {
+    if (!this.currentUserId || !userId) {
+      this.showErrorToast("Unable to block user");
+      return;
+    }
+
+    try {
+      await this.relationshipService
+        .blockUser(this.currentUserId, userId)
+        .toPromise();
+
+      // Update local state if this is the other participant
+      if (userId === this.otherParticipantId) {
+        this.isContactBlocked = true;
+        this.canSendMessages = false;
+      }
+
+      this.showSuccessToast("User blocked");
+    } catch (error) {
+      console.error("Error blocking user:", error);
+      this.showErrorToast("Failed to block user");
+    }
+  }
+
+  /**
+   * Unblock user from message context
+   */
+  private async unblockUser(userId: string) {
+    if (!this.currentUserId || !userId) {
+      this.showErrorToast("Unable to unblock user");
+      return;
+    }
+
+    try {
+      await this.relationshipService
+        .unblockUser(this.currentUserId, userId)
+        .toPromise();
+
+      // Update local state if this is the other participant
+      if (userId === this.otherParticipantId) {
+        this.isContactBlocked = false;
+        this.canSendMessages = true;
+      }
+
+      this.showSuccessToast("User unblocked");
+    } catch (error) {
+      console.error("Error unblocking user:", error);
+      this.showErrorToast("Failed to unblock user");
+    }
+  }
+
+  /**
+   * Edit message (placeholder for future implementation)
+   */
+  private editMessage(message: Message) {
+    // TODO: Implement message editing
+    console.log("Edit message:", message);
+    this.showToast("Message editing coming soon!", "medium");
+  }
+
+  /**
+   * Delete message (placeholder for future implementation)
+   */
+  private async deleteMessage(message: Message) {
+    // TODO: Implement message deletion
+    console.log("Delete message:", message);
+    this.showToast("Message deletion coming soon!", "medium");
+  }
+
+  /**
+   * Copy message text to clipboard
+   */
+  private async copyMessageText(text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      this.showToast("Text copied to clipboard", "short");
+    } catch (error) {
+      console.error("Failed to copy text:", error);
+      this.showToast("Failed to copy text", "short");
+    }
+  }
+
+  /**
+   * Show toast message
+   */
+  private async showToast(
+    message: string,
+    duration: "short" | "medium" | "long" = "short",
+  ) {
+    const toast = await this.toastController.create({
+      message,
+      duration:
+        duration === "short" ? 2000 : duration === "medium" ? 3000 : 5000,
+      position: "bottom",
+    });
+    toast.present();
+  }
+
+  /**
+   * Set default avatar when image fails to load
+   */
+  setDefaultAvatar(event: Event) {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.src = "assets/image/logo/ASCENDynamics NFP-logos_transparent.png";
+    }
   }
 }

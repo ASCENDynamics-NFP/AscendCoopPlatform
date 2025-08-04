@@ -1,13 +1,48 @@
 // New Chat Page Styling
+:host {
+  // Import chat input styling variables
+  --chat-input-bg-light: #1f2c33; // Dark gray for input field (same as hover)
+  --chat-input-bg-dark: #2a3942;
+  --chat-input-text-light: #ffffff;
+  --chat-input-text-dark: #e9edef;
+}
+
 .group-options {
   background: var(--ion-color-light);
   padding: 1rem;
   border-bottom: 1px solid var(--ion-color-light-shade);
 
   ion-item {
-    --background: white;
-    --border-radius: 8px;
+    --background: var(--chat-input-bg-light); // Match chat input background
+    --border-radius: 24px; // Match chat input border radius
+    --border-color: transparent;
+    --border-width: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     margin-bottom: 0.5rem;
+
+    ion-input {
+      --color: var(--chat-input-text-light); // White text like chat input
+      --placeholder-color: rgba(255, 255, 255, 0.6);
+      font-size: 1rem;
+    }
+  }
+}
+
+// Dark mode for group options
+@media (prefers-color-scheme: dark) {
+  .group-options {
+    background: var(--ion-color-dark);
+    border-bottom-color: var(--ion-color-dark-shade);
+
+    ion-item {
+      --background: var(--chat-input-bg-dark);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+
+      ion-input {
+        --color: var(--chat-input-text-dark);
+        --placeholder-color: rgba(233, 237, 239, 0.6);
+      }
+    }
   }
 }
 

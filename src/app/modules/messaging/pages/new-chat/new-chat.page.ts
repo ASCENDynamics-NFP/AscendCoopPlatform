@@ -26,12 +26,17 @@ import {CreateChatRequest} from "../../models/chat.model";
 import {Store} from "@ngrx/store";
 import {AuthState} from "../../../../state/reducers/auth.reducer";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
-import {forkJoin, firstValueFrom} from "rxjs";
-import {map} from "rxjs/operators";
+import {selectAccountById} from "../../../../state/selectors/account.selectors";
+import {forkJoin, firstValueFrom, combineLatest} from "rxjs";
+import {map, filter, take} from "rxjs/operators";
+import * as AccountActions from "../../../../state/actions/account.actions";
 
 interface Contact {
   id: string;
   name: string;
+  iconImage?: string;
+  tagline?: string;
+  type?: "user" | "group";
   selected: boolean;
 }
 
@@ -84,14 +89,59 @@ export class NewChatPage implements OnInit {
       .getAcceptedRelationships(this.currentUserId)
       .subscribe({
         next: (relationships) => {
-          this.contacts = relationships.map((rel) => ({
-            id:
-              rel.targetId === this.currentUserId
-                ? rel.initiatorId
-                : rel.targetId,
-            name: `User ${rel.id}`, // We'll need to get display names from account service
-            selected: false,
-          }));
+          // Get the contact IDs from relationships
+          const contactIds = relationships.map((rel) =>
+            rel.targetId === this.currentUserId
+              ? rel.initiatorId
+              : rel.targetId,
+          );
+
+          // If no relationships, set empty contacts
+          if (contactIds.length === 0) {
+            this.contacts = [];
+            return;
+          }
+
+          // Load account data for each contact
+          const accountObservables = contactIds.map((contactId) => {
+            // Dispatch action to load account if needed
+            this.store.dispatch(
+              AccountActions.loadAccount({accountId: contactId}),
+            );
+
+            // Return observable for this account - wait for account to be loaded
+            return this.store.select(selectAccountById(contactId)).pipe(
+              filter((account) => account !== null), // Wait until account data is loaded
+              take(1), // Take the first loaded value
+              map((account) => {
+                return {
+                  id: contactId,
+                  name: account?.name || `User ${contactId}`,
+                  iconImage: account?.iconImage || undefined,
+                  tagline: account?.tagline || undefined,
+                  type: (account?.type as "user" | "group") || undefined,
+                  selected: false,
+                } as Contact;
+              }),
+            );
+          });
+
+          // Combine all account observables
+          forkJoin(accountObservables).subscribe({
+            next: (contacts) => {
+              // Don't filter out contacts - show them even if account data is still loading
+              this.contacts = contacts;
+            },
+            error: (error) => {
+              console.error("Error loading contact account data:", error);
+              // Fallback to basic contact data
+              this.contacts = contactIds.map((contactId) => ({
+                id: contactId,
+                name: `User ${contactId}`,
+                selected: false,
+              }));
+            },
+          });
         },
         error: (error) => {
           console.error("Error loading contacts:", error);
@@ -156,18 +206,16 @@ export class NewChatPage implements OnInit {
         ...this.selectedContacts.map((c) => c.id),
       ];
 
-      console.log("Participant IDs (including current user):", participantIds);
-
-      // For testing: skip relationship validation temporarily
-      console.log("Skipping relationship validation for debugging...");
-
       // Validate relationships for all selected contacts
-      // const relationshipChecks = participantIds.map((participantId) =>
-      //   this.relationshipService.canMessage(this.currentUserId!, participantId),
-      // );
+      const relationshipChecks = this.selectedContacts.map((contact) => {
+        return this.relationshipService.canMessage(
+          this.currentUserId!,
+          contact.id,
+        );
+      });
 
-      // console.log("Checking relationships...");
       // const canMessageAll = await firstValueFrom(forkJoin(relationshipChecks));
+      // console.log("Relationship check results:", canMessageAll);
 
       // // Check if any relationship is invalid
       // const invalidContacts = canMessageAll

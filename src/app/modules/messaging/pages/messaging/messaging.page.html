@@ -31,6 +31,40 @@
           </ion-button>
         </div>
 
+        <!-- Actual Chat List when chats exist -->
+        <div *ngIf="hasChats">
+          <ion-list>
+            <ion-item
+              *ngFor="let chat of chats$ | async; trackBy: trackByFn"
+              button
+              (click)="onChatSelected(chat.id)"
+              detail="false"
+            >
+              <!-- Profile Picture -->
+              <ion-avatar slot="start">
+                <img
+                  [src]="getChatAvatarImage(chat) | async"
+                  [alt]="(getChatDisplayName(chat) | async) + ' avatar'"
+                  onerror="this.src='assets/image/logo/ASCENDynamics NFP-logos_transparent.png'"
+                />
+              </ion-avatar>
+
+              <!-- Chat Info -->
+              <ion-label>
+                <h2>{{ getChatDisplayName(chat) | async }}</h2>
+                <p>{{ getTruncatedMessage(chat.lastMessage) }}</p>
+              </ion-label>
+
+              <!-- Timestamp -->
+              <div slot="end" class="chat-meta">
+                <p class="timestamp">
+                  {{ getFormattedTime(chat.lastMessageTimestamp) }}
+                </p>
+              </div>
+            </ion-item>
+          </ion-list>
+        </div>
+
         <!-- Message indicating to create a real chat -->
         <div class="info-message" *ngIf="!hasChats">
           <ion-card>

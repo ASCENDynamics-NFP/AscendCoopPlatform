@@ -72,6 +72,14 @@ export const onCreateChat = onDocumentCreated(
         createdBy: chatData.createdBy,
       });
 
+      // Auto-create relationships if they don't exist (for 1-on-1 chats)
+      if (!chatData.isGroup && chatData.participants.length === 2) {
+        await autoCreateRelationshipsForChat(
+          chatData.participants,
+          chatData.createdBy,
+        );
+      }
+
       // Validate relationships between participants
       const isValid = await validateChatParticipants(chatData);
 
@@ -252,5 +260,131 @@ async function logChatViolation(
     logger.info(`Logged chat violation: ${chatId} - ${reason}`);
   } catch (error) {
     logger.error(`Error logging chat violation for ${chatId}:`, error);
+  }
+}
+
+/**
+ * Auto-create mutual friend relationships when users start chatting
+ * @param {string[]} participants - Array of participant IDs
+ * @param {string} createdBy - ID of the user who created the chat
+ * @return {Promise<void>} Promise that resolves when relationships are created
+ */
+async function autoCreateRelationshipsForChat(
+  participants: string[],
+  createdBy: string,
+): Promise<void> {
+  try {
+    if (participants.length !== 2) {
+      logger.info("Auto-relationship creation only applies to 1-on-1 chats");
+      return;
+    }
+
+    const [user1, user2] = participants;
+
+    // Check if they already have relationships
+    const [relationship1, relationship2] = await Promise.all([
+      db
+        .collection("accounts")
+        .doc(user1)
+        .collection("relatedAccounts")
+        .doc(user2)
+        .get(),
+      db
+        .collection("accounts")
+        .doc(user2)
+        .collection("relatedAccounts")
+        .doc(user1)
+        .get(),
+    ]);
+
+    // If relationships already exist, no need to create new ones
+    if (relationship1.exists && relationship2.exists) {
+      logger.info(`Relationships already exist between ${user1} and ${user2}`);
+      return;
+    }
+
+    // Get account data for both users
+    const [account1Doc, account2Doc] = await Promise.all([
+      db.collection("accounts").doc(user1).get(),
+      db.collection("accounts").doc(user2).get(),
+    ]);
+
+    if (!account1Doc.exists || !account2Doc.exists) {
+      logger.error(`One or both accounts do not exist: ${user1}, ${user2}`);
+      return;
+    }
+
+    const account1Data = account1Doc.data();
+    const account2Data = account2Doc.data();
+
+    // Determine relationship type (friend for user-to-user relationships)
+    const relationshipType =
+      account1Data?.type === "group" || account2Data?.type === "group"
+        ? account1Data?.type === "group" && account2Data?.type === "group"
+          ? "partner"
+          : "member"
+        : "friend";
+
+    const timestamp = new Date();
+
+    // Create relationship from user1 to user2 (if doesn't exist)
+    if (!relationship1.exists) {
+      await db
+        .collection("accounts")
+        .doc(user1)
+        .collection("relatedAccounts")
+        .doc(user2)
+        .set({
+          id: user2,
+          accountId: user1,
+          name: account2Data?.name,
+          iconImage: account2Data?.iconImage,
+          tagline: account2Data?.tagline,
+          type: account2Data?.type,
+          status: "accepted", // Auto-accept when starting chat
+          relationship: relationshipType,
+          createdAt: timestamp,
+          createdBy: createdBy,
+          lastModifiedAt: timestamp,
+          lastModifiedBy: createdBy,
+          initiatorId: createdBy,
+          targetId: user2,
+        });
+
+      logger.info(`Auto-created relationship from ${user1} to ${user2}`);
+    }
+
+    // Create relationship from user2 to user1 (if doesn't exist)
+    if (!relationship2.exists) {
+      await db
+        .collection("accounts")
+        .doc(user2)
+        .collection("relatedAccounts")
+        .doc(user1)
+        .set({
+          id: user1,
+          accountId: user2,
+          name: account1Data?.name,
+          iconImage: account1Data?.iconImage,
+          tagline: account1Data?.tagline,
+          type: account1Data?.type,
+          status: "accepted", // Auto-accept when starting chat
+          relationship: relationshipType,
+          createdAt: timestamp,
+          createdBy: createdBy,
+          lastModifiedAt: timestamp,
+          lastModifiedBy: createdBy,
+          initiatorId: createdBy,
+          targetId: user1,
+        });
+
+      logger.info(`Auto-created relationship from ${user2} to ${user1}`);
+    }
+
+    logger.info(
+      `Successfully auto-created mutual relationships for chat participants ${user1} and ${user2}`,
+    );
+  } catch (error) {
+    logger.error("Error auto-creating relationships for chat:", error);
   }
 }

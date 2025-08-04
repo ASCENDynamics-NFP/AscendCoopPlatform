@@ -20,10 +20,15 @@
 import {Component, OnInit, OnDestroy} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Platform} from "@ionic/angular";
-import {Subject, Observable} from "rxjs";
+import {Subject, Observable, of} from "rxjs";
 import {takeUntil, map} from "rxjs/operators";
+import {Store} from "@ngrx/store";
 import {ChatService} from "../../services/chat.service";
 import {Chat} from "../../models/chat.model";
+import {AuthState} from "../../../../state/reducers/auth.reducer";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {selectAccountById} from "../../../../state/selectors/account.selectors";
+import * as AccountActions from "../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-messaging",
@@ -42,6 +47,7 @@ export class MessagingPage implements OnInit, OnDestroy {
     public router: Router,
     private platform: Platform,
     private chatService: ChatService,
+    private store: Store<{auth: AuthState}>,
   ) {
     // Initialize chats observable
     this.chats$ = this.chatService.getUserChats();
@@ -64,14 +70,27 @@ export class MessagingPage implements OnInit, OnDestroy {
       });
 
     // Subscribe to chats to check if user has any conversations
-    this.chats$
-      .pipe(
-        takeUntil(this.destroy$),
-        map((chats) => chats.length > 0),
-      )
-      .subscribe((hasChats) => {
-        this.hasChats = hasChats;
+    // and pre-load participant accounts
+    this.chats$.pipe(takeUntil(this.destroy$)).subscribe((chats) => {
+      this.hasChats = chats.length > 0;
+
+      // Pre-load participant accounts for all chats
+      const participantIds = new Set<string>();
+      chats.forEach((chat) => {
+        chat.participants.forEach((participantId) => {
+          if (participantId !== this.getCurrentUserId()) {
+            participantIds.add(participantId);
+          }
+        });
       });
+
+      // Dispatch actions to load all participant accounts
+      participantIds.forEach((participantId) => {
+        this.store.dispatch(
+          AccountActions.loadAccount({accountId: participantId}),
+        );
+      });
+    });
   }
 
   ngOnDestroy() {
@@ -112,5 +131,118 @@ export class MessagingPage implements OnInit, OnDestroy {
     if (!this.isDesktop) {
       this.router.navigate(["/messaging/chats"]);
     }
+  }
+
+  /**
+   * Get display name for chat
+   */
+  getChatDisplayName(chat: Chat): Observable<string> {
+    if (chat.isGroup) {
+      return of(chat.name || chat.groupName || "Group Chat");
+    }
+
+    // For 1-on-1 chats, get the other user's name
+    const otherParticipants = chat.participants.filter(
+      (id) => id !== this.getCurrentUserId(),
+    );
+
+    if (otherParticipants.length === 0) {
+      return of("Unknown User");
+    }
+
+    const otherUserId = otherParticipants[0];
+
+    // Get account name from store (account should already be loading from ngOnInit)
+    return this.store
+      .select(selectAccountById(otherUserId))
+      .pipe(map((account) => account?.name || `User ${otherUserId}`));
+  }
+
+  /**
+   * Get avatar image for chat
+   */
+  getChatAvatarImage(chat: Chat): Observable<string> {
+    if (chat.isGroup) {
+      // For group chats, you might want a group icon or first participant's avatar
+      return of("assets/image/logo/ASCENDynamics NFP-logos_transparent.png");
+    }
+
+    // For 1-on-1 chats, get the other user's avatar
+    const otherParticipants = chat.participants.filter(
+      (id) => id !== this.getCurrentUserId(),
+    );
+
+    if (otherParticipants.length === 0) {
+      return of("assets/image/logo/ASCENDynamics NFP-logos_transparent.png");
+    }
+
+    const otherUserId = otherParticipants[0];
+
+    // Get account avatar from store (account should already be loading from ngOnInit)
+    return this.store
+      .select(selectAccountById(otherUserId))
+      .pipe(
+        map(
+          (account) =>
+            account?.iconImage ||
+            "assets/image/logo/ASCENDynamics NFP-logos_transparent.png",
+        ),
+      );
+  }
+
+  /**
+   * Get truncated last message for display
+   */
+  getTruncatedMessage(
+    message: string | undefined,
+    maxLength: number = 50,
+  ): string {
+    if (!message) return "No messages yet";
+    return message.length > maxLength
+      ? message.substring(0, maxLength) + "..."
+      : message;
+  }
+
+  /**
+   * Get formatted timestamp for last message
+   */
+  getFormattedTime(timestamp: any): string {
+    if (!timestamp) return "";
+
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+
+    // Less than 24 hours - show time
+    if (diff < 24 * 60 * 60 * 1000) {
+      return date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+
+    // Less than a week - show day
+    if (diff < 7 * 24 * 60 * 60 * 1000) {
+      return date.toLocaleDateString("en-US", {weekday: "short"});
+    }
+
+    // Older - show date
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  }
+
+  getCurrentUserId(): string {
+    // Get user ID through chat service which has auth integration
+    return (this.chatService as any).getCurrentUserIdSync();
+  }
+
+  /**
+   * TrackBy function for chat list performance
+   */
+  trackByFn(index: number, item: Chat): string {
+    return item.id;
   }
 }

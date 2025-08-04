@@ -176,7 +176,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
             .isUserBlocked(this.currentUserId, this.otherParticipantId)
             .toPromise()) || false;
 
-        // Check if can message (for send functionality)
+        // Check if can message
         this.canSendMessages =
           !this.isContactBlocked &&
           ((await this.relationshipService
@@ -184,6 +184,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
             .toPromise()) ||
             false);
 
+        // Validate that user can access this chat
         if (
           !(await this.relationshipService
             .canMessage(this.currentUserId, this.otherParticipantId)

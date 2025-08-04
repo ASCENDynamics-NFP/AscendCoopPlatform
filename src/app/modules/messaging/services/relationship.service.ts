@@ -58,9 +58,9 @@ export class RelationshipService {
       )
       .valueChanges({idField: "id"})
       .pipe(
-        map((relationships) =>
-          relationships.length > 0 ? relationships[0] : null,
-        ),
+        map((relationships) => {
+          return relationships.length > 0 ? relationships[0] : null;
+        }),
         catchError((error) => {
           console.error("Error checking relationship status:", error);
           return throwError(() => error);
@@ -100,6 +100,9 @@ export class RelationshipService {
       )
       .valueChanges({idField: "id"})
       .pipe(
+        map((relationships) => {
+          return relationships;
+        }),
         catchError((error) => {
           console.error("Error fetching accepted relationships:", error);
           return throwError(() => error);

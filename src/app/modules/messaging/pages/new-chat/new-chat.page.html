@@ -39,6 +39,10 @@
       *ngFor="let contact of selectedContacts"
       (click)="toggleContact(contact)"
     >
+      <ion-avatar *ngIf="contact.iconImage">
+        <img [src]="contact.iconImage" [alt]="contact.name" />
+      </ion-avatar>
+      <ion-icon *ngIf="!contact.iconImage" name="person-circle"></ion-icon>
       <ion-label>{{ contact.name }}</ion-label>
       <ion-icon name="close-circle"></ion-icon>
     </ion-chip>
@@ -63,11 +67,22 @@
       </ion-checkbox>
 
       <ion-avatar slot="start">
-        <ion-icon name="person-circle" size="large"></ion-icon>
+        <img
+          *ngIf="contact.iconImage"
+          [src]="contact.iconImage"
+          [alt]="contact.name"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+        />
+        <ion-icon
+          name="person-circle"
+          size="large"
+          [style.display]="contact.iconImage ? 'none' : 'block'"
+        ></ion-icon>
       </ion-avatar>
 
       <ion-label>
         <h2>{{ contact.name }}</h2>
+        <p *ngIf="contact.tagline">{{ contact.tagline }}</p>
       </ion-label>
     </ion-item>
   </ion-list>

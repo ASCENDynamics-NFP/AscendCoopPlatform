@@ -25,7 +25,8 @@
     "settings": "Settings",
     "dashboard": "Dashboard",
     "manage_projects": "Manage Projects",
-    "time_tracking": "Time Tracking"
+    "time_tracking": "Time Tracking",
+    "messaging": "Messages"
   },
   "user": {
     "login": {

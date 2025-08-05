@@ -1,29 +1,59 @@
 // New Chat Page Styling
 :host {
   // Import chat input styling variables
-  --chat-input-bg-light: #1f2c33; // Dark gray for input field (same as hover)
+  --chat-input-bg-light: #ffffff; // Pure white for light mode
   --chat-input-bg-dark: #2a3942;
-  --chat-input-text-light: #ffffff;
+  --chat-input-text-light: #000000; // Dark text for light mode
   --chat-input-text-dark: #e9edef;
+  --chat-input-border-light: #d0d0d0;
+  --chat-input-border-dark: #3a4a55;
+
+  // Page background
+  --page-bg-light: #f8f9fa;
+  --page-bg-dark: #1a1a1a;
+
+  background: var(--page-bg-light);
+  min-height: 100vh;
+}
+
+// Dark mode for host
+@media (prefers-color-scheme: dark) {
+  :host {
+    background: var(--page-bg-dark);
+  }
 }
 
 .group-options {
-  background: var(--ion-color-light);
+  background: transparent;
   padding: 1rem;
   border-bottom: 1px solid var(--ion-color-light-shade);
 
   ion-item {
-    --background: var(--chat-input-bg-light); // Match chat input background
-    --border-radius: 24px; // Match chat input border radius
-    --border-color: transparent;
-    --border-width: 0;
+    --background: var(--chat-input-bg-light);
+    --border-radius: 12px;
+    --border-color: var(--chat-input-border-light);
+    --border-width: 1px;
+    --border-style: solid;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     margin-bottom: 0.5rem;
+    transition: all 0.2s ease;
+
+    &:hover {
+      --background: #f5f5f5;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
 
     ion-input {
-      --color: var(--chat-input-text-light); // White text like chat input
-      --placeholder-color: rgba(255, 255, 255, 0.6);
+      --color: var(--chat-input-text-light);
+      --placeholder-color: rgba(0, 0, 0, 0.5);
       font-size: 1rem;
+      padding: 8px 16px;
+    }
+
+    ion-label {
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--ion-color-dark);
     }
   }
 }
@@ -31,16 +61,26 @@
 // Dark mode for group options
 @media (prefers-color-scheme: dark) {
   .group-options {
-    background: var(--ion-color-dark);
+    background: transparent;
     border-bottom-color: var(--ion-color-dark-shade);
 
     ion-item {
       --background: var(--chat-input-bg-dark);
+      --border-color: var(--chat-input-border-dark);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+
+      &:hover {
+        --background: #323e47;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+      }
 
       ion-input {
         --color: var(--chat-input-text-dark);
-        --placeholder-color: rgba(233, 237, 239, 0.6);
+        --placeholder-color: rgba(233, 237, 239, 0.5);
+      }
+
+      ion-label {
+        color: var(--ion-color-light);
       }
     }
   }
@@ -48,7 +88,7 @@
 
 .selected-summary {
   padding: 1rem;
-  background: var(--ion-color-light);
+  background: transparent;
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -107,6 +147,15 @@ ion-list {
 
   p {
     color: var(--ion-color-medium);
+  }
+}
+
+// Dark mode for empty state
+@media (prefers-color-scheme: dark) {
+  .empty-state {
+    h3 {
+      color: var(--ion-color-light);
+    }
   }
 }
 

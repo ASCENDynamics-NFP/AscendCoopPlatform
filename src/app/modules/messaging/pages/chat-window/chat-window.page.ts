@@ -29,6 +29,7 @@ import {
   IonContent,
   ToastController,
   ActionSheetController,
+  ModalController,
 } from "@ionic/angular";
 import {Observable, Subject, combineLatest, forkJoin, of} from "rxjs";
 import {takeUntil, map, catchError, take} from "rxjs/operators";
@@ -47,6 +48,7 @@ import {AuthState} from "../../../../state/reducers/auth.reducer";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
+import {UserReportModalComponent} from "../../components/user-report-modal/user-report-modal.component";
 
 @Component({
   selector: "app-chat-window",
@@ -77,6 +79,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private toastController: ToastController,
     private actionSheetController: ActionSheetController,
+    private modalController: ModalController,
     private store: Store<{auth: AuthState}>,
   ) {}
 
@@ -454,6 +457,18 @@ export class ChatWindowPage implements OnInit, OnDestroy {
           },
         });
       }
+
+      // Add report option for 1-on-1 chats (only if not blocked)
+      if (!this.isContactBlocked) {
+        buttons.push({
+          text: "Report User",
+          icon: "flag-outline",
+          role: "destructive",
+          handler: () => {
+            this.showReportModal();
+          },
+        });
+      }
     }
 
     buttons.push({
@@ -821,6 +836,18 @@ export class ChatWindowPage implements OnInit, OnDestroy {
         });
       }
 
+      // Add report user option (only if not blocked)
+      if (!isBlocked) {
+        buttons.push({
+          text: `Report ${senderName}`,
+          icon: "flag-outline",
+          role: "destructive",
+          handler: () => {
+            this.showReportModal(message.senderId!);
+          },
+        });
+      }
+
       // Add edit message option (for own messages or if user has permission)
       if (this.isOwnMessage(message) && message.type === "text") {
         buttons.push({
@@ -963,6 +990,58 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     } catch (error) {
       console.error("Failed to copy text:", error);
       this.showToast("Failed to copy text", "short");
+    }
+  }
+
+  /**
+   * Show the user report modal
+   */
+  async showReportModal(userId?: string) {
+    const reportedUserId = userId || this.otherParticipantId;
+
+    if (!reportedUserId) {
+      this.showErrorToast("Unable to report user");
+      return;
+    }
+
+    // Get the other participant's name
+    let reportedUserName = "Unknown User";
+
+    try {
+      // Get the current user for the reporter info
+      const currentUser = await this.store
+        .select(selectAuthUser)
+        .pipe(take(1))
+        .toPromise();
+
+      // Get the reported user's account info
+      const reportedUserAccount = await this.store
+        .select(selectAccountById(reportedUserId))
+        .pipe(take(1))
+        .toPromise();
+
+      if (reportedUserAccount) {
+        reportedUserName =
+          reportedUserAccount.name ||
+          reportedUserAccount.email ||
+          "Unknown User";
+      }
+
+      const modal = await this.modalController.create({
+        component: UserReportModalComponent,
+        componentProps: {
+          reportedUserId: reportedUserId,
+          reportedUserName: reportedUserName,
+          chatId: this.chatId,
+          currentUser: currentUser,
+        },
+        cssClass: "user-report-modal",
+      });
+
+      await modal.present();
+    } catch (error) {
+      console.error("Error opening report modal:", error);
+      this.showErrorToast("Failed to open report form");
     }
   }
 

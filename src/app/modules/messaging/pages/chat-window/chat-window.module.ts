@@ -23,6 +23,7 @@ import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {ChatWindowPageRoutingModule} from "./chat-window-routing.module";
 import {ChatWindowPage} from "./chat-window.page";
+import {SharedModule} from "../../../../shared/shared.module";
 
 @NgModule({
   imports: [
@@ -30,6 +31,7 @@ import {ChatWindowPage} from "./chat-window.page";
     FormsModule,
     IonicModule,
     ChatWindowPageRoutingModule,
+    SharedModule,
   ],
   declarations: [ChatWindowPage],
 })

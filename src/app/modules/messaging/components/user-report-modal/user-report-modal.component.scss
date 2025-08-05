@@ -1,0 +1,133 @@
+/***********************************************************************************************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+*
+* This file is part of Nonprofit Social Networking Platform.
+*
+* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+
+* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+
+* You should have received a copy of the GNU Affero General Public License
+* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+***********************************************************************************************/
+
+// Global modal styling
+:host {
+  .user-report-modal {
+    --width: 90%;
+    --max-width: 500px;
+    --height: auto;
+    --max-height: 80vh;
+  }
+}
+
+.report-header {
+  text-align: center;
+  margin-bottom: 24px;
+
+  .report-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    margin: 8px 0;
+    color: var(--ion-color-dark);
+    font-weight: 600;
+  }
+
+  .report-subtitle {
+    color: var(--ion-color-medium);
+    font-size: 14px;
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+.character-count {
+  text-align: right;
+  font-size: 12px;
+  color: var(--ion-color-medium);
+  margin-top: 4px;
+  margin-bottom: 16px;
+}
+
+.info-card {
+  margin: 20px 0;
+
+  ion-card-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    ion-icon {
+      font-size: 20px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.4;
+
+      strong {
+        color: var(--ion-color-primary);
+      }
+    }
+  }
+}
+
+.submit-button {
+  margin-top: 20px;
+  --border-radius: 8px;
+  font-weight: 600;
+}
+
+.cancel-button {
+  margin-top: 8px;
+  --border-radius: 8px;
+}
+
+ion-item {
+  margin-bottom: 8px;
+  --border-radius: 8px;
+}
+
+ion-note {
+  margin-left: 16px;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+ion-textarea {
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+// Make sure the modal looks good on smaller screens
+@media (max-width: 768px) {
+  :host {
+    .user-report-modal {
+      --width: 95%;
+      --max-height: 90vh;
+    }
+  }
+
+  .report-header {
+    .report-icon {
+      font-size: 40px;
+    }
+
+    h2 {
+      font-size: 20px;
+    }
+  }
+}

@@ -1,0 +1,174 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Report User</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">Close</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="report-header">
+    <ion-icon
+      name="warning-outline"
+      color="warning"
+      class="report-icon"
+    ></ion-icon>
+    <h2>Report {{ reportedUserName }}</h2>
+    <p class="report-subtitle">
+      Help us keep the community safe by reporting inappropriate behavior.
+    </p>
+  </div>
+
+  <form [formGroup]="reportForm">
+    <!-- Reporter Information (if not logged in) -->
+    <div *ngIf="!currentUser">
+      <ion-item>
+        <ion-label position="floating">Your Name</ion-label>
+        <ion-input type="text" formControlName="reporterName"></ion-input>
+      </ion-item>
+      <ion-note
+        *ngIf="
+          reportForm.get('reporterName')?.touched &&
+          reportForm.get('reporterName')?.hasError('required')
+        "
+        color="danger"
+      >
+        Name is required.
+      </ion-note>
+
+      <ion-item>
+        <ion-label position="floating">Your Email</ion-label>
+        <ion-input type="email" formControlName="reporterEmail"></ion-input>
+      </ion-item>
+      <ion-note
+        *ngIf="
+          reportForm.get('reporterEmail')?.touched &&
+          reportForm.get('reporterEmail')?.hasError('required')
+        "
+        color="danger"
+      >
+        Email is required.
+      </ion-note>
+      <ion-note
+        *ngIf="
+          reportForm.get('reporterEmail')?.touched &&
+          reportForm.get('reporterEmail')?.hasError('email')
+        "
+        color="danger"
+      >
+        Please enter a valid email address.
+      </ion-note>
+    </div>
+
+    <!-- Report Reason -->
+    <ion-item>
+      <ion-label>Reason for Report</ion-label>
+      <ion-select formControlName="reason" placeholder="Select a reason">
+        <ion-select-option
+          *ngFor="let reason of reportReasons"
+          [value]="reason.value"
+        >
+          {{ reason.label }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-note
+      *ngIf="
+        reportForm.get('reason')?.touched &&
+        reportForm.get('reason')?.hasError('required')
+      "
+      color="danger"
+    >
+      Please select a reason for the report.
+    </ion-note>
+
+    <!-- Description -->
+    <ion-item>
+      <ion-label position="floating">Description</ion-label>
+      <ion-textarea
+        formControlName="description"
+        placeholder="Please provide specific details about the inappropriate behavior..."
+        rows="4"
+        maxlength="1000"
+      ></ion-textarea>
+    </ion-item>
+    <ion-note
+      *ngIf="
+        reportForm.get('description')?.touched &&
+        reportForm.get('description')?.hasError('required')
+      "
+      color="danger"
+    >
+      Description is required.
+    </ion-note>
+    <ion-note
+      *ngIf="
+        reportForm.get('description')?.touched &&
+        reportForm.get('description')?.hasError('minlength')
+      "
+      color="danger"
+    >
+      Please provide at least 10 characters of description.
+    </ion-note>
+
+    <!-- Character count -->
+    <div class="character-count">
+      {{ reportForm.get("description")?.value?.length || 0 }}/1000 characters
+    </div>
+
+    <!-- Information Notice -->
+    <ion-card class="info-card">
+      <ion-card-content>
+        <ion-icon name="information-circle-outline" color="primary"></ion-icon>
+        <p>
+          <strong>Important:</strong> False reports may result in action being
+          taken against your account. Please only report genuine violations of
+          our community guidelines.
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Submit Button -->
+    <ion-button
+      expand="block"
+      color="danger"
+      [disabled]="reportForm.invalid"
+      (click)="submitReport()"
+      class="submit-button"
+    >
+      <ion-icon name="flag-outline" slot="start"></ion-icon>
+      Submit Report
+    </ion-button>
+
+    <!-- Cancel Button -->
+    <ion-button
+      expand="block"
+      fill="outline"
+      color="medium"
+      (click)="closeModal()"
+      class="cancel-button"
+    >
+      Cancel
+    </ion-button>
+  </form>
+</ion-content>

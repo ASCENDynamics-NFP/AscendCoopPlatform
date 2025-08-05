@@ -610,9 +610,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     const otherParticipants = chat.participants.filter(
       (id) => id !== this.getCurrentUserId(),
     );
-    return otherParticipants.length > 0
-      ? "User " + otherParticipants[0]
-      : "Unknown User";
+    return otherParticipants.length > 0 ? "User" : "Unknown User";
   }
 
   getCurrentUserId(): string {

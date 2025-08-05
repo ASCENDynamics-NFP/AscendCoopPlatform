@@ -116,7 +116,7 @@ export class NewChatPage implements OnInit {
               map((account) => {
                 return {
                   id: contactId,
-                  name: account?.name || `User ${contactId}`,
+                  name: account?.name || `User`,
                   iconImage: account?.iconImage || undefined,
                   tagline: account?.tagline || undefined,
                   type: (account?.type as "user" | "group") || undefined,
@@ -137,7 +137,7 @@ export class NewChatPage implements OnInit {
               // Fallback to basic contact data
               this.contacts = contactIds.map((contactId) => ({
                 id: contactId,
-                name: `User ${contactId}`,
+                name: `User`,
                 selected: false,
               }));
             },
@@ -147,12 +147,7 @@ export class NewChatPage implements OnInit {
           console.error("Error loading contacts:", error);
           this.showErrorToast("Failed to load contacts");
           // Fallback to dummy data for development
-          this.contacts = [
-            {id: "user1", name: "Alice Johnson", selected: false},
-            {id: "user2", name: "Bob Smith", selected: false},
-            {id: "user3", name: "Carol Davis", selected: false},
-            {id: "user4", name: "David Wilson", selected: false},
-          ];
+          this.contacts = [];
         },
       });
   }

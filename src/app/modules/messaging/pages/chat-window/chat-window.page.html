@@ -45,7 +45,11 @@
       </div>
 
       <!-- Message Bubble -->
-      <div class="message-bubble">
+      <div
+        class="message-bubble"
+        (press)="showMessageOptions(message)"
+        (contextmenu)="showMessageOptions(message); $event.preventDefault()"
+      >
         <!-- Sender name (for group chats and incoming messages) -->
         <div *ngIf="!isOwnMessage(message)" class="sender-name">
           {{ getSenderName(message) }}
@@ -56,6 +60,10 @@
           <!-- Text Message -->
           <div *ngIf="message.type === 'text'" class="text-message">
             {{ message.text }}
+            <div *ngIf="message.editedAt" class="edited-indicator">
+              <ion-icon name="create-outline"></ion-icon>
+              edited
+            </div>
           </div>
 
           <!-- Image Message -->

@@ -10,6 +10,65 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+  <!-- Chat Title Section (for group chats) -->
+  <div class="section" *ngIf="chat.isGroup">
+    <h3 class="section-title">
+      <ion-icon name="chatbubbles-outline"></ion-icon>
+      Chat Title
+    </h3>
+
+    <div class="title-section" *ngIf="!isEditingTitle">
+      <div class="title-display">
+        <span class="title-text">{{
+          chat.name || chat.groupName || "Unnamed Group"
+        }}</span>
+        <ion-button
+          fill="clear"
+          size="small"
+          (click)="startEditingTitle()"
+          [disabled]="isLoading"
+        >
+          <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+
+    <div class="title-edit" *ngIf="isEditingTitle">
+      <ion-item>
+        <ion-input
+          [(ngModel)]="editTitleText"
+          placeholder="Enter chat title"
+          maxlength="50"
+          [disabled]="isLoading"
+        >
+        </ion-input>
+      </ion-item>
+      <div class="title-actions">
+        <ion-button
+          fill="clear"
+          size="small"
+          (click)="cancelEditingTitle()"
+          [disabled]="isLoading"
+        >
+          Cancel
+        </ion-button>
+        <ion-button
+          fill="solid"
+          size="small"
+          (click)="saveChatTitle()"
+          [disabled]="isLoading || !editTitleText.trim()"
+        >
+          <ion-spinner
+            name="crescent"
+            *ngIf="isLoading"
+            slot="start"
+          ></ion-spinner>
+          Save
+        </ion-button>
+      </div>
+    </div>
+  </div>
+
   <!-- Current Participants Section -->
   <div class="section">
     <h3 class="section-title">

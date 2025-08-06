@@ -167,6 +167,21 @@
   color: inherit;
 }
 
+// Edited message indicator
+.edited-indicator {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 4px;
+  font-size: 0.7rem;
+  opacity: 0.6;
+  font-style: italic;
+
+  ion-icon {
+    font-size: 0.7rem;
+  }
+}
+
 .message-meta {
   display: flex;
   align-items: center;

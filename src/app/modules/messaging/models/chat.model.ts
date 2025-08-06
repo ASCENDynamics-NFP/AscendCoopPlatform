@@ -49,6 +49,7 @@ export interface Message extends BaseDocument {
   fileType?: string; // MIME type of the file
   fileSize?: number; // File size in bytes
   timestamp: Timestamp | FieldValue; // Server timestamp
+  editedAt?: Timestamp | FieldValue; // When the message was last edited
   type: MessageType; // Type of message
   status?: MessageStatus; // Message delivery status
 }

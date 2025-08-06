@@ -30,6 +30,7 @@ import {
   ToastController,
   ActionSheetController,
   ModalController,
+  AlertController,
 } from "@ionic/angular";
 import {Observable, Subject, combineLatest, forkJoin, of} from "rxjs";
 import {takeUntil, map, catchError, take} from "rxjs/operators";
@@ -87,6 +88,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     private toastController: ToastController,
     private actionSheetController: ActionSheetController,
     private modalController: ModalController,
+    private alertController: AlertController,
     private store: Store<{auth: AuthState}>,
   ) {}
 
@@ -105,6 +107,8 @@ export class ChatWindowPage implements OnInit, OnDestroy {
       .subscribe((user) => {
         this.currentUserId = user?.uid || null;
         if (this.currentUserId) {
+          // Set user ID in notification service
+          this.notificationService.setCurrentUserId(this.currentUserId);
           this.initializeChat();
         }
       });
@@ -547,6 +551,13 @@ export class ChatWindowPage implements OnInit, OnDestroy {
           console.log("TODO: Show chat info");
         },
       },
+      {
+        text: "Notification Settings",
+        icon: "notifications-outline",
+        handler: () => {
+          this.showNotificationSettings();
+        },
+      },
     ];
 
     // Add manage participants option for group chats
@@ -874,14 +885,14 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Show message options when avatar is clicked
+   * Show message options when message is long-pressed or avatar is clicked
    */
   async showMessageOptions(message: Message) {
     try {
       console.log("showMessageOptions called with message:", message);
 
-      if (!message.senderId || this.isOwnMessage(message)) {
-        console.log("Skipping message options - no senderId or own message");
+      if (!message.senderId) {
+        console.log("Skipping message options - no senderId");
         return;
       }
 
@@ -891,99 +902,25 @@ export class ChatWindowPage implements OnInit, OnDestroy {
         return;
       }
 
-      // Load sender account if not already loaded
-      this.store.dispatch(
-        AccountActions.loadAccount({accountId: message.senderId}),
-      );
-
       const buttons: any[] = [];
-
-      // Get sender name for display
+      const isOwnMessage = this.isOwnMessage(message);
       let senderName = "User";
-      try {
-        const account = await this.store
-          .select(selectAccountById(message.senderId))
-          .pipe(
-            take(1), // Use take(1) instead of toPromise()
-            map((account) => account),
-          )
-          .toPromise();
 
-        if (account?.name) {
-          senderName = account.name;
+      if (isOwnMessage) {
+        // Options for own messages
+
+        // Edit message option (for text messages only)
+        if (message.type === "text") {
+          buttons.push({
+            text: "Edit Message",
+            icon: "create-outline",
+            handler: () => {
+              this.editMessage(message);
+            },
+          });
         }
-      } catch (error) {
-        console.warn("Could not get sender name:", error);
-      }
 
-      // Check if user is blocked
-      let isBlocked = false;
-      try {
-        isBlocked =
-          (await this.relationshipService
-            .isUserBlocked(this.currentUserId, message.senderId)
-            .pipe(take(1)) // Use take(1) instead of toPromise()
-            .toPromise()) || false;
-      } catch (error) {
-        console.warn("Could not check block status:", error);
-      }
-
-      console.log("Creating action sheet with buttons:", buttons.length);
-
-      // Add user info option
-      buttons.push({
-        text: `View ${senderName}'s Profile`,
-        icon: "person-outline",
-        handler: () => {
-          this.navigateToUserProfile(message.senderId!);
-        },
-      });
-
-      // Add block/unblock option
-      if (isBlocked) {
-        buttons.push({
-          text: `Unblock ${senderName}`,
-          icon: "checkmark-circle-outline",
-          handler: () => {
-            this.unblockUser(message.senderId!);
-          },
-        });
-      } else {
-        buttons.push({
-          text: `Block ${senderName}`,
-          icon: "ban-outline",
-          role: "destructive",
-          handler: () => {
-            this.blockUser(message.senderId!);
-          },
-        });
-      }
-
-      // Add report user option (only if not blocked)
-      if (!isBlocked) {
-        buttons.push({
-          text: `Report ${senderName}`,
-          icon: "flag-outline",
-          role: "destructive",
-          handler: () => {
-            this.showReportModal(message.senderId!);
-          },
-        });
-      }
-
-      // Add edit message option (for own messages or if user has permission)
-      if (this.isOwnMessage(message) && message.type === "text") {
-        buttons.push({
-          text: "Edit Message",
-          icon: "create-outline",
-          handler: () => {
-            this.editMessage(message);
-          },
-        });
-      }
-
-      // Add delete message option (for own messages)
-      if (this.isOwnMessage(message)) {
+        // Delete message option
         buttons.push({
           text: "Delete Message",
           icon: "trash-outline",
@@ -992,17 +929,105 @@ export class ChatWindowPage implements OnInit, OnDestroy {
             this.deleteMessage(message);
           },
         });
-      }
 
-      // Add copy text option for text messages
-      if (message.type === "text" && message.text) {
+        // Copy text option for text messages
+        if (message.type === "text" && message.text) {
+          buttons.push({
+            text: "Copy Text",
+            icon: "copy-outline",
+            handler: () => {
+              this.copyMessageText(message.text!);
+            },
+          });
+        }
+      } else {
+        // Options for other users' messages
+
+        // Load sender account if not already loaded
+        this.store.dispatch(
+          AccountActions.loadAccount({accountId: message.senderId}),
+        );
+
+        // Get sender name for display
+        try {
+          const account = await this.store
+            .select(selectAccountById(message.senderId))
+            .pipe(
+              take(1),
+              map((account) => account),
+            )
+            .toPromise();
+
+          if (account?.name) {
+            senderName = account.name;
+          }
+        } catch (error) {
+          console.warn("Could not get sender name:", error);
+        }
+
+        // Check if user is blocked
+        let isBlocked = false;
+        try {
+          isBlocked =
+            (await this.relationshipService
+              .isUserBlocked(this.currentUserId, message.senderId)
+              .pipe(take(1))
+              .toPromise()) || false;
+        } catch (error) {
+          console.warn("Could not check block status:", error);
+        }
+
+        // Add user info option
         buttons.push({
-          text: "Copy Text",
-          icon: "copy-outline",
+          text: `View ${senderName}'s Profile`,
+          icon: "person-outline",
           handler: () => {
-            this.copyMessageText(message.text!);
+            this.navigateToUserProfile(message.senderId!);
           },
         });
+
+        // Add block/unblock option
+        if (isBlocked) {
+          buttons.push({
+            text: `Unblock ${senderName}`,
+            icon: "checkmark-circle-outline",
+            handler: () => {
+              this.unblockUser(message.senderId!);
+            },
+          });
+        } else {
+          buttons.push({
+            text: `Block ${senderName}`,
+            icon: "ban-outline",
+            role: "destructive",
+            handler: () => {
+              this.blockUser(message.senderId!);
+            },
+          });
+        }
+
+        // Add report user option (only if not blocked)
+        if (!isBlocked) {
+          buttons.push({
+            text: `Report ${senderName}`,
+            icon: "flag-outline",
+            role: "destructive",
+            handler: () => {
+              this.showReportModal(message.senderId!);
+            },
+          });
+        }
+
+        // Copy text option for text messages
+        if (message.type === "text" && message.text) {
+          buttons.push({
+            text: "Copy Text",
+            icon: "copy-outline",
+            handler: () => {
+              this.copyMessageText(message.text!);
+            },
+          });
+        }
       }
 
       buttons.push({
@@ -1018,7 +1043,9 @@ export class ChatWindowPage implements OnInit, OnDestroy {
       );
 
       const actionSheet = await this.actionSheetController.create({
-        header: `Message from ${senderName}`,
+        header: isOwnMessage
+          ? "Message Options"
+          : `Message from ${senderName || "User"}`,
         buttons,
       });
 
@@ -1086,21 +1113,98 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Edit message (placeholder for future implementation)
+   * Edit message functionality
    */
-  private editMessage(message: Message) {
-    // TODO: Implement message editing
-    console.log("Edit message:", message);
-    this.showToast("Message editing coming soon!", "medium");
+  private async editMessage(message: Message) {
+    if (!message.text || message.type !== "text") {
+      this.showErrorToast("Only text messages can be edited");
+      return;
+    }
+
+    const alert = await this.alertController.create({
+      header: "Edit Message",
+      inputs: [
+        {
+          name: "messageText",
+          type: "textarea",
+          placeholder: "Enter your message...",
+          value: message.text,
+          attributes: {
+            maxlength: 1000,
+            rows: 3,
+          },
+        },
+      ],
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "Save",
+          handler: async (data) => {
+            const newText = data.messageText?.trim();
+            if (!newText) {
+              this.showErrorToast("Message cannot be empty");
+              return false;
+            }
+
+            if (newText === message.text) {
+              return true; // No changes
+            }
+
+            try {
+              await this.chatService
+                .updateMessage(this.chatId!, message.id, {text: newText})
+                .toPromise();
+
+              this.showToast("Message updated successfully", "short");
+              return true;
+            } catch (error) {
+              console.error("Error updating message:", error);
+              this.showErrorToast("Failed to update message");
+              return false;
+            }
+          },
+        },
+      ],
+    });
+
+    await alert.present();
   }
 
   /**
-   * Delete message (placeholder for future implementation)
+   * Delete message functionality
    */
   private async deleteMessage(message: Message) {
-    // TODO: Implement message deletion
-    console.log("Delete message:", message);
-    this.showToast("Message deletion coming soon!", "medium");
+    const alert = await this.alertController.create({
+      header: "Delete Message",
+      message:
+        "Are you sure you want to delete this message? This action cannot be undone.",
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "Delete",
+          role: "destructive",
+          handler: async () => {
+            try {
+              await this.chatService
+                .deleteMessage(this.chatId!, message.id)
+                .toPromise();
+              this.showToast("Message deleted successfully", "short");
+            } catch (error) {
+              console.error("Error deleting message:", error);
+              this.showErrorToast("Failed to delete message");
+            }
+          },
+        },
+      ],
+    });
+
+    await alert.present();
   }
 
   /**
@@ -1201,6 +1305,27 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     } catch (error) {
       console.error("Error opening participants modal:", error);
       this.showErrorToast("Failed to open participants manager");
+    }
+  }
+
+  /**
+   * Show notification settings modal
+   */
+  async showNotificationSettings() {
+    try {
+      const {NotificationSettingsModalComponent} = await import(
+        "../../components/notification-settings-modal/notification-settings-modal.component"
+      );
+
+      const modal = await this.modalController.create({
+        component: NotificationSettingsModalComponent,
+        cssClass: "notification-settings-modal",
+      });
+
+      await modal.present();
+    } catch (error) {
+      console.error("Error opening notification settings:", error);
+      this.showErrorToast("Failed to open notification settings");
     }
   }
 

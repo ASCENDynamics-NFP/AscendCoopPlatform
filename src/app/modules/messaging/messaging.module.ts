@@ -24,9 +24,13 @@ import {IonicModule} from "@ionic/angular";
 
 import {MessagingRoutingModule} from "./messaging-routing.module";
 import {ChatParticipantsModalComponent} from "./components/chat-participants-modal/chat-participants-modal.component";
+import {NotificationSettingsModalComponent} from "./components/notification-settings-modal/notification-settings-modal.component";
 
 @NgModule({
-  declarations: [ChatParticipantsModalComponent],
+  declarations: [
+    ChatParticipantsModalComponent,
+    NotificationSettingsModalComponent,
+  ],
   imports: [
     CommonModule,
     FormsModule,

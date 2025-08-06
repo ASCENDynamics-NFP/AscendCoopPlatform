@@ -401,6 +401,55 @@ export class ChatService {
   }
 
   /**
+   * Update chat title/name (for group chats)
+   */
+  updateChatTitle(chatId: string, newTitle: string): Observable<void> {
+    return from(
+      this.firestore.collection(this.CHATS_COLLECTION).doc(chatId).update({
+        name: newTitle,
+        groupName: newTitle, // Update both fields for compatibility
+        lastModifiedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      }),
+    ).pipe(
+      map(() => void 0),
+      catchError((error) => {
+        console.error("Error updating chat title:", error);
+        return throwError(() => error);
+      }),
+    );
+  }
+
+  /**
+   * Update/edit a message
+   */
+  updateMessage(
+    chatId: string,
+    messageId: string,
+    updatedContent: {text?: string; editedAt?: any},
+  ): Observable<void> {
+    const updateData = {
+      ...updatedContent,
+      editedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      lastModifiedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+
+    return from(
+      this.firestore
+        .collection(
+          `${this.CHATS_COLLECTION}/${chatId}/${this.MESSAGES_COLLECTION}`,
+        )
+        .doc(messageId)
+        .update(updateData),
+    ).pipe(
+      map(() => void 0),
+      catchError((error) => {
+        console.error("Error updating message:", error);
+        return throwError(() => error);
+      }),
+    );
+  }
+
+  /**
    * Find existing chat between users
    */
   findExistingChat(participantIds: string[]): Observable<Chat | null> {

@@ -21,6 +21,9 @@ import {Injectable} from "@angular/core";
 import {ToastController} from "@ionic/angular";
 import {BehaviorSubject, Observable} from "rxjs";
 import {Message, Chat} from "../models/chat.model";
+import {AngularFirestore} from "@angular/fire/compat/firestore";
+import {Router} from "@angular/router";
+import {Platform} from "@ionic/angular";
 
 export interface NotificationData {
   id: string;
@@ -31,14 +34,76 @@ export interface NotificationData {
   isRead: boolean;
 }
 
+export interface NotificationSettings {
+  enabled: boolean;
+  sound: boolean;
+  vibration: boolean;
+  showPreview: boolean;
+  muteUntil?: Date;
+}
+
+export interface ChatNotificationSettings {
+  [chatId: string]: {
+    muted: boolean;
+    muteUntil?: Date;
+    customSound?: string;
+  };
+}
+
 @Injectable({
   providedIn: "root",
 })
 export class NotificationService {
   private activeNotifications$ = new BehaviorSubject<NotificationData[]>([]);
   private unreadCounts$ = new BehaviorSubject<{[chatId: string]: number}>({});
+  private notificationSettings$ = new BehaviorSubject<NotificationSettings>({
+    enabled: true,
+    sound: true,
+    vibration: true,
+    showPreview: true,
+  });
+  private chatSettings$ = new BehaviorSubject<ChatNotificationSettings>({});
+  private currentUserId: string | null = null;
 
-  constructor(private toastController: ToastController) {}
+  constructor(
+    private toastController: ToastController,
+    private firestore: AngularFirestore,
+    private router: Router,
+    private platform: Platform,
+  ) {
+    this.initializePushNotifications();
+  }
+
+  /**
+   * Initialize push notifications and request permission
+   */
+  private async initializePushNotifications() {
+    try {
+      // Check if notifications are supported
+      if (!("Notification" in window)) {
+        console.warn("This browser does not support notifications");
+        return;
+      }
+
+      // Request notification permission
+      const permission = await Notification.requestPermission();
+      if (permission === "granted") {
+        console.log("Notification permission granted");
+      } else {
+        console.warn("Notification permission denied");
+      }
+    } catch (error) {
+      console.error("Error initializing push notifications:", error);
+    }
+  }
+
+  /**
+   * Set current user ID and load settings
+   */
+  async setCurrentUserId(userId: string) {
+    this.currentUserId = userId;
+    await this.loadUserSettings(userId);
+  }
 
   /**
    * Get observable of active notifications
@@ -70,6 +135,96 @@ export class NotificationService {
   }
 
   /**
+   * Get notification settings
+   */
+  getNotificationSettings(): Observable<NotificationSettings> {
+    return this.notificationSettings$.asObservable();
+  }
+
+  /**
+   * Update notification settings
+   */
+  updateNotificationSettings(settings: Partial<NotificationSettings>) {
+    const currentSettings = this.notificationSettings$.value;
+    const newSettings = {...currentSettings, ...settings};
+    this.notificationSettings$.next(newSettings);
+
+    // Save to localStorage for persistence
+    localStorage.setItem("notificationSettings", JSON.stringify(newSettings));
+
+    // Save to Firestore if user is logged in
+    if (this.currentUserId) {
+      this.firestore
+        .collection("accounts")
+        .doc(this.currentUserId)
+        .update({notificationSettings: newSettings})
+        .catch((error) =>
+          console.error("Error saving notification settings:", error),
+        );
+    }
+  }
+
+  /**
+   * Get chat-specific notification settings
+   */
+  getChatNotificationSettings(): Observable<ChatNotificationSettings> {
+    return this.chatSettings$.asObservable();
+  }
+
+  /**
+   * Update chat-specific notification settings
+   */
+  updateChatNotificationSettings(
+    chatId: string,
+    settings: Partial<ChatNotificationSettings[string]>,
+  ) {
+    const currentSettings = this.chatSettings$.value;
+    const newSettings = {
+      ...currentSettings,
+      [chatId]: {...currentSettings[chatId], ...settings},
+    };
+    this.chatSettings$.next(newSettings);
+
+    // Save to localStorage for persistence
+    localStorage.setItem(
+      "chatNotificationSettings",
+      JSON.stringify(newSettings),
+    );
+
+    // Save to Firestore if user is logged in
+    if (this.currentUserId) {
+      this.firestore
+        .collection("accounts")
+        .doc(this.currentUserId)
+        .update({chatNotificationSettings: newSettings})
+        .catch((error) =>
+          console.error("Error saving chat notification settings:", error),
+        );
+    }
+  }
+
+  /**
+   * Mute/unmute a chat
+   */
+  muteChat(chatId: string, duration?: number) {
+    const muteUntil = duration ? new Date(Date.now() + duration) : undefined;
+    this.updateChatNotificationSettings(chatId, {
+      muted: true,
+      muteUntil,
+    });
+  }
+
+  /**
+   * Unmute a chat
+   */
+  unmuteChat(chatId: string) {
+    this.updateChatNotificationSettings(chatId, {
+      muted: false,
+      muteUntil: undefined,
+    });
+  }
+
+  /**
    * Show in-app notification for new message
    */
   async showNewMessageNotification(
@@ -79,6 +234,19 @@ export class NotificationService {
   ): Promise<void> {
     // Don't show notification for current active chat
     if (currentChatId === chat.id) {
+      return;
+    }
+
+    const settings = this.notificationSettings$.value;
+    const chatSettings = this.chatSettings$.value[chat.id];
+
+    // Check if notifications are enabled and chat is not muted
+    if (!settings.enabled || chatSettings?.muted) {
+      return;
+    }
+
+    // Check if chat is muted temporarily
+    if (chatSettings?.muteUntil && new Date() < chatSettings.muteUntil) {
       return;
     }
 
@@ -98,13 +266,90 @@ export class NotificationService {
     // Update unread count
     this.incrementUnreadCount(chat.id);
 
+    // Show browser notification if permission granted
+    await this.showBrowserNotification(message, chat);
+
     // Show toast notification
     await this.showToastNotification(message, chat);
+
+    // Play notification sound
+    if (settings.sound) {
+      this.playNotificationSound(chatSettings?.customSound);
+    }
+
+    // Vibrate if enabled
+    if (settings.vibration && navigator.vibrate) {
+      navigator.vibrate([200, 100, 200]);
+    }
 
     // Auto-remove notification after 10 seconds
     setTimeout(() => {
       this.removeNotification(notificationData.id);
     }, 10000);
+  }
+
+  /**
+   * Show browser notification
+   */
+  private async showBrowserNotification(message: Message, chat: Chat) {
+    if (!("Notification" in window) || Notification.permission !== "granted") {
+      return;
+    }
+
+    const settings = this.notificationSettings$.value;
+    const senderName = this.getSenderDisplayName(message, chat);
+    const messageText = this.getMessagePreview(message);
+
+    const notification = new Notification(
+      chat.isGroup ? chat.name || "Group Chat" : senderName,
+      {
+        body: settings.showPreview
+          ? chat.isGroup
+            ? `${senderName}: ${messageText}`
+            : messageText
+          : "New message",
+        icon: "/assets/icon/icon-192x192.png",
+        badge: "/assets/icon/icon-72x72.png",
+        tag: `chat-${chat.id}`,
+        data: {chatId: chat.id, messageId: message.id},
+        requireInteraction: false,
+        silent: !settings.sound,
+      },
+    );
+
+    // Handle notification click
+    notification.onclick = () => {
+      window.focus();
+      this.navigateToChat(chat.id);
+      notification.close();
+    };
+
+    // Auto-close after 5 seconds
+    setTimeout(() => {
+      notification.close();
+    }, 5000);
+  }
+
+  /**
+   * Play notification sound
+   */
+  private playNotificationSound(customSound?: string) {
+    try {
+      const audio = new Audio(customSound || "/assets/sounds/notification.mp3");
+      audio.volume = 0.5;
+      audio.play().catch((error) => {
+        console.warn("Could not play notification sound:", error);
+      });
+    } catch (error) {
+      console.warn("Error playing notification sound:", error);
+    }
+  }
+
+  /**
+   * Navigate to chat
+   */
+  private navigateToChat(chatId: string) {
+    this.router.navigate(["/messaging/chat", chatId]);
   }
 
   /**
@@ -185,10 +430,15 @@ export class NotificationService {
   ): Promise<void> {
     const senderName = this.getSenderDisplayName(message, chat);
     const messageText = this.getMessagePreview(message);
+    const settings = this.notificationSettings$.value;
 
     const toast = await this.toastController.create({
-      header: chat.isGroup ? chat.name : senderName,
-      message: chat.isGroup ? `${senderName}: ${messageText}` : messageText,
+      header: chat.isGroup ? chat.name || "Group Chat" : senderName,
+      message: settings.showPreview
+        ? chat.isGroup
+          ? `${senderName}: ${messageText}`
+          : messageText
+        : "New message",
       duration: 5000,
       position: "top",
       color: "primary",
@@ -196,8 +446,7 @@ export class NotificationService {
         {
           text: "View",
           handler: () => {
-            // TODO: Navigate to chat
-            console.log("Navigate to chat:", chat.id);
+            this.navigateToChat(chat.id);
           },
         },
         {
@@ -214,8 +463,7 @@ export class NotificationService {
    * Get sender display name
    */
   private getSenderDisplayName(message: Message, chat: Chat): string {
-    // TODO: Get actual user name from user service
-    return `User ${message.senderId.substring(0, 8)}`;
+    return message.senderName || `User ${message.senderId.substring(0, 8)}`;
   }
 
   /**
@@ -227,10 +475,64 @@ export class NotificationService {
         return message.text?.substring(0, 50) || "";
       case "image":
         return "📸 Image";
+      case "video":
+        return "🎥 Video";
+      case "audio":
+        return "🎵 Audio";
       case "file":
         return `📎 ${message.fileName || "File"}`;
       default:
         return "New message";
+    }
+  }
+
+  /**
+   * Load user settings from storage and Firestore
+   */
+  private async loadUserSettings(userId: string) {
+    try {
+      // Load from localStorage first for immediate UI update
+      const localNotificationSettings = localStorage.getItem(
+        "notificationSettings",
+      );
+      const localChatSettings = localStorage.getItem(
+        "chatNotificationSettings",
+      );
+
+      if (localNotificationSettings) {
+        this.notificationSettings$.next(JSON.parse(localNotificationSettings));
+      }
+
+      if (localChatSettings) {
+        this.chatSettings$.next(JSON.parse(localChatSettings));
+      }
+
+      // Then load from Firestore for authoritative data
+      const userDoc = await this.firestore
+        .collection("accounts")
+        .doc(userId)
+        .get()
+        .toPromise();
+
+      if (userDoc && userDoc.exists) {
+        const userData = userDoc.data() as any;
+
+        if (userData.notificationSettings) {
+          this.notificationSettings$.next({
+            ...this.notificationSettings$.value,
+            ...userData.notificationSettings,
+          });
+        }
+
+        if (userData.chatNotificationSettings) {
+          this.chatSettings$.next({
+            ...this.chatSettings$.value,
+            ...userData.chatNotificationSettings,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error loading user notification settings:", error);
     }
   }
 }

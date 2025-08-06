@@ -58,6 +58,8 @@ export class ChatParticipantsModalComponent implements OnInit {
   availableUsers: any[] = [];
   searchTerm = "";
   isLoading = false;
+  isEditingTitle = false;
+  editTitleText = "";
 
   constructor(
     private modalController: ModalController,
@@ -284,6 +286,50 @@ export class ChatParticipantsModalComponent implements OnInit {
         user.name?.toLowerCase().includes(searchLower) ||
         user.email?.toLowerCase().includes(searchLower),
     );
+  }
+
+  /**
+   * Start editing chat title
+   */
+  startEditingTitle() {
+    if (!this.chat.isGroup) return;
+
+    this.isEditingTitle = true;
+    this.editTitleText = this.chat.name || this.chat.groupName || "";
+  }
+
+  /**
+   * Cancel editing chat title
+   */
+  cancelEditingTitle() {
+    this.isEditingTitle = false;
+    this.editTitleText = "";
+  }
+
+  /**
+   * Save chat title
+   */
+  async saveChatTitle() {
+    if (!this.chat.isGroup || !this.editTitleText.trim()) return;
+
+    this.isLoading = true;
+    try {
+      await this.chatService
+        .updateChatTitle(this.chat.id, this.editTitleText.trim())
+        .toPromise();
+
+      // Update local chat object
+      this.chat.name = this.editTitleText.trim();
+      this.chat.groupName = this.editTitleText.trim();
+
+      this.isEditingTitle = false;
+      this.showToast("Chat title updated successfully", "success");
+    } catch (error) {
+      console.error("Error updating chat title:", error);
+      this.showToast("Failed to update chat title", "danger");
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   /**

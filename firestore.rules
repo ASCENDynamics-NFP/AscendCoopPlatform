@@ -266,16 +266,35 @@ service cloud.firestore {
                request.resource.data.participants.size() <= 50; // Reasonable limit for group chats
       }
 
+      // Helper function to check if user can modify participants
+      function canModifyParticipants() {
+        return request.auth != null && 
+               resource.data.isGroup == true && // Only allow for group chats
+               request.auth.uid in resource.data.participants && // User must be a participant
+               (
+                 // Allow adding participants (any participant can add others)
+                 (request.resource.data.participants.size() > resource.data.participants.size() &&
+                  request.resource.data.participants.size() <= 50) ||
+                 // Allow removing participants (any participant can remove others, including themselves)
+                 (request.resource.data.participants.size() < resource.data.participants.size() &&
+                  request.resource.data.participants.size() >= 2) // Must keep at least 2 participants
+               );
+      }
+
       // Allow reading chats if user is a participant or group admin
       allow read: if canAccessChat();
       
       // Allow creating chats if user is included and participants are valid
       allow create: if canCreateChat();
       
-      // Allow updating chat metadata (like lastMessage) if user has access
-      // But prevent modifying participants array after creation
+      // Allow updating chat metadata or participants
       allow update: if canAccessChat() && 
-                    request.resource.data.participants == resource.data.participants;
+                    (
+                      // Allow metadata updates without changing participants
+                      request.resource.data.participants == resource.data.participants ||
+                      // Allow participant modifications for group chats
+                      canModifyParticipants()
+                    );
       
       // Only allow deleting if user has access (for leaving chats)
       allow delete: if canAccessChat();

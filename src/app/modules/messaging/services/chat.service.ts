@@ -375,6 +375,32 @@ export class ChatService {
   }
 
   /**
+   * Remove participants from a group chat
+   */
+  removeParticipants(
+    chatId: string,
+    participantIds: string[],
+  ): Observable<void> {
+    return from(
+      this.firestore
+        .collection(this.CHATS_COLLECTION)
+        .doc(chatId)
+        .update({
+          participants: firebase.firestore.FieldValue.arrayRemove(
+            ...participantIds,
+          ),
+          lastModifiedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        }),
+    ).pipe(
+      map(() => void 0),
+      catchError((error) => {
+        console.error("Error removing participants:", error);
+        return throwError(() => error);
+      }),
+    );
+  }
+
+  /**
    * Find existing chat between users
    */
   findExistingChat(participantIds: string[]): Observable<Chat | null> {

@@ -64,35 +64,85 @@
               [src]="message.fileUrl"
               [alt]="message.fileName"
               (click)="openImagePreview(message.fileUrl!)"
+              loading="lazy"
             />
+            <!-- <div class="image-overlay">
+              <ion-button
+                fill="clear"
+                size="small"
+                (click)="downloadFile(message.fileUrl!, message.fileName!)"
+                class="download-overlay-btn"
+              >
+                <ion-icon name="download-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+            </div> -->
+          </div>
+
+          <!-- Video Message -->
+          <div *ngIf="message.type === 'video'" class="video-message">
+            <video [src]="message.fileUrl" controls preload="metadata">
+              Your browser does not support the video tag.
+            </video>
+            <div class="media-info">
+              <span class="file-name">{{ message.fileName }}</span>
+              <span class="file-size"
+                >{{ formatFileSize(message.fileSize) }}</span
+              >
+            </div>
+          </div>
+
+          <!-- Audio Message -->
+          <div *ngIf="message.type === 'audio'" class="audio-message">
+            <div class="audio-player">
+              <ion-icon
+                name="musical-notes-outline"
+                class="audio-icon"
+              ></ion-icon>
+              <div class="audio-info">
+                <div class="file-name">{{ message.fileName }}</div>
+                <div class="file-size">
+                  {{ formatFileSize(message.fileSize) }}
+                </div>
+              </div>
+            </div>
+            <audio [src]="message.fileUrl" controls preload="metadata">
+              Your browser does not support the audio tag.
+            </audio>
           </div>
 
           <!-- File Message -->
           <div
-            *ngIf="message.type === 'file' || message.type === 'video' || message.type === 'audio'"
-            class="file-message"
+            *ngIf="message.type === 'file'"
+            class="file-message-enhanced clickable-file-block"
+            (click)="openFileInNewWindow(message.fileUrl!, message.fileName!)"
+            title="Click to open file in new window"
           >
-            <ion-icon name="document-outline"></ion-icon>
+            <div class="file-icon-container">
+              <ion-icon
+                [name]="getFileIcon(message.fileType || '')"
+                class="file-type-icon"
+              ></ion-icon>
+            </div>
             <div class="file-info">
-              <div
-                class="file-name clickable-file-name"
-                (click)="openFileInNewWindow(message.fileUrl!, message.fileName!)"
-                title="Click to open file in new window"
-              >
-                {{ message.fileName }}
+              <div class="file-header">
+                <div class="file-name">{{ message.fileName }}</div>
+                <!-- <ion-button
+                  fill="clear"
+                  size="small"
+                  (click)="downloadFile(message.fileUrl!, message.fileName!); $event.stopPropagation()"
+                  title="Download file"
+                  class="download-btn"
+                >
+                  <ion-icon name="download-outline" slot="icon-only"></ion-icon>
+                </ion-button> -->
               </div>
-              <div class="file-size">
-                {{ formatFileSize(message.fileSize) }}
+              <div class="file-metadata">
+                <span class="file-size"
+                  >{{ formatFileSize(message.fileSize) }}</span
+                >
+                <span class="file-type">{{ message.fileType }}</span>
               </div>
             </div>
-            <ion-button
-              fill="clear"
-              size="small"
-              (click)="downloadFile(message.fileUrl!, message.fileName!)"
-              title="Download file"
-            >
-              <ion-icon name="download-outline" slot="icon-only"></ion-icon>
-            </ion-button>
           </div>
         </div>
 
@@ -155,6 +205,72 @@
 <div *ngIf="!canSendMessages && !isContactBlocked" class="blocked-notice">
   <ion-icon name="information-circle-outline"></ion-icon>
   <span>You need to have an accepted friend connection to send messages.</span>
+</div>
+
+<!-- File Preview Section -->
+<div *ngIf="selectedFile" class="file-preview-container">
+  <ion-card class="file-preview-card">
+    <ion-card-header>
+      <ion-card-title class="file-preview-title">
+        <ion-icon name="attach-outline"></ion-icon>
+        File Preview
+        <ion-button
+          fill="clear"
+          size="small"
+          (click)="clearFilePreview()"
+          class="cancel-preview-btn"
+        >
+          <ion-icon name="close" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content class="file-preview-content">
+      <!-- Image Preview -->
+      <div *ngIf="filePreviewType === 'image'" class="image-preview">
+        <img [src]="filePreviewUrl" [alt]="selectedFile.name" />
+      </div>
+
+      <!-- Video Preview -->
+      <div *ngIf="filePreviewType === 'video'" class="video-preview">
+        <video [src]="filePreviewUrl" controls></video>
+      </div>
+
+      <!-- Audio Preview -->
+      <div *ngIf="filePreviewType === 'audio'" class="audio-preview">
+        <ion-icon name="musical-notes-outline" class="audio-icon"></ion-icon>
+        <audio [src]="filePreviewUrl" controls></audio>
+      </div>
+
+      <!-- Document Preview -->
+      <div *ngIf="filePreviewType === 'document'" class="document-preview">
+        <ion-icon
+          [name]="getFileIcon(selectedFile.type)"
+          class="file-type-icon"
+        ></ion-icon>
+        <div class="file-details">
+          <div class="file-name">{{ selectedFile.name }}</div>
+          <div class="file-type">{{ selectedFile.type || 'Unknown type' }}</div>
+        </div>
+      </div>
+
+      <!-- File Info -->
+      <div class="file-info-preview">
+        <div class="file-size">{{ formatFileSize(selectedFile.size) }}</div>
+        <div class="file-actions">
+          <ion-button
+            expand="block"
+            (click)="sendSelectedFile()"
+            [disabled]="isUploadingFile"
+            class="send-file-btn"
+          >
+            <ion-icon name="send" slot="start"></ion-icon>
+            {{ isUploadingFile ? 'Sending...' : 'Send File' }}
+          </ion-button>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
 </div>
 
 <!-- Message Input Footer -->

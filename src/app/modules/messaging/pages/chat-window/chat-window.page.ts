@@ -49,6 +49,7 @@ import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {UserReportModalComponent} from "../../components/user-report-modal/user-report-modal.component";
+import {ChatParticipantsModalComponent} from "../../components/chat-participants-modal/chat-participants-modal.component";
 
 @Component({
   selector: "app-chat-window",
@@ -68,6 +69,12 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   currentUserId: string | null = null;
   otherParticipantId: string | null = null;
   isContactBlocked = false;
+
+  // File preview properties
+  selectedFile: File | null = null;
+  filePreviewUrl: string | null = null;
+  filePreviewType: "image" | "video" | "audio" | "document" | null = null;
+  isUploadingFile = false;
   canSendMessages = true;
   private destroy$ = new Subject<void>();
 
@@ -263,6 +270,8 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     this.destroy$.complete();
     // Clear avatar cache to prevent memory leaks
     this.senderAvatarCache.clear();
+    // Clean up file preview URL
+    this.clearFilePreview();
   }
 
   /**
@@ -359,7 +368,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Handle file selection
+   * Handle file selection with preview
    */
   private selectFile(accept: string) {
     const input = document.createElement("input");
@@ -368,10 +377,112 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     input.onchange = (event: any) => {
       const file = event.target.files[0];
       if (file) {
-        this.uploadAndSendFile(file);
+        this.showFilePreview(file);
       }
     };
     input.click();
+  }
+
+  /**
+   * Show file preview before sending
+   */
+  private showFilePreview(file: File) {
+    console.log("showFilePreview called with file:", file);
+
+    if (file.size > 10 * 1024 * 1024) {
+      // 10MB limit
+      this.showErrorToast("File size must be less than 10MB");
+      return;
+    }
+
+    this.selectedFile = file;
+    this.filePreviewType = this.getFilePreviewType(file);
+
+    console.log("File preview type:", this.filePreviewType);
+    console.log("Selected file:", this.selectedFile);
+
+    // Create preview URL for images and videos
+    if (this.filePreviewType === "image" || this.filePreviewType === "video") {
+      this.filePreviewUrl = URL.createObjectURL(file);
+      console.log("Created preview URL:", this.filePreviewUrl);
+    } else {
+      this.filePreviewUrl = null;
+    }
+  }
+
+  /**
+   * Get file preview type based on MIME type
+   */
+  private getFilePreviewType(
+    file: File,
+  ): "image" | "video" | "audio" | "document" {
+    if (file.type.startsWith("image/")) {
+      return "image";
+    } else if (file.type.startsWith("video/")) {
+      return "video";
+    } else if (file.type.startsWith("audio/")) {
+      return "audio";
+    } else {
+      return "document";
+    }
+  }
+
+  /**
+   * Send the selected file
+   */
+  async sendSelectedFile() {
+    console.log("sendSelectedFile called, selectedFile:", this.selectedFile);
+
+    if (!this.selectedFile) {
+      console.log("No selected file, returning");
+      return;
+    }
+
+    this.isUploadingFile = true;
+    try {
+      await this.uploadAndSendFile(this.selectedFile);
+      this.clearFilePreview();
+    } catch (error) {
+      console.error("Error sending file:", error);
+      // Don't clear preview on error so user can retry
+    } finally {
+      this.isUploadingFile = false;
+    }
+  }
+
+  /**
+   * Cancel file selection and clear preview
+   */
+  clearFilePreview() {
+    if (this.filePreviewUrl) {
+      URL.revokeObjectURL(this.filePreviewUrl);
+    }
+    this.selectedFile = null;
+    this.filePreviewUrl = null;
+    this.filePreviewType = null;
+  }
+
+  /**
+   * Get file icon based on file type
+   */
+  getFileIcon(fileType: string): string {
+    if (fileType.startsWith("image/")) return "image-outline";
+    if (fileType.startsWith("video/")) return "videocam-outline";
+    if (fileType.startsWith("audio/")) return "musical-notes-outline";
+    if (fileType.includes("pdf")) return "document-text-outline";
+    if (fileType.includes("word") || fileType.includes("doc"))
+      return "document-outline";
+    if (fileType.includes("excel") || fileType.includes("sheet"))
+      return "grid-outline";
+    if (fileType.includes("powerpoint") || fileType.includes("presentation"))
+      return "easel-outline";
+    if (
+      fileType.includes("zip") ||
+      fileType.includes("rar") ||
+      fileType.includes("archive")
+    )
+      return "archive-outline";
+    return "document-outline";
   }
 
   /**
@@ -426,6 +537,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
    * Show chat options (block, info, etc.)
    */
   async showChatOptions() {
+    const chat = await this.chat$.pipe(take(1)).toPromise();
     const buttons: any[] = [
       {
         text: "Chat Info",
@@ -437,8 +549,19 @@ export class ChatWindowPage implements OnInit, OnDestroy {
       },
     ];
 
+    // Add manage participants option for group chats
+    if (chat?.isGroup) {
+      buttons.push({
+        text: "Manage Participants",
+        icon: "people-outline",
+        handler: () => {
+          this.showParticipantsModal();
+        },
+      });
+    }
+
     // Add block/unblock option for 1-on-1 chats
-    if (!this.chat$ || this.otherParticipantId) {
+    if (!chat?.isGroup && this.otherParticipantId) {
       if (this.isContactBlocked) {
         buttons.push({
           text: "Unblock Contact",
@@ -1042,6 +1165,42 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     } catch (error) {
       console.error("Error opening report modal:", error);
       this.showErrorToast("Failed to open report form");
+    }
+  }
+
+  /**
+   * Show the chat participants modal
+   */
+  async showParticipantsModal() {
+    try {
+      const chat = await this.chat$.pipe(take(1)).toPromise();
+
+      if (!chat) {
+        this.showErrorToast("Chat not found");
+        return;
+      }
+
+      const modal = await this.modalController.create({
+        component: ChatParticipantsModalComponent,
+        componentProps: {
+          chat: chat,
+          chatId: this.chatId,
+        },
+        cssClass: "chat-participants-modal",
+      });
+
+      await modal.present();
+
+      // Handle modal result if needed
+      const {data} = await modal.onDidDismiss();
+      if (data?.updated) {
+        // Refresh chat data if participants were updated
+        console.log("Chat participants updated, refreshing...");
+        // The chat observable should automatically update via Firestore subscriptions
+      }
+    } catch (error) {
+      console.error("Error opening participants modal:", error);
+      this.showErrorToast("Failed to open participants manager");
     }
   }
 

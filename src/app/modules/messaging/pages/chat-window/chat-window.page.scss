@@ -186,67 +186,489 @@
   }
 }
 
-// File upload preview styling
-.file-preview {
+// File preview container styling
+.file-preview-container {
+  position: sticky;
+  bottom: 0;
+  z-index: 100;
+  background: var(--ion-background-color);
+  padding: 8px 16px;
+  border-top: 1px solid var(--ion-color-light-shade);
+
+  .file-preview-card {
+    margin: 0;
+    overflow: visible;
+
+    .file-preview-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 0;
+      color: var(--ion-color-dark);
+
+      .cancel-preview-btn {
+        margin-left: auto;
+        --color: var(--ion-color-danger);
+      }
+    }
+
+    .file-preview-content {
+      padding: 8px 0;
+      display: flex;
+      flex-direction: column;
+
+      .image-preview {
+        img {
+          max-width: 100%;
+          max-height: 150px;
+          border-radius: 8px;
+          object-fit: contain;
+          display: block;
+          margin: 0 auto;
+        }
+      }
+
+      .video-preview video {
+        max-width: 100%;
+        max-height: 150px;
+        border-radius: 8px;
+      }
+
+      .audio-preview {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+
+        .audio-icon {
+          font-size: 48px;
+          color: var(--ion-color-primary);
+        }
+
+        audio {
+          width: 100%;
+          max-width: 300px;
+        }
+      }
+
+      .document-preview {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        background: var(--ion-color-step-50);
+        border: 1px solid var(--ion-color-step-100);
+        border-radius: 8px;
+
+        .file-type-icon {
+          font-size: 48px;
+          color: var(--ion-color-primary);
+        }
+
+        .file-details {
+          flex: 1;
+
+          .file-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+            word-break: break-word;
+            color: var(--ion-color-dark);
+            line-height: 1.3;
+          }
+
+          .file-type {
+            font-size: 12px;
+            color: var(--ion-color-medium);
+            text-transform: uppercase;
+          }
+        }
+      }
+
+      .file-info-preview {
+        margin-top: 12px;
+        border-top: 1px solid var(--ion-color-light-shade);
+        padding-top: 12px;
+        display: block !important;
+        visibility: visible !important;
+        min-height: 60px;
+        order: 999; /* Ensure it appears at the bottom */
+
+        .file-size {
+          font-size: 12px;
+          color: var(--ion-color-medium);
+          margin-bottom: 8px;
+        }
+
+        .file-actions {
+          display: block !important;
+        }
+
+        .send-file-btn {
+          --border-radius: 8px;
+          margin: 0;
+          display: block !important;
+          width: 100%;
+          min-height: 40px;
+        }
+      }
+    }
+  }
+}
+
+// Enhanced file message styling
+.image-message {
+  position: relative;
+  max-width: 280px;
+  border-radius: 12px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .image-overlay {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+
+    .download-overlay-btn {
+      --background: rgba(0, 0, 0, 0.6);
+      --color: white;
+      --border-radius: 50%;
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  &:hover .image-overlay {
+    opacity: 1;
+  }
+}
+
+.video-message {
+  max-width: 280px;
+  border-radius: 12px;
+  overflow: hidden;
+
+  video {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    display: block;
+  }
+
+  .media-info {
+    padding: 8px 12px;
+    background: var(--ion-color-step-50);
+    border: 1px solid var(--ion-color-step-100);
+    font-size: 12px;
+
+    .file-name {
+      font-weight: 500;
+      margin-bottom: 2px;
+      display: block;
+      word-break: break-word;
+      color: var(--ion-color-dark);
+      line-height: 1.3;
+    }
+
+    .file-size {
+      color: var(--ion-color-medium-shade);
+      font-size: 11px;
+    }
+  }
+}
+
+.audio-message {
+  max-width: 280px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--ion-color-step-50);
+  border: 1px solid var(--ion-color-step-100);
+
+  .audio-player {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+
+    .audio-icon {
+      font-size: 24px;
+      color: var(--ion-color-primary);
+      flex-shrink: 0;
+    }
+
+    .audio-info {
+      flex: 1;
+
+      .file-name {
+        font-weight: 500;
+        font-size: 14px;
+        margin-bottom: 2px;
+        word-break: break-word;
+        color: var(--ion-color-dark);
+        line-height: 1.3;
+      }
+
+      .file-size {
+        font-size: 12px;
+        color: var(--ion-color-medium-shade);
+      }
+    }
+  }
+
+  audio {
+    width: 100%;
+    height: 40px;
+  }
+}
+
+.file-message-enhanced {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 0.5rem;
-  margin-bottom: 0.5rem;
+  gap: 16px;
+  max-width: 280px;
+  padding: 16px;
+  background: var(--ion-color-step-50);
+  border: 1px solid var(--ion-color-step-100);
+  border-radius: 8px;
 
-  .file-icon {
-    font-size: 1.5rem;
-    color: var(--chat-text-secondary-light);
+  .file-icon-container {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+
+    .file-type-icon {
+      font-size: 48px;
+      color: var(--ion-color-primary);
+    }
   }
 
   .file-info {
     flex: 1;
     min-width: 0;
 
-    .file-name {
-      font-weight: 500;
-      font-size: 0.85rem;
-      color: var(--chat-text-primary-light);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .file-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+
+      .file-name {
+        flex: 1;
+        font-weight: 600;
+        font-size: 14px;
+        line-height: 1.3;
+        word-break: break-word;
+        color: var(--ion-color-dark);
+      }
+
+      .download-btn {
+        --color: var(--ion-color-medium);
+        --padding-start: 4px;
+        --padding-end: 4px;
+        width: 28px;
+        height: 28px;
+        flex-shrink: 0;
+
+        &:hover {
+          --color: var(--ion-color-primary);
+        }
+      }
     }
 
-    .file-size {
-      font-size: 0.75rem;
-      color: var(--chat-text-secondary-light);
-      margin: 0;
+    .file-metadata {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--ion-color-medium);
+      line-height: 1.2;
+
+      .file-size {
+        font-weight: 500;
+        color: var(--ion-color-medium-shade);
+      }
+
+      .file-type {
+        text-transform: uppercase;
+        color: var(--ion-color-medium-tint);
+        font-size: 11px;
+      }
+    }
+  }
+}
+
+// Clickable file block styling
+.clickable-file-block {
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--ion-color-step-100) !important;
+    border-color: var(--ion-color-step-150) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    .file-type-icon {
+      color: var(--ion-color-primary-shade);
+    }
+
+    .file-name {
+      color: var(--ion-color-primary) !important;
     }
   }
 
-  .remove-file {
-    --color: var(--ion-color-danger);
-    --background: transparent;
-    --padding-start: 8px;
-    --padding-end: 8px;
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
   }
 }
 
 // Dark mode for file preview
 @media (prefers-color-scheme: dark) {
-  .file-preview {
-    background: rgba(255, 255, 255, 0.05);
+  .file-preview-container {
+    border-top-color: var(--ion-color-dark-shade);
 
-    .file-icon {
-      color: var(--chat-text-secondary-dark);
+    .file-preview-card {
+      .file-preview-title {
+        color: var(--ion-color-light);
+      }
+
+      .document-preview {
+        background: var(--ion-color-dark);
+        border-color: var(--ion-color-dark-shade);
+
+        .file-details {
+          .file-name {
+            color: var(--ion-color-light);
+          }
+        }
+      }
     }
+  }
+
+  .video-message .media-info,
+  .audio-message,
+  .file-message-enhanced {
+    .file-info {
+      .file-header {
+        .file-name {
+          color: var(--ion-color-primary-tint);
+
+          &:hover {
+            color: var(--ion-color-primary-shade);
+          }
+        }
+      }
+
+      .file-metadata {
+        .file-size {
+          color: var(--ion-color-medium-tint);
+        }
+
+        .file-type {
+          color: var(--ion-color-medium);
+        }
+      }
+    }
+  }
+
+  .video-message .media-info {
+    .file-name {
+      color: var(--ion-color-light);
+    }
+  }
+
+  .audio-message .audio-player {
+    .audio-info {
+      .file-name {
+        color: var(--ion-color-light);
+      }
+    }
+  }
+}
+
+// Additional dark mode support using body.dark selector
+body.dark {
+  .file-message-enhanced {
+    background: var(--ion-color-step-850) !important;
+    border-color: var(--ion-color-step-800) !important;
 
     .file-info {
-      .file-name {
-        color: var(--chat-text-primary-dark);
-      }
-
-      .file-size {
-        color: var(--chat-text-secondary-dark);
+      .file-header {
+        .file-name {
+          color: var(--ion-color-light) !important;
+        }
       }
     }
+  }
+
+  .clickable-file-block {
+    &:hover {
+      background: var(--ion-color-step-800) !important;
+      border-color: var(--ion-color-step-750) !important;
+
+      .file-name {
+        color: var(--ion-color-primary-tint) !important;
+      }
+    }
+  }
+} // Responsive design for file messages
+@media (max-width: 768px) {
+  .image-message,
+  .video-message {
+    max-width: 240px;
+  }
+
+  .file-message-enhanced {
+    max-width: 240px;
+
+    .file-info .file-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+
+      .download-btn {
+        align-self: flex-end;
+      }
+    }
+  }
+
+  .file-preview-container {
+    .file-preview-card {
+      .file-preview-content {
+        .document-preview {
+          flex-direction: column;
+          text-align: center;
+          gap: 12px;
+        }
+      }
+    }
+  }
+}
+
+// Animation for file preview
+.file-preview-container {
+  animation: slideUpFade 0.3s ease-out;
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

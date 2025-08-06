@@ -23,11 +23,10 @@ import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 
 import {MessagingRoutingModule} from "./messaging-routing.module";
+import {ChatParticipantsModalComponent} from "./components/chat-participants-modal/chat-participants-modal.component";
 
 @NgModule({
-  declarations: [
-    // Components will be added here as we create them
-  ],
+  declarations: [ChatParticipantsModalComponent],
   imports: [
     CommonModule,
     FormsModule,

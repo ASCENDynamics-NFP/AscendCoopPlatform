@@ -67,6 +67,9 @@ export class EncryptedChatService {
   // Subject to trigger message updates after async decryption
   private updateTrigger = new BehaviorSubject<number>(0);
 
+  // Track if key regeneration is in progress to prevent multiple attempts
+  private keyRegenerationInProgress = false;
+
   constructor(
     private firestore: AngularFirestore,
     private store: Store<{auth: AuthState}>,
@@ -120,21 +123,71 @@ export class EncryptedChatService {
    */
   async getUserPublicKey(userId: string): Promise<CryptoKey | null> {
     try {
-      // First try to get stored keys for this user
-      const storedKeyPair =
-        await this.encryptionService.getStoredKeyPair(userId);
-      if (storedKeyPair) {
-        return storedKeyPair.publicKey;
+      // Get current user ID to check if this is our own key
+      const currentUserId = await firstValueFrom(this.getCurrentUserId());
+
+      // If this is our own key, get it from local storage
+      if (currentUserId === userId) {
+        const storedKeyPair =
+          await this.encryptionService.getStoredKeyPair(userId);
+        if (storedKeyPair) {
+          return storedKeyPair.publicKey;
+        }
+
+        // If no stored keys exist for us, generate new ones
+        const keyPair = await this.encryptionService.generateKeyPair();
+        await this.encryptionService.storeKeyPair(keyPair, userId);
+
+        // Store public key in Firestore for other users
+        const publicKeyString = await this.encryptionService.exportPublicKey(
+          keyPair.publicKey,
+        );
+
+        try {
+          await this.firestore.collection("userKeys").doc(userId).set({
+            publicKey: publicKeyString,
+            createdAt: new Date(),
+            userId: userId,
+          });
+        } catch (firestoreError) {
+          console.warn(
+            "Failed to store public key in Firestore:",
+            firestoreError,
+          );
+          // Continue - local key generation was successful
+        }
+
+        return keyPair.publicKey;
       }
 
-      // If no stored keys exist, generate new ones and store them
-      const keyPair = await this.encryptionService.generateKeyPair();
+      // For other users, get their public key from Firestore
+      try {
+        const userKeyDoc = await firstValueFrom(
+          this.firestore.collection("userKeys").doc(userId).get(),
+        );
 
-      // Store the key pair for future use
-      await this.encryptionService.storeKeyPair(keyPair, userId);
+        if (!userKeyDoc.exists) {
+          console.warn(`No public key found in Firestore for user ${userId}`);
+          return null;
+        }
 
-      return keyPair.publicKey;
+        const userData = userKeyDoc.data() as any;
+        if (!userData?.publicKey) {
+          console.warn(`Invalid public key data for user ${userId}`);
+          return null;
+        }
+
+        // Import the public key from Firestore
+        return await this.encryptionService.importPublicKey(userData.publicKey);
+      } catch (firestoreError) {
+        console.warn(
+          `Failed to fetch public key for user ${userId} from Firestore:`,
+          firestoreError,
+        );
+        return null;
+      }
     } catch (error) {
+      console.error(`Error getting public key for user ${userId}:`, error);
       return null;
     }
   }
@@ -312,26 +365,30 @@ export class EncryptedChatService {
       // Validate message has proper encryption fields
       if (!this.isValidEncryptedMessage(message)) {
         console.warn("Message marked as encrypted but missing encryption data");
-        return message.text || "[Invalid encrypted message]";
+        // Check if the text looks like encrypted content
+        if (this.looksLikeEncryptedContent(message.text)) {
+          return "🔒 Encrypted message (unable to decrypt)";
+        }
+        return message.text || "🔒 Invalid encrypted message";
       }
 
       // Get user's private key
       const keyPair = await this.encryptionService.getStoredKeyPair(userId);
       if (!keyPair) {
         console.warn(
-          "No encryption keys found for user, returning original text",
+          `No encryption keys found for user ${userId}, returning fallback message`,
         );
-        return message.text || "[No decryption keys]";
+        return "🔒 Encrypted message (no decryption keys)";
       }
 
       // Get encrypted message key for this user
       const encryptedKey = message.encryptedKeys![userId];
       if (!encryptedKey) {
         console.warn(
-          "No encrypted key found for this user, available keys:",
+          `No encrypted key found for user ${userId}, available keys:`,
           Object.keys(message.encryptedKeys!),
         );
-        return message.text || "[No access key]";
+        return "🔒 Encrypted message (no access key)";
       }
 
       // Decrypt the message key
@@ -359,22 +416,19 @@ export class EncryptedChatService {
 
       // Type the error properly
       const typedError = error as Error;
-      console.error("Error details:", {
-        name: typedError.name,
-        message: typedError.message,
-        stack: typedError.stack,
-      });
 
       // Check if this might be a key mismatch issue
       if (typedError.name === "OperationError") {
         console.warn(
-          "OperationError detected - likely key mismatch from previous encryption session",
+          "OperationError detected - key import/export issue, but NOT regenerating keys to preserve message history",
         );
-        return `[Encrypted message - cannot decrypt: ${message.text?.substring(0, 20)}...]`;
+        // DO NOT regenerate keys automatically as this would make old messages unreadable
+        // Instead, return a helpful message that suggests manual key regeneration if needed
+        return "🔒 Encrypted message (key mismatch - refresh page or regenerate keys if this persists)";
       }
 
-      // Return a fallback instead of throwing
-      return message.text || "[Decryption failed]";
+      // Return a user-friendly fallback instead of throwing
+      return "🔒 Encrypted message (unable to decrypt)";
     }
   }
 
@@ -390,6 +444,26 @@ export class EncryptedChatService {
       message.encryptedKeys &&
       Object.keys(message.encryptedKeys).length > 0
     );
+  }
+
+  /**
+   * Check if text content looks like encrypted data (base64-like patterns)
+   */
+  private looksLikeEncryptedContent(text: string | undefined): boolean {
+    if (!text) return false;
+
+    // Check for base64-like patterns (common in encrypted content)
+    // Base64 typically contains alphanumeric characters, +, /, and = padding
+    const base64Pattern = /^[A-Za-z0-9+/]{20,}={0,2}$/;
+
+    // Check for other patterns that suggest encrypted content
+    const hasRandomLookingContent =
+      text.length > 15 &&
+      /[A-Za-z0-9]{15,}/.test(text) &&
+      !/\s/.test(text) && // No spaces
+      !/[.!?]/.test(text); // No common punctuation
+
+    return base64Pattern.test(text) || hasRandomLookingContent;
   }
 
   /**
@@ -412,6 +486,13 @@ export class EncryptedChatService {
               !message.isEncrypted ||
               !this.isValidEncryptedMessage(message)
             ) {
+              // Check if this looks like encrypted content but wasn't properly marked
+              if (this.looksLikeEncryptedContent(message.text)) {
+                return {
+                  ...message,
+                  text: "🔒 Encrypted message (unable to decrypt)",
+                };
+              }
               // Non-encrypted message - return as-is
               return message;
             }
@@ -493,7 +574,17 @@ export class EncryptedChatService {
       })
       .catch((error) => {
         console.error("Error decrypting message:", error);
-        const fallbackText = `[Decryption failed]`;
+
+        // Check if this is an OperationError indicating key incompatibility
+        if (error.name === "OperationError") {
+          console.warn(
+            "OperationError in async decryption - NOT regenerating keys to preserve message history",
+          );
+          // DO NOT regenerate keys automatically in background as this would make old messages unreadable
+        }
+
+        // Use a user-friendly fallback message instead of raw encrypted content
+        const fallbackText = "🔒 Encrypted message (unable to decrypt)";
         this.decryptedCache.set(cacheKey, fallbackText);
         this.updateTrigger.next(this.updateTrigger.value + 1);
       })
@@ -553,6 +644,31 @@ export class EncryptedChatService {
       const existingKeyPair =
         await this.encryptionService.getStoredKeyPair(userId);
       if (existingKeyPair) {
+        // Check if public key is stored in Firestore
+        try {
+          const userKeyDoc = await firstValueFrom(
+            this.firestore.collection("userKeys").doc(userId).get(),
+          );
+
+          if (!userKeyDoc.exists) {
+            // Store public key in Firestore for other users to access
+            const publicKeyString =
+              await this.encryptionService.exportPublicKey(
+                existingKeyPair.publicKey,
+              );
+            await this.firestore.collection("userKeys").doc(userId).set({
+              publicKey: publicKeyString,
+              createdAt: new Date(),
+              userId: userId,
+            });
+          }
+        } catch (firestoreError) {
+          console.warn(
+            "Failed to access or store public key in Firestore:",
+            firestoreError,
+          );
+          // Continue - local encryption still works
+        }
         return;
       }
 
@@ -562,10 +678,82 @@ export class EncryptedChatService {
       // Store locally
       await this.encryptionService.storeKeyPair(keyPair, userId);
 
-      // For demo purposes, we're not storing public keys in Firestore
+      // Store public key in Firestore for other users to access
+      const publicKeyString = await this.encryptionService.exportPublicKey(
+        keyPair.publicKey,
+      );
+
+      try {
+        await this.firestore.collection("userKeys").doc(userId).set({
+          publicKey: publicKeyString,
+          createdAt: new Date(),
+          userId: userId,
+        });
+      } catch (firestoreError) {
+        console.warn(
+          "Failed to store public key in Firestore, continuing with local keys only:",
+          firestoreError,
+        );
+        // Don't throw here - local encryption keys are still functional
+      }
     } catch (error) {
       console.error("Error initializing encryption:", error);
       throw error;
+    }
+  }
+
+  /**
+   * Regenerate encryption keys (use when there are key compatibility issues)
+   */
+  async regenerateKeys(): Promise<void> {
+    // Prevent multiple simultaneous regeneration attempts
+    if (this.keyRegenerationInProgress) {
+      console.log("Key regeneration already in progress, skipping...");
+      return;
+    }
+
+    const userId = await firstValueFrom(this.getCurrentUserId());
+    if (!userId) throw new Error("User not authenticated");
+
+    try {
+      this.keyRegenerationInProgress = true;
+
+      // Clear existing keys and cache
+      this.encryptionService.clearStoredKeys(userId);
+      this.clearDecryptionCache();
+
+      // Generate new key pair
+      const keyPair = await this.encryptionService.generateKeyPair();
+
+      // Store new keys locally
+      await this.encryptionService.storeKeyPair(keyPair, userId);
+
+      // Store new public key in Firestore for other users to access
+      const publicKeyString = await this.encryptionService.exportPublicKey(
+        keyPair.publicKey,
+      );
+
+      try {
+        await this.firestore.collection("userKeys").doc(userId).set({
+          publicKey: publicKeyString,
+          createdAt: new Date(),
+          userId: userId,
+        });
+      } catch (firestoreError) {
+        console.warn(
+          "Failed to store public key in Firestore, continuing with local keys only:",
+          firestoreError,
+        );
+        // Don't throw here - local encryption keys are still functional
+        // This allows the system to work even if Firestore permissions are misconfigured
+      }
+
+      console.log("Successfully regenerated encryption keys");
+    } catch (error) {
+      console.error("Error regenerating encryption keys:", error);
+      throw error;
+    } finally {
+      this.keyRegenerationInProgress = false;
     }
   }
 
@@ -665,5 +853,342 @@ export class EncryptedChatService {
     keysToDelete.forEach((key) => this.decryptedCache.delete(key));
 
     // Note: We don't clear messageVersions here as they're not user-specific
+  }
+
+  /**
+   * Get the encrypted message key for a specific user and message
+   * This retrieves the user's encrypted copy of the message key
+   */
+  getMessageKeyForUser(message: Message, userId: string): string | null {
+    if (!message.encryptedKeys || !message.encryptedKeys[userId]) {
+      console.warn(
+        `No encrypted key found for user ${userId} in message ${message.id}`,
+      );
+      return null;
+    }
+    return message.encryptedKeys[userId];
+  }
+
+  /**
+   * Get all users who have access to a specific message
+   * Returns array of user IDs who can decrypt this message
+   */
+  getMessageRecipients(message: Message): string[] {
+    if (!message.encryptedKeys) {
+      return [];
+    }
+    return Object.keys(message.encryptedKeys);
+  }
+
+  /**
+   * Check if a specific user can decrypt a message
+   */
+  canUserDecryptMessage(message: Message, userId: string): boolean {
+    return !!(message.encryptedKeys && message.encryptedKeys[userId]);
+  }
+
+  /**
+   * Get decrypted message key for current user (useful for debugging or key management)
+   * WARNING: This exposes the raw message key - use carefully
+   */
+  async getDecryptedMessageKey(
+    message: Message,
+    userId: string,
+  ): Promise<CryptoKey | null> {
+    try {
+      // Get user's private key
+      const keyPair = await this.encryptionService.getStoredKeyPair(userId);
+      if (!keyPair) {
+        console.warn(`No encryption keys found for user ${userId}`);
+        return null;
+      }
+
+      // Get encrypted message key for this user
+      const encryptedKey = this.getMessageKeyForUser(message, userId);
+      if (!encryptedKey) {
+        return null;
+      }
+
+      // Decrypt the message key
+      const messageKey = await this.encryptionService.decryptKeyFromSender(
+        encryptedKey,
+        keyPair.privateKey,
+      );
+
+      return messageKey;
+    } catch (error) {
+      console.error(
+        `Error getting decrypted message key for user ${userId}:`,
+        error,
+      );
+      return null;
+    }
+  }
+
+  /**
+   * Get message encryption info for debugging/analysis
+   */
+  getMessageEncryptionInfo(message: Message): {
+    isEncrypted: boolean;
+    algorithm?: string;
+    recipientCount: number;
+    recipients: string[];
+    hasEncryptionData: boolean;
+    keyFingerprint?: string;
+  } {
+    return {
+      isEncrypted: !!message.isEncrypted,
+      algorithm: message.encryptionData?.algorithm,
+      recipientCount: message.encryptedKeys
+        ? Object.keys(message.encryptedKeys).length
+        : 0,
+      recipients: this.getMessageRecipients(message),
+      hasEncryptionData: !!message.encryptionData,
+      keyFingerprint: message.encryptionData?.keyFingerprint,
+    };
+  }
+
+  /**
+   * Export user's decryption keys for backup/transfer (use with extreme caution)
+   * This could be used for key backup or device migration
+   */
+  async exportUserKeys(
+    userId: string,
+  ): Promise<{publicKey: string; privateKey: string} | null> {
+    try {
+      const keyPair = await this.encryptionService.getStoredKeyPair(userId);
+      if (!keyPair) {
+        return null;
+      }
+
+      const publicKeyString = await this.encryptionService.exportPublicKey(
+        keyPair.publicKey,
+      );
+      const privateKeyBytes = await crypto.subtle.exportKey(
+        "pkcs8",
+        keyPair.privateKey,
+      );
+      const privateKeyString = btoa(
+        String.fromCharCode(...new Uint8Array(privateKeyBytes)),
+      );
+
+      return {
+        publicKey: publicKeyString,
+        privateKey: privateKeyString,
+      };
+    } catch (error) {
+      console.error(`Error exporting keys for user ${userId}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Import user keys from backup (use with extreme caution)
+   * This could be used for key restoration or device migration
+   */
+  async importUserKeys(
+    userId: string,
+    keys: {publicKey: string; privateKey: string},
+  ): Promise<boolean> {
+    try {
+      // Import the keys first to validate them
+      const publicKey = await this.encryptionService.importPublicKey(
+        keys.publicKey,
+      );
+
+      const privateKeyBuffer = Uint8Array.from(atob(keys.privateKey), (c) =>
+        c.charCodeAt(0),
+      );
+      const privateKey = await window.crypto.subtle.importKey(
+        "pkcs8",
+        privateKeyBuffer,
+        {
+          name: "RSA-OAEP",
+          hash: "SHA-256",
+        },
+        true,
+        ["decrypt"],
+      );
+
+      // Store the keys using the standard method
+      await this.encryptionService.storeKeyPair(
+        {publicKey, privateKey},
+        userId,
+      );
+
+      // Update Firestore with the public key
+      try {
+        await this.firestore.collection("userKeys").doc(userId).set({
+          publicKey: keys.publicKey,
+          createdAt: new Date(),
+          userId: userId,
+        });
+      } catch (firestoreError) {
+        console.warn(
+          "Failed to store public key in Firestore:",
+          firestoreError,
+        );
+        // Continue - local keys are imported successfully
+      }
+
+      console.log(`Successfully imported keys for user ${userId}`);
+      return true;
+    } catch (error) {
+      console.error(`Error importing keys for user ${userId}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Diagnose encryption key issues for debugging
+   */
+  async diagnoseKeyIssues(userId: string): Promise<{
+    hasLocalKeys: boolean;
+    hasFirestoreKey: boolean;
+    canImportLocalKeys: boolean;
+    keyMismatch: boolean;
+    issues: string[];
+    recommendations: string[];
+  }> {
+    const issues: string[] = [];
+    const recommendations: string[] = [];
+    let hasLocalKeys = false;
+    let hasFirestoreKey = false;
+    let canImportLocalKeys = false;
+    let keyMismatch = false;
+
+    try {
+      // Check local keys
+      const keyPair = await this.encryptionService.getStoredKeyPair(userId);
+      hasLocalKeys = !!keyPair;
+
+      if (keyPair) {
+        canImportLocalKeys = true;
+        console.log("✅ Local keys found and can be imported");
+      } else {
+        issues.push("No local encryption keys found");
+        recommendations.push("Enable encryption or import keys from backup");
+      }
+
+      // Check Firestore key
+      try {
+        const userKeyDoc = await firstValueFrom(
+          this.firestore.collection("userKeys").doc(userId).get(),
+        );
+        const userData = userKeyDoc.data() as any;
+        hasFirestoreKey = userKeyDoc.exists && !!userData?.publicKey;
+
+        if (!hasFirestoreKey) {
+          issues.push("No public key found in Firestore");
+          recommendations.push("Re-enable encryption to upload public key");
+        }
+      } catch (firestoreError) {
+        issues.push("Cannot access Firestore keys");
+        recommendations.push(
+          "Check internet connection and Firestore permissions",
+        );
+      }
+
+      // Check for key mismatch if both exist
+      if (hasLocalKeys && hasFirestoreKey) {
+        try {
+          const userKeyDoc = await firstValueFrom(
+            this.firestore.collection("userKeys").doc(userId).get(),
+          );
+          const userData = userKeyDoc.data() as any;
+          const firestorePublicKey = userData?.publicKey;
+          const localPublicKey = await this.encryptionService.exportPublicKey(
+            keyPair!.publicKey,
+          );
+
+          if (firestorePublicKey !== localPublicKey) {
+            keyMismatch = true;
+            issues.push(
+              "Public key mismatch between local storage and Firestore",
+            );
+            recommendations.push(
+              "Re-enable encryption to sync keys or restore from backup",
+            );
+          }
+        } catch (error) {
+          issues.push("Cannot compare local and Firestore keys");
+        }
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      issues.push(`Error during diagnosis: ${errorMessage}`);
+      recommendations.push(
+        "Try refreshing the page or clearing browser storage",
+      );
+    }
+
+    return {
+      hasLocalKeys,
+      hasFirestoreKey,
+      canImportLocalKeys,
+      keyMismatch,
+      issues,
+      recommendations,
+    };
+  }
+
+  /**
+   * Manual key regeneration (only call when user explicitly requests it)
+   * WARNING: This will make all existing encrypted messages unreadable!
+   */
+  async manualKeyRegeneration(): Promise<{success: boolean; message: string}> {
+    const userId = await firstValueFrom(this.getCurrentUserId());
+    if (!userId) {
+      return {success: false, message: "User not authenticated"};
+    }
+
+    try {
+      console.warn(
+        "⚠️ MANUAL KEY REGENERATION - This will make existing encrypted messages unreadable!",
+      );
+
+      // Clear existing keys and cache
+      this.encryptionService.clearStoredKeys(userId);
+      this.clearDecryptionCache();
+
+      // Generate new key pair
+      const keyPair = await this.encryptionService.generateKeyPair();
+
+      // Store new keys locally
+      await this.encryptionService.storeKeyPair(keyPair, userId);
+
+      // Store new public key in Firestore for other users to access
+      const publicKeyString = await this.encryptionService.exportPublicKey(
+        keyPair.publicKey,
+      );
+
+      try {
+        await this.firestore.collection("userKeys").doc(userId).set({
+          publicKey: publicKeyString,
+          createdAt: new Date(),
+          userId: userId,
+        });
+      } catch (firestoreError) {
+        console.warn(
+          "Failed to store public key in Firestore:",
+          firestoreError,
+        );
+      }
+
+      return {
+        success: true,
+        message:
+          "Keys regenerated successfully. Note: Previous encrypted messages are now unreadable.",
+      };
+    } catch (error) {
+      console.error("Error in manual key regeneration:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      return {
+        success: false,
+        message: `Failed to regenerate keys: ${errorMessage}`,
+      };
+    }
   }
 }

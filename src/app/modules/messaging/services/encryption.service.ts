@@ -221,15 +221,15 @@ export class EncryptionService {
       encryptedKeyBytes,
     );
 
-    // Import as AES key with extractable = true for fingerprint creation
+    // Import as AES key with extractable = true and both encrypt/decrypt usages
     return await crypto.subtle.importKey(
       "raw",
       keyBytes,
       {
         name: this.ALGORITHM,
       },
-      true, // Make extractable so we can create fingerprints
-      ["decrypt"],
+      true, // Make extractable for fingerprint creation
+      ["encrypt", "decrypt"], // Include both usages for flexibility
     );
   }
 
@@ -270,47 +270,103 @@ export class EncryptionService {
   }
 
   /**
-   * Retrieve stored keys
+   * Get stored key pair for a user, with enhanced error handling and corruption detection
    */
-  async getStoredKeyPair(userId: string): Promise<KeyPair | null> {
+  async getStoredKeyPair(userId: string): Promise<CryptoKeyPair | null> {
     try {
-      const publicKeyString = localStorage.getItem(`publicKey_${userId}`);
-      const privateKeyString = localStorage.getItem(`privateKey_${userId}`);
+      // Check both old and new naming conventions for backward compatibility
+      let publicKeyData = localStorage.getItem(`publicKey_${userId}`);
+      let privateKeyData = localStorage.getItem(`privateKey_${userId}`);
 
-      if (!publicKeyString || !privateKeyString) {
+      // Fallback to old naming convention if new one doesn't exist
+      if (!publicKeyData || !privateKeyData) {
+        publicKeyData = localStorage.getItem(`encryptionPublicKey_${userId}`);
+        privateKeyData = localStorage.getItem(`encryptionPrivateKey_${userId}`);
+
+        // If we found keys with old naming, migrate them to new naming
+        if (publicKeyData && privateKeyData) {
+          console.log(
+            `Migrating keys from old naming convention for user ${userId}`,
+          );
+          localStorage.setItem(`publicKey_${userId}`, publicKeyData);
+          localStorage.setItem(`privateKey_${userId}`, privateKeyData);
+          // Remove old keys
+          localStorage.removeItem(`encryptionPublicKey_${userId}`);
+          localStorage.removeItem(`encryptionPrivateKey_${userId}`);
+        }
+      }
+
+      if (!publicKeyData || !privateKeyData) {
         return null;
       }
 
-      // Import public key
-      const publicKey = await this.importPublicKey(publicKeyString);
+      // Import each key separately with individual error handling
+      let publicKey: CryptoKey;
+      let privateKey: CryptoKey;
 
-      // Import private key
-      const privateKeyBytes = Uint8Array.from(atob(privateKeyString), (c) =>
-        c.charCodeAt(0),
-      );
-      const privateKey = await crypto.subtle.importKey(
-        "pkcs8",
-        privateKeyBytes,
-        {
-          name: "RSA-OAEP",
-          hash: "SHA-256",
-        },
-        false,
-        ["decrypt"],
-      );
+      try {
+        // Import public key
+        const publicKeyBuffer = Uint8Array.from(atob(publicKeyData), (c) =>
+          c.charCodeAt(0),
+        );
+        publicKey = await window.crypto.subtle.importKey(
+          "spki",
+          publicKeyBuffer,
+          {
+            name: "RSA-OAEP",
+            hash: "SHA-256",
+          },
+          true,
+          ["encrypt"],
+        );
+      } catch (publicKeyError) {
+        console.error("Failed to import public key:", publicKeyError);
+        // Clear corrupted keys and return null
+        await this.clearStoredKeys(userId);
+        return null;
+      }
+
+      try {
+        // Import private key
+        const privateKeyBuffer = Uint8Array.from(atob(privateKeyData), (c) =>
+          c.charCodeAt(0),
+        );
+        privateKey = await window.crypto.subtle.importKey(
+          "pkcs8",
+          privateKeyBuffer,
+          {
+            name: "RSA-OAEP",
+            hash: "SHA-256",
+          },
+          true,
+          ["decrypt"],
+        );
+      } catch (privateKeyError) {
+        console.error("Failed to import private key:", privateKeyError);
+        // Clear corrupted keys and return null
+        await this.clearStoredKeys(userId);
+        return null;
+      }
 
       return {publicKey, privateKey};
     } catch (error) {
-      console.error("Error retrieving stored key pair:", error);
+      console.error("Error retrieving stored keys:", error);
+      // Clear potentially corrupted keys
+      await this.clearStoredKeys(userId);
       return null;
     }
   }
 
   /**
-   * Clear stored keys (for logout)
+   * Clear stored keys (for logout) - clears both old and new naming conventions
    */
   clearStoredKeys(userId: string): void {
+    // Clear new naming convention
     localStorage.removeItem(`publicKey_${userId}`);
     localStorage.removeItem(`privateKey_${userId}`);
+
+    // Clear old naming convention for backward compatibility
+    localStorage.removeItem(`encryptionPublicKey_${userId}`);
+    localStorage.removeItem(`encryptionPrivateKey_${userId}`);
   }
 }

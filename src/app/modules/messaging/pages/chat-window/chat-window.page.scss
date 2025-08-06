@@ -160,6 +160,25 @@
   }
 }
 
+// Encryption indicator styling
+.encryption-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 0.25rem;
+  font-size: 0.7rem;
+  opacity: 0.8;
+
+  .encryption-text {
+    font-weight: 500;
+    color: var(--ion-color-success);
+  }
+
+  ion-icon {
+    font-size: 0.8rem;
+  }
+}
+
 .message-text {
   font-size: 0.9rem;
   line-height: 1.4;

@@ -24,6 +24,7 @@ import {IonicModule} from "@ionic/angular";
 import {ChatWindowPageRoutingModule} from "./chat-window-routing.module";
 import {ChatWindowPage} from "./chat-window.page";
 import {SharedModule} from "../../../../shared/shared.module";
+import {EncryptionToggleComponent} from "../../components/encryption-toggle/encryption-toggle.component";
 
 @NgModule({
   imports: [
@@ -33,6 +34,6 @@ import {SharedModule} from "../../../../shared/shared.module";
     ChatWindowPageRoutingModule,
     SharedModule,
   ],
-  declarations: [ChatWindowPage],
+  declarations: [ChatWindowPage, EncryptionToggleComponent],
 })
 export class ChatWindowPageModule {}

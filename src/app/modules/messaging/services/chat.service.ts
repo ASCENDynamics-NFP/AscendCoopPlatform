@@ -201,16 +201,40 @@ export class ChatService {
       messageData.fileType = request.fileType;
     }
 
+    // Include encryption fields if present
+    if (request.isEncrypted) {
+      messageData.isEncrypted = request.isEncrypted;
+    }
+    if (request.encryptionData) {
+      messageData.encryptionData = request.encryptionData;
+    }
+    if (request.encryptedKeys) {
+      messageData.encryptedKeys = request.encryptedKeys;
+    }
+
     const messagesRef = this.firestore.collection(
       `${this.CHATS_COLLECTION}/${request.chatId}/${this.MESSAGES_COLLECTION}`,
     );
 
     return from(messagesRef.add(messageData)).pipe(
       switchMap((docRef) => {
-        // Update chat metadata
-        const lastMessageText =
-          request.text ||
-          (request.fileName ? `📎 ${request.fileName}` : "File attachment");
+        // Update chat metadata with appropriate last message text
+        let lastMessageText: string;
+
+        if (request.isEncrypted) {
+          // For encrypted messages, show a placeholder instead of encrypted content
+          lastMessageText = "🔒 Encrypted message";
+        } else if (request.text) {
+          // For regular text messages
+          lastMessageText = request.text;
+        } else if (request.fileName) {
+          // For file attachments
+          lastMessageText = `📎 ${request.fileName}`;
+        } else {
+          // Fallback
+          lastMessageText = "File attachment";
+        }
+
         const chatUpdateData = {
           lastMessage: lastMessageText,
           lastMessageTimestamp: firebase.firestore.FieldValue.serverTimestamp(),

@@ -55,14 +55,22 @@
               <!-- Chat Info -->
               <ion-label>
                 <h2>{{ getChatDisplayName(chat) | async }}</h2>
-                <p>{{ getTruncatedMessage(chat.lastMessage) }}</p>
+                <!-- Removed message preview - only show unread indicator -->
               </ion-label>
 
-              <!-- Timestamp -->
+              <!-- Timestamp and Unread Badge -->
               <div slot="end" class="chat-meta">
                 <p class="timestamp">
                   {{ getFormattedTime(chat.lastMessageTimestamp) }}
                 </p>
+                <!-- Unread message badge -->
+                <ion-badge
+                  *ngIf="(getUnreadCount(chat.id) | async) && (getUnreadCount(chat.id) | async)! > 0"
+                  color="primary"
+                  class="unread-badge"
+                >
+                  {{ getUnreadCount(chat.id) | async }}
+                </ion-badge>
               </div>
             </ion-item>
           </ion-list>

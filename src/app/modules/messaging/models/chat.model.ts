@@ -43,7 +43,7 @@ export interface Chat extends BaseDocument {
 export interface Message extends BaseDocument {
   senderId: string; // UID of the message sender
   senderName?: string; // Display name of sender (for caching)
-  text?: string; // Message text content (for text messages)
+  text?: string; // Message text content (for text messages) - may be encrypted
   fileUrl?: string; // Download URL for media/file messages
   fileName?: string; // Original filename for file messages
   fileType?: string; // MIME type of the file
@@ -52,6 +52,15 @@ export interface Message extends BaseDocument {
   editedAt?: Timestamp | FieldValue; // When the message was last edited
   type: MessageType; // Type of message
   status?: MessageStatus; // Message delivery status
+
+  // Encryption fields
+  isEncrypted?: boolean; // Whether this message is encrypted
+  encryptionData?: {
+    algorithm: string; // Encryption algorithm used
+    iv: string; // Initialization vector (base64)
+    keyFingerprint: string; // Key verification fingerprint
+  };
+  encryptedKeys?: {[userId: string]: string}; // Per-participant encrypted message keys
 }
 
 export enum MessageType {
@@ -78,13 +87,22 @@ export interface CreateChatRequest {
   name?: string;
 }
 
-// For sending messages
+// For sending new messages
 export interface SendMessageRequest {
   chatId: string;
-  text?: string;
-  fileUrl?: string;
+  text?: string; // Text content (may be encrypted)
+  type?: MessageType;
+  fileUrl?: string; // For file attachments
   fileName?: string;
   fileType?: string;
   fileSize?: number;
-  type: MessageType;
+
+  // Encryption support
+  isEncrypted?: boolean;
+  encryptionData?: {
+    algorithm: string;
+    iv: string;
+    keyFingerprint: string;
+  };
+  encryptedKeys?: {[userId: string]: string};
 }

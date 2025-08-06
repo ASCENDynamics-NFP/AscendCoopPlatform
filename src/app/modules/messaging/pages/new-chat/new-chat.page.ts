@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit, OnDestroy} from "@angular/core";
+import {Component, OnInit, OnDestroy, ChangeDetectorRef} from "@angular/core";
 import {Router} from "@angular/router";
 import {ToastController} from "@ionic/angular";
 import {ChatService} from "../../services/chat.service";
@@ -27,8 +27,22 @@ import {Store} from "@ngrx/store";
 import {AuthState} from "../../../../state/reducers/auth.reducer";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
-import {forkJoin, firstValueFrom, combineLatest, Subject} from "rxjs";
-import {map, filter, take, takeUntil} from "rxjs/operators";
+import {
+  forkJoin,
+  firstValueFrom,
+  combineLatest,
+  Subject,
+  of,
+  timer,
+} from "rxjs";
+import {
+  map,
+  filter,
+  take,
+  takeUntil,
+  timeout,
+  catchError,
+} from "rxjs/operators";
 import * as AccountActions from "../../../../state/actions/account.actions";
 
 interface Contact {
@@ -60,6 +74,7 @@ export class NewChatPage implements OnInit, OnDestroy {
     private relationshipService: RelationshipService,
     private toastController: ToastController,
     private store: Store<{auth: AuthState}>,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -99,6 +114,7 @@ export class NewChatPage implements OnInit, OnDestroy {
           // If no relationships, set empty contacts
           if (contactIds.length === 0) {
             this.contacts = [];
+            this.cdr.detectChanges();
             return;
           }
 
@@ -109,8 +125,9 @@ export class NewChatPage implements OnInit, OnDestroy {
               AccountActions.loadAccount({accountId: contactId}),
             );
 
-            // Return observable for this account - wait for account to be loaded
+            // Return observable for this account with timeout to prevent hanging
             return this.store.select(selectAccountById(contactId)).pipe(
+              timeout(5000), // 5 second timeout
               filter((account) => account !== null), // Wait until account data is loaded
               take(1), // Take the first loaded value
               map((account) => {
@@ -123,23 +140,37 @@ export class NewChatPage implements OnInit, OnDestroy {
                   selected: false,
                 } as Contact;
               }),
+              catchError((error) => {
+                console.warn(
+                  `Timeout loading account ${contactId}, using fallback:`,
+                  error,
+                );
+                // Return fallback contact data on timeout
+                return of({
+                  id: contactId,
+                  name: `User ${contactId.substring(0, 8)}`,
+                  selected: false,
+                } as Contact);
+              }),
             );
           });
 
           // Combine all account observables
           forkJoin(accountObservables).subscribe({
             next: (contacts) => {
-              // Don't filter out contacts - show them even if account data is still loading
               this.contacts = contacts;
+              // Manually trigger change detection to ensure UI updates
+              this.cdr.detectChanges();
             },
             error: (error) => {
               console.error("Error loading contact account data:", error);
               // Fallback to basic contact data
               this.contacts = contactIds.map((contactId) => ({
                 id: contactId,
-                name: `User`,
+                name: `User ${contactId.substring(0, 8)}`,
                 selected: false,
               }));
+              this.cdr.detectChanges();
             },
           });
         },
@@ -158,6 +189,7 @@ export class NewChatPage implements OnInit, OnDestroy {
   toggleContact(contact: Contact) {
     contact.selected = !contact.selected;
     this.updateSelectedContacts();
+    this.cdr.detectChanges();
   }
 
   /**

@@ -55,6 +55,12 @@
           {{ getSenderName(message) }}
         </div>
 
+        <!-- Encryption indicator -->
+        <div *ngIf="message.isEncrypted" class="encryption-indicator">
+          <ion-icon name="lock-closed" color="success" size="small"></ion-icon>
+          <span class="encryption-text">Encrypted</span>
+        </div>
+
         <!-- Message Content -->
         <div class="message-content">
           <!-- Text Message -->
@@ -283,6 +289,14 @@
 
 <!-- Message Input Footer -->
 <ion-footer class="message-input-footer" *ngIf="canSendMessages">
+  <!-- Encryption Toggle -->
+  <app-encryption-toggle
+    [chatId]="chatId"
+    [encryptionActive]="isEncryptionActive"
+    (encryptionToggled)="onEncryptionToggled($event)"
+  >
+  </app-encryption-toggle>
+
   <ion-toolbar>
     <div style="display: flex; align-items: flex-end; gap: 8px">
       <ion-item fill="outline" class="message-input-item" style="flex: 1">

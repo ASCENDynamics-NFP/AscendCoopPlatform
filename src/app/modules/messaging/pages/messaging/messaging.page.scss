@@ -39,6 +39,31 @@ ion-split-pane {
       font-size: 0.8rem;
     }
 
+    // Chat metadata (timestamp and unread badge)
+    .chat-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+
+      .timestamp {
+        color: var(--ion-color-medium);
+        font-size: 0.8rem;
+        margin: 0;
+      }
+
+      .unread-badge {
+        min-width: 20px;
+        height: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
     &:hover {
       background-color: var(--ion-color-light);
     }

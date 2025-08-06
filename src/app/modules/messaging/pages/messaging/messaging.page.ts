@@ -17,13 +17,25 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit, OnDestroy} from "@angular/core";
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Platform, ActionSheetController} from "@ionic/angular";
-import {Subject, Observable, of} from "rxjs";
-import {takeUntil, map} from "rxjs/operators";
+import {Subject, Observable, of, BehaviorSubject} from "rxjs";
+import {
+  takeUntil,
+  map,
+  distinctUntilChanged,
+  shareReplay,
+} from "rxjs/operators";
 import {Store} from "@ngrx/store";
 import {ChatService} from "../../services/chat.service";
+import {NotificationService} from "../../services/notification.service";
 import {Chat} from "../../models/chat.model";
 import {AuthState} from "../../../../state/reducers/auth.reducer";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
@@ -34,24 +46,30 @@ import * as AccountActions from "../../../../state/actions/account.actions";
   selector: "app-messaging",
   templateUrl: "./messaging.page.html",
   styleUrls: ["./messaging.page.scss"],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MessagingPage implements OnInit, OnDestroy {
   selectedChatId: string | null = null;
   isDesktop = false;
   hasChats = false;
   chats$: Observable<Chat[]>;
+  unreadCounts$: Observable<{[chatId: string]: number}>;
   private destroy$ = new Subject<void>();
+  private stableChats$ = new BehaviorSubject<Chat[]>([]);
 
   constructor(
     private route: ActivatedRoute,
     public router: Router,
     private platform: Platform,
     private chatService: ChatService,
+    private notificationService: NotificationService,
     private store: Store<{auth: AuthState}>,
     private actionSheetController: ActionSheetController,
+    private cdr: ChangeDetectorRef,
   ) {
-    // Initialize chats observable
-    this.chats$ = this.chatService.getUserChats();
+    // Initialize chats observable with stable references
+    this.chats$ = this.createStableChatObservable();
+    this.unreadCounts$ = this.notificationService.getUnreadCounts();
   }
 
   ngOnInit() {
@@ -71,27 +89,30 @@ export class MessagingPage implements OnInit, OnDestroy {
       });
 
     // Subscribe to chats to check if user has any conversations
-    // and pre-load participant accounts
-    this.chats$.pipe(takeUntil(this.destroy$)).subscribe((chats) => {
-      this.hasChats = chats.length > 0;
+    // and pre-load participant accounts (use original observable for data loading)
+    this.chatService
+      .getUserChats()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((chats) => {
+        this.hasChats = chats.length > 0;
 
-      // Pre-load participant accounts for all chats
-      const participantIds = new Set<string>();
-      chats.forEach((chat) => {
-        chat.participants.forEach((participantId) => {
-          if (participantId !== this.getCurrentUserId()) {
-            participantIds.add(participantId);
-          }
+        // Pre-load participant accounts for all chats
+        const participantIds = new Set<string>();
+        chats.forEach((chat) => {
+          chat.participants.forEach((participantId) => {
+            if (participantId !== this.getCurrentUserId()) {
+              participantIds.add(participantId);
+            }
+          });
+        });
+
+        // Dispatch actions to load all participant accounts
+        participantIds.forEach((participantId) => {
+          this.store.dispatch(
+            AccountActions.loadAccount({accountId: participantId}),
+          );
         });
       });
-
-      // Dispatch actions to load all participant accounts
-      participantIds.forEach((participantId) => {
-        this.store.dispatch(
-          AccountActions.loadAccount({accountId: participantId}),
-        );
-      });
-    });
   }
 
   ngOnDestroy() {
@@ -100,23 +121,56 @@ export class MessagingPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Handle chat selection from the list
+   * Create a stable chat observable that doesn't re-render on timestamp changes
+   */
+  private createStableChatObservable(): Observable<Chat[]> {
+    return this.chatService.getUserChats().pipe(
+      map((chats) => {
+        // Create stable references for chats by only tracking essential properties
+        return chats.map((chat) => ({
+          ...chat,
+          // Create a stable reference by only including properties that affect the UI
+          _stableId: `${chat.id}_${chat.participants.join("_")}_${chat.isGroup ? chat.name : ""}`,
+        }));
+      }),
+      distinctUntilChanged((prev, curr) => {
+        // Only re-render if the actual chat list structure changes (not timestamps)
+        if (prev.length !== curr.length) return false;
+
+        return prev.every((prevChat, index) => {
+          const currChat = curr[index];
+          return (
+            prevChat.id === currChat.id &&
+            prevChat.isGroup === currChat.isGroup &&
+            prevChat.name === currChat.name &&
+            JSON.stringify(prevChat.participants) ===
+              JSON.stringify(currChat.participants)
+          );
+        });
+      }),
+      shareReplay(1),
+      takeUntil(this.destroy$),
+    );
+  }
+
+  /**
+   * Handle chat selection
    */
   onChatSelected(chatId: string) {
+    // Mark notifications as read for this chat
+    this.notificationService.markChatNotificationsAsRead(chatId);
+
     this.selectedChatId = chatId;
-    if (this.isDesktop) {
-      // On desktop, update the detail view
-      this.router.navigate(["chat", chatId], {relativeTo: this.route});
-    } else {
-      // On mobile, navigate to the chat page
-      this.router.navigate(["/messaging/chat", chatId]);
-    }
+    this.router.navigate(["/messaging/chat", chatId]);
   }
 
   /**
    * Handle new chat creation
    */
   onNewChat() {
+    // Manually trigger change detection to ensure proper state
+    this.cdr.detectChanges();
+
     if (this.isDesktop) {
       this.router.navigate(["new-chat"], {relativeTo: this.route});
     } else {
@@ -220,6 +274,13 @@ export class MessagingPage implements OnInit, OnDestroy {
             "assets/image/logo/ASCENDynamics NFP-logos_transparent.png",
         ),
       );
+  }
+
+  /**
+   * Get unread count for a specific chat
+   */
+  getUnreadCount(chatId: string): Observable<number> {
+    return this.unreadCounts$.pipe(map((counts) => counts[chatId] || 0));
   }
 
   /**

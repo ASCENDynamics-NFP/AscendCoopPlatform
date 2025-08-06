@@ -23,6 +23,8 @@ import {
   OnDestroy,
   ViewChild,
   ElementRef,
+  ChangeDetectorRef,
+  NgZone,
 } from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {
@@ -44,6 +46,7 @@ import {
 import {ChatService} from "../../services/chat.service";
 import {RelationshipService} from "../../services/relationship.service";
 import {NotificationService} from "../../services/notification.service";
+import {EncryptedChatService} from "../../services/encrypted-chat.service";
 import {Store} from "@ngrx/store";
 import {AuthState} from "../../../../state/reducers/auth.reducer";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
@@ -79,6 +82,11 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   canSendMessages = true;
   private destroy$ = new Subject<void>();
 
+  // Encryption properties
+  encryptionEnabled = false;
+  isEncryptionActive = false;
+  encryptionAvailable = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -90,6 +98,9 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     private modalController: ModalController,
     private alertController: AlertController,
     private store: Store<{auth: AuthState}>,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone,
+    private encryptedChatService: EncryptedChatService,
   ) {}
 
   ngOnInit() {
@@ -110,6 +121,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
           // Set user ID in notification service
           this.notificationService.setCurrentUserId(this.currentUserId);
           this.initializeChat();
+          this.initializeEncryption();
         }
       });
   }
@@ -141,8 +153,27 @@ export class ChatWindowPage implements OnInit, OnDestroy {
       },
     });
 
-    // Load messages
-    this.messages$ = this.chatService.getChatMessages(this.chatId);
+    // Load messages with decryption support
+    this.loadMessages();
+  }
+
+  /**
+   * Load messages with encryption support
+   */
+  private loadMessages() {
+    if (!this.currentUserId) {
+      return;
+    }
+
+    // Use encrypted chat service if encryption is enabled, otherwise use regular service
+    if (this.encryptionEnabled) {
+      this.messages$ = this.encryptedChatService.getDecryptedMessages(
+        this.chatId,
+        this.currentUserId,
+      );
+    } else {
+      this.messages$ = this.chatService.getChatMessages(this.chatId);
+    }
 
     // Subscribe to messages and update local array
     this.messages$.pipe(takeUntil(this.destroy$)).subscribe({
@@ -180,24 +211,93 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     senderIds.forEach((senderId) => {
       this.store.dispatch(AccountActions.loadAccount({accountId: senderId}));
 
-      // Subscribe to account updates to populate avatar cache
+      // Subscribe to account updates to populate avatar and name cache
       this.store
         .select(selectAccountById(senderId))
         .pipe(
           takeUntil(this.destroy$),
-          take(1), // Only take the first emission to avoid signal write conflicts
+          // Remove take(1) to allow for updates when data loads
         )
         .subscribe({
           next: (account: any) => {
-            const avatarUrl = account?.iconImage || defaultImage;
-            this.senderAvatarCache.set(senderId, avatarUrl);
+            // Run cache updates outside Angular's zone to avoid signal conflicts
+            this.ngZone.runOutsideAngular(() => {
+              const avatarUrl = account?.iconImage || defaultImage;
+              this.senderAvatarCache.set(senderId, avatarUrl);
+
+              // Cache sender name as well - only if we have account data
+              if (account) {
+                let senderName = "User";
+                if (account.name) {
+                  senderName = account.name;
+                } else if (account.email) {
+                  senderName = account.email;
+                } else {
+                  senderName = `User ${senderId.substring(0, 8)}...`;
+                }
+                this.senderNameCache.set(senderId, senderName);
+              }
+            });
+
+            // Trigger change detection in Angular zone
+            this.cdr.detectChanges();
           },
           error: (error) => {
             console.warn(`Error loading account ${senderId}:`, error);
-            this.senderAvatarCache.set(senderId, defaultImage);
+            // Run cache updates outside Angular's zone to avoid signal conflicts
+            this.ngZone.runOutsideAngular(() => {
+              this.senderAvatarCache.set(senderId, defaultImage);
+              this.senderNameCache.set(senderId, "Unknown User");
+            });
           },
         });
     });
+  }
+
+  /**
+   * Initialize encryption for the current user and chat
+   */
+  private async initializeEncryption() {
+    try {
+      if (!this.currentUserId) {
+        return;
+      }
+
+      // Check if user has encryption enabled
+      this.encryptionEnabled =
+        await this.encryptedChatService.isEncryptionEnabled();
+
+      // Check if encryption is available for this chat
+      if (this.chatId) {
+        this.encryptionAvailable =
+          await this.encryptedChatService.isEncryptionAvailable(this.chatId);
+      }
+
+      // If encryption is not enabled, try to initialize it
+      if (!this.encryptionEnabled) {
+        try {
+          await this.encryptedChatService.enableEncryption();
+          this.encryptionEnabled = true;
+          this.encryptionAvailable =
+            await this.encryptedChatService.isEncryptionAvailable(this.chatId);
+        } catch (error) {
+          console.warn("Encryption initialization failed:", error);
+          // Continue without encryption
+        }
+      }
+
+      // Reload messages with encryption support if encryption status changed
+      this.loadMessages();
+    } catch (error) {
+      console.error("Error initializing encryption:", error);
+    }
+  }
+
+  /**
+   * Handle encryption toggle from the UI component
+   */
+  onEncryptionToggled(active: boolean) {
+    this.isEncryptionActive = active;
   }
 
   /**
@@ -281,8 +381,11 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-    // Clear avatar cache to prevent memory leaks
-    this.senderAvatarCache.clear();
+    // Clear caches outside Angular zone to prevent signal conflicts
+    this.ngZone.runOutsideAngular(() => {
+      this.senderAvatarCache.clear();
+      this.senderNameCache.clear();
+    });
     // Clean up file preview URL
     this.clearFilePreview();
   }
@@ -325,12 +428,21 @@ export class ChatWindowPage implements OnInit, OnDestroy {
       chatId: this.chatId,
       text: messageText,
       type: MessageType.TEXT,
+      isEncrypted: this.isEncryptionActive && this.encryptionAvailable,
     };
 
     try {
-      const messageId = await firstValueFrom(
-        this.chatService.sendMessage(request),
-      );
+      let messageId: string;
+
+      if (this.isEncryptionActive && this.encryptionAvailable) {
+        // Send encrypted message
+        const encryptedMessageObservable =
+          await this.encryptedChatService.sendEncryptedMessage(request);
+        messageId = await firstValueFrom(encryptedMessageObservable);
+      } else {
+        // Send regular message
+        messageId = await firstValueFrom(this.chatService.sendMessage(request));
+      }
 
       // Update optimistic message status to sent
       this.messages = this.messages.map((msg) =>
@@ -417,6 +529,9 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     } else {
       this.filePreviewUrl = null;
     }
+
+    // Trigger change detection for OnPush strategy
+    this.cdr.detectChanges();
   }
 
   /**
@@ -445,6 +560,8 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     }
 
     this.isUploadingFile = true;
+    this.cdr.detectChanges(); // Update UI to show loading state
+
     try {
       await this.uploadAndSendFile(this.selectedFile);
       this.clearFilePreview();
@@ -453,6 +570,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
       // Don't clear preview on error so user can retry
     } finally {
       this.isUploadingFile = false;
+      this.cdr.detectChanges(); // Update UI to hide loading state
     }
   }
 
@@ -466,6 +584,9 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     this.selectedFile = null;
     this.filePreviewUrl = null;
     this.filePreviewType = null;
+
+    // Trigger change detection for OnPush strategy
+    this.cdr.detectChanges();
   }
 
   /**
@@ -725,17 +846,60 @@ export class ChatWindowPage implements OnInit, OnDestroy {
       return "Unknown User";
     }
 
+    // Use message's built-in sender name if available
     if (message.senderName) {
       return message.senderName;
     }
 
+    // Check if it's own message
     if (this.isOwnMessage(message)) {
       return "You";
     }
 
-    return message.senderId
-      ? `User ${message.senderId.substring(0, 8)}...`
-      : "Unknown User";
+    // Check if we don't have a sender ID
+    if (!message.senderId) {
+      return "Unknown User";
+    }
+
+    // Check cache first for better performance
+    if (this.senderNameCache.has(message.senderId)) {
+      return this.senderNameCache.get(message.senderId)!;
+    }
+
+    // Load account if not already loaded (but don't wait for it)
+    this.store.dispatch(
+      AccountActions.loadAccount({accountId: message.senderId}),
+    );
+
+    // Try to get from store synchronously - only cache if we have real data
+    let senderName = `User ${message.senderId.substring(0, 8)}...`; // Default fallback
+    let hasValidData = false;
+
+    this.store
+      .select(selectAccountById(message.senderId))
+      .pipe(take(1))
+      .subscribe((account) => {
+        if (account) {
+          hasValidData = true;
+          if (account.name) {
+            senderName = account.name;
+          } else if (account.email) {
+            senderName = account.email;
+          } else {
+            senderName = `User ${message.senderId!.substring(0, 8)}...`;
+          }
+        }
+      });
+
+    // Only cache if we have valid account data, not placeholder/loading states
+    if (hasValidData) {
+      // Run cache update outside Angular's zone to avoid signal conflicts
+      this.ngZone.runOutsideAngular(() => {
+        this.senderNameCache.set(message.senderId!, senderName);
+      });
+    }
+
+    return senderName;
   }
 
   /**
@@ -876,6 +1040,8 @@ export class ChatWindowPage implements OnInit, OnDestroy {
 
   // Cache for sender avatars to prevent infinite observable chains
   private senderAvatarCache = new Map<string, string>();
+  // Cache for sender names to improve performance
+  private senderNameCache = new Map<string, string>();
 
   /**
    * Get sender avatar URL synchronously for template use
@@ -901,7 +1067,9 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     );
 
     // Return default for now, cache will be updated by preloadSenderAccounts
-    this.senderAvatarCache.set(message.senderId, defaultImage);
+    this.ngZone.runOutsideAngular(() => {
+      this.senderAvatarCache.set(message.senderId!, defaultImage);
+    });
     return defaultImage;
   }
 

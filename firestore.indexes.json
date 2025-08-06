@@ -15,10 +15,6 @@
         {
           "fieldPath": "name",
           "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "ASCENDING"
         }
       ]
     },
@@ -33,10 +29,6 @@
         {
           "fieldPath": "status",
           "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "ASCENDING"
         }
       ]
     },
@@ -50,10 +42,6 @@
         },
         {
           "fieldPath": "userId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "__name__",
           "order": "ASCENDING"
         }
       ]
@@ -69,10 +57,6 @@
         {
           "fieldPath": "date",
           "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "ASCENDING"
         }
       ]
     },
@@ -86,10 +70,6 @@
         },
         {
           "fieldPath": "lastMessageTimestamp",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "__name__",
           "order": "DESCENDING"
         }
       ]
@@ -105,10 +85,6 @@
         {
           "fieldPath": "createdAt",
           "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "DESCENDING"
         }
       ]
     },
@@ -122,10 +98,6 @@
         },
         {
           "fieldPath": "status",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "__name__",
           "order": "ASCENDING"
         }
       ]

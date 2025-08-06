@@ -8,7 +8,7 @@ import {
   ToastController,
   AlertController,
 } from "@ionic/angular";
-import {Subject, combineLatest, of, from} from "rxjs";
+import {Subject, combineLatest, of, firstValueFrom} from "rxjs";
 import {takeUntil, switchMap, map, catchError} from "rxjs/operators";
 import {Store} from "@ngrx/store";
 import {AuthState} from "../../../../state/reducers/auth.reducer";
@@ -146,9 +146,9 @@ export class BlockListComponent implements OnInit, OnDestroy {
     await loading.present();
 
     try {
-      await this.relationshipService
-        .unblockUser(this.currentUserId, user.id)
-        .toPromise();
+      await firstValueFrom(
+        this.relationshipService.unblockUser(this.currentUserId, user.id),
+      );
 
       // Remove from local list
       this.blockedUsers = this.blockedUsers.filter((u) => u.id !== user.id);

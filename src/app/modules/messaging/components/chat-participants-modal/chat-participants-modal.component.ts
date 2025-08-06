@@ -23,8 +23,9 @@ import {
   ToastController,
   ActionSheetController,
 } from "@ionic/angular";
+import {Router} from "@angular/router";
 import {Store} from "@ngrx/store";
-import {Observable, combineLatest, map, of, forkJoin} from "rxjs";
+import {Observable, combineLatest, map, of, firstValueFrom} from "rxjs";
 import {take, switchMap, filter, catchError} from "rxjs/operators";
 
 import {Chat} from "../../models/chat.model";
@@ -60,7 +61,6 @@ export class ChatParticipantsModalComponent implements OnInit {
   isLoading = false;
   isEditingTitle = false;
   editTitleText = "";
-
   constructor(
     private modalController: ModalController,
     private toastController: ToastController,
@@ -68,6 +68,7 @@ export class ChatParticipantsModalComponent implements OnInit {
     private chatService: ChatService,
     private relationshipService: RelationshipService,
     private store: Store,
+    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -190,9 +191,9 @@ export class ChatParticipantsModalComponent implements OnInit {
 
     this.isLoading = true;
     try {
-      await this.chatService
-        .addParticipants(this.chat.id, [userId])
-        .toPromise();
+      await firstValueFrom(
+        this.chatService.addParticipants(this.chat.id, [userId]),
+      );
       this.showToast("User added to chat", "success");
 
       // Update local chat participants
@@ -220,8 +221,7 @@ export class ChatParticipantsModalComponent implements OnInit {
           text: "View Profile",
           icon: "person-outline",
           handler: () => {
-            // TODO: Navigate to user profile
-            console.log("Navigate to profile:", participant.id);
+            this.router.navigate(["/account", participant.id]);
           },
         },
         {
@@ -251,9 +251,9 @@ export class ChatParticipantsModalComponent implements OnInit {
 
     this.isLoading = true;
     try {
-      await this.chatService
-        .removeParticipants(this.chat.id, [userId])
-        .toPromise();
+      await firstValueFrom(
+        this.chatService.removeParticipants(this.chat.id, [userId]),
+      );
       this.showToast("User removed from chat", "success");
 
       // Update local chat participants
@@ -263,7 +263,6 @@ export class ChatParticipantsModalComponent implements OnInit {
       this.loadParticipants();
       this.loadAvailableUsers();
     } catch (error) {
-      console.error("Error removing user from chat:", error);
       this.showToast("Failed to remove user from chat", "danger");
     } finally {
       this.isLoading = false;
@@ -314,9 +313,12 @@ export class ChatParticipantsModalComponent implements OnInit {
 
     this.isLoading = true;
     try {
-      await this.chatService
-        .updateChatTitle(this.chat.id, this.editTitleText.trim())
-        .toPromise();
+      await firstValueFrom(
+        this.chatService.updateChatTitle(
+          this.chat.id,
+          this.editTitleText.trim(),
+        ),
+      );
 
       // Update local chat object
       this.chat.name = this.editTitleText.trim();

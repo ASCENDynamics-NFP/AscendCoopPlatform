@@ -20,7 +20,7 @@
 import {Injectable} from "@angular/core";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
 import {AngularFireStorage} from "@angular/fire/compat/storage";
-import {Observable, from, throwError} from "rxjs";
+import {Observable, from, throwError, of} from "rxjs";
 import {map, switchMap, catchError, take} from "rxjs/operators";
 import firebase from "firebase/compat/app";
 import {Store} from "@ngrx/store";
@@ -136,50 +136,42 @@ export class ChatService {
   }
 
   /**
-   * Create a new chat
+   * Create a new chat (direct or group)
    */
   createChat(request: CreateChatRequest): Observable<string> {
-    const userId = this.getCurrentUserIdSync();
-    console.log("Creating chat with user ID:", userId);
-    console.log("Chat request:", request);
+    return from(this.createChatInternal(request));
+  }
 
-    if (!userId) {
-      console.error("Cannot create chat: user not authenticated");
-      return throwError(() => new Error("User not authenticated"));
-    }
-
-    // Ensure current user is in participants
-    if (!request.participants.includes(userId)) {
-      request.participants.push(userId);
-    }
-
+  /**
+   * Create a new chat (internal implementation)
+   */
+  async createChatInternal(request: CreateChatRequest): Promise<string> {
     const chatData: Partial<Chat> = {
       participants: request.participants,
-      isGroup: request.isGroup || false,
-      createdBy: userId,
+      isGroup: request.isGroup,
       createdAt: firebase.firestore.FieldValue.serverTimestamp() as any,
-      lastModifiedAt: firebase.firestore.FieldValue.serverTimestamp() as any,
+      lastMessage: "",
+      lastMessageTimestamp:
+        firebase.firestore.FieldValue.serverTimestamp() as any,
     };
 
-    // Only include name field if it has a value
-    if (request.name && request.name.trim()) {
-      chatData.name = request.name.trim();
+    // Add group-specific fields if it's a group chat
+    if (request.isGroup && request.name) {
+      chatData.name = request.name;
+      chatData.groupName = request.name; // For compatibility
     }
 
-    console.log("Chat data to be saved:", chatData);
-
-    return from(
-      this.firestore.collection(this.CHATS_COLLECTION).add(chatData),
-    ).pipe(
-      map((docRef) => {
-        console.log("Chat created successfully with ID:", docRef.id);
+    try {
+      const docRef = await this.firestore.collection("chats").add(chatData);
+      if (docRef?.id) {
         return docRef.id;
-      }),
-      catchError((error) => {
-        console.error("Error creating chat:", error);
-        return throwError(() => error);
-      }),
-    );
+      } else {
+        throw new Error("Failed to create chat: No document ID returned");
+      }
+    } catch (error) {
+      console.error("Error creating chat:", error);
+      throw error;
+    }
   }
 
   /**
@@ -284,10 +276,11 @@ export class ChatService {
 
   /**
    * Search users for creating new chats
+   * Note: User search is handled by the relationship service and NgRx store
    */
   searchUsers(searchTerm: string): Observable<any[]> {
-    // TODO: Implement user search logic based on your user collection structure
-    // This is a placeholder implementation
+    // User search functionality is implemented via RelationshipService
+    // and managed through NgRx store in the components
     return from([]).pipe(
       catchError((error) => {
         console.error("Error searching users:", error);
@@ -298,10 +291,11 @@ export class ChatService {
 
   /**
    * Get chat participants info
+   * Note: Participant info is managed through NgRx store account selectors
    */
   getChatParticipants(participantIds: string[]): Observable<any[]> {
-    // TODO: Implement participant info fetching based on your user collection structure
-    // This is a placeholder implementation
+    // Participant information is loaded via NgRx store account actions
+    // and accessed through account selectors in components
     return from([]).pipe(
       catchError((error) => {
         console.error("Error fetching participants:", error);
@@ -450,9 +444,42 @@ export class ChatService {
   }
 
   /**
-   * Find existing chat between users
+   * Find existing chat between users (works for both 1-on-1 and group chats)
    */
   findExistingChat(participantIds: string[]): Observable<Chat | null> {
+    // Sort participant IDs to ensure consistent comparison
+    const sortedParticipantIds = [...participantIds].sort();
+
+    return this.firestore
+      .collection<any>(this.CHATS_COLLECTION, (ref) =>
+        ref.where("participants", "array-contains", participantIds[0]),
+      )
+      .valueChanges({idField: "id"})
+      .pipe(
+        map((chats: any[]) => {
+          // Filter to find exact participant match
+          const exactMatch = chats.find((chat: Chat) => {
+            const chatParticipants = [...chat.participants].sort();
+            return (
+              chatParticipants.length === sortedParticipantIds.length &&
+              chatParticipants.every(
+                (id, index) => id === sortedParticipantIds[index],
+              )
+            );
+          });
+          return exactMatch ? (exactMatch as Chat) : null;
+        }),
+        catchError((error) => {
+          console.error("Error finding existing chat:", error);
+          return of(null);
+        }),
+      );
+  }
+
+  /**
+   * Find existing 1-on-1 chat between two users (legacy method for backward compatibility)
+   */
+  findExistingDirectChat(participantIds: string[]): Observable<Chat | null> {
     if (participantIds.length !== 2) {
       return throwError(
         () => new Error("This method is only for 1-on-1 chats"),
@@ -470,8 +497,8 @@ export class ChatService {
       .pipe(
         map((chats: any[]) => (chats.length > 0 ? (chats[0] as Chat) : null)),
         catchError((error) => {
-          console.error("Error finding existing chat:", error);
-          return throwError(() => error);
+          console.error("Error finding existing direct chat:", error);
+          return of(null);
         }),
       );
   }

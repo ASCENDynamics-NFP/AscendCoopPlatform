@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 import {Injectable} from "@angular/core";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
-import {Observable, from, throwError} from "rxjs";
+import {Observable, from, throwError, combineLatest} from "rxjs";
 import {map, catchError} from "rxjs/operators";
 
 export interface RelatedAccount {
@@ -41,13 +41,14 @@ export class RelationshipService {
   constructor(private firestore: AngularFirestore) {}
 
   /**
-   * Check if two users have an accepted relationship
+   * Check if two users have an accepted relationship (bidirectional check)
    */
   checkRelationshipStatus(
     currentUserId: string,
     targetUserId: string,
   ): Observable<RelatedAccount | null> {
-    return this.firestore
+    // Check relationship from current user's perspective
+    const forwardCheck = this.firestore
       .collection<RelatedAccount>(
         `${this.ACCOUNTS_COLLECTION}/${currentUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
         (ref) =>
@@ -56,16 +57,33 @@ export class RelationshipService {
             .where("status", "==", "accepted")
             .limit(1),
       )
-      .valueChanges({idField: "id"})
-      .pipe(
-        map((relationships) => {
-          return relationships.length > 0 ? relationships[0] : null;
-        }),
-        catchError((error) => {
-          console.error("Error checking relationship status:", error);
-          return throwError(() => error);
-        }),
-      );
+      .valueChanges({idField: "id"});
+
+    // Check relationship from target user's perspective
+    const reverseCheck = this.firestore
+      .collection<RelatedAccount>(
+        `${this.ACCOUNTS_COLLECTION}/${targetUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
+        (ref) =>
+          ref
+            .where("targetId", "==", currentUserId)
+            .where("status", "==", "accepted")
+            .limit(1),
+      )
+      .valueChanges({idField: "id"});
+
+    // Return the first relationship found from either direction
+    return combineLatest([forwardCheck, reverseCheck]).pipe(
+      map(([forward, reverse]) => {
+        // Return the first non-empty result
+        if (forward && forward.length > 0) return forward[0];
+        if (reverse && reverse.length > 0) return reverse[0];
+        return null;
+      }),
+      catchError((error) => {
+        console.error("Error checking relationship status:", error);
+        return throwError(() => error);
+      }),
+    );
   }
 
   /**
@@ -77,9 +95,14 @@ export class RelationshipService {
       return from([true]);
     }
 
-    return this.checkRelationshipStatus(currentUserId, targetUserId).pipe(
-      map((relationship) => {
-        return relationship !== null && relationship.status === "accepted";
+    // Check if either user has blocked the other
+    return combineLatest([
+      this.isUserBlocked(currentUserId, targetUserId),
+      this.isUserBlocked(targetUserId, currentUserId),
+    ]).pipe(
+      map(([currentBlocked, targetBlocked]) => {
+        // Allow messaging if neither user has blocked the other
+        return !currentBlocked && !targetBlocked;
       }),
       catchError((error) => {
         console.error("Error checking message permissions:", error);

@@ -28,6 +28,18 @@
         placeholder="Enter group name"
         maxlength="50"
         required
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        data-form-type="other"
+        data-lpignore="true"
+        data-1p-ignore="true"
+        data-bwignore="true"
+        data-dashlane-ignore="true"
+        readonly
+        (click)="makeEditable($event)"
+        (focus)="makeEditable($event)"
       >
       </ion-input>
     </ion-item>

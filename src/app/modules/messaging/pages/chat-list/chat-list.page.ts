@@ -20,10 +20,15 @@
 import {Component, OnInit, OnDestroy} from "@angular/core";
 import {Router} from "@angular/router";
 import {Observable, Subject} from "rxjs";
-import {takeUntil} from "rxjs/operators";
+import {takeUntil, take} from "rxjs/operators";
 import {Chat} from "../../models/chat.model";
 import {ChatService} from "../../services/chat.service";
 import {NotificationService} from "../../services/notification.service";
+import {Store} from "@ngrx/store";
+import {AuthState} from "../../../../state/reducers/auth.reducer";
+import {selectAccountById} from "../../../../state/selectors/account.selectors";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import * as AccountActions from "../../../../state/actions/account.actions";
 
 @Component({
   selector: "app-chat-list",
@@ -35,11 +40,14 @@ export class ChatListPage implements OnInit, OnDestroy {
   unreadCounts$: Observable<{[chatId: string]: number}>;
   totalUnreadCount$: Observable<number>;
   private destroy$ = new Subject<void>();
+  private chatDisplayNameCache = new Map<string, string>();
+  private currentUserId: string | null = null;
 
   constructor(
     private chatService: ChatService,
     private notificationService: NotificationService,
     private router: Router,
+    private store: Store<{auth: AuthState}>,
   ) {
     this.chats$ = this.chatService.getUserChats();
     this.unreadCounts$ = this.notificationService.getUnreadCounts();
@@ -47,10 +55,19 @@ export class ChatListPage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // Get current user ID from store
+    this.store
+      .select(selectAuthUser)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((user) => {
+        this.currentUserId = user?.uid || null;
+      });
+
     // Subscribe to chats for real-time updates
     this.chats$.pipe(takeUntil(this.destroy$)).subscribe({
       next: (chats) => {
-        console.log("Chats updated:", chats);
+        // Preload account information for all chat participants
+        this.preloadChatDisplayNames(chats);
       },
       error: (error) => {
         console.error("Error loading chats:", error);
@@ -61,6 +78,8 @@ export class ChatListPage implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+    // Clear cache to prevent memory leaks
+    this.chatDisplayNameCache.clear();
   }
 
   /**
@@ -92,21 +111,111 @@ export class ChatListPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Get display name for chat
+   * Preload account information for chat display names
    */
-  getChatDisplayName(chat: Chat): string {
-    if (chat.isGroup) {
-      return chat.name || chat.groupName || "Group Chat";
+  private preloadChatDisplayNames(chats: Chat[]) {
+    const currentUserId = this.getCurrentUserId();
+
+    chats.forEach((chat) => {
+      if (chat.isGroup) {
+        // Group chats use the group name
+        const displayName = chat.name || chat.groupName || "Group Chat";
+        this.chatDisplayNameCache.set(chat.id, displayName);
+      } else {
+        // For 1-on-1 chats, get the other participant's name
+        const otherParticipants = chat.participants.filter(
+          (id) => id !== currentUserId,
+        );
+
+        if (otherParticipants.length > 0) {
+          const otherUserId = otherParticipants[0];
+
+          // Load account if not already loaded
+          this.store.dispatch(
+            AccountActions.loadAccount({accountId: otherUserId}),
+          );
+
+          // Subscribe to account updates to populate cache
+          this.store
+            .select(selectAccountById(otherUserId))
+            .pipe(
+              takeUntil(this.destroy$),
+              take(1), // Only take the first emission to avoid repeated updates
+            )
+            .subscribe({
+              next: (account: any) => {
+                let displayName = "User";
+                if (account?.name) {
+                  displayName = account.name;
+                } else if (account?.email) {
+                  displayName = account.email;
+                } else {
+                  displayName = `User ${otherUserId.substring(0, 8)}...`;
+                }
+                this.chatDisplayNameCache.set(chat.id, displayName);
+              },
+              error: (error) => {
+                console.warn(`Error loading account ${otherUserId}:`, error);
+                this.chatDisplayNameCache.set(chat.id, "Unknown User");
+              },
+            });
+        } else {
+          this.chatDisplayNameCache.set(chat.id, "Unknown User");
+        }
+      }
+    });
+  }
+
+  /**
+   * Get chat display name
+   */
+  getChatDisplayName(chat: Chat | null): string {
+    if (!chat) return "Loading...";
+
+    // Check cache first for better performance
+    if (this.chatDisplayNameCache.has(chat.id)) {
+      return this.chatDisplayNameCache.get(chat.id)!;
     }
 
-    // TODO: For 1-on-1 chats, get the other user's name
-    // This will require integration with the account service
+    if (chat.isGroup) {
+      const displayName = chat.name || chat.groupName || "Group Chat";
+      this.chatDisplayNameCache.set(chat.id, displayName);
+      return displayName;
+    }
+
+    // For 1-on-1 chats, get the other user's name
     const otherParticipants = chat.participants.filter(
       (id) => id !== this.getCurrentUserId(),
     );
-    return otherParticipants.length > 0
-      ? "User " + otherParticipants[0]
-      : "Unknown User";
+
+    if (otherParticipants.length > 0) {
+      const otherUserId = otherParticipants[0];
+
+      // Load account if not already loaded
+      this.store.dispatch(AccountActions.loadAccount({accountId: otherUserId}));
+
+      // Try to get from store synchronously (might be null if not loaded yet)
+      let displayName = "Loading...";
+      this.store
+        .select(selectAccountById(otherUserId))
+        .pipe(take(1))
+        .subscribe((account) => {
+          if (account?.name) {
+            displayName = account.name;
+          } else if (account?.email) {
+            displayName = account.email;
+          } else if (account) {
+            displayName = `User ${otherUserId.substring(0, 8)}...`;
+          }
+        });
+
+      this.chatDisplayNameCache.set(chat.id, displayName);
+      return displayName;
+    }
+
+    const fallback = "Unknown User";
+    this.chatDisplayNameCache.set(chat.id, fallback);
+    return fallback;
   }
 
   /**
@@ -154,8 +263,7 @@ export class ChatListPage implements OnInit, OnDestroy {
   }
 
   getCurrentUserId(): string {
-    // Get user ID through chat service which has auth integration
-    return (this.chatService as any).getCurrentUserIdSync();
+    return this.currentUserId || "";
   }
 
   /**

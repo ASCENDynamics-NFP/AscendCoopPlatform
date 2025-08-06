@@ -32,8 +32,8 @@ import {
   ModalController,
   AlertController,
 } from "@ionic/angular";
-import {Observable, Subject, combineLatest, forkJoin, of} from "rxjs";
-import {takeUntil, map, catchError, take} from "rxjs/operators";
+import {Observable, Subject, of, firstValueFrom} from "rxjs";
+import {takeUntil, map, take} from "rxjs/operators";
 import {
   Chat,
   Message,
@@ -230,23 +230,32 @@ export class ChatWindowPage implements OnInit, OnDestroy {
       if (this.otherParticipantId) {
         // Check if contact is blocked
         this.isContactBlocked =
-          (await this.relationshipService
-            .isUserBlocked(this.currentUserId, this.otherParticipantId)
-            .toPromise()) || false;
+          (await firstValueFrom(
+            this.relationshipService.isUserBlocked(
+              this.currentUserId,
+              this.otherParticipantId,
+            ),
+          )) || false;
 
         // Check if can message
         this.canSendMessages =
           !this.isContactBlocked &&
-          ((await this.relationshipService
-            .canMessage(this.currentUserId, this.otherParticipantId)
-            .toPromise()) ||
+          ((await firstValueFrom(
+            this.relationshipService.canMessage(
+              this.currentUserId,
+              this.otherParticipantId,
+            ),
+          )) ||
             false);
 
         // Validate that user can access this chat
         if (
-          !(await this.relationshipService
-            .canMessage(this.currentUserId, this.otherParticipantId)
-            .toPromise())
+          !(await firstValueFrom(
+            this.relationshipService.canMessage(
+              this.currentUserId,
+              this.otherParticipantId,
+            ),
+          ))
         ) {
           this.showErrorToast("You can only message accepted friends");
           this.router.navigate(["/messaging/chats"]);
@@ -319,7 +328,9 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     };
 
     try {
-      const messageId = await this.chatService.sendMessage(request).toPromise();
+      const messageId = await firstValueFrom(
+        this.chatService.sendMessage(request),
+      );
 
       // Update optimistic message status to sent
       this.messages = this.messages.map((msg) =>
@@ -391,8 +402,6 @@ export class ChatWindowPage implements OnInit, OnDestroy {
    * Show file preview before sending
    */
   private showFilePreview(file: File) {
-    console.log("showFilePreview called with file:", file);
-
     if (file.size > 10 * 1024 * 1024) {
       // 10MB limit
       this.showErrorToast("File size must be less than 10MB");
@@ -402,13 +411,9 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     this.selectedFile = file;
     this.filePreviewType = this.getFilePreviewType(file);
 
-    console.log("File preview type:", this.filePreviewType);
-    console.log("Selected file:", this.selectedFile);
-
     // Create preview URL for images and videos
     if (this.filePreviewType === "image" || this.filePreviewType === "video") {
       this.filePreviewUrl = URL.createObjectURL(file);
-      console.log("Created preview URL:", this.filePreviewUrl);
     } else {
       this.filePreviewUrl = null;
     }
@@ -435,10 +440,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
    * Send the selected file
    */
   async sendSelectedFile() {
-    console.log("sendSelectedFile called, selectedFile:", this.selectedFile);
-
     if (!this.selectedFile) {
-      console.log("No selected file, returning");
       return;
     }
 
@@ -503,9 +505,9 @@ export class ChatWindowPage implements OnInit, OnDestroy {
 
     try {
       // Upload file to storage
-      const fileUrl = await this.chatService
-        .uploadFile(file, this.chatId)
-        .toPromise();
+      const fileUrl = await firstValueFrom(
+        this.chatService.uploadFile(file, this.chatId),
+      );
 
       // Determine message type
       let messageType = MessageType.FILE;
@@ -527,7 +529,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
         type: messageType,
       };
 
-      await this.chatService.sendMessage(request).toPromise();
+      await firstValueFrom(this.chatService.sendMessage(request));
       this.scrollToBottom();
     } catch (error) {
       console.error("Error uploading file:", error);
@@ -541,14 +543,13 @@ export class ChatWindowPage implements OnInit, OnDestroy {
    * Show chat options (block, info, etc.)
    */
   async showChatOptions() {
-    const chat = await this.chat$.pipe(take(1)).toPromise();
+    const chat = await firstValueFrom(this.chat$.pipe(take(1)));
     const buttons: any[] = [
       {
         text: "Chat Info",
         icon: "information-circle-outline",
         handler: () => {
-          // TODO: Navigate to chat info page
-          console.log("TODO: Show chat info");
+          this.showChatInfo();
         },
       },
       {
@@ -628,9 +629,12 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     }
 
     try {
-      await this.relationshipService
-        .blockUser(this.currentUserId, this.otherParticipantId)
-        .toPromise();
+      await firstValueFrom(
+        this.relationshipService.blockUser(
+          this.currentUserId,
+          this.otherParticipantId,
+        ),
+      );
       this.isContactBlocked = true;
       this.canSendMessages = false;
       this.showSuccessToast("Contact blocked");
@@ -650,9 +654,12 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     }
 
     try {
-      await this.relationshipService
-        .unblockUser(this.currentUserId, this.otherParticipantId)
-        .toPromise();
+      await firstValueFrom(
+        this.relationshipService.unblockUser(
+          this.currentUserId,
+          this.otherParticipantId,
+        ),
+      );
       this.isContactBlocked = false;
       this.canSendMessages = true;
       this.showSuccessToast("Contact unblocked");
@@ -755,11 +762,31 @@ export class ChatWindowPage implements OnInit, OnDestroy {
       return chat.name || chat.groupName || "Group Chat";
     }
 
-    // TODO: Get other user's name from account service
+    // Get other user's name from account service
     const otherParticipants = chat.participants.filter(
       (id) => id !== this.getCurrentUserId(),
     );
-    return otherParticipants.length > 0 ? "User" : "Unknown User";
+
+    if (otherParticipants.length > 0) {
+      const otherUserId = otherParticipants[0];
+      // Try to get cached account info
+      let displayName = "User";
+
+      this.store
+        .select(selectAccountById(otherUserId))
+        .pipe(take(1))
+        .subscribe((account) => {
+          if (account?.name) {
+            displayName = account.name;
+          } else if (account?.email) {
+            displayName = account.email;
+          }
+        });
+
+      return displayName;
+    }
+
+    return "Unknown User";
   }
 
   getCurrentUserId(): string {
@@ -807,7 +834,8 @@ export class ChatWindowPage implements OnInit, OnDestroy {
    * Open image preview
    */
   openImagePreview(url: string) {
-    // TODO: Implement image preview modal
+    // Open image in a new window for now
+    // TODO: Implement a proper image preview modal component with zoom and navigation
     window.open(url, "_blank");
   }
 
@@ -889,10 +917,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
    */
   async showMessageOptions(message: Message) {
     try {
-      console.log("showMessageOptions called with message:", message);
-
       if (!message.senderId) {
-        console.log("Skipping message options - no senderId");
         return;
       }
 
@@ -950,13 +975,12 @@ export class ChatWindowPage implements OnInit, OnDestroy {
 
         // Get sender name for display
         try {
-          const account = await this.store
-            .select(selectAccountById(message.senderId))
-            .pipe(
+          const account = await firstValueFrom(
+            this.store.select(selectAccountById(message.senderId)).pipe(
               take(1),
               map((account) => account),
-            )
-            .toPromise();
+            ),
+          );
 
           if (account?.name) {
             senderName = account.name;
@@ -969,10 +993,11 @@ export class ChatWindowPage implements OnInit, OnDestroy {
         let isBlocked = false;
         try {
           isBlocked =
-            (await this.relationshipService
-              .isUserBlocked(this.currentUserId, message.senderId)
-              .pipe(take(1))
-              .toPromise()) || false;
+            (await firstValueFrom(
+              this.relationshipService
+                .isUserBlocked(this.currentUserId, message.senderId)
+                .pipe(take(1)),
+            )) || false;
         } catch (error) {
           console.warn("Could not check block status:", error);
         }
@@ -1036,12 +1061,6 @@ export class ChatWindowPage implements OnInit, OnDestroy {
         role: "cancel",
       });
 
-      console.log(
-        "About to present action sheet with",
-        buttons.length,
-        "buttons",
-      );
-
       const actionSheet = await this.actionSheetController.create({
         header: isOwnMessage
           ? "Message Options"
@@ -1049,9 +1068,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
         buttons,
       });
 
-      console.log("Action sheet created, presenting...");
       await actionSheet.present();
-      console.log("Action sheet presented");
     } catch (error) {
       console.error("Error in showMessageOptions:", error);
       this.showErrorToast("Failed to show message options");
@@ -1068,9 +1085,9 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     }
 
     try {
-      await this.relationshipService
-        .blockUser(this.currentUserId, userId)
-        .toPromise();
+      await firstValueFrom(
+        this.relationshipService.blockUser(this.currentUserId, userId),
+      );
 
       // Update local state if this is the other participant
       if (userId === this.otherParticipantId) {
@@ -1095,9 +1112,9 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     }
 
     try {
-      await this.relationshipService
-        .unblockUser(this.currentUserId, userId)
-        .toPromise();
+      await firstValueFrom(
+        this.relationshipService.unblockUser(this.currentUserId, userId),
+      );
 
       // Update local state if this is the other participant
       if (userId === this.otherParticipantId) {
@@ -1154,9 +1171,11 @@ export class ChatWindowPage implements OnInit, OnDestroy {
             }
 
             try {
-              await this.chatService
-                .updateMessage(this.chatId!, message.id, {text: newText})
-                .toPromise();
+              await firstValueFrom(
+                this.chatService.updateMessage(this.chatId!, message.id, {
+                  text: newText,
+                }),
+              );
 
               this.showToast("Message updated successfully", "short");
               return true;
@@ -1191,9 +1210,9 @@ export class ChatWindowPage implements OnInit, OnDestroy {
           role: "destructive",
           handler: async () => {
             try {
-              await this.chatService
-                .deleteMessage(this.chatId!, message.id)
-                .toPromise();
+              await firstValueFrom(
+                this.chatService.deleteMessage(this.chatId!, message.id),
+              );
               this.showToast("Message deleted successfully", "short");
             } catch (error) {
               console.error("Error deleting message:", error);
@@ -1236,16 +1255,14 @@ export class ChatWindowPage implements OnInit, OnDestroy {
 
     try {
       // Get the current user for the reporter info
-      const currentUser = await this.store
-        .select(selectAuthUser)
-        .pipe(take(1))
-        .toPromise();
+      const currentUser = await firstValueFrom(
+        this.store.select(selectAuthUser).pipe(take(1)),
+      );
 
       // Get the reported user's account info
-      const reportedUserAccount = await this.store
-        .select(selectAccountById(reportedUserId))
-        .pipe(take(1))
-        .toPromise();
+      const reportedUserAccount = await firstValueFrom(
+        this.store.select(selectAccountById(reportedUserId)).pipe(take(1)),
+      );
 
       if (reportedUserAccount) {
         reportedUserName =
@@ -1277,7 +1294,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
    */
   async showParticipantsModal() {
     try {
-      const chat = await this.chat$.pipe(take(1)).toPromise();
+      const chat = await firstValueFrom(this.chat$.pipe(take(1)));
 
       if (!chat) {
         this.showErrorToast("Chat not found");
@@ -1299,12 +1316,42 @@ export class ChatWindowPage implements OnInit, OnDestroy {
       const {data} = await modal.onDidDismiss();
       if (data?.updated) {
         // Refresh chat data if participants were updated
-        console.log("Chat participants updated, refreshing...");
         // The chat observable should automatically update via Firestore subscriptions
       }
     } catch (error) {
       console.error("Error opening participants modal:", error);
       this.showErrorToast("Failed to open participants manager");
+    }
+  }
+
+  /**
+   * Show chat info modal
+   */
+  async showChatInfo() {
+    try {
+      const chat = await firstValueFrom(this.chat$.pipe(take(1)));
+      if (!chat) {
+        this.showErrorToast("Chat not found");
+        return;
+      }
+
+      // For now, show a simple alert with chat information
+      // TODO: Implement a proper chat info modal component
+      const alert = await this.alertController.create({
+        header: "Chat Information",
+        message: `
+          <p><strong>Chat Type:</strong> ${chat.isGroup ? "Group Chat" : "Direct Message"}</p>
+          <p><strong>Participants:</strong> ${chat.participants.length}</p>
+          <p><strong>Created:</strong> ${chat.createdAt && (chat.createdAt as any).toDate ? new Date((chat.createdAt as any).toDate()).toLocaleDateString() : "Unknown"}</p>
+          ${chat.isGroup && chat.groupName ? `<p><strong>Name:</strong> ${chat.groupName}</p>` : ""}
+        `,
+        buttons: ["OK"],
+      });
+
+      await alert.present();
+    } catch (error) {
+      console.error("Error showing chat info:", error);
+      this.showErrorToast("Failed to load chat information");
     }
   }
 

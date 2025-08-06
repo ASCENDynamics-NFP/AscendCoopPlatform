@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, OnDestroy} from "@angular/core";
 import {Router} from "@angular/router";
 import {ToastController} from "@ionic/angular";
 import {ChatService} from "../../services/chat.service";
@@ -27,8 +27,8 @@ import {Store} from "@ngrx/store";
 import {AuthState} from "../../../../state/reducers/auth.reducer";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
-import {forkJoin, firstValueFrom, combineLatest} from "rxjs";
-import {map, filter, take} from "rxjs/operators";
+import {forkJoin, firstValueFrom, combineLatest, Subject} from "rxjs";
+import {map, filter, take, takeUntil} from "rxjs/operators";
 import * as AccountActions from "../../../../state/actions/account.actions";
 
 interface Contact {
@@ -45,13 +45,14 @@ interface Contact {
   templateUrl: "./new-chat.page.html",
   styleUrls: ["./new-chat.page.scss"],
 })
-export class NewChatPage implements OnInit {
+export class NewChatPage implements OnInit, OnDestroy {
   contacts: Contact[] = [];
   selectedContacts: Contact[] = [];
   isGroupChat = false;
   groupName = "";
   isLoading = false;
   currentUserId: string | null = null;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private router: Router,
@@ -63,16 +64,15 @@ export class NewChatPage implements OnInit {
 
   ngOnInit() {
     // Get current user ID
-    this.store.select(selectAuthUser).subscribe((user) => {
-      console.log("Auth user updated:", user);
-      this.currentUserId = user?.uid || null;
-      console.log("Current user ID set to:", this.currentUserId);
-      if (this.currentUserId) {
-        this.loadContacts();
-      } else {
-        console.warn("No authenticated user found");
-      }
-    });
+    this.store
+      .select(selectAuthUser)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((user) => {
+        if (user?.uid) {
+          this.currentUserId = user.uid;
+          this.loadContacts();
+        }
+      });
   }
 
   /**
@@ -188,11 +188,6 @@ export class NewChatPage implements OnInit {
     }
 
     this.isLoading = true;
-    console.log("Starting chat creation...", {
-      selectedContacts: this.selectedContacts,
-      isGroupChat: this.isGroupChat,
-      currentUserId: this.currentUserId,
-    });
 
     try {
       // Include current user in participants array
@@ -230,19 +225,15 @@ export class NewChatPage implements OnInit {
       //   return;
       // }
 
-      // Check if 1-on-1 chat already exists (only for 2 participants total)
-      if (!this.isGroupChat && participantIds.length === 2) {
-        console.log("Checking for existing 1-on-1 chat...");
-        const existingChat = await firstValueFrom(
-          this.chatService.findExistingChat(participantIds),
-        );
+      // Check if chat already exists (works for both 1-on-1 and group chats)
+      const existingChat = await firstValueFrom(
+        this.chatService.findExistingChat(participantIds),
+      );
 
-        if (existingChat) {
-          console.log("Existing chat found, navigating...");
-          this.isLoading = false;
-          this.router.navigate(["/messaging/chat", existingChat.id]);
-          return;
-        }
+      if (existingChat) {
+        this.isLoading = false;
+        this.router.navigate(["/messaging/chat", existingChat.id]);
+        return;
       }
 
       const request: CreateChatRequest = {
@@ -251,9 +242,7 @@ export class NewChatPage implements OnInit {
         ...(this.isGroupChat && {name: this.groupName.trim()}),
       };
 
-      console.log("Creating new chat with request:", request);
       const chatId = await firstValueFrom(this.chatService.createChat(request));
-      console.log("Chat created successfully with ID:", chatId);
 
       this.isLoading = false;
       this.router.navigate(["/messaging/chat", chatId]);
@@ -279,6 +268,25 @@ export class NewChatPage implements OnInit {
       position: "top",
     });
     await toast.present();
+  }
+
+  /**
+   * Make input field editable (removes readonly to prevent password manager interference)
+   */
+  makeEditable(event: any) {
+    if (event?.target) {
+      // Remove readonly attribute to allow typing
+      event.target.removeAttribute("readonly");
+      // Focus on the input
+      setTimeout(() => {
+        event.target.focus();
+      }, 10);
+    }
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**

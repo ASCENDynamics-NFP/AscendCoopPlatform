@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 import {Injectable} from "@angular/core";
 import {ToastController} from "@ionic/angular";
-import {BehaviorSubject, Observable} from "rxjs";
+import {BehaviorSubject, Observable, firstValueFrom} from "rxjs";
 import {Message, Chat} from "../models/chat.model";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
 import {Router} from "@angular/router";
@@ -88,7 +88,7 @@ export class NotificationService {
       // Request notification permission
       const permission = await Notification.requestPermission();
       if (permission === "granted") {
-        console.log("Notification permission granted");
+        // Notification permission granted
       } else {
         console.warn("Notification permission denied");
       }
@@ -508,11 +508,9 @@ export class NotificationService {
       }
 
       // Then load from Firestore for authoritative data
-      const userDoc = await this.firestore
-        .collection("accounts")
-        .doc(userId)
-        .get()
-        .toPromise();
+      const userDoc = await firstValueFrom(
+        this.firestore.collection("accounts").doc(userId).get(),
+      );
 
       if (userDoc && userDoc.exists) {
         const userData = userDoc.data() as any;

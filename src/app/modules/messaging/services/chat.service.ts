@@ -26,6 +26,9 @@ import firebase from "firebase/compat/app";
 import {Store} from "@ngrx/store";
 import {AuthState} from "../../../state/reducers/auth.reducer";
 import {selectAuthUser} from "../../../state/selectors/auth.selectors";
+import {NetworkConnectionService} from "../../../core/services/network-connection.service";
+import {OfflineSyncService} from "../../../core/services/offline-sync.service";
+import {FirestoreOfflineService} from "../../../core/services/firestore-offline.service";
 import {
   Chat,
   Message,
@@ -47,7 +50,39 @@ export class ChatService {
     private firestore: AngularFirestore,
     private storage: AngularFireStorage,
     private store: Store<{auth: AuthState}>,
-  ) {}
+    private networkService: NetworkConnectionService,
+    private offlineSync: OfflineSyncService,
+    private firestoreOffline: FirestoreOfflineService,
+  ) {
+    this.initializeOfflineCapabilities();
+  }
+
+  /**
+   * Initialize offline synchronization capabilities
+   */
+  private async initializeOfflineCapabilities(): Promise<void> {
+    try {
+      // Enable Firestore offline persistence
+      await this.firestoreOffline.initializeOfflinePersistence({
+        enabled: true,
+        cacheSizeBytes: 40 * 1024 * 1024, // 40MB cache
+        synchronizeTabs: true,
+      });
+
+      // Set up user ID for offline sync when user changes
+      this.store.select(selectAuthUser).subscribe((user) => {
+        if (user?.uid) {
+          this.offlineSync.setCurrentUserId(user.uid);
+          // Pre-cache user's data for offline use
+          this.firestoreOffline.preCacheCollections(user.uid);
+        }
+      });
+
+      console.log("✅ Chat offline capabilities initialized");
+    } catch (error) {
+      console.warn("⚠️ Could not initialize offline capabilities:", error);
+    }
+  }
 
   private getCurrentUserId(): Observable<string> {
     return this.store.select(selectAuthUser).pipe(
@@ -68,30 +103,46 @@ export class ChatService {
   }
 
   /**
-   * Get user's chats with real-time updates
+   * Get user's chats with real-time updates (offline-optimized)
    */
   getUserChats(): Observable<Chat[]> {
     const userId = this.getCurrentUserIdSync();
+    const isOnline = this.networkService.isCurrentlyOnline();
+
+    // Optimize query based on connection status
+    const limit = isOnline ? 50 : 20; // Load fewer chats when offline
+
     return this.firestore
       .collection<any>(this.CHATS_COLLECTION, (ref) =>
         ref
           .where("participants", "array-contains", userId)
-          .orderBy("lastMessageTimestamp", "desc"),
+          .orderBy("lastMessageTimestamp", "desc")
+          .limit(limit),
       )
       .valueChanges({idField: "id"})
       .pipe(
         map((chats: any[]) => chats as Chat[]),
         catchError((error) => {
           console.error("Error fetching user chats:", error);
+
+          // In offline mode, try to return cached data if available
+          if (!isOnline) {
+            console.log("Attempting to serve cached chats...");
+            // The AngularFirestore automatically handles offline cache
+            // So this error likely means no cached data is available
+          }
+
           return throwError(() => error);
         }),
       );
   }
 
   /**
-   * Get a specific chat by ID with real-time updates
+   * Get a specific chat by ID with real-time updates (offline-optimized)
    */
   getChat(chatId: string): Observable<Chat | null> {
+    const options = this.firestoreOffline.getQueryOptions("messaging");
+
     return this.firestore
       .collection<any>(this.CHATS_COLLECTION)
       .doc(chatId)
@@ -106,16 +157,21 @@ export class ChatService {
   }
 
   /**
-   * Get messages for a chat with real-time updates
+   * Get messages for a chat with real-time updates (offline-optimized)
    */
   getChatMessages(
     chatId: string,
     limitCount: number = 50,
   ): Observable<Message[]> {
+    const isOnline = this.networkService.isCurrentlyOnline();
+
+    // Adjust limit based on connection status
+    const optimizedLimit = isOnline ? limitCount : Math.min(limitCount, 20);
+
     return this.firestore
       .collection<Message>(
         `${this.CHATS_COLLECTION}/${chatId}/${this.MESSAGES_COLLECTION}`,
-        (ref) => ref.orderBy("timestamp", "desc").limit(limitCount),
+        (ref) => ref.orderBy("timestamp", "desc").limit(optimizedLimit),
       )
       .valueChanges({idField: "id"})
       .pipe(
@@ -130,6 +186,12 @@ export class ChatService {
         ),
         catchError((error) => {
           console.error("Error fetching chat messages:", error);
+
+          // In offline mode, provide user feedback
+          if (!isOnline) {
+            console.log("Offline mode: returning cached messages if available");
+          }
+
           return throwError(() => error);
         }),
       );
@@ -175,9 +237,24 @@ export class ChatService {
   }
 
   /**
-   * Send a message in a chat
+   * Send a message in a chat (with offline support)
    */
   sendMessage(request: SendMessageRequest): Observable<string> {
+    // Check if we're online
+    if (!this.networkService.isCurrentlyOnline()) {
+      // Queue message for offline sending
+      const queuedId = this.offlineSync.queueMessage(request);
+      return of(queuedId);
+    }
+
+    // Send message normally when online
+    return this.sendMessageInternal(request);
+  }
+
+  /**
+   * Internal method to send message to Firestore
+   */
+  private sendMessageInternal(request: SendMessageRequest): Observable<string> {
     const currentUserId = this.getCurrentUserIdSync();
     const messageData: Partial<Message> = {
       senderId: currentUserId,
@@ -250,6 +327,13 @@ export class ChatService {
       }),
       catchError((error) => {
         console.error("Error sending message:", error);
+
+        // If sending fails, queue for offline retry
+        if (!this.networkService.isCurrentlyOnline()) {
+          const queuedId = this.offlineSync.queueMessage(request);
+          return of(queuedId);
+        }
+
         return throwError(() => error);
       }),
     );
@@ -525,5 +609,93 @@ export class ChatService {
           return of(null);
         }),
       );
+  }
+
+  // ============================================================================
+  // OFFLINE SYNCHRONIZATION METHODS
+  // ============================================================================
+
+  /**
+   * Get offline sync status
+   */
+  getOfflineSyncStatus(): Observable<any> {
+    return this.offlineSync.getSyncStatus();
+  }
+
+  /**
+   * Get network connection status
+   */
+  getConnectionStatus(): Observable<any> {
+    return this.networkService.getConnectionStatus();
+  }
+
+  /**
+   * Check if currently online
+   */
+  isOnline(): Observable<boolean> {
+    return this.networkService.isOnline();
+  }
+
+  /**
+   * Get queued messages
+   */
+  getQueuedMessages(): any[] {
+    return this.offlineSync.getQueuedMessages();
+  }
+
+  /**
+   * Retry failed messages
+   */
+  retryFailedMessages(): void {
+    this.offlineSync.retryFailedMessages();
+  }
+
+  /**
+   * Clear failed messages
+   */
+  clearFailedMessages(): void {
+    this.offlineSync.clearFailedMessages();
+  }
+
+  /**
+   * Get sync statistics for debugging
+   */
+  getSyncStats(): any {
+    return this.offlineSync.getSyncStats();
+  }
+
+  /**
+   * Get offline capabilities status
+   */
+  getOfflineStatus(): any {
+    return this.firestoreOffline.getOfflineStatus();
+  }
+
+  /**
+   * Enable network (force online mode)
+   */
+  async enableNetwork(): Promise<void> {
+    return this.firestoreOffline.enableNetwork();
+  }
+
+  /**
+   * Disable network (force offline mode for testing)
+   */
+  async disableNetwork(): Promise<void> {
+    return this.firestoreOffline.disableNetwork();
+  }
+
+  /**
+   * Clear offline cache
+   */
+  async clearOfflineCache(): Promise<void> {
+    return this.firestoreOffline.clearOfflineCache();
+  }
+
+  /**
+   * Test network connectivity
+   */
+  async testConnectivity(): Promise<boolean> {
+    return this.networkService.testConnectivity();
   }
 }

@@ -47,6 +47,8 @@ import {ChatService} from "../../services/chat.service";
 import {RelationshipService} from "../../services/relationship.service";
 import {NotificationService} from "../../services/notification.service";
 import {EncryptedChatService} from "../../services/encrypted-chat.service";
+import {NetworkConnectionService} from "../../../../core/services/network-connection.service";
+import {OfflineSyncService} from "../../../../core/services/offline-sync.service";
 import {Store} from "@ngrx/store";
 import {AuthState} from "../../../../state/reducers/auth.reducer";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
@@ -87,6 +89,10 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   isEncryptionActive = false;
   encryptionAvailable = false;
 
+  // Connection status properties
+  isOnline$!: Observable<boolean>;
+  syncStatus$!: Observable<any>;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -101,6 +107,8 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone,
     private encryptedChatService: EncryptedChatService,
+    private networkService: NetworkConnectionService,
+    private offlineSync: OfflineSyncService,
   ) {}
 
   ngOnInit() {
@@ -110,6 +118,10 @@ export class ChatWindowPage implements OnInit, OnDestroy {
       this.router.navigate(["/messaging/chats"]);
       return;
     }
+
+    // Initialize connection status observables
+    this.isOnline$ = this.chatService.isOnline();
+    this.syncStatus$ = this.chatService.getOfflineSyncStatus();
 
     // Get current user ID from store
     this.store

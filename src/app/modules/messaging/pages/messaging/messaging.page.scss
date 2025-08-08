@@ -5,7 +5,20 @@ ion-split-pane {
   --side-max-width: 400px;
 }
 
-// Chat list container
+// Header styling to match other pages
+ion-header {
+  ion-title {
+    color: var(--ion-color-primary);
+  }
+
+  ion-button {
+    color: var(--ion-color-primary);
+  }
+
+  ion-back-button {
+    color: var(--ion-color-primary);
+  }
+} // Chat list container
 .chat-list-container {
   ion-item {
     --inner-padding-end: 16px;

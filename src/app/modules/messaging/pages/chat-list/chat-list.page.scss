@@ -15,6 +15,20 @@
   --chat-list-unread-bg-dark: #0f1a20;
 }
 
+// Header styling to match other pages
+ion-header {
+  ion-title {
+    color: var(--ion-color-primary);
+  }
+
+  ion-button {
+    color: var(--ion-color-primary);
+  }
+
+  ion-back-button {
+    color: var(--ion-color-primary);
+  }
+}
 .chat-meta {
   display: flex;
   flex-direction: column;
@@ -59,7 +73,7 @@
   min-width: 20px;
   height: 20px;
   border-radius: 10px;
-  background: #25d366;
+  background: var(--ion-color-primary);
   color: white;
 }
 
@@ -301,13 +315,13 @@ ion-item ion-label {
 
 // FAB button styling
 ion-fab-button {
-  --background: #25d366;
+  --background: var(--ion-color-primary);
   --color: white;
   --border-radius: 50%;
-  --box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+  // --box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
 
   &:hover {
-    --background: #22c55e;
-    --box-shadow: 0 6px 16px rgba(37, 211, 102, 0.5);
+    --background: var(--ion-color-secondary);
+    // --box-shadow: 0 6px 16px rgba(37, 211, 102, 0.5);
   }
 }

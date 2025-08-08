@@ -16,6 +16,21 @@
   min-height: 100vh;
 }
 
+// Header styling to match other pages
+ion-header {
+  ion-title {
+    color: var(--ion-color-primary);
+  }
+
+  ion-button {
+    color: var(--ion-color-primary);
+  }
+
+  ion-back-button {
+    color: var(--ion-color-primary);
+  }
+}
+
 // Dark mode for host
 @media (prefers-color-scheme: dark) {
   :host {

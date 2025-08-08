@@ -54,14 +54,14 @@ export class MenuComponent implements OnInit, OnDestroy {
     // Initialize project links
     this.project = [
       {
-        title: "LinkedIn",
-        url: "https://www.linkedin.com/company/ascendynamics-nfp",
-        icon: "logo-linkedin",
+        title: "Donate",
+        url: "https://buy.stripe.com/bIY5mC9sY1ob4TufYY",
+        icon: "heart-sharp",
       },
       {
-        title: "Facebook",
-        url: "https://www.facebook.com/ASCENDynamicsNFP",
-        icon: "logo-facebook",
+        title: "Project Repository",
+        url: "https://github.com/ASCENDynamics-NFP/AscendCoopPlatform",
+        icon: "code-slash",
       },
       {
         title: "Slack Community",
@@ -74,20 +74,20 @@ export class MenuComponent implements OnInit, OnDestroy {
         icon: "logo-youtube",
       },
       {
-        title: "Donate",
-        url: "https://buy.stripe.com/bIY5mC9sY1ob4TufYY",
-        icon: "heart-sharp",
+        title: "LinkedIn",
+        url: "https://www.linkedin.com/company/ascendynamics-nfp",
+        icon: "logo-linkedin",
       },
       {
-        title: "Project Repository",
-        url: "https://github.com/ASCENDynamics-NFP/AscendCoopPlatform",
-        icon: "code-slash",
+        title: "Facebook",
+        url: "https://www.facebook.com/ASCENDynamicsNFP",
+        icon: "logo-facebook",
       },
     ];
 
     // Initialize informational page links
     this.infoPages = [
-      {title: "Home", url: "", icon: "globe-outline"},
+      {title: "Home", url: "/", icon: "globe-outline"},
       {title: "About Us", url: "/info/about-us", icon: "information-circle"},
       {title: "Services", url: "/info/services", icon: "construct"},
       {title: "Startups", url: "/info/startups", icon: "rocket"},

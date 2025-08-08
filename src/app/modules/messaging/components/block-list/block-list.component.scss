@@ -1,4 +1,17 @@
-// Loading state
+// Header styling to match other pages
+ion-header {
+  ion-title {
+    color: var(--ion-color-primary);
+  }
+
+  ion-button {
+    color: var(--ion-color-primary);
+  }
+
+  ion-back-button {
+    color: var(--ion-color-primary);
+  }
+} // Loading state
 .loading-container {
   display: flex;
   flex-direction: column;

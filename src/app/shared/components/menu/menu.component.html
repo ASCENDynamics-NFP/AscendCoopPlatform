@@ -96,6 +96,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             [routerLink]="info.url"
             lines="none"
             detail="false"
+            routerLinkActive="selected"
+            [routerLinkActiveOptions]="{exact: info.url === '/'}"
           >
             <ion-icon
               aria-hidden="true"
@@ -109,7 +111,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <!-- Project Links Section -->
       <ion-list>
         <ion-list-header>
-          <strong>ASCENDynamics NFP Information</strong>
+          <strong>Links</strong>
         </ion-list-header>
         <ion-item
           *ngFor="let p of project"

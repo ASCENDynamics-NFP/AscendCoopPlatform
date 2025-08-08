@@ -15,7 +15,20 @@
   --chat-input-text-dark: #e9edef;
 }
 
-// Main chat container with WhatsApp-style background
+// Header styling to match other pages
+ion-header {
+  ion-title {
+    color: var(--ion-color-primary);
+  }
+
+  ion-button {
+    color: var(--ion-color-primary);
+  }
+
+  ion-back-button {
+    color: var(--ion-color-primary);
+  }
+} // Main chat container with WhatsApp-style background
 .chat-container {
   height: 100%;
   background: var(--chat-background-light);

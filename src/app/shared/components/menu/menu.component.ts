@@ -155,6 +155,15 @@ export class MenuComponent implements OnInit, OnDestroy {
         buttonIcon: "add",
       },
       {
+        title: this.translate.instant("menu.messaging"),
+        url: "/messaging",
+        icon: "chatbubbles",
+        hasButton: true,
+        buttonLink: "/messaging/new-chat",
+        buttonText: this.translate.instant("menu.create"),
+        buttonIcon: "add",
+      },
+      {
         title: this.translate.instant("menu.groups"),
         url: "/account/group-list",
         icon: "business",

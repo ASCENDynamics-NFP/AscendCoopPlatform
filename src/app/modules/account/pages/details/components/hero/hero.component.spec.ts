@@ -19,16 +19,33 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {HeroComponent} from "./hero.component";
-import {ModalController} from "@ionic/angular";
+import {ModalController, ToastController} from "@ionic/angular";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
-import {Account} from "@shared/models/account.model";
+import {Account} from "../../../../../../../../shared/models/account.model";
 import {ImageUploadModalComponent} from "../../../../../../shared/components/image-upload-modal/image-upload-modal.component";
 import {Timestamp} from "firebase/firestore";
+import {AngularFirestore} from "@angular/fire/compat/firestore";
+import {AngularFireStorage} from "@angular/fire/compat/storage";
+import {provideMockStore} from "@ngrx/store/testing";
+import {Router} from "@angular/router";
+import {ChatService} from "../../../../../messaging/services/chat.service";
+import {NetworkConnectionService} from "../../../../../../core/services/network-connection.service";
+import {OfflineSyncService} from "../../../../../../core/services/offline-sync.service";
+import {FirestoreOfflineService} from "../../../../../../core/services/firestore-offline.service";
+import {of} from "rxjs";
 
 describe("HeroComponent", () => {
   let component: HeroComponent;
   let fixture: ComponentFixture<HeroComponent>;
   let mockModalController: jasmine.SpyObj<ModalController>;
+  let mockToastController: jasmine.SpyObj<ToastController>;
+  let mockRouter: jasmine.SpyObj<Router>;
+  let mockAngularFirestore: jasmine.SpyObj<AngularFirestore>;
+  let mockAngularFireStorage: jasmine.SpyObj<AngularFireStorage>;
+  let mockChatService: jasmine.SpyObj<ChatService>;
+  let mockNetworkService: jasmine.SpyObj<NetworkConnectionService>;
+  let mockOfflineSync: jasmine.SpyObj<OfflineSyncService>;
+  let mockFirestoreOffline: jasmine.SpyObj<FirestoreOfflineService>;
 
   // Mock Data
   const mockAccountId = "12345";
@@ -63,12 +80,61 @@ describe("HeroComponent", () => {
       "present",
       "onDidDismiss",
     ]);
+
+    // Create all the required mocks
     mockModalController = jasmine.createSpyObj("ModalController", ["create"]);
+    mockToastController = jasmine.createSpyObj("ToastController", ["create"]);
+    mockRouter = jasmine.createSpyObj("Router", ["navigate"]);
+    mockAngularFirestore = jasmine.createSpyObj("AngularFirestore", [
+      "collection",
+    ]);
+    mockAngularFireStorage = jasmine.createSpyObj("AngularFireStorage", [
+      "ref",
+    ]);
+    mockChatService = jasmine.createSpyObj("ChatService", [
+      "createChat",
+      "sendMessage",
+    ]);
+    mockNetworkService = jasmine.createSpyObj("NetworkConnectionService", [], {
+      isOnline$: of(true),
+      connectionType$: of("wifi"),
+      networkQuality$: of("good"),
+    });
+    mockOfflineSync = jasmine.createSpyObj(
+      "OfflineSyncService",
+      ["queueMessage", "retryFailedMessages", "setCurrentUserId"],
+      {
+        isOnline$: of(true),
+        syncStatus$: of("idle"),
+        queueLength$: of(0),
+      },
+    );
+    mockFirestoreOffline = jasmine.createSpyObj("FirestoreOfflineService", [
+      "initializeOfflinePersistence",
+      "preCacheCollections",
+    ]);
+
     mockModalController.create.and.returnValue(Promise.resolve(modalSpy));
+    mockToastController.create.and.returnValue(
+      Promise.resolve({
+        present: jasmine.createSpy(),
+      } as any),
+    );
 
     await TestBed.configureTestingModule({
       declarations: [HeroComponent],
-      providers: [{provide: ModalController, useValue: mockModalController}],
+      providers: [
+        {provide: ModalController, useValue: mockModalController},
+        {provide: ToastController, useValue: mockToastController},
+        {provide: Router, useValue: mockRouter},
+        {provide: AngularFirestore, useValue: mockAngularFirestore},
+        {provide: AngularFireStorage, useValue: mockAngularFireStorage},
+        {provide: ChatService, useValue: mockChatService},
+        {provide: NetworkConnectionService, useValue: mockNetworkService},
+        {provide: OfflineSyncService, useValue: mockOfflineSync},
+        {provide: FirestoreOfflineService, useValue: mockFirestoreOffline},
+        provideMockStore(),
+      ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });

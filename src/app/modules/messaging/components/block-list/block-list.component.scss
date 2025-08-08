@@ -1,0 +1,151 @@
+// Loading state
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  min-height: 200px;
+
+  ion-spinner {
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 0.9rem;
+  }
+}
+
+// Empty state
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--ion-color-medium);
+
+  ion-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  h2 {
+    margin: 1rem 0 0.5rem 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+  }
+
+  p {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+}
+
+// Avatar placeholder
+.avatar-placeholder {
+  background: var(--ion-color-primary);
+  color: white;
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+// Blocked status
+.blocked-status {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--ion-color-danger);
+  margin-top: 0.25rem;
+
+  .blocked-icon {
+    font-size: 0.8rem;
+  }
+}
+
+// List styling
+ion-list {
+  background: transparent;
+}
+
+ion-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --min-height: 70px;
+
+  ion-label {
+    h2 {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+    }
+
+    p {
+      color: var(--ion-color-medium);
+      font-size: 0.85rem;
+      margin: 0.125rem 0;
+    }
+  }
+
+  ion-button {
+    --border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    height: 32px;
+  }
+}
+
+// Sliding options
+ion-item-options {
+  ion-item-option {
+    --color: white;
+
+    ion-icon {
+      font-size: 1.2rem;
+    }
+  }
+}
+
+// Footer info
+.footer-info {
+  padding: 1.5rem;
+  text-align: center;
+
+  p {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin: 0;
+
+    ion-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  ion-item {
+    ion-button {
+      font-size: 0.8rem;
+      height: 28px;
+      --padding-start: 8px;
+      --padding-end: 8px;
+
+      ion-icon {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}

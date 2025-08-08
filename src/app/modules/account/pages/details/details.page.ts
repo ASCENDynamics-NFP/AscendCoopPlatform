@@ -56,6 +56,8 @@ export class DetailsPage implements OnInit, ViewWillEnter {
   isProfileOwner$!: Observable<boolean>;
   isGroupAdmin$!: Observable<boolean>;
   isGroupMember$!: Observable<boolean>;
+  relationshipStatus$!: Observable<string | null>;
+  hasRelationship$!: Observable<boolean>;
   error$!: Observable<any>;
 
   constructor(
@@ -175,6 +177,30 @@ export class DetailsPage implements OnInit, ViewWillEnter {
             const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
             const isMember = rel?.status === "accepted";
             return isOwner || isMember;
+          }),
+        );
+
+        // Check current user's relationship status with this account
+        this.relationshipStatus$ = combineLatest([
+          this.authUser$,
+          this.relatedAccounts$,
+        ]).pipe(
+          map(([currentUser, relatedAccounts]) => {
+            if (!currentUser) return null;
+            const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
+            return rel?.status || null;
+          }),
+        );
+
+        // Check if current user has any relationship with this account
+        this.hasRelationship$ = combineLatest([
+          this.authUser$,
+          this.relatedAccounts$,
+        ]).pipe(
+          map(([currentUser, relatedAccounts]) => {
+            if (!currentUser) return false;
+            const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
+            return rel !== undefined;
           }),
         );
       }

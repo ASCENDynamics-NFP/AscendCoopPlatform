@@ -30,6 +30,8 @@ import {FeedbackModalComponent} from "./components/feedback-modal/feedback-modal
 import {UserMenuComponent} from "./components/user-menu/user-menu.component";
 import {ImageUploadModalComponent} from "./components/image-upload-modal/image-upload-modal.component";
 import {PaginationComponent} from "./components/pagination/pagination.component";
+import {UserReportModalComponent} from "../modules/messaging/components/user-report-modal/user-report-modal.component";
+import {ConnectionStatusComponent} from "./components/connection-status/connection-status.component";
 
 @NgModule({
   declarations: [
@@ -38,6 +40,8 @@ import {PaginationComponent} from "./components/pagination/pagination.component"
     ImageUploadModalComponent,
     PaginationComponent,
     UserMenuComponent,
+    UserReportModalComponent,
+    ConnectionStatusComponent,
   ],
   imports: [
     IonicModule,
@@ -54,6 +58,8 @@ import {PaginationComponent} from "./components/pagination/pagination.component"
     ImageUploadModalComponent,
     UserMenuComponent,
     PaginationComponent,
+    UserReportModalComponent,
+    ConnectionStatusComponent,
   ],
 })
 export class SharedModule {}

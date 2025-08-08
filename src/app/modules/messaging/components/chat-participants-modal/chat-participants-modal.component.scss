@@ -1,0 +1,335 @@
+.section {
+  margin-bottom: 24px;
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--ion-color-primary);
+
+    ion-icon {
+      font-size: 1.2rem;
+    }
+  }
+}
+
+// Chat title editing styles
+.title-section {
+  .title-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--step-color);
+    border-radius: 12px;
+
+    .title-text {
+      font-weight: 500;
+      font-size: 1rem;
+      color: var(--ion-color-dark);
+    }
+  }
+}
+
+.title-edit {
+  ion-item {
+    --background: var(--step-color);
+    --border-radius: 12px;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    margin-bottom: 12px;
+  }
+
+  .title-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+
+    ion-button {
+      --border-radius: 8px;
+
+      &[fill="solid"] {
+        --background: var(--ion-color-primary);
+        --color: var(--ion-color-primary-contrast);
+      }
+    }
+  }
+}
+
+.participants-list {
+  .participant-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background: var(--step-color);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+
+    &.clickable {
+      cursor: pointer;
+
+      &:hover {
+        background: var(--step-color-hover);
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+
+    .participant-avatar {
+      width: 44px;
+      height: 44px;
+      margin-right: 12px;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .participant-info {
+      flex: 1;
+
+      .participant-name {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--ion-color-dark);
+        margin-bottom: 2px;
+
+        ion-badge {
+          --color: var(--ion-color-primary-contrast);
+          --background: var(--ion-color-primary);
+          font-size: 0.7rem;
+          font-weight: 500;
+        }
+      }
+
+      .participant-email {
+        font-size: 0.85rem;
+        color: var(--ion-color-medium);
+      }
+    }
+
+    .action-icon {
+      color: var(--ion-color-medium);
+      font-size: 1.2rem;
+    }
+  }
+}
+
+.add-users-search {
+  margin-bottom: 16px;
+  --background: var(--step-color);
+  --border-radius: 12px;
+}
+
+.available-users-list {
+  .no-users-message {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--ion-color-medium);
+
+    .no-users-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    p {
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    small {
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+  }
+
+  .user-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background: var(--step-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--step-color-hover);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    .user-avatar {
+      width: 44px;
+      height: 44px;
+      margin-right: 12px;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .user-info {
+      flex: 1;
+
+      .user-name {
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--ion-color-dark);
+        margin-bottom: 2px;
+      }
+
+      .user-email {
+        font-size: 0.85rem;
+        color: var(--ion-color-medium);
+      }
+    }
+
+    .add-btn {
+      --color: var(--ion-color-primary);
+      --color-hover: var(--ion-color-primary-shade);
+
+      ion-icon {
+        font-size: 1.5rem;
+      }
+
+      &[disabled] {
+        --color: var(--ion-color-medium);
+      }
+    }
+  }
+}
+
+.info-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  border: 1px solid var(--ion-color-light-shade);
+
+  .info-icon {
+    color: var(--ion-color-primary);
+    font-size: 1.5rem;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  p {
+    margin: 0;
+    color: var(--ion-color-dark);
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 1000;
+
+  ion-spinner {
+    margin-bottom: 16px;
+    --color: var(--ion-color-primary);
+  }
+
+  p {
+    color: var(--ion-color-dark);
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .participants-list .participant-item,
+  .available-users-list .user-item {
+    .participant-name,
+    .user-name {
+      color: var(--ion-color-light);
+    }
+  }
+
+  .info-message {
+    background: var(--ion-color-dark);
+    border-color: var(--ion-color-dark-shade);
+
+    p {
+      color: var(--ion-color-light);
+    }
+  }
+
+  .loading-container {
+    background: rgba(0, 0, 0, 0.9);
+
+    p {
+      color: var(--ion-color-light);
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .section {
+    margin-bottom: 20px;
+
+    .section-title {
+      font-size: 1rem;
+      margin-bottom: 12px;
+    }
+  }
+
+  .participants-list .participant-item,
+  .available-users-list .user-item {
+    padding: 10px 12px;
+
+    .participant-avatar,
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+    }
+
+    .participant-info,
+    .user-info {
+      .participant-name,
+      .user-name {
+        font-size: 0.95rem;
+      }
+
+      .participant-email,
+      .user-email {
+        font-size: 0.8rem;
+      }
+    }
+  }
+}

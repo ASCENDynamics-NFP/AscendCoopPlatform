@@ -1,0 +1,114 @@
+<ion-chip
+  [color]="getConnectionColor(connectionStatus)"
+  *ngIf="connectionStatus$ | async as connectionStatus"
+  [class.compact]="compactMode"
+>
+  <ion-icon [name]="getConnectionIcon(connectionStatus)" slot="start">
+  </ion-icon>
+
+  <ion-label>
+    {{ getStatusText(connectionStatus, (syncStatus$ | async)!) }}
+  </ion-label>
+
+  <!-- Sync indicator -->
+  <ion-spinner
+    name="crescent"
+    *ngIf="(syncStatus$ | async)?.isSyncing"
+    slot="end"
+  >
+  </ion-spinner>
+
+  <!-- Failed messages indicator -->
+  <ion-badge
+    color="danger"
+    *ngIf="(syncStatus$ | async)?.failedMessagesCount! > 0"
+    slot="end"
+    (click)="retryFailedMessages()"
+  >
+    {{ (syncStatus$ | async)?.failedMessagesCount }}
+    <ion-icon name="refresh-outline" size="small"></ion-icon>
+  </ion-badge>
+</ion-chip>
+
+<!-- Detailed status (optional) -->
+<ion-card
+  *ngIf="showDetails && (connectionStatus$ | async) as connectionStatus"
+  class="status-details"
+>
+  <ion-card-header>
+    <ion-card-title>Connection Status</ion-card-title>
+  </ion-card-header>
+
+  <ion-card-content>
+    <ion-list lines="none">
+      <!-- Connection Info -->
+      <ion-item>
+        <ion-icon
+          [name]="getConnectionIcon(connectionStatus)"
+          slot="start"
+        ></ion-icon>
+        <ion-label>
+          <h3>Network Status</h3>
+          <p>
+            {{ connectionStatus.isOnline ? "Online" : "Offline" }} ({{
+              connectionStatus.connectionType
+            }})
+          </p>
+        </ion-label>
+      </ion-item>
+
+      <!-- Sync Status -->
+      <ion-item *ngIf="syncStatus$ | async as syncStatus">
+        <ion-icon name="sync-outline" slot="start"></ion-icon>
+        <ion-label>
+          <h3>Sync Status</h3>
+          <p *ngIf="syncStatus.isSyncing">Syncing messages...</p>
+          <p
+            *ngIf="
+              !syncStatus.isSyncing && syncStatus.queuedMessagesCount === 0
+            "
+          >
+            All messages synced
+          </p>
+          <p
+            *ngIf="!syncStatus.isSyncing && syncStatus.queuedMessagesCount > 0"
+          >
+            {{ syncStatus.queuedMessagesCount }} messages pending
+          </p>
+        </ion-label>
+      </ion-item>
+
+      <!-- Failed Messages -->
+      <ion-item *ngIf="(syncStatus$ | async)?.failedMessagesCount! > 0">
+        <ion-icon name="warning-outline" color="danger" slot="start"></ion-icon>
+        <ion-label>
+          <h3>Failed Messages</h3>
+          <p>
+            {{ (syncStatus$ | async)?.failedMessagesCount }} messages failed to
+            send
+          </p>
+        </ion-label>
+        <ion-button fill="clear" slot="end" (click)="retryFailedMessages()">
+          Retry
+        </ion-button>
+      </ion-item>
+
+      <!-- Last Sync Time -->
+      <ion-item *ngIf="(syncStatus$ | async)?.lastSyncTime">
+        <ion-icon name="time-outline" slot="start"></ion-icon>
+        <ion-label>
+          <h3>Last Sync</h3>
+          <p>{{ (syncStatus$ | async)?.lastSyncTime | date: "short" }}</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons" *ngIf="!connectionStatus.isOnline">
+      <ion-button fill="outline" size="small" (click)="testConnection()">
+        <ion-icon name="refresh-outline" slot="start"></ion-icon>
+        Test Connection
+      </ion-button>
+    </div>
+  </ion-card-content>
+</ion-card>

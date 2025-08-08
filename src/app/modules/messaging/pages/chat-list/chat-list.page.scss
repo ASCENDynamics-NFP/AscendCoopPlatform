@@ -1,0 +1,313 @@
+// Chat List Styling - Improved readability with theme support
+:root {
+  // Chat list theme variables
+  --chat-list-text-primary-light: #2d3436;
+  --chat-list-text-primary-dark: #e9edef;
+  --chat-list-text-secondary-light: #667081;
+  --chat-list-text-secondary-dark: #8696a0;
+  --chat-list-border-light: #f1f3f4;
+  --chat-list-border-dark: #3b4a54;
+  --chat-list-hover-light: #f8f9fa;
+  --chat-list-hover-dark: #1f2c33;
+  --chat-list-active-light: #e8f0fe;
+  --chat-list-active-dark: #0f1419;
+  --chat-list-unread-bg-light: #f8fcff;
+  --chat-list-unread-bg-dark: #0f1a20;
+}
+
+.chat-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  padding: 4px 0;
+
+  .timestamp {
+    color: var(--chat-list-text-secondary-light);
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .unread-badge {
+    min-width: 22px;
+    height: 22px;
+    border-radius: 11px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    background: #25d366; // WhatsApp green (consistent in both modes)
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+// Dark mode overrides for chat meta
+@media (prefers-color-scheme: dark) {
+  .chat-meta {
+    .timestamp {
+      color: var(--chat-list-text-secondary-dark);
+    }
+  }
+}
+
+// Total unread badge in header
+.total-unread-badge {
+  margin-left: 0.5rem;
+  font-size: 0.7rem;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background: #25d366;
+  color: white;
+}
+
+// Chat item styling
+ion-item {
+  --inner-padding-end: 16px;
+  --padding-start: 16px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  --border-color: transparent;
+  border-bottom: 1px solid var(--chat-list-border-light);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    --background: var(--chat-list-hover-light);
+  }
+
+  &:active {
+    --background: var(--chat-list-active-light);
+  }
+
+  ion-avatar {
+    width: 54px;
+    height: 54px;
+    margin-right: 12px;
+
+    img {
+      border-radius: 50%;
+      border: 2px solid var(--chat-list-border-light);
+    }
+  }
+
+  // Highlight unread chats
+  &.has-unread {
+    --background: var(--chat-list-unread-bg-light);
+
+    ion-label h2 {
+      font-weight: 700;
+      color: #1a73e8;
+    }
+
+    ion-label p {
+      color: var(--chat-list-text-primary-light);
+      font-weight: 500;
+    }
+  }
+}
+
+// Dark mode support for chat items
+@media (prefers-color-scheme: dark) {
+  ion-item {
+    border-bottom-color: var(--chat-list-border-dark);
+
+    &:hover {
+      --background: var(--chat-list-hover-dark);
+    }
+
+    &:active {
+      --background: var(--chat-list-active-dark);
+    }
+
+    ion-avatar img {
+      border-color: var(--chat-list-border-dark);
+    }
+
+    &.has-unread {
+      --background: var(--chat-list-unread-bg-dark);
+
+      ion-label p {
+        color: var(--chat-list-text-primary-dark);
+      }
+    }
+  }
+}
+
+.chat-preview {
+  flex: 1;
+  min-width: 0; // Allows proper text truncation
+
+  .chat-title {
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.3;
+    color: var(--chat-list-text-primary-light);
+    margin: 0 0 0.25rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .chat-snippet {
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--chat-list-text-secondary-light);
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// Dark mode support for chat preview
+@media (prefers-color-scheme: dark) {
+  .chat-preview {
+    .chat-title {
+      color: var(--chat-list-text-primary-dark);
+    }
+
+    .chat-snippet {
+      color: var(--chat-list-text-secondary-dark);
+    }
+  }
+}
+
+// Unread message styling
+.unread-chat {
+  .chat-preview .chat-snippet {
+    font-weight: 600;
+    color: var(--chat-list-text-primary-light);
+  }
+
+  ion-item {
+    --background: var(--chat-list-unread-bg-light);
+  }
+}
+
+// Dark mode for unread chats
+@media (prefers-color-scheme: dark) {
+  .unread-chat {
+    .chat-preview .chat-snippet {
+      color: var(--chat-list-text-primary-dark);
+    }
+
+    ion-item {
+      --background: var(--chat-list-unread-bg-dark);
+    }
+  }
+}
+
+// Legacy ion-label styling for compatibility
+ion-item ion-label {
+  margin: 0;
+
+  h2 {
+    font-weight: 600;
+    color: var(--chat-list-text-primary-light);
+    margin-bottom: 4px;
+    font-size: 1rem;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  p {
+    color: var(--chat-list-text-secondary-light);
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px; // Prevent text from being too wide
+  }
+}
+
+// Dark mode for ion-label
+@media (prefers-color-scheme: dark) {
+  ion-item ion-label {
+    h2 {
+      color: var(--chat-list-text-primary-dark);
+    }
+
+    p {
+      color: var(--chat-list-text-secondary-dark);
+    }
+  }
+}
+
+// Empty state styling
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  min-height: 60vh;
+
+  ion-icon {
+    font-size: 4rem;
+    color: var(--chat-list-text-secondary-light);
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    color: var(--chat-list-text-primary-light);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+  }
+
+  p {
+    color: var(--chat-list-text-secondary-light);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0 0 1.5rem 0;
+    max-width: 300px;
+  }
+
+  ion-button {
+    --border-radius: 24px;
+    --padding-start: 24px;
+    --padding-end: 24px;
+    font-weight: 600;
+  }
+}
+
+// Dark mode for empty state
+@media (prefers-color-scheme: dark) {
+  .empty-state {
+    ion-icon {
+      color: var(--chat-list-text-secondary-dark);
+    }
+
+    h2 {
+      color: var(--chat-list-text-primary-dark);
+    }
+
+    p {
+      color: var(--chat-list-text-secondary-dark);
+    }
+  }
+}
+
+// FAB button styling
+ion-fab-button {
+  --background: #25d366;
+  --color: white;
+  --border-radius: 50%;
+  --box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+
+  &:hover {
+    --background: #22c55e;
+    --box-shadow: 0 6px 16px rgba(37, 211, 102, 0.5);
+  }
+}

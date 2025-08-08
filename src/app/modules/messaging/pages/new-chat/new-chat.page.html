@@ -1,0 +1,114 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button
+        (click)="goBack()"
+        defaultHref="/messaging/chats"
+      ></ion-back-button>
+    </ion-buttons>
+    <ion-title>New Chat</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        (click)="createChat()"
+        [disabled]="selectedContacts.length === 0 || isLoading"
+        fill="clear"
+      >
+        Create
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Group Name Input (shown when multiple contacts selected) -->
+  <div *ngIf="isGroupChat" class="group-options">
+    <ion-item>
+      <ion-input
+        [(ngModel)]="groupName"
+        placeholder="Enter group name"
+        maxlength="50"
+        required
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        data-form-type="other"
+        data-lpignore="true"
+        data-1p-ignore="true"
+        data-bwignore="true"
+        data-dashlane-ignore="true"
+        readonly
+        (click)="makeEditable($event)"
+        (focus)="makeEditable($event)"
+      >
+      </ion-input>
+    </ion-item>
+  </div>
+
+  <!-- Selected Contacts Summary -->
+  <div *ngIf="selectedContacts.length > 0" class="selected-summary">
+    <ion-chip
+      *ngFor="let contact of selectedContacts"
+      (click)="toggleContact(contact)"
+    >
+      <ion-avatar *ngIf="contact.iconImage">
+        <img [src]="contact.iconImage" [alt]="contact.name" />
+      </ion-avatar>
+      <ion-icon *ngIf="!contact.iconImage" name="person-circle"></ion-icon>
+      <ion-label>{{ contact.name }}</ion-label>
+      <ion-icon name="close-circle"></ion-icon>
+    </ion-chip>
+  </div>
+
+  <!-- Contacts List -->
+  <ion-list>
+    <ion-list-header>
+      <ion-label>Select Contacts</ion-label>
+    </ion-list-header>
+
+    <ion-item
+      *ngFor="let contact of contacts; trackBy: trackByContactId"
+      button
+      (click)="toggleContact(contact)"
+    >
+      <ion-checkbox
+        slot="start"
+        [checked]="contact.selected"
+        (ionChange)="toggleContact(contact)"
+      >
+      </ion-checkbox>
+
+      <ion-avatar slot="start">
+        <img
+          *ngIf="contact.iconImage"
+          [src]="contact.iconImage"
+          [alt]="contact.name"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+        />
+        <ion-icon
+          name="person-circle"
+          size="large"
+          [style.display]="contact.iconImage ? 'none' : 'block'"
+        ></ion-icon>
+      </ion-avatar>
+
+      <ion-label>
+        <h2>{{ contact.name }}</h2>
+        <p *ngIf="contact.tagline">{{ contact.tagline }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <!-- Empty State -->
+  <div *ngIf="contacts.length === 0" class="empty-state">
+    <ion-icon name="people-outline" size="large"></ion-icon>
+    <h3>No contacts available</h3>
+    <p>You need to have accepted connections to start a chat</p>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <ion-spinner></ion-spinner>
+    <p>Creating chat...</p>
+  </div>
+</ion-content>

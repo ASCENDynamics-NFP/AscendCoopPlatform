@@ -41,6 +41,7 @@ export class UserMenuComponent {
 
   async logout() {
     await this.popoverCtrl.dismiss(); // Await the popover dismissal
+    this.router.navigate([`/`]);
     this.store.dispatch(AuthActions.signOut());
   }
 

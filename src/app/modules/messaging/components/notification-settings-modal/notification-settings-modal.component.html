@@ -1,0 +1,144 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Notification Settings</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="dismiss()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Permission Status -->
+  <div class="section">
+    <div class="permission-status" [ngSwitch]="notificationPermission">
+      <ion-item *ngSwitchCase="'granted'" lines="none">
+        <ion-icon
+          name="checkmark-circle"
+          slot="start"
+          color="success"
+        ></ion-icon>
+        <ion-label>
+          <h3>Notifications Enabled</h3>
+          <p>Your browser allows notifications from this app</p>
+        </ion-label>
+      </ion-item>
+
+      <ion-item *ngSwitchCase="'denied'" lines="none">
+        <ion-icon name="ban" slot="start" color="danger"></ion-icon>
+        <ion-label>
+          <h3>Notifications Blocked</h3>
+          <p>Enable notifications in your browser settings</p>
+        </ion-label>
+      </ion-item>
+
+      <ion-item *ngSwitchCase="'default'" lines="none">
+        <ion-icon
+          name="notifications-outline"
+          slot="start"
+          color="warning"
+        ></ion-icon>
+        <ion-label>
+          <h3>Allow Notifications</h3>
+          <p>Get notified when you receive new messages</p>
+        </ion-label>
+        <ion-button
+          slot="end"
+          fill="outline"
+          size="small"
+          (click)="requestNotificationPermission()"
+        >
+          Allow
+        </ion-button>
+      </ion-item>
+
+      <ion-item *ngSwitchCase="'unsupported'" lines="none">
+        <ion-icon
+          name="information-circle"
+          slot="start"
+          color="medium"
+        ></ion-icon>
+        <ion-label>
+          <h3>Notifications Not Supported</h3>
+          <p>Your browser doesn't support notifications</p>
+        </ion-label>
+      </ion-item>
+    </div>
+  </div>
+
+  <!-- General Settings -->
+  <div class="section">
+    <h3 class="section-title">
+      <ion-icon name="notifications-outline"></ion-icon>
+      General Settings
+    </h3>
+
+    <ion-list>
+      <ion-item>
+        <ion-label>
+          <h3>Enable Notifications</h3>
+          <p>Show notifications for new messages</p>
+        </ion-label>
+        <ion-toggle
+          [(ngModel)]="settings.enabled"
+          (ionChange)="toggleNotifications()"
+          [disabled]="notificationPermission !== 'granted'"
+        >
+        </ion-toggle>
+      </ion-item>
+
+      <ion-item [disabled]="!settings.enabled">
+        <ion-label>
+          <h3>Sound</h3>
+          <p>Play sound when receiving notifications</p>
+        </ion-label>
+        <ion-toggle [(ngModel)]="settings.sound"></ion-toggle>
+      </ion-item>
+
+      <ion-item [disabled]="!settings.enabled">
+        <ion-label>
+          <h3>Vibration</h3>
+          <p>Vibrate when receiving notifications</p>
+        </ion-label>
+        <ion-toggle [(ngModel)]="settings.vibration"></ion-toggle>
+      </ion-item>
+
+      <ion-item [disabled]="!settings.enabled">
+        <ion-label>
+          <h3>Show Message Preview</h3>
+          <p>Display message content in notifications</p>
+        </ion-label>
+        <ion-toggle [(ngModel)]="settings.showPreview"></ion-toggle>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <!-- Privacy Notice -->
+  <div class="section">
+    <ion-card>
+      <ion-card-content>
+        <h4>
+          <ion-icon name="shield-checkmark-outline"></ion-icon>
+          Privacy Notice
+        </h4>
+        <p>
+          Notifications are processed locally on your device. Message content is
+          only displayed in notifications if you enable message preview. You can
+          disable notifications at any time.
+        </p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="dismiss()"> Cancel </ion-button>
+      <ion-button fill="solid" (click)="saveSettings()">
+        Save Settings
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

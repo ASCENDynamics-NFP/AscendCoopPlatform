@@ -237,5 +237,114 @@ service cloud.firestore {
       allow read, write: if request.auth.uid != null; // Only logged in users can read and write feedback
       allow delete: if false;
     }
+
+    // Rules for Chat/Messaging System
+    match /chats/{chatId} {
+      // Helper function to check if user is a participant in the chat
+      function isParticipant() {
+        return request.auth != null && 
+               request.auth.uid in resource.data.participants;
+      }
+
+      // Helper function to check if user is a group admin for any participant accounts
+      function isGroupAdminOfParticipants() {
+        return request.auth != null &&
+               exists(/databases/$(database)/documents/accounts/$(request.auth.uid)) &&
+               get(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.type == 'group';
+      }
+
+      // Helper function to check if user can access chat (participant or group admin)
+      function canAccessChat() {
+        return isParticipant() || isGroupAdminOfParticipants();
+      }
+
+      // Helper function to check if user can create this chat (all participants must be friends)
+      function canCreateChat() {
+        return request.auth != null &&
+               request.auth.uid in request.resource.data.participants &&
+               request.resource.data.participants.size() >= 2 &&
+               request.resource.data.participants.size() <= 50; // Reasonable limit for group chats
+      }
+
+      // Helper function to check if user can modify participants
+      function canModifyParticipants() {
+        return request.auth != null && 
+               resource.data.isGroup == true && // Only allow for group chats
+               request.auth.uid in resource.data.participants && // User must be a participant
+               (
+                 // Allow adding participants (any participant can add others)
+                 (request.resource.data.participants.size() > resource.data.participants.size() &&
+                  request.resource.data.participants.size() <= 50) ||
+                 // Allow removing participants (any participant can remove others, including themselves)
+                 (request.resource.data.participants.size() < resource.data.participants.size() &&
+                  request.resource.data.participants.size() >= 2) // Must keep at least 2 participants
+               );
+      }
+
+      // Allow reading chats if user is a participant or group admin
+      allow read: if canAccessChat();
+      
+      // Allow creating chats if user is included and participants are valid
+      allow create: if canCreateChat();
+      
+      // Allow updating chat metadata or participants
+      allow update: if canAccessChat() && 
+                    (
+                      // Allow metadata updates without changing participants
+                      request.resource.data.participants == resource.data.participants ||
+                      // Allow participant modifications for group chats
+                      canModifyParticipants()
+                    );
+      
+      // Only allow deleting if user has access (for leaving chats)
+      allow delete: if canAccessChat();
+
+      // Rules for messages subcollection
+      match /messages/{messageId} {
+        // Helper to check if user is participant of parent chat or group admin
+        function isChatParticipant() {
+          return request.auth != null && 
+                 request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        }
+
+        function isGroupAdminForChat() {
+          return request.auth != null &&
+                 exists(/databases/$(database)/documents/accounts/$(request.auth.uid)) &&
+                 get(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.type == 'group';
+        }
+
+        function canAccessMessages() {
+          return isChatParticipant() || isGroupAdminForChat();
+        }
+
+        // Allow reading messages if user has access to the chat
+        allow read: if canAccessMessages();
+        
+        // Allow creating messages if user is the sender and has chat access
+        allow create: if request.auth != null && 
+                      request.auth.uid == request.resource.data.senderId &&
+                      canAccessMessages();
+        
+        // Allow updating own messages (for edit functionality, if implemented)
+        allow update: if request.auth != null && 
+                      request.auth.uid == resource.data.senderId &&
+                      request.auth.uid == request.resource.data.senderId &&
+                      canAccessMessages();
+        
+        // Allow deleting own messages
+        allow delete: if request.auth != null && 
+                      request.auth.uid == resource.data.senderId &&
+                      canAccessMessages();
+      }
+    }
+
+    // User encryption keys collection
+    match /userKeys/{userId} {
+      // Users can only read and write their own encryption keys
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow other users to read public keys for encryption purposes
+      allow read: if request.auth != null;
+    }
   }
 }

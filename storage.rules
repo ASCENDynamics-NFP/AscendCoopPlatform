@@ -23,6 +23,19 @@ service firebase.storage {
         request.resource.contentType.matches('image/.*') && 
         request.resource.size < 5 * 1024 * 1024; // 5MB
     }
+
+    // Chat media files
+    match /chatMedia/{chatId}/{fileName} {
+      allow read: if 
+        request.auth != null; // For now, allow any authenticated user to read
+      allow write: if 
+        request.auth != null && 
+        (request.resource.contentType.matches('image/.*') ||
+         request.resource.contentType.matches('application/.*') ||
+         request.resource.contentType.matches('video/.*') ||
+         request.resource.contentType.matches('audio/.*')) &&
+        request.resource.size < 10 * 1024 * 1024; // 10MB limit for chat files
+    }
   }
 
   // Depreciating for 'org' directory to make it more generalized.

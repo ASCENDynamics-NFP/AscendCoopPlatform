@@ -62,6 +62,51 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       >
         Donate</ion-button
       >
+      <!-- Message Button: Show for other users/groups (not yourself) -->
+      <ion-button
+        *ngIf="!isProfileOwner"
+        color="secondary"
+        fill="outline"
+        size="small"
+        (click)="onMessage()"
+      >
+        <ion-icon name="chatbubble"></ion-icon> Message
+      </ion-button>
+      <!-- Connect Button: Show when no relationship exists or when pending -->
+      <ion-button
+        *ngIf="!isProfileOwner && !hasRelationship"
+        color="primary"
+        fill="outline"
+        size="small"
+        (click)="onConnect()"
+      >
+        <ion-icon name="person-add"></ion-icon> Connect
+      </ion-button>
+      <!-- Connection Status: Show when relationship exists -->
+      <ion-button
+        *ngIf="
+          !isProfileOwner && hasRelationship && relationshipStatus === 'pending'
+        "
+        color="warning"
+        fill="outline"
+        size="small"
+        disabled
+      >
+        <ion-icon name="hourglass"></ion-icon> Pending
+      </ion-button>
+      <ion-button
+        *ngIf="
+          !isProfileOwner &&
+          hasRelationship &&
+          relationshipStatus === 'accepted'
+        "
+        color="success"
+        fill="outline"
+        size="small"
+        disabled
+      >
+        <ion-icon name="checkmark-circle"></ion-icon> Connected
+      </ion-button>
       <!-- Projects: Only group admins/owners can manage projects for group accounts -->
       <ion-button
         *ngIf="account.type === 'group' && isGroupAdmin"

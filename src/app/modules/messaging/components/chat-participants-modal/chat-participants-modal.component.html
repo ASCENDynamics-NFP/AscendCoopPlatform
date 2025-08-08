@@ -1,0 +1,186 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Chat Participants</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="dismiss()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Chat Title Section (for group chats) -->
+  <div class="section" *ngIf="chat.isGroup">
+    <h3 class="section-title">
+      <ion-icon name="chatbubbles-outline"></ion-icon>
+      Chat Title
+    </h3>
+
+    <div class="title-section" *ngIf="!isEditingTitle">
+      <div class="title-display">
+        <span class="title-text">{{
+          chat.name || chat.groupName || "Unnamed Group"
+        }}</span>
+        <ion-button
+          fill="clear"
+          size="small"
+          (click)="startEditingTitle()"
+          [disabled]="isLoading"
+        >
+          <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+
+    <div class="title-edit" *ngIf="isEditingTitle">
+      <ion-item>
+        <ion-input
+          [(ngModel)]="editTitleText"
+          placeholder="Enter chat title"
+          maxlength="50"
+          [disabled]="isLoading"
+        >
+        </ion-input>
+      </ion-item>
+      <div class="title-actions">
+        <ion-button
+          fill="clear"
+          size="small"
+          (click)="cancelEditingTitle()"
+          [disabled]="isLoading"
+        >
+          Cancel
+        </ion-button>
+        <ion-button
+          fill="solid"
+          size="small"
+          (click)="saveChatTitle()"
+          [disabled]="isLoading || !editTitleText.trim()"
+        >
+          <ion-spinner
+            name="crescent"
+            *ngIf="isLoading"
+            slot="start"
+          ></ion-spinner>
+          Save
+        </ion-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Current Participants Section -->
+  <div class="section">
+    <h3 class="section-title">
+      <ion-icon name="people-outline"></ion-icon>
+      Participants ({{ (participants$ | async)?.length || 0 }})
+    </h3>
+
+    <div class="participants-list">
+      <div
+        *ngFor="let participant of participants$ | async"
+        class="participant-item"
+        (click)="showParticipantOptions(participant)"
+        [class.clickable]="participant.canRemove"
+      >
+        <ion-avatar class="participant-avatar">
+          <img
+            [src]="participant.iconImage || getDefaultAvatar()"
+            [alt]="participant.name + ' avatar'"
+            (error)="setDefaultAvatar($event)"
+            loading="lazy"
+          />
+        </ion-avatar>
+
+        <div class="participant-info">
+          <div class="participant-name">
+            {{ participant.name }}
+            <ion-badge *ngIf="participant.isCurrentUser" color="primary"
+              >You</ion-badge
+            >
+          </div>
+          <div class="participant-email">{{ participant.email }}</div>
+        </div>
+
+        <ion-icon
+          *ngIf="participant.canRemove"
+          name="chevron-forward-outline"
+          class="action-icon"
+        >
+        </ion-icon>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Participants Section (only for group chats) -->
+  <div *ngIf="chat.isGroup" class="section">
+    <h3 class="section-title">
+      <ion-icon name="person-add-outline"></ion-icon>
+      Add Participants
+    </h3>
+
+    <!-- Search Bar -->
+    <ion-searchbar
+      [(ngModel)]="searchTerm"
+      placeholder="Search friends to add..."
+      debounce="300"
+      class="add-users-search"
+    >
+    </ion-searchbar>
+
+    <!-- Available Users List -->
+    <div class="available-users-list">
+      <div *ngIf="getFilteredUsers().length === 0" class="no-users-message">
+        <ion-icon name="people-outline" class="no-users-icon"></ion-icon>
+        <p>No friends available to add</p>
+        <small>Users must be your friends to be added to group chats</small>
+      </div>
+
+      <div
+        *ngFor="let user of getFilteredUsers()"
+        class="user-item"
+        (click)="addUser(user.id)"
+      >
+        <ion-avatar class="user-avatar">
+          <img
+            [src]="user.iconImage || getDefaultAvatar()"
+            [alt]="user.name + ' avatar'"
+            (error)="setDefaultAvatar($event)"
+            loading="lazy"
+          />
+        </ion-avatar>
+
+        <div class="user-info">
+          <div class="user-name">{{ user.name }}</div>
+          <div class="user-email">{{ user.email }}</div>
+        </div>
+
+        <ion-button
+          fill="clear"
+          size="small"
+          [disabled]="isLoading"
+          class="add-btn"
+        >
+          <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info for 1-on-1 chats -->
+  <div *ngIf="!chat.isGroup" class="section">
+    <div class="info-message">
+      <ion-icon name="information-circle-outline" class="info-icon"></ion-icon>
+      <p>
+        This is a private conversation. To add more people, create a group chat
+        instead.
+      </p>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Updating chat...</p>
+  </div>
+</ion-content>

@@ -1,0 +1,118 @@
+<ion-split-pane contentId="messaging-content" when="md">
+  <!-- Master: Chat List (always visible on desktop, full screen on mobile) -->
+  <ion-menu
+    contentId="messaging-content"
+    menuId="chat-list"
+    side="start"
+    type="push"
+  >
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Messages</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="onNewChat()" fill="clear">
+            <ion-icon name="add" slot="icon-only"></ion-icon>
+          </ion-button>
+          <ion-button (click)="showMessagingOptions()" fill="clear">
+            <ion-icon name="ellipsis-vertical" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <!-- Chat List -->
+      <div class="chat-list-container">
+        <!-- Empty state when no chats are available -->
+        <div class="empty-state" *ngIf="!hasChats">
+          <ion-icon name="chatbubbles-outline" size="large"></ion-icon>
+          <h3>No conversations yet</h3>
+          <p>Start a new conversation to begin messaging</p>
+          <ion-button (click)="onNewChat()" fill="outline">
+            <ion-icon name="add" slot="start"></ion-icon>
+            New Chat
+          </ion-button>
+        </div>
+
+        <!-- Actual Chat List when chats exist -->
+        <div *ngIf="hasChats">
+          <ion-list>
+            <ion-item
+              *ngFor="let chat of chats$ | async; trackBy: trackByFn"
+              button
+              (click)="onChatSelected(chat.id)"
+              detail="false"
+            >
+              <!-- Profile Picture -->
+              <ion-avatar slot="start">
+                <img
+                  [src]="getChatAvatarImage(chat) | async"
+                  [alt]="(getChatDisplayName(chat) | async) + ' avatar'"
+                  onerror="this.src='assets/image/logo/ASCENDynamics NFP-logos_transparent.png'"
+                />
+              </ion-avatar>
+
+              <!-- Chat Info -->
+              <ion-label>
+                <h2>{{ getChatDisplayName(chat) | async }}</h2>
+                <!-- Removed message preview - only show unread indicator -->
+              </ion-label>
+
+              <!-- Timestamp and Unread Badge -->
+              <div slot="end" class="chat-meta">
+                <p class="timestamp">
+                  {{ getFormattedTime(chat.lastMessageTimestamp) }}
+                </p>
+                <!-- Unread message badge -->
+                <ion-badge
+                  *ngIf="(getUnreadCount(chat.id) | async) && (getUnreadCount(chat.id) | async)! > 0"
+                  color="primary"
+                  class="unread-badge"
+                >
+                  {{ getUnreadCount(chat.id) | async }}
+                </ion-badge>
+              </div>
+            </ion-item>
+          </ion-list>
+        </div>
+
+        <!-- Message indicating to create a real chat -->
+        <div class="info-message" *ngIf="!hasChats">
+          <ion-card>
+            <ion-card-content>
+              <h4>Getting Started with Messaging</h4>
+              <p>To see real conversations here, you'll need to:</p>
+              <ol>
+                <li>Click "New Chat" to start a conversation</li>
+                <li>
+                  Select contacts who have accepted relationship connections
+                </li>
+                <li>Send your first message</li>
+              </ol>
+              <p>
+                <strong>Note:</strong> You can only message users with whom you
+                have an accepted relationship connection.
+              </p>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </div>
+    </ion-content>
+  </ion-menu>
+
+  <!-- Detail: Chat Window (hidden on mobile when no chat selected) -->
+  <ion-router-outlet id="messaging-content" main>
+    <!-- Chat content will be loaded here -->
+  </ion-router-outlet>
+</ion-split-pane>
+
+<!-- Mobile-only: Show placeholder when no chat is selected -->
+<!-- Hide this placeholder when we're in any chat-related route -->
+<div
+  class="no-chat-selected"
+  *ngIf="!selectedChatId && isDesktop && !router.url.includes('/messaging/chat') && !router.url.includes('/messaging/new-chat')"
+>
+  <ion-icon name="chatbubbles-outline" size="large"></ion-icon>
+  <h2>Select a conversation</h2>
+  <p>Choose a chat from the list to start messaging</p>
+</div>

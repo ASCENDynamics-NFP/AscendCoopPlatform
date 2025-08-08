@@ -1,0 +1,81 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Messages
+      <ion-badge
+        *ngIf="(totalUnreadCount$ | async) && (totalUnreadCount$ | async)! > 0"
+        color="danger"
+        class="total-unread-badge"
+      >
+        {{ totalUnreadCount$ | async }}
+      </ion-badge>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="startNewChat()" fill="clear">
+        <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Messages</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- Chat List -->
+  <ion-list>
+    <ion-item
+      *ngFor="let chat of chats$ | async; trackBy: trackByFn"
+      button
+      (click)="openChat(chat)"
+      detail="false"
+    >
+      <!-- Profile Picture Placeholder -->
+      <ion-avatar slot="start">
+        <ion-icon name="person-circle" size="large"></ion-icon>
+      </ion-avatar>
+
+      <!-- Chat Info -->
+      <ion-label>
+        <h2>{{ getChatDisplayName(chat) }}</h2>
+        <p>{{ getTruncatedMessage(chat.lastMessage) }}</p>
+      </ion-label>
+
+      <!-- Timestamp and Unread Badge -->
+      <div slot="end" class="chat-meta">
+        <p class="timestamp">
+          {{ getFormattedTime(chat.lastMessageTimestamp) }}
+        </p>
+        <!-- Use notification service for unread counts -->
+        <ion-badge
+          *ngIf="(unreadCounts$ | async) && ((unreadCounts$ | async)?.[chat.id] || 0) > 0"
+          color="primary"
+          class="unread-badge"
+        >
+          {{ (unreadCounts$ | async)?.[chat.id] }}
+        </ion-badge>
+      </div>
+    </ion-item>
+  </ion-list>
+
+  <!-- Empty State -->
+  <div *ngIf="(chats$ | async)?.length === 0" class="empty-state">
+    <ion-icon name="chatbubbles-outline" size="large"></ion-icon>
+    <h3>No conversations yet</h3>
+    <p>Start a new conversation with your connections</p>
+    <ion-button (click)="startNewChat()" fill="outline">
+      <ion-icon name="add" slot="start"></ion-icon>
+      Start New Chat
+    </ion-button>
+  </div>
+
+  <!-- Floating Action Button -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="startNewChat()">
+      <ion-icon name="create"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

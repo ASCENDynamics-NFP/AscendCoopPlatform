@@ -1,0 +1,184 @@
+// New Chat Page Styling
+:host {
+  // Import chat input styling variables
+  --chat-input-bg-light: #ffffff; // Pure white for light mode
+  --chat-input-bg-dark: #2a3942;
+  --chat-input-text-light: #000000; // Dark text for light mode
+  --chat-input-text-dark: #e9edef;
+  --chat-input-border-light: #d0d0d0;
+  --chat-input-border-dark: #3a4a55;
+
+  // Page background
+  --page-bg-light: #f8f9fa;
+  --page-bg-dark: #1a1a1a;
+
+  background: var(--page-bg-light);
+  min-height: 100vh;
+}
+
+// Dark mode for host
+@media (prefers-color-scheme: dark) {
+  :host {
+    background: var(--page-bg-dark);
+  }
+}
+
+.group-options {
+  background: transparent;
+  padding: 1rem;
+  border-bottom: 1px solid var(--ion-color-light-shade);
+
+  ion-item {
+    --background: var(--chat-input-bg-light);
+    --border-radius: 12px;
+    --border-color: var(--chat-input-border-light);
+    --border-width: 1px;
+    --border-style: solid;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0.5rem;
+    transition: all 0.2s ease;
+
+    &:hover {
+      --background: #f5f5f5;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    ion-input {
+      --color: var(--chat-input-text-light);
+      --placeholder-color: rgba(0, 0, 0, 0.5);
+      font-size: 1rem;
+      padding: 8px 16px;
+    }
+
+    ion-label {
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--ion-color-dark);
+    }
+  }
+}
+
+// Dark mode for group options
+@media (prefers-color-scheme: dark) {
+  .group-options {
+    background: transparent;
+    border-bottom-color: var(--ion-color-dark-shade);
+
+    ion-item {
+      --background: var(--chat-input-bg-dark);
+      --border-color: var(--chat-input-border-dark);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+
+      &:hover {
+        --background: #323e47;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+      }
+
+      ion-input {
+        --color: var(--chat-input-text-dark);
+        --placeholder-color: rgba(233, 237, 239, 0.5);
+      }
+
+      ion-label {
+        color: var(--ion-color-light);
+      }
+    }
+  }
+}
+
+.selected-summary {
+  padding: 1rem;
+  background: transparent;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  ion-chip {
+    cursor: pointer;
+    transition: transform 0.2s;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+}
+
+// Contacts list styling
+ion-list {
+  ion-item {
+    --padding-start: 16px;
+    --inner-padding-end: 16px;
+
+    ion-checkbox {
+      margin-right: 12px;
+    }
+
+    ion-avatar {
+      margin-right: 12px;
+    }
+
+    ion-label {
+      h2 {
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+// Empty state
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  text-align: center;
+  padding: 2rem;
+
+  ion-icon {
+    color: var(--ion-color-medium);
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    color: var(--ion-color-dark);
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+  }
+}
+
+// Dark mode for empty state
+@media (prefers-color-scheme: dark) {
+  .empty-state {
+    h3 {
+      color: var(--ion-color-light);
+    }
+  }
+}
+
+// Loading overlay
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+
+  ion-spinner {
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: white;
+    font-weight: 500;
+  }
+}

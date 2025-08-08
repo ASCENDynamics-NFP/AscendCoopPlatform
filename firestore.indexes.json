@@ -15,10 +15,6 @@
         {
           "fieldPath": "name",
           "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "ASCENDING"
         }
       ]
     },
@@ -33,10 +29,6 @@
         {
           "fieldPath": "status",
           "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "ASCENDING"
         }
       ]
     },
@@ -50,10 +42,6 @@
         },
         {
           "fieldPath": "userId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "__name__",
           "order": "ASCENDING"
         }
       ]
@@ -69,9 +57,47 @@
         {
           "fieldPath": "date",
           "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "chats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "participants",
+          "arrayConfig": "CONTAINS"
         },
         {
-          "fieldPath": "__name__",
+          "fieldPath": "lastMessageTimestamp",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "relatedAccounts",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "relatedAccounts",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "accountId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
           "order": "ASCENDING"
         }
       ]

@@ -54,6 +54,7 @@ import {SuccessHandlerService} from "./core/services/success-handler.service";
 
 import {AngularFireModule} from "@angular/fire/compat";
 import {AngularFirestoreModule} from "@angular/fire/compat/firestore";
+import {AngularFireStorageModule} from "@angular/fire/compat/storage";
 
 import {AuthSyncService} from "./core/services/auth-sync.service";
 import {MenuComponent} from "./shared/components/menu/menu.component";
@@ -89,6 +90,7 @@ export function createTranslateLoader(http: HttpClient) {
   imports: [
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFirestoreModule,
+    AngularFireStorageModule,
     AppRoutingModule,
     BrowserModule,
     IonicModule.forRoot({}),

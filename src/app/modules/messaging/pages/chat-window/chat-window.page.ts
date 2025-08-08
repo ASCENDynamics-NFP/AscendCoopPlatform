@@ -33,6 +33,7 @@ import {
   ActionSheetController,
   ModalController,
   AlertController,
+  Platform,
 } from "@ionic/angular";
 import {Observable, Subject, of, firstValueFrom} from "rxjs";
 import {takeUntil, map, take} from "rxjs/operators";
@@ -75,6 +76,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   currentUserId: string | null = null;
   otherParticipantId: string | null = null;
   isContactBlocked = false;
+  isDesktop = false;
 
   // File preview properties
   selectedFile: File | null = null;
@@ -109,6 +111,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     private encryptedChatService: EncryptedChatService,
     private networkService: NetworkConnectionService,
     private offlineSync: OfflineSyncService,
+    private platform: Platform,
   ) {}
 
   ngOnInit() {
@@ -118,6 +121,9 @@ export class ChatWindowPage implements OnInit, OnDestroy {
       this.router.navigate(["/messaging/chats"]);
       return;
     }
+
+    // Check if we're on desktop
+    this.isDesktop = this.platform.width() >= 768;
 
     // Initialize connection status observables
     this.isOnline$ = this.chatService.isOnline();

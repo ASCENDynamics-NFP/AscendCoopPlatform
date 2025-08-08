@@ -26,7 +26,11 @@
     "dashboard": "Dashboard",
     "manage_projects": "Manage Projects",
     "time_tracking": "Time Tracking",
-    "messaging": "Messages"
+    "messaging": "Messages",
+    "timesheet": "Timesheet",
+    "about_us": "About Us",
+    "search_groups": "Search Groups",
+    "home": "Home"
   },
   "user": {
     "login": {

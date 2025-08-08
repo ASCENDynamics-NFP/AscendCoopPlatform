@@ -53,6 +53,13 @@ import {ConnectionStatusComponent} from "./components/connection-status/connecti
     ReactiveFormsModule,
   ],
   exports: [
+    CommonModule,
+    IonicModule,
+    TranslateModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterLink,
+    RouterLinkActive,
     AppHeaderComponent,
     FeedbackModalComponent,
     ImageUploadModalComponent,

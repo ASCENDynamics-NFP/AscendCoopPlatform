@@ -5,6 +5,9 @@
         (click)="goBack()"
         defaultHref="/messaging/chats"
       ></ion-back-button>
+
+      <!-- Main menu button - allows navigation out of messaging on all screen sizes -->
+      <ion-menu-button menu="main" color="primary"> </ion-menu-button>
     </ion-buttons>
 
     <ion-title>{{ getChatDisplayName(chat$ | async) }}</ion-title>

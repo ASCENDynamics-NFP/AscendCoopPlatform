@@ -51,11 +51,13 @@ import * as AccountActions from "../../../../state/actions/account.actions";
 export class MessagingPage implements OnInit, OnDestroy {
   selectedChatId: string | null = null;
   isDesktop = false;
+  isDesktop$: Observable<boolean>;
   hasChats = false;
   chats$: Observable<Chat[]>;
   unreadCounts$: Observable<{[chatId: string]: number}>;
   private destroy$ = new Subject<void>();
   private stableChats$ = new BehaviorSubject<Chat[]>([]);
+  private isDesktopSubject$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private route: ActivatedRoute,
@@ -70,15 +72,18 @@ export class MessagingPage implements OnInit, OnDestroy {
     // Initialize chats observable with stable references
     this.chats$ = this.createStableChatObservable();
     this.unreadCounts$ = this.notificationService.getUnreadCounts();
+    this.isDesktop$ = this.isDesktopSubject$.asObservable();
   }
 
   ngOnInit() {
     // Check if we're on desktop
     this.isDesktop = this.platform.width() >= 768;
+    this.isDesktopSubject$.next(this.isDesktop);
 
     // Listen for platform changes
     this.platform.resize.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.isDesktop = this.platform.width() >= 768;
+      this.isDesktopSubject$.next(this.isDesktop);
     });
 
     // Listen for route changes to track selected chat
@@ -118,6 +123,7 @@ export class MessagingPage implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+    this.isDesktopSubject$.complete();
   }
 
   /**

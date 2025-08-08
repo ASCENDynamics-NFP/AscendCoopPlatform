@@ -75,11 +75,11 @@ export class AppComponent implements OnInit {
 
   private async updateMenu(isLoggedIn: boolean) {
     if (isLoggedIn) {
-      await this.menuCtrl.enable(false, "guest");
-      await this.menuCtrl.enable(true, "user");
+      // Enable the main app menu for authenticated users
+      await this.menuCtrl.enable(true, "main");
     } else {
-      await this.menuCtrl.enable(false, "user");
-      await this.menuCtrl.enable(true, "guest");
+      // Disable the main app menu for guests
+      await this.menuCtrl.enable(false, "main");
     }
   }
 }

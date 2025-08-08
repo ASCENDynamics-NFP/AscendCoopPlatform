@@ -20,7 +20,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <!-- src/app/shared/components/menu/menu.component.html -->
 
 <ion-split-pane [disabled]="!user" contentId="main-content">
-  <ion-menu side="start" contentId="main-content" type="overlay">
+  <ion-menu menuId="main" side="start" contentId="main-content" type="overlay">
     <ion-header>
       <ion-toolbar class="menu-toolbar">
         <div class="toolbar-content">
@@ -97,7 +97,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             lines="none"
             detail="false"
           >
-            <ion-icon aria-hidden="true" slot="start" [name]="info.icon"></ion-icon>
+            <ion-icon
+              aria-hidden="true"
+              slot="start"
+              [name]="info.icon"
+            ></ion-icon>
             <ion-label>{{ info.title }}</ion-label>
           </ion-item>
         </ion-menu-toggle>

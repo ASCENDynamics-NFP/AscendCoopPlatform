@@ -17,18 +17,16 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// src/app/guards/auth.guard.ts
 import {Injectable} from "@angular/core";
 import {Router, ActivatedRouteSnapshot} from "@angular/router";
 import {firstValueFrom} from "rxjs";
 import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../state/selectors/auth.selectors";
-import * as AuthActions from "../../state/actions/auth.actions";
 
 @Injectable({
   providedIn: "root",
 })
-export class AuthGuard {
+export class RegistrationAuthGuard {
   constructor(
     private store: Store,
     private router: Router,
@@ -41,45 +39,35 @@ export class AuthGuard {
       // Redirect to login if not authenticated
       this.router.navigate(["/auth/login"]);
       return false;
-    } else if (authUser && !authUser.emailVerified) {
-      // Send verification email if the user is not verified
-      if (authUser.email) {
-        this.store.dispatch(
-          AuthActions.sendVerificationMail({email: authUser.email}),
-        );
-      }
-      // Sign out the user and redirect to login
-      this.store.dispatch(AuthActions.signOut());
-      return false;
     }
 
-    // Check registration completion for specific routes
-    if (route && this.requiresCompletedRegistration(route)) {
+    // For registration routes, we allow access even if email is not verified
+    // This is because users need to complete registration before email verification
+
+    if (route && this.isRegistrationRoute(route)) {
       const accountId = route.paramMap.get("accountId");
-      const isOwnProfile = accountId === authUser.uid;
+      const isOwnRegistration = accountId === authUser.uid;
       const hasCompletedRegistration = authUser.type && authUser.type !== "new";
 
-      if (isOwnProfile && !hasCompletedRegistration) {
-        // Redirect to registration if viewing own profile and haven't completed registration
-        this.router.navigate(["/account/registration", authUser.uid]);
+      if (!isOwnRegistration) {
+        // Prevent access to other users' registration pages
+        this.router.navigate(["/account", authUser.uid]);
+        return false;
+      }
+
+      if (hasCompletedRegistration) {
+        // Redirect to user's profile if they try to access registration after completing it
+        this.router.navigate(["/account", authUser.uid]);
         return false;
       }
     }
+
     return true;
   }
 
-  private requiresCompletedRegistration(
-    route: ActivatedRouteSnapshot,
-  ): boolean {
-    // Define which routes require completed registration
-    const routesRequiringRegistration = [
-      ":accountId", // Profile details page
-      ":accountId/edit", // Profile edit page
-      "settings", // Settings page
-      // Add other routes that should require completed registration
-    ];
-
+  private isRegistrationRoute(route: ActivatedRouteSnapshot): boolean {
+    // Check if the current route is the registration route
     const currentPath = route.routeConfig?.path || "";
-    return routesRequiringRegistration.includes(currentPath);
+    return currentPath === "registration/:accountId";
   }
 }

@@ -31,7 +31,7 @@ import {countryCodes} from "../../../../../../core/data/phone";
 import {countries, statesProvinces} from "../../../../../../core/data/country";
 import {Store} from "@ngrx/store";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
-import {selectAccountById} from "../../../../../../state/selectors/account.selectors";
+import * as AuthActions from "../../../../../../state/actions/auth.actions";
 import {selectAuthUser} from "../../../../../../state/selectors/auth.selectors";
 import {filter, take} from "rxjs/operators";
 
@@ -194,6 +194,11 @@ export class UnifiedRegistrationComponent implements OnChanges {
       this.store.dispatch(AccountActions.updateAccount({account: baseAccount}));
 
       if (this.redirectSubmit && this.account?.id) {
+        // Force token refresh after account update to get updated custom claims
+        setTimeout(() => {
+          this.store.dispatch(AuthActions.refreshToken({forceRefresh: true}));
+        }, 1000); // Small delay to allow server-side function to complete
+
         // Wait for the AuthUser to be synced with the updated account type before redirecting
         this.store
           .select(selectAuthUser)

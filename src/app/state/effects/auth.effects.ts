@@ -53,7 +53,11 @@ import {
 import {ErrorHandlerService} from "../../core/services/error-handler.service";
 import {SuccessHandlerService} from "../../core/services/success-handler.service";
 import {Router} from "@angular/router";
-import {AlertController, LoadingController} from "@ionic/angular";
+import {
+  AlertController,
+  LoadingController,
+  MenuController,
+} from "@ionic/angular";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {selectAuthUser} from "../selectors/auth.selectors";
 import {Store} from "@ngrx/store";
@@ -77,6 +81,7 @@ export class AuthEffects {
     private alertController: AlertController,
     private loadingController: LoadingController,
     private store: Store<{auth: AuthState}>,
+    private menuCtrl: MenuController,
   ) {}
 
   // Initialize Auth and Process Sign-In Link
@@ -164,11 +169,6 @@ export class AuthEffects {
       ofType(AuthActions.processSignInLink),
       switchMap(({email, link}) =>
         from(signInWithEmailLink(this.auth, email, link)).pipe(
-          tap(() => {
-            this.successHandler.handleSuccess(
-              "Successfully signed in with email link!",
-            );
-          }),
           switchMap(async (result) => {
             const idTokenResult = await result.user.getIdTokenResult();
             return {user: result.user, claims: idTokenResult.claims};
@@ -198,13 +198,6 @@ export class AuthEffects {
       ofType(AuthActions.signUp),
       switchMap(({email, password}) =>
         from(createUserWithEmailAndPassword(this.auth, email, password)).pipe(
-          tap((result) => {
-            this.successHandler.handleSuccess("Successfully signed up!");
-            this.router.navigateByUrl(
-              `/account/registration/${result.user.uid}`,
-              {replaceUrl: true},
-            );
-          }),
           switchMap(async (result) => {
             const idTokenResult = await result.user.getIdTokenResult();
             return {user: result.user, claims: idTokenResult.claims};
@@ -214,6 +207,11 @@ export class AuthEffects {
               map((authUser) => {
                 this.store.dispatch(
                   AuthActions.updateAuthUser({user: authUser}),
+                );
+                // Navigate to registration after auth state is updated
+                this.router.navigateByUrl(
+                  `/account/registration/${authUser.uid}`,
+                  {replaceUrl: true},
                 );
                 return AuthActions.signUpSuccess({user: authUser});
               }),
@@ -234,9 +232,6 @@ export class AuthEffects {
       ofType(AuthActions.signIn),
       switchMap(({email, password}) =>
         from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
-          tap(() => {
-            this.successHandler.handleSuccess("Successfully signed in!");
-          }),
           switchMap(async (result) => {
             const idTokenResult = await result.user.getIdTokenResult();
             return {user: result.user, claims: idTokenResult.claims};
@@ -266,11 +261,6 @@ export class AuthEffects {
       ofType(AuthActions.signInWithGoogle),
       switchMap(() =>
         from(signInWithPopup(this.auth, new GoogleAuthProvider())).pipe(
-          tap(() => {
-            this.successHandler.handleSuccess(
-              "Successfully signed in with Google!",
-            );
-          }),
           switchMap(async (result) => {
             const idTokenResult = await result.user.getIdTokenResult();
             return {user: result.user, claims: idTokenResult.claims};
@@ -299,8 +289,30 @@ export class AuthEffects {
     () =>
       this.actions$.pipe(
         ofType(AuthActions.signInSuccess),
-        tap(({uid}) => {
-          this.router.navigateByUrl(`/account/${uid}`, {replaceUrl: true});
+        withLatestFrom(this.store.select(selectAuthUser)),
+        switchMap(([{uid}, authUser]) => {
+          const currentUser = this.auth.currentUser;
+
+          // Check if user has completed registration
+          const hasCompletedRegistration =
+            authUser?.type && authUser.type !== "new";
+
+          // If email is unverified OR registration is incomplete, redirect to registration
+          if (
+            (currentUser && !currentUser.emailVerified) ||
+            !hasCompletedRegistration
+          ) {
+            this.router.navigateByUrl(`/account/registration/${uid}`, {
+              replaceUrl: true,
+            });
+          } else {
+            // Email is verified AND registration is complete, redirect to profile
+            // Re-enable menu when redirecting to profile (user has completed registration)
+            this.menuCtrl.enable(true);
+            this.router.navigateByUrl(`/account/${uid}`, {replaceUrl: true});
+          }
+
+          return of(null);
         }),
       ),
     {dispatch: false},
@@ -449,6 +461,41 @@ export class AuthEffects {
       })),
       map(({user}) => AuthActions.updateAuthUserSuccess({user})),
       catchError((error) => of(AuthActions.updateAuthUserFailure({error}))),
+    ),
+  );
+
+  // Refresh Token Effect
+  refreshToken$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.refreshToken),
+      switchMap(({forceRefresh = true}) => {
+        const currentUser = this.auth.currentUser;
+
+        if (!currentUser) {
+          return of(
+            AuthActions.refreshTokenFailure({
+              error: "No authenticated user found",
+            }),
+          );
+        }
+
+        return from(currentUser.getIdTokenResult(forceRefresh)).pipe(
+          switchMap((idTokenResult) => {
+            return this.createAuthUserFromClaims(
+              currentUser,
+              idTokenResult.claims,
+            ).pipe(
+              map((authUser) =>
+                AuthActions.refreshTokenSuccess({user: authUser}),
+              ),
+            );
+          }),
+          catchError((error) => {
+            console.error("Error refreshing token:", error);
+            return of(AuthActions.refreshTokenFailure({error}));
+          }),
+        );
+      }),
     ),
   );
 

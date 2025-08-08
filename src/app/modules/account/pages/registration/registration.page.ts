@@ -19,8 +19,8 @@
 ***********************************************************************************************/
 // src/app/modules/account/pages/registration/registration.page.ts
 
-import {Component, OnInit} from "@angular/core";
-import {ActivatedRoute, Router} from "@angular/router";
+import {Component, OnInit, OnDestroy} from "@angular/core";
+import {ActivatedRoute} from "@angular/router";
 import {Account} from "@shared/models/account.model";
 import {Store} from "@ngrx/store";
 import {
@@ -28,7 +28,7 @@ import {
   selectAccountLoading,
 } from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
-import {Observable, combineLatest} from "rxjs";
+import {Observable} from "rxjs";
 import {
   switchMap,
   filter,
@@ -38,13 +38,14 @@ import {
   take,
 } from "rxjs/operators";
 import {MetaService} from "../../../../core/services/meta.service";
+import {MenuController} from "@ionic/angular";
 
 @Component({
   selector: "app-registration",
   templateUrl: "./registration.page.html",
   styleUrls: ["./registration.page.scss"],
 })
-export class RegistrationPage implements OnInit {
+export class RegistrationPage implements OnInit, OnDestroy {
   public selectedType: "user" | "group" | "" = "";
   public account$!: Observable<Account | undefined>;
   public loading$!: Observable<boolean>;
@@ -54,11 +55,14 @@ export class RegistrationPage implements OnInit {
   constructor(
     private metaService: MetaService,
     private route: ActivatedRoute,
-    private router: Router,
     private store: Store,
+    private menuCtrl: MenuController,
   ) {}
 
   ngOnInit() {
+    // Disable the menu when entering the registration page
+    this.menuCtrl.enable(false);
+
     // Get accountId as an observable
     this.accountId$ = this.route.paramMap.pipe(
       map((params) => params.get("accountId")),
@@ -87,6 +91,11 @@ export class RegistrationPage implements OnInit {
     );
   }
 
+  ngOnDestroy() {
+    // Re-enable the menu when leaving the registration page
+    this.menuCtrl.enable(true);
+  }
+
   ionViewWillEnter() {
     // Default Meta Tags
     this.metaService.updateMetaTags(
@@ -110,6 +119,11 @@ export class RegistrationPage implements OnInit {
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
     );
+  }
+
+  ionViewWillLeave() {
+    // Re-enable the menu when leaving the registration page
+    this.menuCtrl.enable(true);
   }
 
   selectType(type: "user" | "group") {

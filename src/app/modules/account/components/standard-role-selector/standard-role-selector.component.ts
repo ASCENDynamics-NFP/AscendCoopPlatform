@@ -129,12 +129,12 @@ export class StandardRoleSelectorComponent implements OnInit {
       Organization: "business",
       Collaboration: "git-merge",
       Family: "home",
-      Friends: "happy",
-      Volunteer: "heart",
+      Friends: "people",
+      Volunteer: "hand-right",
       Professional: "briefcase",
-      Community: "location",
+      Community: "globe",
       Administrative: "shield-checkmark",
-      Partnership: "handshake",
+      Partnership: "link",
       Corporate: "storefront",
     };
     return categoryIcons[categoryEnum] || "ellipse";
@@ -143,16 +143,16 @@ export class StandardRoleSelectorComponent implements OnInit {
   getCategoryColor(category: string): string {
     const categoryEnum = category as StandardRoleCategory;
     const categoryColors: {[key in StandardRoleCategory]: string} = {
-      Organization: "primary",
-      Collaboration: "secondary",
-      Family: "tertiary",
-      Friends: "success",
-      Volunteer: "warning",
-      Professional: "danger",
-      Community: "dark",
+      Organization: "secondary",
+      Collaboration: "tertiary",
+      Family: "warning",
+      Friends: "medium",
+      Volunteer: "success",
+      Professional: "dark",
+      Community: "primary",
       Administrative: "medium",
-      Partnership: "primary",
-      Corporate: "secondary",
+      Partnership: "secondary",
+      Corporate: "success",
     };
     return categoryColors[categoryEnum] || "medium";
   }

@@ -91,8 +91,8 @@ describe("onCreateAccount", () => {
       suggestedChildRoles: [],
     };
 
-    let loggerInfoStub = sinon.stub();
-    let loggerErrorStub = sinon.stub();
+    const loggerInfoStub = sinon.stub();
+    const loggerErrorStub = sinon.stub();
 
     let handler: any;
     proxyquire("../src/database/accounts/triggers/onCreate/index", {

@@ -263,6 +263,10 @@ export interface RelatedAccount extends BaseDocument {
    * Reference to a custom group role defined in the parent group
    */
   roleId?: string;
+  /**
+   * Multiple role assignments for more complex permission structures
+   */
+  roleIds?: string[];
   initiatorId?: string; // ID of the account who initiated the request
   targetId?: string; // ID of the account who received the request
   canAccessContactInfo?: boolean; // Whether the related account can access the contact information

@@ -27,6 +27,10 @@ import * as AccountActions from "../../../../state/actions/account.actions";
 import {RouterTestingModule} from "@angular/router/testing";
 import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
+import {
+  StandardRoleTemplate,
+  StandardRoleCategory,
+} from "../../../../../../shared/models/standard-role-template.model";
 
 describe("RoleManagementPage", () => {
   let component: RoleManagementPage;
@@ -58,22 +62,72 @@ describe("RoleManagementPage", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should dispatch createGroupRole on addRole", () => {
+  it("should dispatch createGroupRole on onStandardRoleSelected", () => {
     const store = TestBed.inject(Store);
     spyOn(store, "dispatch");
     const afs = TestBed.inject(AngularFirestore);
     (afs.createId as jasmine.Spy).and.returnValue("generatedId");
-    component.newRole = {name: "Test"};
-    component.addRole();
+
+    const template: StandardRoleTemplate = {
+      id: "std_admin",
+      category: "Organization" as StandardRoleCategory,
+      name: "Administrator",
+      description: "Test admin role",
+      defaultPermissions: ["manage_members"],
+      isSystemRole: true,
+      icon: "shield-checkmark",
+    };
+
+    component.onStandardRoleSelected(template);
+
     expect(store.dispatch).toHaveBeenCalledWith(
       AccountActions.createGroupRole({
         groupId: component.groupId,
         role: {
           id: "generatedId",
-          name: "Test",
-          description: undefined,
-          parentRoleId: undefined,
+          name: "Administrator",
+          description: "Test admin role",
           roleType: "organization",
+          permissions: ["manage_members"],
+          standardRoleTemplateId: "std_admin",
+          standardCategory: "Organization",
+          isStandardRole: true,
+          isCustomRole: false,
+          icon: "shield-checkmark",
+          sortOrder: 0,
+        },
+      }),
+    );
+  });
+
+  it("should dispatch createGroupRole on onCustomRoleRequested", () => {
+    const store = TestBed.inject(Store);
+    spyOn(store, "dispatch");
+    const afs = TestBed.inject(AngularFirestore);
+    (afs.createId as jasmine.Spy).and.returnValue("generatedId");
+
+    const customRole = {
+      name: "Custom Manager",
+      description: "Custom role description",
+      category: "Organization" as StandardRoleCategory,
+      parentRoleId: "parent-role-id",
+    };
+
+    component.onCustomRoleRequested(customRole);
+
+    expect(store.dispatch).toHaveBeenCalledWith(
+      AccountActions.createGroupRole({
+        groupId: component.groupId,
+        role: {
+          id: "generatedId",
+          name: "Custom Manager",
+          description: "Custom role description",
+          roleType: "organization",
+          parentRoleId: "parent-role-id",
+          standardCategory: "Organization",
+          isStandardRole: false,
+          isCustomRole: true,
+          permissions: [],
         },
       }),
     );
@@ -89,5 +143,86 @@ describe("RoleManagementPage", () => {
         type: AccountActions.updateGroupRole.type,
       }),
     );
+  });
+
+  it("should dispatch deleteGroupRole on deleteRole", () => {
+    const store = TestBed.inject(Store);
+    spyOn(store, "dispatch");
+    const role = {id: "test-role-id", name: "Test Role"};
+
+    component.deleteRole(role as any);
+
+    expect(store.dispatch).toHaveBeenCalledWith(
+      AccountActions.deleteGroupRole({
+        groupId: component.groupId,
+        roleId: "test-role-id",
+      }),
+    );
+  });
+
+  it("should filter available parent roles by same category", () => {
+    const roles = [
+      {id: "1", name: "Admin", standardCategory: "Organization"},
+      {id: "2", name: "Manager", standardCategory: "Organization"},
+      {id: "3", name: "Volunteer", standardCategory: "Volunteer"},
+      {id: "4", name: "Member", standardCategory: "Organization"},
+    ];
+
+    const currentRole = {
+      id: "2",
+      name: "Manager",
+      standardCategory: "Organization",
+    };
+
+    const availableParents = component.getAvailableParentRoles(
+      currentRole as any,
+      roles as any,
+    );
+
+    expect(availableParents.length).toBe(2); // Admin and Member (same category, excluding self)
+    expect(availableParents.map((r) => r.name)).toEqual(
+      jasmine.arrayContaining(["Admin", "Member"]),
+    );
+    expect(availableParents.map((r) => r.name)).not.toContain("Manager"); // Exclude self
+    expect(availableParents.map((r) => r.name)).not.toContain("Volunteer"); // Different category
+  });
+
+  it("should prevent circular references in parent selection", () => {
+    const roles = [
+      {
+        id: "1",
+        name: "Parent",
+        standardCategory: "Organization",
+        parentRoleId: undefined,
+      },
+      {
+        id: "2",
+        name: "Child",
+        standardCategory: "Organization",
+        parentRoleId: "1",
+      },
+      {
+        id: "3",
+        name: "Grandchild",
+        standardCategory: "Organization",
+        parentRoleId: "2",
+      },
+    ];
+
+    // Try to make "Parent" a child of "Grandchild" (would create circular reference)
+    const parentRole = {
+      id: "1",
+      name: "Parent",
+      standardCategory: "Organization",
+    };
+
+    const availableParents = component.getAvailableParentRoles(
+      parentRole as any,
+      roles as any,
+    );
+
+    // Should not include Child or Grandchild as they would create circular reference
+    expect(availableParents.map((r) => r.name)).not.toContain("Child");
+    expect(availableParents.map((r) => r.name)).not.toContain("Grandchild");
   });
 });

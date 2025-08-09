@@ -9,6 +9,7 @@ import {selectEntries} from "../../../../state/selectors/time-tracking.selectors
 import {selectActiveProjectsByAccount} from "../../../../state/selectors/projects.selectors";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
 import {FormsModule} from "@angular/forms";
+import {TranslateModule} from "@ngx-translate/core";
 
 describe("TimesheetPage", () => {
   let component: TimesheetPage;
@@ -18,7 +19,7 @@ describe("TimesheetPage", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [TimesheetPage, WeekViewComponent],
-      imports: [IonicModule.forRoot(), FormsModule],
+      imports: [IonicModule.forRoot(), FormsModule, TranslateModule.forRoot()],
       providers: [
         provideMockStore({
           initialState: {

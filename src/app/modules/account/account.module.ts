@@ -60,6 +60,7 @@ import {RoleHierarchyPage} from "./pages/role-hierarchy/role-hierarchy.page";
 import {ProjectsPage} from "./pages/projects/projects.page";
 import {SafeUrlPipe} from "../../shared/pipes/safe-url.pipe";
 import {GroupCalendarComponent} from "./pages/details/components/group-calendar/group-calendar.component";
+import {StandardRoleSelectorComponent} from "./components/standard-role-selector/standard-role-selector.component";
 
 @NgModule({
   declarations: [
@@ -92,6 +93,7 @@ import {GroupCalendarComponent} from "./pages/details/components/group-calendar/
     RoleHierarchyPage,
     ProjectsPage,
     GroupCalendarComponent,
+    StandardRoleSelectorComponent,
     SafeUrlPipe,
   ],
   imports: [

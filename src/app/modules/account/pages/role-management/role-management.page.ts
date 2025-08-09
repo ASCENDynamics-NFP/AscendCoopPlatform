@@ -24,13 +24,28 @@ import {ActivatedRoute} from "@angular/router";
 import {Store} from "@ngrx/store";
 import {Observable} from "rxjs";
 import {map} from "rxjs/operators";
-import {GroupRole, RoleType} from "@shared/models/group-role.model";
+import {
+  GroupRole,
+  RoleType,
+} from "../../../../../../shared/models/group-role.model";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {
   selectGroupRolesByGroupId,
   selectAccountLoading,
 } from "../../../../state/selectors/account.selectors";
+import {
+  StandardRoleTemplate,
+  StandardRoleCategory,
+} from "../../../../../../shared/models/standard-role-template.model";
+import {Account} from "../../../../../../shared/models/account.model";
+
+interface CategorizedRoles {
+  category: StandardRoleCategory | "Uncategorized";
+  roles: GroupRole[];
+  icon: string;
+  color: string;
+}
 
 @Component({
   selector: "app-role-management",
@@ -41,14 +56,11 @@ export class RoleManagementPage implements OnInit {
   groupId!: string;
   roles$!: Observable<GroupRole[]>;
   editableRoles$!: Observable<GroupRole[]>;
+  categorizedRoles$!: Observable<CategorizedRoles[]>;
   loading$!: Observable<boolean>;
 
-  newRole: Partial<GroupRole> = {
-    name: "",
-    parentRoleId: undefined,
-    roleType: "organization",
-  };
-
+  // For account info to pass to standard role selector
+  currentAccount?: Account;
   constructor(
     private route: ActivatedRoute,
     private store: Store,
@@ -62,27 +74,13 @@ export class RoleManagementPage implements OnInit {
     this.editableRoles$ = this.roles$.pipe(
       map((roles) => roles.map((role) => ({...role}))),
     );
+
+    this.categorizedRoles$ = this.roles$.pipe(
+      map((roles) => this.groupRolesByCategory(roles)),
+    );
+
     this.loading$ = this.store.select(selectAccountLoading);
     this.store.dispatch(AccountActions.loadGroupRoles({groupId: this.groupId}));
-  }
-
-  addRole() {
-    if (!this.newRole.name) return;
-    const role: GroupRole = {
-      id: this.afs.createId(),
-      name: this.newRole.name!,
-      description: this.newRole.description,
-      parentRoleId: this.newRole.parentRoleId,
-      roleType: this.newRole.roleType || "organization",
-    };
-    this.store.dispatch(
-      AccountActions.createGroupRole({groupId: this.groupId, role}),
-    );
-    this.newRole = {
-      name: "",
-      parentRoleId: undefined,
-      roleType: "organization",
-    };
   }
 
   updateRole(role: GroupRole) {
@@ -129,5 +127,135 @@ export class RoleManagementPage implements OnInit {
 
   getRoleIcon(role: GroupRole): string {
     return role.roleType === "user" ? "people" : "business";
+  }
+
+  /**
+   * Gets available parent roles for a given role, filtered by same category
+   * @param currentRole The role to get parent options for
+   * @param allRoles All available roles
+   * @returns Filtered array of potential parent roles
+   */
+  getAvailableParentRoles(
+    currentRole: GroupRole,
+    allRoles: GroupRole[],
+  ): GroupRole[] {
+    return allRoles.filter((role) => {
+      // Exclude the current role itself
+      if (role.id === currentRole.id) return false;
+
+      // Exclude if it would create a circular dependency
+      if (this.isDescendant(role.id, currentRole.id, allRoles)) return false;
+
+      // Only allow roles from the same category (if categories are defined)
+      if (currentRole.standardCategory && role.standardCategory) {
+        return role.standardCategory === currentRole.standardCategory;
+      }
+
+      // For roles without categories, allow any other role without category
+      if (!currentRole.standardCategory && !role.standardCategory) {
+        return true;
+      }
+
+      // Mixed category/no-category combinations not allowed
+      return false;
+    });
+  }
+
+  onStandardRoleSelected(template: StandardRoleTemplate) {
+    const role: GroupRole = {
+      id: this.afs.createId(),
+      name: template.name,
+      description: template.description,
+      roleType: "organization", // Default to organization type
+      permissions: template.defaultPermissions || [],
+      standardRoleTemplateId: template.id,
+      standardCategory: template.category,
+      isStandardRole: true,
+      isCustomRole: false,
+      icon: template.icon,
+      sortOrder: 0, // Default sort order
+    };
+
+    this.store.dispatch(
+      AccountActions.createGroupRole({groupId: this.groupId, role}),
+    );
+  }
+
+  onCustomRoleRequested(customRole: {
+    name: string;
+    description?: string;
+    category: StandardRoleCategory;
+    parentRoleId?: string;
+  }) {
+    const role: GroupRole = {
+      id: this.afs.createId(),
+      name: customRole.name,
+      description: customRole.description,
+      roleType: "organization",
+      parentRoleId: customRole.parentRoleId,
+      standardCategory: customRole.category,
+      isStandardRole: false,
+      isCustomRole: true,
+      permissions: [],
+    };
+
+    this.store.dispatch(
+      AccountActions.createGroupRole({groupId: this.groupId, role}),
+    );
+  }
+
+  private groupRolesByCategory(roles: GroupRole[]): CategorizedRoles[] {
+    const categoryIcons: {[key: string]: string} = {
+      User: "person",
+      Organization: "business",
+      Collaboration: "git-merge",
+      Volunteer: "hand-right",
+      Family: "home",
+      Friends: "people",
+      Professional: "briefcase",
+      Community: "globe",
+      Partnership: "link",
+      Corporate: "storefront",
+      Leadership: "star",
+      Uncategorized: "help",
+    };
+
+    const categoryColors: {[key: string]: string} = {
+      User: "primary",
+      Organization: "secondary",
+      Collaboration: "tertiary",
+      Volunteer: "success",
+      Family: "warning",
+      Friends: "medium",
+      Professional: "dark",
+      Community: "primary",
+      Partnership: "secondary",
+      Corporate: "success",
+      Leadership: "danger",
+      Uncategorized: "medium",
+    };
+
+    // Group roles by category
+    const grouped = roles.reduce(
+      (acc, role) => {
+        const category = role.standardCategory || "Uncategorized";
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push(role);
+        return acc;
+      },
+      {} as {[key: string]: GroupRole[]},
+    );
+
+    // Convert to array and sort by category name
+    return Object.keys(grouped)
+      .sort()
+      .map((category) => ({
+        category: category as StandardRoleCategory | "Uncategorized",
+        roles: grouped[category].sort((a, b) => a.name.localeCompare(b.name)),
+        icon: categoryIcons[category] || "help",
+        color: categoryColors[category] || "medium",
+      }));
   }
 }

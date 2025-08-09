@@ -100,18 +100,25 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 </ng-container>
                 <ng-container *ngIf="showAccessControls$ | async">
                   <ion-select
-                    [value]="relatedAccount.roleId"
+                    [value]="getCurrentRoleIds(relatedAccount)"
                     interface="popover"
-                    placeholder="Role"
+                    placeholder="Roles (max 1 per category)"
+                    multiple="true"
                     (click)="$event.stopPropagation()"
-                    (ionChange)="updateRole(relatedAccount, $event.detail.value)"
-                    style="max-width: 110px; margin-right: 8px"
+                    (ionChange)="updateRoles(relatedAccount, $event.detail.value)"
+                    style="max-width: 140px; margin-right: 8px"
                   >
                     <ion-select-option
-                      *ngFor="let role of customRoles$ | async"
+                      *ngFor="let role of getRolesForAccount(relatedAccount) | async"
                       [value]="role.id"
                     >
                       {{ role.name }}
+                      <span
+                        *ngIf="role.standardCategory"
+                        style="font-size: 0.8em; color: var(--ion-color-medium)"
+                      >
+                        ({{ role.standardCategory }})
+                      </span>
                     </ion-select-option>
                   </ion-select>
                 </ng-container>
@@ -199,17 +206,27 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   </ng-container>
                   <ng-container *ngIf="showRoleControls$ | async">
                     <ion-select
-                      [value]="relatedAccount.roleId"
+                      [value]="getCurrentRoleIds(relatedAccount)"
                       interface="popover"
-                      placeholder="Role"
+                      placeholder="Roles (max 1 per category)"
+                      multiple="true"
                       (click)="$event.stopPropagation()"
-                      (ionChange)="updateRole(relatedAccount, $event.detail.value)"
-                      style="max-width: 110px; margin-right: 8px"
+                      (ionChange)="updateRoles(relatedAccount, $event.detail.value)"
+                      style="max-width: 140px; margin-right: 8px"
                     >
                       <ion-select-option
-                        *ngFor="let role of customRoles$ | async"
+                        *ngFor="let role of getRolesForAccount(relatedAccount) | async"
                         [value]="role.id"
-                        >{{ role.name }}</ion-select-option
+                        >{{ role.name }}
+                        <span
+                          *ngIf="role.standardCategory"
+                          style="
+                            font-size: 0.8em;
+                            color: var(--ion-color-medium);
+                          "
+                        >
+                          ({{ role.standardCategory }})
+                        </span></ion-select-option
                       >
                     </ion-select>
                   </ng-container>

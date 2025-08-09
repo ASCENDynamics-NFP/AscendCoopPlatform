@@ -95,14 +95,12 @@ describe("AppComponent", () => {
 
   it("should update menu for logged-in user", async () => {
     await component["updateMenu"](true);
-    expect(mockMenuController.enable).toHaveBeenCalledWith(false, "guest");
-    expect(mockMenuController.enable).toHaveBeenCalledWith(true, "user");
+    expect(mockMenuController.enable).toHaveBeenCalledWith(true, "main");
   });
 
   it("should update menu for guest user", async () => {
     await component["updateMenu"](false);
-    expect(mockMenuController.enable).toHaveBeenCalledWith(false, "user");
-    expect(mockMenuController.enable).toHaveBeenCalledWith(true, "guest");
+    expect(mockMenuController.enable).toHaveBeenCalledWith(false, "main");
   });
 
   it("should set up language on construction", () => {

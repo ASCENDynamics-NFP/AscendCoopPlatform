@@ -19,6 +19,8 @@
  *******************************************************************************/
 // shared/models/group-role.model.ts
 
+import {StandardRoleCategory} from "./standard-role-template.model";
+
 export type RoleType = "user" | "organization";
 
 export interface GroupRole {
@@ -28,4 +30,20 @@ export interface GroupRole {
   parentRoleId?: string;
   permissions?: string[];
   roleType?: RoleType;
+
+  // New fields for standardization
+  /** Reference to standard role template this role is based on */
+  standardRoleTemplateId?: string;
+  /** Standard category this role belongs to for analytics */
+  standardCategory?: StandardRoleCategory;
+  /** Whether this is a system-provided standard role (cannot be deleted) */
+  isStandardRole?: boolean;
+  /** Custom role created under a standard category */
+  isCustomRole?: boolean;
+  /** Icon associated with this role */
+  icon?: string;
+  /** Color theme for this role */
+  color?: string;
+  /** Sort order within the same parent level */
+  sortOrder?: number;
 }

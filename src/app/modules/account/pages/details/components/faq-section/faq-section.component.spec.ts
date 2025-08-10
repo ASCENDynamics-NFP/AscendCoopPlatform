@@ -20,6 +20,7 @@
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
 import {CommonModule} from "@angular/common";
+import {Router} from "@angular/router";
 import {FaqSectionComponent} from "./faq-section.component";
 
 describe("FaqSectionComponent", () => {
@@ -27,9 +28,12 @@ describe("FaqSectionComponent", () => {
   let fixture: ComponentFixture<FaqSectionComponent>;
 
   beforeEach(waitForAsync(() => {
+    const routerSpy = jasmine.createSpyObj("Router", ["navigate"]);
+
     TestBed.configureTestingModule({
       declarations: [FaqSectionComponent],
       imports: [IonicModule.forRoot(), CommonModule],
+      providers: [{provide: Router, useValue: routerSpy}],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FaqSectionComponent);
@@ -72,7 +76,7 @@ describe("FaqSectionComponent", () => {
     ];
     fixture.detectChanges();
     const compiled = fixture.nativeElement;
-    expect(compiled.querySelector(".add-faq-btn")).toBeTruthy();
+    expect(compiled.querySelector(".manage-faq-btn")).toBeTruthy();
   });
 
   it("should track FAQs by id", () => {

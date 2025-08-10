@@ -123,7 +123,11 @@ service cloud.firestore {
       allow read: if (isAccountOwner() || isAcceptedFriend() || isAcceptedGroup() || isPublicGroup() || isPublicUser());
 
       // General write rule allows owners or group admins/moderators
-      allow create, write: if isAccountOwner() || isGroupAdmin();
+      // For account owners, allow all operations (create, update, delete)
+      // For new accounts (type: 'new'), the owner can always update regardless of account type
+      allow create: if isAccountOwner();
+      allow update: if isAccountOwner() || isGroupAdmin();
+      allow delete: if isAccountOwner();
     }
 
     // Rules for relatedAccount

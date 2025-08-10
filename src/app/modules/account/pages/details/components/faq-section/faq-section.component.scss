@@ -1,0 +1,134 @@
+/***********************************************************************************************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+*
+* This file is part of Nonprofit Social Networking Platform.
+*
+* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+
+* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+
+* You should have received a copy of the GNU Affero General Public License
+* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+***********************************************************************************************/
+.faq-card {
+  border: 1px solid var(--ion-color-primary);
+  margin-bottom: 1rem;
+}
+
+.faq-card ion-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  color: var(--ion-color-primary);
+}
+
+.title-icon {
+  margin-right: 8px;
+  font-size: 1.2rem;
+}
+
+.manage-faq-btn {
+  --color: var(--ion-color-primary);
+  margin-left: auto;
+}
+
+.no-faqs {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--ion-color-medium);
+}
+
+.no-faqs-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.no-faqs p {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.faq-accordion {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--ion-color-light);
+}
+
+.faq-item:last-child {
+  border-bottom: none;
+}
+
+.faq-header {
+  --padding-start: 16px;
+  --padding-end: 8px;
+  --min-height: 60px;
+}
+
+.faq-question {
+  font-weight: 500;
+  font-size: 1rem;
+  color: var(--ion-color-dark);
+}
+
+.add-faq-btn {
+  --color: var(--ion-color-primary);
+  margin-left: auto;
+}
+
+.add-faq-btn ion-icon {
+  margin-right: 4px;
+}
+
+.faq-content {
+  padding: 16px;
+  background: var(--ion-color-light);
+}
+
+.faq-answer {
+  color: var(--ion-color-dark);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.faq-answer ::ng-deep p {
+  margin-bottom: 8px;
+}
+
+.faq-answer ::ng-deep p:last-child {
+  margin-bottom: 0;
+}
+
+.faq-meta {
+  text-align: right;
+}
+
+.faq-meta small {
+  color: var(--ion-color-medium);
+  font-size: 0.8rem;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .faq-card ion-card-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .add-faq-btn {
+    margin-left: 0;
+    align-self: stretch;
+  }
+}

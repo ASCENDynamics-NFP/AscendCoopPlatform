@@ -1,0 +1,150 @@
+/***********************************************************************************************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+*
+* This file is part of Nonprofit Social Networking Platform.
+*
+* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+
+* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+
+* You should have received a copy of the GNU Affero General Public License
+* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+***********************************************************************************************/
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0 8px;
+}
+
+.section-header h3 {
+  margin: 0;
+  color: var(--ion-color-primary);
+  font-weight: 600;
+}
+
+.add-faq-btn {
+  --border-color: var(--ion-color-primary);
+  --color: var(--ion-color-primary);
+}
+
+.faq-item {
+  margin-bottom: 1rem;
+}
+
+.faq-card {
+  border: 1px solid var(--ion-color-light-shade);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.faq-item-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+}
+
+.faq-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.faq-actions ion-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  margin: 0;
+}
+
+.faq-actions ion-button[disabled] {
+  opacity: 0.4;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--ion-color-medium);
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+}
+
+.empty-state p {
+  margin: 0 0 1.5rem 0;
+  font-size: 1rem;
+}
+
+.save-btn {
+  margin-top: 2rem;
+  --background: var(--ion-color-primary);
+  --color: var(--ion-color-primary-contrast);
+}
+
+.save-btn[disabled] {
+  --background: var(--ion-color-light);
+  --color: var(--ion-color-medium);
+}
+
+/* Form validation styles */
+ion-input.ng-invalid.ng-touched,
+ion-textarea.ng-invalid.ng-touched {
+  --border-color: var(--ion-color-danger);
+}
+
+ion-note[color="danger"] {
+  margin-top: 4px;
+  font-size: 0.875rem;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .add-faq-btn {
+    align-self: stretch;
+  }
+
+  .faq-item-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .faq-actions {
+    align-self: flex-end;
+  }
+}
+
+/* Drag and drop visual feedback (future enhancement) */
+.faq-item.dragging {
+  opacity: 0.5;
+  transform: rotate(2deg);
+}
+
+.faq-item.drag-over {
+  border-top: 2px solid var(--ion-color-primary);
+}

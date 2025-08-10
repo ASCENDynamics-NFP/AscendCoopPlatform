@@ -76,6 +76,13 @@ export class EditPage implements OnInit {
   ngOnInit(): void {
     this.authUser$ = this.store.select(selectAuthUser);
 
+    // Check for query parameters to set the initial form
+    this.activatedRoute.queryParams.subscribe((params) => {
+      if (params["section"]) {
+        this.selectedForm = params["section"];
+      }
+    });
+
     const accountId$ = this.activatedRoute.paramMap.pipe(
       map((params) => params.get("accountId")),
       filter((accountId): accountId is string => accountId !== null),

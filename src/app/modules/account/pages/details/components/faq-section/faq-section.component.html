@@ -1,0 +1,84 @@
+<!--
+Nonprofit Socia  <ion-card-header>
+    <ion-card-title>
+      <ion-icon name="help-circle-outline" class="title-icon"></ion-icon>
+      Frequently Asked Questions
+      <ion-button 
+        *ngIf="canEdit" 
+        fill="clear" 
+        size="small" 
+        (click)="onManageFAQs()" 
+        class="manage-faq-btn"
+      >
+        <ion-icon name="create-outline" slot="start"></ion-icon>
+        Manage FAQs
+      </ion-button>
+    </ion-card-title>
+  </ion-card-header>tform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<ion-card class="faq-card">
+  <ion-card-header>
+    <ion-card-title>
+      <ion-icon name="help-circle-outline" class="title-icon"></ion-icon>
+      Frequently Asked Questions
+      <ion-button
+        *ngIf="canEdit"
+        fill="clear"
+        size="small"
+        (click)="onManageFAQs()"
+        class="manage-faq-btn"
+      >
+        <ion-icon name="create-outline" slot="start"></ion-icon>
+        Manage FAQs
+      </ion-button>
+    </ion-card-title>
+  </ion-card-header>
+
+  <ion-card-content>
+    <div *ngIf="faqs.length === 0" class="no-faqs">
+      <ion-icon name="help-outline" class="no-faqs-icon"></ion-icon>
+      <p>No FAQs available yet.</p>
+      <ion-button *ngIf="canEdit" fill="outline" (click)="onManageFAQs()">
+        <ion-icon name="add" slot="start"></ion-icon>
+        Add First FAQ
+      </ion-button>
+    </div>
+
+    <ion-accordion-group *ngIf="faqs.length > 0" class="faq-accordion">
+      <ion-accordion
+        *ngFor="let faq of faqs; trackBy: trackByFAQ"
+        [value]="faq.id"
+        class="faq-item"
+      >
+        <ion-item slot="header" class="faq-header">
+          <ion-label class="faq-question">
+            {{ faq.question }}
+          </ion-label>
+        </ion-item>
+
+        <div slot="content" class="faq-content">
+          <div class="faq-answer" [innerHTML]="faq.answer"></div>
+          <div *ngIf="faq.updatedAt" class="faq-meta">
+            <small>Last updated: {{ faq.updatedAt | date: "short" }}</small>
+          </div>
+        </div>
+      </ion-accordion>
+    </ion-accordion-group>
+  </ion-card-content>
+</ion-card>

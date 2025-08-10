@@ -62,7 +62,16 @@ interface GroupSpecific {
   groupHistoryBackground?: string;
   /** Public Google Calendar embed or share URL */
   googleCalendarUrl?: string;
-  // faqs?: string[]; // Optional, for common queries related to the group
+  /** Frequently Asked Questions for the group */
+  faqs?: FAQ[];
+}
+
+export interface FAQ {
+  id: string;
+  question: string;
+  answer: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 interface LegalAgreement {

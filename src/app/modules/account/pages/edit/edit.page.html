@@ -34,6 +34,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <app-edit-menu
           [account]="account"
           [isProfileOwner]="(isProfileOwner$ | async) ?? false"
+          [selectedForm]="selectedForm"
           (itemSelected)="onItemSelected($event)"
         ></app-edit-menu>
       </ion-col>
@@ -62,6 +63,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           *ngIf="selectedForm === 'labor'"
           [account]="account"
         ></app-labor-rights-info-form>
+        <app-faq-form
+          *ngIf="selectedForm === 'faq'"
+          [account]="account"
+        ></app-faq-form>
       </ion-col>
     </ion-row>
   </ion-grid>

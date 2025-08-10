@@ -21,14 +21,15 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {ListingCreatePage} from "./listing-create.page";
 import {IonicModule, NavController} from "@ionic/angular";
 import {Store} from "@ngrx/store";
-import {Router} from "@angular/router";
+import {Router, ActivatedRoute} from "@angular/router";
 import * as ListingActions from "../../../../state/actions/listings.actions";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {Timestamp} from "firebase/firestore";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, of} from "rxjs";
 import {Listing} from "@shared/models/listing.model";
 import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
+import {MetaService} from "../../../../core/services/meta.service";
 
 describe("ListingCreatePage", () => {
   let component: ListingCreatePage;
@@ -61,6 +62,18 @@ describe("ListingCreatePage", () => {
     subscribe: new BehaviorSubject(null),
   };
 
+  const activatedRouteMock = {
+    snapshot: {
+      queryParamMap: {
+        get: jasmine.createSpy("get").and.returnValue(null),
+      },
+    },
+  };
+
+  const metaServiceMock = {
+    updateMetaTags: jasmine.createSpy("updateMetaTags"),
+  };
+
   beforeEach(async () => {
     const routerSpy = jasmine.createSpyObj("Router", ["navigate"]);
 
@@ -71,6 +84,8 @@ describe("ListingCreatePage", () => {
         provideMockStore(),
         {provide: Router, useValue: routerSpy},
         {provide: NavController, useValue: navCtrlMock},
+        {provide: ActivatedRoute, useValue: activatedRouteMock},
+        {provide: MetaService, useValue: metaServiceMock},
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();

@@ -376,22 +376,22 @@ export class AccountEffects {
   loadRelatedListings$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.loadRelatedListings),
-      mergeMap(({accountId}) =>
+      mergeMap(({accountId, forceReload}) =>
         this.store.select(selectAreRelatedListingsFresh(accountId)).pipe(
           take(1),
-          filter((areFresh) => !areFresh),
-          switchMap(() =>
-            this.listingsService
+          filter((areFresh) => !areFresh || !!forceReload),
+          switchMap(() => {
+            return this.listingsService
               .getDocuments<RelatedListing>(
                 `accounts/${accountId}/relatedListings`,
               )
               .pipe(
-                map((relatedListings) =>
-                  AccountActions.loadRelatedListingsSuccess({
+                map((relatedListings) => {
+                  return AccountActions.loadRelatedListingsSuccess({
                     accountId,
                     relatedListings,
-                  }),
-                ),
+                  });
+                }),
                 catchError((error) => {
                   this.showToast(
                     `Error loading related listings: ${error.message}`,
@@ -403,8 +403,8 @@ export class AccountEffects {
                     }),
                   );
                 }),
-              ),
-          ),
+              );
+          }),
         ),
       ),
     ),

@@ -17,11 +17,14 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
+import {ActivatedRoute} from "@angular/router";
 import {Store} from "@ngrx/store";
-import {first} from "rxjs/operators";
+import {first, filter, take} from "rxjs/operators";
+import {Listing} from "@shared/models/listing.model";
 import * as ListingActions from "../../../../state/actions/listings.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {selectListingById} from "../../../../state/selectors/listings.selectors";
 import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
@@ -29,11 +32,44 @@ import {MetaService} from "../../../../core/services/meta.service";
   templateUrl: "./listing-create.page.html",
   styleUrls: ["./listing-create.page.scss"],
 })
-export class ListingCreatePage {
+export class ListingCreatePage implements OnInit {
+  templateListing: Listing | null = null;
+
   constructor(
     private metaService: MetaService,
     private store: Store,
+    private route: ActivatedRoute,
   ) {}
+
+  ngOnInit() {
+    // Check if we have a template parameter for duplication
+    const templateId = this.route.snapshot.queryParamMap.get("template");
+    if (templateId) {
+      // Load the template listing
+      this.store.dispatch(ListingActions.loadListingById({id: templateId}));
+
+      // Get the template listing from store
+      this.store
+        .select(selectListingById(templateId))
+        .pipe(
+          filter((listing): listing is Listing => listing != null),
+          take(1),
+        )
+        .subscribe((listing) => {
+          // Create a copy without id and timestamps for the template
+          this.templateListing = {
+            ...listing,
+            id: "", // Reset ID for new listing
+            title: `Copy of ${listing.title}`, // Make it clear this is a copy
+            createdAt: undefined as any,
+            lastModifiedAt: undefined as any,
+            createdBy: "",
+            lastModifiedBy: undefined,
+            status: "active" as const, // Always start new listings as active
+          };
+        });
+    }
+  }
 
   ionViewWillEnter() {
     // Default Meta Tags

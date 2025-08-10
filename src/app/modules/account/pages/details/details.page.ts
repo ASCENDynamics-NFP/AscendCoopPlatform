@@ -99,13 +99,6 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         this.relatedAccounts$ = this.store.select(
           selectRelatedAccountsByAccountId(this.accountId),
         );
-        this.relatedListings$ = this.store
-          .select(selectRelatedListingsByAccountId(this.accountId))
-          .pipe(
-            map((listings) =>
-              listings.filter((listing) => listing.status === "active"),
-            ),
-          );
 
         this.error$ = this.store.select(selectAccountError);
 
@@ -202,6 +195,34 @@ export class DetailsPage implements OnInit, ViewWillEnter {
             if (!currentUser) return false;
             const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
             return rel !== undefined;
+          }),
+        );
+
+        // Define relatedListings$ with privacy filtering after permission observables are set
+        this.relatedListings$ = combineLatest([
+          this.store.select(selectRelatedListingsByAccountId(this.accountId)),
+          this.isProfileOwner$,
+          this.isGroupAdmin$,
+        ]).pipe(
+          map(([listings, isOwner, isAdmin]) => {
+            // Filter out applicant listings for non-authorized users
+            const filteredListings = listings.filter((listing) => {
+              // Keep active listings
+              if (listing.status !== "active") return false;
+
+              // For applicant listings, only show to owners/admins
+              if (
+                listing.relationship === "applicant" &&
+                !isOwner &&
+                !isAdmin
+              ) {
+                return false;
+              }
+
+              return true;
+            });
+
+            return filteredListings;
           }),
         );
       }

@@ -154,3 +154,34 @@ export const updateRelatedAccountFailure = createAction(
   "[Listings] Update Related Account Failure",
   props<{error: string}>(),
 );
+
+// Save/Unsave Listing Actions
+export const saveListing = createAction(
+  "[Listings] Save Listing",
+  props<{listingId: string; accountId: string}>(),
+);
+
+export const saveListingSuccess = createAction(
+  "[Listings] Save Listing Success",
+  props<{listingId: string; accountId: string}>(),
+);
+
+export const saveListingFailure = createAction(
+  "[Listings] Save Listing Failure",
+  props<{error: string}>(),
+);
+
+export const unsaveListing = createAction(
+  "[Listings] Unsave Listing",
+  props<{listingId: string; accountId: string}>(),
+);
+
+export const unsaveListingSuccess = createAction(
+  "[Listings] Unsave Listing Success",
+  props<{listingId: string; accountId: string}>(),
+);
+
+export const unsaveListingFailure = createAction(
+  "[Listings] Unsave Listing Failure",
+  props<{error: string}>(),
+);

@@ -166,10 +166,42 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
       <!-- Listings Section -->
       <div *ngIf="selectedSegment === 'listings'" class="segment-section">
+        <!-- Owner Listings -->
         <app-related-listings
           [account]="account"
           [relatedListings]="(relatedListings$ | async) ?? []"
           relationship="owner"
+          [isProfileOwner]="(isProfileOwner$ | async) ?? false"
+          [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+        ></app-related-listings>
+
+        <!-- Participating Listings -->
+        <app-related-listings
+          [account]="account"
+          [relatedListings]="(relatedListings$ | async) ?? []"
+          relationship="participant"
+          [isProfileOwner]="(isProfileOwner$ | async) ?? false"
+          [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+        ></app-related-listings>
+
+        <!-- Saved Listings -->
+        <app-related-listings
+          *ngIf="(isProfileOwner$ | async) || (isGroupAdmin$ | async)"
+          [account]="account"
+          [relatedListings]="(relatedListings$ | async) ?? []"
+          relationship="saved"
+          [isProfileOwner]="(isProfileOwner$ | async) ?? false"
+          [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+        ></app-related-listings>
+
+        <!-- Applicant Listings (Owner/Admin Only) -->
+        <app-related-listings
+          *ngIf="(isProfileOwner$ | async) || (isGroupAdmin$ | async)"
+          [account]="account"
+          [relatedListings]="(relatedListings$ | async) ?? []"
+          relationship="applicant"
+          [isProfileOwner]="(isProfileOwner$ | async) ?? false"
+          [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
         ></app-related-listings>
       </div>
     </div>

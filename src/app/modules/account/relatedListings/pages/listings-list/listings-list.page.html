@@ -36,9 +36,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-segment-button>
       <ion-segment-button value="owner">
         <ion-icon name="person-outline"></ion-icon>
-        <ion-label>My Listings</ion-label>
+        <ion-label>Posted Listings</ion-label>
       </ion-segment-button>
-      <ion-segment-button value="applicant">
+      <ion-segment-button
+        value="applicant"
+        *ngIf="(isOwner$ | async) || (isGroupAdmin$ | async)"
+      >
         <ion-icon name="paper-plane-outline"></ion-icon>
         <ion-label>Applications</ion-label>
       </ion-segment-button>
@@ -50,14 +53,49 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <ion-icon name="bookmark-outline"></ion-icon>
         <ion-label>Saved</ion-label>
       </ion-segment-button>
+      <ion-segment-button
+        value="archived"
+        *ngIf="(isOwner$ | async) || (isGroupAdmin$ | async)"
+      >
+        <ion-icon name="archive-outline"></ion-icon>
+        <ion-label>Archived</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment
+      scrollable
+      [(ngModel)]="typeFilter"
+      (ionChange)="onTypeFilterChange($event)"
+    >
+      <ion-segment-button value="all">
+        <ion-icon name="apps-outline"></ion-icon>
+        <ion-label>All Types</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="volunteer">
+        <ion-icon name="heart-outline"></ion-icon>
+        <ion-label>Volunteer</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="job">
+        <ion-icon name="briefcase-outline"></ion-icon>
+        <ion-label>Jobs</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="internship">
+        <ion-icon name="school-outline"></ion-icon>
+        <ion-label>Internships</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="gig">
+        <ion-icon name="flash-outline"></ion-icon>
+        <ion-label>Gigs</ion-label>
+      </ion-segment-button>
     </ion-segment>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-list *ngIf="paginatedListings$ | async as listings">
+  <ion-list *ngIf="(paginatedListings$ | async)?.length; else emptyState">
     <ion-item
-      *ngFor="let listing of listings; trackBy: trackById"
+      *ngFor="let listing of (paginatedListings$ | async); trackBy: trackById"
       (click)="goToListing(listing.id)"
       button
     >
@@ -74,47 +112,213 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <h3>{{ listing.organization }}</h3>
         <div class="ion-padding-vertical">
           <ion-badge color="primary" class="ion-margin-end"
-            >{{ listing.type }}</ion-badge
+            >{{ listing.type | titlecase }}</ion-badge
           >
           <ion-badge
-            [color]="listing.status === 'active' ? 'success' : 'warning'"
+            [color]="getStatusColor(listing.status)"
             class="ion-margin-end"
           >
-            {{ listing.status }}
+            {{ listing.status | titlecase }}
           </ion-badge>
-          <ion-badge color="tertiary">{{ listing.relationship }}</ion-badge>
+          <ion-badge color="tertiary"
+            >{{ listing.relationship | titlecase }}</ion-badge
+          >
         </div>
       </ion-label>
-      <ion-button
-        *ngIf="(isOwner$ | async) && listing.relationship === 'owner' && listing.accountId === (currentUser$ | async)?.uid"
-        slot="end"
-        color="primary"
-        [routerLink]="['/listings', listing.id, 'applicants']"
-        (click)="$event.stopPropagation()"
-      >
-        <ion-icon name="people-outline" slot="start"></ion-icon>
-        View Applicants
-      </ion-button>
-      <ion-button
-        *ngIf="(isOwner$ | async) && listing.relationship === 'owner' && listing.accountId === (currentUser$ | async)?.uid"
-        slot="end"
-        color="danger"
-        (click)="deleteListing(listing); $event.stopPropagation()"
-      >
-        <ion-icon name="trash-outline" slot="start"></ion-icon>
-        DELETE Listing
-      </ion-button>
-      <ion-button
-        *ngIf="(isOwner$ | async) && listing.relationship !== 'owner'"
-        slot="end"
-        color="danger"
-        (click)="removeRelatedListing(listing); $event.stopPropagation()"
-      >
-        <ion-icon name="close-circle-outline" slot="start"></ion-icon>
-        Remove Application
-      </ion-button>
+
+      <!-- Action buttons for different relationships and permissions -->
+      <div class="listing-actions" slot="end">
+        <!-- Primary action buttons (always visible) -->
+        <div class="primary-actions">
+          <!-- Save/Unsave button for non-owner listings -->
+          <ion-button
+            *ngIf="listing.relationship !== 'owner' && listing.relationship !== 'saved'"
+            fill="clear"
+            size="small"
+            color="medium"
+            (click)="saveListing(listing); $event.stopPropagation()"
+          >
+            <ion-icon name="bookmark-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+
+          <!-- Unsave button for saved listings -->
+          <ion-button
+            *ngIf="listing.relationship === 'saved'"
+            fill="clear"
+            size="small"
+            color="warning"
+            (click)="unsaveListing(listing); $event.stopPropagation()"
+          >
+            <ion-icon name="bookmark" slot="icon-only"></ion-icon>
+          </ion-button>
+
+          <!-- Primary action for owners -->
+          <ion-button
+            *ngIf="listing.relationship === 'owner' && listing.status === 'active'"
+            fill="clear"
+            size="small"
+            color="primary"
+            [routerLink]="['/listings', listing.id, 'applicants']"
+            (click)="$event.stopPropagation()"
+          >
+            <ion-icon name="people-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+
+          <!-- Remove application button for non-owner relationships -->
+          <ion-button
+            *ngIf="listing.relationship === 'applicant' || listing.relationship === 'participant'"
+            fill="clear"
+            size="small"
+            color="danger"
+            (click)="removeRelatedListing(listing); $event.stopPropagation()"
+          >
+            <ion-icon name="close-circle-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <!-- More actions button (for additional actions) -->
+        <ion-button
+          *ngIf="(isOwner$ | async) || (isGroupAdmin$ | async)"
+          fill="clear"
+          size="small"
+          color="medium"
+          id="trigger-{{ listing.id }}"
+          (click)="$event.stopPropagation()"
+        >
+          <ion-icon name="ellipsis-vertical" slot="icon-only"></ion-icon>
+        </ion-button>
+
+        <!-- Popover for additional actions -->
+        <ion-popover
+          [trigger]="'trigger-' + listing.id"
+          trigger-action="click"
+          side="left"
+          alignment="end"
+        >
+          <ng-template>
+            <ion-content class="action-popover">
+              <ion-list>
+                <!-- Edit button for owner listings -->
+                <ion-item
+                  *ngIf="listing.relationship === 'owner'"
+                  button
+                  (click)="navigateAndClosePopover('/listings/' + listing.id + '/edit')"
+                >
+                  <ion-icon name="create-outline" slot="start"></ion-icon>
+                  <ion-label>Edit</ion-label>
+                </ion-item>
+
+                <!-- Archive/Unarchive button for owner listings -->
+                <ion-item
+                  *ngIf="listing.relationship === 'owner' && listing.status === 'active'"
+                  button
+                  (click)="archiveListing(listing); closePopover('trigger-' + listing.id)"
+                >
+                  <ion-icon name="archive-outline" slot="start"></ion-icon>
+                  <ion-label>Archive</ion-label>
+                </ion-item>
+
+                <ion-item
+                  *ngIf="listing.relationship === 'owner' && (listing.status === 'filled' || listing.status === 'expired')"
+                  button
+                  (click)="unarchiveListing(listing); closePopover('trigger-' + listing.id)"
+                >
+                  <ion-icon name="refresh-outline" slot="start"></ion-icon>
+                  <ion-label>Reactivate</ion-label>
+                </ion-item>
+
+                <!-- Mark as Filled -->
+                <ion-item
+                  *ngIf="listing.relationship === 'owner' && listing.status === 'active'"
+                  button
+                  (click)="markAsFilled(listing); closePopover('trigger-' + listing.id)"
+                >
+                  <ion-icon
+                    name="checkmark-circle-outline"
+                    slot="start"
+                  ></ion-icon>
+                  <ion-label>Mark as Filled</ion-label>
+                </ion-item>
+
+                <!-- Duplicate listing -->
+                <ion-item
+                  *ngIf="listing.relationship === 'owner'"
+                  button
+                  (click)="duplicateListing(listing); closePopover('trigger-' + listing.id)"
+                >
+                  <ion-icon name="copy-outline" slot="start"></ion-icon>
+                  <ion-label>Duplicate</ion-label>
+                </ion-item>
+
+                <!-- Delete button for owner listings -->
+                <ion-item
+                  *ngIf="listing.relationship === 'owner'"
+                  button
+                  (click)="deleteListing(listing); closePopover('trigger-' + listing.id)"
+                  color="danger"
+                >
+                  <ion-icon name="trash-outline" slot="start"></ion-icon>
+                  <ion-label>Delete</ion-label>
+                </ion-item>
+              </ion-list>
+            </ion-content>
+          </ng-template>
+        </ion-popover>
+      </div>
     </ion-item>
   </ion-list>
+
+  <!-- Empty state -->
+  <ng-template #emptyState>
+    <div class="empty-state ion-text-center ion-padding">
+      <ion-icon
+        name="document-text-outline"
+        size="large"
+        color="medium"
+      ></ion-icon>
+      <h3>No listings found</h3>
+      <p *ngIf="relationshipFilter === 'owner'" color="medium">
+        You haven't posted any listings yet.
+      </p>
+      <p *ngIf="relationshipFilter === 'saved'" color="medium">
+        You haven't saved any listings yet.
+      </p>
+      <p *ngIf="relationshipFilter === 'participant'" color="medium">
+        You're not participating in any listings yet.
+      </p>
+      <p *ngIf="relationshipFilter === 'applicant'" color="medium">
+        No applications found.
+      </p>
+      <p *ngIf="relationshipFilter === 'archived'" color="medium">
+        No archived listings found.
+      </p>
+      <p *ngIf="relationshipFilter === 'all'" color="medium">
+        No listings available.
+      </p>
+
+      <!-- Add listing button for owners -->
+      <ion-button
+        *ngIf="relationshipFilter === 'owner' && (isOwner$ | async)"
+        routerLink="/listings/create"
+        fill="clear"
+        color="primary"
+      >
+        <ion-icon name="add" slot="start"></ion-icon>
+        Create Your First Listing
+      </ion-button>
+
+      <!-- Browse listings button for other cases -->
+      <ion-button
+        *ngIf="relationshipFilter !== 'owner'"
+        routerLink="/listings"
+        fill="clear"
+        color="primary"
+      >
+        <ion-icon name="search" slot="start"></ion-icon>
+        Browse Available Listings
+      </ion-button>
+    </div>
+  </ng-template>
 
   <ion-fab
     vertical="bottom"

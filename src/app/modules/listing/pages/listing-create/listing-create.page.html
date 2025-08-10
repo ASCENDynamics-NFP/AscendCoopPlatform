@@ -22,10 +22,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
     </ion-buttons>
-    <ion-title>Create New Listing</ion-title>
+    <ion-title
+      >{{ templateListing ? 'Duplicate Listing' : 'Create New Listing'
+      }}</ion-title
+    >
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <app-listing-form (formSubmit)="onSubmit($event)"></app-listing-form>
+  <app-listing-form [listing]="templateListing" (formSubmit)="onSubmit($event)">
+  </app-listing-form>
 </ion-content>

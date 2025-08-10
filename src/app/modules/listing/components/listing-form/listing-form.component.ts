@@ -113,10 +113,10 @@ export class ListingFormComponent implements OnInit {
         ...this.listing,
         timeCommitment: {
           ...this.listing.timeCommitment,
-          startDate: this.listing.timeCommitment.startDate
-            ?.toDate()
-            .toISOString(),
-          endDate: this.listing.timeCommitment.endDate?.toDate().toISOString(),
+          startDate: this.convertToISOString(
+            this.listing.timeCommitment.startDate,
+          ),
+          endDate: this.convertToISOString(this.listing.timeCommitment.endDate),
         },
       };
       this.listingForm.patchValue(formValue);
@@ -402,5 +402,43 @@ export class ListingFormComponent implements OnInit {
 
   getProgress() {
     return this.currentStep / 2; // Progress value for the progress bar
+  }
+
+  /**
+   * Safely converts various date formats to ISO string
+   * @param date The date to convert (Timestamp, Date, string, or undefined)
+   * @returns ISO string or empty string if invalid
+   */
+  private convertToISOString(date: any): string {
+    if (!date) return "";
+
+    try {
+      // If it's a Firestore Timestamp
+      if (date && typeof date.toDate === "function") {
+        return date.toDate().toISOString();
+      }
+
+      // If it's already a Date object
+      if (date instanceof Date) {
+        return date.toISOString();
+      }
+
+      // If it's a string, try to parse it
+      if (typeof date === "string") {
+        const parsedDate = new Date(date);
+        if (!isNaN(parsedDate.getTime())) {
+          return parsedDate.toISOString();
+        }
+      }
+
+      // If it has seconds and nanoseconds (Timestamp-like object)
+      if (date.seconds !== undefined) {
+        return new Date(date.seconds * 1000).toISOString();
+      }
+    } catch (error) {
+      console.warn("Error converting date:", error);
+    }
+
+    return "";
   }
 }

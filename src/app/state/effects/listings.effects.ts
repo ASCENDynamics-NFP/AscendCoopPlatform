@@ -174,7 +174,15 @@ export class ListingsEffects {
           ),
         ).pipe(
           map(() => {
-            this.router.navigate([`/listings/${listing.id}`]);
+            // Only navigate if we're not on the account listings page
+            const currentUrl = this.router.url;
+            // Don't navigate if we're on the account listings page (pattern: /accounts/:accountId/listings)
+            const isAccountListingsPage = currentUrl.match(
+              /\/accounts\/[^\/]+\/listings$/,
+            );
+            if (!isAccountListingsPage) {
+              this.router.navigate([`/listings/${listing.id}`]);
+            }
             this.showToast("Listing updated successfully", "success");
             return ListingsActions.updateListingSuccess({
               listing: updatedListing,
@@ -359,6 +367,68 @@ export class ListingsEffects {
               }),
             ),
           ),
+        ),
+      ),
+    ),
+  );
+
+  // Save a listing for a user
+  saveListing$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ListingsActions.saveListing),
+      mergeMap(({listingId, accountId}) =>
+        from(
+          this.firestoreService.setDocument(
+            `accounts/${accountId}/relatedListings/${listingId}`,
+            {
+              id: listingId,
+              accountId: accountId,
+              relationship: "saved",
+              createdAt: serverTimestamp(),
+              lastModifiedAt: serverTimestamp(),
+            },
+            {merge: true},
+          ),
+        ).pipe(
+          map(() => {
+            this.showToast("Listing saved successfully", "success");
+            return ListingsActions.saveListingSuccess({listingId, accountId});
+          }),
+          catchError((error) => {
+            this.showToast(`Error saving listing: ${error.message}`, "danger");
+            return of(
+              ListingsActions.saveListingFailure({error: error.message}),
+            );
+          }),
+        ),
+      ),
+    ),
+  );
+
+  // Unsave a listing for a user
+  unsaveListing$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ListingsActions.unsaveListing),
+      mergeMap(({listingId, accountId}) =>
+        from(
+          this.firestoreService.deleteDocument(
+            `accounts/${accountId}/relatedListings`,
+            listingId,
+          ),
+        ).pipe(
+          map(() => {
+            this.showToast("Listing removed from saved items", "success");
+            return ListingsActions.unsaveListingSuccess({listingId, accountId});
+          }),
+          catchError((error) => {
+            this.showToast(
+              `Error removing saved listing: ${error.message}`,
+              "danger",
+            );
+            return of(
+              ListingsActions.unsaveListingFailure({error: error.message}),
+            );
+          }),
         ),
       ),
     ),

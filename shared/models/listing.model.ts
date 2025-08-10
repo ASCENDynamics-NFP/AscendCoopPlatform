@@ -52,5 +52,5 @@ export interface Listing extends BaseDocument {
   iconImage?: string;
   heroImage?: string;
   contactInformation: ContactInformation;
-  status: "active" | "filled" | "expired";
+  status: "draft" | "active" | "filled" | "expired";
 }

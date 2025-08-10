@@ -28,7 +28,7 @@ export interface RelatedListing extends BaseDocument {
   remote: boolean;
   heroImage?: string;
   iconImage?: string;
-  status: "active" | "filled" | "expired";
+  status: "draft" | "active" | "filled" | "expired";
   relationship: "owner" | "applicant" | "participant" | "saved";
   applicationDate?: Timestamp | FieldValue;
   notes?: string;

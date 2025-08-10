@@ -194,7 +194,7 @@ export const updateRelatedAccountFailure = createAction(
 // Load Related Listings
 export const loadRelatedListings = createAction(
   "[Account] Load Related Listings",
-  props<{accountId: string}>(),
+  props<{accountId: string; forceReload?: boolean}>(),
 );
 
 export const loadRelatedListingsSuccess = createAction(

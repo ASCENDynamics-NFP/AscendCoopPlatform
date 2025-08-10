@@ -1,0 +1,178 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<form [formGroup]="faqForm" (ngSubmit)="onSubmit()">
+  <ion-item slot="header">
+    <ion-label>FAQ Management</ion-label>
+  </ion-item>
+
+  <div slot="content">
+    <ion-grid>
+      <!-- Header with Add FAQ Button -->
+      <ion-row>
+        <ion-col>
+          <div class="section-header">
+            <h3>Frequently Asked Questions</h3>
+            <ion-button
+              type="button"
+              fill="outline"
+              (click)="addFAQ()"
+              class="add-faq-btn"
+            >
+              <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+              Add FAQ
+            </ion-button>
+          </div>
+        </ion-col>
+      </ion-row>
+
+      <!-- FAQ Items -->
+      <div formArrayName="faqs">
+        <div
+          *ngFor="let faqControl of faqsFormArray.controls; let i = index"
+          [formGroupName]="i"
+          class="faq-item"
+        >
+          <ion-card class="faq-card">
+            <ion-card-header>
+              <ion-card-title class="faq-item-title">
+                FAQ {{ i + 1 }}
+                <div class="faq-actions">
+                  <ion-button
+                    type="button"
+                    fill="clear"
+                    size="small"
+                    [disabled]="i === 0"
+                    (click)="moveFAQUp(i)"
+                    title="Move up"
+                  >
+                    <ion-icon name="arrow-up" slot="icon-only"></ion-icon>
+                  </ion-button>
+                  <ion-button
+                    type="button"
+                    fill="clear"
+                    size="small"
+                    [disabled]="i === faqsFormArray.length - 1"
+                    (click)="moveFAQDown(i)"
+                    title="Move down"
+                  >
+                    <ion-icon name="arrow-down" slot="icon-only"></ion-icon>
+                  </ion-button>
+                  <ion-button
+                    type="button"
+                    fill="clear"
+                    size="small"
+                    color="danger"
+                    (click)="removeFAQ(i)"
+                    title="Delete FAQ"
+                  >
+                    <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                </div>
+              </ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <ion-grid>
+                <!-- Question -->
+                <ion-row>
+                  <ion-col>
+                    <ion-input
+                      formControlName="question"
+                      label="Question"
+                      label-placement="floating"
+                      fill="outline"
+                      placeholder="Enter the question"
+                      maxlength="500"
+                      [counter]="true"
+                    ></ion-input>
+                    <ion-note
+                      *ngIf="
+                        faqControl.get('question')?.invalid &&
+                        faqControl.get('question')?.touched
+                      "
+                      color="danger"
+                    >
+                      Question is required and must be less than 500 characters.
+                    </ion-note>
+                  </ion-col>
+                </ion-row>
+
+                <!-- Answer -->
+                <ion-row>
+                  <ion-col>
+                    <ion-textarea
+                      formControlName="answer"
+                      label="Answer"
+                      label-placement="floating"
+                      fill="outline"
+                      placeholder="Enter the answer"
+                      rows="6"
+                      maxlength="2000"
+                      [counter]="true"
+                    ></ion-textarea>
+                    <ion-note
+                      *ngIf="
+                        faqControl.get('answer')?.invalid &&
+                        faqControl.get('answer')?.touched
+                      "
+                      color="danger"
+                    >
+                      Answer is required and must be less than 2000 characters.
+                    </ion-note>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <ion-row *ngIf="faqsFormArray.length === 0">
+        <ion-col>
+          <div class="empty-state">
+            <ion-icon name="help-circle-outline" class="empty-icon"></ion-icon>
+            <h4>No FAQs Yet</h4>
+            <p>Add your first FAQ to help visitors find answers quickly.</p>
+            <ion-button fill="outline" (click)="addFAQ()">
+              <ion-icon name="add" slot="start"></ion-icon>
+              Add First FAQ
+            </ion-button>
+          </div>
+        </ion-col>
+      </ion-row>
+
+      <!-- Save Button -->
+      <ion-row>
+        <ion-col>
+          <ion-button
+            type="submit"
+            expand="block"
+            [disabled]="faqForm.invalid"
+            class="save-btn"
+          >
+            <ion-icon name="save-outline" slot="start"></ion-icon>
+            Save FAQs
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+</form>

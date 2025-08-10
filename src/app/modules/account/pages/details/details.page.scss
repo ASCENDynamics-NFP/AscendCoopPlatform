@@ -17,38 +17,102 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-.tabs {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  margin-bottom: 1rem;
-  border-bottom: 2px solid var(--ion-color-primary);
+
+/* Profile Segments Styling */
+.profile-segments {
+  margin: 0;
+  padding: 8px 16px;
+  background: var(--ion-color-light);
+  border-bottom: 1px solid var(--ion-color-light-shade);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.tab-link {
-  flex: 1 1 auto;
-  padding: 0.75rem 1rem;
-  text-align: center;
-  text-decoration: none;
-  color: var(--ion-color-primary);
-  cursor: pointer;
-  // border: 1px solid var(--ion-color-primary);
-  border-radius: 4px 4px 0 0;
-  margin: 0 2px;
-  // background-color: var(--ion-color-light);
+.profile-segments ion-segment-button {
+  --indicator-color: var(--ion-color-primary);
+  --color: var(--ion-color-medium);
+  --color-checked: var(--ion-color-primary);
+  --color-hover: var(--ion-color-primary-shade);
+  --background: transparent;
+  --background-checked: transparent;
+  min-width: auto;
+  padding: 8px 12px;
 }
 
-.tab-link:hover,
-.tab-link:focus,
-.tab-link.active {
-  background-color: var(--ion-color-primary);
-  color: white;
-  outline: none;
+.profile-segments ion-segment-button ion-icon {
+  font-size: 1.2rem;
+  margin-bottom: 2px;
 }
 
-@media (max-width: 600px) {
-  .tab-link {
-    flex: 1 1 100%;
-    margin-bottom: 2px;
+.profile-segments ion-segment-button ion-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: none;
+}
+
+/* Segment Content Styling */
+.segment-content {
+  padding: 16px;
+  min-height: calc(100vh - 200px);
+}
+
+.segment-section {
+  animation: slideIn 0.3s ease-in-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .profile-segments {
+    padding: 6px 8px;
+  }
+
+  .profile-segments ion-segment-button {
+    padding: 6px 8px;
+    min-width: 60px;
+  }
+
+  .profile-segments ion-segment-button ion-icon {
+    font-size: 1rem;
+  }
+
+  .profile-segments ion-segment-button ion-label {
+    font-size: 0.75rem;
+  }
+
+  .segment-content {
+    padding: 12px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .profile-segments {
+    // transparent black background
+    background: rgba(10, 10, 10, 0.7);
+    border-bottom-color: var(--ion-color-step-200);
+  }
+
+  .profile-segments ion-segment-button {
+    --color: var(--ion-color-medium);
+    --color-checked: var(--ion-color-primary);
+    --color-hover: var(--ion-color-primary-shade);
+    --background-checked: var(--ion-color-step-10);
+    --indicator-color: var(--ion-color-primary);
+  }
+
+  .segment-content {
+    background: var(--ion-background-color);
   }
 }

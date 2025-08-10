@@ -59,6 +59,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
   relationshipStatus$!: Observable<string | null>;
   hasRelationship$!: Observable<boolean>;
   error$!: Observable<any>;
+  selectedSegment: string = "profile";
 
   constructor(
     private metaService: MetaService,
@@ -234,6 +235,10 @@ export class DetailsPage implements OnInit, ViewWillEnter {
     if (yOffset !== undefined) {
       this.content.scrollToPoint(0, yOffset, 500);
     }
+  }
+
+  onSegmentChange(event: any): void {
+    this.selectedSegment = event.detail.value;
   }
 
   private async presentToast(message: string, navigateBack = false) {

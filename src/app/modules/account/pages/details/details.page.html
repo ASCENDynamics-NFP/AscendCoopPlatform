@@ -36,81 +36,142 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       [hasRelationship]="(hasRelationship$ | async) ?? false"
     ></app-hero>
 
-    <div class="tabs">
-      <a (click)="scrollToSection('contact')" class="tab-link"
-        >Contact Information</a
-      >
-      <a
-        *ngIf="account.type === 'user'"
-        (click)="scrollToSection('professional')"
-        class="tab-link"
-        >Professional Contact</a
-      >
-      <a (click)="scrollToSection('users')" class="tab-link">
-        {{ account.type === 'user' ? 'Friends' : 'Members' }}
-      </a>
-      <a (click)="scrollToSection('groups')" class="tab-link">Organizations</a>
-      <a
-        *ngIf="account.type === 'user'"
-        (click)="scrollToSection('volunteer')"
-        class="tab-link"
-        >Volunteer Preferences</a
-      >
-      <a
+    <!-- Segment Control -->
+    <ion-segment
+      [value]="selectedSegment"
+      (ionChange)="onSegmentChange($event)"
+      scrollable="true"
+      class="profile-segments"
+    >
+      <ion-segment-button value="profile">
+        <ion-icon name="person-outline"></ion-icon>
+        <ion-label
+          >{{ account.type === 'user' ? 'Profile' : 'About' }}</ion-label
+        >
+      </ion-segment-button>
+
+      <ion-segment-button *ngIf="account.type === 'user'" value="professional">
+        <ion-icon name="briefcase-outline"></ion-icon>
+        <ion-label>Professional</ion-label>
+      </ion-segment-button>
+
+      <ion-segment-button value="connections">
+        <ion-icon name="people-outline"></ion-icon>
+        <ion-label
+          >{{ account.type === 'user' ? 'Friends' : 'Members' }}</ion-label
+        >
+      </ion-segment-button>
+
+      <ion-segment-button value="organizations">
+        <ion-icon name="business-outline"></ion-icon>
+        <ion-label>Organizations</ion-label>
+      </ion-segment-button>
+
+      <ion-segment-button *ngIf="account.type === 'user'" value="volunteer">
+        <ion-icon name="heart-outline"></ion-icon>
+        <ion-label>Volunteer</ion-label>
+      </ion-segment-button>
+
+      <ion-segment-button
         *ngIf="account.type === 'user' && account.mutualAidCommunityEngagement"
-        (click)="scrollToSection('mutual-aid')"
-        class="tab-link"
-        >Mutual Aid</a
+        value="mutual-aid"
       >
-      <a (click)="scrollToSection('listings')" class="tab-link">Listings</a>
-    </div>
+        <ion-icon name="hand-left-outline"></ion-icon>
+        <ion-label>Mutual Aid</ion-label>
+      </ion-segment-button>
 
-    <div>
-      <app-profile [account]="account"></app-profile>
-      <app-contact-information
-        id="contact"
-        [account]="account"
-      ></app-contact-information>
-      <app-group-calendar
-        *ngIf="account.type === 'group'"
-        [account]="account"
-      ></app-group-calendar>
-      <app-professional-info
-        id="professional"
-        *ngIf="account.type === 'user'"
-        [professionalInfo]="account.professionalInformation"
-      ></app-professional-info>
+      <ion-segment-button *ngIf="account.type === 'group'" value="faq">
+        <ion-icon name="help-circle-outline"></ion-icon>
+        <ion-label>FAQ</ion-label>
+      </ion-segment-button>
 
-      <app-related-accounts
-        id="users"
-        [account]="account"
-        [relatedAccounts]="(relatedAccounts$ | async) ?? []"
-        type="user"
-      ></app-related-accounts>
+      <ion-segment-button value="listings">
+        <ion-icon name="list-outline"></ion-icon>
+        <ion-label>Listings</ion-label>
+      </ion-segment-button>
+    </ion-segment>
 
-      <app-related-accounts
-        id="groups"
-        [account]="account"
-        [relatedAccounts]="(relatedAccounts$ | async) ?? []"
-        type="group"
-      ></app-related-accounts>
-      <app-related-listings
-        id="listings"
-        [account]="account"
-        [relatedListings]="(relatedListings$ | async) ?? []"
-        relationship="owner"
-      ></app-related-listings>
+    <!-- Segment Content -->
+    <div class="segment-content">
+      <!-- Profile/About Section -->
+      <div *ngIf="selectedSegment === 'profile'" class="segment-section">
+        <app-profile [account]="account"></app-profile>
+        <app-contact-information [account]="account"></app-contact-information>
+        <app-group-calendar
+          *ngIf="account.type === 'group'"
+          [account]="account"
+        ></app-group-calendar>
+      </div>
 
-      <app-volunteer-preference-info
-        id="volunteer"
-        *ngIf="account.type === 'user'"
-        [volunteerPreferences]="account.volunteerPreferences"
-      ></app-volunteer-preference-info>
-      <app-mutual-aid-community-info
-        *ngIf="account.type === 'user' && account.mutualAidCommunityEngagement"
-        id="mutual-aid"
-        [mutualAidCommunityEngagement]="account.mutualAidCommunityEngagement"
-      ></app-mutual-aid-community-info>
+      <!-- Professional Section -->
+      <div
+        *ngIf="selectedSegment === 'professional' && account.type === 'user'"
+        class="segment-section"
+      >
+        <app-professional-info
+          [professionalInfo]="account.professionalInformation"
+        ></app-professional-info>
+      </div>
+
+      <!-- Connections Section -->
+      <div *ngIf="selectedSegment === 'connections'" class="segment-section">
+        <app-related-accounts
+          [account]="account"
+          [relatedAccounts]="(relatedAccounts$ | async) ?? []"
+          type="user"
+        ></app-related-accounts>
+      </div>
+
+      <!-- Organizations Section -->
+      <div *ngIf="selectedSegment === 'organizations'" class="segment-section">
+        <app-related-accounts
+          [account]="account"
+          [relatedAccounts]="(relatedAccounts$ | async) ?? []"
+          type="group"
+        ></app-related-accounts>
+      </div>
+
+      <!-- Volunteer Section -->
+      <div
+        *ngIf="selectedSegment === 'volunteer' && account.type === 'user'"
+        class="segment-section"
+      >
+        <app-volunteer-preference-info
+          [volunteerPreferences]="account.volunteerPreferences"
+        ></app-volunteer-preference-info>
+      </div>
+
+      <!-- Mutual Aid Section -->
+      <div
+        *ngIf="selectedSegment === 'mutual-aid' && account.type === 'user' && account.mutualAidCommunityEngagement"
+        class="segment-section"
+      >
+        <app-mutual-aid-community-info
+          [mutualAidCommunityEngagement]="account.mutualAidCommunityEngagement"
+        ></app-mutual-aid-community-info>
+      </div>
+
+      <!-- FAQ Section -->
+      <!-- FAQ Section -->
+      <div
+        *ngIf="selectedSegment === 'faq' && account.type === 'group'"
+        class="segment-section"
+      >
+        <app-faq-section
+          [faqs]="account.groupDetails?.faqs || []"
+          [canEdit]="(isGroupAdmin$ | async) ?? false"
+          [accountId]="account.id"
+        ></app-faq-section>
+      </div>
+
+      <!-- Listings Section -->
+      <div *ngIf="selectedSegment === 'listings'" class="segment-section">
+        <app-related-listings
+          [account]="account"
+          [relatedListings]="(relatedListings$ | async) ?? []"
+          relationship="owner"
+        ></app-related-listings>
+      </div>
     </div>
   </ion-content>
 </ng-container>

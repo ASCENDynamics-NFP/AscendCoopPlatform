@@ -61,6 +61,8 @@ import {ProjectsPage} from "./pages/projects/projects.page";
 import {SafeUrlPipe} from "../../shared/pipes/safe-url.pipe";
 import {GroupCalendarComponent} from "./pages/details/components/group-calendar/group-calendar.component";
 import {StandardRoleSelectorComponent} from "./components/standard-role-selector/standard-role-selector.component";
+import {FaqSectionComponent} from "./pages/details/components/faq-section/faq-section.component";
+import {FaqFormComponent} from "./pages/edit/components/faq-form/faq-form.component";
 
 @NgModule({
   declarations: [
@@ -94,6 +96,8 @@ import {StandardRoleSelectorComponent} from "./components/standard-role-selector
     ProjectsPage,
     GroupCalendarComponent,
     StandardRoleSelectorComponent,
+    FaqSectionComponent,
+    FaqFormComponent,
     SafeUrlPipe,
   ],
   imports: [

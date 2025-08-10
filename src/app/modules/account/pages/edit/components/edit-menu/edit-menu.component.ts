@@ -30,6 +30,9 @@ import {ImageUploadModalComponent} from "../../../../../../shared/components/ima
 export class EditMenuComponent {
   @Input() account?: Partial<Account>;
   @Input() isProfileOwner: boolean = true;
+  @Input() set selectedForm(value: string) {
+    this.selectedItem = value;
+  }
   @Output() itemSelected = new EventEmitter<string>();
   selectedItem: string | null = "basic";
 

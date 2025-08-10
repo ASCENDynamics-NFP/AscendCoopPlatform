@@ -34,6 +34,7 @@ import {Account} from "@shared/models/account.model";
 import {AuthUser} from "@shared/models/auth-user.model";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {MetaService} from "../../../../core/services/meta.service";
 
 describe("EditPage", () => {
   let component: EditPage;
@@ -51,6 +52,9 @@ describe("EditPage", () => {
 
     const storeSpy = jasmine.createSpyObj("Store", ["dispatch", "select"]);
     const routerSpy = jasmine.createSpyObj("Router", ["navigate"]);
+    const metaServiceSpy = jasmine.createSpyObj("MetaService", [
+      "updateMetaTags",
+    ]);
 
     await TestBed.configureTestingModule({
       declarations: [EditPage],
@@ -58,12 +62,14 @@ describe("EditPage", () => {
       providers: [
         {provide: Store, useValue: storeSpy},
         {provide: Router, useValue: routerSpy},
+        {provide: MetaService, useValue: metaServiceSpy},
         {
           provide: ActivatedRoute,
           useValue: {
             paramMap: of({
               get: (key: string) => "test-account-id",
             }),
+            queryParams: of({}),
           },
         },
       ],

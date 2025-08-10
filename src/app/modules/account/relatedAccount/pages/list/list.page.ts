@@ -61,6 +61,8 @@ export class ListPage implements OnInit {
   showRoleControls$!: Observable<boolean>;
   accessOptions = ["admin", "moderator", "member"] as const;
   customRoles$!: Observable<GroupRole[]>;
+  filteredUserRoles$!: Observable<GroupRole[]>;
+  filteredOrganizationRoles$!: Observable<GroupRole[]>;
   relationshipOptions = ["friend", "member", "partner", "family"] as const;
 
   constructor(
@@ -178,6 +180,22 @@ export class ListPage implements OnInit {
       this.customRoles$ = this.store.select(
         selectGroupRolesByGroupId(this.accountId),
       );
+
+      // Create filtered role observables for different account types
+      this.filteredUserRoles$ = this.customRoles$.pipe(
+        map((roles) =>
+          roles.filter((role) => !role.roleType || role.roleType === "user"),
+        ),
+      );
+
+      this.filteredOrganizationRoles$ = this.customRoles$.pipe(
+        map((roles) =>
+          roles.filter(
+            (role) => !role.roleType || role.roleType === "organization",
+          ),
+        ),
+      );
+
       this.store.dispatch(
         AccountActions.loadGroupRoles({groupId: this.accountId}),
       );
@@ -217,6 +235,69 @@ export class ListPage implements OnInit {
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
+    );
+  }
+
+  /**
+   * Gets the current role IDs for a related account, supporting both single and multiple roles
+   * @param relatedAccount The related account to get role IDs for
+   * @returns Array of role IDs
+   */
+  getCurrentRoleIds(relatedAccount: Partial<RelatedAccount>): string[] {
+    if (relatedAccount.roleIds && relatedAccount.roleIds.length > 0) {
+      return relatedAccount.roleIds;
+    }
+    if (relatedAccount.roleId) {
+      return [relatedAccount.roleId];
+    }
+    return [];
+  }
+
+  /**
+   * Gets the appropriate roles for a related account based on its type,
+   * excluding roles from categories that are already selected
+   * @param relatedAccount The related account to get roles for
+   * @returns Observable of filtered roles
+   */
+  getRolesForAccount(
+    relatedAccount: Partial<RelatedAccount>,
+  ): Observable<GroupRole[]> {
+    const currentRoleIds = this.getCurrentRoleIds(relatedAccount);
+
+    let baseRoles$: Observable<GroupRole[]>;
+    if (relatedAccount.type === "user") {
+      baseRoles$ = this.filteredUserRoles$;
+    } else if (relatedAccount.type === "group") {
+      baseRoles$ = this.filteredOrganizationRoles$;
+    } else {
+      baseRoles$ = this.customRoles$;
+    }
+
+    return baseRoles$.pipe(
+      map((roles) => {
+        if (currentRoleIds.length === 0) {
+          return roles; // Show all roles if none selected
+        }
+
+        // Get categories of currently selected roles
+        const selectedRoles = roles.filter((role) =>
+          currentRoleIds.includes(role.id),
+        );
+        const selectedCategories = new Set(
+          selectedRoles
+            .map((role) => role.standardCategory)
+            .filter((category) => category !== undefined),
+        );
+
+        // Filter out roles from categories that are already selected,
+        // but keep already selected roles so they can be deselected
+        return roles.filter(
+          (role) =>
+            currentRoleIds.includes(role.id) || // Keep currently selected roles
+            !role.standardCategory || // Keep roles without category
+            !selectedCategories.has(role.standardCategory), // Keep roles from unselected categories
+        );
+      }),
     );
   }
 
@@ -317,6 +398,36 @@ export class ListPage implements OnInit {
         AccountActions.updateRelatedAccount({
           accountId: this.accountId!,
           relatedAccount: updated,
+        }),
+      );
+    });
+  }
+
+  updateRoles(request: Partial<RelatedAccount>, roleIds: string[]) {
+    this.currentUser$.pipe(take(1)).subscribe((authUser) => {
+      if (!authUser?.uid || !request.id || !this.accountId) return;
+
+      const updated: Partial<RelatedAccount> = {
+        ...(request as RelatedAccount),
+        accountId: this.accountId,
+        lastModifiedBy: authUser.uid,
+      };
+
+      // Only set role fields if there are roles selected
+      if (roleIds && roleIds.length > 0) {
+        updated.roleIds = roleIds;
+        updated.roleId = roleIds[0]; // Keep backward compatibility
+      } else {
+        // For Firestore, we need to explicitly remove the fields
+        // by not including them in the update object
+        delete updated.roleIds;
+        delete updated.roleId;
+      }
+
+      this.store.dispatch(
+        AccountActions.updateRelatedAccount({
+          accountId: this.accountId!,
+          relatedAccount: updated as RelatedAccount,
         }),
       );
     });

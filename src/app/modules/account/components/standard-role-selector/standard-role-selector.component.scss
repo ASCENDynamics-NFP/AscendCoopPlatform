@@ -1,0 +1,156 @@
+/*******************************************************************************
+ * Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+ * Copyright (C) 2023  ASCENDynamics NFP
+ *
+ * This file is part of Nonprofit Social Networking Platform.
+ *
+ * Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+ *******************************************************************************/
+/* standard-role-selector.component.scss */
+
+.category-selector {
+  margin-bottom: 1rem;
+
+  h4 {
+    color: var(--ion-color-dark);
+    margin-bottom: 0.5rem;
+  }
+}
+
+.category-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.category-chip {
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  ion-badge {
+    margin-left: 0.25rem;
+  }
+}
+
+.category-description {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  border-left: 4px solid var(--ion-color-primary);
+
+  ion-note {
+    font-style: italic;
+    color: var(--ion-color-medium-shade);
+  }
+}
+
+.role-templates {
+  margin: 1.5rem 0;
+
+  h5 {
+    color: var(--ion-color-primary);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  ion-item {
+    --padding-start: 12px;
+    --padding-end: 12px;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--ion-color-light-shade);
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--ion-color-light-tint);
+      border-color: var(--ion-color-primary-tint);
+    }
+
+    ion-label {
+      h3 {
+        font-weight: 600;
+        color: var(--ion-color-dark);
+        margin-bottom: 0.25rem;
+      }
+
+      p {
+        color: var(--ion-color-medium);
+        margin-bottom: 0.5rem;
+      }
+
+      ion-note {
+        font-size: 0.75rem;
+        color: var(--ion-color-medium-shade);
+      }
+    }
+  }
+}
+
+.custom-role-section {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ion-color-light-shade);
+}
+
+.custom-role-form {
+  margin-top: 1rem;
+  animation: slideIn 0.3s ease-out;
+
+  ion-item {
+    margin-bottom: 1rem;
+    --padding-start: 0;
+    --padding-end: 0;
+  }
+
+  ion-button {
+    margin-top: 1rem;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .category-grid {
+    justify-content: center;
+  }
+
+  .category-chip {
+    flex: 1 1 calc(50% - 0.25rem);
+    min-width: 120px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .category-chip {
+    flex: 1 1 100%;
+  }
+}

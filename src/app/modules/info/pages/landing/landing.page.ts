@@ -62,22 +62,22 @@ export class LandingPage {
   // Runs when the page is about to enter the view
   ionViewWillEnter() {
     this.metaService.updateMetaTags(
-      "ASCENDynamics NFP | Volunteer Opportunities",
-      "Join ASCENDynamics NFP to connect with nonprofits, find volunteer opportunities, and make an impact in your community.",
-      "volunteer, nonprofits, community, opportunities",
+      "ASCENDynamics NFP Collaborative Platform | Connect, Volunteer, Impact",
+      "Join ASCENDynamics NFP's open-source collaboration platform to connect with nonprofits, find volunteer opportunities, and create meaningful community impact together.",
+      "volunteer, nonprofits, community, collaboration, social impact, open source, cooperative, platform",
       {
-        title: "ASCENDynamics NFP | Volunteer Opportunities",
+        title: "ASCENDynamics NFP Collaborative Platform",
         description:
-          "Find local nonprofits and volunteer opportunities with ASCENDynamics NFP.",
+          "An open-source collaboration platform connecting volunteers and nonprofits to foster community growth and address fundamental human needs.",
         url: "https://app.ASCENDynamics.org/",
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
       {
         card: "summary_large_image",
-        title: "ASCENDynamics NFP | Volunteer Opportunities",
+        title: "ASCENDynamics NFP Collaborative Platform",
         description:
-          "Explore meaningful ways to contribute to your community with ASCENDynamics NFP.",
+          "Connect with nonprofits, volunteer opportunities, and community impact. Build meaningful connections and create positive change together.",
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
@@ -92,7 +92,7 @@ export class LandingPage {
       url: "https://app.ASCENDynamics.org",
       logo: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       description:
-        "A nonprofit platform connecting volunteers with organizations to create positive community impact through collaborative volunteering opportunities.",
+        "An open-source collaboration platform connecting volunteers and nonprofits to foster community growth and address fundamental human needs through meaningful partnerships.",
       foundingDate: "2023",
       organizationType: "Nonprofit",
       areaServed: "Global",

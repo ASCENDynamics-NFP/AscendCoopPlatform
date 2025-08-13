@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {HomepageListingsComponent} from "./homepage-listings.component";
-import {ListingsService} from "../../../../../../core/services/listings.service";
+import {ListingsService} from "../../../../core/services/listings.service";
 import {of} from "rxjs";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {IonicModule} from "@ionic/angular";

@@ -19,18 +19,23 @@
  *******************************************************************************/
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {ReactiveFormsModule} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
+import {IonicModule, ToastController} from "@ionic/angular";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {LeadFormComponent} from "./lead-form.component";
-import {LeadService} from "../../../../../../core/services/lead.service";
+import {LeadService} from "../../../../core/services/lead.service";
+import {of} from "rxjs";
 
 describe("LeadFormComponent", () => {
   let component: LeadFormComponent;
   let fixture: ComponentFixture<LeadFormComponent>;
   let leadService: LeadService;
+  let toastController: ToastController;
 
   beforeEach(async () => {
     const leadServiceSpy = jasmine.createSpyObj("LeadService", ["submitLead"]);
+    const toastControllerSpy = jasmine.createSpyObj("ToastController", [
+      "create",
+    ]);
 
     await TestBed.configureTestingModule({
       declarations: [LeadFormComponent],
@@ -39,12 +44,16 @@ describe("LeadFormComponent", () => {
         IonicModule.forRoot(),
         HttpClientTestingModule,
       ],
-      providers: [{provide: LeadService, useValue: leadServiceSpy}],
+      providers: [
+        {provide: LeadService, useValue: leadServiceSpy},
+        {provide: ToastController, useValue: toastControllerSpy},
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LeadFormComponent);
     component = fixture.componentInstance;
     leadService = TestBed.inject(LeadService);
+    toastController = TestBed.inject(ToastController);
     fixture.detectChanges();
   });
 
@@ -52,19 +61,38 @@ describe("LeadFormComponent", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should submit form through service", () => {
+  it("should submit form through service", async () => {
+    // Mock toast controller methods
+    const mockToast = {
+      present: jasmine.createSpy("present"),
+    };
+    (toastController.create as jasmine.Spy).and.returnValue(
+      Promise.resolve(mockToast),
+    );
+
     component.form.setValue({
       name: "Tester",
       email: "t@example.com",
       phone: "",
       inquiry: "general",
       message: "hello world",
-      from: "ASCENDynamics NFP",
     });
-    (leadService.submitLead as jasmine.Spy).and.returnValue({
-      subscribe: () => {},
+
+    // Mock the submitLead service to return an observable
+    (leadService.submitLead as jasmine.Spy).and.returnValue(
+      of({success: true}),
+    );
+
+    await component.submit();
+
+    expect(leadService.submitLead).toHaveBeenCalledWith({
+      name: "Tester",
+      email: "t@example.com",
+      phone: "",
+      inquiry: "general",
+      message: "hello world",
+      from: "landing-page",
     });
-    component.submit();
-    expect(leadService.submitLead).toHaveBeenCalled();
+    expect(toastController.create).toHaveBeenCalled();
   });
 });

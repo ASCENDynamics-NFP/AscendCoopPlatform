@@ -109,52 +109,5 @@
       src="assets/image/pexels-fauxels-3182826.jpg"
     ></ion-img>
   </ion-grid>
-  <ion-footer>
-    <div class="footer">
-      <ion-grid>
-        <ion-row>
-          <ion-col size="12" size-md="4" class="footer-logo">
-            <img
-              src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
-              alt="ASCENDynamics Logo"
-            />
-          </ion-col>
-          <ion-col size="12" size-md="4" class="footer-nav">
-            <h3>Quick Links</h3>
-            <ul>
-              <li>
-                <a (click)="openLegalModal('privacyPolicy')">Privacy Policy</a>
-              </li>
-              <li>
-                <a (click)="openLegalModal('termsOfUse')">Terms of Service</a>
-              </li>
-            </ul>
-          </ion-col>
-          <ion-col size="12" size-md="4" class="footer-social">
-            <h3>Follow Us</h3>
-            <ion-buttons class="social-buttons">
-              <ion-button
-                href="https://github.com/ASCENDynamics-NFP"
-                target="_blank"
-                ><ion-icon slot="icon-only" name="logo-github"></ion-icon
-              ></ion-button>
-              <ion-button
-                href="https://www.facebook.com/ASCENDynamicsNFP"
-                target="_blank"
-                ><ion-icon slot="icon-only" name="logo-facebook"></ion-icon
-              ></ion-button>
-              <ion-button
-                href="https://www.linkedin.com/company/ascendynamics-nfp"
-                target="_blank"
-                ><ion-icon slot="icon-only" name="logo-linkedin"></ion-icon
-              ></ion-button>
-            </ion-buttons>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-      <div class="footer-bottom">
-        <p>&copy; {{ currentYear }} ASCENDynamics NFP. All rights reserved.</p>
-      </div>
-    </div>
-  </ion-footer>
+  <app-info-footer></app-info-footer>
 </ion-content>

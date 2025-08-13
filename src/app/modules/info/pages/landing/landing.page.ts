@@ -17,11 +17,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
  ***********************************************************************************************/
-// src/app/modules/auth/pages/landing/landing.page.ts
+// src/app/modules/info/pages/landing/landing.page.ts
 
 import {Component, ElementRef, ViewChild} from "@angular/core";
-import {ModalController} from "@ionic/angular";
-import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
 import {SwiperOptions} from "swiper/types";
 import {MetaService} from "../../../../core/services/meta.service";
 
@@ -59,10 +57,7 @@ export class LandingPage {
 
   currentYear: number = new Date().getFullYear();
 
-  constructor(
-    private metaService: MetaService,
-    private modalController: ModalController,
-  ) {}
+  constructor(private metaService: MetaService) {}
 
   // Runs when the page is about to enter the view
   ionViewWillEnter() {
@@ -109,15 +104,6 @@ export class LandingPage {
       ],
       sameAs: ["https://app.ASCENDynamics.org"],
     });
-  }
-
-  // Open the legal modal (Privacy Policy or Terms of Use)
-  async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {
-    const modal = await this.modalController.create({
-      component: LegalModalComponent,
-      componentProps: {content: contentType},
-    });
-    await modal.present();
   }
 
   features = [

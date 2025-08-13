@@ -20,9 +20,7 @@
 // src/app/modules/info/pages/services/services.page.ts
 
 import {Component, OnInit} from "@angular/core";
-import {ModalController} from "@ionic/angular";
 import {MetaService} from "../../../../core/services/meta.service";
-import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
 
 @Component({
   selector: "app-services",
@@ -32,10 +30,7 @@ import {LegalModalComponent} from "../../../../shared/components/legal-modal/leg
 export class ServicesPage implements OnInit {
   currentYear: number = new Date().getFullYear();
 
-  constructor(
-    private metaService: MetaService,
-    private modalController: ModalController,
-  ) {}
+  constructor(private metaService: MetaService) {}
 
   ionViewWillEnter() {
     this.metaService.updateMetaTags(
@@ -80,14 +75,6 @@ export class ServicesPage implements OnInit {
           "Comprehensive support including funding assistance, networking opportunities, and SEO expertise.",
       },
     });
-  }
-
-  async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {
-    const modal = await this.modalController.create({
-      component: LegalModalComponent,
-      componentProps: {content: contentType},
-    });
-    await modal.present();
   }
 
   ngOnInit() {}

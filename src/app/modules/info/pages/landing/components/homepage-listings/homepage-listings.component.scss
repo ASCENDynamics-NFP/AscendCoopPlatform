@@ -1,0 +1,171 @@
+/***********************************************************************************************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+*
+* This file is part of Nonprofit Social Networking Platform.
+*
+* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+
+* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+
+* You should have received a copy of the GNU Affero General Public License
+* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+***********************************************************************************************/
+/* Homepage Listings Component Styles - Supports Light and Dark Modes */
+/* General Styling */
+.homepage-listings {
+  font-family: "Roboto", sans-serif;
+  padding: 0 1.25rem;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+/* Heading */
+.homepage-listings h1 {
+  font-size: 2rem;
+  margin-bottom: 1.25rem;
+  text-align: center;
+  color: var(--ion-text-color);
+}
+
+/* Listings Container */
+.listings {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Individual Card */
+.listing-card {
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.5rem var(--ion-color-primary);
+  background-color: var(--ion-item-background);
+  padding: 0.9375rem;
+  transition:
+    box-shadow 0.3s ease,
+    background-color 0.3s ease;
+}
+
+/* Header */
+.listing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.625rem;
+}
+
+.listing-main {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.listing-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.listing-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1875rem;
+}
+
+.listing-info ion-card-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--ion-color-primary);
+}
+
+.listing-info ion-card-subtitle {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+}
+
+.status-badge {
+  background-color: var(--ion-color-primary);
+  // color: var(--ion-color-warning-contrast);
+  border-radius: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Description */
+.listing-description {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+  margin-top: 0.3125rem;
+}
+
+/* Footer */
+.listing-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.9375rem;
+}
+
+.listing-details {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--ion-text-color);
+}
+
+/* Buttons */
+.listing-actions {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.save-btn,
+.apply-btn {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  transition: transform 0.2s ease;
+  font-weight: 500;
+}
+
+.save-btn:hover,
+.apply-btn:hover {
+  transform: scale(1.05);
+}
+
+/* More Opportunities */
+.more-opportunities {
+  text-align: right;
+  margin-top: 1.25rem;
+}
+
+.more-link {
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.more-link:hover {
+  text-decoration: underline;
+}
+
+/* Hide ion-chips on small screens */
+@media (max-width: 576px) {
+  .listing-details ion-chip {
+    display: none;
+  }
+}
+
+@media (max-width: 740px) {
+  .listing-details ion-chip:last-child {
+    display: none;
+  }
+}

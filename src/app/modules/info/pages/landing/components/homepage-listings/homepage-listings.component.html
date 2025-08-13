@@ -1,0 +1,96 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<div class="homepage-listings">
+  <h1>Find Volunteer Opportunities</h1>
+  <div class="listings">
+    <ion-card class="listing-card" *ngFor="let listing of listings">
+      <ion-card-header>
+        <div class="listing-header">
+          <div class="listing-main">
+            <img
+              [src]="listing.iconImage || 'assets/icon/logo.png'"
+              alt="Organization Icon"
+              class="listing-icon"
+            />
+            <div class="listing-info">
+              <ion-card-title>{{ listing.title }}</ion-card-title>
+              <ion-card-subtitle>{{ listing.organization }}</ion-card-subtitle>
+            </div>
+          </div>
+          <ion-badge *ngIf="listing.status === 'active'" class="status-badge">
+            {{
+              listing.type === "volunteer"
+                ? "Actively Seeking"
+                : "Actively Hiring"
+            }}
+          </ion-badge>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <p class="listing-description">
+          {{
+            (listing.description | slice: 0 : 200) +
+              (listing.description.length > 200 ? "..." : "")
+          }}
+        </p>
+        <div class="listing-footer">
+          <div class="listing-details">
+            <ion-chip>
+              <ion-icon name="briefcase"></ion-icon>
+              <ion-label>{{ listing.type | titlecase }}</ion-label>
+            </ion-chip>
+            <ion-chip>
+              <ion-icon name="time"></ion-icon>
+              <ion-label
+                >{{ listing.timeCommitment.hoursPerWeek }} hrs/week</ion-label
+              >
+            </ion-chip>
+            <ion-chip>
+              <ion-icon name="location"></ion-icon>
+              <ion-label>{{ listing.remote ? "Remote" : "Onsite" }}</ion-label>
+            </ion-chip>
+            <ion-chip>
+              <ion-icon name="calendar"></ion-icon>
+              <ion-label>Posted {{ listing.createdAt | timeAgo }}</ion-label>
+            </ion-chip>
+          </div>
+          <div class="listing-actions">
+            <!-- <ion-button fill="outline" class="save-btn" size="small">
+              <ion-icon name="bookmark"></ion-icon>
+              Save
+            </ion-button> -->
+            <ion-button
+              class="apply-btn"
+              size="small"
+              [routerLink]="['/listings', listing.id, 'apply']"
+            >
+              <ion-icon name="send"></ion-icon>
+              Apply
+            </ion-button>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+  <div class="more-opportunities">
+    <a href="/listings" class="more-link">Find More Opportunities →</a>
+  </div>
+</div>

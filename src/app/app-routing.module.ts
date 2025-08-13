@@ -25,13 +25,13 @@ import {RouterModule, Routes, ExtraOptions} from "@angular/router";
 export const routes: Routes = [
   {
     path: "",
-    redirectTo: "",
+    redirectTo: "info",
     pathMatch: "full",
   },
   {
-    path: "", // Used to remove "/auth" from landing page.
+    path: "info", // Used to organize routes in "/info" folder.
     loadChildren: () =>
-      import("./modules/auth/auth.module").then((m) => m.AuthModule),
+      import("./modules/info/info.module").then((m) => m.InfoModule),
   },
   {
     path: "account", // Used to organize routes in "/account" folder.
@@ -61,11 +61,6 @@ export const routes: Routes = [
       import("./modules/time-tracking/time-tracking.module").then(
         (m) => m.TimeTrackingModule,
       ),
-  },
-  {
-    path: "info", // Used to organize routes in "/info" folder.
-    loadChildren: () =>
-      import("./modules/info/info.module").then((m) => m.InfoModule),
   },
 ];
 

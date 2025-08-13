@@ -1,0 +1,217 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<ion-header>
+  <app-header [title]="'Child Safety Standards'"></app-header>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="container">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Child Safety Standards</ion-card-title>
+        <ion-card-subtitle>
+          Our commitment to protecting children and preventing child sexual
+          abuse and exploitation (CSAE)
+        </ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <div class="section">
+          <h2>Our Commitment</h2>
+          <p>
+            ASCENDynamics NFP Platform is committed to providing a safe
+            environment for all users, with special attention to protecting
+            minors from child sexual abuse and exploitation (CSAE) and child
+            sexual abuse material (CSAM).
+          </p>
+        </div>
+
+        <div class="section">
+          <h2>Safety Measures</h2>
+          <ion-list>
+            <ion-item>
+              <ion-icon
+                name="shield-checkmark"
+                slot="start"
+                color="primary"
+              ></ion-icon>
+              <ion-label>
+                <h3>User Verification</h3>
+                <p>
+                  All users must verify their email addresses and agree to our
+                  community guidelines
+                </p>
+              </ion-label>
+            </ion-item>
+
+            <ion-item>
+              <ion-icon name="eye" slot="start" color="primary"></ion-icon>
+              <ion-label>
+                <h3>Content Moderation</h3>
+                <p>
+                  Active monitoring and moderation of user-generated content
+                  using both automated systems and human review
+                </p>
+              </ion-label>
+            </ion-item>
+
+            <ion-item>
+              <ion-icon name="flag" slot="start" color="primary"></ion-icon>
+              <ion-label>
+                <h3>Reporting System</h3>
+                <p>
+                  Easy-to-use in-app reporting tools for users to report
+                  inappropriate content or behavior
+                </p>
+              </ion-label>
+            </ion-item>
+
+            <ion-item>
+              <ion-icon name="ban" slot="start" color="primary"></ion-icon>
+              <ion-label>
+                <h3>Zero Tolerance Policy</h3>
+                <p>
+                  Immediate suspension and reporting to authorities for any CSAE
+                  or CSAM violations
+                </p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </div>
+
+        <div class="section">
+          <h2>Reporting Mechanisms</h2>
+          <p>
+            Users can report child safety concerns through multiple channels:
+          </p>
+          <ul>
+            <li>
+              <strong>In-App Reporting:</strong> Report button available on all
+              user profiles and content
+            </li>
+            <li>
+              <strong>Email:</strong>
+              <a href="mailto:support&#64;ascendynamicsnfp.org"
+                >support&#64;ascendynamicsnfp.org</a
+              >
+            </li>
+            <li>
+              <strong>Emergency Contact:</strong> For immediate threats, users
+              are directed to contact local law enforcement
+            </li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <h2>Response Procedures</h2>
+          <ol>
+            <li>
+              <strong>Immediate Action:</strong> Suspected CSAE/CSAM content is
+              immediately removed and accounts suspended
+            </li>
+            <li>
+              <strong>Investigation:</strong> Thorough review by our safety team
+              within 24 hours
+            </li>
+            <li>
+              <strong>Law Enforcement:</strong> Reporting to NCMEC (National
+              Center for Missing & Exploited Children) and relevant authorities
+            </li>
+            <li>
+              <strong>Documentation:</strong> Maintaining records as required by
+              law for potential legal proceedings
+            </li>
+          </ol>
+        </div>
+
+        <div class="section">
+          <h2>Legal Compliance</h2>
+          <p>
+            ASCENDynamics NFP Platform complies with all applicable laws
+            regarding child safety, including:
+          </p>
+          <ul>
+            <li>Children's Online Privacy Protection Act (COPPA)</li>
+            <li>State and federal laws regarding mandatory reporting</li>
+            <li>
+              International laws in jurisdictions where our service is available
+            </li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <h2>Age Requirements</h2>
+          <p>
+            Our platform requires users to be at least 13 years of age. For
+            users under 18, we implement additional safety measures including
+            enhanced privacy settings and restricted communication features.
+          </p>
+        </div>
+
+        <div class="section">
+          <h2>Continuous Improvement</h2>
+          <p>
+            We regularly review and update our child safety measures in
+            consultation with safety experts, law enforcement, and child
+            protection organizations. Our policies are reviewed annually and
+            updated as needed to address emerging threats.
+          </p>
+        </div>
+
+        <div class="section">
+          <h2>Contact Information</h2>
+          <p>
+            For questions about our child safety standards or to report
+            concerns:
+          </p>
+          <ul>
+            <li>
+              <strong>Safety Team:</strong>
+              <a href="mailto:support&#64;ascendynamicsnfp.org"
+                >support&#64;ascendynamicsnfp.org</a
+              >
+            </li>
+            <li>
+              <strong>General Contact:</strong>
+              <a href="mailto:support&#64;ascendynamicsnfp.org"
+                >support&#64;ascendynamicsnfp.org</a
+              >
+            </li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <ion-text color="medium">
+            <p>
+              <small>
+                Last updated: {{ currentDate | date: 'longDate' }}<br />
+                This document is publicly available and reviewed regularly to
+                ensure compliance with evolving child safety standards and legal
+                requirements.
+              </small>
+            </p>
+          </ion-text>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <app-footer></app-footer>
+</ion-content>

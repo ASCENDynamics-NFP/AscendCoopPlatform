@@ -36,6 +36,7 @@ import {TeamPage} from "./pages/team/team.page";
 import {ThinkTankPage} from "./pages/think-tank/think-tank.page";
 import {PrivacyPolicyPage} from "./pages/privacy-policy/privacy-policy.page";
 import {TermsOfUsePage} from "./pages/terms-of-use/terms-of-use.page";
+import {ChildSafetyPage} from "./pages/child-safety/child-safety.page";
 import {LandingPage} from "./pages/landing/landing.page";
 import {InfoFooterComponent} from "./components/info-footer/info-footer.component";
 import {HomepageListingsComponent} from "./components/homepage-listings/homepage-listings.component";
@@ -52,6 +53,7 @@ import {TimeAgoPipe} from "../../shared/pipes/time-ago.pipe";
     ThinkTankPage,
     PrivacyPolicyPage,
     TermsOfUsePage,
+    ChildSafetyPage,
     LandingPage,
     InfoFooterComponent,
     HomepageListingsComponent,

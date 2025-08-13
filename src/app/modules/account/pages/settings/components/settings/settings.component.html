@@ -55,4 +55,43 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       >
     </form>
   </ion-card>
+
+  <!-- Account Deletion Section -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title color="danger">Delete Account</ion-card-title>
+      <ion-card-subtitle>
+        This action cannot be undone. All your data will be permanently deleted.
+      </ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-text>
+        <p>Deleting your account will permanently remove:</p>
+        <ul>
+          <li>Your profile and account information</li>
+          <li>All your listings and postings</li>
+          <li>Your connections and relationships</li>
+          <li>Your chat messages and conversations</li>
+        </ul>
+        <p>
+          <strong
+            >Your volunteer time entries will be preserved for organizational
+            records but anonymized</strong
+          >
+          (your name will be replaced with "Deleted User").
+        </p>
+        <p><strong>This action cannot be undone.</strong></p>
+      </ion-text>
+      <ion-button
+        expand="full"
+        color="danger"
+        fill="outline"
+        (click)="onDeleteAccount()"
+        [disabled]="isDeleting"
+      >
+        <ion-icon name="trash" slot="start"></ion-icon>
+        {{ isDeleting ? "Deleting Account..." : "Delete My Account" }}
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
 </ion-content>

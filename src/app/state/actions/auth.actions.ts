@@ -177,3 +177,17 @@ export const refreshTokenFailure = createAction(
   "[Auth] Refresh Token Failure",
   props<{error: any}>(),
 );
+
+export const deleteAccount = createAction(
+  "[Auth] Delete Account",
+  props<{confirmationText: string}>(),
+);
+
+export const deleteAccountSuccess = createAction(
+  "[Auth] Delete Account Success",
+);
+
+export const deleteAccountFailure = createAction(
+  "[Auth] Delete Account Failure",
+  props<{error: any}>(),
+);

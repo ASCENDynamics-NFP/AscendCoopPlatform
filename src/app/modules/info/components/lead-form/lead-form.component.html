@@ -22,7 +22,8 @@
       label="Phone"
       formControlName="phone"
       label-placement="stacked"
-      pattern="[0-9()+-\\s]*"
+      placeholder="(555) 123-4567 or +1 (555) 123-4567"
+      (ionInput)="onPhoneInput($event)"
     ></ion-input>
   </ion-item>
   <ion-item>

@@ -87,7 +87,7 @@ export class MenuComponent implements OnInit, OnDestroy {
 
     // Initialize informational page links
     this.infoPages = [
-      {title: "Home", url: "/", icon: "globe-outline"},
+      {title: "Home", url: "/info", icon: "globe-outline"},
       {title: "About Us", url: "/info/about-us", icon: "information-circle"},
       {title: "Services", url: "/info/services", icon: "construct"},
       {title: "Startups", url: "/info/startups", icon: "rocket"},

@@ -21,7 +21,7 @@ import {CapacitorConfig} from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "org.ascendcoopplatform.app",
-  appName: "ASCENDynamics NFP Cooperative Platform",
+  appName: "ASCENDynamics NFP Platform",
   webDir: "public",
   server: {
     androidScheme: "https",

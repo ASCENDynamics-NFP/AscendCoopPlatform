@@ -71,6 +71,11 @@ export class AuthEffects {
   private actionCodeSettings = {
     url: `${window.location.origin}/auth/login`,
     handleCodeInApp: true,
+    android: {
+      packageName: "org.ascendcoopplatform.app",
+      installApp: true,
+      // minimumVersion: "1", // Set your minimum app version if needed
+    },
   };
 
   constructor(

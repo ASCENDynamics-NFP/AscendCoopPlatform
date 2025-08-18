@@ -48,8 +48,8 @@ The system defines 10 standardized categories, each designed for specific relati
 
 - **Purpose**: Volunteer program management
 - **Use Cases**: Nonprofit volunteer coordination, community service
-- **Key Roles**: Volunteer Coordinator, Volunteer
-- **Hierarchy**: Coordinator → Volunteers
+- **Key Roles**: Volunteer Coordinator, Team Leader, Event Volunteer, Program Volunteer, Remote Volunteer, Youth Volunteer, Volunteer
+- **Hierarchy**: Coordinator → Team Leader → Volunteers
 
 ### 3. **Collaboration**
 
@@ -136,6 +136,11 @@ interface StandardRoleTemplate {
 #### Volunteer Category
 
 - **Volunteer Coordinator**: Manages volunteer programs and activities
+- **Team Leader**: Oversees groups of volunteers for specific initiatives
+- **Event Volunteer**: Supports on-site events and activities
+- **Program Volunteer**: Assists ongoing programs and initiatives
+- **Remote Volunteer**: Contributes to projects from remote locations
+- **Youth Volunteer**: Participates in youth-oriented activities
 - **Volunteer**: Individual contributing time and skills
 
 #### Partnership Category
@@ -207,9 +212,12 @@ Member (base level)
 
 ```
 Volunteer Coordinator
-├── Event Volunteer
-├── Program Volunteer
-└── Volunteer
+└── Team Leader
+    ├── Event Volunteer
+    ├── Program Volunteer
+    ├── Remote Volunteer
+    ├── Youth Volunteer
+    └── Volunteer
 ```
 
 #### Partnership Hierarchy
@@ -236,6 +244,12 @@ Strategic Partner
 
 - `manage_volunteers`: Coordinate volunteer assignments and schedules
 - `create_volunteer_opportunities`: Post and manage volunteer positions
+- `manage_team`: Organize volunteer teams
+- `assign_volunteer_tasks`: Delegate tasks to team members
+- `participate_in_events`: Support on-site events
+- `support_programs`: Assist ongoing programs
+- `contribute_remotely`: Work on tasks from remote locations
+- `participate_in_youth_programs`: Engage in youth-focused volunteer work
 - `register_for_opportunities`: Sign up for volunteer activities
 - `track_hours`: Log and monitor volunteer time contributions
 
@@ -340,8 +354,12 @@ Organization Category:
 
 Volunteer Category:
 - Volunteer Coordinator
-  - Event Volunteer
-  - Program Volunteer
+  - Team Leader
+    - Event Volunteer
+    - Program Volunteer
+    - Remote Volunteer
+    - Youth Volunteer
+    - Volunteer
 ```
 
 #### Corporate Partnership Setup

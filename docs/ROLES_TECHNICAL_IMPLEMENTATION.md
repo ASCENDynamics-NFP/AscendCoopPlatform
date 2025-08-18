@@ -59,6 +59,30 @@ export interface StandardRoleHierarchy {
 - **Suggested Hierarchies**: Pre-defined child role recommendations
 - **Group Type Filtering**: Roles can be restricted to specific group types
 
+#### Volunteer Templates
+
+The volunteer category now uses a two-tier structure to support team-based coordination.
+
+- **Volunteer Coordinator**: Oversees volunteer programs and manages team leaders
+- **Team Leader**: Leads groups of volunteers for specific initiatives
+- **Event Volunteer**: Supports on-site events
+- **Program Volunteer**: Assists ongoing programs
+- **Remote Volunteer**: Contributes to projects from remote locations
+- **Youth Volunteer**: Participates in youth-focused activities
+- **Volunteer**: General volunteer role
+
+Hierarchy:
+
+```
+Volunteer Coordinator
+└── Team Leader
+    ├── Event Volunteer
+    ├── Program Volunteer
+    ├── Remote Volunteer
+    ├── Youth Volunteer
+    └── Volunteer
+```
+
 ### GroupRole Model
 
 **Location**: `/shared/models/group-role.model.ts`

@@ -1,0 +1,53 @@
+<h2 class="ion-text-center">Contact Us</h2>
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <ion-item>
+    <ion-input
+      label="Name"
+      formControlName="name"
+      label-placement="stacked"
+      required
+    ></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-input
+      label="Email"
+      formControlName="email"
+      type="email"
+      label-placement="stacked"
+      required
+    ></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-input
+      label="Phone"
+      formControlName="phone"
+      label-placement="stacked"
+      placeholder="(555) 123-4567 or +1 (555) 123-4567"
+      (ionInput)="onPhoneInput($event)"
+    ></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-select
+      label="Inquiry"
+      formControlName="inquiry"
+      label-placement="stacked"
+      required
+    >
+      <ion-select-option *ngFor="let opt of inquiries" [value]="opt.value">{{
+        opt.label
+      }}</ion-select-option>
+    </ion-select>
+  </ion-item>
+  <ion-item>
+    <ion-textarea
+      label="Message"
+      formControlName="message"
+      label-placement="stacked"
+      minlength="10"
+      rows="6"
+    ></ion-textarea>
+  </ion-item>
+  <ion-button type="submit" expand="block" [disabled]="form.invalid"
+    >Submit</ion-button
+  >
+</form>

@@ -27,14 +27,22 @@ import {StartupsPage} from "./pages/startups/startups.page";
 import {EventCalendarPage} from "./pages/event-calendar/event-calendar.page";
 import {TeamPage} from "./pages/team/team.page";
 import {ThinkTankPage} from "./pages/think-tank/think-tank.page";
+import {PrivacyPolicyPage} from "./pages/privacy-policy/privacy-policy.page";
+import {TermsOfUsePage} from "./pages/terms-of-use/terms-of-use.page";
+import {ChildSafetyPage} from "./pages/child-safety/child-safety.page";
+import {LandingPage} from "./pages/landing/landing.page";
 
 const routes: Routes = [
+  {path: "", component: LandingPage},
   {path: "about-us", component: AboutUsPage},
   {path: "services", component: ServicesPage},
   {path: "startups", component: StartupsPage},
   {path: "event-calendar", component: EventCalendarPage},
   {path: "team", component: TeamPage},
   {path: "think-tank", component: ThinkTankPage},
+  {path: "privacy-policy", component: PrivacyPolicyPage},
+  {path: "terms-of-use", component: TermsOfUsePage},
+  {path: "child-safety", component: ChildSafetyPage},
 ];
 
 @NgModule({

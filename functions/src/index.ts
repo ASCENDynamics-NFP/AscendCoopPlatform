@@ -72,6 +72,7 @@ export {onUpdateListingsRelatedAccount} from "./database/listings/relatedAccount
 // HTTP functions
 export {getHomepageListings} from "./functions/listings/homepage";
 export {submitLead} from "./functions/contactform";
+export {deleteAccount} from "./functions/deleteAccount";
 
 // Chat/Messaging functions
 export {

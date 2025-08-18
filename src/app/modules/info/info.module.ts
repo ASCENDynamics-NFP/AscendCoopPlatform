@@ -19,10 +19,10 @@
  ********************************************************************************/
 // src/app/modules/info/info.module.ts
 
-import {NgModule} from "@angular/core";
+import {NgModule, CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
-import {FormsModule} from "@angular/forms";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {RouterModule} from "@angular/router";
 
 import {SharedModule} from "../../shared/shared.module";
@@ -34,6 +34,14 @@ import {StartupsPage} from "./pages/startups/startups.page";
 import {EventCalendarPage} from "./pages/event-calendar/event-calendar.page";
 import {TeamPage} from "./pages/team/team.page";
 import {ThinkTankPage} from "./pages/think-tank/think-tank.page";
+import {PrivacyPolicyPage} from "./pages/privacy-policy/privacy-policy.page";
+import {TermsOfUsePage} from "./pages/terms-of-use/terms-of-use.page";
+import {ChildSafetyPage} from "./pages/child-safety/child-safety.page";
+import {LandingPage} from "./pages/landing/landing.page";
+import {InfoFooterComponent} from "./components/info-footer/info-footer.component";
+import {HomepageListingsComponent} from "./components/homepage-listings/homepage-listings.component";
+import {LeadFormComponent} from "./components/lead-form/lead-form.component";
+import {TimeAgoPipe} from "../../shared/pipes/time-ago.pipe";
 
 @NgModule({
   declarations: [
@@ -43,14 +51,24 @@ import {ThinkTankPage} from "./pages/think-tank/think-tank.page";
     EventCalendarPage,
     TeamPage,
     ThinkTankPage,
+    PrivacyPolicyPage,
+    TermsOfUsePage,
+    ChildSafetyPage,
+    LandingPage,
+    InfoFooterComponent,
+    HomepageListingsComponent,
+    LeadFormComponent,
+    TimeAgoPipe,
   ],
   imports: [
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     IonicModule,
     RouterModule,
     SharedModule,
     InfoRoutingModule,
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class InfoModule {}

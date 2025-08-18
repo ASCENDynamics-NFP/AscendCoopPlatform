@@ -20,9 +20,7 @@
 // src/app/modules/info/pages/event-calendar/event-calendar.page.ts
 
 import {Component, OnInit} from "@angular/core";
-import {ModalController} from "@ionic/angular";
 import {MetaService} from "../../../../core/services/meta.service";
-import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
 
 @Component({
   selector: "app-event-calendar",
@@ -32,10 +30,7 @@ import {LegalModalComponent} from "../../../../shared/components/legal-modal/leg
 export class EventCalendarPage implements OnInit {
   currentYear: number = new Date().getFullYear();
 
-  constructor(
-    private metaService: MetaService,
-    private modalController: ModalController,
-  ) {}
+  constructor(private metaService: MetaService) {}
 
   ionViewWillEnter() {
     this.metaService.updateMetaTags(
@@ -78,14 +73,6 @@ export class EventCalendarPage implements OnInit {
         url: "https://app.ASCENDynamics.org",
       },
     });
-  }
-
-  async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {
-    const modal = await this.modalController.create({
-      component: LegalModalComponent,
-      componentProps: {content: contentType},
-    });
-    await modal.present();
   }
 
   ngOnInit() {}

@@ -30,21 +30,10 @@ import {EffectsModule} from "@ngrx/effects";
 import {StoreModule} from "@ngrx/store";
 import {authReducer} from "../../state/reducers/auth.reducer";
 import {AuthEffects} from "../../state/effects/auth.effects";
-import {LandingPage} from "./pages/landing/landing.page";
 import {SharedModule} from "../../shared/shared.module";
-import {HomepageListingsComponent} from "./pages/landing/components/homepage-listings/homepage-listings.component";
-import {LeadFormComponent} from "./pages/landing/components/lead-form/lead-form.component";
-import {TimeAgoPipe} from "../../shared/pipes/time-ago.pipe";
 
 @NgModule({
-  declarations: [
-    HomepageListingsComponent,
-    LeadFormComponent,
-    LoginPage,
-    SignupPage,
-    LandingPage,
-    TimeAgoPipe,
-  ],
+  declarations: [LoginPage, SignupPage],
   imports: [
     SharedModule,
     AuthRoutingModule,

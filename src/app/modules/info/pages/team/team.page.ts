@@ -20,9 +20,7 @@
 // src/app/modules/info/pages/team/team.page.ts
 
 import {Component, OnInit} from "@angular/core";
-import {ModalController} from "@ionic/angular";
 import {MetaService} from "../../../../core/services/meta.service";
-import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
 
 @Component({
   selector: "app-team",
@@ -32,10 +30,7 @@ import {LegalModalComponent} from "../../../../shared/components/legal-modal/leg
 export class TeamPage implements OnInit {
   currentYear: number = new Date().getFullYear();
 
-  constructor(
-    private metaService: MetaService,
-    private modalController: ModalController,
-  ) {}
+  constructor(private metaService: MetaService) {}
 
   ionViewWillEnter() {
     this.metaService.updateMetaTags(
@@ -75,14 +70,6 @@ export class TeamPage implements OnInit {
           "Team of volunteers and SEO specialists supporting cooperative development",
       },
     });
-  }
-
-  async openLegalModal(contentType: "privacyPolicy" | "termsOfUse") {
-    const modal = await this.modalController.create({
-      component: LegalModalComponent,
-      componentProps: {content: contentType},
-    });
-    await modal.present();
   }
 
   ngOnInit() {}

@@ -21,10 +21,18 @@ import {CapacitorConfig} from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "org.ascendcoopplatform.app",
-  appName: "ASCENDynamics NFP Cooperative Platform",
+  appName: "ASCENDynamics NFP Platform",
   webDir: "public",
   server: {
     androidScheme: "https",
+  },
+  plugins: {
+    GoogleAuth: {
+      scopes: ["profile", "email"],
+      webClientId:
+        "1031671694911-3ejesivnlk5fhr8l29ne74fhp0smdltn.apps.googleusercontent.com",
+      forceCodeForRefreshToken: true,
+    },
   },
 };
 

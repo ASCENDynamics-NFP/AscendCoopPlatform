@@ -67,9 +67,14 @@ UserInterfaceState.xcuserstate
 /platforms
 /plugins
 /public
+/android/
+/ios/
 
 # === Firebase ===
 .firebase
 
 # === Salesforce ===
 .sfdx
+
+# === Other ===
+/prod/

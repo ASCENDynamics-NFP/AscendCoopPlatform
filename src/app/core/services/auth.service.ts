@@ -30,7 +30,7 @@ import {
 } from "../../state/selectors/auth.selectors";
 import {AuthState} from "../../state/reducers/auth.reducer";
 import {Observable} from "rxjs";
-import {AuthUser} from "@shared/models/auth-user.model";
+import {AuthUser} from "../../../../shared/models/auth-user.model";
 
 @Injectable({
   providedIn: "root",
@@ -97,5 +97,10 @@ export class AuthService {
   // Clear Stored Email after Sign-In
   clearEmailForSignIn(): void {
     window.localStorage.removeItem("emailForSignIn");
+  }
+
+  // Delete Account
+  deleteAccount(confirmationText: string): void {
+    this.store.dispatch(AuthActions.deleteAccount({confirmationText}));
   }
 }

@@ -1,9 +1,9 @@
 {
-  "name": "ASCENDynamics NFP",
+  "name": "ASCENDynamics NFP Collaborative Platform",
   "short_name": "ASCENDynamics",
-  "start_url": "/",
+  "start_url": "/info",
   "display": "standalone",
-  "description": "Volunteer opportunities and nonprofit collaboration platform.",
+  "description": "An open-source collaboration platform connecting volunteers and nonprofits to foster community growth and address fundamental human needs.",
   "icons": [
     {
       "src": "/assets/icons/icon-192x192.png",
@@ -17,5 +17,8 @@
     }
   ],
   "theme_color": "#E87121",
-  "background_color": "#7ABD91"
+  "background_color": "#7ABD91",
+  "categories": ["social", "productivity", "lifestyle"],
+  "lang": "en",
+  "orientation": "portrait-primary"
 }

@@ -105,6 +105,14 @@ Category: Organization
 └── Member (Standalone)
 ```
 
+```
+Category: Administrative
+├── Super Admin
+│   └── System Administrator
+│       ├── Support Agent
+│       └── Auditor
+```
+
 ### Pattern 2: Multi-Category Assignment
 
 ```typescript

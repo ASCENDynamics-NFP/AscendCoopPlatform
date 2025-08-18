@@ -236,6 +236,62 @@ export const STANDARD_ROLE_TEMPLATES: StandardRoleTemplate[] = [
     suggestedChildRoles: [],
   },
 
+  // Administrative Category
+  {
+    id: "std_super_admin",
+    category: "Administrative",
+    name: "Super Admin",
+    description:
+      "Highest-level platform administrator with full system control",
+    defaultPermissions: [
+      "manage_platform",
+      "manage_system_settings",
+      "manage_roles",
+      "view_audit_logs",
+    ],
+    applicableGroupTypes: ["Platform"],
+    icon: "planet",
+    isSystemRole: true,
+    suggestedChildRoles: ["System Administrator"],
+  },
+  {
+    id: "std_system_admin",
+    category: "Administrative",
+    name: "System Administrator",
+    description: "Manages system configuration and user administration",
+    defaultPermissions: [
+      "manage_system_settings",
+      "manage_users",
+      "view_audit_logs",
+    ],
+    applicableGroupTypes: ["Platform"],
+    icon: "settings",
+    isSystemRole: true,
+    suggestedChildRoles: ["Support Agent", "Auditor"],
+  },
+  {
+    id: "std_support_agent",
+    category: "Administrative",
+    name: "Support Agent",
+    description: "Provides user support and resolves tickets",
+    defaultPermissions: ["support_users", "resolve_tickets"],
+    applicableGroupTypes: ["Platform"],
+    icon: "help-buoy",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
+    id: "std_auditor",
+    category: "Administrative",
+    name: "Auditor",
+    description: "Reviews system activity and ensures compliance",
+    defaultPermissions: ["view_audit_logs", "view_reports"],
+    applicableGroupTypes: ["Platform"],
+    icon: "search",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+
   // Partnership Category
   {
     id: "std_strategic_partner",
@@ -403,6 +459,21 @@ export const STANDARD_ROLE_HIERARCHIES: StandardRoleHierarchy[] = [
       (r) => r.category === "Community" && r.name === "Resident",
     ),
     description: "Community structure with leaders guiding residents",
+  },
+  {
+    category: "Administrative",
+    parentRoles: STANDARD_ROLE_TEMPLATES.filter(
+      (r) =>
+        r.category === "Administrative" &&
+        ["Super Admin", "System Administrator"].includes(r.name),
+    ),
+    childRoleTemplates: STANDARD_ROLE_TEMPLATES.filter(
+      (r) =>
+        r.category === "Administrative" &&
+        ["Support Agent", "Auditor"].includes(r.name),
+    ),
+    description:
+      "Platform oversight with super admins managing system administrators who oversee support agents and auditors",
   },
   {
     category: "Partnership",

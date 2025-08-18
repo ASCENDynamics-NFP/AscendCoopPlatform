@@ -123,6 +123,30 @@ const userRoles = roles.filter((r) => r.roleType === "user" || !r.roleType);
 const orgRoles = roles.filter((r) => r.roleType === "organization");
 ```
 
+### Pattern 4: Professional Hierarchy
+
+```
+Department Head
+├── Team Lead
+│   ├── Employee
+│   ├── Intern
+│   ├── Contractor
+│   └── Consultant
+└── Mentor
+    ├── Employee
+    ├── Intern
+    ├── Contractor
+    └── Consultant
+```
+
+- **Department Head**: Leads a specific department or division
+- **Team Lead**: Oversees a specific team and coordinates tasks
+- **Mentor**: Provides guidance and support to team members
+- **Employee**: Standard staff member
+- **Intern**: Temporary trainee gaining work experience
+- **Contractor**: External specialist engaged for specific tasks
+- **Consultant**: Expert providing professional advice
+
 ## Component Integration
 
 ### Using Role Selector Component

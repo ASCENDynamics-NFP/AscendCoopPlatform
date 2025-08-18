@@ -59,6 +59,17 @@ export interface StandardRoleHierarchy {
 - **Suggested Hierarchies**: Pre-defined child role recommendations
 - **Group Type Filtering**: Roles can be restricted to specific group types
 
+#### Professional Category Templates
+
+- **Department Head**: Leads a specific department or division
+- **Team Lead**: Oversees a specific team and coordinates tasks
+- **Mentor**: Provides guidance and support to team members
+- **Employee**: Standard staff member
+- **Intern**: Temporary trainee gaining work experience
+- **Contractor**: External specialist engaged for specific tasks
+- **Consultant**: Expert providing professional advice
+- **Hierarchy**: Department Head → Team Lead/Mentor → Employee/Intern/Contractor/Consultant
+
 ### GroupRole Model
 
 **Location**: `/shared/models/group-role.model.ts`

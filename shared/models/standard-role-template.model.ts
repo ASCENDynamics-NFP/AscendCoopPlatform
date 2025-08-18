@@ -198,7 +198,7 @@ export const STANDARD_ROLE_TEMPLATES: StandardRoleTemplate[] = [
     applicableGroupTypes: ["Business", "Nonprofit"],
     icon: "briefcase",
     isSystemRole: true,
-    suggestedChildRoles: ["Team Lead", "Senior Specialist"],
+    suggestedChildRoles: ["Team Lead", "Mentor", "Senior Specialist"],
   },
   {
     id: "std_employee",
@@ -208,6 +208,62 @@ export const STANDARD_ROLE_TEMPLATES: StandardRoleTemplate[] = [
     defaultPermissions: ["access_workplace_tools", "collaborate"],
     applicableGroupTypes: ["Business", "Nonprofit"],
     icon: "person-circle",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+
+  {
+    id: "std_team_lead",
+    category: "Professional",
+    name: "Team Lead",
+    description: "Oversees a specific team and coordinates tasks",
+    defaultPermissions: ["lead_team", "assign_tasks"],
+    applicableGroupTypes: ["Business", "Nonprofit"],
+    icon: "people",
+    isSystemRole: true,
+    suggestedChildRoles: ["Employee", "Intern", "Contractor", "Consultant"],
+  },
+  {
+    id: "std_mentor",
+    category: "Professional",
+    name: "Mentor",
+    description: "Provides guidance and support to team members",
+    defaultPermissions: ["provide_guidance", "review_work"],
+    applicableGroupTypes: ["Business", "Nonprofit"],
+    icon: "ribbon",
+    isSystemRole: true,
+    suggestedChildRoles: ["Employee", "Intern", "Contractor", "Consultant"],
+  },
+  {
+    id: "std_contractor",
+    category: "Professional",
+    name: "Contractor",
+    description: "External specialist engaged for specific tasks",
+    defaultPermissions: ["access_limited_tools", "submit_timesheets"],
+    applicableGroupTypes: ["Business", "Nonprofit"],
+    icon: "construct",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
+    id: "std_consultant",
+    category: "Professional",
+    name: "Consultant",
+    description: "Expert providing professional advice",
+    defaultPermissions: ["advise", "view_reports"],
+    applicableGroupTypes: ["Business", "Nonprofit"],
+    icon: "chatbubbles",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
+    id: "std_intern",
+    category: "Professional",
+    name: "Intern",
+    description: "Temporary trainee gaining work experience",
+    defaultPermissions: ["access_training_resources", "assist_tasks"],
+    applicableGroupTypes: ["Business", "Nonprofit"],
+    icon: "school",
     isSystemRole: true,
     suggestedChildRoles: [],
   },
@@ -389,10 +445,26 @@ export const STANDARD_ROLE_HIERARCHIES: StandardRoleHierarchy[] = [
       (r) => r.category === "Professional" && r.name === "Department Head",
     ),
     childRoleTemplates: STANDARD_ROLE_TEMPLATES.filter(
-      (r) => r.category === "Professional" && r.name === "Employee",
+      (r) =>
+        r.category === "Professional" &&
+        ["Team Lead", "Mentor"].includes(r.name),
+    ),
+    description: "Department heads oversee team leads and mentors",
+  },
+  {
+    category: "Professional",
+    parentRoles: STANDARD_ROLE_TEMPLATES.filter(
+      (r) =>
+        r.category === "Professional" &&
+        ["Team Lead", "Mentor"].includes(r.name),
+    ),
+    childRoleTemplates: STANDARD_ROLE_TEMPLATES.filter(
+      (r) =>
+        r.category === "Professional" &&
+        ["Employee", "Intern", "Contractor", "Consultant"].includes(r.name),
     ),
     description:
-      "Professional hierarchy with department heads managing employees",
+      "Team leads and mentors manage employees, interns, contractors, and consultants",
   },
   {
     category: "Community",

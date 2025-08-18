@@ -105,6 +105,16 @@ Category: Organization
 └── Member (Standalone)
 ```
 
+### Community Roles Overview
+
+- **Community Leader** – Guides initiatives and delegates to organizers.
+- **Event Organizer** – Plans and manages community events.
+- **Outreach Coordinator** – Drives outreach and communication efforts.
+- **Community Volunteer** – Supports events and outreach activities.
+- **Sponsor** – Provides funding or resources (standalone).
+
+Hierarchy: Community Leader → Event Organizer/Outreach Coordinator → Community Volunteer; Sponsor (standalone)
+
 ### Pattern 2: Multi-Category Assignment
 
 ```typescript

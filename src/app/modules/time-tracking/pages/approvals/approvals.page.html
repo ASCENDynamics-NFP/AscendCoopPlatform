@@ -197,53 +197,37 @@
       </ng-container>
 
       <!-- By Project View -->
-      <ng-container
-        *ngIf="viewMode === 'by-project' && (projectGroupedEntries$ | async) as projectGroups"
-      >
+      <ng-container *ngIf="viewMode === 'by-project'">
         <div class="section-header">
           <h2>
             <ion-icon name="folder-outline"></ion-icon>
             Timesheets by Project
           </h2>
-          <p *ngIf="projectGroups.length === 0" class="no-entries">
+          <p *ngIf="(projectWeekRows$ | async)?.length === 0" class="no-entries">
             No project timesheets for this period
           </p>
         </div>
 
-        <ion-list *ngIf="projectGroups.length > 0">
-          <ion-item-group *ngFor="let project of projectGroups">
-            <ion-item-divider>
-              <ion-label>
-                <h3>{{ project.projectName }}</h3>
-                <p>Total: {{ project.totalHours }}h</p>
-              </ion-label>
-            </ion-item-divider>
-
-            <div *ngFor="let user of project.users">
-              <ion-item class="timesheet-item">
-                <ion-icon
-                  [name]="getStatusIcon(user.status)"
-                  [color]="getStatusColor(user.status)"
-                  slot="start"
-                >
-                </ion-icon>
-
-                <ion-label>
-                  <h2>{{ user.userName }}</h2>
-                  <h3>Hours: {{ user.totalHours }}</h3>
-                  <p>{{ user.entries.length }} time entries</p>
-                  <div class="status-badge">
-                    <ion-badge [color]="getStatusColor(user.status)">
-                      {{ user.status | titlecase }}
-                    </ion-badge>
-                  </div>
-                </ion-label>
-
-                <!-- Project-specific user actions would go here -->
-              </ion-item>
-            </div>
-          </ion-item-group>
-        </ion-list>
+        <div *ngIf="(projectWeekRows$ | async) as projectRows">
+          <table class="approvals-table">
+            <thead>
+              <tr>
+                <th>Project</th>
+                <th>Week Date (MM/DD/YY-MM/DD/YY)</th>
+                <th *ngFor="let day of ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']">
+                  {{ day }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of projectRows">
+                <td>{{ row.projectName }}</td>
+                <td>{{ formatWeekRange(row.weekStart) }}</td>
+                <td *ngFor="let h of row.dailyHours">{{ h || 0 }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </ng-container>
 
       <!-- All View (Combined) -->

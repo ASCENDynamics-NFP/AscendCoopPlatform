@@ -139,6 +139,29 @@
   }
 }
 
+.approvals-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+
+  th,
+  td {
+    border: 1px solid var(--ion-color-light-shade);
+    padding: 8px;
+    text-align: center;
+  }
+
+  th {
+    background: var(--ion-color-light);
+    font-weight: 600;
+  }
+
+  td:first-child,
+  td:nth-child(2) {
+    text-align: left;
+  }
+}
+
 .timesheet-item {
   --padding-start: 16px;
   --padding-end: 16px;

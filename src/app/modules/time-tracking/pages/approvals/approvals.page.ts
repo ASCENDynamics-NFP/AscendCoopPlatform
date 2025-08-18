@@ -59,6 +59,12 @@ interface ProjectGroupedEntries {
   }[];
 }
 
+interface ProjectWeekRow {
+  projectName: string;
+  weekStart: Date;
+  dailyHours: number[];
+}
+
 type ViewMode = "all" | "by-user" | "by-project";
 
 @Component({
@@ -72,6 +78,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
   currentUser$!: Observable<AuthUser | null>;
   groupedEntries$!: Observable<GroupedEntries[]>;
   projectGroupedEntries$!: Observable<ProjectGroupedEntries[]>;
+  projectWeekRows$!: Observable<ProjectWeekRow[]>;
 
   // Navigation and filtering properties
   currentWeekStart: Date = (() => {
@@ -153,6 +160,19 @@ export class ApprovalsPage implements OnInit, OnDestroy {
           ? entries
           : this.filterEntriesByWeek(entries, currentWeekStart);
         return this.groupEntriesByProject(filteredEntries, account!);
+      }),
+    );
+
+    this.projectWeekRows$ = combineLatest([
+      this.store.select(selectAllEntriesForAccount(this.accountId)),
+      this.showAllWeeks$,
+      this.currentWeekStart$,
+    ]).pipe(
+      map(([entries, showAllWeeks, currentWeekStart]) => {
+        const filteredEntries = showAllWeeks
+          ? entries
+          : this.filterEntriesByWeek(entries, currentWeekStart);
+        return this.groupEntriesByProjectAndWeek(filteredEntries);
       }),
     );
   }
@@ -302,6 +322,50 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     return Array.from(grouped.values()).sort((a, b) => {
       return a.projectName.localeCompare(b.projectName);
     });
+  }
+
+  private groupEntriesByProjectAndWeek(entries: TimeEntry[]): ProjectWeekRow[] {
+    const grouped = new Map<string, ProjectWeekRow>();
+
+    const submittedEntries = entries.filter(
+      (entry) => entry.status !== "draft",
+    );
+
+    submittedEntries.forEach((entry) => {
+      const weekStart = this.getWeekStart(entry.date.toDate());
+      const key = `${entry.projectId}_${weekStart.getTime()}`;
+
+      if (!grouped.has(key)) {
+        grouped.set(key, {
+          projectName: entry.projectName || "No Project",
+          weekStart,
+          dailyHours: Array(7).fill(0),
+        });
+      }
+
+      const row = grouped.get(key)!;
+      const dayIndex = entry.date.toDate().getDay();
+      row.dailyHours[dayIndex] += entry.hours;
+    });
+
+    return Array.from(grouped.values()).sort((a, b) => {
+      const nameCompare = a.projectName.localeCompare(b.projectName);
+      return nameCompare !== 0
+        ? nameCompare
+        : b.weekStart.getTime() - a.weekStart.getTime();
+    });
+  }
+
+  formatWeekRange(start: Date): string {
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    const fmt = (d: Date) =>
+      d.toLocaleDateString("en-US", {
+        month: "2-digit",
+        day: "2-digit",
+        year: "2-digit",
+      });
+    return `${fmt(start)}-${fmt(end)}`;
   }
 
   getWeekRange(weekStart: Date): string {

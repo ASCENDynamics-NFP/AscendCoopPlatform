@@ -141,6 +141,14 @@ Category: Volunteer
 
 Hierarchy: Community Leader → Event Organizer/Outreach Coordinator → Community Volunteer; Sponsor (standalone)
 
+```
+Category: Administrative
+├── Super Admin
+│   └── System Administrator
+│       ├── Support Agent
+│       └── Auditor
+```
+
 ### Pattern 2: Multi-Category Assignment
 
 ```typescript

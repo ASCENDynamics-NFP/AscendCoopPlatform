@@ -52,6 +52,10 @@ export interface StandardRoleHierarchy {
 }
 ```
 
+The Administrative category is now active, providing templates for Super Admin,
+System Administrator, Support Agent, and Auditor to support platform-level
+operations.
+
 **Key Features**:
 
 - **Category Enum**: Strongly typed categories prevent invalid assignments

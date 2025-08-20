@@ -114,10 +114,12 @@ The system defines 10 standardized categories, each designed for specific relati
 - **Key Roles**: Corporate Sponsor, Vendor, Client Organization, Board Member Organization
 - **Hierarchy**: Board Members/Sponsors → Vendors/Clients
 
-### 10. **Administrative** _(Reserved for future use)_
+### 10. **Administrative**
 
 - **Purpose**: System and administrative functions
 - **Use Cases**: Platform administration, system roles
+- **Key Roles**: Super Admin, System Administrator, Support Agent, Auditor
+- **Hierarchy**: Super Admin → System Administrator → Support Agent, Auditor
 
 ## Standard Role Templates
 

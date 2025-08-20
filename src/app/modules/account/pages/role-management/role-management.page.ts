@@ -23,7 +23,7 @@ import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {Store} from "@ngrx/store";
 import {Observable} from "rxjs";
-import {map} from "rxjs/operators";
+import {map, tap} from "rxjs/operators";
 import {
   GroupRole,
   RoleType,
@@ -61,6 +61,15 @@ export class RoleManagementPage implements OnInit {
 
   // For account info to pass to standard role selector
   currentAccount?: Account;
+
+  /** Tracks which role categories are collapsed on the page */
+  private collapsedCategories = new Set<
+    StandardRoleCategory | "Uncategorized"
+  >();
+  /** Keeps track of categories that have been initialized to avoid reset */
+  private initializedCategories = new Set<
+    StandardRoleCategory | "Uncategorized"
+  >();
   constructor(
     private route: ActivatedRoute,
     private store: Store,
@@ -77,6 +86,14 @@ export class RoleManagementPage implements OnInit {
 
     this.categorizedRoles$ = this.roles$.pipe(
       map((roles) => this.groupRolesByCategory(roles)),
+      tap((groups) => {
+        groups.forEach((g) => {
+          if (!this.initializedCategories.has(g.category)) {
+            this.collapsedCategories.add(g.category);
+            this.initializedCategories.add(g.category);
+          }
+        });
+      }),
     );
 
     this.loading$ = this.store.select(selectAccountLoading);
@@ -202,6 +219,30 @@ export class RoleManagementPage implements OnInit {
     this.store.dispatch(
       AccountActions.createGroupRole({groupId: this.groupId, role}),
     );
+  }
+
+  /** Toggles the collapsed state of a role category */
+  toggleCategory(category: StandardRoleCategory | "Uncategorized") {
+    if (this.collapsedCategories.has(category)) {
+      this.collapsedCategories.delete(category);
+    } else {
+      this.collapsedCategories.add(category);
+    }
+  }
+
+  /** Checks whether the provided category is currently collapsed */
+  isCategoryCollapsed(category: StandardRoleCategory | "Uncategorized") {
+    return this.collapsedCategories.has(category);
+  }
+
+  /** Track function for category ngFor to reduce DOM churn */
+  trackCategory(index: number, group: CategorizedRoles) {
+    return group.category;
+  }
+
+  /** Track function for role ngFor to reduce DOM churn */
+  trackRole(index: number, role: GroupRole) {
+    return role.id;
   }
 
   private groupRolesByCategory(roles: GroupRole[]): CategorizedRoles[] {

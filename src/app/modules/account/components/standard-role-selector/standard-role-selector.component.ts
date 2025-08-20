@@ -19,7 +19,15 @@
  *******************************************************************************/
 // src/app/modules/account/components/standard-role-selector/standard-role-selector.component.ts
 
-import {Component, EventEmitter, Input, Output, OnInit} from "@angular/core";
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+} from "@angular/core";
 import {
   StandardRoleTemplate,
   StandardRoleCategory,
@@ -33,7 +41,7 @@ import {GroupRole} from "../../../../../../shared/models/group-role.model";
   templateUrl: "./standard-role-selector.component.html",
   styleUrls: ["./standard-role-selector.component.scss"],
 })
-export class StandardRoleSelectorComponent implements OnInit {
+export class StandardRoleSelectorComponent implements OnInit, OnChanges {
   @Input() groupType?: string;
   @Input() existingRoles: GroupRole[] = [];
   @Output() roleSelected = new EventEmitter<StandardRoleTemplate>();
@@ -50,6 +58,9 @@ export class StandardRoleSelectorComponent implements OnInit {
   } = {};
   selectedCategory?: StandardRoleCategory;
 
+  /** IDs of roles that already exist so templates can be disabled */
+  private existingRoleIds = new Set<string>();
+
   showCustomRoleForm = false;
   customRoleName = "";
   customRoleDescription = "";
@@ -58,6 +69,17 @@ export class StandardRoleSelectorComponent implements OnInit {
   ngOnInit() {
     this.loadAvailableTemplates();
     this.categorizeTemplates();
+    this.syncExistingRoleIds();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes["groupType"] && !changes["groupType"].firstChange) {
+      this.loadAvailableTemplates();
+      this.categorizeTemplates();
+    }
+    if (changes["existingRoles"]) {
+      this.syncExistingRoleIds();
+    }
   }
 
   private loadAvailableTemplates() {
@@ -69,12 +91,7 @@ export class StandardRoleSelectorComponent implements OnInit {
         }
         return true;
       },
-    ).filter((template: StandardRoleTemplate) => {
-      // Filter out templates that are already used (optional)
-      return !this.existingRoles.some(
-        (role) => role.standardRoleTemplateId === template.id,
-      );
-    });
+    );
   }
 
   private categorizeTemplates() {
@@ -95,6 +112,8 @@ export class StandardRoleSelectorComponent implements OnInit {
 
   selectTemplate(template: StandardRoleTemplate) {
     this.roleSelected.emit(template);
+    // Mark template as used to disable further selection without reloading
+    this.existingRoleIds.add(template.id);
   }
 
   toggleCustomRoleForm() {
@@ -102,6 +121,22 @@ export class StandardRoleSelectorComponent implements OnInit {
     if (!this.showCustomRoleForm) {
       this.resetCustomForm();
     }
+  }
+
+  private syncExistingRoleIds() {
+    this.existingRoleIds = new Set(
+      this.existingRoles
+        .map((r) => r.standardRoleTemplateId)
+        .filter((id): id is string => !!id),
+    );
+  }
+
+  isTemplateUsed(template: StandardRoleTemplate): boolean {
+    return this.existingRoleIds.has(template.id);
+  }
+
+  trackTemplate(index: number, template: StandardRoleTemplate) {
+    return template.id;
   }
 
   createCustomRole() {

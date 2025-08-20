@@ -19,7 +19,15 @@
  *******************************************************************************/
 // src/app/modules/account/components/standard-role-selector/standard-role-selector.component.ts
 
-import {Component, EventEmitter, Input, Output, OnInit} from "@angular/core";
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+} from "@angular/core";
 import {
   StandardRoleTemplate,
   StandardRoleCategory,
@@ -33,7 +41,7 @@ import {GroupRole} from "../../../../../../shared/models/group-role.model";
   templateUrl: "./standard-role-selector.component.html",
   styleUrls: ["./standard-role-selector.component.scss"],
 })
-export class StandardRoleSelectorComponent implements OnInit {
+export class StandardRoleSelectorComponent implements OnInit, OnChanges {
   @Input() groupType?: string;
   @Input() existingRoles: GroupRole[] = [];
   @Output() roleSelected = new EventEmitter<StandardRoleTemplate>();
@@ -58,6 +66,13 @@ export class StandardRoleSelectorComponent implements OnInit {
   ngOnInit() {
     this.loadAvailableTemplates();
     this.categorizeTemplates();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes["existingRoles"] || changes["groupType"]) {
+      this.loadAvailableTemplates();
+      this.categorizeTemplates();
+    }
   }
 
   private loadAvailableTemplates() {
@@ -95,6 +110,11 @@ export class StandardRoleSelectorComponent implements OnInit {
 
   selectTemplate(template: StandardRoleTemplate) {
     this.roleSelected.emit(template);
+    // Immediately remove the selected template so it cannot be chosen again
+    this.availableTemplates = this.availableTemplates.filter(
+      (t) => t.id !== template.id,
+    );
+    this.categorizeTemplates();
   }
 
   toggleCustomRoleForm() {

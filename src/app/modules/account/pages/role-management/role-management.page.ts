@@ -61,6 +61,11 @@ export class RoleManagementPage implements OnInit {
 
   // For account info to pass to standard role selector
   currentAccount?: Account;
+
+  /** Tracks which role categories are collapsed on the page */
+  private collapsedCategories = new Set<
+    StandardRoleCategory | "Uncategorized"
+  >();
   constructor(
     private route: ActivatedRoute,
     private store: Store,
@@ -202,6 +207,20 @@ export class RoleManagementPage implements OnInit {
     this.store.dispatch(
       AccountActions.createGroupRole({groupId: this.groupId, role}),
     );
+  }
+
+  /** Toggles the collapsed state of a role category */
+  toggleCategory(category: StandardRoleCategory | "Uncategorized") {
+    if (this.collapsedCategories.has(category)) {
+      this.collapsedCategories.delete(category);
+    } else {
+      this.collapsedCategories.add(category);
+    }
+  }
+
+  /** Checks whether the provided category is currently collapsed */
+  isCategoryCollapsed(category: StandardRoleCategory | "Uncategorized") {
+    return this.collapsedCategories.has(category);
   }
 
   private groupRolesByCategory(roles: GroupRole[]): CategorizedRoles[] {

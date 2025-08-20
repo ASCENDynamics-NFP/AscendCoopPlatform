@@ -21,9 +21,10 @@ import {Component, OnInit, OnDestroy} from "@angular/core";
 import {Router} from "@angular/router";
 import {Observable, Subject} from "rxjs";
 import {takeUntil, take} from "rxjs/operators";
-import {Chat} from "../../models/chat.model";
+import {Chat, Message} from "../../models/chat.model";
 import {ChatService} from "../../services/chat.service";
 import {NotificationService} from "../../services/notification.service";
+import {EncryptedChatService} from "../../services/encrypted-chat.service";
 import {Store} from "@ngrx/store";
 import {AuthState} from "../../../../state/reducers/auth.reducer";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
@@ -41,6 +42,8 @@ export class ChatListPage implements OnInit, OnDestroy {
   totalUnreadCount$: Observable<number>;
   private destroy$ = new Subject<void>();
   private chatDisplayNameCache = new Map<string, string>();
+  private chatAvatarCache = new Map<string, string>();
+  private chatLastMessageCache = new Map<string, string>();
   private currentUserId: string | null = null;
 
   constructor(
@@ -48,6 +51,7 @@ export class ChatListPage implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private router: Router,
     private store: Store<{auth: AuthState}>,
+    private encryptedChatService: EncryptedChatService,
   ) {
     this.chats$ = this.chatService.getUserChats();
     this.unreadCounts$ = this.notificationService.getUnreadCounts();
@@ -111,18 +115,18 @@ export class ChatListPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Preload account information for chat display names
+   * Preload account information, avatars and last messages
    */
   private preloadChatDisplayNames(chats: Chat[]) {
     const currentUserId = this.getCurrentUserId();
 
     chats.forEach((chat) => {
       if (chat.isGroup) {
-        // Group chats use the group name
         const displayName = chat.name || chat.groupName || "Group Chat";
         this.chatDisplayNameCache.set(chat.id, displayName);
+        const groupIcon = (chat as any)?.iconImage || "assets/avatar/male1.png";
+        this.chatAvatarCache.set(chat.id, groupIcon);
       } else {
-        // For 1-on-1 chats, get the other participant's name
         const otherParticipants = chat.participants.filter(
           (id) => id !== currentUserId,
         );
@@ -130,18 +134,13 @@ export class ChatListPage implements OnInit, OnDestroy {
         if (otherParticipants.length > 0) {
           const otherUserId = otherParticipants[0];
 
-          // Load account if not already loaded
           this.store.dispatch(
             AccountActions.loadAccount({accountId: otherUserId}),
           );
 
-          // Subscribe to account updates to populate cache
           this.store
             .select(selectAccountById(otherUserId))
-            .pipe(
-              takeUntil(this.destroy$),
-              take(1), // Only take the first emission to avoid repeated updates
-            )
+            .pipe(takeUntil(this.destroy$), take(1))
             .subscribe({
               next: (account: any) => {
                 let displayName = "User";
@@ -153,17 +152,83 @@ export class ChatListPage implements OnInit, OnDestroy {
                   displayName = `User ${otherUserId.substring(0, 8)}...`;
                 }
                 this.chatDisplayNameCache.set(chat.id, displayName);
+
+                let avatar =
+                  account?.iconImage ||
+                  account?.photoURL ||
+                  "assets/avatar/male1.png";
+                if (avatar?.startsWith("src/")) {
+                  avatar = avatar.replace(/^src\//, "");
+                }
+                this.chatAvatarCache.set(chat.id, avatar);
               },
               error: (error) => {
                 console.warn(`Error loading account ${otherUserId}:`, error);
                 this.chatDisplayNameCache.set(chat.id, "Unknown User");
+                this.chatAvatarCache.set(chat.id, "assets/avatar/male1.png");
               },
             });
         } else {
           this.chatDisplayNameCache.set(chat.id, "Unknown User");
+          this.chatAvatarCache.set(chat.id, "assets/avatar/male1.png");
         }
       }
+
+      // Load and decrypt last message
+      this.loadLastMessage(chat, currentUserId);
     });
+  }
+
+  /**
+   * Load and decrypt last message for a chat
+   */
+  private loadLastMessage(chat: Chat, currentUserId: string) {
+    this.chatService
+      .getChatMessages(chat.id, 1)
+      .pipe(takeUntil(this.destroy$), take(1))
+      .subscribe({
+        next: async (messages: Message[]) => {
+          if (!messages.length) {
+            this.chatLastMessageCache.set(chat.id, "No messages yet");
+            return;
+          }
+
+          const msg = messages[0];
+          let text = msg.text || "";
+
+          if (msg.isEncrypted) {
+            try {
+              text = await this.encryptedChatService.decryptMessage(
+                msg,
+                currentUserId,
+              );
+            } catch (error) {
+              console.warn(
+                `Error decrypting last message for chat ${chat.id}:`,
+                error,
+              );
+              text = "🔒 Encrypted message (unable to decrypt)";
+            }
+          }
+
+          if (!text) {
+            if (msg.fileName) {
+              text = `📎 ${msg.fileName}`;
+            } else if (msg.fileUrl) {
+              text = "File attachment";
+            }
+          }
+
+          this.chatLastMessageCache.set(chat.id, text);
+        },
+        error: (err) => {
+          console.warn(`Error loading last message for chat ${chat.id}:`, err);
+          this.chatLastMessageCache.set(
+            chat.id,
+            chat.lastMessage || "No messages yet",
+          );
+        },
+      });
   }
 
   /**
@@ -219,6 +284,14 @@ export class ChatListPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Get chat avatar URL if available
+   */
+  getChatAvatar(chat: Chat | null): string | null {
+    if (!chat) return null;
+    return this.chatAvatarCache.get(chat.id) || null;
+  }
+
+  /**
    * Get formatted timestamp for last message
    */
   getFormattedTime(timestamp: any): string {
@@ -247,6 +320,17 @@ export class ChatListPage implements OnInit, OnDestroy {
       month: "short",
       day: "numeric",
     });
+  }
+
+  /**
+   * Get last message text for a chat
+   */
+  getLastMessage(chat: Chat | null): string {
+    if (!chat) return "";
+    if (this.chatLastMessageCache.has(chat.id)) {
+      return this.chatLastMessageCache.get(chat.id)!;
+    }
+    return chat.lastMessage || "";
   }
 
   /**

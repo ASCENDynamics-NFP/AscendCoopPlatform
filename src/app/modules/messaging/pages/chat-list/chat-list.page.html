@@ -33,15 +33,21 @@
       (click)="openChat(chat)"
       detail="false"
     >
-      <!-- Profile Picture Placeholder -->
+      <!-- Profile Picture -->
       <ion-avatar slot="start">
-        <ion-icon name="person-circle" size="large"></ion-icon>
+        <img
+          *ngIf="getChatAvatar(chat); else defaultAvatar"
+          [src]="getChatAvatar(chat)"
+        />
+        <ng-template #defaultAvatar>
+          <ion-icon name="person-circle" size="large"></ion-icon>
+        </ng-template>
       </ion-avatar>
 
       <!-- Chat Info -->
       <ion-label>
         <h2>{{ getChatDisplayName(chat) }}</h2>
-        <p>{{ getTruncatedMessage(chat.lastMessage) }}</p>
+        <p>{{ getTruncatedMessage(getLastMessage(chat)) }}</p>
       </ion-label>
 
       <!-- Timestamp and Unread Badge -->

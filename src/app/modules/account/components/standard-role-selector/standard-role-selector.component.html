@@ -56,8 +56,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <h5>Available {{ selectedCategory }} Roles</h5>
       <ion-list>
         <ion-item
-          *ngFor="let template of getTemplatesForCategory(selectedCategory)"
+          *ngFor="let template of getTemplatesForCategory(selectedCategory); trackBy: trackTemplate"
           button
+          [disabled]="isTemplateUsed(template)"
           (click)="selectTemplate(template)"
         >
           <ion-icon

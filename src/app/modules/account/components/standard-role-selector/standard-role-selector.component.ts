@@ -58,6 +58,9 @@ export class StandardRoleSelectorComponent implements OnInit, OnChanges {
   } = {};
   selectedCategory?: StandardRoleCategory;
 
+  /** IDs of roles that already exist so templates can be disabled */
+  private existingRoleIds = new Set<string>();
+
   showCustomRoleForm = false;
   customRoleName = "";
   customRoleDescription = "";
@@ -66,12 +69,16 @@ export class StandardRoleSelectorComponent implements OnInit, OnChanges {
   ngOnInit() {
     this.loadAvailableTemplates();
     this.categorizeTemplates();
+    this.syncExistingRoleIds();
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes["existingRoles"] || changes["groupType"]) {
+    if (changes["groupType"] && !changes["groupType"].firstChange) {
       this.loadAvailableTemplates();
       this.categorizeTemplates();
+    }
+    if (changes["existingRoles"]) {
+      this.syncExistingRoleIds();
     }
   }
 
@@ -84,12 +91,7 @@ export class StandardRoleSelectorComponent implements OnInit, OnChanges {
         }
         return true;
       },
-    ).filter((template: StandardRoleTemplate) => {
-      // Filter out templates that are already used (optional)
-      return !this.existingRoles.some(
-        (role) => role.standardRoleTemplateId === template.id,
-      );
-    });
+    );
   }
 
   private categorizeTemplates() {
@@ -110,11 +112,8 @@ export class StandardRoleSelectorComponent implements OnInit, OnChanges {
 
   selectTemplate(template: StandardRoleTemplate) {
     this.roleSelected.emit(template);
-    // Immediately remove the selected template so it cannot be chosen again
-    this.availableTemplates = this.availableTemplates.filter(
-      (t) => t.id !== template.id,
-    );
-    this.categorizeTemplates();
+    // Mark template as used to disable further selection without reloading
+    this.existingRoleIds.add(template.id);
   }
 
   toggleCustomRoleForm() {
@@ -122,6 +121,22 @@ export class StandardRoleSelectorComponent implements OnInit, OnChanges {
     if (!this.showCustomRoleForm) {
       this.resetCustomForm();
     }
+  }
+
+  private syncExistingRoleIds() {
+    this.existingRoleIds = new Set(
+      this.existingRoles
+        .map((r) => r.standardRoleTemplateId)
+        .filter((id): id is string => !!id),
+    );
+  }
+
+  isTemplateUsed(template: StandardRoleTemplate): boolean {
+    return this.existingRoleIds.has(template.id);
+  }
+
+  trackTemplate(index: number, template: StandardRoleTemplate) {
+    return template.id;
   }
 
   createCustomRole() {

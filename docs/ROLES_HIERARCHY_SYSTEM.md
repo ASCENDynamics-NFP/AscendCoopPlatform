@@ -82,8 +82,16 @@ The system defines 10 standardized categories, each designed for specific relati
 
 - **Purpose**: Workplace and professional relationships
 - **Use Cases**: Corporate departments, professional networks
-- **Key Roles**: Department Head, Employee
-- **Hierarchy**: Department Head → Employees
+- **Key Roles**: Department Head, Team Lead, Mentor, Employee, Intern, Contractor, Consultant
+- **Role Purposes**:
+  - **Department Head**: Leads a specific department or division
+  - **Team Lead**: Oversees a specific team and coordinates tasks
+  - **Mentor**: Provides guidance and support to team members
+  - **Employee**: Standard staff member
+  - **Intern**: Temporary trainee gaining work experience
+  - **Contractor**: External specialist engaged for specific tasks
+  - **Consultant**: Expert providing professional advice
+- **Hierarchy**: Department Head → Team Lead/Mentor → Employee/Intern/Contractor/Consultant
 
 ### 7. **Community**
 
@@ -258,6 +266,22 @@ Volunteer Coordinator
     ├── Remote Volunteer
     ├── Youth Volunteer
     └── Volunteer
+```
+
+#### Professional Hierarchy
+
+```
+Department Head
+├── Team Lead
+│   ├── Employee
+│   ├── Intern
+│   ├── Contractor
+│   └── Consultant
+└── Mentor
+    ├── Employee
+    ├── Intern
+    ├── Contractor
+    └── Consultant
 ```
 
 #### Partnership Hierarchy

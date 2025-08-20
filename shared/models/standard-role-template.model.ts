@@ -67,7 +67,13 @@ export const STANDARD_ROLE_TEMPLATES: StandardRoleTemplate[] = [
     applicableGroupTypes: ["Nonprofit", "Business", "Community", "Government"],
     icon: "shield-checkmark",
     isSystemRole: true,
-    suggestedChildRoles: ["Project Manager", "Department Head"],
+    suggestedChildRoles: [
+      "Project Manager",
+      "Department Head",
+      "Team Lead",
+      "Staff",
+      "Intern",
+    ],
   },
   {
     id: "std_moderator",
@@ -78,7 +84,13 @@ export const STANDARD_ROLE_TEMPLATES: StandardRoleTemplate[] = [
     applicableGroupTypes: ["Nonprofit", "Business", "Community"],
     icon: "hammer",
     isSystemRole: true,
-    suggestedChildRoles: ["Content Reviewer", "Community Manager"],
+    suggestedChildRoles: [
+      "Content Reviewer",
+      "Community Manager",
+      "Team Lead",
+      "Staff",
+      "Intern",
+    ],
   },
   {
     id: "std_member",
@@ -88,6 +100,62 @@ export const STANDARD_ROLE_TEMPLATES: StandardRoleTemplate[] = [
     defaultPermissions: ["view_content", "participate"],
     applicableGroupTypes: ["Nonprofit", "Business", "Community", "Government"],
     icon: "person",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+
+  {
+    id: "std_project_manager",
+    category: "Organization",
+    name: "Project Manager",
+    description: "Oversees projects and coordinates team activities",
+    defaultPermissions: ["manage_projects", "assign_tasks"],
+    applicableGroupTypes: ["Nonprofit", "Business", "Community", "Government"],
+    icon: "clipboard",
+    isSystemRole: true,
+    suggestedChildRoles: ["Team Lead", "Staff", "Intern"],
+  },
+  {
+    id: "std_department_head_org",
+    category: "Organization",
+    name: "Department Head",
+    description: "Manages a specific department within the organization",
+    defaultPermissions: ["manage_department", "approve_requests"],
+    applicableGroupTypes: ["Nonprofit", "Business", "Community", "Government"],
+    icon: "briefcase",
+    isSystemRole: true,
+    suggestedChildRoles: ["Team Lead"],
+  },
+  {
+    id: "std_team_lead",
+    category: "Organization",
+    name: "Team Lead",
+    description: "Leads a team and coordinates staff members",
+    defaultPermissions: ["manage_team", "assign_tasks"],
+    applicableGroupTypes: ["Nonprofit", "Business", "Community", "Government"],
+    icon: "people-circle",
+    isSystemRole: true,
+    suggestedChildRoles: ["Staff", "Intern"],
+  },
+  {
+    id: "std_staff",
+    category: "Organization",
+    name: "Staff",
+    description: "Staff member with general responsibilities",
+    defaultPermissions: ["access_workplace_tools", "collaborate"],
+    applicableGroupTypes: ["Nonprofit", "Business", "Community", "Government"],
+    icon: "person-circle",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
+    id: "std_intern",
+    category: "Organization",
+    name: "Intern",
+    description: "Intern with limited access for learning purposes",
+    defaultPermissions: ["view_content", "participate_in_training"],
+    applicableGroupTypes: ["Nonprofit", "Business", "Community", "Government"],
+    icon: "school",
     isSystemRole: true,
     suggestedChildRoles: [],
   },
@@ -346,10 +414,43 @@ export const STANDARD_ROLE_HIERARCHIES: StandardRoleHierarchy[] = [
         ["Administrator", "Moderator"].includes(r.name),
     ),
     childRoleTemplates: STANDARD_ROLE_TEMPLATES.filter(
-      (r) => r.category === "Organization" && r.name === "Member",
+      (r) =>
+        r.category === "Organization" &&
+        [
+          "Project Manager",
+          "Department Head",
+          "Team Lead",
+          "Staff",
+          "Intern",
+          "Member",
+        ].includes(r.name),
     ),
     description:
-      "Basic organizational structure with administrators, moderators, and members",
+      "Organizational structure with administrators and moderators overseeing managers, team leads, staff, interns, and members",
+  },
+  {
+    category: "Organization",
+    parentRoles: STANDARD_ROLE_TEMPLATES.filter(
+      (r) =>
+        r.category === "Organization" &&
+        ["Project Manager", "Department Head"].includes(r.name),
+    ),
+    childRoleTemplates: STANDARD_ROLE_TEMPLATES.filter(
+      (r) => r.category === "Organization" && r.name === "Team Lead",
+    ),
+    description:
+      "Mid-level structure with project managers and department heads guiding team leads",
+  },
+  {
+    category: "Organization",
+    parentRoles: STANDARD_ROLE_TEMPLATES.filter(
+      (r) => r.category === "Organization" && r.name === "Team Lead",
+    ),
+    childRoleTemplates: STANDARD_ROLE_TEMPLATES.filter(
+      (r) =>
+        r.category === "Organization" && ["Staff", "Intern"].includes(r.name),
+    ),
+    description: "Team leads supervising staff and interns",
   },
   {
     category: "Volunteer",

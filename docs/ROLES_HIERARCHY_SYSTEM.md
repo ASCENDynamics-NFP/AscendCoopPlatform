@@ -41,8 +41,8 @@ The system defines 10 standardized categories, each designed for specific relati
 
 - **Purpose**: Traditional organizational structures
 - **Use Cases**: Nonprofits, businesses, government agencies
-- **Key Roles**: Administrator, Moderator, Member
-- **Hierarchy**: Admin → Moderator → Member
+- **Key Roles**: Administrator, Moderator, Project Manager, Department Head, Team Lead, Staff, Intern, Member
+- **Hierarchy**: Administrator → Moderator → Project Manager/Department Head → Team Lead → Staff/Intern → Member
 
 ### 2. **Volunteer**
 
@@ -131,6 +131,11 @@ interface StandardRoleTemplate {
 
 - **Administrator**: Full system access and management capabilities
 - **Moderator**: Content moderation and member management
+- **Project Manager**: Oversees projects and coordinates team activities
+- **Department Head**: Manages a specific department within the organization
+- **Team Lead**: Leads a team and coordinates staff members
+- **Staff**: Staff member with general responsibilities
+- **Intern**: Intern with limited access for learning purposes
 - **Member**: Standard organization member with basic access
 
 #### Volunteer Category
@@ -194,13 +199,16 @@ interface RelatedAccount {
 
 ```
 Administrator
-├── Department Head
-│   ├── Team Lead
-│   └── Senior Specialist
-└── Moderator
-    ├── Content Reviewer
-    └── Community Manager
-Member (base level)
+├── Moderator
+│   └── Member
+├── Project Manager
+│   └── Team Lead
+│       ├── Staff
+│       └── Intern
+└── Department Head
+    └── Team Lead
+        ├── Staff
+        └── Intern
 ```
 
 #### Volunteer Hierarchy
@@ -336,7 +344,15 @@ The system uses NgRx for state management with the following selectors:
 Organization Category:
 - Administrator (Executive Director)
   - Moderator (Program Manager)
-    - Member (Staff/Volunteers)
+    - Member
+  - Department Head
+    - Team Lead
+      - Staff
+      - Intern
+  - Project Manager
+    - Team Lead
+      - Staff
+      - Intern
 
 Volunteer Category:
 - Volunteer Coordinator

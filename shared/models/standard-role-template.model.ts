@@ -67,7 +67,13 @@ export const STANDARD_ROLE_TEMPLATES: StandardRoleTemplate[] = [
     applicableGroupTypes: ["Nonprofit", "Business", "Community", "Government"],
     icon: "shield-checkmark",
     isSystemRole: true,
-    suggestedChildRoles: ["Project Manager", "Department Head"],
+    suggestedChildRoles: [
+      "Project Manager",
+      "Department Head",
+      "Team Lead",
+      "Staff",
+      "Intern",
+    ],
   },
   {
     id: "std_moderator",
@@ -78,7 +84,13 @@ export const STANDARD_ROLE_TEMPLATES: StandardRoleTemplate[] = [
     applicableGroupTypes: ["Nonprofit", "Business", "Community"],
     icon: "hammer",
     isSystemRole: true,
-    suggestedChildRoles: ["Content Reviewer", "Community Manager"],
+    suggestedChildRoles: [
+      "Content Reviewer",
+      "Community Manager",
+      "Team Lead",
+      "Staff",
+      "Intern",
+    ],
   },
   {
     id: "std_member",
@@ -88,6 +100,62 @@ export const STANDARD_ROLE_TEMPLATES: StandardRoleTemplate[] = [
     defaultPermissions: ["view_content", "participate"],
     applicableGroupTypes: ["Nonprofit", "Business", "Community", "Government"],
     icon: "person",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+
+  {
+    id: "std_project_manager",
+    category: "Organization",
+    name: "Project Manager",
+    description: "Oversees projects and coordinates team activities",
+    defaultPermissions: ["manage_projects", "assign_tasks"],
+    applicableGroupTypes: ["Nonprofit", "Business", "Community", "Government"],
+    icon: "clipboard",
+    isSystemRole: true,
+    suggestedChildRoles: ["Team Lead", "Staff", "Intern"],
+  },
+  {
+    id: "std_department_head_org",
+    category: "Organization",
+    name: "Department Head",
+    description: "Manages a specific department within the organization",
+    defaultPermissions: ["manage_department", "approve_requests"],
+    applicableGroupTypes: ["Nonprofit", "Business", "Community", "Government"],
+    icon: "briefcase",
+    isSystemRole: true,
+    suggestedChildRoles: ["Team Lead"],
+  },
+  {
+    id: "std_team_lead",
+    category: "Organization",
+    name: "Team Lead",
+    description: "Leads a team and coordinates staff members",
+    defaultPermissions: ["manage_team", "assign_tasks"],
+    applicableGroupTypes: ["Nonprofit", "Business", "Community", "Government"],
+    icon: "people-circle",
+    isSystemRole: true,
+    suggestedChildRoles: ["Staff", "Intern"],
+  },
+  {
+    id: "std_staff",
+    category: "Organization",
+    name: "Staff",
+    description: "Staff member with general responsibilities",
+    defaultPermissions: ["access_workplace_tools", "collaborate"],
+    applicableGroupTypes: ["Nonprofit", "Business", "Community", "Government"],
+    icon: "person-circle",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
+    id: "std_intern",
+    category: "Organization",
+    name: "Intern",
+    description: "Intern with limited access for learning purposes",
+    defaultPermissions: ["view_content", "participate_in_training"],
+    applicableGroupTypes: ["Nonprofit", "Business", "Community", "Government"],
+    icon: "school",
     isSystemRole: true,
     suggestedChildRoles: [],
   },
@@ -102,7 +170,68 @@ export const STANDARD_ROLE_TEMPLATES: StandardRoleTemplate[] = [
     applicableGroupTypes: ["Nonprofit", "Community"],
     icon: "people",
     isSystemRole: true,
-    suggestedChildRoles: ["Event Volunteer", "Program Volunteer"],
+    suggestedChildRoles: ["Team Leader"],
+  },
+  {
+    id: "std_team_leader",
+    category: "Volunteer",
+    name: "Team Leader",
+    description: "Leads groups of volunteers for events or programs",
+    defaultPermissions: ["manage_team", "assign_volunteer_tasks"],
+    applicableGroupTypes: ["Nonprofit", "Community"],
+    icon: "people-circle",
+    isSystemRole: true,
+    suggestedChildRoles: [
+      "Event Volunteer",
+      "Program Volunteer",
+      "Remote Volunteer",
+      "Youth Volunteer",
+      "Volunteer",
+    ],
+  },
+  {
+    id: "std_event_volunteer",
+    category: "Volunteer",
+    name: "Event Volunteer",
+    description: "Supports on-site events and activities",
+    defaultPermissions: ["participate_in_events", "track_hours"],
+    applicableGroupTypes: ["Nonprofit", "Community"],
+    icon: "calendar",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
+    id: "std_program_volunteer",
+    category: "Volunteer",
+    name: "Program Volunteer",
+    description: "Assists ongoing programs and initiatives",
+    defaultPermissions: ["support_programs", "track_hours"],
+    applicableGroupTypes: ["Nonprofit", "Community"],
+    icon: "ribbon",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
+    id: "std_remote_volunteer",
+    category: "Volunteer",
+    name: "Remote Volunteer",
+    description: "Contributes remotely to projects",
+    defaultPermissions: ["contribute_remotely", "track_hours"],
+    applicableGroupTypes: ["Nonprofit", "Community"],
+    icon: "globe",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
+    id: "std_youth_volunteer",
+    category: "Volunteer",
+    name: "Youth Volunteer",
+    description: "Participates in youth-oriented activities",
+    defaultPermissions: ["participate_in_youth_programs", "track_hours"],
+    applicableGroupTypes: ["Nonprofit", "Community"],
+    icon: "school",
+    isSystemRole: true,
+    suggestedChildRoles: [],
   },
   {
     id: "std_volunteer",
@@ -166,6 +295,21 @@ export const STANDARD_ROLE_TEMPLATES: StandardRoleTemplate[] = [
 
   // Friends Category
   {
+    id: "std_best_friend",
+    category: "Friends",
+    name: "Best Friend",
+    description: "Closest friend with full personal access",
+    defaultPermissions: [
+      "view_personal_content",
+      "private_messaging",
+      "priority_interaction",
+    ],
+    applicableGroupTypes: ["Social", "Personal"],
+    icon: "star",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
     id: "std_close_friend",
     category: "Friends",
     name: "Close Friend",
@@ -184,6 +328,28 @@ export const STANDARD_ROLE_TEMPLATES: StandardRoleTemplate[] = [
     defaultPermissions: ["view_public_content", "basic_interaction"],
     applicableGroupTypes: ["Social", "Personal"],
     icon: "happy",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
+    id: "std_acquaintance",
+    category: "Friends",
+    name: "Acquaintance",
+    description: "Casual connection with limited access",
+    defaultPermissions: ["view_public_content", "limited_interaction"],
+    applicableGroupTypes: ["Social", "Personal"],
+    icon: "person-outline",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
+    id: "std_follower",
+    category: "Friends",
+    name: "Follower",
+    description: "Follower with view-only access to public posts",
+    defaultPermissions: ["view_public_content"],
+    applicableGroupTypes: ["Social", "Personal"],
+    icon: "eye",
     isSystemRole: true,
     suggestedChildRoles: [],
   },
@@ -402,10 +568,43 @@ export const STANDARD_ROLE_HIERARCHIES: StandardRoleHierarchy[] = [
         ["Administrator", "Moderator"].includes(r.name),
     ),
     childRoleTemplates: STANDARD_ROLE_TEMPLATES.filter(
-      (r) => r.category === "Organization" && r.name === "Member",
+      (r) =>
+        r.category === "Organization" &&
+        [
+          "Project Manager",
+          "Department Head",
+          "Team Lead",
+          "Staff",
+          "Intern",
+          "Member",
+        ].includes(r.name),
     ),
     description:
-      "Basic organizational structure with administrators, moderators, and members",
+      "Organizational structure with administrators and moderators overseeing managers, team leads, staff, interns, and members",
+  },
+  {
+    category: "Organization",
+    parentRoles: STANDARD_ROLE_TEMPLATES.filter(
+      (r) =>
+        r.category === "Organization" &&
+        ["Project Manager", "Department Head"].includes(r.name),
+    ),
+    childRoleTemplates: STANDARD_ROLE_TEMPLATES.filter(
+      (r) => r.category === "Organization" && r.name === "Team Lead",
+    ),
+    description:
+      "Mid-level structure with project managers and department heads guiding team leads",
+  },
+  {
+    category: "Organization",
+    parentRoles: STANDARD_ROLE_TEMPLATES.filter(
+      (r) => r.category === "Organization" && r.name === "Team Lead",
+    ),
+    childRoleTemplates: STANDARD_ROLE_TEMPLATES.filter(
+      (r) =>
+        r.category === "Organization" && ["Staff", "Intern"].includes(r.name),
+    ),
+    description: "Team leads supervising staff and interns",
   },
   {
     category: "Volunteer",
@@ -413,10 +612,29 @@ export const STANDARD_ROLE_HIERARCHIES: StandardRoleHierarchy[] = [
       (r) => r.category === "Volunteer" && r.name === "Volunteer Coordinator",
     ),
     childRoleTemplates: STANDARD_ROLE_TEMPLATES.filter(
-      (r) => r.category === "Volunteer" && r.name === "Volunteer",
+      (r) => r.category === "Volunteer" && r.name === "Team Leader",
     ),
     description:
-      "Volunteer program structure with coordinators managing volunteers",
+      "Volunteer program structure with coordinators overseeing team leaders",
+  },
+  {
+    category: "Volunteer",
+    parentRoles: STANDARD_ROLE_TEMPLATES.filter(
+      (r) => r.category === "Volunteer" && r.name === "Team Leader",
+    ),
+    childRoleTemplates: STANDARD_ROLE_TEMPLATES.filter(
+      (r) =>
+        r.category === "Volunteer" &&
+        [
+          "Volunteer",
+          "Event Volunteer",
+          "Program Volunteer",
+          "Remote Volunteer",
+          "Youth Volunteer",
+        ].includes(r.name),
+    ),
+    description:
+      "Team leaders manage volunteers across events, programs, remote work, and youth activities",
   },
   {
     category: "Collaboration",

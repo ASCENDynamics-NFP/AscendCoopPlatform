@@ -41,15 +41,15 @@ The system defines 10 standardized categories, each designed for specific relati
 
 - **Purpose**: Traditional organizational structures
 - **Use Cases**: Nonprofits, businesses, government agencies
-- **Key Roles**: Administrator, Moderator, Member
-- **Hierarchy**: Admin → Moderator → Member
+- **Key Roles**: Administrator, Moderator, Project Manager, Department Head, Team Lead, Staff, Intern, Member
+- **Hierarchy**: Administrator → Moderator → Project Manager/Department Head → Team Lead → Staff/Intern → Member
 
 ### 2. **Volunteer**
 
 - **Purpose**: Volunteer program management
 - **Use Cases**: Nonprofit volunteer coordination, community service
-- **Key Roles**: Volunteer Coordinator, Volunteer
-- **Hierarchy**: Coordinator → Volunteers
+- **Key Roles**: Volunteer Coordinator, Team Leader, Event Volunteer, Program Volunteer, Remote Volunteer, Youth Volunteer, Volunteer
+- **Hierarchy**: Coordinator → Team Leader → Volunteers
 
 ### 3. **Collaboration**
 
@@ -69,8 +69,14 @@ The system defines 10 standardized categories, each designed for specific relati
 
 - **Purpose**: Social networking and personal connections
 - **Use Cases**: Social groups, friend networks
-- **Key Roles**: Close Friend, Friend
+- **Key Roles**: Best Friend, Close Friend, Friend, Acquaintance, Follower
 - **Hierarchy**: Flat structure (peer-to-peer)
+- **Access Levels**:
+  - **Best Friend**: full personal content, private messaging, and priority interactions
+  - **Close Friend**: personal content and private messaging
+  - **Friend**: public content and standard interactions
+  - **Acquaintance**: public content with limited interaction
+  - **Follower**: view-only access to public posts
 
 ### 6. **Professional**
 
@@ -139,11 +145,21 @@ interface StandardRoleTemplate {
 
 - **Administrator**: Full system access and management capabilities
 - **Moderator**: Content moderation and member management
+- **Project Manager**: Oversees projects and coordinates team activities
+- **Department Head**: Manages a specific department within the organization
+- **Team Lead**: Leads a team and coordinates staff members
+- **Staff**: Staff member with general responsibilities
+- **Intern**: Intern with limited access for learning purposes
 - **Member**: Standard organization member with basic access
 
 #### Volunteer Category
 
 - **Volunteer Coordinator**: Manages volunteer programs and activities
+- **Team Leader**: Oversees groups of volunteers for specific initiatives
+- **Event Volunteer**: Supports on-site events and activities
+- **Program Volunteer**: Assists ongoing programs and initiatives
+- **Remote Volunteer**: Contributes to projects from remote locations
+- **Youth Volunteer**: Participates in youth-oriented activities
 - **Volunteer**: Individual contributing time and skills
 
 #### Partnership Category
@@ -202,22 +218,28 @@ interface RelatedAccount {
 
 ```
 Administrator
-├── Department Head
-│   ├── Team Lead
-│   └── Senior Specialist
-└── Moderator
-    ├── Content Reviewer
-    └── Community Manager
-Member (base level)
+├── Moderator
+│   └── Member
+├── Project Manager
+│   └── Team Lead
+│       ├── Staff
+│       └── Intern
+└── Department Head
+    └── Team Lead
+        ├── Staff
+        └── Intern
 ```
 
 #### Volunteer Hierarchy
 
 ```
 Volunteer Coordinator
-├── Event Volunteer
-├── Program Volunteer
-└── Volunteer
+└── Team Leader
+    ├── Event Volunteer
+    ├── Program Volunteer
+    ├── Remote Volunteer
+    ├── Youth Volunteer
+    └── Volunteer
 ```
 
 #### Professional Hierarchy
@@ -260,6 +282,12 @@ Strategic Partner
 
 - `manage_volunteers`: Coordinate volunteer assignments and schedules
 - `create_volunteer_opportunities`: Post and manage volunteer positions
+- `manage_team`: Organize volunteer teams
+- `assign_volunteer_tasks`: Delegate tasks to team members
+- `participate_in_events`: Support on-site events
+- `support_programs`: Assist ongoing programs
+- `contribute_remotely`: Work on tasks from remote locations
+- `participate_in_youth_programs`: Engage in youth-focused volunteer work
 - `register_for_opportunities`: Sign up for volunteer activities
 - `track_hours`: Log and monitor volunteer time contributions
 
@@ -360,12 +388,24 @@ The system uses NgRx for state management with the following selectors:
 Organization Category:
 - Administrator (Executive Director)
   - Moderator (Program Manager)
-    - Member (Staff/Volunteers)
+    - Member
+  - Department Head
+    - Team Lead
+      - Staff
+      - Intern
+  - Project Manager
+    - Team Lead
+      - Staff
+      - Intern
 
 Volunteer Category:
 - Volunteer Coordinator
-  - Event Volunteer
-  - Program Volunteer
+  - Team Leader
+    - Event Volunteer
+    - Program Volunteer
+    - Remote Volunteer
+    - Youth Volunteer
+    - Volunteer
 ```
 
 #### Corporate Partnership Setup

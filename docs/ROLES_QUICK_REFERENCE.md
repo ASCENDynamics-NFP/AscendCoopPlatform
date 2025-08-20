@@ -97,12 +97,38 @@ getRolesForAccount(account: RelatedAccount): GroupRole[] {
 
 ### Pattern 1: Hierarchical Role Structure
 
+Standard organization roles now include:
+
+- **Project Manager** – Oversees projects and coordinates team activities
+- **Department Head** – Manages a department within the organization
+- **Team Lead** – Leads a team and coordinates staff
+- **Staff** – Staff member with general responsibilities
+- **Intern** – Intern with limited access for learning purposes
+
 ```
 Category: Organization
 ├── Administrator (Parent)
+│   ├── Project Manager (Child)
+│   │   └── Team Lead
+│   │       ├── Staff
+│   │       └── Intern
 │   ├── Department Head (Child)
-│   └── Project Manager (Child)
-└── Member (Standalone)
+│   │   └── Team Lead
+│   │       ├── Staff
+│   │       └── Intern
+│   └── Moderator (Child)
+│       └── Member
+```
+
+```
+Category: Volunteer
+├── Volunteer Coordinator (Parent)
+└── Team Leader (Child)
+    ├── Event Volunteer
+    ├── Program Volunteer
+    ├── Remote Volunteer
+    ├── Youth Volunteer
+    └── Volunteer
 ```
 
 ### Pattern 2: Multi-Category Assignment
@@ -111,7 +137,7 @@ Category: Organization
 // User can have roles from different categories
 userRoles = [
   {category: "Organization", name: "Member"},
-  {category: "Volunteer", name: "Event Coordinator"},
+  {category: "Volunteer", name: "Event Volunteer"},
   {category: "Professional", name: "Consultant"},
 ];
 ```

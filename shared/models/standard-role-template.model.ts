@@ -255,7 +255,46 @@ export const STANDARD_ROLE_TEMPLATES: StandardRoleTemplate[] = [
     applicableGroupTypes: ["Nonprofit", "Business", "Community"],
     icon: "flag",
     isSystemRole: true,
-    suggestedChildRoles: ["Project Member", "Subject Matter Expert"],
+    suggestedChildRoles: [
+      "Subject Matter Expert",
+      "Reviewer",
+      "Stakeholder",
+      "Collaborator",
+      "Observer",
+    ],
+  },
+  {
+    id: "std_subject_matter_expert",
+    category: "Collaboration",
+    name: "Subject Matter Expert",
+    description: "Provides specialized knowledge for project tasks",
+    defaultPermissions: ["provide_expertise", "support_decisions"],
+    applicableGroupTypes: ["Nonprofit", "Business", "Community"],
+    icon: "school",
+    isSystemRole: true,
+    suggestedChildRoles: ["Collaborator"],
+  },
+  {
+    id: "std_reviewer",
+    category: "Collaboration",
+    name: "Reviewer",
+    description: "Reviews work products and ensures quality standards",
+    defaultPermissions: ["review_work", "approve_changes"],
+    applicableGroupTypes: ["Nonprofit", "Business", "Community"],
+    icon: "checkmark-done",
+    isSystemRole: true,
+    suggestedChildRoles: ["Collaborator"],
+  },
+  {
+    id: "std_stakeholder",
+    category: "Collaboration",
+    name: "Stakeholder",
+    description: "Provides project requirements and strategic feedback",
+    defaultPermissions: ["view_project_status", "provide_feedback"],
+    applicableGroupTypes: ["Nonprofit", "Business", "Community"],
+    icon: "briefcase",
+    isSystemRole: true,
+    suggestedChildRoles: ["Observer"],
   },
   {
     id: "std_collaborator",
@@ -265,6 +304,17 @@ export const STANDARD_ROLE_TEMPLATES: StandardRoleTemplate[] = [
     defaultPermissions: ["contribute_to_projects", "share_resources"],
     applicableGroupTypes: ["Nonprofit", "Business", "Community"],
     icon: "git-merge",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
+    id: "std_observer",
+    category: "Collaboration",
+    name: "Observer",
+    description: "Monitors project progress without direct contribution",
+    defaultPermissions: ["view_project_updates"],
+    applicableGroupTypes: ["Nonprofit", "Business", "Community"],
+    icon: "eye",
     isSystemRole: true,
     suggestedChildRoles: [],
   },
@@ -683,10 +733,26 @@ export const STANDARD_ROLE_HIERARCHIES: StandardRoleHierarchy[] = [
       (r) => r.category === "Collaboration" && r.name === "Project Lead",
     ),
     childRoleTemplates: STANDARD_ROLE_TEMPLATES.filter(
-      (r) => r.category === "Collaboration" && r.name === "Collaborator",
+      (r) =>
+        r.category === "Collaboration" &&
+        ["Subject Matter Expert", "Reviewer"].includes(r.name),
     ),
     description:
-      "Project-based collaboration with leads managing collaborators",
+      "Project leads coordinate SMEs and reviewers in multi-tier collaborations",
+  },
+  {
+    category: "Collaboration",
+    parentRoles: STANDARD_ROLE_TEMPLATES.filter(
+      (r) =>
+        r.category === "Collaboration" &&
+        ["Subject Matter Expert", "Reviewer"].includes(r.name),
+    ),
+    childRoleTemplates: STANDARD_ROLE_TEMPLATES.filter(
+      (r) =>
+        r.category === "Collaboration" &&
+        ["Collaborator", "Observer"].includes(r.name),
+    ),
+    description: "SMEs and reviewers oversee collaborators and observers",
   },
   {
     category: "Family",

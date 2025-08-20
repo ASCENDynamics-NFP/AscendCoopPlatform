@@ -55,8 +55,8 @@ The system defines 10 standardized categories, each designed for specific relati
 
 - **Purpose**: Project-based teamwork
 - **Use Cases**: Cross-functional projects, collaborative initiatives
-- **Key Roles**: Project Lead, Collaborator
-- **Hierarchy**: Lead → Collaborators
+- **Key Roles**: Project Lead, Subject Matter Expert, Reviewer, Stakeholder, Collaborator, Observer
+- **Hierarchy**: Project Lead → Subject Matter Expert/Reviewer → Collaborator/Observer
 
 ### 4. **Family**
 
@@ -154,6 +154,15 @@ interface StandardRoleTemplate {
 - **Youth Volunteer**: Participates in youth-oriented activities
 - **Volunteer**: Individual contributing time and skills
 
+#### Collaboration Category
+
+- **Project Lead**: Leads specific projects and initiatives
+- **Subject Matter Expert**: Provides specialized knowledge for project tasks
+- **Reviewer**: Ensures quality through review and approval
+- **Stakeholder**: Offers requirements and strategic feedback
+- **Collaborator**: Contributes to project execution and shared resources
+- **Observer**: Monitors progress without direct contribution
+
 #### Partnership Category
 
 - **Strategic Partner**: Key strategic alliance partner organization
@@ -224,6 +233,19 @@ Administrator
     └── Team Lead
         ├── Staff
         └── Intern
+```
+
+#### Collaboration Hierarchy
+
+```
+Project Lead
+├── Subject Matter Expert
+│   ├── Collaborator
+│   └── Observer
+├── Reviewer
+│   ├── Collaborator
+│   └── Observer
+└── Stakeholder
 ```
 
 #### Volunteer Hierarchy

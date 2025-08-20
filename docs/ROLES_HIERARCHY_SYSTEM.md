@@ -69,8 +69,14 @@ The system defines 10 standardized categories, each designed for specific relati
 
 - **Purpose**: Social networking and personal connections
 - **Use Cases**: Social groups, friend networks
-- **Key Roles**: Close Friend, Friend
+- **Key Roles**: Best Friend, Close Friend, Friend, Acquaintance, Follower
 - **Hierarchy**: Flat structure (peer-to-peer)
+- **Access Levels**:
+  - **Best Friend**: full personal content, private messaging, and priority interactions
+  - **Close Friend**: personal content and private messaging
+  - **Friend**: public content and standard interactions
+  - **Acquaintance**: public content with limited interaction
+  - **Follower**: view-only access to public posts
 
 ### 6. **Professional**
 

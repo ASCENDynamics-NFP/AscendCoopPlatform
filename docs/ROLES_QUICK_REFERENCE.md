@@ -97,12 +97,27 @@ getRolesForAccount(account: RelatedAccount): GroupRole[] {
 
 ### Pattern 1: Hierarchical Role Structure
 
+Standard organization roles now include:
+
+- **Project Manager** – Oversees projects and coordinates team activities
+- **Department Head** – Manages a department within the organization
+- **Team Lead** – Leads a team and coordinates staff
+- **Staff** – Staff member with general responsibilities
+- **Intern** – Intern with limited access for learning purposes
+
 ```
 Category: Organization
 ├── Administrator (Parent)
+│   ├── Project Manager (Child)
+│   │   └── Team Lead
+│   │       ├── Staff
+│   │       └── Intern
 │   ├── Department Head (Child)
-│   └── Project Manager (Child)
-└── Member (Standalone)
+│   │   └── Team Lead
+│   │       ├── Staff
+│   │       └── Intern
+│   └── Moderator (Child)
+│       └── Member
 ```
 
 ```

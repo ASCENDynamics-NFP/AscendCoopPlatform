@@ -83,6 +83,30 @@ Volunteer Coordinator
     └── Volunteer
 ```
 
+### Organization Role Hierarchy
+
+The following standard organization roles extend the platform's default templates:
+
+- **Project Manager**: Oversees projects and coordinates team activities
+- **Department Head**: Manages a specific department within the organization
+- **Team Lead**: Leads a team and coordinates staff members
+- **Staff**: Staff member with general responsibilities
+- **Intern**: Intern with limited access for learning purposes
+
+```
+Administrator
+├── Moderator
+│   └── Member
+├── Project Manager
+│   └── Team Lead
+│       ├── Staff
+│       └── Intern
+└── Department Head
+    └── Team Lead
+        ├── Staff
+        └── Intern
+```
+
 ### GroupRole Model
 
 **Location**: `/shared/models/group-role.model.ts`
@@ -692,14 +716,14 @@ describe("Role Management Page", () => {
     const categories = await page
       .locator(".category-header h3")
       .allTextContents();
-    expect(categories).toContain("Organization (3)");
+    expect(categories).toContain("Organization (8)");
     expect(categories).toContain("Volunteer (2)");
 
     // Verify role display within categories
     const orgRoles = await page
       .locator('[data-category="Organization"] .role-row')
       .count();
-    expect(orgRoles).toBe(3);
+    expect(orgRoles).toBe(8);
   });
 
   it("should enforce parent role category restrictions", async () => {

@@ -89,8 +89,8 @@ The system defines 10 standardized categories, each designed for specific relati
 
 - **Purpose**: Community organization and civic engagement
 - **Use Cases**: Neighborhood groups, civic organizations
-- **Key Roles**: Community Leader, Resident
-- **Hierarchy**: Leader → Residents
+- **Key Roles**: Community Leader, Event Organizer, Outreach Coordinator, Community Volunteer, Sponsor
+- **Hierarchy**: Community Leader → Event Organizer/Outreach Coordinator → Community Volunteer; Sponsor (standalone)
 
 ### 8. **Partnership**
 

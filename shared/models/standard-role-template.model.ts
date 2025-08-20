@@ -391,6 +391,50 @@ export const STANDARD_ROLE_TEMPLATES: StandardRoleTemplate[] = [
     suggestedChildRoles: ["Event Organizer", "Outreach Coordinator"],
   },
   {
+    id: "std_event_organizer",
+    category: "Community",
+    name: "Event Organizer",
+    description: "Plans and manages community events",
+    defaultPermissions: ["organize_events", "manage_event_participation"],
+    applicableGroupTypes: ["Community", "Nonprofit"],
+    icon: "calendar",
+    isSystemRole: true,
+    suggestedChildRoles: ["Community Volunteer"],
+  },
+  {
+    id: "std_outreach_coordinator",
+    category: "Community",
+    name: "Outreach Coordinator",
+    description: "Coordinates community outreach and engagement",
+    defaultPermissions: ["manage_outreach", "communicate_with_members"],
+    applicableGroupTypes: ["Community", "Nonprofit"],
+    icon: "share-social",
+    isSystemRole: true,
+    suggestedChildRoles: ["Community Volunteer"],
+  },
+  {
+    id: "std_community_volunteer",
+    category: "Community",
+    name: "Community Volunteer",
+    description: "Supports events and outreach efforts",
+    defaultPermissions: ["assist_events", "participate_in_outreach"],
+    applicableGroupTypes: ["Community", "Nonprofit"],
+    icon: "hand-left",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
+    id: "std_sponsor",
+    category: "Community",
+    name: "Sponsor",
+    description: "Provides funding or resources for community initiatives",
+    defaultPermissions: ["contribute_resources"],
+    applicableGroupTypes: ["Community", "Nonprofit"],
+    icon: "cash",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
     id: "std_resident",
     category: "Community",
     name: "Resident",
@@ -618,9 +662,24 @@ export const STANDARD_ROLE_HIERARCHIES: StandardRoleHierarchy[] = [
       (r) => r.category === "Community" && r.name === "Community Leader",
     ),
     childRoleTemplates: STANDARD_ROLE_TEMPLATES.filter(
-      (r) => r.category === "Community" && r.name === "Resident",
+      (r) =>
+        r.category === "Community" &&
+        ["Event Organizer", "Outreach Coordinator"].includes(r.name),
     ),
-    description: "Community structure with leaders guiding residents",
+    description:
+      "Community leaders delegate event organization and outreach coordination",
+  },
+  {
+    category: "Community",
+    parentRoles: STANDARD_ROLE_TEMPLATES.filter(
+      (r) =>
+        r.category === "Community" &&
+        ["Event Organizer", "Outreach Coordinator"].includes(r.name),
+    ),
+    childRoleTemplates: STANDARD_ROLE_TEMPLATES.filter(
+      (r) => r.category === "Community" && r.name === "Community Volunteer",
+    ),
+    description: "Organizers and coordinators manage community volunteers",
   },
   {
     category: "Partnership",

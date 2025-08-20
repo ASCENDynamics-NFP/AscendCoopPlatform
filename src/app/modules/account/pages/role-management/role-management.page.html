@@ -11,7 +11,7 @@
       </ion-card-header>
       <ion-card-content>
         <!-- Display roles grouped by category -->
-        <div *ngFor="let categoryGroup of categorizedRoles$ | async">
+        <div *ngFor="let categoryGroup of categorizedRoles$ | async; trackBy: trackCategory">
           <!-- Category Header -->
           <div
             class="category-header"
@@ -75,7 +75,7 @@
 
             <!-- Roles in this category -->
             <ion-grid
-              *ngFor="let role of categoryGroup.roles"
+              *ngFor="let role of categoryGroup.roles; trackBy: trackRole"
               class="role-row"
               style="margin-left: 16px"
             >

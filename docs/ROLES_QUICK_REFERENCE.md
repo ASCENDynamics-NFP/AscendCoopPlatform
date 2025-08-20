@@ -120,13 +120,24 @@ Category: Organization
 │       └── Member
 ```
 
+```
+Category: Volunteer
+├── Volunteer Coordinator (Parent)
+└── Team Leader (Child)
+    ├── Event Volunteer
+    ├── Program Volunteer
+    ├── Remote Volunteer
+    ├── Youth Volunteer
+    └── Volunteer
+```
+
 ### Pattern 2: Multi-Category Assignment
 
 ```typescript
 // User can have roles from different categories
 userRoles = [
   {category: "Organization", name: "Member"},
-  {category: "Volunteer", name: "Event Coordinator"},
+  {category: "Volunteer", name: "Event Volunteer"},
   {category: "Professional", name: "Consultant"},
 ];
 ```

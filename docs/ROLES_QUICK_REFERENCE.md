@@ -97,13 +97,49 @@ getRolesForAccount(account: RelatedAccount): GroupRole[] {
 
 ### Pattern 1: Hierarchical Role Structure
 
+Standard organization roles now include:
+
+- **Project Manager** – Oversees projects and coordinates team activities
+- **Department Head** – Manages a department within the organization
+- **Team Lead** – Leads a team and coordinates staff
+- **Staff** – Staff member with general responsibilities
+- **Intern** – Intern with limited access for learning purposes
+
 ```
 Category: Organization
 ├── Administrator (Parent)
+│   ├── Project Manager (Child)
+│   │   └── Team Lead
+│   │       ├── Staff
+│   │       └── Intern
 │   ├── Department Head (Child)
-│   └── Project Manager (Child)
-└── Member (Standalone)
+│   │   └── Team Lead
+│   │       ├── Staff
+│   │       └── Intern
+│   └── Moderator (Child)
+│       └── Member
 ```
+
+```
+Category: Volunteer
+├── Volunteer Coordinator (Parent)
+└── Team Leader (Child)
+    ├── Event Volunteer
+    ├── Program Volunteer
+    ├── Remote Volunteer
+    ├── Youth Volunteer
+    └── Volunteer
+```
+
+### Community Roles Overview
+
+- **Community Leader** – Guides initiatives and delegates to organizers.
+- **Event Organizer** – Plans and manages community events.
+- **Outreach Coordinator** – Drives outreach and communication efforts.
+- **Community Volunteer** – Supports events and outreach activities.
+- **Sponsor** – Provides funding or resources (standalone).
+
+Hierarchy: Community Leader → Event Organizer/Outreach Coordinator → Community Volunteer; Sponsor (standalone)
 
 ```
 Category: Administrative
@@ -119,7 +155,7 @@ Category: Administrative
 // User can have roles from different categories
 userRoles = [
   {category: "Organization", name: "Member"},
-  {category: "Volunteer", name: "Event Coordinator"},
+  {category: "Volunteer", name: "Event Volunteer"},
   {category: "Professional", name: "Consultant"},
 ];
 ```
@@ -130,6 +166,30 @@ userRoles = [
 const userRoles = roles.filter((r) => r.roleType === "user" || !r.roleType);
 const orgRoles = roles.filter((r) => r.roleType === "organization");
 ```
+
+### Pattern 4: Professional Hierarchy
+
+```
+Department Head
+├── Team Lead
+│   ├── Employee
+│   ├── Intern
+│   ├── Contractor
+│   └── Consultant
+└── Mentor
+    ├── Employee
+    ├── Intern
+    ├── Contractor
+    └── Consultant
+```
+
+- **Department Head**: Leads a specific department or division
+- **Team Lead**: Oversees a specific team and coordinates tasks
+- **Mentor**: Provides guidance and support to team members
+- **Employee**: Standard staff member
+- **Intern**: Temporary trainee gaining work experience
+- **Contractor**: External specialist engaged for specific tasks
+- **Consultant**: Expert providing professional advice
 
 ## Component Integration
 

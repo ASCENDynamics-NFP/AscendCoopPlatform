@@ -41,22 +41,22 @@ The system defines 10 standardized categories, each designed for specific relati
 
 - **Purpose**: Traditional organizational structures
 - **Use Cases**: Nonprofits, businesses, government agencies
-- **Key Roles**: Administrator, Moderator, Member
-- **Hierarchy**: Admin → Moderator → Member
+- **Key Roles**: Administrator, Moderator, Project Manager, Department Head, Team Lead, Staff, Intern, Member
+- **Hierarchy**: Administrator → Moderator → Project Manager/Department Head → Team Lead → Staff/Intern → Member
 
 ### 2. **Volunteer**
 
 - **Purpose**: Volunteer program management
 - **Use Cases**: Nonprofit volunteer coordination, community service
-- **Key Roles**: Volunteer Coordinator, Volunteer
-- **Hierarchy**: Coordinator → Volunteers
+- **Key Roles**: Volunteer Coordinator, Team Leader, Event Volunteer, Program Volunteer, Remote Volunteer, Youth Volunteer, Volunteer
+- **Hierarchy**: Coordinator → Team Leader → Volunteers
 
 ### 3. **Collaboration**
 
 - **Purpose**: Project-based teamwork
 - **Use Cases**: Cross-functional projects, collaborative initiatives
-- **Key Roles**: Project Lead, Collaborator
-- **Hierarchy**: Lead → Collaborators
+- **Key Roles**: Project Lead, Subject Matter Expert, Reviewer, Stakeholder, Collaborator, Observer
+- **Hierarchy**: Project Lead → Subject Matter Expert/Reviewer → Collaborator/Observer
 
 ### 4. **Family**
 
@@ -69,28 +69,42 @@ The system defines 10 standardized categories, each designed for specific relati
 
 - **Purpose**: Social networking and personal connections
 - **Use Cases**: Social groups, friend networks
-- **Key Roles**: Close Friend, Friend
+- **Key Roles**: Best Friend, Close Friend, Friend, Acquaintance, Follower
 - **Hierarchy**: Flat structure (peer-to-peer)
+- **Access Levels**:
+  - **Best Friend**: full personal content, private messaging, and priority interactions
+  - **Close Friend**: personal content and private messaging
+  - **Friend**: public content and standard interactions
+  - **Acquaintance**: public content with limited interaction
+  - **Follower**: view-only access to public posts
 
 ### 6. **Professional**
 
 - **Purpose**: Workplace and professional relationships
 - **Use Cases**: Corporate departments, professional networks
-- **Key Roles**: Department Head, Employee
-- **Hierarchy**: Department Head → Employees
+- **Key Roles**: Department Head, Team Lead, Mentor, Employee, Intern, Contractor, Consultant
+- **Role Purposes**:
+  - **Department Head**: Leads a specific department or division
+  - **Team Lead**: Oversees a specific team and coordinates tasks
+  - **Mentor**: Provides guidance and support to team members
+  - **Employee**: Standard staff member
+  - **Intern**: Temporary trainee gaining work experience
+  - **Contractor**: External specialist engaged for specific tasks
+  - **Consultant**: Expert providing professional advice
+- **Hierarchy**: Department Head → Team Lead/Mentor → Employee/Intern/Contractor/Consultant
 
 ### 7. **Community**
 
 - **Purpose**: Community organization and civic engagement
 - **Use Cases**: Neighborhood groups, civic organizations
-- **Key Roles**: Community Leader, Resident
-- **Hierarchy**: Leader → Residents
+- **Key Roles**: Community Leader, Event Organizer, Outreach Coordinator, Community Volunteer, Sponsor
+- **Hierarchy**: Community Leader → Event Organizer/Outreach Coordinator → Community Volunteer; Sponsor (standalone)
 
 ### 8. **Partnership**
 
 - **Purpose**: Inter-organizational partnerships
 - **Use Cases**: Strategic alliances, service partnerships
-- **Key Roles**: Strategic Partner, Service Provider, Resource Partner, Affiliate Organization
+- **Key Roles**: Strategic Partner, Service Provider, Resource Partner, Affiliate Organization, Technology Partner, Advocacy Partner, Implementation Partner, Research Partner
 - **Hierarchy**: Strategic Partner → Specialized Partners
 
 ### 9. **Corporate**
@@ -133,12 +147,31 @@ interface StandardRoleTemplate {
 
 - **Administrator**: Full system access and management capabilities
 - **Moderator**: Content moderation and member management
+- **Project Manager**: Oversees projects and coordinates team activities
+- **Department Head**: Manages a specific department within the organization
+- **Team Lead**: Leads a team and coordinates staff members
+- **Staff**: Staff member with general responsibilities
+- **Intern**: Intern with limited access for learning purposes
 - **Member**: Standard organization member with basic access
 
 #### Volunteer Category
 
 - **Volunteer Coordinator**: Manages volunteer programs and activities
+- **Team Leader**: Oversees groups of volunteers for specific initiatives
+- **Event Volunteer**: Supports on-site events and activities
+- **Program Volunteer**: Assists ongoing programs and initiatives
+- **Remote Volunteer**: Contributes to projects from remote locations
+- **Youth Volunteer**: Participates in youth-oriented activities
 - **Volunteer**: Individual contributing time and skills
+
+#### Collaboration Category
+
+- **Project Lead**: Leads specific projects and initiatives
+- **Subject Matter Expert**: Provides specialized knowledge for project tasks
+- **Reviewer**: Ensures quality through review and approval
+- **Stakeholder**: Offers requirements and strategic feedback
+- **Collaborator**: Contributes to project execution and shared resources
+- **Observer**: Monitors progress without direct contribution
 
 #### Partnership Category
 
@@ -146,6 +179,10 @@ interface StandardRoleTemplate {
 - **Service Provider**: Organization providing specific services or expertise
 - **Resource Partner**: Partner providing resources, funding, or materials
 - **Affiliate Organization**: Affiliated or subsidiary organization
+- **Technology Partner**: Partner providing technical solutions or platforms
+- **Advocacy Partner**: Partner focusing on advocacy and outreach efforts
+- **Implementation Partner**: Partner responsible for on-the-ground program implementation
+- **Research Partner**: Partner conducting research and sharing findings
 
 #### Corporate Category
 
@@ -196,22 +233,57 @@ interface RelatedAccount {
 
 ```
 Administrator
-├── Department Head
-│   ├── Team Lead
-│   └── Senior Specialist
-└── Moderator
-    ├── Content Reviewer
-    └── Community Manager
-Member (base level)
+├── Moderator
+│   └── Member
+├── Project Manager
+│   └── Team Lead
+│       ├── Staff
+│       └── Intern
+└── Department Head
+    └── Team Lead
+        ├── Staff
+        └── Intern
+```
+
+#### Collaboration Hierarchy
+
+```
+Project Lead
+├── Subject Matter Expert
+│   ├── Collaborator
+│   └── Observer
+├── Reviewer
+│   ├── Collaborator
+│   └── Observer
+└── Stakeholder
 ```
 
 #### Volunteer Hierarchy
 
 ```
 Volunteer Coordinator
-├── Event Volunteer
-├── Program Volunteer
-└── Volunteer
+└── Team Leader
+    ├── Event Volunteer
+    ├── Program Volunteer
+    ├── Remote Volunteer
+    ├── Youth Volunteer
+    └── Volunteer
+```
+
+#### Professional Hierarchy
+
+```
+Department Head
+├── Team Lead
+│   ├── Employee
+│   ├── Intern
+│   ├── Contractor
+│   └── Consultant
+└── Mentor
+    ├── Employee
+    ├── Intern
+    ├── Contractor
+    └── Consultant
 ```
 
 #### Partnership Hierarchy
@@ -220,7 +292,11 @@ Volunteer Coordinator
 Strategic Partner
 ├── Service Provider
 ├── Resource Partner
-└── Affiliate Organization
+├── Affiliate Organization
+├── Technology Partner
+├── Advocacy Partner
+├── Implementation Partner
+└── Research Partner
 ```
 
 ## Permission Framework
@@ -238,6 +314,12 @@ Strategic Partner
 
 - `manage_volunteers`: Coordinate volunteer assignments and schedules
 - `create_volunteer_opportunities`: Post and manage volunteer positions
+- `manage_team`: Organize volunteer teams
+- `assign_volunteer_tasks`: Delegate tasks to team members
+- `participate_in_events`: Support on-site events
+- `support_programs`: Assist ongoing programs
+- `contribute_remotely`: Work on tasks from remote locations
+- `participate_in_youth_programs`: Engage in youth-focused volunteer work
 - `register_for_opportunities`: Sign up for volunteer activities
 - `track_hours`: Log and monitor volunteer time contributions
 
@@ -247,6 +329,12 @@ Strategic Partner
 - `joint_planning`: Participate in collaborative planning sessions
 - `data_sharing`: Exchange organizational data within partnerships
 - `provide_services`: Deliver contracted services to partners
+- `provide_resources`: Supply funding or materials to partners
+- `affiliate_access`: Utilize shared branding or affiliate tools
+- `provide_technology`: Deliver technical solutions and integrations
+- `advocacy_campaigns`: Run advocacy and outreach efforts
+- `implement_projects`: Execute programs and initiatives
+- `conduct_research`: Perform research and share findings
 
 #### Corporate
 
@@ -338,12 +426,24 @@ The system uses NgRx for state management with the following selectors:
 Organization Category:
 - Administrator (Executive Director)
   - Moderator (Program Manager)
-    - Member (Staff/Volunteers)
+    - Member
+  - Department Head
+    - Team Lead
+      - Staff
+      - Intern
+  - Project Manager
+    - Team Lead
+      - Staff
+      - Intern
 
 Volunteer Category:
 - Volunteer Coordinator
-  - Event Volunteer
-  - Program Volunteer
+  - Team Leader
+    - Event Volunteer
+    - Program Volunteer
+    - Remote Volunteer
+    - Youth Volunteer
+    - Volunteer
 ```
 
 #### Corporate Partnership Setup
@@ -353,6 +453,11 @@ Partnership Category:
 - Strategic Partner (Primary Organization)
   - Service Provider (Contracted Services)
   - Resource Partner (Funding/Materials)
+  - Affiliate Organization (Affiliated Entity)
+  - Technology Partner (Tech Solutions)
+  - Advocacy Partner (Advocacy/Outreach)
+  - Implementation Partner (Program Execution)
+  - Research Partner (Research & Analysis)
 
 Corporate Category:
 - Corporate Sponsor (Major Donors)

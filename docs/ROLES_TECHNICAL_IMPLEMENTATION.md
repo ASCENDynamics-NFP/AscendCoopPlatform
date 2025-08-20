@@ -63,6 +63,65 @@ operations.
 - **Suggested Hierarchies**: Pre-defined child role recommendations
 - **Group Type Filtering**: Roles can be restricted to specific group types
 
+#### Professional Category Templates
+
+- **Department Head**: Leads a specific department or division
+- **Team Lead**: Oversees a specific team and coordinates tasks
+- **Mentor**: Provides guidance and support to team members
+- **Employee**: Standard staff member
+- **Intern**: Temporary trainee gaining work experience
+- **Contractor**: External specialist engaged for specific tasks
+- **Consultant**: Expert providing professional advice
+- **Hierarchy**: Department Head → Team Lead/Mentor → Employee/Intern/Contractor/Consultant
+
+#### Volunteer Templates
+
+The volunteer category now uses a two-tier structure to support team-based coordination.
+
+- **Volunteer Coordinator**: Oversees volunteer programs and manages team leaders
+- **Team Leader**: Leads groups of volunteers for specific initiatives
+- **Event Volunteer**: Supports on-site events
+- **Program Volunteer**: Assists ongoing programs
+- **Remote Volunteer**: Contributes to projects from remote locations
+- **Youth Volunteer**: Participates in youth-focused activities
+- **Volunteer**: General volunteer role
+
+Hierarchy:
+
+```
+Volunteer Coordinator
+└── Team Leader
+    ├── Event Volunteer
+    ├── Program Volunteer
+    ├── Remote Volunteer
+    ├── Youth Volunteer
+    └── Volunteer
+```
+
+### Organization Role Hierarchy
+
+The following standard organization roles extend the platform's default templates:
+
+- **Project Manager**: Oversees projects and coordinates team activities
+- **Department Head**: Manages a specific department within the organization
+- **Team Lead**: Leads a team and coordinates staff members
+- **Staff**: Staff member with general responsibilities
+- **Intern**: Intern with limited access for learning purposes
+
+```
+Administrator
+├── Moderator
+│   └── Member
+├── Project Manager
+│   └── Team Lead
+│       ├── Staff
+│       └── Intern
+└── Department Head
+    └── Team Lead
+        ├── Staff
+        └── Intern
+```
+
 ### GroupRole Model
 
 **Location**: `/shared/models/group-role.model.ts`
@@ -672,14 +731,14 @@ describe("Role Management Page", () => {
     const categories = await page
       .locator(".category-header h3")
       .allTextContents();
-    expect(categories).toContain("Organization (3)");
+    expect(categories).toContain("Organization (8)");
     expect(categories).toContain("Volunteer (2)");
 
     // Verify role display within categories
     const orgRoles = await page
       .locator('[data-category="Organization"] .role-row')
       .count();
-    expect(orgRoles).toBe(3);
+    expect(orgRoles).toBe(8);
   });
 
   it("should enforce parent role category restrictions", async () => {

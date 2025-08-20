@@ -96,7 +96,7 @@ The system defines 10 standardized categories, each designed for specific relati
 
 - **Purpose**: Inter-organizational partnerships
 - **Use Cases**: Strategic alliances, service partnerships
-- **Key Roles**: Strategic Partner, Service Provider, Resource Partner, Affiliate Organization
+- **Key Roles**: Strategic Partner, Service Provider, Resource Partner, Affiliate Organization, Technology Partner, Advocacy Partner, Implementation Partner, Research Partner
 - **Hierarchy**: Strategic Partner → Specialized Partners
 
 ### 9. **Corporate**
@@ -160,6 +160,10 @@ interface StandardRoleTemplate {
 - **Service Provider**: Organization providing specific services or expertise
 - **Resource Partner**: Partner providing resources, funding, or materials
 - **Affiliate Organization**: Affiliated or subsidiary organization
+- **Technology Partner**: Partner providing technical solutions or platforms
+- **Advocacy Partner**: Partner focusing on advocacy and outreach efforts
+- **Implementation Partner**: Partner responsible for on-the-ground program implementation
+- **Research Partner**: Partner conducting research and sharing findings
 
 #### Corporate Category
 
@@ -240,7 +244,11 @@ Volunteer Coordinator
 Strategic Partner
 ├── Service Provider
 ├── Resource Partner
-└── Affiliate Organization
+├── Affiliate Organization
+├── Technology Partner
+├── Advocacy Partner
+├── Implementation Partner
+└── Research Partner
 ```
 
 ## Permission Framework
@@ -273,6 +281,12 @@ Strategic Partner
 - `joint_planning`: Participate in collaborative planning sessions
 - `data_sharing`: Exchange organizational data within partnerships
 - `provide_services`: Deliver contracted services to partners
+- `provide_resources`: Supply funding or materials to partners
+- `affiliate_access`: Utilize shared branding or affiliate tools
+- `provide_technology`: Deliver technical solutions and integrations
+- `advocacy_campaigns`: Run advocacy and outreach efforts
+- `implement_projects`: Execute programs and initiatives
+- `conduct_research`: Perform research and share findings
 
 #### Corporate
 
@@ -391,6 +405,11 @@ Partnership Category:
 - Strategic Partner (Primary Organization)
   - Service Provider (Contracted Services)
   - Resource Partner (Funding/Materials)
+  - Affiliate Organization (Affiliated Entity)
+  - Technology Partner (Tech Solutions)
+  - Advocacy Partner (Advocacy/Outreach)
+  - Implementation Partner (Program Execution)
+  - Research Partner (Research & Analysis)
 
 Corporate Category:
 - Corporate Sponsor (Major Donors)

@@ -110,9 +110,9 @@ The system defines 10 standardized categories, each designed for specific relati
 ### 9. **Corporate**
 
 - **Purpose**: Corporate relationships and business partnerships
-- **Use Cases**: Sponsorships, vendor relationships, client management
-- **Key Roles**: Corporate Sponsor, Vendor, Client Organization, Board Member Organization
-- **Hierarchy**: Board Members/Sponsors → Vendors/Clients
+- **Use Cases**: Sponsorships, investor relations, channel partnerships, vendor and contractor management, client management
+- **Key Roles**: Corporate Sponsor, Board Member Organization, Investor Organization, Channel Partner Organization, Vendor, Supplier Organization, Contractor Organization, Client Organization
+- **Hierarchy**: Board Member Org/Corporate Sponsor → Investor/Channel Partner → Vendor/Supplier/Contractor/Client Orgs
 
 ### 10. **Administrative**
 
@@ -187,9 +187,13 @@ interface StandardRoleTemplate {
 #### Corporate Category
 
 - **Corporate Sponsor**: Corporate entity providing sponsorship support
-- **Vendor**: Supplier or vendor organization
-- **Client Organization**: Client or customer organization
 - **Board Member Organization**: Organization with board representation
+- **Investor Organization**: Organization providing investment or funding
+- **Channel Partner Organization**: Organization participating in channel partnerships
+- **Vendor**: Supplier or vendor organization
+- **Supplier Organization**: Organization supplying goods or materials
+- **Contractor Organization**: Organization providing contract-based services
+- **Client Organization**: Client or customer organization
 
 ## Role Assignment Models
 

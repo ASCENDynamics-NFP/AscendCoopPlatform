@@ -724,28 +724,6 @@ export const STANDARD_ROLE_TEMPLATES: StandardRoleTemplate[] = [
     suggestedChildRoles: ["Platinum Sponsor", "Gold Sponsor", "Silver Sponsor"],
   },
   {
-    id: "std_vendor",
-    category: "Corporate",
-    name: "Vendor",
-    description: "Supplier or vendor organization",
-    defaultPermissions: ["vendor_portal", "contract_management"],
-    applicableGroupTypes: ["group", "organization"],
-    icon: "storefront",
-    isSystemRole: true,
-    suggestedChildRoles: [],
-  },
-  {
-    id: "std_client_organization",
-    category: "Corporate",
-    name: "Client Organization",
-    description: "Client or customer organization",
-    defaultPermissions: ["client_portal", "service_access", "support_tickets"],
-    applicableGroupTypes: ["group", "organization"],
-    icon: "briefcase",
-    isSystemRole: true,
-    suggestedChildRoles: [],
-  },
-  {
     id: "std_board_member_org",
     category: "Corporate",
     name: "Board Member Organization",
@@ -757,6 +735,72 @@ export const STANDARD_ROLE_TEMPLATES: StandardRoleTemplate[] = [
     ],
     applicableGroupTypes: ["group", "organization"],
     icon: "shield-checkmark",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
+    id: "std_investor_org",
+    category: "Corporate",
+    name: "Investor Organization",
+    description: "Organization providing investment or funding",
+    defaultPermissions: ["investor_portal", "financial_reports"],
+    applicableGroupTypes: ["group", "organization"],
+    icon: "trending-up",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
+    id: "std_channel_partner_org",
+    category: "Corporate",
+    name: "Channel Partner Organization",
+    description: "Organization participating in channel partnerships",
+    defaultPermissions: ["channel_portal", "co_marketing", "sales_support"],
+    applicableGroupTypes: ["group", "organization"],
+    icon: "swap-horizontal",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
+    id: "std_vendor",
+    category: "Corporate",
+    name: "Vendor",
+    description: "Supplier or vendor organization",
+    defaultPermissions: ["vendor_portal", "contract_management"],
+    applicableGroupTypes: ["group", "organization"],
+    icon: "storefront",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
+    id: "std_supplier_org",
+    category: "Corporate",
+    name: "Supplier Organization",
+    description: "Organization supplying goods or materials",
+    defaultPermissions: ["supply_portal", "inventory_access"],
+    applicableGroupTypes: ["group", "organization"],
+    icon: "cube",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
+    id: "std_contractor_org",
+    category: "Corporate",
+    name: "Contractor Organization",
+    description: "Organization providing contract-based services",
+    defaultPermissions: ["contractor_portal", "service_orders"],
+    applicableGroupTypes: ["group", "organization"],
+    icon: "construct",
+    isSystemRole: true,
+    suggestedChildRoles: [],
+  },
+  {
+    id: "std_client_organization",
+    category: "Corporate",
+    name: "Client Organization",
+    description: "Client or customer organization",
+    defaultPermissions: ["client_portal", "service_access", "support_tickets"],
+    applicableGroupTypes: ["group", "organization"],
+    icon: "briefcase",
     isSystemRole: true,
     suggestedChildRoles: [],
   },
@@ -974,9 +1018,33 @@ export const STANDARD_ROLE_HIERARCHIES: StandardRoleHierarchy[] = [
     childRoleTemplates: STANDARD_ROLE_TEMPLATES.filter(
       (r) =>
         r.category === "Corporate" &&
-        ["Vendor", "Client Organization"].includes(r.name),
+        ["Investor Organization", "Channel Partner Organization"].includes(
+          r.name,
+        ),
     ),
     description:
-      "Corporate relationships with sponsors and board members having elevated access",
+      "Sponsors and board member organizations overseeing investors and channel partners",
+  },
+  {
+    category: "Corporate",
+    parentRoles: STANDARD_ROLE_TEMPLATES.filter(
+      (r) =>
+        r.category === "Corporate" &&
+        ["Investor Organization", "Channel Partner Organization"].includes(
+          r.name,
+        ),
+    ),
+    childRoleTemplates: STANDARD_ROLE_TEMPLATES.filter(
+      (r) =>
+        r.category === "Corporate" &&
+        [
+          "Vendor",
+          "Supplier Organization",
+          "Contractor Organization",
+          "Client Organization",
+        ].includes(r.name),
+    ),
+    description:
+      "Investor and channel partner relationships managing vendors, suppliers, contractors, and clients",
   },
 ];

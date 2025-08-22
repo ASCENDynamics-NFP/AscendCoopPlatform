@@ -63,6 +63,8 @@ import {GroupCalendarComponent} from "./pages/details/components/group-calendar/
 import {StandardRoleSelectorComponent} from "./components/standard-role-selector/standard-role-selector.component";
 import {FaqSectionComponent} from "./pages/details/components/faq-section/faq-section.component";
 import {FaqFormComponent} from "./pages/edit/components/faq-form/faq-form.component";
+import {AdminDashboardPage} from "./pages/admin-dashboard/admin-dashboard.page";
+import {AdminGroupProfileFormComponent} from "./pages/admin-dashboard/components/admin-group-profile-form/admin-group-profile-form.component";
 
 @NgModule({
   declarations: [
@@ -94,6 +96,8 @@ import {FaqFormComponent} from "./pages/edit/components/faq-form/faq-form.compon
     RoleManagementPage,
     RoleHierarchyPage,
     ProjectsPage,
+    AdminDashboardPage,
+    AdminGroupProfileFormComponent,
     GroupCalendarComponent,
     StandardRoleSelectorComponent,
     FaqSectionComponent,

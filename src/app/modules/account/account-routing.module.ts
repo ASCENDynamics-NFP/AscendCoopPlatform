@@ -22,6 +22,7 @@ import {RouterModule, Routes} from "@angular/router";
 import {AuthGuard} from "../../core/guards/auth.guard";
 import {RegistrationAuthGuard} from "../../core/guards/registration-auth.guard";
 import {AdminGroupOwnerGuard} from "../../core/guards/admin-group-owner.guard";
+import {ProfileOwnerGuard} from "../../core/guards/profile-owner.guard";
 import {DetailsPage} from "./pages/details/details.page";
 import {EditPage} from "./pages/edit/edit.page";
 import {RegistrationPage} from "./pages/registration/registration.page";
@@ -33,6 +34,7 @@ import {ListingsListPage} from "./relatedListings/pages/listings-list/listings-l
 import {RoleManagementPage} from "./pages/role-management/role-management.page";
 import {RoleHierarchyPage} from "./pages/role-hierarchy/role-hierarchy.page";
 import {ProjectsPage} from "./pages/projects/projects.page";
+import {AdminDashboardPage} from "./pages/admin-dashboard/admin-dashboard.page";
 
 const routes: Routes = [
   {
@@ -55,6 +57,11 @@ const routes: Routes = [
     canActivate: [AuthGuard, AdminGroupOwnerGuard],
   },
   {
+    path: ":accountId/admin",
+    component: AdminDashboardPage,
+    canActivate: [AuthGuard, AdminGroupOwnerGuard],
+  },
+  {
     path: "registration/:accountId",
     component: RegistrationPage,
     canActivate: [RegistrationAuthGuard],
@@ -67,7 +74,7 @@ const routes: Routes = [
   {
     path: ":accountId/edit",
     component: EditPage,
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, ProfileOwnerGuard],
   },
   {
     path: ":accountId/listings",

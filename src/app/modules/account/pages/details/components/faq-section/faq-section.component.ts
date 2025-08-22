@@ -37,15 +37,36 @@ export class FaqSectionComponent {
   @Input() faqs: FAQ[] = [];
   @Input() canEdit: boolean = false;
   @Input() accountId: string = "";
+  @Input() accountType: string = ""; // Add account type to determine if it's a group
 
   constructor(private router: Router) {}
 
-  onManageFAQs() {
+  // Navigate to admin dashboard for group FAQ management
+  navigateToAdminDashboard() {
     if (this.accountId) {
-      this.router.navigate([`/account/${this.accountId}/edit`], {
-        queryParams: {section: "faq"},
+      this.router.navigate(["/account", this.accountId, "admin"], {
+        queryParams: {tab: "faqs"},
       });
     }
+  }
+
+  // Legacy method - kept for backward compatibility but now redirects to admin dashboard
+  onManageFAQs() {
+    if (this.isGroup()) {
+      this.navigateToAdminDashboard();
+    } else {
+      // For personal profiles, still use edit interface
+      if (this.accountId) {
+        this.router.navigate([`/account/${this.accountId}/edit`], {
+          queryParams: {section: "faq"},
+        });
+      }
+    }
+  }
+
+  // Check if this is a group profile
+  isGroup(): boolean {
+    return this.accountType === "group" || this.accountType === "organization";
   }
 
   trackByFAQ(index: number, faq: FAQ): string {

@@ -1,0 +1,809 @@
+/***********************************************************************************************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+*
+* This file is part of Nonprofit Social Networking Platform.
+*
+* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+
+* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+
+* You should have received a copy of the GNU Affero General Public License
+* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+***********************************************************************************************/
+
+.admin-dashboard-container {
+  padding: 16px;
+}
+
+.dashboard-header {
+  margin-bottom: 20px;
+
+  .group-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .group-avatar {
+      width: 60px;
+      height: 60px;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .group-details {
+      flex: 1;
+
+      h2 {
+        margin: 0 0 4px 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--ion-color-dark);
+      }
+
+      .group-tagline {
+        margin: 0;
+        color: var(--ion-color-medium);
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
+.segments-container {
+  width: 100%;
+  overflow-x: auto; // Enable horizontal scrolling
+  -webkit-overflow-scrolling: touch; // Smooth scrolling on iOS
+  scrollbar-width: none; // Hide scrollbar in Firefox
+  -ms-overflow-style: none; // Hide scrollbar in IE/Edge
+
+  &::-webkit-scrollbar {
+    display: none; // Hide scrollbar in WebKit browsers
+  }
+}
+
+.dashboard-segments {
+  margin-bottom: 24px;
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  padding: 4px;
+  overflow: visible; // Ensure badges are not clipped
+  min-width: max-content; // Prevent segment buttons from wrapping
+  width: 100%;
+
+  ion-segment-button {
+    --color-checked: var(--ion-color-primary);
+    --background-checked: var(--ion-color-primary-contrast);
+    --border-radius: 6px;
+    --padding-start: 8px;
+    --padding-end: 8px;
+    overflow: visible; // Ensure badges are not clipped
+    flex: none; // Prevent flex shrinking on mobile
+    min-width: fit-content; // Ensure buttons maintain their size
+
+    ion-label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      position: relative;
+      padding-top: 6px; // Add padding to prevent badge cutoff
+      padding-right: 6px; // Add padding to prevent badge cutoff
+      white-space: nowrap; // Prevent text wrapping
+
+      .notification-badge {
+        position: absolute;
+        top: -2px; // Reduced from -8px to prevent cutoff
+        right: -2px; // Reduced from -8px to prevent cutoff
+        min-width: 16px;
+        height: 16px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10; // Ensure badge appears above other elements
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); // Add shadow for better visibility
+      }
+    }
+
+    ion-icon {
+      font-size: 1.1rem;
+      margin-bottom: 2px;
+    }
+
+    @media (max-width: 768px) {
+      --padding-start: 12px;
+      --padding-end: 12px;
+      min-width: 48px; // Ensure touch targets are large enough
+
+      ion-label {
+        display: none;
+      }
+    }
+  }
+
+  // Mobile-specific adjustments for better scrolling
+  @media (max-width: 768px) {
+    padding: 4px 8px;
+    margin-left: -8px;
+    margin-right: -8px;
+
+    ion-segment-button {
+      margin: 0 2px;
+    }
+  }
+}
+
+.dashboard-content {
+  h3 {
+    color: var(--ion-color-dark);
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  h4 {
+    color: var(--ion-color-dark);
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+}
+
+// Overview Section
+.overview-section {
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+
+    .stat-card {
+      margin: 0;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+      }
+
+      ion-card-content {
+        padding: 20px 16px;
+        position: relative;
+
+        .stat-value {
+          font-size: 2rem;
+          font-weight: 700;
+          color: var(--ion-color-primary);
+          margin-bottom: 4px;
+        }
+
+        .stat-label {
+          font-size: 0.9rem;
+          color: var(--ion-color-medium);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .stat-icon {
+          position: absolute;
+          top: 16px;
+          right: 16px;
+          font-size: 1.5rem;
+          color: var(--ion-color-primary);
+          opacity: 0.6;
+        }
+
+        .profile-visibility {
+          &.public {
+            color: var(--ion-color-success);
+          }
+
+          &.private {
+            color: var(--ion-color-warning);
+          }
+        }
+      }
+    }
+  }
+
+  .quick-actions-section {
+    margin: 24px 0;
+
+    h4 {
+      margin-bottom: 12px;
+      color: var(--ion-color-dark);
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .quick-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+
+      ion-button {
+        --border-radius: 8px;
+        --border-width: 2px;
+        --color: var(--ion-color-primary);
+        margin: 0;
+        height: 48px;
+
+        ion-icon {
+          margin-right: 8px;
+        }
+
+        &:hover {
+          --background: var(--ion-color-primary-tint);
+          --color: var(--ion-color-primary-contrast);
+        }
+      }
+
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+
+  .recent-activity {
+    margin: 24px 0;
+
+    h4 {
+      margin-bottom: 12px;
+      color: var(--ion-color-dark);
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    ion-card {
+      margin: 0;
+      --border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+      ion-card-content {
+        padding: 0;
+      }
+
+      ion-list {
+        background: transparent;
+      }
+
+      ion-item {
+        --padding-start: 16px;
+        --inner-padding-end: 16px;
+        --min-height: 60px;
+
+        ion-icon {
+          margin-right: 16px;
+        }
+
+        ion-label {
+          h3 {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+          }
+
+          p {
+            color: var(--ion-color-medium);
+            font-size: 0.9rem;
+          }
+        }
+
+        ion-button {
+          --color: var(--ion-color-primary);
+        }
+      }
+    }
+  }
+
+  .admin-tips {
+    margin: 24px 0;
+
+    h4 {
+      margin-bottom: 12px;
+      color: var(--ion-color-dark);
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .tips-card {
+      margin: 0;
+      --border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border-left: 4px solid var(--ion-color-primary);
+
+      .tips-list {
+        .tip-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          margin-bottom: 16px;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+
+          ion-icon {
+            font-size: 1.2rem;
+            margin-top: 2px;
+            flex-shrink: 0;
+          }
+
+          div {
+            flex: 1;
+            font-size: 0.9rem;
+            line-height: 1.4;
+
+            strong {
+              color: var(--ion-color-dark);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .group-glance {
+    margin: 24px 0;
+
+    h4 {
+      margin-bottom: 12px;
+      color: var(--ion-color-dark);
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    ion-card {
+      margin: 0;
+      --border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .glance-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+
+      ion-icon {
+        font-size: 1.4rem;
+        min-width: 24px;
+      }
+
+      .glance-content {
+        flex: 1;
+
+        .glance-label {
+          font-size: 0.85rem;
+          color: var(--ion-color-medium);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 2px;
+        }
+
+        .glance-value {
+          font-size: 0.95rem;
+          color: var(--ion-color-dark);
+          font-weight: 500;
+        }
+      }
+    }
+  }
+
+  .quick-actions {
+    .action-buttons {
+      display: grid;
+      gap: 12px;
+
+      ion-button {
+        margin: 0;
+        --border-radius: 8px;
+
+        ion-icon {
+          margin-right: 8px;
+        }
+      }
+    }
+  }
+}
+
+// Section-specific styles
+.profile-section,
+.members-section,
+.roles-section,
+.faqs-section,
+.listings-section,
+.settings-section {
+  ion-card {
+    margin: 16px 0;
+    --border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    ion-card-header {
+      ion-card-title {
+        color: var(--ion-color-dark);
+        font-weight: 600;
+      }
+    }
+
+    ion-card-content {
+      p {
+        color: var(--ion-color-medium);
+        line-height: 1.5;
+      }
+    }
+  }
+}
+
+.members-actions,
+.roles-actions,
+.listings-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+
+  ion-button {
+    --border-radius: 8px;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .admin-dashboard-container {
+    padding: 12px;
+  }
+
+  .dashboard-header {
+    .group-info {
+      .group-avatar {
+        width: 50px;
+        height: 50px;
+      }
+
+      .group-details {
+        h2 {
+          font-size: 1.3rem;
+        }
+      }
+    }
+  }
+
+  .overview-section {
+    .stats-grid {
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+
+      .stat-card {
+        ion-card-content {
+          padding: 16px 12px;
+
+          .stat-value {
+            font-size: 1.5rem;
+          }
+
+          .stat-label {
+            font-size: 0.8rem;
+          }
+        }
+      }
+    }
+  }
+
+  .members-actions,
+  .roles-actions,
+  .listings-actions {
+    flex-direction: column;
+
+    ion-button {
+      margin: 0;
+    }
+  }
+}
+
+// Admin dashboard specific header styling
+ion-header {
+  ion-toolbar {
+    --background: var(--ion-color-primary);
+    --color: var(--ion-color-primary-contrast);
+
+    ion-title {
+      font-weight: 600;
+    }
+
+    ion-button {
+      --color: var(--ion-color-primary-contrast);
+    }
+  }
+}
+
+// FAQ Section Styling
+.faqs-section {
+  .no-faqs-message {
+    text-align: center;
+    padding: 24px;
+
+    p {
+      margin: 0;
+      font-style: italic;
+    }
+  }
+
+  ion-card {
+    margin-bottom: 16px;
+
+    ion-card-header {
+      ion-card-subtitle {
+        color: var(--ion-color-medium);
+        font-size: 0.9rem;
+        margin-top: 4px;
+      }
+    }
+  }
+}
+
+// Listings Section Styling
+.listings-section {
+  .listings-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+
+      ion-button {
+        flex: 1;
+      }
+    }
+  }
+
+  .listings-stats {
+    display: flex;
+    justify-content: space-around;
+    margin: 16px 0;
+
+    .stat-item {
+      text-align: center;
+
+      .stat-number {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--ion-color-primary);
+        margin-bottom: 4px;
+      }
+
+      .stat-label {
+        font-size: 0.9rem;
+        color: var(--ion-color-medium);
+      }
+    }
+  }
+
+  .listings-quick-links {
+    margin-top: 16px;
+    text-align: right;
+  }
+
+  .pending-applicants {
+    margin-top: 20px;
+
+    h4 {
+      margin: 0 0 12px 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+    }
+
+    .application-date {
+      margin-top: 4px;
+      font-size: 0.85rem;
+    }
+
+    .applicant-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    ion-button[fill="clear"] {
+      margin: 0;
+    }
+  }
+}
+
+// Members Section Styling
+.members-section {
+  .members-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+    }
+
+    ion-button {
+      flex: 1;
+    }
+  }
+
+  .request-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .self-initiated-note {
+    margin-top: 4px;
+
+    ion-text {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      small {
+        font-style: italic;
+      }
+
+      ion-icon {
+        font-size: 14px;
+      }
+    }
+  }
+
+  .overview-stats {
+    display: flex;
+    justify-content: space-around;
+    margin: 16px 0;
+
+    .stat-item {
+      text-align: center;
+
+      .stat-number {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--ion-color-primary);
+        margin-bottom: 4px;
+      }
+
+      .stat-label {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
+// Roles Section Styling
+.roles-section {
+  .roles-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+
+      ion-button {
+        flex: 1;
+      }
+    }
+  }
+
+  .role-info {
+    margin-bottom: 16px;
+
+    ul {
+      margin: 12px 0;
+      padding-left: 20px;
+
+      li {
+        margin-bottom: 8px;
+        color: var(--ion-color-dark);
+
+        strong {
+          color: var(--ion-color-primary);
+        }
+      }
+    }
+  }
+
+  .role-quick-links {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+
+    @media (max-width: 768px) {
+      gap: 8px;
+    }
+  }
+}
+
+// Settings Section Styling
+.settings-section {
+  .admin-info {
+    margin-bottom: 16px;
+
+    p {
+      margin: 4px 0;
+      color: var(--ion-color-dark);
+
+      strong {
+        color: var(--ion-color-primary);
+      }
+    }
+  }
+
+  ion-card {
+    margin-bottom: 16px;
+
+    &[color="danger"] {
+      --background: var(--ion-color-danger);
+      --color: var(--ion-color-danger-contrast);
+
+      ion-card-header,
+      ion-card-content {
+        color: var(--ion-color-danger-contrast);
+      }
+    }
+  }
+
+  ion-list {
+    background: transparent;
+
+    ion-item {
+      --background: transparent;
+      --padding-start: 0;
+      --inner-padding-end: 0;
+
+      ion-label {
+        h3 {
+          color: var(--ion-color-dark);
+          font-weight: 600;
+          margin-bottom: 4px;
+        }
+
+        p {
+          color: var(--ion-color-medium);
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+}
+
+// Welcome card styling
+.welcome-card {
+  margin-bottom: 20px;
+
+  .title-icon {
+    color: var(--ion-color-primary);
+    margin-right: 8px;
+  }
+
+  .quick-links {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+
+    ion-button {
+      flex: 1;
+      min-width: 120px;
+    }
+  }
+}

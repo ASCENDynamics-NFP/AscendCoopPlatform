@@ -1,0 +1,425 @@
+<div class="admin-profile-form">
+  <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+    <!-- Basic Information Section -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Group Basic Information</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="stacked">Group Name *</ion-label>
+          <ion-input
+            formControlName="name"
+            placeholder="Enter group name"
+            [class.error]="isFieldInvalid('name')"
+          ></ion-input>
+        </ion-item>
+        <div class="error-message" *ngIf="isFieldInvalid('name')">
+          Group name is required
+        </div>
+
+        <ion-item>
+          <ion-label position="stacked">Description</ion-label>
+          <ion-textarea
+            formControlName="description"
+            placeholder="Describe your group's purpose and activities"
+            rows="4"
+          ></ion-textarea>
+        </ion-item>
+
+        <!-- Group Details Section -->
+        <div formGroupName="groupDetails">
+          <ion-item>
+            <ion-label position="stacked">Group Type</ion-label>
+            <ion-select
+              formControlName="groupType"
+              placeholder="Select group type"
+            >
+              <ion-select-option value="Nonprofit">Nonprofit</ion-select-option>
+              <ion-select-option value="Community">Community</ion-select-option>
+              <ion-select-option value="Business">Business</ion-select-option>
+              <ion-select-option value="Educational"
+                >Educational</ion-select-option
+              >
+              <ion-select-option value="Government"
+                >Government</ion-select-option
+              >
+              <ion-select-option value="Other">Other</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Founding Date</ion-label>
+            <ion-datetime
+              formControlName="foundingDate"
+              presentation="date"
+              display-format="MMM DD, YYYY"
+              placeholder="Select founding date"
+              [showDefaultButtons]="true"
+              [showClearButton]="true"
+              size="cover"
+              id="foundingDatePicker"
+            >
+              <ion-button slot="time-label" fill="outline" size="small">
+                <ion-icon name="calendar-outline" slot="start"></ion-icon>
+                {{ getFormattedFoundingDate() || "Select Date" }}
+              </ion-button>
+            </ion-datetime>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Mission Statement</ion-label>
+            <ion-textarea
+              formControlName="groupObjectivesMissionStatement"
+              placeholder="Enter your group's mission statement"
+              rows="3"
+            ></ion-textarea>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">History & Background</ion-label>
+            <ion-textarea
+              formControlName="groupHistoryBackground"
+              placeholder="Share your organization's history, founding story, and background"
+              rows="4"
+            ></ion-textarea>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Supported Languages</ion-label>
+            <ion-select
+              formControlName="supportedLanguages"
+              multiple="true"
+              placeholder="Select languages your group supports"
+            >
+              <ion-select-option value="en">English</ion-select-option>
+              <ion-select-option value="es">Spanish</ion-select-option>
+              <ion-select-option value="fr">French</ion-select-option>
+              <ion-select-option value="de">German</ion-select-option>
+              <ion-select-option value="it">Italian</ion-select-option>
+              <ion-select-option value="pt">Portuguese</ion-select-option>
+              <ion-select-option value="zh">Chinese</ion-select-option>
+              <ion-select-option value="ja">Japanese</ion-select-option>
+              <ion-select-option value="ko">Korean</ion-select-option>
+              <ion-select-option value="ar">Arabic</ion-select-option>
+              <ion-select-option value="hi">Hindi</ion-select-option>
+              <ion-select-option value="ru">Russian</ion-select-option>
+              <ion-select-option value="other">Other</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Google Calendar URL</ion-label>
+            <ion-input
+              formControlName="googleCalendarUrl"
+              type="url"
+              placeholder="Enter your public Google Calendar embed URL"
+            ></ion-input>
+            <ion-note slot="helper">
+              <small
+                >Share your calendar's public embed URL to display events on
+                your profile</small
+              >
+            </ion-note>
+          </ion-item>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Contact Information Section -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Contact Information</ion-card-title>
+      </ion-card-header>
+      <ion-card-content formGroupName="contactInformation">
+        <!-- Email Addresses -->
+        <div class="section-title">
+          <h3>Email Addresses</h3>
+          <ion-button
+            fill="clear"
+            size="small"
+            (click)="addEmail()"
+            aria-label="Add email address"
+          >
+            <ion-icon name="add" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div formArrayName="emails">
+          <div
+            *ngFor="let emailGroup of emailsArray.controls; let i = index"
+            [formGroupName]="i"
+            class="form-array-item email-item"
+          >
+            <div class="array-item-header">
+              <span class="item-number">Email {{ i + 1 }}</span>
+              <ion-button
+                fill="clear"
+                color="danger"
+                size="small"
+                [disabled]="emailsArray.length <= 1"
+                (click)="removeEmail(i)"
+                aria-label="Remove email address"
+                class="remove-button"
+              >
+                <ion-icon name="trash" slot="icon-only"></ion-icon>
+              </ion-button>
+            </div>
+            <div class="form-fields">
+              <ion-item>
+                <ion-label position="stacked">Label</ion-label>
+                <ion-input
+                  formControlName="name"
+                  placeholder="e.g., Work, Personal"
+                  type="text"
+                >
+                </ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label position="stacked">Email Address</ion-label>
+                <ion-input
+                  formControlName="email"
+                  placeholder="email@example.com"
+                  type="email"
+                >
+                </ion-input>
+              </ion-item>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phone Numbers -->
+        <div class="section-title">
+          <h3>Phone Numbers</h3>
+          <ion-button
+            fill="clear"
+            size="small"
+            (click)="addPhoneNumber()"
+            aria-label="Add phone number"
+          >
+            <ion-icon name="add" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div formArrayName="phoneNumbers">
+          <div
+            *ngFor="let phoneGroup of phoneNumbersArray.controls; let i = index"
+            [formGroupName]="i"
+            class="form-array-item phone-item"
+          >
+            <div class="array-item-header">
+              <span class="item-number">Phone {{ i + 1 }}</span>
+              <ion-button
+                fill="clear"
+                color="danger"
+                size="small"
+                [disabled]="phoneNumbersArray.length <= 1"
+                (click)="removePhoneNumber(i)"
+                aria-label="Remove phone number"
+                class="remove-button"
+              >
+                <ion-icon name="trash" slot="icon-only"></ion-icon>
+              </ion-button>
+            </div>
+            <div class="form-fields">
+              <ion-item>
+                <ion-label position="stacked">Type</ion-label>
+                <ion-select formControlName="type" placeholder="Select type">
+                  <ion-select-option value="Mobile">Mobile</ion-select-option>
+                  <ion-select-option value="Home">Home</ion-select-option>
+                  <ion-select-option value="Work">Work</ion-select-option>
+                  <ion-select-option value="Fax">Fax</ion-select-option>
+                  <ion-select-option value="Other">Other</ion-select-option>
+                </ion-select>
+              </ion-item>
+              <ion-item>
+                <ion-label position="stacked">Phone Number</ion-label>
+                <ion-input
+                  formControlName="number"
+                  placeholder="(555) 123-4567"
+                  type="tel"
+                  (ionInput)="formatPhoneNumber($event, i)"
+                >
+                </ion-input>
+              </ion-item>
+            </div>
+          </div>
+        </div>
+
+        <!-- Address Section -->
+        <ion-item-divider>
+          <ion-label>Address</ion-label>
+        </ion-item-divider>
+
+        <ion-item>
+          <ion-label position="stacked">Street Address</ion-label>
+          <ion-input
+            formControlName="address"
+            placeholder="Enter street address"
+          ></ion-input>
+        </ion-item>
+
+        <ion-row>
+          <ion-col size="6">
+            <ion-item>
+              <ion-label position="stacked">City</ion-label>
+              <ion-input
+                formControlName="city"
+                placeholder="Enter city"
+              ></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="6">
+            <ion-item>
+              <ion-label position="stacked">State/Province</ion-label>
+              <ion-input
+                formControlName="state"
+                placeholder="Enter state/province"
+              ></ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+
+        <ion-row>
+          <ion-col size="6">
+            <ion-item>
+              <ion-label position="stacked">ZIP/Postal Code</ion-label>
+              <ion-input
+                formControlName="zipCode"
+                placeholder="Enter ZIP/postal code"
+              ></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="6">
+            <ion-item>
+              <ion-label position="stacked">Country</ion-label>
+              <ion-input
+                formControlName="country"
+                placeholder="Enter country"
+              ></ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Web Links Section -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Web Links</ion-card-title>
+        <ion-card-subtitle>
+          Add links to your website, social media, and other online presence
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <div formArrayName="webLinks">
+          <div
+            *ngFor="let link of webLinksFormArray.controls; let i = index"
+            [formGroupName]="i"
+            class="form-array-item web-link-item"
+          >
+            <div class="array-item-header">
+              <span class="item-number">Link {{ i + 1 }}</span>
+              <ion-button
+                fill="clear"
+                color="danger"
+                size="small"
+                (click)="removeWebLink(i)"
+                [disabled]="webLinksFormArray.length <= 1"
+                class="remove-button"
+                aria-label="Remove web link"
+              >
+                <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+            </div>
+            <div class="form-fields">
+              <ion-item>
+                <ion-label position="stacked">Category</ion-label>
+                <ion-select
+                  formControlName="category"
+                  placeholder="Select category"
+                >
+                  <ion-select-option value="Personal Website"
+                    >Personal Website</ion-select-option
+                  >
+                  <ion-select-option value="Social Media"
+                    >Social Media</ion-select-option
+                  >
+                  <ion-select-option value="Donation"
+                    >Donation</ion-select-option
+                  >
+                  <ion-select-option value="Publications"
+                    >Publications</ion-select-option
+                  >
+                  <ion-select-option value="Portfolio"
+                    >Portfolio</ion-select-option
+                  >
+                  <ion-select-option value="Hobbies">Hobbies</ion-select-option>
+                  <ion-select-option value="External Resources"
+                    >External Resources</ion-select-option
+                  >
+                  <ion-select-option value="Other">Other</ion-select-option>
+                </ion-select>
+              </ion-item>
+              <ion-item>
+                <ion-label position="stacked">Name/Title</ion-label>
+                <ion-input
+                  formControlName="name"
+                  type="text"
+                  placeholder="e.g., LinkedIn, Portfolio"
+                ></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label position="stacked">URL</ion-label>
+                <ion-input
+                  formControlName="url"
+                  type="url"
+                  placeholder="https://example.com"
+                ></ion-input>
+              </ion-item>
+            </div>
+          </div>
+        </div>
+
+        <div class="add-link-section">
+          <ion-button
+            fill="outline"
+            size="default"
+            (click)="addWebLink()"
+            [disabled]="webLinksFormArray.length >= maxLinks"
+            expand="block"
+          >
+            <ion-icon name="add-outline" slot="start"></ion-icon>
+            Add Web Link
+          </ion-button>
+
+          <p class="helper-text" *ngIf="webLinksFormArray.length >= maxLinks">
+            Maximum {{ maxLinks }} web links allowed
+          </p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <ion-button
+        type="submit"
+        expand="block"
+        [disabled]="profileForm.invalid || isSubmitting"
+      >
+        <ion-spinner name="crescent" *ngIf="isSubmitting"></ion-spinner>
+        <span *ngIf="!isSubmitting">Save Changes</span>
+        <span *ngIf="isSubmitting">Saving...</span>
+      </ion-button>
+
+      <ion-button
+        fill="outline"
+        expand="block"
+        (click)="onCancel()"
+        [disabled]="isSubmitting"
+      >
+        Cancel
+      </ion-button>
+    </div>
+  </form>
+</div>

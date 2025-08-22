@@ -93,8 +93,11 @@ describe("EditPage", () => {
     component = fixture.componentInstance;
   });
 
-  it("should dispatch loadAccount and setSelectedAccount on init", () => {
+  it("should dispatch loadAccount when account$ observable is subscribed", () => {
     component.ngOnInit();
+
+    // Subscribe to the account$ observable to trigger the tap operator that dispatches the action
+    component.account$.subscribe();
 
     expect(store.dispatch).toHaveBeenCalledWith(
       AccountActions.loadAccount({accountId: "test-account-id"}),

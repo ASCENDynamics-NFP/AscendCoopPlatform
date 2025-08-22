@@ -30,13 +30,42 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       name="person-circle-outline"
       class="profile-icon"
     ></ion-icon>
-    <ion-button fill="clear" (click)="openImageUploadModal()"
-      >Upload photo</ion-button
+    <ion-button
+      fill="clear"
+      (click)="openImageUploadModal()"
+      [disabled]="!isProfileOwner"
     >
+      Upload photo
+    </ion-button>
   </div>
   <h2>{{ account?.name }}</h2>
-  <ion-list
-    ><ion-item
+
+  <!-- Information card for group accounts -->
+  <ion-card *ngIf="account?.type === 'group'" class="info-card">
+    <ion-card-content>
+      <div class="info-header">
+        <ion-icon name="information-circle" color="primary"></ion-icon>
+        <span class="info-title">Group Profile Editing</span>
+      </div>
+      <p class="info-text">
+        For comprehensive group management including member approval, role
+        assignment, and administrative settings, visit the
+        <strong>Admin Dashboard</strong>.
+      </p>
+      <ion-button
+        fill="outline"
+        size="small"
+        (click)="navigateToAdminDashboard()"
+        class="admin-button"
+      >
+        <ion-icon name="settings" slot="start"></ion-icon>
+        Go to Admin Dashboard
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-list>
+    <ion-item
       (click)="selectItem('basic')"
       [class.selected]="selectedItem === 'basic'"
     >
@@ -50,6 +79,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-icon slot="start" name="mail-outline"></ion-icon>
       <ion-label>Contact Information</ion-label>
     </ion-item>
+
+    <!-- User-specific sections (hidden for groups) -->
     <ion-item
       *ngIf="account?.type === 'user'"
       (click)="selectItem('professional')"
@@ -81,14 +112,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     >
       <ion-icon slot="start" name="hand-left-outline"></ion-icon>
       <ion-label>Labor Rights</ion-label>
-    </ion-item>
-    <ion-item
-      *ngIf="account?.type === 'group'"
-      (click)="selectItem('faq')"
-      [class.selected]="selectedItem === 'faq'"
-    >
-      <ion-icon slot="start" name="help-circle-outline"></ion-icon>
-      <ion-label>FAQ Management</ion-label>
     </ion-item>
   </ion-list>
 </div>

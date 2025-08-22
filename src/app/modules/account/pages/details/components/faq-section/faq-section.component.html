@@ -1,20 +1,5 @@
 <!--
-Nonprofit Socia  <ion-card-header>
-    <ion-card-title>
-      <ion-icon name="help-circle-outline" class="title-icon"></ion-icon>
-      Frequently Asked Questions
-      <ion-button 
-        *ngIf="canEdit" 
-        fill="clear" 
-        size="small" 
-        (click)="onManageFAQs()" 
-        class="manage-faq-btn"
-      >
-        <ion-icon name="create-outline" slot="start"></ion-icon>
-        Manage FAQs
-      </ion-button>
-    </ion-card-title>
-  </ion-card-header>tform: Allowing Users and Organizations to Collaborate.
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
 Copyright (C) 2023  ASCENDynamics NFP
 
 This file is part of Nonprofit Social Networking Platform.
@@ -32,13 +17,41 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
+
+<!-- Information Card for Group Admins -->
+<ion-card *ngIf="canEdit && isGroup()" class="info-card admin-info-card">
+  <ion-card-content>
+    <div class="info-content">
+      <ion-icon name="information-circle" class="info-icon"></ion-icon>
+      <div class="info-text">
+        <h4>Group FAQ Management</h4>
+        <p>
+          Manage your group's FAQs through the comprehensive Admin Dashboard
+          with advanced editing tools, bulk operations, and analytics.
+        </p>
+      </div>
+      <ion-button
+        fill="solid"
+        color="primary"
+        size="small"
+        (click)="navigateToAdminDashboard()"
+        class="admin-btn"
+      >
+        <ion-icon name="settings" slot="start"></ion-icon>
+        Admin Dashboard
+      </ion-button>
+    </div>
+  </ion-card-content>
+</ion-card>
+
 <ion-card class="faq-card">
   <ion-card-header>
     <ion-card-title>
       <ion-icon name="help-circle-outline" class="title-icon"></ion-icon>
       Frequently Asked Questions
+      <!-- Only show inline edit for personal profiles, not groups -->
       <ion-button
-        *ngIf="canEdit"
+        *ngIf="canEdit && !isGroup()"
         fill="clear"
         size="small"
         (click)="onManageFAQs()"
@@ -54,9 +67,22 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <div *ngIf="faqs.length === 0" class="no-faqs">
       <ion-icon name="help-outline" class="no-faqs-icon"></ion-icon>
       <p>No FAQs available yet.</p>
-      <ion-button *ngIf="canEdit" fill="outline" (click)="onManageFAQs()">
+      <!-- Different behavior for groups vs personal profiles -->
+      <ion-button
+        *ngIf="canEdit && !isGroup()"
+        fill="outline"
+        (click)="onManageFAQs()"
+      >
         <ion-icon name="add" slot="start"></ion-icon>
         Add First FAQ
+      </ion-button>
+      <ion-button
+        *ngIf="canEdit && isGroup()"
+        fill="outline"
+        (click)="navigateToAdminDashboard()"
+      >
+        <ion-icon name="settings" slot="start"></ion-icon>
+        Use Admin Dashboard
       </ion-button>
     </div>
 

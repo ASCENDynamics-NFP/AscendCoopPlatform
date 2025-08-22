@@ -17,6 +17,54 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+
+// Information Card for Group Admin Guidance
+.admin-info-card {
+  margin-bottom: 1rem;
+  border-left: 4px solid var(--ion-color-primary);
+  background: linear-gradient(
+    135deg,
+    var(--ion-color-primary-tint) 0%,
+    var(--ion-color-light) 100%
+  );
+}
+
+.info-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.info-icon {
+  font-size: 2rem;
+  color: var(--ion-color-primary);
+  flex-shrink: 0;
+}
+
+.info-text {
+  flex: 1;
+
+  h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--ion-color-primary);
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--ion-color-dark);
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+}
+
+.admin-btn {
+  --border-radius: 20px;
+  flex-shrink: 0;
+  min-width: 120px;
+}
+
 .faq-card {
   border: 1px solid var(--ion-color-primary);
   margin-bottom: 1rem;
@@ -121,6 +169,24 @@
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
+  .info-content {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+    gap: 0.75rem;
+  }
+
+  .info-icon {
+    align-self: center;
+  }
+
+  .admin-btn {
+    align-self: center;
+    min-width: auto;
+    width: 100%;
+    max-width: 200px;
+  }
+
   .faq-card ion-card-title {
     flex-direction: column;
     align-items: flex-start;

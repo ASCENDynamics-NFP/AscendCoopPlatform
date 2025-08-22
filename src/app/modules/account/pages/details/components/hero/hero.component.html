@@ -117,6 +117,16 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       >
         <ion-icon name="folder-open"></ion-icon> Projects
       </ion-button>
+      <!-- Admin Dashboard: Only group admins/owners can access admin dashboard for group accounts -->
+      <ion-button
+        *ngIf="account.type === 'group' && isGroupAdmin"
+        color="primary"
+        fill="solid"
+        size="small"
+        [routerLink]="'/account/' + account.id + '/admin'"
+      >
+        <ion-icon name="settings"></ion-icon> Admin
+      </ion-button>
       <!-- Time Tracking: Only users (type 'user') can enter time for group accounts they're members of -->
       <ion-button
         *ngIf="

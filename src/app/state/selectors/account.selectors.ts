@@ -97,7 +97,7 @@ export const selectAccountError = createSelector(
   (state) => state.error,
 );
 
-// Filtered Accounts Selector
+// Filtered Accounts Selector with Privacy Support
 export const selectFilteredAccounts = (
   searchTerm: string,
   accountType: string,
@@ -116,11 +116,68 @@ export const selectFilteredAccounts = (
         if (acc.type !== accountType || !acc.name) {
           return false;
         }
+        // Filter out inactive accounts from search results
+        if (acc.status === "inactive") {
+          return false;
+        }
+        // Only show public groups in general search
+        // Private groups require membership and should be filtered at component level
+        if (acc.privacy === "private") {
+          return false;
+        }
         const normalizedAccountName = normalizeString(acc.name);
         return normalizedAccountName.includes(normalizedSearchTerm);
       })
       .sort((a, b) => (a.name && b.name ? a.name.localeCompare(b.name) : 0));
   });
+
+// Privacy-aware filtered accounts selector that considers user membership
+export const selectFilteredAccountsWithPrivacy = (
+  searchTerm: string,
+  accountType: string,
+  userId: string | null,
+) =>
+  createSelector(
+    selectAllAccounts,
+    selectAccountState,
+    (accounts: Account[], state) => {
+      const normalizeString = (str: string) =>
+        str
+          .toLowerCase()
+          .replace(/\s+/g, "")
+          .replace(/[^a-z0-9]/gi, "");
+
+      const normalizedSearchTerm = normalizeString(searchTerm);
+      const userRelatedAccounts = userId
+        ? state.relatedAccounts[userId] || []
+        : [];
+
+      return accounts
+        .filter((acc) => {
+          if (acc.type !== accountType || !acc.name) {
+            return false;
+          }
+          // Filter out inactive accounts from search results
+          if (acc.status === "inactive") {
+            return false;
+          }
+
+          // Privacy filtering logic
+          if (acc.privacy === "private") {
+            // Private groups are only visible to members
+            if (!userId) return false;
+            const isMember = userRelatedAccounts.some(
+              (ra) => ra.id === acc.id && ra.status === "accepted",
+            );
+            if (!isMember) return false;
+          }
+
+          const normalizedAccountName = normalizeString(acc.name);
+          return normalizedAccountName.includes(normalizedSearchTerm);
+        })
+        .sort((a, b) => (a.name && b.name ? a.name.localeCompare(b.name) : 0));
+    },
+  );
 
 // Cache and Freshness Selectors
 export const selectAccountsLastUpdated = createSelector(

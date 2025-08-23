@@ -367,20 +367,13 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
     }
   }
 
-  updatePrivacySetting(setting: string, value: string) {
+  updateGroupPrivacy(value: string) {
     this.account$.pipe(take(1)).subscribe((account) => {
       if (account) {
         const updatedAccount = {
           ...account,
-          settings: {
-            language: account.settings?.language || "en", // Ensure language is set
-            theme: account.settings?.theme || "system", // Ensure theme is set
-            ...(account.settings || {}),
-            privacy: {
-              ...(account.settings?.privacy || {}),
-              [setting]: value,
-            },
-          },
+          privacy: value as "public" | "private",
+          lastModified: new Date(),
         };
         this.store.dispatch(
           AccountActions.updateAccount({account: updatedAccount}),
@@ -389,8 +382,12 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
     });
   }
 
+  updatePrivacy(value: "public" | "private") {
+    this.updateGroupPrivacy(value);
+  }
+
   updateMembershipPolicy(value: string) {
-    this.account$.pipe(take(1)).subscribe((account) => {
+    this.account$.pipe(take(1)).subscribe(async (account) => {
       if (account) {
         const updatedAccount = {
           ...account,
@@ -398,21 +395,91 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
             language: account.settings?.language || "en",
             theme: account.settings?.theme || "system",
             ...(account.settings || {}),
-            privacy: {
-              ...(account.settings?.privacy || {}),
-              membershipPolicy: value,
-            },
           },
+          administrativeSettings: {
+            groupAdminsManagers:
+              account.administrativeSettings?.groupAdminsManagers || [],
+            ...(account.administrativeSettings || {}),
+            membershipPolicy: value as "open" | "approval" | "invitation",
+          },
+          lastModified: new Date(),
         };
         this.store.dispatch(
           AccountActions.updateAccount({account: updatedAccount}),
         );
+
+        // Show success feedback
+        const toast = await this.toastController.create({
+          message: `Membership policy updated to ${this.capitalizeFirst(value)}`,
+          duration: 2000,
+          color: "success",
+          position: "bottom",
+        });
+        await toast.present();
       }
     });
   }
 
   getMembershipPolicy(account: any): string {
-    return (account.settings?.privacy as any)?.membershipPolicy || "approval";
+    const policy =
+      account.administrativeSettings?.membershipPolicy || "approval";
+    return policy; // Return the raw value for the select element
+  }
+
+  // Helper method to capitalize first letter
+  private capitalizeFirst(str: string): string {
+    if (!str) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  // Helper method to format founding date
+  getFormattedFoundingDate(account: any): string {
+    const date = this.getDateFromTimestamp(account.groupDetails?.dateFounded);
+    if (!date) return "Not specified";
+    return date.getFullYear().toString();
+  }
+
+  // Helper method to format supported languages
+  getFormattedLanguages(account: any): string {
+    const languages = account.groupDetails?.supportedLanguages;
+    if (!languages) return "Not specified";
+
+    // If it's an array, join and format
+    if (Array.isArray(languages)) {
+      return languages.map((lang) => this.getLanguageName(lang)).join(", ");
+    }
+
+    // If it's a string with commas, split and format
+    if (typeof languages === "string" && languages.includes(",")) {
+      return languages
+        .split(",")
+        .map((lang) => this.getLanguageName(lang.trim()))
+        .join(", ");
+    }
+
+    // Single language
+    return this.getLanguageName(languages);
+  }
+
+  // Helper method to convert language codes to readable names
+  private getLanguageName(code: string): string {
+    const languageMap: {[key: string]: string} = {
+      en: "English",
+      es: "Spanish",
+      fr: "French",
+      de: "German",
+      it: "Italian",
+      pt: "Portuguese",
+      zh: "Chinese",
+      ja: "Japanese",
+      ko: "Korean",
+      ar: "Arabic",
+      hi: "Hindi",
+      ru: "Russian",
+      other: "Other",
+    };
+
+    return languageMap[code.toLowerCase()] || this.capitalizeFirst(code);
   }
 
   updateNotificationSetting(setting: string, value: boolean) {
@@ -470,9 +537,126 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
     this.router.navigate(["/account", this.accountId, "applicants"]);
   }
 
-  async showArchiveGroupConfirmation() {
-    // TODO: Implement archive group confirmation dialog
-    console.log("Archive group confirmation requested");
+  async showDeactivateGroupConfirmation() {
+    const alert = await this.alertController.create({
+      header: "Deactivate Group",
+      cssClass: "custom-alert",
+      message: `
+        <div class="alert-content">
+          <ion-icon name="warning-outline" color="warning" style="font-size: 3rem; display: block; margin: 0 auto 16px;"></ion-icon>
+          <p><strong>This will temporarily deactivate your group</strong></p>
+          
+          <div style="text-align: left; margin: 16px 0;">
+            <p><strong>What happens when you deactivate:</strong></p>
+            <ul style="margin: 8px 0; padding-left: 20px; font-size: 0.9rem;">
+              <li>Your group will be hidden from search results</li>
+              <li>New member requests will be disabled</li>
+              <li>All group listings will be set to inactive</li>
+              <li>Existing members will be notified of the change</li>
+              <li>Group content remains accessible to current members</li>
+            </ul>
+          </div>
+          
+          <div style="background: #f0f9ff; padding: 12px; border-radius: 8px; margin: 12px 0;">
+            <p style="margin: 0; font-size: 0.85rem; color: #0369a1;">
+              <ion-icon name="information-circle-outline" style="vertical-align: middle; margin-right: 4px;"></ion-icon>
+              <strong>Good news:</strong> You can reactivate your group at any time by logging back into this dashboard.
+            </p>
+          </div>
+          
+          <p style="margin-top: 16px;"><strong>Are you sure you want to continue?</strong></p>
+        </div>
+      `,
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+          cssClass: "alert-button-cancel",
+        },
+        {
+          text: "Deactivate Group",
+          role: "destructive",
+          cssClass: "alert-button-confirm",
+          handler: () => {
+            this.deactivateGroup();
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  async deactivateGroup() {
+    try {
+      this.account$.pipe(take(1)).subscribe(async (account) => {
+        if (account) {
+          const updatedAccount = {
+            ...account,
+            status: "inactive" as any,
+            lastModified: new Date(),
+          };
+
+          this.store.dispatch(
+            AccountActions.updateAccount({account: updatedAccount}),
+          );
+
+          // TODO: Deactivate all related listings when backend supports it
+          // For now, this would need to be handled in the backend or via separate actions
+
+          // Show success message
+          const toast = await this.toastController.create({
+            message:
+              "Group has been deactivated successfully. Members will be notified.",
+            duration: 4000,
+            color: "success",
+            position: "bottom",
+          });
+          await toast.present();
+
+          // Redirect to home after deactivation
+          setTimeout(() => {
+            this.router.navigate(["/tabs/home"]);
+          }, 3000);
+        }
+      });
+    } catch (error) {
+      console.error("Error deactivating group:", error);
+      this.showErrorToast("Failed to deactivate group. Please try again.");
+    }
+  }
+
+  async reactivateGroup() {
+    try {
+      this.account$.pipe(take(1)).subscribe(async (account) => {
+        if (account) {
+          const updatedAccount = {
+            ...account,
+            status: "active" as any,
+            lastModified: new Date(),
+          };
+
+          this.store.dispatch(
+            AccountActions.updateAccount({account: updatedAccount}),
+          );
+
+          // Show success message
+          const toast = await this.toastController.create({
+            message: "Group has been reactivated successfully!",
+            duration: 3000,
+            color: "success",
+            position: "bottom",
+          });
+          await toast.present();
+        }
+      });
+    } catch (error) {
+      console.error("Error reactivating group:", error);
+      this.showErrorToast("Failed to reactivate group. Please try again.");
+    }
+  }
+
+  isGroupInactive(): Observable<boolean> {
+    return this.account$.pipe(map((account) => account?.status === "inactive"));
   }
 
   // Role/Access Control Methods

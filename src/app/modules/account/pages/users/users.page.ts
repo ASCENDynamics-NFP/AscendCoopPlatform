@@ -33,11 +33,15 @@ import {
   filter,
 } from "rxjs/operators";
 import {Store} from "@ngrx/store";
-import {AuthUser} from "@shared/models/auth-user.model";
-import {Account, RelatedAccount} from "@shared/models/account.model";
+import {AuthUser} from "../../../../../../shared/models/auth-user.model";
+import {
+  Account,
+  RelatedAccount,
+} from "../../../../../../shared/models/account.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {
   selectFilteredAccounts,
+  selectFilteredAccountsWithPrivacy,
   selectAccountLoading,
   selectRelatedAccountsByAccountId,
 } from "../../../../state/selectors/account.selectors";
@@ -116,12 +120,22 @@ export class UsersPage implements OnInit, ViewWillEnter {
 
     this.store.dispatch(AccountActions.loadAccounts());
 
-    const filteredAccounts$ = this.searchTerms.pipe(
-      startWith(this.searchedValue),
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap((term) =>
-        this.store.select(selectFilteredAccounts(term, "user")),
+    const filteredAccounts$ = combineLatest([
+      this.searchTerms.pipe(
+        startWith(this.searchedValue),
+        debounceTime(300),
+        distinctUntilChanged(),
+      ),
+      this.authUser$,
+    ]).pipe(
+      switchMap(([term, authUser]) =>
+        this.store.select(
+          selectFilteredAccountsWithPrivacy(
+            term,
+            "user",
+            authUser?.uid || null,
+          ),
+        ),
       ),
     );
 

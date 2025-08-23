@@ -228,15 +228,14 @@
             <ion-card-content>
               <div
                 class="stat-value profile-visibility"
-                [class.public]="account.settings?.privacy?.profileVisibility === 'public'"
-                [class.private]="account.settings?.privacy?.profileVisibility !== 'public'"
+                [class.public]="account.privacy === 'public'"
+                [class.private]="account.privacy === 'private'"
               >
-                {{ account.settings?.privacy?.profileVisibility === 'public' ?
-                'Public' : 'Private' }}
+                {{ account.privacy === 'public' ? 'Public' : 'Private' }}
               </div>
-              <div class="stat-label">Profile Visibility</div>
+              <div class="stat-label">Privacy</div>
               <ion-icon
-                [name]="account.settings?.privacy?.profileVisibility === 'public' ? 'globe-outline' : 'lock-closed-outline'"
+                [name]="account.privacy === 'public' ? 'globe-outline' : 'lock-closed-outline'"
                 class="stat-icon"
               >
               </ion-icon>
@@ -387,9 +386,7 @@
                       <div class="glance-content">
                         <div class="glance-label">Founded</div>
                         <div class="glance-value">
-                          {{
-                          getDateFromTimestamp(account.groupDetails?.dateFounded)
-                          | date:'yyyy' || 'Not specified' }}
+                          {{ getFormattedFoundingDate(account) }}
                         </div>
                       </div>
                     </div>
@@ -418,8 +415,7 @@
                       <div class="glance-content">
                         <div class="glance-label">Languages</div>
                         <div class="glance-value">
-                          {{ account.groupDetails?.supportedLanguages || 'Not
-                          specified' }}
+                          {{ getFormattedLanguages(account) }}
                         </div>
                       </div>
                     </div>
@@ -1195,7 +1191,7 @@
         <!-- Privacy Controls -->
         <ion-card>
           <ion-card-header>
-            <ion-card-title>Privacy & Visibility Settings</ion-card-title>
+            <ion-card-title>Privacy Settings</ion-card-title>
             <ion-card-subtitle
               >Control who can see and join your group</ion-card-subtitle
             >
@@ -1204,23 +1200,22 @@
             <ion-list>
               <ion-item>
                 <ion-label>
-                  <h3>Profile Visibility</h3>
-                  <p>Who can view your group's profile information</p>
+                  <h3>Group Visibility</h3>
+                  <p>Who can view your group's profile and information</p>
                 </ion-label>
                 <ion-select
                   *ngIf="account$ | async as account"
-                  [value]="account.settings?.privacy?.profileVisibility || 'public'"
-                  (ionChange)="updatePrivacySetting('profileVisibility', $event.detail.value)"
+                  [value]="account.privacy || 'public'"
+                  (ionChange)="updatePrivacy($event.detail.value)"
                   interface="popover"
                 >
                   <ion-select-option value="public"
-                    >Public - Anyone can view</ion-select-option
+                    >Public - Anyone can view and find your
+                    group</ion-select-option
                   >
                   <ion-select-option value="private"
-                    >Members Only</ion-select-option
-                  >
-                  <ion-select-option value="accepted-users-only"
-                    >Private - Invitation only</ion-select-option
+                    >Private - Only members can view group
+                    details</ion-select-option
                   >
                 </ion-select>
               </ion-item>
@@ -1347,32 +1342,98 @@
           </ion-card-content>
         </ion-card>
 
-        <!-- Danger Zone -->
-        <ion-card color="danger">
+        <!-- Group Status Management -->
+        <ion-card>
           <ion-card-header>
-            <ion-card-title>Danger Zone</ion-card-title>
-            <ion-card-subtitle>Irreversible actions</ion-card-subtitle>
+            <ion-card-title>Group Status</ion-card-title>
+            <ion-card-subtitle>
+              Manage your group's visibility and status
+            </ion-card-subtitle>
           </ion-card-header>
           <ion-card-content>
-            <ion-button
-              expand="block"
-              fill="outline"
-              color="light"
-              (click)="showArchiveGroupConfirmation()"
-            >
-              <ion-icon name="archive-outline" slot="start"></ion-icon>
-              Archive Group
-            </ion-button>
+            <!-- Active Group Status -->
+            <div *ngIf="!(isGroupInactive() | async)" class="status-section">
+              <div class="status-indicator active">
+                <ion-icon name="checkmark-circle" color="success"></ion-icon>
+                <div class="status-info">
+                  <h3>Group is Active</h3>
+                  <p>
+                    Your group is visible in search results and accepting new
+                    members
+                  </p>
+                </div>
+              </div>
 
-            <ion-text color="light">
-              <p>
-                <small
-                  >Archiving will make your group inactive and hide it from
-                  public view. This action can be reversed by contacting
-                  support.</small
+              <div class="status-actions">
+                <ion-button
+                  fill="outline"
+                  color="warning"
+                  (click)="showDeactivateGroupConfirmation()"
                 >
-              </p>
-            </ion-text>
+                  <ion-icon name="pause-outline" slot="start"></ion-icon>
+                  Temporarily Deactivate
+                </ion-button>
+              </div>
+
+              <div class="status-details">
+                <ion-text color="medium">
+                  <p>
+                    <strong>Deactivating your group will:</strong>
+                  </p>
+                  <ul>
+                    <li>Hide your group from search results</li>
+                    <li>Prevent new member requests</li>
+                    <li>Set all listings to inactive</li>
+                    <li>Notify existing members</li>
+                  </ul>
+                  <p>
+                    <small
+                      >You can reactivate your group at any time by logging
+                      in.</small
+                    >
+                  </p>
+                </ion-text>
+              </div>
+            </div>
+
+            <!-- Inactive Group Status -->
+            <div *ngIf="isGroupInactive() | async" class="status-section">
+              <div class="status-indicator inactive">
+                <ion-icon name="pause-circle" color="warning"></ion-icon>
+                <div class="status-info">
+                  <h3>Group is Inactive</h3>
+                  <p>
+                    Your group is hidden from search results and not accepting
+                    new members
+                  </p>
+                </div>
+              </div>
+
+              <div class="status-actions">
+                <ion-button
+                  fill="solid"
+                  color="success"
+                  (click)="reactivateGroup()"
+                >
+                  <ion-icon name="play-outline" slot="start"></ion-icon>
+                  Reactivate Group
+                </ion-button>
+              </div>
+
+              <div class="status-details">
+                <ion-text color="medium">
+                  <p>
+                    <strong>While inactive:</strong>
+                  </p>
+                  <ul>
+                    <li>Group is hidden from public search</li>
+                    <li>New member requests are disabled</li>
+                    <li>Existing members can still access group content</li>
+                    <li>All listings are set to inactive</li>
+                  </ul>
+                </ion-text>
+              </div>
+            </div>
           </ion-card-content>
         </ion-card>
       </div>

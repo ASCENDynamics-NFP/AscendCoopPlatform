@@ -147,7 +147,7 @@
 .dashboard-content {
   h3 {
     color: var(--ion-color-dark);
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     font-weight: 600;
     margin-bottom: 16px;
   }
@@ -183,7 +183,7 @@
         position: relative;
 
         .stat-value {
-          font-size: 2rem;
+          font-size: 1.6rem;
           font-weight: 700;
           color: var(--ion-color-primary);
           margin-bottom: 4px;
@@ -804,6 +804,164 @@ ion-header {
     ion-button {
       flex: 1;
       min-width: 120px;
+    }
+  }
+}
+
+// Group Status Management Styles
+.status-section {
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+
+    &.active {
+      background-color: rgba(var(--ion-color-success-rgb), 0.1);
+      border: 2px solid rgba(var(--ion-color-success-rgb), 0.3);
+
+      // Dark mode adjustments
+      @media (prefers-color-scheme: dark) {
+        background-color: rgba(40, 167, 69, 0.15);
+        border-color: rgba(40, 167, 69, 0.4);
+      }
+    }
+
+    &.inactive {
+      background-color: rgba(var(--ion-color-warning-rgb), 0.1);
+      border: 2px solid rgba(var(--ion-color-warning-rgb), 0.3);
+
+      // Dark mode adjustments
+      @media (prefers-color-scheme: dark) {
+        background-color: rgba(255, 193, 7, 0.15);
+        border-color: rgba(255, 193, 7, 0.4);
+      }
+    }
+
+    ion-icon {
+      font-size: 2rem;
+    }
+
+    .status-info {
+      flex: 1;
+
+      h3 {
+        margin: 0 0 4px 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--ion-text-color, #000);
+      }
+
+      p {
+        margin: 0;
+        color: var(--ion-color-step-600, #666);
+        font-size: 0.95rem;
+      }
+    }
+  }
+
+  .status-actions {
+    text-align: center;
+    margin-bottom: 20px;
+
+    ion-button {
+      min-width: 200px;
+      height: 44px;
+      font-weight: 600;
+    }
+  }
+
+  .status-details {
+    background-color: var(--ion-color-light);
+    border-radius: 8px;
+    padding: 16px;
+
+    @media (prefers-color-scheme: dark) {
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    p {
+      margin: 0 0 12px 0;
+      font-size: 0.9rem;
+    }
+
+    ul {
+      margin: 8px 0;
+      padding-left: 20px;
+
+      li {
+        margin: 4px 0;
+        font-size: 0.85rem;
+        line-height: 1.4;
+      }
+    }
+
+    small {
+      font-style: italic;
+      color: var(--ion-color-medium);
+    }
+  }
+}
+
+// Mobile responsive adjustments
+@media (max-width: 768px) {
+  .status-section {
+    .status-indicator {
+      flex-direction: column;
+      text-align: center;
+      gap: 12px;
+
+      .status-info {
+        text-align: center;
+      }
+    }
+
+    .status-actions {
+      ion-button {
+        min-width: 100%;
+      }
+    }
+  }
+}
+
+// Custom Alert Styles
+:host ::ng-deep {
+  .custom-alert {
+    .alert-wrapper {
+      max-width: 500px;
+    }
+
+    .alert-message {
+      text-align: center;
+
+      .alert-content {
+        p {
+          margin: 8px 0;
+          line-height: 1.5;
+        }
+
+        ul {
+          text-align: left;
+          margin: 8px 0;
+
+          li {
+            margin: 4px 0;
+            font-size: 0.9rem;
+          }
+        }
+      }
+    }
+
+    .alert-button-cancel {
+      color: var(--ion-color-medium) !important;
+    }
+
+    .alert-button-confirm {
+      color: var(--ion-color-danger) !important;
+      font-weight: 600;
     }
   }
 }

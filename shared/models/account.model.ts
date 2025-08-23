@@ -218,7 +218,6 @@ interface Group {
   };
   administrativeSettings?: {
     // Optional, can be added later
-    groupAdminsManagers: string[]; // Assign initial administrators or managers for the group
     notificationPreferences?: string; // e.g., "Email notifications for new posts, member requests"
     membershipPolicy?: "open" | "approval" | "invitation"; // How new members can join the group
   };

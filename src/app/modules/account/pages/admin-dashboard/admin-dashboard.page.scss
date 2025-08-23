@@ -745,6 +745,25 @@ ion-header {
       strong {
         color: var(--ion-color-primary);
       }
+
+      &.owner-badge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: rgba(var(--ion-color-primary-rgb), 0.1);
+        border-radius: 8px;
+        margin: 8px 0;
+
+        ion-icon {
+          font-size: 1.1rem;
+        }
+
+        strong {
+          color: var(--ion-color-primary);
+          font-weight: 600;
+        }
+      }
     }
   }
 

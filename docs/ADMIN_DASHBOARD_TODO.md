@@ -201,7 +201,7 @@ Separate personal profile management from group administration to ensure individ
 - [x] **Admin Management**
 
   - [x] Assign additional group admins
-  - [x] List current admins (`groupAdminsManagers`)
+  - [x] List current admins (`relatedAccounts` with access="admin")
   - [x] Promote members to admin status
   - [x] Prevent removing last admin
   - [x] Admin delegation functionality

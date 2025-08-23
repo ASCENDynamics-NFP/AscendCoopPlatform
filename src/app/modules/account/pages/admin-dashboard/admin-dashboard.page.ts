@@ -64,6 +64,7 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
   showAccessControls$: Observable<boolean>;
   activeMembers$: Observable<RelatedAccount[]>;
   filteredMembers$: Observable<RelatedAccount[]>;
+  adminCount$: Observable<number>;
   memberSearchTerm = "";
 
   // Access level options for dropdown
@@ -193,6 +194,25 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
       map((accounts) =>
         accounts.filter((ra) => ra.status === "accepted" && ra.type === "user"),
       ),
+    );
+
+    // Calculate admin count (including owner + members with admin access)
+    this.adminCount$ = combineLatest([
+      this.relatedAccounts$,
+      this.currentUser$,
+      this.account$,
+    ]).pipe(
+      map(([relatedAccounts, currentUser, account]) => {
+        if (!currentUser || !account) return 1; // At minimum, the owner
+
+        // Count members with admin access
+        const adminMembers = relatedAccounts.filter(
+          (ra) => ra.status === "accepted" && ra.access === "admin",
+        );
+
+        // Always include the owner (current user) + admin members
+        return 1 + adminMembers.length;
+      }),
     );
 
     // Initialize filtered members (same as active members initially)
@@ -397,8 +417,6 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
             ...(account.settings || {}),
           },
           administrativeSettings: {
-            groupAdminsManagers:
-              account.administrativeSettings?.groupAdminsManagers || [],
             ...(account.administrativeSettings || {}),
             membershipPolicy: value as "open" | "approval" | "invitation",
           },
@@ -505,7 +523,7 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
             ...(account.settings || {}),
           },
           administrativeSettings: {
-            ...(account.administrativeSettings || {groupAdminsManagers: []}),
+            ...(account.administrativeSettings || {}),
             notificationPreferences: JSON.stringify(updatedPrefs),
           },
         };

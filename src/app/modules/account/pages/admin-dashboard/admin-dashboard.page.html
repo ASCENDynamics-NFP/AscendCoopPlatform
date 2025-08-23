@@ -1311,14 +1311,26 @@
           </ion-card-header>
           <ion-card-content>
             <div *ngIf="account$ | async as account" class="admin-info">
+              <div *ngIf="currentUser$ | async as currentUser">
+                <!-- Only show owner info if current user is NOT the owner -->
+                <p *ngIf="account.createdBy && account.createdBy !== currentUser.uid">
+                  <strong>Group Owner:</strong> {{ account.createdBy }}
+                </p>
+                <!-- Show friendly message if current user IS the owner -->
+                <p *ngIf="account.createdBy === currentUser.uid" class="owner-badge">
+                  <ion-icon name="shield-checkmark" color="primary"></ion-icon>
+                  <strong>You are the group owner</strong>
+                </p>
+              </div>
               <p>
-                <strong>Group Owner:</strong> {{ account.createdBy || 'Not
-                specified' }}
-              </p>
-              <p>
-                <strong>Current Admins:</strong> {{
-                (account.administrativeSettings?.groupAdminsManagers ||
-                []).length + 1 }} total
+                <strong>Total Administrators:</strong> 
+                <ng-container *ngIf="(adminCount$ | async) === 1">
+                  1 (you)
+                </ng-container>
+                <ng-container *ngIf="(adminCount$ | async) && (adminCount$ | async)! > 1">
+                  {{ adminCount$ | async }}
+                  (including you)
+                </ng-container>
               </p>
             </div>
 

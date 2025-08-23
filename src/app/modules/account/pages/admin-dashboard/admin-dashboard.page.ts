@@ -34,6 +34,7 @@ import {
 } from "../../../../state/selectors/account.selectors";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
+import {NotificationService} from "../../../messaging/services/notification.service";
 
 @Component({
   selector: "app-admin-dashboard",
@@ -80,6 +81,7 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
     private store: Store,
     private toastController: ToastController,
     private alertController: AlertController,
+    private notificationService: NotificationService,
   ) {
     this.accountId = this.route.snapshot.paramMap.get("accountId") || "";
 
@@ -231,6 +233,37 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
       AccountActions.loadRelatedListings({accountId: this.accountId}),
     );
 
+    // Check for query parameters to set initial tab
+    this.route.queryParams.pipe(take(1)).subscribe((params) => {
+      if (params["tab"]) {
+        console.log(
+          "Setting selectedSegment from query params:",
+          params["tab"],
+        );
+        this.selectedSegment = params["tab"];
+      }
+    });
+
+    // Also listen for query parameter changes during the session
+    this.subscription.add(
+      this.route.queryParams.subscribe((params) => {
+        if (params["tab"] && params["tab"] !== this.selectedSegment) {
+          console.log(
+            "Updating selectedSegment from query params:",
+            params["tab"],
+          );
+          this.selectedSegment = params["tab"];
+        }
+      }),
+    );
+
+    // Initialize notification service for admin notifications
+    this.currentUser$.pipe(take(1)).subscribe((user) => {
+      if (user?.uid) {
+        this.notificationService.setCurrentUserId(user.uid);
+      }
+    });
+
     // Verify this is a group account
     this.subscription.add(
       this.account$.pipe(take(1)).subscribe((account) => {
@@ -248,6 +281,25 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
 
   onSegmentChange(event: any) {
     this.selectedSegment = event.detail.value;
+
+    // Update URL with query parameter to maintain state
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {tab: this.selectedSegment},
+      queryParamsHandling: "merge",
+    });
+  }
+
+  // Helper method to navigate to specific tab
+  navigateToTab(tabName: string) {
+    console.log("navigateToTab called with:", tabName);
+    this.selectedSegment = tabName;
+    console.log("selectedSegment set to:", this.selectedSegment);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {tab: tabName},
+      queryParamsHandling: "merge",
+    });
   }
 
   navigateToRoleManagement() {
@@ -530,29 +582,96 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
         this.store.dispatch(
           AccountActions.updateAccount({account: updatedAccount}),
         );
+
+        // Show confirmation message
+        this.showNotificationSettingUpdate(setting, value);
       }
     });
   }
 
+  // Helper method to show notification setting update
+  private async showNotificationSettingUpdate(
+    setting: string,
+    enabled: boolean,
+  ) {
+    const settingNames: {[key: string]: string} = {
+      memberJoinRequests: "Member Join Requests",
+      newListingApplications: "Listing Applications",
+      groupActivity: "Group Activity",
+    };
+
+    const settingName = settingNames[setting] || setting;
+    const status = enabled ? "enabled" : "disabled";
+
+    const toast = await this.toastController.create({
+      message: `${settingName} notifications ${status}`,
+      duration: 2000,
+      color: enabled ? "success" : "medium",
+      position: "bottom",
+    });
+    await toast.present();
+  }
+
   // Applicant Management Methods
-  approveApplicant(applicantId: string) {
+  async approveApplicant(applicantId: string) {
     // TODO: Implement actual applicant approval logic
     // This would involve updating the applicant's status in the listing's relatedAccounts
     console.log("Approving applicant:", applicantId);
-    // For Phase 1, just log the action
-    // In Phase 2, dispatch action to update applicant status
+
+    // Show user feedback
+    const toast = await this.toastController.create({
+      message:
+        "Applicant approval functionality coming soon! Use individual listing pages to manage applicants.",
+      duration: 4000,
+      color: "warning",
+      position: "bottom",
+      buttons: [
+        {
+          text: "View Listings",
+          handler: () => {
+            this.navigateToTab("listings");
+          },
+        },
+        {
+          text: "OK",
+          role: "cancel",
+        },
+      ],
+    });
+    await toast.present();
   }
 
-  rejectApplicant(applicantId: string) {
+  async rejectApplicant(applicantId: string) {
     // TODO: Implement actual applicant rejection logic
     console.log("Rejecting applicant:", applicantId);
-    // For Phase 1, just log the action
-    // In Phase 2, dispatch action to update applicant status
+
+    // Show user feedback
+    const toast = await this.toastController.create({
+      message:
+        "Applicant rejection functionality coming soon! Use individual listing pages to manage applicants.",
+      duration: 4000,
+      color: "warning",
+      position: "bottom",
+      buttons: [
+        {
+          text: "View Listings",
+          handler: () => {
+            this.navigateToTab("listings");
+          },
+        },
+        {
+          text: "OK",
+          role: "cancel",
+        },
+      ],
+    });
+    await toast.present();
   }
 
   viewAllApplicants() {
-    // Navigate to dedicated applicants management page
-    this.router.navigate(["/account", this.accountId, "applicants"]);
+    // For now, navigate to listings page where admin can manage individual listing applicants
+    // TODO: Create a consolidated applicants view for all group listings
+    this.navigateToTab("listings");
   }
 
   async showDeactivateGroupConfirmation() {
@@ -845,6 +964,27 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
     } catch {
       return true; // Default to true if parsing fails
     }
+  }
+
+  // Test notification methods for development
+  async testMemberJoinNotification() {
+    this.account$.pipe(take(1)).subscribe(async (account) => {
+      if (account) {
+        await this.notificationService.showMemberJoinRequestNotification(
+          "John Doe",
+          account.name || "Your Group",
+          this.accountId,
+        );
+      }
+    });
+  }
+
+  async testListingApplicationNotification() {
+    await this.notificationService.showListingApplicationNotification(
+      "Jane Smith",
+      "Volunteer Coordinator Position",
+      "test-listing-id",
+    );
   }
 
   // Helper method to safely convert dates

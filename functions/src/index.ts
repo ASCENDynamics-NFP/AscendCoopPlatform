@@ -52,6 +52,7 @@ export {onCreateProject} from "./database/accounts/projects/triggers/onCreate";
 export {onCreateRelatedAccount} from "./database/accounts/relatedAccounts/triggers/onCreate";
 export {onDeleteRelatedAccount} from "./database/accounts/relatedAccounts/triggers/onDelete";
 export {onUpdateRelatedAccount} from "./database/accounts/relatedAccounts/triggers/onUpdate";
+export {notifyAdminsOnMemberRequest} from "./database/accounts/relatedAccounts/triggers/adminNotifications";
 
 // Related listings triggers
 export {onDeleteAccountsRelatedListing} from "./database/accounts/relatedListings/triggers/onDelete";

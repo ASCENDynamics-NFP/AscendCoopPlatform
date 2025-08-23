@@ -146,7 +146,7 @@
               <ion-button
                 fill="outline"
                 size="small"
-                (click)="selectedSegment = 'profile'"
+                (click)="navigateToTab('profile')"
               >
                 <ion-icon name="create-outline" slot="start"></ion-icon>
                 Group Profile
@@ -154,7 +154,7 @@
               <ion-button
                 fill="outline"
                 size="small"
-                (click)="selectedSegment = 'members'"
+                (click)="navigateToTab('members')"
               >
                 <ion-icon name="people-outline" slot="start"></ion-icon>
                 Manage Members
@@ -162,7 +162,7 @@
               <ion-button
                 fill="outline"
                 size="small"
-                (click)="selectedSegment = 'settings'"
+                (click)="navigateToTab('settings')"
               >
                 <ion-icon name="settings-outline" slot="start"></ion-icon>
                 Group Settings
@@ -266,7 +266,7 @@
             <ion-button
               expand="block"
               fill="outline"
-              (click)="selectedSegment = 'members'"
+              (click)="navigateToTab('members')"
             >
               <ion-icon name="person-add-outline" slot="start"></ion-icon>
               View Pending Requests
@@ -312,7 +312,7 @@
                     fill="clear"
                     size="small"
                     slot="end"
-                    (click)="selectedSegment = 'members'"
+                    (click)="navigateToTab('members')"
                   >
                     Review
                   </ion-button>
@@ -1298,6 +1298,43 @@
                 </ion-label>
               </ion-item>
             </ion-list>
+
+            <!-- Test notification section for development -->
+            <!-- <div
+              class="test-notifications"
+              style="
+                margin-top: 16px;
+                padding-top: 16px;
+                border-top: 1px solid var(--ion-color-light);
+              "
+            >
+              <ion-button
+                expand="block"
+                fill="outline"
+                color="secondary"
+                (click)="testMemberJoinNotification()"
+              >
+                <ion-icon name="notifications-outline" slot="start"></ion-icon>
+                Test Member Join Notification
+              </ion-button>
+              <ion-button
+                expand="block"
+                fill="outline"
+                color="secondary"
+                (click)="testListingApplicationNotification()"
+                style="margin-top: 8px"
+              >
+                <ion-icon name="mail-outline" slot="start"></ion-icon>
+                Test Application Notification
+              </ion-button>
+              <ion-text color="medium">
+                <p
+                  style="text-align: center; font-size: 0.8em; margin-top: 8px"
+                >
+                  <small>Development tools - remove in production</small>
+                </p>
+              </ion-text>
+            </div> -->
           </ion-card-content>
         </ion-card>
 
@@ -1313,23 +1350,29 @@
             <div *ngIf="account$ | async as account" class="admin-info">
               <div *ngIf="currentUser$ | async as currentUser">
                 <!-- Only show owner info if current user is NOT the owner -->
-                <p *ngIf="account.createdBy && account.createdBy !== currentUser.uid">
+                <p
+                  *ngIf="account.createdBy && account.createdBy !== currentUser.uid"
+                >
                   <strong>Group Owner:</strong> {{ account.createdBy }}
                 </p>
                 <!-- Show friendly message if current user IS the owner -->
-                <p *ngIf="account.createdBy === currentUser.uid" class="owner-badge">
+                <p
+                  *ngIf="account.createdBy === currentUser.uid"
+                  class="owner-badge"
+                >
                   <ion-icon name="shield-checkmark" color="primary"></ion-icon>
                   <strong>You are the group owner</strong>
                 </p>
               </div>
               <p>
-                <strong>Total Administrators:</strong> 
+                <strong>Total Administrators:</strong>
                 <ng-container *ngIf="(adminCount$ | async) === 1">
                   1 (you)
                 </ng-container>
-                <ng-container *ngIf="(adminCount$ | async) && (adminCount$ | async)! > 1">
-                  {{ adminCount$ | async }}
-                  (including you)
+                <ng-container
+                  *ngIf="(adminCount$ | async) && (adminCount$ | async)! > 1"
+                >
+                  {{ adminCount$ | async }} (including you)
                 </ng-container>
               </p>
             </div>

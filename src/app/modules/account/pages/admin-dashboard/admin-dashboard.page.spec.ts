@@ -24,6 +24,7 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {IonicModule} from "@ionic/angular";
 import {FormsModule} from "@angular/forms";
 import {of} from "rxjs";
+import {NotificationService} from "../../../messaging/services/notification.service";
 
 describe("AdminDashboardPage", () => {
   let component: AdminDashboardPage;
@@ -31,6 +32,7 @@ describe("AdminDashboardPage", () => {
   let mockStore: MockStore;
   let mockRouter: jasmine.SpyObj<Router>;
   let mockActivatedRoute: jasmine.SpyObj<ActivatedRoute>;
+  let mockNotificationService: jasmine.SpyObj<NotificationService>;
 
   const mockAccount = {
     id: "test-group-id",
@@ -48,7 +50,12 @@ describe("AdminDashboardPage", () => {
           get: jasmine.createSpy("get").and.returnValue("test-group-id"),
         },
       },
+      queryParams: of({}),
     });
+    const notificationServiceSpy = jasmine.createSpyObj("NotificationService", [
+      "showMemberJoinRequestNotification",
+      "showListingApplicationNotification",
+    ]);
 
     await TestBed.configureTestingModule({
       declarations: [AdminDashboardPage],
@@ -69,6 +76,7 @@ describe("AdminDashboardPage", () => {
         }),
         {provide: Router, useValue: routerSpy},
         {provide: ActivatedRoute, useValue: activatedRouteSpy},
+        {provide: NotificationService, useValue: notificationServiceSpy},
       ],
     }).compileComponents();
 
@@ -79,6 +87,9 @@ describe("AdminDashboardPage", () => {
     mockActivatedRoute = TestBed.inject(
       ActivatedRoute,
     ) as jasmine.SpyObj<ActivatedRoute>;
+    mockNotificationService = TestBed.inject(
+      NotificationService,
+    ) as jasmine.SpyObj<NotificationService>;
 
     fixture.detectChanges();
   });

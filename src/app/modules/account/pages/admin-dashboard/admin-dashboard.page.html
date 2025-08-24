@@ -1,0 +1,1497 @@
+<!--
+**********************************************************************************************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+*
+* This file is part of Nonprofit Social Networking Platform.
+*
+* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+
+* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+
+* You should have received a copy of the GNU Affero General Public License
+* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+***********************************************************************************************
+-->
+
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBackToProfile()">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Admin Dashboard</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="goBackToProfile()">
+        <ion-icon name="eye-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="admin-dashboard-container">
+    <!-- Header with group info -->
+    <div class="dashboard-header" *ngIf="account$ | async as account">
+      <div class="group-info">
+        <ion-avatar class="group-avatar">
+          <img
+            [src]="account.iconImage || '/assets/images/default-avatar.png'"
+            [alt]="account.name"
+          />
+        </ion-avatar>
+        <div class="group-details">
+          <h2>{{ account.name }}</h2>
+          <p class="group-tagline">{{ account.tagline }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Segments -->
+    <div class="segments-container">
+      <ion-segment
+        [(ngModel)]="selectedSegment"
+        (ionChange)="onSegmentChange($event)"
+        class="dashboard-segments"
+        scrollable="true"
+        aria-label="Admin dashboard navigation"
+      >
+        <ion-segment-button value="overview">
+          <ion-label>Overview</ion-label>
+          <ion-icon name="analytics-outline"></ion-icon>
+        </ion-segment-button>
+        <ion-segment-button value="profile">
+          <ion-label>Profile</ion-label>
+          <ion-icon name="create-outline"></ion-icon>
+        </ion-segment-button>
+        <ion-segment-button value="members">
+          <ion-label>
+            Members
+            <ion-badge
+              *ngIf="(pendingRequestsCount$ | async) && (pendingRequestsCount$ | async)! > 0"
+              color="danger"
+              class="notification-badge"
+              [attr.aria-label]="'You have ' + (pendingRequestsCount$ | async) + ' pending member requests'"
+            >
+              {{ pendingRequestsCount$ | async }}
+            </ion-badge>
+          </ion-label>
+          <ion-icon name="people-outline"></ion-icon>
+        </ion-segment-button>
+        <ion-segment-button value="roles">
+          <ion-label>Roles</ion-label>
+          <ion-icon name="shield-outline"></ion-icon>
+        </ion-segment-button>
+        <ion-segment-button value="faqs">
+          <ion-label>FAQs</ion-label>
+          <ion-icon name="help-circle-outline"></ion-icon>
+        </ion-segment-button>
+        <ion-segment-button value="listings">
+          <ion-label>Listings</ion-label>
+          <ion-icon name="list-outline"></ion-icon>
+        </ion-segment-button>
+        <ion-segment-button value="projects">
+          <ion-label>Projects</ion-label>
+          <ion-icon name="folder-outline"></ion-icon>
+        </ion-segment-button>
+        <ion-segment-button value="time-tracking">
+          <ion-label>Time Tracking</ion-label>
+          <ion-icon name="time-outline"></ion-icon>
+        </ion-segment-button>
+        <ion-segment-button value="settings">
+          <ion-label>Settings</ion-label>
+          <ion-icon name="settings-outline"></ion-icon>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+
+    <!-- Content based on selected segment -->
+    <div class="dashboard-content" role="main">
+      <!-- Overview Section -->
+      <div
+        *ngIf="selectedSegment === 'overview'"
+        class="overview-section"
+        role="tabpanel"
+        aria-labelledby="overview-tab"
+      >
+        <!-- Welcome Message -->
+        <ion-card class="welcome-card">
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon
+                name="shield-checkmark-outline"
+                class="title-icon"
+                aria-hidden="true"
+              ></ion-icon>
+              Admin Dashboard
+            </ion-card-title>
+            <ion-card-subtitle>
+              Manage your group's profile, members, and settings
+            </ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <p>
+              Welcome to your group's admin dashboard. Here you can update your
+              group profile, manage members and their roles, handle join
+              requests, and configure group settings.
+            </p>
+            <div class="quick-links">
+              <ion-button
+                fill="outline"
+                size="small"
+                (click)="navigateToTab('profile')"
+              >
+                <ion-icon name="create-outline" slot="start"></ion-icon>
+                Group Profile
+              </ion-button>
+              <ion-button
+                fill="outline"
+                size="small"
+                (click)="navigateToTab('members')"
+              >
+                <ion-icon name="people-outline" slot="start"></ion-icon>
+                Manage Members
+              </ion-button>
+              <ion-button
+                fill="outline"
+                size="small"
+                (click)="navigateToTab('settings')"
+              >
+                <ion-icon name="settings-outline" slot="start"></ion-icon>
+                Group Settings
+              </ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <h3>Group Overview</h3>
+        <div class="stats-grid">
+          <ion-card class="stat-card" (click)="navigateToMembers()">
+            <ion-card-content>
+              <div class="stat-value">{{ userMemberCount$ | async }}</div>
+              <div class="stat-label">Members</div>
+              <ion-icon name="people-outline" class="stat-icon"></ion-icon>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card class="stat-card" (click)="navigateToPartners()">
+            <ion-card-content>
+              <div class="stat-value">{{ partnerCount$ | async }}</div>
+              <div class="stat-label">Partners</div>
+              <ion-icon name="business-outline" class="stat-icon"></ion-icon>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card class="stat-card">
+            <ion-card-content>
+              <div class="stat-value">{{ pendingRequestsCount$ | async }}</div>
+              <div class="stat-label">Pending Requests</div>
+              <ion-icon name="time-outline" class="stat-icon"></ion-icon>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card class="stat-card" (click)="navigateToListings()">
+            <ion-card-content>
+              <div class="stat-value">{{ activeListingsCount$ | async }}</div>
+              <div class="stat-label">Active Listings</div>
+              <ion-icon name="list-outline" class="stat-icon"></ion-icon>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card class="stat-card" (click)="navigateToProjects()">
+            <ion-card-content>
+              <div class="stat-value">Projects</div>
+              <div class="stat-label">Manage</div>
+              <ion-icon name="folder-outline" class="stat-icon"></ion-icon>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card
+            class="stat-card"
+            (click)="navigateToTimeTrackingApprovals()"
+          >
+            <ion-card-content>
+              <div class="stat-value">Time</div>
+              <div class="stat-label">Approvals</div>
+              <ion-icon name="time-outline" class="stat-icon"></ion-icon>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card class="stat-card" *ngIf="account$ | async as account">
+            <ion-card-content>
+              <div
+                class="stat-value profile-visibility"
+                [class.public]="account.privacy === 'public'"
+                [class.private]="account.privacy === 'private'"
+              >
+                {{ account.privacy === 'public' ? 'Public' : 'Private' }}
+              </div>
+              <div class="stat-label">Privacy</div>
+              <ion-icon
+                [name]="account.privacy === 'public' ? 'globe-outline' : 'lock-closed-outline'"
+                class="stat-icon"
+              >
+              </ion-icon>
+            </ion-card-content>
+          </ion-card>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions-section">
+          <h4>Quick Actions</h4>
+          <div class="quick-actions-grid">
+            <ion-button
+              expand="block"
+              fill="outline"
+              (click)="createNewListing()"
+            >
+              <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+              Create New Listing
+            </ion-button>
+            <ion-button
+              expand="block"
+              fill="outline"
+              (click)="navigateToProjects()"
+            >
+              <ion-icon name="folder-outline" slot="start"></ion-icon>
+              Manage Projects
+            </ion-button>
+            <ion-button
+              expand="block"
+              fill="outline"
+              (click)="navigateToTab('members')"
+            >
+              <ion-icon name="person-add-outline" slot="start"></ion-icon>
+              View Pending Requests
+            </ion-button>
+          </div>
+        </div>
+
+        <!-- Recent Activity Summary -->
+        <div class="recent-activity">
+          <h4>Recent Activity</h4>
+          <ion-card>
+            <ion-card-content>
+              <ion-list>
+                <ion-item lines="none">
+                  <ion-icon
+                    name="person-add-outline"
+                    slot="start"
+                    color="success"
+                  ></ion-icon>
+                  <ion-label>
+                    <h3>New member joined</h3>
+                    <p>{{ (memberCount$ | async) || 0 }} total members</p>
+                  </ion-label>
+                  <ion-note slot="end" color="medium">Recent</ion-note>
+                </ion-item>
+
+                <ion-item
+                  lines="none"
+                  *ngIf="(pendingRequestsCount$ | async) && (pendingRequestsCount$ | async)! > 0"
+                >
+                  <ion-icon
+                    name="time-outline"
+                    slot="start"
+                    color="warning"
+                  ></ion-icon>
+                  <ion-label>
+                    <h3>Pending requests</h3>
+                    <p>
+                      {{ pendingRequestsCount$ | async }} requests need approval
+                    </p>
+                  </ion-label>
+                  <ion-button
+                    fill="clear"
+                    size="small"
+                    slot="end"
+                    (click)="navigateToTab('members')"
+                  >
+                    Review
+                  </ion-button>
+                </ion-item>
+
+                <ion-item
+                  lines="none"
+                  *ngIf="(activeListingsCount$ | async) && (activeListingsCount$ | async)! > 0"
+                >
+                  <ion-icon
+                    name="list-outline"
+                    slot="start"
+                    color="primary"
+                  ></ion-icon>
+                  <ion-label>
+                    <h3>Active listings</h3>
+                    <p>{{ activeListingsCount$ | async }} listings published</p>
+                  </ion-label>
+                  <ion-button
+                    fill="clear"
+                    size="small"
+                    slot="end"
+                    (click)="navigateToListings()"
+                  >
+                    Manage
+                  </ion-button>
+                </ion-item>
+
+                <ion-item
+                  lines="none"
+                  *ngIf="(pendingApplicantsCount$ | async) && (pendingApplicantsCount$ | async)! > 0"
+                >
+                  <ion-icon
+                    name="mail-outline"
+                    slot="start"
+                    color="tertiary"
+                  ></ion-icon>
+                  <ion-label>
+                    <h3>New applications</h3>
+                    <p>
+                      {{ pendingApplicantsCount$ | async }} pending applicants
+                    </p>
+                  </ion-label>
+                  <ion-button
+                    fill="clear"
+                    size="small"
+                    slot="end"
+                    (click)="selectedSegment = 'listings'"
+                  >
+                    Review
+                  </ion-button>
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+        </div>
+
+        <!-- Group at a Glance -->
+        <div class="group-glance" *ngIf="account$ | async as account">
+          <h4>Group at a Glance</h4>
+          <ion-card>
+            <ion-card-content>
+              <ion-grid>
+                <ion-row>
+                  <ion-col size="12" size-md="6">
+                    <div class="glance-item">
+                      <ion-icon
+                        name="calendar-outline"
+                        color="primary"
+                      ></ion-icon>
+                      <div class="glance-content">
+                        <div class="glance-label">Founded</div>
+                        <div class="glance-value">
+                          {{ getFormattedFoundingDate(account) }}
+                        </div>
+                      </div>
+                    </div>
+                  </ion-col>
+                  <ion-col size="12" size-md="6">
+                    <div class="glance-item">
+                      <ion-icon
+                        name="business-outline"
+                        color="secondary"
+                      ></ion-icon>
+                      <div class="glance-content">
+                        <div class="glance-label">Type</div>
+                        <div class="glance-value">
+                          {{ account.groupDetails?.groupType || 'Not specified'
+                          }}
+                        </div>
+                      </div>
+                    </div>
+                  </ion-col>
+                  <ion-col size="12" size-md="6">
+                    <div class="glance-item">
+                      <ion-icon
+                        name="language-outline"
+                        color="tertiary"
+                      ></ion-icon>
+                      <div class="glance-content">
+                        <div class="glance-label">Languages</div>
+                        <div class="glance-value">
+                          {{ getFormattedLanguages(account) }}
+                        </div>
+                      </div>
+                    </div>
+                  </ion-col>
+                  <ion-col size="12" size-md="6">
+                    <div class="glance-item">
+                      <ion-icon
+                        name="shield-outline"
+                        color="success"
+                      ></ion-icon>
+                      <div class="glance-content">
+                        <div class="glance-label">Membership</div>
+                        <div class="glance-value">
+                          {{ getMembershipPolicy(account) }}
+                        </div>
+                      </div>
+                    </div>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ion-card-content>
+          </ion-card>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+          <h4>Quick Actions</h4>
+          <div class="action-buttons">
+            <ion-button
+              expand="block"
+              fill="outline"
+              (click)="navigateToMembers()"
+            >
+              <ion-icon name="people-outline" slot="start"></ion-icon>
+              Manage Members
+            </ion-button>
+            <ion-button
+              expand="block"
+              fill="outline"
+              (click)="navigateToPartners()"
+            >
+              <ion-icon name="business-outline" slot="start"></ion-icon>
+              Manage Partners
+            </ion-button>
+            <ion-button
+              expand="block"
+              fill="outline"
+              (click)="navigateToRoleManagement()"
+            >
+              <ion-icon name="shield-outline" slot="start"></ion-icon>
+              Manage Roles
+            </ion-button>
+            <ion-button
+              expand="block"
+              fill="outline"
+              (click)="navigateToListings()"
+            >
+              <ion-icon name="list-outline" slot="start"></ion-icon>
+              Manage Listings
+            </ion-button>
+          </div>
+        </div>
+
+        <!-- Admin Tips -->
+        <div class="admin-tips">
+          <h4>Admin Tips</h4>
+          <ion-card class="tips-card">
+            <ion-card-content>
+              <div class="tips-list">
+                <div class="tip-item">
+                  <ion-icon name="bulb-outline" color="warning"></ion-icon>
+                  <div>
+                    <strong>Get Started:</strong> Start by updating your group
+                    profile and inviting core team members.
+                  </div>
+                </div>
+                <div class="tip-item">
+                  <ion-icon
+                    name="shield-checkmark-outline"
+                    color="success"
+                  ></ion-icon>
+                  <div>
+                    <strong>Assign Roles:</strong> Use the Roles section to
+                    define permissions and responsibilities.
+                  </div>
+                </div>
+                <div class="tip-item">
+                  <ion-icon name="people-outline" color="primary"></ion-icon>
+                  <div>
+                    <strong>Review Requests:</strong> Check the Members tab
+                    regularly for pending join requests.
+                  </div>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </div>
+
+      <!-- Profile Management Section -->
+      <div *ngIf="selectedSegment === 'profile'" class="profile-section">
+        <h3>Group Profile Management</h3>
+        <p>
+          Manage your organization's basic information, contact details, and web
+          presence.
+        </p>
+
+        <!-- Group profile form -->
+        <app-admin-group-profile-form
+          [account]="(account$ | async) || null"
+        ></app-admin-group-profile-form>
+      </div>
+
+      <!-- Members Management Section -->
+      <div *ngIf="selectedSegment === 'members'" class="members-section">
+        <h3>Members & Partners Management</h3>
+
+        <!-- Quick Actions -->
+        <div class="members-actions">
+          <ion-button fill="outline" (click)="navigateToMembers()">
+            <ion-icon name="people-outline" slot="start"></ion-icon>
+            View All Members
+          </ion-button>
+          <ion-button fill="outline" (click)="navigateToPartners()">
+            <ion-icon name="business-outline" slot="start"></ion-icon>
+            View All Partners
+          </ion-button>
+          <ion-button fill="outline" (click)="showInviteMemberModal()">
+            <ion-icon name="person-add-outline" slot="start"></ion-icon>
+            Invite Members
+          </ion-button>
+        </div>
+
+        <!-- Pending Requests Section -->
+        <ion-card *ngIf="(pendingMemberRequests$ | async)?.length">
+          <ion-card-header>
+            <ion-card-title>Pending Member Requests</ion-card-title>
+            <ion-card-subtitle
+              >{{ (pendingMemberRequests$ | async)?.length }} requests awaiting
+              approval</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list>
+              <ion-item
+                *ngFor="let request of (pendingMemberRequests$ | async)"
+                lines="full"
+              >
+                <ion-avatar slot="start">
+                  <img
+                    [src]="request.iconImage || '/assets/icon/default-avatar.png'"
+                    [alt]="request.name"
+                  />
+                </ion-avatar>
+                <ion-label>
+                  <h3>{{ request.name }}</h3>
+                  <p>
+                    {{ request.type === 'user' ? 'Individual' : 'Organization'
+                    }}
+                  </p>
+                  <p *ngIf="request.tagline">{{ request.tagline }}</p>
+                  <p
+                    *ngIf="request.initiatorId === accountId"
+                    class="self-initiated-note"
+                  >
+                    <ion-text color="medium">
+                      <small
+                        ><ion-icon name="information-circle-outline"></ion-icon>
+                        Request initiated by you</small
+                      >
+                    </ion-text>
+                  </p>
+                </ion-label>
+                <div slot="end" class="request-actions">
+                  <ion-button
+                    fill="clear"
+                    color="success"
+                    size="small"
+                    [disabled]="!canApproveMemberRequest(request)"
+                    (click)="approveMemberRequest(request.id)"
+                  >
+                    <ion-icon name="checkmark-outline"></ion-icon>
+                  </ion-button>
+                  <ion-button
+                    fill="clear"
+                    color="danger"
+                    size="small"
+                    (click)="rejectMemberRequest(request.id)"
+                  >
+                    <ion-icon name="close-outline"></ion-icon>
+                  </ion-button>
+                </div>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Role/Access Controls Section -->
+        <ion-card *ngIf="showAccessControls$ | async">
+          <ion-card-header>
+            <ion-card-title>Member Access Controls</ion-card-title>
+            <ion-card-subtitle>
+              Manage access levels for group members
+            </ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <!-- Search/Filter for Members -->
+            <ion-searchbar
+              *ngIf="(activeMembers$ | async) && (activeMembers$ | async)!.length > 5"
+              placeholder="Search members..."
+              (ionInput)="filterMembers($event)"
+              debounce="300"
+            ></ion-searchbar>
+
+            <ion-list
+              *ngIf="(filteredMembers$ | async) && (filteredMembers$ | async)!.length > 0; else noActiveMembers"
+            >
+              <ion-item
+                *ngFor="let member of (filteredMembers$ | async)"
+                lines="full"
+              >
+                <ion-avatar slot="start">
+                  <img
+                    [src]="member.iconImage || '/assets/icon/default-avatar.png'"
+                    [alt]="member.name"
+                  />
+                </ion-avatar>
+                <ion-label>
+                  <h3>{{ member.name }}</h3>
+                  <p *ngIf="member.tagline">{{ member.tagline }}</p>
+                  <p>
+                    <ion-text color="medium">
+                      <small>
+                        Current Access: {{ getMemberAccessLevel(member) |
+                        titlecase }}
+                      </small>
+                    </ion-text>
+                  </p>
+                </ion-label>
+                <div slot="end" *ngIf="canManageRoles(member)">
+                  <ion-select
+                    [value]="getMemberAccessLevel(member)"
+                    placeholder="Select Access Level"
+                    (ionChange)="updateMemberAccessLevel(member.id, $event.detail.value)"
+                    interface="popover"
+                  >
+                    <ion-select-option
+                      *ngFor="let level of accessLevels"
+                      [value]="level.value"
+                    >
+                      {{ level.label }}
+                    </ion-select-option>
+                  </ion-select>
+                </div>
+                <div slot="end" *ngIf="!canManageRoles(member)">
+                  <ion-text color="medium">
+                    <small>Cannot modify own role</small>
+                  </ion-text>
+                </div>
+              </ion-item>
+            </ion-list>
+            <ng-template #noActiveMembers>
+              <div class="empty-state">
+                <ion-text color="medium">
+                  <p>No active members to manage</p>
+                </ion-text>
+              </div>
+            </ng-template>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Members Overview Cards -->
+        <ion-row>
+          <ion-col size="12" size-md="6">
+            <ion-card>
+              <ion-card-header>
+                <ion-card-title>Members Overview</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <div class="overview-stats">
+                  <div class="stat-item">
+                    <div class="stat-number">
+                      {{ userMemberCount$ | async }}
+                    </div>
+                    <div class="stat-label">Individual Members</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-number">
+                      {{ (pendingMemberRequests$ | async)?.length || 0 }}
+                    </div>
+                    <div class="stat-label">Pending Requests</div>
+                  </div>
+                </div>
+                <ion-button
+                  expand="block"
+                  fill="outline"
+                  (click)="navigateToMembers()"
+                >
+                  <ion-icon name="people-outline" slot="start"></ion-icon>
+                  Manage Members
+                </ion-button>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+          <ion-col size="12" size-md="6">
+            <ion-card>
+              <ion-card-header>
+                <ion-card-title>Partners Overview</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <div class="overview-stats">
+                  <div class="stat-item">
+                    <div class="stat-number">{{ partnerCount$ | async }}</div>
+                    <div class="stat-label">Partner Organizations</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-number">{{ memberCount$ | async }}</div>
+                    <div class="stat-label">Total Relationships</div>
+                  </div>
+                </div>
+                <ion-button
+                  expand="block"
+                  fill="outline"
+                  (click)="navigateToPartners()"
+                >
+                  <ion-icon name="business-outline" slot="start"></ion-icon>
+                  Manage Partners
+                </ion-button>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+      </div>
+
+      <!-- Roles Management Section -->
+      <div *ngIf="selectedSegment === 'roles'" class="roles-section">
+        <h3>Roles & Permissions</h3>
+
+        <!-- Quick Actions -->
+        <div class="roles-actions">
+          <ion-button expand="block" (click)="navigateToRoleManagement()">
+            <ion-icon name="shield-outline" slot="start"></ion-icon>
+            Manage Roles
+          </ion-button>
+          <ion-button fill="outline" (click)="navigateToRoleHierarchy()">
+            <ion-icon name="git-network-outline" slot="start"></ion-icon>
+            View Hierarchy
+          </ion-button>
+        </div>
+
+        <!-- Role Overview -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Role Management Overview</ion-card-title>
+            <ion-card-subtitle
+              >Define and assign roles to organize your group's
+              permissions</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-card-content>
+            <div class="role-info">
+              <p>Use roles to control what members can do in your group:</p>
+              <ul>
+                <li>
+                  <strong>Administrator:</strong> Full control of group settings
+                  and members
+                </li>
+                <li>
+                  <strong>Moderator:</strong> Manage content and moderate
+                  discussions
+                </li>
+                <li>
+                  <strong>Project Manager:</strong> Lead projects and coordinate
+                  activities
+                </li>
+                <li>
+                  <strong>Member:</strong> Basic participation in group
+                  activities
+                </li>
+              </ul>
+            </div>
+
+            <div class="role-quick-links">
+              <ion-button
+                size="small"
+                fill="clear"
+                (click)="navigateToRoleManagement()"
+              >
+                Create New Role
+                <ion-icon name="add-outline" slot="end"></ion-icon>
+              </ion-button>
+              <ion-button
+                size="small"
+                fill="clear"
+                (click)="navigateToRoleHierarchy()"
+              >
+                View Role Structure
+                <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+              </ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Role Assignment Quick Access -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Role Assignment</ion-card-title>
+            <ion-card-subtitle
+              >Assign roles to your group members</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-card-content>
+            <p>
+              Manage member permissions by assigning appropriate roles. Visit
+              the Members section to assign roles to individual members.
+            </p>
+            <ion-button
+              expand="block"
+              fill="outline"
+              (click)="selectedSegment = 'members'"
+            >
+              <ion-icon name="people-outline" slot="start"></ion-icon>
+              Go to Member Management
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- FAQs Management Section -->
+      <div *ngIf="selectedSegment === 'faqs'" class="faqs-section">
+        <h3>FAQs Management</h3>
+
+        <!-- FAQ Form for adding/editing FAQs -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Manage FAQs</ion-card-title>
+            <ion-card-subtitle
+              >Add, edit, or reorder frequently asked questions for your
+              group</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-card-content>
+            <app-faq-form
+              *ngIf="account$ | async as account"
+              [account]="account"
+              (formSubmitted)="onFaqFormSubmitted()"
+            >
+            </app-faq-form>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- FAQ Preview Section -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>FAQ Preview</ion-card-title>
+            <ion-card-subtitle
+              >How your FAQs will appear to visitors</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-card-content>
+            <app-faq-section
+              *ngIf="account$ | async as account"
+              [faqs]="account.groupDetails?.faqs || []"
+              [canEdit]="false"
+              [accountId]="account.id || ''"
+              [accountType]="account.type || ''"
+            >
+            </app-faq-section>
+
+            <div
+              *ngIf="!(account$ | async)?.groupDetails?.faqs?.length"
+              class="no-faqs-message"
+            >
+              <ion-text color="medium">
+                <p>
+                  No FAQs have been added yet. Use the form above to create your
+                  first FAQ.
+                </p>
+              </ion-text>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- Listings Management Section -->
+      <div *ngIf="selectedSegment === 'listings'" class="listings-section">
+        <h3>Listings Management</h3>
+
+        <!-- Quick Actions -->
+        <div class="listings-actions">
+          <ion-button expand="block" (click)="createNewListing()">
+            <ion-icon name="add-outline" slot="start"></ion-icon>
+            Create New Listing
+          </ion-button>
+
+          <ion-button fill="outline" (click)="navigateToListings()">
+            <ion-icon name="list-outline" slot="start"></ion-icon>
+            View All Listings
+          </ion-button>
+        </div>
+
+        <!-- Listings Overview -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Listings Overview</ion-card-title>
+            <ion-card-subtitle
+              >Manage your group's job postings, volunteer opportunities, and
+              resource sharing</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-card-content>
+            <div class="listings-stats">
+              <div class="stat-item">
+                <div class="stat-number">
+                  {{ activeListingsCount$ | async }}
+                </div>
+                <div class="stat-label">Active Listings</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-number">
+                  {{ pendingApplicantsCount$ | async }}
+                </div>
+                <div class="stat-label">Pending Applicants</div>
+              </div>
+            </div>
+
+            <!-- Pending Applicants Section -->
+            <div
+              *ngIf="pendingApplicants$ | async as pendingApplicants; else noApplicants"
+              class="pending-applicants"
+            >
+              <div *ngIf="pendingApplicants.length > 0">
+                <h4>Recent Applications</h4>
+                <ion-list>
+                  <ion-item
+                    *ngFor="let applicant of pendingApplicants | slice:0:3"
+                    lines="full"
+                  >
+                    <ion-avatar slot="start">
+                      <img
+                        [src]="applicant.applicantImage || '/assets/icon/default-avatar.png'"
+                        [alt]="applicant.applicantName"
+                      />
+                    </ion-avatar>
+                    <ion-label>
+                      <h3>{{ applicant.applicantName }}</h3>
+                      <p>Applied to: {{ applicant.listingTitle }}</p>
+                      <p class="application-date">
+                        <ion-text color="medium">
+                          {{ getDateFromTimestamp(applicant.createdAt) |
+                          date:'short' }}
+                        </ion-text>
+                      </p>
+                    </ion-label>
+                    <div slot="end" class="applicant-actions">
+                      <ion-button
+                        fill="clear"
+                        color="success"
+                        size="small"
+                        (click)="approveApplicant(applicant.id)"
+                      >
+                        <ion-icon name="checkmark-outline"></ion-icon>
+                      </ion-button>
+                      <ion-button
+                        fill="clear"
+                        color="danger"
+                        size="small"
+                        (click)="rejectApplicant(applicant.id)"
+                      >
+                        <ion-icon name="close-outline"></ion-icon>
+                      </ion-button>
+                    </div>
+                  </ion-item>
+                </ion-list>
+                <ion-button
+                  *ngIf="pendingApplicants.length > 3"
+                  size="small"
+                  fill="clear"
+                  (click)="viewAllApplicants()"
+                >
+                  View All {{ pendingApplicants.length }} Applications
+                  <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+            <ng-template #noApplicants></ng-template>
+
+            <div class="listings-quick-links">
+              <ion-button
+                size="small"
+                fill="clear"
+                (click)="navigateToListings()"
+              >
+                Manage All Listings
+                <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+              </ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- Projects Management Section -->
+      <div *ngIf="selectedSegment === 'projects'" class="projects-section">
+        <h3>Projects Management</h3>
+
+        <!-- Projects Overview Card -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="folder-outline" class="card-icon"></ion-icon>
+              Projects Overview
+            </ion-card-title>
+            <ion-card-subtitle
+              >Manage your group's projects and initiatives</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-card-content>
+            <p>
+              Organize and track your group's projects, assign tasks, and
+              monitor progress.
+            </p>
+
+            <div class="projects-quick-actions">
+              <ion-button expand="block" (click)="navigateToProjects()">
+                <ion-icon name="folder-outline" slot="start"></ion-icon>
+                Manage All Projects
+              </ion-button>
+            </div>
+
+            <!-- Projects Quick Info -->
+            <div class="projects-info">
+              <p>
+                <strong>Active Projects:</strong> View and manage ongoing
+                initiatives
+              </p>
+              <p>
+                <strong>Project Creation:</strong> Create new projects for your
+                group
+              </p>
+              <p>
+                <strong>Archive Management:</strong> Review completed projects
+              </p>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Time Tracking Integration -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="time-outline" class="card-icon"></ion-icon>
+              Project Time Tracking
+            </ion-card-title>
+            <ion-card-subtitle
+              >Monitor project hours and approvals</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-card-content>
+            <p>
+              Review time entries submitted by team members and approve
+              volunteer hours.
+            </p>
+
+            <div class="time-tracking-actions">
+              <ion-button
+                expand="block"
+                (click)="navigateToTimeTrackingApprovals()"
+              >
+                <ion-icon
+                  name="checkmark-circle-outline"
+                  slot="start"
+                ></ion-icon>
+                Review Time Approvals
+              </ion-button>
+            </div>
+
+            <ion-text color="medium">
+              <p>
+                <small
+                  >Approve or reject time entries submitted by group members for
+                  various projects.</small
+                >
+              </p>
+            </ion-text>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- Time Tracking Management Section -->
+      <div
+        *ngIf="selectedSegment === 'time-tracking'"
+        class="time-tracking-section"
+      >
+        <h3>Time Tracking Management</h3>
+
+        <!-- Time Tracking Overview -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="time-outline" class="card-icon"></ion-icon>
+              Time Tracking Overview
+            </ion-card-title>
+            <ion-card-subtitle
+              >Manage volunteer hours and approvals</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-card-content>
+            <p>
+              Review and approve time entries submitted by your group members.
+            </p>
+
+            <div class="time-tracking-actions">
+              <ion-button
+                expand="block"
+                (click)="navigateToTimeTrackingApprovals()"
+              >
+                <ion-icon
+                  name="checkmark-circle-outline"
+                  slot="start"
+                ></ion-icon>
+                View All Time Approvals
+              </ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Approval Guidelines -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Approval Guidelines</ion-card-title>
+            <ion-card-subtitle
+              >Best practices for reviewing time entries</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-card-content>
+            <div class="approval-guidelines">
+              <ul>
+                <li>
+                  <strong>Review Accuracy:</strong> Verify that submitted hours
+                  are reasonable and align with project activities
+                </li>
+                <li>
+                  <strong>Project Alignment:</strong> Ensure time entries are
+                  logged against the correct projects
+                </li>
+                <li>
+                  <strong>Timely Approval:</strong> Process approvals promptly
+                  to maintain accurate records
+                </li>
+                <li>
+                  <strong>Rejection Reasons:</strong> Provide clear feedback
+                  when rejecting time entries
+                </li>
+              </ul>
+            </div>
+
+            <ion-text color="medium">
+              <p>
+                <small
+                  >Use the Time Approvals page to review pending submissions by
+                  user or by project.</small
+                >
+              </p>
+            </ion-text>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- Settings Section -->
+      <div *ngIf="selectedSegment === 'settings'" class="settings-section">
+        <h3>Group Settings</h3>
+
+        <!-- Privacy Controls -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Privacy Settings</ion-card-title>
+            <ion-card-subtitle
+              >Control who can see and join your group</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list>
+              <ion-item>
+                <ion-label>
+                  <h3>Group Visibility</h3>
+                  <p>Who can view your group's profile and information</p>
+                </ion-label>
+                <ion-select
+                  *ngIf="account$ | async as account"
+                  [value]="account.privacy || 'public'"
+                  (ionChange)="updatePrivacy($event.detail.value)"
+                  interface="popover"
+                >
+                  <ion-select-option value="public"
+                    >Public - Anyone can view and find your
+                    group</ion-select-option
+                  >
+                  <ion-select-option value="private"
+                    >Private - Only members can view group
+                    details</ion-select-option
+                  >
+                </ion-select>
+              </ion-item>
+
+              <ion-item>
+                <ion-label>
+                  <h3>Membership Policy</h3>
+                  <p>How new members can join your group</p>
+                </ion-label>
+                <ion-select
+                  *ngIf="account$ | async as account"
+                  [value]="getMembershipPolicy(account)"
+                  (ionChange)="updateMembershipPolicy($event.detail.value)"
+                  interface="popover"
+                >
+                  <ion-select-option value="open"
+                    >Open - Anyone can join</ion-select-option
+                  >
+                  <ion-select-option value="approval"
+                    >Approval Required</ion-select-option
+                  >
+                  <ion-select-option value="invitation"
+                    >Invitation Only</ion-select-option
+                  >
+                </ion-select>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Notification Preferences -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Notification Settings</ion-card-title>
+            <ion-card-subtitle
+              >Configure admin notifications and alerts</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list>
+              <ion-item>
+                <ion-checkbox
+                  *ngIf="account$ | async as account"
+                  [checked]="getNotificationPreference(account, 'memberJoinRequests')"
+                  (ionChange)="updateNotificationSetting('memberJoinRequests', $event.detail.checked)"
+                  slot="start"
+                >
+                </ion-checkbox>
+                <ion-label>
+                  <h3>Member Join Requests</h3>
+                  <p>Get notified when someone requests to join your group</p>
+                </ion-label>
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox
+                  *ngIf="account$ | async as account"
+                  [checked]="getNotificationPreference(account, 'newListingApplications')"
+                  (ionChange)="updateNotificationSetting('newListingApplications', $event.detail.checked)"
+                  slot="start"
+                >
+                </ion-checkbox>
+                <ion-label>
+                  <h3>Listing Applications</h3>
+                  <p>Get notified about new applications to your listings</p>
+                </ion-label>
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox
+                  *ngIf="account$ | async as account"
+                  [checked]="getNotificationPreference(account, 'groupActivity')"
+                  (ionChange)="updateNotificationSetting('groupActivity', $event.detail.checked)"
+                  slot="start"
+                >
+                </ion-checkbox>
+                <ion-label>
+                  <h3>Group Activity</h3>
+                  <p>Get notified about posts and activities in your group</p>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+
+            <!-- Test notification section for development -->
+            <!-- <div
+              class="test-notifications"
+              style="
+                margin-top: 16px;
+                padding-top: 16px;
+                border-top: 1px solid var(--ion-color-light);
+              "
+            >
+              <ion-button
+                expand="block"
+                fill="outline"
+                color="secondary"
+                (click)="testMemberJoinNotification()"
+              >
+                <ion-icon name="notifications-outline" slot="start"></ion-icon>
+                Test Member Join Notification
+              </ion-button>
+              <ion-button
+                expand="block"
+                fill="outline"
+                color="secondary"
+                (click)="testListingApplicationNotification()"
+                style="margin-top: 8px"
+              >
+                <ion-icon name="mail-outline" slot="start"></ion-icon>
+                Test Application Notification
+              </ion-button>
+              <ion-text color="medium">
+                <p
+                  style="text-align: center; font-size: 0.8em; margin-top: 8px"
+                >
+                  <small>Development tools - remove in production</small>
+                </p>
+              </ion-text>
+            </div> -->
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Admin Management -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Admin Management</ion-card-title>
+            <ion-card-subtitle
+              >Manage group administrators and permissions</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-card-content>
+            <div *ngIf="account$ | async as account" class="admin-info">
+              <div *ngIf="currentUser$ | async as currentUser">
+                <!-- Only show owner info if current user is NOT the owner -->
+                <p
+                  *ngIf="account.createdBy && account.createdBy !== currentUser.uid"
+                >
+                  <strong>Group Owner:</strong> {{ account.createdBy }}
+                </p>
+                <!-- Show friendly message if current user IS the owner -->
+                <p
+                  *ngIf="account.createdBy === currentUser.uid"
+                  class="owner-badge"
+                >
+                  <ion-icon name="shield-checkmark" color="primary"></ion-icon>
+                  <strong>You are the group owner</strong>
+                </p>
+              </div>
+              <p>
+                <strong>Total Administrators:</strong>
+                <ng-container *ngIf="(adminCount$ | async) === 1">
+                  1 (you)
+                </ng-container>
+                <ng-container
+                  *ngIf="(adminCount$ | async) && (adminCount$ | async)! > 1"
+                >
+                  {{ adminCount$ | async }} (including you)
+                </ng-container>
+              </p>
+            </div>
+
+            <ion-button
+              expand="block"
+              fill="outline"
+              (click)="selectedSegment = 'members'"
+            >
+              <ion-icon name="people-outline" slot="start"></ion-icon>
+              Manage Admin Roles
+            </ion-button>
+
+            <ion-text color="medium">
+              <p>
+                <small
+                  >Use the Members section to promote members to admin status or
+                  modify admin permissions.</small
+                >
+              </p>
+            </ion-text>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Group Status Management -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Group Status</ion-card-title>
+            <ion-card-subtitle>
+              Manage your group's visibility and status
+            </ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <!-- Active Group Status -->
+            <div *ngIf="!(isGroupInactive() | async)" class="status-section">
+              <div class="status-indicator active">
+                <ion-icon name="checkmark-circle" color="success"></ion-icon>
+                <div class="status-info">
+                  <h3>Group is Active</h3>
+                  <p>
+                    Your group is visible in search results and accepting new
+                    members
+                  </p>
+                </div>
+              </div>
+
+              <div class="status-actions">
+                <ion-button
+                  fill="outline"
+                  color="warning"
+                  (click)="showDeactivateGroupConfirmation()"
+                >
+                  <ion-icon name="pause-outline" slot="start"></ion-icon>
+                  Temporarily Deactivate
+                </ion-button>
+              </div>
+
+              <div class="status-details">
+                <ion-text color="medium">
+                  <p>
+                    <strong>Deactivating your group will:</strong>
+                  </p>
+                  <ul>
+                    <li>Hide your group from search results</li>
+                    <li>Prevent new member requests</li>
+                    <li>Set all listings to inactive</li>
+                    <li>Notify existing members</li>
+                  </ul>
+                  <p>
+                    <small
+                      >You can reactivate your group at any time by logging
+                      in.</small
+                    >
+                  </p>
+                </ion-text>
+              </div>
+            </div>
+
+            <!-- Inactive Group Status -->
+            <div *ngIf="isGroupInactive() | async" class="status-section">
+              <div class="status-indicator inactive">
+                <ion-icon name="pause-circle" color="warning"></ion-icon>
+                <div class="status-info">
+                  <h3>Group is Inactive</h3>
+                  <p>
+                    Your group is hidden from search results and not accepting
+                    new members
+                  </p>
+                </div>
+              </div>
+
+              <div class="status-actions">
+                <ion-button
+                  fill="solid"
+                  color="success"
+                  (click)="reactivateGroup()"
+                >
+                  <ion-icon name="play-outline" slot="start"></ion-icon>
+                  Reactivate Group
+                </ion-button>
+              </div>
+
+              <div class="status-details">
+                <ion-text color="medium">
+                  <p>
+                    <strong>While inactive:</strong>
+                  </p>
+                  <ul>
+                    <li>Group is hidden from public search</li>
+                    <li>New member requests are disabled</li>
+                    <li>Existing members can still access group content</li>
+                    <li>All listings are set to inactive</li>
+                  </ul>
+                </ion-text>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </div>
+  </div>
+</ion-content>

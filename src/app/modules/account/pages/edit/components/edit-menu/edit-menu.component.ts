@@ -19,6 +19,7 @@
 ***********************************************************************************************/
 import {Component, EventEmitter, Input, Output} from "@angular/core";
 import {ModalController} from "@ionic/angular";
+import {Router} from "@angular/router";
 import {Account} from "@shared/models/account.model";
 import {ImageUploadModalComponent} from "../../../../../../shared/components/image-upload-modal/image-upload-modal.component";
 
@@ -36,7 +37,10 @@ export class EditMenuComponent {
   @Output() itemSelected = new EventEmitter<string>();
   selectedItem: string | null = "basic";
 
-  constructor(private modalController: ModalController) {}
+  constructor(
+    private modalController: ModalController,
+    private router: Router,
+  ) {}
 
   async openImageUploadModal() {
     if (!this.account?.id || !this.isProfileOwner) return;
@@ -58,5 +62,11 @@ export class EditMenuComponent {
   selectItem(item: string): void {
     this.selectedItem = item;
     this.itemSelected.emit(item);
+  }
+
+  navigateToAdminDashboard(): void {
+    if (this.account?.id) {
+      this.router.navigate(["/account", this.account.id, "admin"]);
+    }
   }
 }

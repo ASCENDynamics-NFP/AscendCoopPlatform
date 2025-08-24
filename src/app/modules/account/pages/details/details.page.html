@@ -159,8 +159,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       >
         <app-faq-section
           [faqs]="account.groupDetails?.faqs || []"
-          [canEdit]="(isGroupAdmin$ | async) ?? false"
+          [canEdit]="(isGroupAdmin$ | async) || false"
           [accountId]="account.id"
+          [accountType]="account.type"
         ></app-faq-section>
       </div>
 

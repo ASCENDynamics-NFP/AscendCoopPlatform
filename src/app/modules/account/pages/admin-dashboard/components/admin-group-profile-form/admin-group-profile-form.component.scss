@@ -1,0 +1,251 @@
+:host {
+  display: block;
+}
+
+.error-message {
+  color: var(--ion-color-danger);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
+  margin-left: 1rem;
+}
+
+.error {
+  --border-color: var(--ion-color-danger);
+  --highlight-color: var(--ion-color-danger);
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1.5rem 0 1rem 0;
+  padding: 0 1rem;
+
+  h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--ion-color-primary);
+  }
+
+  ion-button {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    --min-height: 32px;
+    margin: 0;
+
+    ion-icon {
+      font-size: 1.2rem;
+    }
+  }
+}
+
+.form-array-item {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--ion-color-light);
+  border-radius: 8px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .array-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--ion-color-light-shade);
+
+    .item-number {
+      font-weight: 600;
+      color: var(--ion-color-primary);
+      font-size: 0.9rem;
+    }
+
+    .remove-button {
+      --padding-start: 8px;
+      --padding-end: 8px;
+      --min-height: 32px;
+      margin: 0;
+
+      ion-icon {
+        font-size: 1.1rem;
+      }
+    }
+  }
+
+  .form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    ion-item {
+      --background: transparent;
+      --padding-start: 0;
+      --padding-end: 0;
+      --inner-padding-end: 0;
+      margin-bottom: 0.5rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  // Email item specific styling
+  &.email-item {
+    .form-fields {
+      @media (min-width: 768px) {
+        flex-direction: row;
+        gap: 1rem;
+
+        ion-item {
+          flex: 1;
+          margin-bottom: 0;
+
+          &:first-child {
+            flex: 0 0 30%;
+          }
+        }
+      }
+    }
+  }
+
+  // Web link item specific styling
+  &.web-link-item {
+    .form-fields {
+      @media (min-width: 768px) {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+
+        ion-item:last-child {
+          grid-column: 1 / -1;
+        }
+      }
+    }
+  }
+}
+
+// Date picker styling
+#foundingDatePicker {
+  ion-button[slot="time-label"] {
+    --border-radius: 8px;
+    --padding-start: 12px;
+    --padding-end: 12px;
+    margin: 0;
+    width: 100%;
+    text-align: left;
+
+    ion-icon {
+      margin-right: 8px;
+    }
+  }
+}
+
+.action-buttons {
+  padding: 1rem;
+  gap: 0.5rem;
+  display: flex;
+  flex-direction: column;
+
+  ion-button {
+    margin: 0.25rem 0;
+  }
+}
+
+.helper-text {
+  font-size: 0.875rem;
+  color: var(--ion-color-medium);
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.add-link-section {
+  margin-top: 1rem;
+  padding: 0 1rem;
+
+  ion-button {
+    margin-bottom: 0.5rem;
+  }
+}
+
+// Form validation styles
+ion-item {
+  --border-color: var(--ion-color-light-shade);
+
+  &.item-has-focus {
+    --border-color: var(--ion-color-primary);
+  }
+}
+
+// Card styling
+ion-card {
+  margin: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+ion-card-header {
+  padding-bottom: 0;
+}
+
+ion-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ion-color-primary);
+}
+
+ion-card-subtitle {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+  margin-top: 0.25rem;
+}
+
+// Responsive design
+@media (min-width: 768px) {
+  .action-buttons {
+    flex-direction: row;
+    justify-content: space-between;
+
+    ion-button {
+      flex: 1;
+      margin: 0 0.25rem;
+    }
+  }
+
+  ion-card {
+    margin: 1rem auto;
+    max-width: 800px;
+  }
+}
+
+// Custom styling for specific form elements
+ion-datetime {
+  --placeholder-color: var(--ion-color-medium);
+}
+
+ion-select {
+  --placeholder-color: var(--ion-color-medium);
+}
+
+ion-textarea {
+  --placeholder-color: var(--ion-color-medium);
+  min-height: 80px;
+}
+
+// Item divider styling
+ion-item-divider {
+  --background: var(--ion-color-light);
+  --color: var(--ion-color-dark);
+  font-weight: 600;
+  margin: 1rem 0 0.5rem 0;
+}
+
+// Spinner in button
+ion-button ion-spinner {
+  margin-right: 0.5rem;
+}

@@ -50,6 +50,13 @@ export interface ChatNotificationSettings {
   };
 }
 
+export interface AdminNotificationSettings {
+  memberJoinRequests: boolean;
+  newListingApplications: boolean;
+  groupActivity: boolean;
+  emailNotifications: boolean;
+}
+
 @Injectable({
   providedIn: "root",
 })
@@ -531,6 +538,170 @@ export class NotificationService {
       }
     } catch (error) {
       console.error("Error loading user notification settings:", error);
+    }
+  }
+
+  /**
+   * Show admin notification for member join requests
+   */
+  async showMemberJoinRequestNotification(
+    requesterName: string,
+    groupName: string,
+    groupId: string,
+  ) {
+    const settings = this.notificationSettings$.value;
+    if (!settings.enabled) return;
+
+    // Show browser notification
+    if (Notification.permission === "granted") {
+      const notification = new Notification(
+        `New Member Request - ${groupName}`,
+        {
+          body: `${requesterName} has requested to join your group`,
+          icon: "/assets/icon/icon-192x192.png",
+          tag: `member-request-${groupId}`,
+          data: {type: "member_request", groupId, requesterName},
+        },
+      );
+
+      notification.onclick = () => {
+        console.log("Browser notification clicked, navigating to members tab");
+        window.focus();
+        this.router.navigate(["/account", groupId, "admin"], {
+          queryParams: {tab: "members"},
+        });
+        notification.close();
+      };
+    }
+
+    // Show toast notification
+    const toast = await this.toastController.create({
+      message: `${requesterName} wants to join ${groupName}`,
+      duration: 5000,
+      color: "primary",
+      position: "top",
+      buttons: [
+        {
+          text: "Review",
+          handler: () => {
+            console.log("Navigating to admin dashboard with members tab");
+            this.router.navigate(["/account", groupId, "admin"], {
+              queryParams: {tab: "members"},
+            });
+          },
+        },
+        {
+          text: "Dismiss",
+          role: "cancel",
+        },
+      ],
+    });
+    await toast.present();
+
+    // Play notification sound and vibrate
+    if (settings.sound) {
+      this.playNotificationSound();
+    }
+    if (settings.vibration && navigator.vibrate) {
+      navigator.vibrate([300, 100, 300]);
+    }
+  }
+
+  /**
+   * Show admin notification for listing applications
+   */
+  async showListingApplicationNotification(
+    applicantName: string,
+    listingTitle: string,
+    listingId: string,
+  ) {
+    const settings = this.notificationSettings$.value;
+    if (!settings.enabled) return;
+
+    // Show browser notification
+    if (Notification.permission === "granted") {
+      const notification = new Notification(
+        `New Application - ${listingTitle}`,
+        {
+          body: `${applicantName} has applied to your listing`,
+          icon: "/assets/icon/icon-192x192.png",
+          tag: `listing-application-${listingId}`,
+          data: {type: "listing_application", listingId, applicantName},
+        },
+      );
+
+      notification.onclick = () => {
+        window.focus();
+        this.router.navigate(["/listings", listingId]);
+        notification.close();
+      };
+    }
+
+    // Show toast notification
+    const toast = await this.toastController.create({
+      message: `New application from ${applicantName} for "${listingTitle}"`,
+      duration: 5000,
+      color: "success",
+      position: "top",
+      buttons: [
+        {
+          text: "View",
+          handler: () => {
+            this.router.navigate(["/listings", listingId]);
+          },
+        },
+        {
+          text: "Dismiss",
+          role: "cancel",
+        },
+      ],
+    });
+    await toast.present();
+
+    // Play notification sound and vibrate
+    if (settings.sound) {
+      this.playNotificationSound();
+    }
+    if (settings.vibration && navigator.vibrate) {
+      navigator.vibrate([200, 100, 200, 100, 200]);
+    }
+  }
+
+  /**
+   * Check admin notification preferences for a specific group
+   */
+  async checkAdminNotificationSettings(
+    groupId: string,
+    notificationType: string,
+  ): Promise<boolean> {
+    try {
+      const accountDoc = await this.firestore
+        .collection("accounts")
+        .doc(groupId)
+        .get()
+        .toPromise();
+
+      if (!accountDoc || !accountDoc.exists) {
+        return true; // Default to enabled if no settings found
+      }
+
+      const accountData = accountDoc.data() as any;
+      const notificationPrefs =
+        accountData?.administrativeSettings?.notificationPreferences;
+
+      if (!notificationPrefs) {
+        return true; // Default to enabled
+      }
+
+      try {
+        const prefs = JSON.parse(notificationPrefs);
+        return prefs[notificationType] !== false; // Default to true unless explicitly disabled
+      } catch {
+        return true; // Default to enabled if parsing fails
+      }
+    } catch (error) {
+      console.error("Error checking admin notification settings:", error);
+      return true; // Default to enabled on error
     }
   }
 }

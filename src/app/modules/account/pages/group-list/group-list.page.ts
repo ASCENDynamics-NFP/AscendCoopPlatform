@@ -4,7 +4,25 @@
 *
 * This file is part of Nonprofit Social Networking Platform.
 *
-* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* Nonpr    );
+    await toast.present();
+  }
+
+  getJoinButtonText(account: Account): string {
+    const membershipPolicy = account.administrativeSettings?.membershipPolicy || "approval";
+    
+    switch (membershipPolicy) {
+      case "open":
+        return "Join Group";
+      case "approval":
+        return "Request to Join";
+      case "invitation":
+        return "Invitation Only";
+      default:
+        return "Send Request";
+    }
+  }
+} Social Networking Platform is free software: you can redistribute it and/or modify
 * it under the terms of the GNU Affero General Public License as published
 * by the Free Software Foundation, either version 3 of the License, or
 * (at your option) any later version.
@@ -32,16 +50,20 @@ import {
   filter,
 } from "rxjs/operators";
 import {Store} from "@ngrx/store";
-import {AuthUser} from "@shared/models/auth-user.model";
-import {Account, RelatedAccount} from "@shared/models/account.model";
+import {AuthUser} from "../../../../../../shared/models/auth-user.model";
+import {
+  Account,
+  RelatedAccount,
+} from "../../../../../../shared/models/account.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {
   selectFilteredAccounts,
+  selectFilteredAccountsWithPrivacy,
   selectAccountLoading,
   selectRelatedAccountsByAccountId,
 } from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
-import {ViewWillEnter} from "@ionic/angular";
+import {ViewWillEnter, ToastController} from "@ionic/angular";
 import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
@@ -68,6 +90,7 @@ export class GroupListPage implements OnInit, ViewWillEnter {
     private metaService: MetaService,
     private store: Store,
     private router: Router,
+    private toastController: ToastController,
   ) {
     this.loading$ = this.store.select(selectAccountLoading);
   }
@@ -115,12 +138,22 @@ export class GroupListPage implements OnInit, ViewWillEnter {
 
     this.store.dispatch(AccountActions.loadAccounts());
 
-    const filteredAccounts$ = this.searchTerms.pipe(
-      startWith(this.searchedValue),
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap((term) =>
-        this.store.select(selectFilteredAccounts(term, "group")),
+    const filteredAccounts$ = combineLatest([
+      this.searchTerms.pipe(
+        startWith(this.searchedValue),
+        debounceTime(300),
+        distinctUntilChanged(),
+      ),
+      this.authUser$,
+    ]).pipe(
+      switchMap(([term, authUser]) =>
+        this.store.select(
+          selectFilteredAccountsWithPrivacy(
+            term,
+            "group",
+            authUser?.uid || null,
+          ),
+        ),
       ),
     );
 
@@ -169,13 +202,27 @@ export class GroupListPage implements OnInit, ViewWillEnter {
         return;
       }
 
+      // Check membership policy
+      const membershipPolicy =
+        account.administrativeSettings?.membershipPolicy || "approval";
+
+      // For invitation-only groups, don't allow direct requests
+      if (membershipPolicy === "invitation") {
+        // Show information that group is invitation-only
+        this.showInvitationOnlyMessage(account.name || "this group");
+        return;
+      }
+
+      // Determine status based on membership policy
+      const status = membershipPolicy === "open" ? "accepted" : "pending";
+
       const newRelatedAccount: RelatedAccount = {
         id: account.id,
         accountId: authUser.uid,
         initiatorId: authUser.uid,
         targetId: account.id,
         type: account.type,
-        status: "pending",
+        status: status as any,
         relationship: "member",
         tagline: account.tagline,
         name: account.name,
@@ -189,6 +236,13 @@ export class GroupListPage implements OnInit, ViewWillEnter {
           accountId: authUser.uid,
           relatedAccount: newRelatedAccount,
         }),
+      );
+
+      // Show appropriate success message based on membership policy
+      this.showJoinSuccessMessage(
+        account.name || "the group",
+        membershipPolicy,
+        status,
       );
     });
   }
@@ -214,6 +268,13 @@ export class GroupListPage implements OnInit, ViewWillEnter {
           return false;
         }
 
+        // Hide button for invitation-only groups
+        const membershipPolicy =
+          item.administrativeSettings?.membershipPolicy || "approval";
+        if (membershipPolicy === "invitation") {
+          return false;
+        }
+
         const shouldShowButton = !relatedAccounts.some(
           (ra) =>
             ((ra.initiatorId === item.id && ra.targetId === authUser.uid) ||
@@ -224,5 +285,64 @@ export class GroupListPage implements OnInit, ViewWillEnter {
         return shouldShowButton;
       }),
     );
+  }
+
+  getJoinButtonText(item: Account): string {
+    const membershipPolicy =
+      item.administrativeSettings?.membershipPolicy || "approval";
+
+    switch (membershipPolicy) {
+      case "open":
+        return "Join Group";
+      case "approval":
+        return "Request to Join";
+      case "invitation":
+        return "Invitation Only";
+      default:
+        return "Request to Join";
+    }
+  }
+
+  private async showInvitationOnlyMessage(groupName: string) {
+    const toast = await this.toastController.create({
+      message: `${groupName} is invitation-only. Please contact a group admin to join.`,
+      duration: 4000,
+      color: "warning",
+      position: "bottom",
+      buttons: [
+        {
+          text: "OK",
+          role: "cancel",
+        },
+      ],
+    });
+    await toast.present();
+  }
+
+  private async showJoinSuccessMessage(
+    groupName: string,
+    membershipPolicy: string,
+    status: string,
+  ) {
+    let message: string;
+    let color: string;
+
+    if (status === "accepted") {
+      // Open membership - instant join
+      message = `Welcome! You've successfully joined ${groupName}.`;
+      color = "success";
+    } else {
+      // Approval required - pending status
+      message = `Join request sent to ${groupName}. You'll be notified when approved.`;
+      color = "primary";
+    }
+
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      color,
+      position: "bottom",
+    });
+    await toast.present();
   }
 }

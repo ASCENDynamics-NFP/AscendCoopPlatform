@@ -40,9 +40,7 @@ export class SettingsComponent implements OnChanges {
   isDeleting = false;
 
   settingsForm: FormGroup<{
-    privacy: FormControl<
-      "public" | "accepted-users-only" | "accepted-groups-only" | "private"
-    >;
+    privacy: FormControl<"public" | "private">;
     language: FormControl<string>;
   }>;
 
@@ -61,9 +59,7 @@ export class SettingsComponent implements OnChanges {
       privacy: ["public", Validators.required],
       language: ["en"],
     }) as FormGroup<{
-      privacy: FormControl<
-        "public" | "accepted-users-only" | "accepted-groups-only" | "private"
-      >;
+      privacy: FormControl<"public" | "private">;
       language: FormControl<string>;
     }>;
   }

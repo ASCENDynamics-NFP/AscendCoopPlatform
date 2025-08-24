@@ -172,12 +172,15 @@ export class ApplyPage implements OnInit {
         return;
       }
 
+      const formValues = this.applyForm.value;
+      // const fullName = `${formValues.firstName} ${formValues.lastName}`.trim();
+
       const relatedAccount = {
-        ...this.applyForm.value,
+        ...formValues,
         id: authUser.uid, // Populate the id
-        name: authUser.name,
-        iconImage: authUser.iconImage,
-        heroImage: authUser.heroImage,
+        name: authUser.name || "Anonymous User",
+        iconImage: authUser.iconImage || "",
+        heroImage: authUser.heroImage || "",
         accountId: authUser.uid, // Populate the accountId
         resumeFile: this.resumeFile,
         coverLetterFile: this.coverLetterFile,

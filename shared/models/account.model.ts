@@ -91,7 +91,7 @@ export interface Email {
 }
 
 export interface ContactInformation {
-  privacy?: "public" | "private" | "specific-users"; // Privacy setting
+  privacy?: "public" | "private";
   addresses?: Nullable<Address>[];
   phoneNumbers: PhoneNumber[];
   emails: Email[];
@@ -218,8 +218,8 @@ interface Group {
   };
   administrativeSettings?: {
     // Optional, can be added later
-    groupAdminsManagers: string[]; // Assign initial administrators or managers for the group
     notificationPreferences?: string; // e.g., "Email notifications for new posts, member requests"
+    membershipPolicy?: "open" | "approval" | "invitation"; // How new members can join the group
   };
   /**
    * Custom roles that can be assigned to related accounts
@@ -228,12 +228,9 @@ interface Group {
 }
 
 export interface Account extends BaseDocument, Group, User {
-  privacy:
-    | "public"
-    | "accepted-users-only"
-    | "accepted-groups-only"
-    | "private"; // Privacy setting
+  privacy: "public" | "private"; // Simplified: Public (anyone can view) or Private (members only)
   type: "user" | "group" | "new"; // Account type: user, group, or new (needs registration)
+  status?: "active" | "inactive" | "suspended"; // Account status
   name: string;
   tagline: string;
   description: string;
@@ -288,12 +285,6 @@ export interface Settings {
     email?: boolean;
     push?: boolean;
     sms?: boolean;
-  };
-  privacy?: {
-    // Privacy settings
-    profileVisibility?: "public" | "private" | "accepted-users-only";
-    contactInformation?: "public" | "private" | "accepted-users-only";
-    // Add more privacy settings as needed
   };
   language: string;
   theme: "light" | "dark" | "system";

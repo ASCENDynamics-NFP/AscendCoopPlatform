@@ -23,7 +23,7 @@ import {Component, OnInit} from "@angular/core";
 import {Account} from "@shared/models/account.model";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, combineLatest} from "rxjs";
-import {map, tap, filter, switchMap, shareReplay, take} from "rxjs/operators";
+import {map, tap, filter, switchMap, shareReplay} from "rxjs/operators";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {Store} from "@ngrx/store";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
@@ -97,23 +97,13 @@ export class EditPage implements OnInit {
       switchMap((accountId) => this.store.select(selectAccountById(accountId))),
     );
 
-    // Check if the user is the profile owner
-    combineLatest([this.authUser$, this.account$])
-      .pipe(
-        take(1),
-        tap(([authUser, account]) => {
-          if (authUser && account && authUser.uid !== account.id) {
-            // Redirect to unauthorized page if not the profile owner
-            this.router.navigate(["/account/" + account.id]);
-          }
-        }),
-      )
-      .subscribe();
-
     // Observable to determine if the current user is the profile owner
     this.isProfileOwner$ = combineLatest([this.authUser$, this.account$]).pipe(
       map(([authUser, account]) => authUser?.uid === account?.id),
     );
+
+    // Note: Group admins are redirected to admin dashboard via ProfileOwnerGuard
+    // This edit page is now primarily for individual user profile editing
   }
 
   onItemSelected(form: string): void {

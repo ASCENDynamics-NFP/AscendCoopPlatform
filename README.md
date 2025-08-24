@@ -49,6 +49,14 @@ We look forward to your contributions and engaging discussions!
 
 ## Features
 
+- **Admin Dashboard** 
+  - Comprehensive group management interface
+  - Member management with role-based access control
+  - Profile editing with advanced contact management
+  - Real-time statistics and analytics
+  - Mobile-optimized with responsive design
+  - See [docs/ADMIN_DASHBOARD.md](docs/ADMIN_DASHBOARD.md) for detailed documentation
+
 - Worker-Owned Cooperative Incubator
 
   - Identify skill sets needed for worker-owned businesses

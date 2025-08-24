@@ -168,7 +168,7 @@ describe("HeroComponent", () => {
       preferredMethodOfContact: "Email",
       addresses: [{city: "CityName", country: "CountryName"}],
     };
-    expect(component.getLocation).toBe("CityName / CountryName");
+    expect(component.getLocation).toBe("CityName, CountryName");
   });
 
   it("should return an empty string if no address is present", () => {

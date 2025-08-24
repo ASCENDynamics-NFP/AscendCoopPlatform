@@ -54,7 +54,7 @@ interface UserSpecific {
 }
 
 interface GroupSpecific {
-  dateFounded?: Timestamp;
+  dateFounded?: Timestamp; // Firestore Timestamp for exact founding date
   supportedLanguages?: string[];
   groupType?: string;
   groupObjectivesMissionStatement?: string;

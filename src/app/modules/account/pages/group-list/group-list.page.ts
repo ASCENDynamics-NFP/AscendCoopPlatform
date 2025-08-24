@@ -216,6 +216,10 @@ export class GroupListPage implements OnInit, ViewWillEnter {
       // Determine status based on membership policy
       const status = membershipPolicy === "open" ? "accepted" : "pending";
 
+      // Determine relationship based on requester type
+      // Users become "members" of groups, groups become "partners" with other groups
+      const relationship = authUser.type === "group" ? "partner" : "member";
+
       const newRelatedAccount: RelatedAccount = {
         id: account.id,
         accountId: authUser.uid,
@@ -223,7 +227,8 @@ export class GroupListPage implements OnInit, ViewWillEnter {
         targetId: account.id,
         type: account.type,
         status: status as any,
-        relationship: "member",
+        relationship: relationship,
+        requestType: "request",
         tagline: account.tagline,
         name: account.name,
         iconImage: account.iconImage,

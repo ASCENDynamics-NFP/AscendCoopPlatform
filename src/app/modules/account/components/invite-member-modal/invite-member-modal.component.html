@@ -1,0 +1,168 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Send Invitation</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="dismiss()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="inviteForm">
+    <!-- Search Type Toggle -->
+    <div class="search-type-toggle">
+      <ion-segment value="user" (ionChange)="onSearchTypeChange($event)">
+        <ion-segment-button value="user">
+          <ion-label>Members</ion-label>
+          <ion-icon name="person"></ion-icon>
+        </ion-segment-button>
+        <ion-segment-button value="group">
+          <ion-label>Partners</ion-label>
+          <ion-icon name="people"></ion-icon>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+
+    <!-- Search Section -->
+    <div class="search-section">
+      <ion-item>
+        <ion-label position="stacked">Search by Name or Email</ion-label>
+        <ion-input
+          type="text"
+          [placeholder]="
+            searchType === 'user'
+              ? 'Type user name or email...'
+              : 'Type organization name...'
+          "
+          formControlName="searchTerm"
+          (ionInput)="onSearchInput($event)"
+        ></ion-input>
+        <ion-button
+          *ngIf="selectedAccounts.length > 0"
+          fill="clear"
+          slot="end"
+          (click)="clearAllSelections()"
+        >
+          <ion-icon name="close-circle"></ion-icon>
+        </ion-button>
+      </ion-item>
+
+      <!-- Selection Counter -->
+      <div class="selection-counter" *ngIf="selectedAccounts.length > 0">
+        <ion-text color="primary">
+          <small>Selected: {{ selectionCountText }}</small>
+        </ion-text>
+      </div>
+    </div>
+
+    <!-- Selected Accounts Display -->
+    <div class="selected-accounts" *ngIf="selectedAccounts.length > 0">
+      <ion-label class="section-label">Selected for Invitation</ion-label>
+      <div class="selected-accounts-list">
+        <ion-chip
+          *ngFor="let account of selectedAccounts"
+          color="primary"
+          outline="true"
+        >
+          <ion-avatar>
+            <img
+              [src]="account.iconImage || '/assets/icon/default-avatar.png'"
+              [alt]="account.name"
+            />
+          </ion-avatar>
+          <ion-label>{{ account.name }}</ion-label>
+          <ion-icon
+            name="close-circle"
+            (click)="removeSelectedAccount(account)"
+          ></ion-icon>
+        </ion-chip>
+      </div>
+    </div>
+
+    <!-- Search Results -->
+    <div class="search-results">
+      <ion-list>
+        <ion-list-header>
+          <ion-label>
+            Search Results
+            <small
+              *ngIf="selectedAccounts.length >= maxSelections"
+              style="color: var(--ion-color-warning)"
+            >
+              (Maximum {{ maxSelections }} selections reached)
+            </small>
+          </ion-label>
+          <ion-spinner *ngIf="loading" size="small"></ion-spinner>
+        </ion-list-header>
+
+        <div
+          *ngIf="(searchResults$ | async)?.length === 0 && !loading"
+          class="no-results"
+        >
+          <ion-item>
+            <ion-label class="ion-text-center">
+              <p>
+                No
+                {{ searchType === "user" ? "users" : "organizations" }} found.
+                Try a different search term.
+              </p>
+            </ion-label>
+          </ion-item>
+        </div>
+
+        <ion-item
+          *ngFor="let account of searchResults$ | async"
+          button
+          (click)="selectAccount(account)"
+          [disabled]="selectedAccounts.length >= maxSelections"
+        >
+          <ion-avatar slot="start">
+            <img
+              [src]="account.iconImage || '/assets/icon/default-avatar.png'"
+              [alt]="account.name"
+            />
+          </ion-avatar>
+          <ion-label>
+            <h3>{{ account.name }}</h3>
+            <p *ngIf="account.tagline">{{ account.tagline }}</p>
+            <p>{{ account.type === "user" ? "Individual" : "Organization" }}</p>
+          </ion-label>
+          <ion-icon
+            [name]="
+              selectedAccounts.length >= maxSelections ? 'ban' : 'add-circle'
+            "
+            slot="end"
+            [color]="
+              selectedAccounts.length >= maxSelections ? 'medium' : 'primary'
+            "
+          ></ion-icon>
+        </ion-item>
+      </ion-list>
+    </div>
+  </form>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <div class="footer-buttons">
+      <ion-button
+        expand="block"
+        fill="solid"
+        color="primary"
+        [disabled]="!isFormValid || loading"
+        (click)="sendInvitations()"
+      >
+        <ion-icon name="mail-outline" slot="start"></ion-icon>
+        <span *ngIf="!loading">
+          Send {{ selectedAccounts.length }}
+          {{ searchType === "user" ? "Member" : "Partner" }}
+          Invitation{{ selectedAccounts.length > 1 ? "s" : "" }}
+        </span>
+        <span *ngIf="loading">Sending...</span>
+        <ion-spinner *ngIf="loading" size="small"></ion-spinner>
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>

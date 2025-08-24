@@ -20,7 +20,11 @@
 import {Component, OnInit, OnDestroy} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
-import {ToastController, AlertController} from "@ionic/angular";
+import {
+  ToastController,
+  AlertController,
+  ModalController,
+} from "@ionic/angular";
 import {Observable, Subscription, combineLatest} from "rxjs";
 import {map, take} from "rxjs/operators";
 import {
@@ -81,6 +85,7 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
     private store: Store,
     private toastController: ToastController,
     private alertController: AlertController,
+    private modalController: ModalController,
     private notificationService: NotificationService,
   ) {
     this.accountId = this.route.snapshot.paramMap.get("accountId") || "";
@@ -877,30 +882,119 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
 
   // Member Invitation Methods
   async showInviteMemberModal() {
-    // For Phase 1, show information about how to invite members
+    // Check membership policy to show appropriate interface
+    this.account$.pipe(take(1)).subscribe(async (account) => {
+      const membershipPolicy =
+        account?.administrativeSettings?.membershipPolicy || "approval";
+
+      if (membershipPolicy === "invitation") {
+        // For invitation-only groups, open the invite modal directly
+        await this.openInviteModal(account);
+      } else {
+        // For other policies, show information first
+        await this.showInvitationInfo(membershipPolicy, account);
+      }
+    });
+  }
+
+  private async openInviteModal(account: any) {
+    const modal = await this.modalController.create({
+      component: (
+        await import(
+          "../../components/invite-member-modal/invite-member-modal.component"
+        )
+      ).InviteMemberModalComponent,
+      componentProps: {
+        groupId: this.accountId,
+        groupName: account?.name || "Your Group",
+      },
+    });
+
+    modal.onDidDismiss().then((result) => {
+      if (result.data === true) {
+        // Invitation was sent successfully
+        console.log("Invitation sent successfully");
+      }
+    });
+
+    await modal.present();
+  }
+
+  private async showInvitationInfo(membershipPolicy: string, account: any) {
+    let message = "";
+    let buttons: any[] = [];
+
+    switch (membershipPolicy) {
+      case "open":
+        message = `
+          <p><strong>Open Membership Policy</strong></p>
+          <p>Your group allows anyone to join immediately. To invite members:</p>
+          <ul>
+            <li>Share your group profile link</li>
+            <li>Members can join instantly without approval</li>
+          </ul>
+        `;
+        buttons = [
+          {
+            text: "Copy Group Link",
+            handler: () => {
+              this.copyGroupLink();
+            },
+          },
+          {
+            text: "Send Personal Invite",
+            handler: () => {
+              this.openInviteModal(account);
+            },
+          },
+          {
+            text: "Close",
+            role: "cancel",
+          },
+        ];
+        break;
+
+      case "approval":
+        message = `
+          <p><strong>Approval Required Policy</strong></p>
+          <p>Your group requires admin approval for new members. You can:</p>
+          <ul>
+            <li>Send personal invitations to specific people</li>
+            <li>Share your group profile link for requests</li>
+            <li>Review and approve requests from the Members tab</li>
+          </ul>
+        `;
+        buttons = [
+          {
+            text: "Send Invitation",
+            handler: () => {
+              this.openInviteModal(account);
+            },
+          },
+          {
+            text: "Copy Group Link",
+            handler: () => {
+              this.copyGroupLink();
+            },
+          },
+          {
+            text: "View Pending Requests",
+            handler: () => {
+              this.navigateToTab("members");
+            },
+          },
+          {
+            text: "Close",
+            role: "cancel",
+          },
+        ];
+        break;
+    }
+
     const alert = await this.alertController.create({
       header: "Invite Members",
-      message: `
-        <p>To invite members to your group:</p>
-        <ul>
-          <li>Share your group profile link</li>
-          <li>Direct members to request to join from your group page</li>
-          <li>Approve requests from the Members tab</li>
-        </ul>
-        <p><small>Advanced invitation features coming in future updates!</small></p>
-      `,
-      buttons: [
-        {
-          text: "Copy Group Link",
-          handler: () => {
-            this.copyGroupLink();
-          },
-        },
-        {
-          text: "Close",
-          role: "cancel",
-        },
-      ],
+      message,
+      buttons,
     });
     await alert.present();
   }

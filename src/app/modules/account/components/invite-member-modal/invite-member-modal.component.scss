@@ -1,0 +1,157 @@
+.search-type-toggle {
+  margin-bottom: 1rem;
+
+  ion-segment {
+    --background: var(--ion-color-light);
+  }
+
+  ion-segment-button {
+    ion-label {
+      font-weight: 500;
+    }
+
+    ion-icon {
+      margin-top: 0.25rem;
+    }
+  }
+}
+
+.search-section {
+  margin-bottom: 1rem;
+
+  .selection-counter {
+    padding: 0.5rem 1rem 0;
+    text-align: right;
+  }
+}
+
+.validation-messages {
+  padding: 0.5rem 1rem;
+}
+
+.selected-account {
+  margin: 1rem 0;
+
+  .account-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    ion-avatar {
+      width: 48px;
+      height: 48px;
+    }
+
+    .account-details {
+      flex: 1;
+
+      h3 {
+        margin: 0 0 0.25rem 0;
+        font-weight: 600;
+      }
+
+      p {
+        margin: 0;
+        color: var(--ion-color-medium);
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
+.selected-accounts {
+  margin: 1rem 0;
+
+  .section-label {
+    font-weight: 600;
+    color: var(--ion-color-primary);
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .selected-accounts-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    ion-chip {
+      ion-avatar {
+        width: 24px;
+        height: 24px;
+      }
+
+      ion-icon {
+        cursor: pointer;
+        margin-left: 0.25rem;
+
+        &:hover {
+          color: var(--ion-color-danger);
+        }
+      }
+    }
+  }
+}
+
+.search-results {
+  ion-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .no-results {
+    ion-item {
+      --color: var(--ion-color-medium);
+    }
+  }
+
+  ion-item {
+    cursor: pointer;
+
+    &:hover {
+      --background: var(--ion-color-light);
+    }
+  }
+
+  ion-avatar {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+.message-section {
+  margin-top: 1.5rem;
+
+  .character-count {
+    padding: 0.25rem 1rem;
+    text-align: right;
+  }
+}
+
+.footer-buttons {
+  padding: 1rem;
+
+  ion-button {
+    height: 48px;
+    font-weight: 600;
+
+    ion-spinner {
+      margin-left: 0.5rem;
+    }
+  }
+}
+
+// Loading state
+.loading {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .selected-account .account-info {
+    .account-details h3 {
+      font-size: 1.1rem;
+    }
+  }
+}

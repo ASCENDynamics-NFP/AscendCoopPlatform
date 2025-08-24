@@ -257,6 +257,10 @@ export interface RelatedAccount extends BaseDocument {
   status?: "pending" | "accepted" | "rejected" | "blocked"; // Relationship status
   relationship?: "friend" | "member" | "partner" | "family"; // Details about the relationship (e.g., 'friend', 'member')
   /**
+   * Type of relationship request: 'request' (user asking to join), 'invitation' (group/admin inviting user)
+   */
+  requestType?: "request" | "invitation";
+  /**
    * Built-in access level within a group
    */
   access?: "admin" | "moderator" | "member";

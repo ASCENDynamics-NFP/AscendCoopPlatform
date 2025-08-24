@@ -545,16 +545,16 @@
           </ion-button>
           <ion-button fill="outline" (click)="showInviteMemberModal()">
             <ion-icon name="person-add-outline" slot="start"></ion-icon>
-            Invite Members
+            Send Invitations
           </ion-button>
         </div>
 
         <!-- Pending Requests Section -->
         <ion-card *ngIf="(pendingMemberRequests$ | async)?.length">
           <ion-card-header>
-            <ion-card-title>Pending Member Requests</ion-card-title>
+            <ion-card-title>Pending Membership Actions</ion-card-title>
             <ion-card-subtitle
-              >{{ (pendingMemberRequests$ | async)?.length }} requests awaiting
+              >{{ (pendingMemberRequests$ | async)?.length }} items awaiting
               approval</ion-card-subtitle
             >
           </ion-card-header>
@@ -575,8 +575,42 @@
                   <p>
                     {{ request.type === 'user' ? 'Individual' : 'Organization'
                     }}
+                    <span
+                      *ngIf="request.requestType === 'invitation'"
+                      class="invitation-badge"
+                    >
+                      <ion-badge color="tertiary">Invitation</ion-badge>
+                    </span>
+                    <span
+                      *ngIf="request.requestType === 'request'"
+                      class="request-badge"
+                    >
+                      <ion-badge color="primary">Request</ion-badge>
+                    </span>
                   </p>
                   <p *ngIf="request.tagline">{{ request.tagline }}</p>
+                  <p
+                    *ngIf="request.requestType === 'invitation'"
+                    class="invitation-note"
+                  >
+                    <ion-text color="tertiary">
+                      <small>
+                        <ion-icon name="mail-outline"></ion-icon>
+                        Invitation sent - awaiting response
+                      </small>
+                    </ion-text>
+                  </p>
+                  <p
+                    *ngIf="request.requestType === 'request'"
+                    class="request-note"
+                  >
+                    <ion-text color="primary">
+                      <small>
+                        <ion-icon name="hand-right-outline"></ion-icon>
+                        Requesting to join your group
+                      </small>
+                    </ion-text>
+                  </p>
                   <p
                     *ngIf="request.initiatorId === accountId"
                     class="self-initiated-note"

@@ -22,6 +22,7 @@ import {Router, ActivatedRouteSnapshot} from "@angular/router";
 import {firstValueFrom} from "rxjs";
 import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../state/selectors/auth.selectors";
+import {AuthNavigationService} from "../services/auth-navigation.service";
 
 @Injectable({
   providedIn: "root",
@@ -30,6 +31,7 @@ export class RegistrationAuthGuard {
   constructor(
     private store: Store,
     private router: Router,
+    private authNavigationService: AuthNavigationService,
   ) {}
 
   async canActivate(route?: ActivatedRouteSnapshot): Promise<boolean> {
@@ -47,7 +49,6 @@ export class RegistrationAuthGuard {
     if (route && this.isRegistrationRoute(route)) {
       const accountId = route.paramMap.get("accountId");
       const isOwnRegistration = accountId === authUser.uid;
-      const hasCompletedRegistration = authUser.type && authUser.type !== "new";
 
       if (!isOwnRegistration) {
         // Prevent access to other users' registration pages
@@ -55,8 +56,11 @@ export class RegistrationAuthGuard {
         return false;
       }
 
+      // Check if user has completed registration
+      const hasCompletedRegistration = authUser.type && authUser.type !== "new";
+
       if (hasCompletedRegistration) {
-        // Redirect to user's profile if they try to access registration after completing it
+        // If user has completed registration, they should not access registration page
         this.router.navigate(["/account", authUser.uid]);
         return false;
       }

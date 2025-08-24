@@ -20,7 +20,7 @@
 // src/app/modules/account/pages/registration/registration.page.ts
 
 import {Component, OnInit, OnDestroy} from "@angular/core";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {Account} from "@shared/models/account.model";
 import {Store} from "@ngrx/store";
 import {
@@ -55,6 +55,7 @@ export class RegistrationPage implements OnInit, OnDestroy {
   constructor(
     private metaService: MetaService,
     private route: ActivatedRoute,
+    private router: Router,
     private store: Store,
     private menuCtrl: MenuController,
   ) {}
@@ -89,6 +90,23 @@ export class RegistrationPage implements OnInit, OnDestroy {
       map(() => true), // Once we have accountId, we're ready
       startWith(false), // Brief initial loading state
     );
+
+    // Check if user has completed registration and redirect if needed
+    this.checkRegistrationStatus();
+  }
+
+  private checkRegistrationStatus() {
+    this.account$
+      .pipe(
+        filter((account) => !!account),
+        take(1),
+      )
+      .subscribe((account) => {
+        if (account && account.type && account.type !== "new") {
+          // Registration already completed, redirect to profile immediately
+          this.router.navigate(["/account", account.id], {replaceUrl: true});
+        }
+      });
   }
 
   ngOnDestroy() {

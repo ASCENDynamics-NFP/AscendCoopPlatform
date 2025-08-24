@@ -52,6 +52,7 @@ import {
 } from "rxjs";
 import {ErrorHandlerService} from "../../core/services/error-handler.service";
 import {SuccessHandlerService} from "../../core/services/success-handler.service";
+import {AuthNavigationService} from "../../core/services/auth-navigation.service";
 import {Router} from "@angular/router";
 import {
   AlertController,
@@ -87,6 +88,7 @@ export class AuthEffects {
     private loadingController: LoadingController,
     private store: Store<{auth: AuthState}>,
     private menuCtrl: MenuController,
+    private authNavigationService: AuthNavigationService,
   ) {}
 
   // Initialize Auth and Process Sign-In Link
@@ -296,27 +298,10 @@ export class AuthEffects {
         ofType(AuthActions.signInSuccess),
         withLatestFrom(this.store.select(selectAuthUser)),
         switchMap(([{uid}, authUser]) => {
-          const currentUser = this.auth.currentUser;
-
-          // Check if user has completed registration
-          const hasCompletedRegistration =
-            authUser?.type && authUser.type !== "new";
-
-          // If email is unverified OR registration is incomplete, redirect to registration
-          if (
-            (currentUser && !currentUser.emailVerified) ||
-            !hasCompletedRegistration
-          ) {
-            this.router.navigateByUrl(`/account/registration/${uid}`, {
-              replaceUrl: true,
-            });
-          } else {
-            // Email is verified AND registration is complete, redirect to profile
-            // Re-enable menu when redirecting to profile (user has completed registration)
-            this.menuCtrl.enable(true);
-            this.router.navigateByUrl(`/account/${uid}`, {replaceUrl: true});
+          if (authUser) {
+            // Use the navigation service for consistent routing logic
+            this.authNavigationService.navigateAfterAuth(authUser);
           }
-
           return of(null);
         }),
       ),

@@ -24,6 +24,7 @@ import {firstValueFrom} from "rxjs";
 import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../state/selectors/auth.selectors";
 import * as AuthActions from "../../state/actions/auth.actions";
+import {AuthNavigationService} from "../services/auth-navigation.service";
 
 @Injectable({
   providedIn: "root",
@@ -32,6 +33,7 @@ export class AuthGuard {
   constructor(
     private store: Store,
     private router: Router,
+    private authNavigationService: AuthNavigationService,
   ) {}
 
   async canActivate(route?: ActivatedRouteSnapshot): Promise<boolean> {
@@ -53,16 +55,23 @@ export class AuthGuard {
       return false;
     }
 
-    // Check registration completion for specific routes
+    // Check registration completion for specific routes using the service
     if (route && this.requiresCompletedRegistration(route)) {
       const accountId = route.paramMap.get("accountId");
       const isOwnProfile = accountId === authUser.uid;
-      const hasCompletedRegistration = authUser.type && authUser.type !== "new";
 
-      if (isOwnProfile && !hasCompletedRegistration) {
-        // Redirect to registration if viewing own profile and haven't completed registration
-        this.router.navigate(["/account/registration", authUser.uid]);
-        return false;
+      if (isOwnProfile) {
+        const currentUrl = this.router.url;
+        const redirectInfo =
+          this.authNavigationService.shouldRedirectFromCurrentRoute(
+            authUser,
+            currentUrl,
+          );
+
+        if (redirectInfo.shouldRedirect && redirectInfo.redirectTo) {
+          this.router.navigate([redirectInfo.redirectTo]);
+          return false;
+        }
       }
     }
     return true;

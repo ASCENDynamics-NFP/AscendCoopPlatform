@@ -105,6 +105,18 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               {{ account?.contactInformation?.preferredMethodOfContact ?? "-" }}
             </p>
           </div>
+
+          <!-- Supported Languages for groups -->
+          <div
+            class="info-block"
+            *ngIf="
+              account?.type === 'group' &&
+              account?.groupDetails?.supportedLanguages?.length
+            "
+          >
+            <h2>Supported Languages</h2>
+            <p>{{ account?.groupDetails?.supportedLanguages?.join(", ") }}</p>
+          </div>
         </ion-col>
       </ion-row>
     </ion-grid>

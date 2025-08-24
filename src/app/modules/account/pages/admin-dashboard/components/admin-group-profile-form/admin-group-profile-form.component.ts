@@ -28,6 +28,7 @@ import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {
   Account,
   WebLink,
+  Address,
 } from "../../../../../../../../shared/models/account.model";
 import {Timestamp} from "firebase/firestore";
 import {Store} from "@ngrx/store";
@@ -44,6 +45,7 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
   profileForm: FormGroup;
   isSubmitting = false;
   maxLinks = 10; // Maximum number of web links allowed
+  maxAddresses = 3; // Maximum number of addresses allowed
 
   constructor(
     private fb: FormBuilder,
@@ -87,11 +89,7 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
       contactInformation: this.fb.group({
         emails: this.fb.array([this.createEmailGroup()]),
         phoneNumbers: this.fb.array([this.createPhoneGroup()]),
-        address: [""],
-        city: [""],
-        state: [""],
-        zipCode: [""],
-        country: [""],
+        addresses: this.fb.array([this.createAddressGroup()]),
       }),
 
       // Web Links
@@ -206,13 +204,6 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
           account.groupDetails?.groupHistoryBackground || "",
         foundingDate: foundingDateValue,
       },
-      contactInformation: {
-        address: account.contactInformation?.addresses?.[0]?.street || "",
-        city: account.contactInformation?.addresses?.[0]?.city || "",
-        state: account.contactInformation?.addresses?.[0]?.state || "",
-        zipCode: account.contactInformation?.addresses?.[0]?.zipcode || "",
-        country: account.contactInformation?.addresses?.[0]?.country || "",
-      },
     });
 
     // Force change detection for the founding date specifically
@@ -232,6 +223,9 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
 
     // Populate phone arrays
     this.populatePhoneNumbers(account.contactInformation?.phoneNumbers || []);
+
+    // Populate addresses arrays
+    this.populateAddresses(account.contactInformation?.addresses || []);
 
     // Populate web links
     this.populateWebLinks(account.webLinks || []);
@@ -266,6 +260,29 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
           this.fb.group({
             type: [phone.type || "Mobile"],
             number: [phone.number || ""],
+          }),
+        );
+      });
+    }
+  }
+
+  private populateAddresses(addresses: any[]) {
+    const addressesArray = this.addressesArray;
+    addressesArray.clear();
+
+    if (addresses.length === 0) {
+      addressesArray.push(this.createAddressGroup());
+    } else {
+      addresses.forEach((address) => {
+        addressesArray.push(
+          this.fb.group({
+            name: [address.name || ""],
+            street: [address.street || ""],
+            city: [address.city || ""],
+            state: [address.state || ""],
+            zipcode: [address.zipcode || ""],
+            country: [address.country || ""],
+            isPrimaryAddress: [address.isPrimaryAddress || false],
           }),
         );
       });
@@ -310,12 +327,28 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
     });
   }
 
+  createAddressGroup(): FormGroup {
+    return this.fb.group({
+      name: [""],
+      street: [""],
+      city: [""],
+      state: [""],
+      zipcode: [""],
+      country: [""],
+      isPrimaryAddress: [false],
+    });
+  }
+
   get emailsArray(): FormArray {
     return this.profileForm.get("contactInformation.emails") as FormArray;
   }
 
   get phoneNumbersArray(): FormArray {
     return this.profileForm.get("contactInformation.phoneNumbers") as FormArray;
+  }
+
+  get addressesArray(): FormArray {
+    return this.profileForm.get("contactInformation.addresses") as FormArray;
   }
 
   addEmail(): void {
@@ -335,6 +368,18 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
   removePhoneNumber(index: number): void {
     if (this.phoneNumbersArray.length > 1) {
       this.phoneNumbersArray.removeAt(index);
+    }
+  }
+
+  addAddress(): void {
+    if (this.addressesArray.length < this.maxAddresses) {
+      this.addressesArray.push(this.createAddressGroup());
+    }
+  }
+
+  removeAddress(index: number): void {
+    if (this.addressesArray.length > 1) {
+      this.addressesArray.removeAt(index);
     }
   }
 
@@ -386,16 +431,18 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
           ...this.account?.contactInformation,
           emails: formValue.contactInformation.emails || [],
           phoneNumbers: formValue.contactInformation.phoneNumbers || [],
-          addresses: [
-            {
-              street: formValue.contactInformation.address,
-              city: formValue.contactInformation.city,
-              state: formValue.contactInformation.state,
-              zipcode: formValue.contactInformation.zipCode,
-              country: formValue.contactInformation.country,
-              isPrimaryAddress: true,
-            },
-          ].filter((addr) => addr.street || addr.city), // Only include if has some address data
+          addresses:
+            formValue.contactInformation.addresses
+              ?.filter((addr: any) => addr.street?.trim() || addr.city?.trim())
+              .map((addr: any) => ({
+                name: addr.name || null,
+                street: addr.street || null,
+                city: addr.city || null,
+                state: addr.state || null,
+                zipcode: addr.zipcode || null,
+                country: addr.country || null,
+                isPrimaryAddress: addr.isPrimaryAddress || false,
+              })) || [],
           preferredMethodOfContact: "Email",
         },
         webLinks: formValue.webLinks

@@ -42,6 +42,13 @@
   margin: 4px 0 0 0;
 }
 
+.mission-statement,
+.history-background {
+  white-space: pre-wrap;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
 @media (prefers-color-scheme: dark) {
   .profile-info-card h2 {
     color: #fff;

@@ -519,42 +519,18 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
     const languages = account.groupDetails?.supportedLanguages;
     if (!languages) return "Not specified";
 
-    // If it's an array, join and format
+    // If it's an array, join directly (now storing full names)
     if (Array.isArray(languages)) {
-      return languages.map((lang) => this.getLanguageName(lang)).join(", ");
+      return languages.join(", ");
     }
 
-    // If it's a string with commas, split and format
+    // If it's a string with commas, return as is (now storing full names)
     if (typeof languages === "string" && languages.includes(",")) {
-      return languages
-        .split(",")
-        .map((lang) => this.getLanguageName(lang.trim()))
-        .join(", ");
+      return languages;
     }
 
     // Single language
-    return this.getLanguageName(languages);
-  }
-
-  // Helper method to convert language codes to readable names
-  private getLanguageName(code: string): string {
-    const languageMap: {[key: string]: string} = {
-      en: "English",
-      es: "Spanish",
-      fr: "French",
-      de: "German",
-      it: "Italian",
-      pt: "Portuguese",
-      zh: "Chinese",
-      ja: "Japanese",
-      ko: "Korean",
-      ar: "Arabic",
-      hi: "Hindi",
-      ru: "Russian",
-      other: "Other",
-    };
-
-    return languageMap[code.toLowerCase()] || this.capitalizeFirst(code);
+    return languages;
   }
 
   updateNotificationSetting(setting: string, value: boolean) {

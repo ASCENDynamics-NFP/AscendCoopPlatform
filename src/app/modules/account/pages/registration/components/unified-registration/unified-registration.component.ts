@@ -27,7 +27,7 @@ import {
   PhoneNumber,
   WebLink,
 } from "@shared/models/account.model";
-import {formatPhoneNumber} from "../../../../../../core/data/phone";
+import {formatPhoneNumber} from "../../../../../../core/utils/phone.util";
 import {countries, statesProvinces} from "../../../../../../core/data/country";
 import {Store} from "@ngrx/store";
 import * as AccountActions from "../../../../../../state/actions/account.actions";

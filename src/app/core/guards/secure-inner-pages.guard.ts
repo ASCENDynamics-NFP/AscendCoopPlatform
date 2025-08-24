@@ -26,6 +26,7 @@ import {
   selectIsLoggedIn,
   selectAuthUser,
 } from "../../state/selectors/auth.selectors";
+import {AuthNavigationService} from "../services/auth-navigation.service";
 
 @Injectable({
   providedIn: "root",
@@ -35,6 +36,7 @@ export class SecureInnerPagesGuard {
     private store: Store,
     private navCtrl: NavController,
     private router: Router,
+    private authNavigationService: AuthNavigationService,
   ) {}
 
   async canActivate(): Promise<boolean> {
@@ -43,10 +45,15 @@ export class SecureInnerPagesGuard {
     );
     if (isLoggedIn) {
       const authUser = await firstValueFrom(this.store.select(selectAuthUser));
+
       if (this.router.getCurrentNavigation()?.previousNavigation) {
         this.navCtrl.back();
+      } else if (authUser) {
+        // Use the navigation service to determine where to redirect
+        await this.authNavigationService.navigateAfterAuth(authUser);
       } else {
-        this.navCtrl.navigateForward(`/account/${authUser?.uid}`);
+        // Fallback if no user
+        this.navCtrl.navigateForward("/info");
       }
       return false;
     }

@@ -27,12 +27,14 @@ import {
   selectIsLoggedIn,
   selectAuthUser,
 } from "../../state/selectors/auth.selectors";
+import {AuthNavigationService} from "../services/auth-navigation.service";
 
 describe("SecureInnerPagesGuard", () => {
   let guard: SecureInnerPagesGuard;
   let mockStore: any;
   let mockRouter: any;
   let mockNavController: any;
+  let mockAuthNavigationService: any;
 
   const mockAuthUser = {
     uid: "12345",
@@ -60,6 +62,12 @@ describe("SecureInnerPagesGuard", () => {
       back: jasmine.createSpy("back"),
     };
 
+    mockAuthNavigationService = {
+      navigateAfterAuth: jasmine
+        .createSpy("navigateAfterAuth")
+        .and.returnValue(Promise.resolve()),
+    };
+
     TestBed.configureTestingModule({
       imports: [StoreModule.forRoot({})],
       providers: [
@@ -67,6 +75,7 @@ describe("SecureInnerPagesGuard", () => {
         {provide: Store, useValue: mockStore},
         {provide: Router, useValue: mockRouter},
         {provide: NavController, useValue: mockNavController},
+        {provide: AuthNavigationService, useValue: mockAuthNavigationService},
       ],
     });
 
@@ -90,8 +99,8 @@ describe("SecureInnerPagesGuard", () => {
 
     const canActivate = await guard.canActivate();
     expect(canActivate).toBeFalse();
-    expect(mockNavController.navigateForward).toHaveBeenCalledWith(
-      `/account/${mockAuthUser.uid}`,
+    expect(mockAuthNavigationService.navigateAfterAuth).toHaveBeenCalledWith(
+      mockAuthUser,
     );
   });
 

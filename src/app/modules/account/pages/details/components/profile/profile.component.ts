@@ -54,9 +54,7 @@ export class ProfileComponent {
     }
     return this.account.webLinks.filter(
       (link) =>
-        !["Donation", "Social Media", "Personal Website"].includes(
-          link.category,
-        ),
+        !["Donation", "Social Media", "Website"].includes(link.category),
     );
   }
 }

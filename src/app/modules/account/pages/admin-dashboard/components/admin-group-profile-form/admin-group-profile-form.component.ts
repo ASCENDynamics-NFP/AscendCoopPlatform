@@ -283,7 +283,7 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
 
     webLinks.forEach((link) => {
       const formGroup = this.fb.group({
-        category: [link.category || "Personal Website"],
+        category: [link.category || "Website"],
         url: [link.url || "", [Validators.pattern(/^https?:\/\/.+/)]],
         name: [link.name || ""],
       });
@@ -348,7 +348,7 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
 
   addWebLink() {
     const webLinkGroup = this.fb.group({
-      category: ["Personal Website"],
+      category: ["Website"],
       url: ["", [Validators.pattern(/^https?:\/\/.+/)]],
       name: [""],
     });
@@ -403,7 +403,7 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
           .map((link: any) => ({
             name: link.name || link.category || "Website",
             url: link.url,
-            category: link.category || "Personal Website",
+            category: link.category || "Website",
           })),
       };
 

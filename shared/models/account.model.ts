@@ -151,7 +151,7 @@ export interface WebLink {
     | "Hobbies"
     | "Publications"
     | "Portfolio"
-    | "Personal Website"
+    | "Website"
     | "External Resources"
     | "Other";
 }
@@ -237,7 +237,7 @@ export interface Account extends BaseDocument, Group, User {
   heroImage: string;
   legalAgreements: LegalAgreements; // Legal agreements, such as terms of service and privacy policy
   contactInformation?: ContactInformation; // Contact information and address
-  webLinks: WebLink[]; // Links to social media, personal websites, etc.
+  webLinks: WebLink[]; // Links to social media, websites, etc.
   lastLoginAt: Timestamp;
   email: string;
   /**

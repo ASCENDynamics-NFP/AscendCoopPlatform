@@ -218,9 +218,9 @@ describe("HeroComponent", () => {
   it("should open a new window with the correct URL on link click", () => {
     spyOn(window, "open");
     component.account.webLinks = [
-      {category: "Personal Website", url: "https://website.com", name: ""},
+      {category: "Website", url: "https://website.com", name: ""},
     ];
-    component.onLink("Personal Website");
+    component.onLink("Website");
     expect(window.open).toHaveBeenCalledWith("https://website.com", "_blank");
   });
 

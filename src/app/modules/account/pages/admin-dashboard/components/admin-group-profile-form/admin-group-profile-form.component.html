@@ -312,6 +312,19 @@
         </ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
+        <!-- Web Links -->
+        <div class="section-title">
+          <h3>Web Links</h3>
+          <ion-button
+            fill="clear"
+            size="small"
+            (click)="addWebLink()"
+            [disabled]="webLinksFormArray.length >= maxLinks"
+            aria-label="Add web link"
+          >
+            <ion-icon name="add" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
         <div formArrayName="webLinks">
           <div
             *ngFor="let link of webLinksFormArray.controls; let i = index"
@@ -339,9 +352,7 @@
                   formControlName="category"
                   placeholder="Select category"
                 >
-                  <ion-select-option value="Personal Website"
-                    >Personal Website</ion-select-option
-                  >
+                  <ion-select-option value="Website">Website</ion-select-option>
                   <ion-select-option value="Social Media"
                     >Social Media</ion-select-option
                   >
@@ -381,22 +392,9 @@
           </div>
         </div>
 
-        <div class="add-link-section">
-          <ion-button
-            fill="outline"
-            size="default"
-            (click)="addWebLink()"
-            [disabled]="webLinksFormArray.length >= maxLinks"
-            expand="block"
-          >
-            <ion-icon name="add-outline" slot="start"></ion-icon>
-            Add Web Link
-          </ion-button>
-
-          <p class="helper-text" *ngIf="webLinksFormArray.length >= maxLinks">
-            Maximum {{ maxLinks }} web links allowed
-          </p>
-        </div>
+        <p class="helper-text" *ngIf="webLinksFormArray.length >= maxLinks">
+          Maximum {{ maxLinks }} web links allowed
+        </p>
       </ion-card-content>
     </ion-card>
 

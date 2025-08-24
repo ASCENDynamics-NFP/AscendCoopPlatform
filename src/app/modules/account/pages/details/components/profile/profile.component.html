@@ -29,11 +29,39 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             <h2>Description</h2>
             <p>{{ account.description }}</p>
           </div>
+
+          <!-- Mission Statement for groups -->
+          <div
+            class="info-block"
+            *ngIf="
+              account.type === 'group' &&
+              account.groupDetails?.groupObjectivesMissionStatement
+            "
+          >
+            <h2>Mission Statement</h2>
+            <p class="mission-statement">
+              {{ account.groupDetails?.groupObjectivesMissionStatement }}
+            </p>
+          </div>
+
+          <!-- History & Background for groups -->
+          <div
+            class="info-block"
+            *ngIf="
+              account.type === 'group' &&
+              account.groupDetails?.groupHistoryBackground
+            "
+          >
+            <h2>History & Background</h2>
+            <p class="history-background">
+              {{ account.groupDetails?.groupHistoryBackground }}
+            </p>
+          </div>
         </ion-col>
         <ion-col size="4">
           <div class="info-block">
             <h2>Website</h2>
-            <p *ngFor="let link of getWebLinks('Personal Website')">
+            <p *ngFor="let link of getWebLinks('Website')">
               <a [href]="link.url" target="_blank">{{
                 link.name || link.url
               }}</a>

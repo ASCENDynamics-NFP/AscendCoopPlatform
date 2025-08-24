@@ -85,7 +85,7 @@ export class ContactInformationComponent {
       "$1 $2-$3",
     );
     const emergencyIndicator = phone.isEmergencyNumber ? "(E)" : "";
-    return `${phone.type || ""}${emergencyIndicator}: ${phone.countryCode || ""} ${formattedNumber}`;
+    return `${phone.type || ""}${emergencyIndicator}: ${formattedNumber}`;
   }
 
   getFirstEmail(): string {

@@ -626,92 +626,104 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               </ion-row>
               <ion-row>
                 <ion-col>
-                <ion-input
-                  label="Street Address"
-                  label-placement="floating"
-                  fill="outline"
-                  formControlName="street"
-                  type="text"
-                  placeholder="Enter street address"
-                ></ion-input>
-                <ion-note
-                  color="danger"
-                  *ngIf="
-                    address.get('street')?.invalid &&
-                    address.get('street')?.touched
-                  "
-                >
-                  Street is required.
-                </ion-note>
-              </ion-col>
-            </ion-row>
+                  <ion-input
+                    label="Street Address"
+                    label-placement="floating"
+                    fill="outline"
+                    formControlName="street"
+                    type="text"
+                    placeholder="Enter street address"
+                  ></ion-input>
+                  <ion-note
+                    color="danger"
+                    *ngIf="
+                      address.get('street')?.invalid &&
+                      address.get('street')?.touched
+                    "
+                  >
+                    Street is required.
+                  </ion-note>
+                </ion-col>
+              </ion-row>
               <ion-row>
                 <ion-col size="6">
-                <ion-input
-                  label="City"
-                  label-placement="floating"
-                  fill="outline"
-                  formControlName="city"
-                  type="text"
-                  placeholder="Enter city"
-                ></ion-input>
-                <ion-note
-                  color="danger"
-                  *ngIf="address.get('city')?.invalid && address.get('city')?.touched"
-                >
-                  City is required.
-                </ion-note>
-              </ion-col>
-              <ion-col size="6">
-                <ion-input
-                  label="State"
-                  label-placement="floating"
-                  fill="outline"
-                  formControlName="state"
-                  type="text"
-                  placeholder="Enter state"
-                ></ion-input>
-                <ion-note
-                  color="danger"
-                  *ngIf="address.get('state')?.invalid && address.get('state')?.touched"
-                >
-                  State is required.
-                </ion-note>
-              </ion-col>
-            </ion-row>
+                  <ion-input
+                    label="City"
+                    label-placement="floating"
+                    fill="outline"
+                    formControlName="city"
+                    type="text"
+                    placeholder="Enter city"
+                  ></ion-input>
+                  <ion-note
+                    color="danger"
+                    *ngIf="
+                      address.get('city')?.invalid &&
+                      address.get('city')?.touched
+                    "
+                  >
+                    City is required.
+                  </ion-note>
+                </ion-col>
+                <ion-col size="6">
+                  <ion-input
+                    label="State"
+                    label-placement="floating"
+                    fill="outline"
+                    formControlName="state"
+                    type="text"
+                    placeholder="Enter state"
+                  ></ion-input>
+                  <ion-note
+                    color="danger"
+                    *ngIf="
+                      address.get('state')?.invalid &&
+                      address.get('state')?.touched
+                    "
+                  >
+                    State is required.
+                  </ion-note>
+                </ion-col>
+              </ion-row>
               <ion-row>
                 <ion-col size="6">
-                <ion-input
-                  label="Country"
-                  label-placement="floating"
-                  fill="outline"
-                  formControlName="country"
-                  type="text"
-                  placeholder="Enter country"
-                ></ion-input>
-                <ion-note
-                  color="danger"
-                  *ngIf="address.get('country')?.invalid && address.get('country')?.touched"
-                >
-                  Country is required.
-                </ion-note>
-              </ion-col>
-              <ion-col size="6">
-                <ion-input
-                  label="Postal Code"
-                  label-placement="floating"
-                  fill="outline"
-                  formControlName="zipcode"
-                  type="text"
-                  placeholder="Enter postal code"
-                ></ion-input>
-                <ion-note
-                  color="danger"
-                  *ngIf="address.get('zipcode')?.invalid && address.get('zipcode')?.touched"
-                >
-                  Postal code is required and must be valid.
-                </ion-note>
-              </ion-col>
+                  <ion-input
+                    label="Country"
+                    label-placement="floating"
+                    fill="outline"
+                    formControlName="country"
+                    type="text"
+                    placeholder="Enter country"
+                  ></ion-input>
+                  <ion-note
+                    color="danger"
+                    *ngIf="
+                      address.get('country')?.invalid &&
+                      address.get('country')?.touched
+                    "
+                  >
+                    Country is required.
+                  </ion-note>
+                </ion-col>
+                <ion-col size="6">
+                  <ion-input
+                    label="Postal Code"
+                    label-placement="floating"
+                    fill="outline"
+                    formControlName="zipcode"
+                    type="text"
+                    placeholder="Enter postal code"
+                  ></ion-input>
+                  <ion-note
+                    color="danger"
+                    *ngIf="
+                      address.get('zipcode')?.invalid &&
+                      address.get('zipcode')?.touched
+                    "
+                  >
+                    Postal code is required and must be valid.
+                  </ion-note>
+                </ion-col>
               </ion-row>
               <ion-row>
                 <ion-col>
@@ -766,33 +778,27 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                     <ion-select-option value="Home">Home</ion-select-option>
                   </ion-select>
                 </ion-col>
-                <ion-col size="2">
+                <ion-col size="8">
                   <ion-input
-                    label="Country Code"
+                    label="Phone Number"
                     label-placement="floating"
                     fill="outline"
-                    formControlName="countryCode"
-                    type="text"
+                    formControlName="number"
+                    type="tel"
+                    placeholder="+1 (555) 123-4567"
                   ></ion-input>
+                  <ion-note
+                    color="danger"
+                    *ngIf="
+                      phone.get('number')?.invalid &&
+                      phone.get('number')?.touched
+                    "
+                  >
+                    Phone number is required.
+                  </ion-note>
                 </ion-col>
-                <ion-col size="6">
-                <ion-input
-                  label="Number"
-                  label-placement="floating"
-                  fill="outline"
-                  formControlName="number"
-                  type="tel"
-                  placeholder="Enter phone number"
-                ></ion-input>
-                <ion-note
-                  color="danger"
-                  *ngIf="phone.get('number')?.invalid && phone.get('number')?.touched"
-                >
-                  Phone number is required.
-                </ion-note>
-              </ion-col>
-              <ion-col size="2">
-                <ion-button
+                <ion-col size="2">
+                  <ion-button
                     fill="clear"
                     (click)="
                       removeArrayItem('contactInformation.phoneNumbers', i)

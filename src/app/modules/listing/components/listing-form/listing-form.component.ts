@@ -165,7 +165,6 @@ export class ListingFormComponent implements OnInit {
     account.contactInformation?.phoneNumbers?.forEach((phone) => {
       const phoneForm = this.fb.group({
         type: [phone.type],
-        countryCode: [phone.countryCode],
         number: [phone.number],
       });
       (
@@ -252,8 +251,10 @@ export class ListingFormComponent implements OnInit {
     listing.contactInformation?.phoneNumbers?.forEach((phone) => {
       const phoneForm = this.fb.group({
         type: [phone.type],
-        countryCode: [phone.countryCode],
-        number: [phone.number, Validators.required],
+        number: [
+          phone.number,
+          [Validators.required, Validators.pattern("^[+]?[0-9()\\s-]{10,25}$")],
+        ],
         isEmergencyNumber: [phone.isEmergencyNumber],
       });
       (
@@ -304,7 +305,6 @@ export class ListingFormComponent implements OnInit {
   addPhoneNumber() {
     const phoneForm = this.fb.group({
       type: ["Mobile"],
-      countryCode: ["+1"],
       number: ["", Validators.required],
     });
     (this.listingForm.get("contactInformation.phoneNumbers") as FormArray).push(

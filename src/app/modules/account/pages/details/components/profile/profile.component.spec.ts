@@ -77,7 +77,7 @@ describe("ProfileComponent", () => {
         {
           name: "Personal Blog",
           url: "https://blog.com",
-          category: "Personal Website",
+          category: "Website",
         },
       ],
     };
@@ -87,7 +87,7 @@ describe("ProfileComponent", () => {
     ]);
   });
 
-  it("should filter out other web links not in Donate, Social Media, or Personal Website", () => {
+  it("should filter out other web links not in Donate, Social Media, or Website", () => {
     component.account = {
       webLinks: [
         {name: "GitHub", url: "https://github.com", category: "Other"},
@@ -96,7 +96,7 @@ describe("ProfileComponent", () => {
         {
           name: "Portfolio",
           url: "https://portfolio.com",
-          category: "Personal Website",
+          category: "Website",
         },
       ],
     };

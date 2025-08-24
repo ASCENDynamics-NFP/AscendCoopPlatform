@@ -33,6 +33,7 @@ import {selectListingById} from "../../../../../state/selectors/listings.selecto
 import {Listing} from "@shared/models/listing.model";
 import {AlertController} from "@ionic/angular";
 import {MetaService} from "../../../../../core/services/meta.service";
+import {formatPhoneNumber} from "../../../../../core/utils/phone.util";
 
 @Component({
   selector: "app-apply",
@@ -142,15 +143,8 @@ export class ApplyPage implements OnInit {
 
   formatPhoneNumber(event: any): void {
     const input = event.target as HTMLInputElement;
-    let phone = input.value.replace(/\D/g, ""); // Remove all non-numeric characters
-
-    if (phone.length > 3 && phone.length <= 6) {
-      phone = `(${phone.slice(0, 3)}) ${phone.slice(3)}`;
-    } else if (phone.length > 6) {
-      phone = `(${phone.slice(0, 3)}) ${phone.slice(3, 6)}-${phone.slice(6, 10)}`;
-    }
-
-    input.value = phone; // Update the input value
+    const formatted = formatPhoneNumber(input.value);
+    input.value = formatted;
   }
 
   onSubmit(): void {

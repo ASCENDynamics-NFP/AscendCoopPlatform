@@ -65,6 +65,7 @@ import {FaqSectionComponent} from "./pages/details/components/faq-section/faq-se
 import {FaqFormComponent} from "./pages/edit/components/faq-form/faq-form.component";
 import {AdminDashboardPage} from "./pages/admin-dashboard/admin-dashboard.page";
 import {AdminGroupProfileFormComponent} from "./pages/admin-dashboard/components/admin-group-profile-form/admin-group-profile-form.component";
+import {InviteMemberModalComponent} from "./components/invite-member-modal/invite-member-modal.component";
 
 @NgModule({
   declarations: [
@@ -102,6 +103,7 @@ import {AdminGroupProfileFormComponent} from "./pages/admin-dashboard/components
     StandardRoleSelectorComponent,
     FaqSectionComponent,
     FaqFormComponent,
+    InviteMemberModalComponent,
     SafeUrlPipe,
   ],
   imports: [

@@ -27,7 +27,7 @@ import {
   PhoneNumber,
   WebLink,
 } from "@shared/models/account.model";
-import {countryCodes} from "../../../../../../core/data/phone";
+import {formatPhoneNumber} from "../../../../../../core/utils/phone.util";
 import {countries, statesProvinces} from "../../../../../../core/data/country";
 import {Store} from "@ngrx/store";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
@@ -50,9 +50,6 @@ export class UnifiedRegistrationComponent implements OnChanges {
   public maxLinks = 10;
   public maxPhoneNumbers = 5;
   public countries = countries;
-  public countryCodes = countryCodes.sort((a, b) =>
-    Number(a.value) > Number(b.value) ? 1 : -1,
-  );
   public statesProvinces = statesProvinces;
 
   registrationForm!: FormGroup;
@@ -160,7 +157,6 @@ export class UnifiedRegistrationComponent implements OnChanges {
           phoneNumbers:
             formValue.contactInformation!.phoneNumbers?.map(
               (phone: Partial<PhoneNumber>) => ({
-                countryCode: phone.countryCode ?? null,
                 number: phone.number ?? null,
                 type: phone.type ?? null,
                 isEmergencyNumber: phone.isEmergencyNumber || false,
@@ -263,8 +259,10 @@ export class UnifiedRegistrationComponent implements OnChanges {
     this.account.contactInformation?.phoneNumbers?.forEach((phone) => {
       this.phoneNumbersFormArray.push(
         this.fb.group({
-          countryCode: [phone.countryCode],
-          number: [phone.number, [Validators.pattern("^\\d{10}$")]],
+          number: [
+            phone.number,
+            [Validators.pattern("^[+]?[0-9()\\s-]{10,25}$")],
+          ],
           type: [phone.type],
           isEmergencyNumber: [phone.isEmergencyNumber],
         }),
@@ -303,7 +301,6 @@ export class UnifiedRegistrationComponent implements OnChanges {
         })) || [this.createEmailFormGroup()],
         phoneNumbers: this.account.contactInformation?.phoneNumbers?.map(
           (phone) => ({
-            countryCode: phone.countryCode,
             number: phone.number,
             type: phone.type,
             isEmergencyNumber: phone.isEmergencyNumber,
@@ -362,8 +359,7 @@ export class UnifiedRegistrationComponent implements OnChanges {
   // Phone number methods
   createPhoneNumberFormGroup(): FormGroup {
     return this.fb.group({
-      countryCode: [""],
-      number: ["", [Validators.pattern("^\\d{10}$")]],
+      number: ["", [Validators.pattern("^[+]?[0-9()\\s-]{10,25}$")]],
       type: [""],
       isEmergencyNumber: [false],
     });
@@ -377,6 +373,15 @@ export class UnifiedRegistrationComponent implements OnChanges {
 
   removePhoneNumber(index: number): void {
     this.phoneNumbersFormArray.removeAt(index);
+  }
+
+  formatPhoneNumber(event: any, index: number): void {
+    const input = event.target.value;
+    const formatted = formatPhoneNumber(input);
+
+    // Update the form control value
+    const phoneControl = this.phoneNumbersFormArray.at(index);
+    phoneControl.get("number")?.setValue(formatted, {emitEvent: false});
   }
 
   // Web link methods

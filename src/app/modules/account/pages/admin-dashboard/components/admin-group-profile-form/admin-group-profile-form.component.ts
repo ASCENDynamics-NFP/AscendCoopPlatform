@@ -28,10 +28,12 @@ import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {
   Account,
   WebLink,
+  Address,
 } from "../../../../../../../../shared/models/account.model";
 import {Timestamp} from "firebase/firestore";
 import {Store} from "@ngrx/store";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
+import {formatPhoneNumber} from "../../../../../../core/utils/phone.util";
 
 @Component({
   selector: "app-admin-group-profile-form",
@@ -44,6 +46,7 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
   profileForm: FormGroup;
   isSubmitting = false;
   maxLinks = 10; // Maximum number of web links allowed
+  maxAddresses = 3; // Maximum number of addresses allowed
 
   constructor(
     private fb: FormBuilder,
@@ -87,11 +90,7 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
       contactInformation: this.fb.group({
         emails: this.fb.array([this.createEmailGroup()]),
         phoneNumbers: this.fb.array([this.createPhoneGroup()]),
-        address: [""],
-        city: [""],
-        state: [""],
-        zipCode: [""],
-        country: [""],
+        addresses: this.fb.array([this.createAddressGroup()]),
       }),
 
       // Web Links
@@ -206,13 +205,6 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
           account.groupDetails?.groupHistoryBackground || "",
         foundingDate: foundingDateValue,
       },
-      contactInformation: {
-        address: account.contactInformation?.addresses?.[0]?.street || "",
-        city: account.contactInformation?.addresses?.[0]?.city || "",
-        state: account.contactInformation?.addresses?.[0]?.state || "",
-        zipCode: account.contactInformation?.addresses?.[0]?.zipcode || "",
-        country: account.contactInformation?.addresses?.[0]?.country || "",
-      },
     });
 
     // Force change detection for the founding date specifically
@@ -232,6 +224,9 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
 
     // Populate phone arrays
     this.populatePhoneNumbers(account.contactInformation?.phoneNumbers || []);
+
+    // Populate addresses arrays
+    this.populateAddresses(account.contactInformation?.addresses || []);
 
     // Populate web links
     this.populateWebLinks(account.webLinks || []);
@@ -272,6 +267,29 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
     }
   }
 
+  private populateAddresses(addresses: any[]) {
+    const addressesArray = this.addressesArray;
+    addressesArray.clear();
+
+    if (addresses.length === 0) {
+      addressesArray.push(this.createAddressGroup());
+    } else {
+      addresses.forEach((address) => {
+        addressesArray.push(
+          this.fb.group({
+            name: [address.name || ""],
+            street: [address.street || ""],
+            city: [address.city || ""],
+            state: [address.state || ""],
+            zipcode: [address.zipcode || ""],
+            country: [address.country || ""],
+            isPrimaryAddress: [address.isPrimaryAddress || false],
+          }),
+        );
+      });
+    }
+  }
+
   private populateWebLinks(webLinks: any[]) {
     const webLinksArray = this.profileForm.get("webLinks") as FormArray;
     if (!webLinksArray) {
@@ -283,7 +301,7 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
 
     webLinks.forEach((link) => {
       const formGroup = this.fb.group({
-        category: [link.category || "Personal Website"],
+        category: [link.category || "Website"],
         url: [link.url || "", [Validators.pattern(/^https?:\/\/.+/)]],
         name: [link.name || ""],
       });
@@ -306,7 +324,19 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
   createPhoneGroup(): FormGroup {
     return this.fb.group({
       type: ["Mobile"],
-      number: [""],
+      number: ["", [Validators.pattern("^[+]?[0-9()\\s-]{10,25}$")]],
+    });
+  }
+
+  createAddressGroup(): FormGroup {
+    return this.fb.group({
+      name: [""],
+      street: [""],
+      city: [""],
+      state: [""],
+      zipcode: [""],
+      country: [""],
+      isPrimaryAddress: [false],
     });
   }
 
@@ -316,6 +346,10 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
 
   get phoneNumbersArray(): FormArray {
     return this.profileForm.get("contactInformation.phoneNumbers") as FormArray;
+  }
+
+  get addressesArray(): FormArray {
+    return this.profileForm.get("contactInformation.addresses") as FormArray;
   }
 
   addEmail(): void {
@@ -338,6 +372,18 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
     }
   }
 
+  addAddress(): void {
+    if (this.addressesArray.length < this.maxAddresses) {
+      this.addressesArray.push(this.createAddressGroup());
+    }
+  }
+
+  removeAddress(index: number): void {
+    if (this.addressesArray.length > 1) {
+      this.addressesArray.removeAt(index);
+    }
+  }
+
   get webLinksArray(): FormArray {
     return this.profileForm.get("webLinks") as FormArray;
   }
@@ -348,7 +394,7 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
 
   addWebLink() {
     const webLinkGroup = this.fb.group({
-      category: ["Personal Website"],
+      category: ["Website"],
       url: ["", [Validators.pattern(/^https?:\/\/.+/)]],
       name: [""],
     });
@@ -386,16 +432,18 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
           ...this.account?.contactInformation,
           emails: formValue.contactInformation.emails || [],
           phoneNumbers: formValue.contactInformation.phoneNumbers || [],
-          addresses: [
-            {
-              street: formValue.contactInformation.address,
-              city: formValue.contactInformation.city,
-              state: formValue.contactInformation.state,
-              zipcode: formValue.contactInformation.zipCode,
-              country: formValue.contactInformation.country,
-              isPrimaryAddress: true,
-            },
-          ].filter((addr) => addr.street || addr.city), // Only include if has some address data
+          addresses:
+            formValue.contactInformation.addresses
+              ?.filter((addr: any) => addr.street?.trim() || addr.city?.trim())
+              .map((addr: any) => ({
+                name: addr.name || null,
+                street: addr.street || null,
+                city: addr.city || null,
+                state: addr.state || null,
+                zipcode: addr.zipcode || null,
+                country: addr.country || null,
+                isPrimaryAddress: addr.isPrimaryAddress || false,
+              })) || [],
           preferredMethodOfContact: "Email",
         },
         webLinks: formValue.webLinks
@@ -403,7 +451,7 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
           .map((link: any) => ({
             name: link.name || link.category || "Website",
             url: link.url,
-            category: link.category || "Personal Website",
+            category: link.category || "Website",
           })),
       };
 
@@ -499,77 +547,10 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
    */
   formatPhoneNumber(event: any, index: number): void {
     const input = event.target.value;
-    const formatted = this.formatPhoneNumberString(input);
+    const formatted = formatPhoneNumber(input);
 
     // Update the form control value
     const phoneControl = this.phoneNumbersArray.at(index);
     phoneControl.get("number")?.setValue(formatted, {emitEvent: false});
-  }
-
-  /**
-   * Format phone number to allow +##### country codes or (###) ###-#### format
-   */
-  private formatPhoneNumberString(value: string): string {
-    // Remove all non-digit and non-plus characters except spaces for better UX
-    const cleanValue = value.replace(/[^\d+\s]/g, "");
-
-    // Don't format if empty
-    if (!cleanValue) return "";
-
-    // If it starts with +, handle international format
-    if (cleanValue.startsWith("+")) {
-      // Extract just the + and digits
-      const plusAndDigits = cleanValue.replace(/[^\d+]/g, "");
-      const digits = plusAndDigits.slice(1); // Remove the +
-
-      if (digits.length === 0) return "+";
-      if (digits.length <= 4) return `+${digits}`;
-
-      // For longer numbers, format with country code + domestic format
-      // Common country codes: +1 (US/CA), +44 (UK), +33 (FR), +49 (DE), etc.
-      let countryCodeLength = 1; // Default for US
-
-      // Determine country code length based on first digits
-      if (digits.startsWith("1")) {
-        countryCodeLength = 1;
-      } else if (digits.length >= 2) {
-        const firstTwo = digits.substring(0, 2);
-        // Common 2-digit country codes
-        if (["33", "44", "49", "81", "86", "91"].includes(firstTwo)) {
-          countryCodeLength = 2;
-        } else if (digits.length >= 3) {
-          countryCodeLength = 3; // Assume 3-digit for others
-        } else {
-          countryCodeLength = 2;
-        }
-      }
-
-      const countryCode = digits.slice(0, countryCodeLength);
-      const remainder = digits.slice(countryCodeLength);
-
-      if (remainder.length === 0) return `+${countryCode}`;
-      if (remainder.length <= 3) return `+${countryCode} (${remainder}`;
-      if (remainder.length <= 6)
-        return `+${countryCode} (${remainder.slice(0, 3)}) ${remainder.slice(3)}`;
-
-      // Full format: +## (###) ###-####
-      const areaCode = remainder.slice(0, 3);
-      const firstPart = remainder.slice(3, 6);
-      const lastPart = remainder.slice(6, 10);
-      return `+${countryCode} (${areaCode}) ${firstPart}-${lastPart}`;
-    }
-
-    // Domestic US format: (###) ###-####
-    const digits = cleanValue.replace(/\D/g, "");
-    if (digits.length <= 3) {
-      return digits.length === 0 ? "" : `(${digits}`;
-    } else if (digits.length <= 6) {
-      return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-    } else {
-      const areaCode = digits.slice(0, 3);
-      const firstPart = digits.slice(3, 6);
-      const lastPart = digits.slice(6, 10);
-      return `(${areaCode}) ${firstPart}-${lastPart}`;
-    }
   }
 }

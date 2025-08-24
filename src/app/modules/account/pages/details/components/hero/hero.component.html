@@ -44,10 +44,38 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     />
     <div class="profile-details">
       <h2>{{ account.name }}</h2>
-      <p>
-        {{ getLocation }}
-      </p>
+
+      <!-- Compact location and date info -->
+      <div class="meta-info">
+        <span *ngIf="getLocation" class="location">
+          <ion-icon name="location-outline"></ion-icon>
+          {{ getLocation }}
+        </span>
+        <span *ngIf="account.type === 'group'" class="founded-date">
+          <ion-icon name="calendar-outline"></ion-icon>
+          {{ getFoundedDate || "Organization" }}
+        </span>
+      </div>
+
       <p class="tagline">{{ account.tagline }}</p>
+
+      <!-- Compact engagement hours -->
+      <div
+        class="hours-compact"
+        *ngIf="
+          account.type === 'group' &&
+          (getAccountTotalHours > 0 || (totalHours$ | async))
+        "
+      >
+        <span class="hours-item" *ngIf="getAccountTotalHours > 0">
+          <ion-icon name="time-outline"></ion-icon>
+          {{ getAccountTotalHours | number: "1.0-0" }} total engagement hours
+        </span>
+        <span class="hours-item" *ngIf="totalHours$ | async as trackedHours">
+          <ion-icon name="analytics-outline"></ion-icon>
+          {{ trackedHours | number: "1.0-0" }} tracked hours
+        </span>
+      </div>
     </div>
   </div>
   <div class="profile-actions">

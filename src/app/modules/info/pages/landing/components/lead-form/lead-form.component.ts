@@ -45,7 +45,7 @@ export class LeadFormComponent {
   form = this.fb.nonNullable.group({
     name: ["", [Validators.required, Validators.minLength(2)]],
     email: ["", [Validators.required, Validators.email]],
-    phone: ["", Validators.pattern(/^[0-9()+-\s]*$/)],
+    phone: ["", Validators.pattern("^[+]?[0-9()\\s-]{10,25}$")],
     inquiry: ["", Validators.required],
     message: ["", Validators.minLength(10)],
     from: ["ASCENDynamics NFP"],

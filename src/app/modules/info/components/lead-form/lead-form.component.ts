@@ -81,42 +81,46 @@ export class LeadFormComponent implements OnInit {
     // Don't format if empty
     if (!digits) return "";
 
+    // Limit to 16 digits
+    const limitedDigits = digits.slice(0, 16);
+
     // Determine if it's an international number (starts with country code other than 1)
     const isInternational =
-      digits.length > 10 || (digits.length === 11 && digits[0] !== "1");
+      limitedDigits.length > 10 ||
+      (limitedDigits.length === 11 && limitedDigits[0] !== "1");
 
     if (isInternational) {
       // International format: +# (###) ###-#### or +## (###) ###-#### etc.
-      if (digits.length <= 1) {
-        return `+${digits}`;
-      } else if (digits.length <= 4) {
-        return `+${digits}`;
-      } else if (digits.length <= 7) {
-        const countryCode = digits.slice(0, -6);
-        const areaCode = digits.slice(-6, -3);
+      if (limitedDigits.length <= 1) {
+        return `+${limitedDigits}`;
+      } else if (limitedDigits.length <= 4) {
+        return `+${limitedDigits}`;
+      } else if (limitedDigits.length <= 7) {
+        const countryCode = limitedDigits.slice(0, -6);
+        const areaCode = limitedDigits.slice(-6, -3);
         return `+${countryCode} (${areaCode})`;
-      } else if (digits.length <= 10) {
-        const countryCode = digits.slice(0, -6);
-        const areaCode = digits.slice(-6, -3);
-        const firstPart = digits.slice(-3);
+      } else if (limitedDigits.length <= 10) {
+        const countryCode = limitedDigits.slice(0, -6);
+        const areaCode = limitedDigits.slice(-6, -3);
+        const firstPart = limitedDigits.slice(-3);
         return `+${countryCode} (${areaCode}) ${firstPart}`;
       } else {
-        const countryCode = digits.slice(0, -10);
-        const areaCode = digits.slice(-10, -7);
-        const firstPart = digits.slice(-7, -4);
-        const lastPart = digits.slice(-4);
+        const countryCode = limitedDigits.slice(0, -10);
+        const areaCode = limitedDigits.slice(-10, -7);
+        const firstPart = limitedDigits.slice(-7, -4);
+        const lastPart = limitedDigits.slice(-4);
         return `+${countryCode} (${areaCode}) ${firstPart}-${lastPart}`;
       }
     } else {
       // Domestic US format: (###) ###-####
-      if (digits.length <= 3) {
-        return digits.length === 0 ? "" : `(${digits}`;
-      } else if (digits.length <= 6) {
-        return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+      if (limitedDigits.length <= 3) {
+        return limitedDigits.length === 0 ? "" : `(${limitedDigits}`;
+      } else if (limitedDigits.length <= 6) {
+        return `(${limitedDigits.slice(0, 3)}) ${limitedDigits.slice(3)}`;
       } else {
-        const areaCode = digits.slice(0, 3);
-        const firstPart = digits.slice(3, 6);
-        const lastPart = digits.slice(6, 10);
+        const areaCode = limitedDigits.slice(0, 3);
+        const firstPart = limitedDigits.slice(3, 6);
+        const lastPart = limitedDigits.slice(6, 10);
         return `(${areaCode}) ${firstPart}-${lastPart}`;
       }
     }

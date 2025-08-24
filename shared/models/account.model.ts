@@ -40,7 +40,6 @@ export interface Address {
 
 // PhoneNumber interface with nullable fields
 export interface PhoneNumber {
-  countryCode: Nullable<string>;
   number: Nullable<string>;
   type: Nullable<string>;
   isEmergencyNumber: Nullable<boolean>;
@@ -55,7 +54,7 @@ interface UserSpecific {
 }
 
 interface GroupSpecific {
-  dateFounded?: Timestamp;
+  dateFounded?: Timestamp; // Firestore Timestamp for exact founding date
   supportedLanguages?: string[];
   groupType?: string;
   groupObjectivesMissionStatement?: string;
@@ -152,7 +151,7 @@ export interface WebLink {
     | "Hobbies"
     | "Publications"
     | "Portfolio"
-    | "Personal Website"
+    | "Website"
     | "External Resources"
     | "Other";
 }
@@ -238,7 +237,7 @@ export interface Account extends BaseDocument, Group, User {
   heroImage: string;
   legalAgreements: LegalAgreements; // Legal agreements, such as terms of service and privacy policy
   contactInformation?: ContactInformation; // Contact information and address
-  webLinks: WebLink[]; // Links to social media, personal websites, etc.
+  webLinks: WebLink[]; // Links to social media, websites, etc.
   lastLoginAt: Timestamp;
   email: string;
   /**
@@ -257,6 +256,10 @@ export interface RelatedAccount extends BaseDocument {
   type?: "user" | "group"; // Type of the related account (new accounts are filtered out)
   status?: "pending" | "accepted" | "rejected" | "blocked"; // Relationship status
   relationship?: "friend" | "member" | "partner" | "family"; // Details about the relationship (e.g., 'friend', 'member')
+  /**
+   * Type of relationship request: 'request' (user asking to join), 'invitation' (group/admin inviting user)
+   */
+  requestType?: "request" | "invitation";
   /**
    * Built-in access level within a group
    */

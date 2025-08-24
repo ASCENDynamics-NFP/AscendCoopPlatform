@@ -52,7 +52,6 @@ describe("ListingEditPage", () => {
       phoneNumbers: [
         {
           type: "Mobile",
-          countryCode: "+1",
           number: "1234567890",
           isEmergencyNumber: false,
         },

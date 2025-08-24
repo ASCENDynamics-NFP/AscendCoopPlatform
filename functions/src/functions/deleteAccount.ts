@@ -46,7 +46,7 @@ export const deleteAccount = onCall(
       await admin.auth().deleteUser(uid);
 
       logger.info(`Successfully deleted Firebase Auth user: ${uid}`);
-      logger.info(`onUserRecordDeletion trigger will handle Firestore cleanup`);
+      logger.info("onUserRecordDeletion trigger will handle Firestore cleanup");
 
       return {
         success: true,

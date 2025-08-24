@@ -40,7 +40,6 @@ export interface Address {
 
 // PhoneNumber interface with nullable fields
 export interface PhoneNumber {
-  countryCode: Nullable<string>;
   number: Nullable<string>;
   type: Nullable<string>;
   isEmergencyNumber: Nullable<boolean>;

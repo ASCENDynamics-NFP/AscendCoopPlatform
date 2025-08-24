@@ -125,31 +125,15 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                       <ion-select-option value="Work">Work</ion-select-option>
                     </ion-select>
                   </ion-col>
-                  <ion-col size="3">
-                    <ion-select
-                      formControlName="countryCode"
-                      label="Country Code"
-                      label-placement="stacked"
-                      placeholder="Select One"
-                      fill="outline"
-                      interface="popover"
-                    >
-                      <ion-select-option
-                        *ngFor="let code of countryCodes"
-                        [value]="code.value"
-                        >{{ code.label }}</ion-select-option
-                      >
-                    </ion-select>
-                  </ion-col>
-                  <ion-col size="6">
+                  <ion-col size="9">
                     <ion-input
-                      label="Number"
+                      label="Phone Number"
                       label-placement="floating"
                       fill="outline"
                       formControlName="number"
                       type="tel"
-                      minlength="0"
-                      maxlength="10"
+                      placeholder="+1 (555) 123-4567"
+                      (ionInput)="formatPhoneNumber($event, i)"
                     ></ion-input>
                     <ion-note
                       *ngIf="
@@ -157,7 +141,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                         phoneControl.get('number')?.touched
                       "
                     >
-                      Please enter a valid phone number
+                      Please enter a valid phone number in format +#### (###)
+                      ###-####
                     </ion-note>
                   </ion-col>
                 </ion-row>

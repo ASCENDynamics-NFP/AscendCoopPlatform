@@ -222,7 +222,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   class="contact-item"
                 >
                   <ion-icon name="call-outline"></ion-icon>
-                  <span>{{ phone.countryCode }} {{ phone.number }}</span>
+                  <span
+                    >{{ phone.number ? (phone.number | phoneFormat) : 'No phone
+                    number' }}</span
+                  >
                   <ion-badge color="medium">{{ phone.type }}</ion-badge>
                 </div>
               </div>

@@ -256,31 +256,15 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   "
                   [formGroupName]="i"
                 >
-                  <ion-col size="3">
-                    <ion-select
-                      label="Country Code"
-                      label-placement="stacked"
-                      formControlName="countryCode"
-                      interface="popover"
-                      placeholder="Code"
-                      fill="outline"
-                    >
-                      <ion-select-option
-                        *ngFor="let code of countryCodes"
-                        [value]="code.value"
-                      >
-                        {{ code.label }}
-                      </ion-select-option>
-                    </ion-select>
-                  </ion-col>
-                  <ion-col size="4">
+                  <ion-col size="6">
                     <ion-input
                       label="Phone Number"
                       label-placement="floating"
                       fill="outline"
                       type="tel"
                       formControlName="number"
-                      placeholder="1234567890"
+                      placeholder="+1 (555) 123-4567"
+                      (ionInput)="formatPhoneNumber($event, i)"
                     ></ion-input>
                     <ion-note
                       *ngIf="
@@ -289,7 +273,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                       "
                       color="danger"
                     >
-                      Please enter a valid 10-digit phone number
+                      Please enter a valid phone number in format +#### (###)
+                      ###-####
                     </ion-note>
                   </ion-col>
                   <ion-col size="3">

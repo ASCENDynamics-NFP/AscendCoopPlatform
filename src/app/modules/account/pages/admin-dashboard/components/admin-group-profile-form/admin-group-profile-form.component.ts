@@ -306,7 +306,7 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
   createPhoneGroup(): FormGroup {
     return this.fb.group({
       type: ["Mobile"],
-      number: [""],
+      number: ["", [Validators.pattern("^[+]?[0-9()\\s-]{10,25}$")]],
     });
   }
 
@@ -507,69 +507,57 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
   }
 
   /**
-   * Format phone number to allow +##### country codes or (###) ###-#### format
+   * Format phone number to (###) ###-#### or +# (###) ###-#### pattern
    */
   private formatPhoneNumberString(value: string): string {
-    // Remove all non-digit and non-plus characters except spaces for better UX
-    const cleanValue = value.replace(/[^\d+\s]/g, "");
+    // Remove all non-digit characters
+    const digits = value.replace(/\D/g, "");
 
     // Don't format if empty
-    if (!cleanValue) return "";
+    if (!digits) return "";
 
-    // If it starts with +, handle international format
-    if (cleanValue.startsWith("+")) {
-      // Extract just the + and digits
-      const plusAndDigits = cleanValue.replace(/[^\d+]/g, "");
-      const digits = plusAndDigits.slice(1); // Remove the +
+    // Limit to 16 digits
+    const limitedDigits = digits.slice(0, 16);
 
-      if (digits.length === 0) return "+";
-      if (digits.length <= 4) return `+${digits}`;
+    // Determine if it's an international number (starts with country code other than 1)
+    const isInternational =
+      limitedDigits.length > 10 ||
+      (limitedDigits.length === 11 && limitedDigits[0] !== "1");
 
-      // For longer numbers, format with country code + domestic format
-      // Common country codes: +1 (US/CA), +44 (UK), +33 (FR), +49 (DE), etc.
-      let countryCodeLength = 1; // Default for US
-
-      // Determine country code length based on first digits
-      if (digits.startsWith("1")) {
-        countryCodeLength = 1;
-      } else if (digits.length >= 2) {
-        const firstTwo = digits.substring(0, 2);
-        // Common 2-digit country codes
-        if (["33", "44", "49", "81", "86", "91"].includes(firstTwo)) {
-          countryCodeLength = 2;
-        } else if (digits.length >= 3) {
-          countryCodeLength = 3; // Assume 3-digit for others
-        } else {
-          countryCodeLength = 2;
-        }
+    if (isInternational) {
+      // International format: +# (###) ###-#### or +## (###) ###-#### etc.
+      if (limitedDigits.length <= 1) {
+        return `+${limitedDigits}`;
+      } else if (limitedDigits.length <= 4) {
+        return `+${limitedDigits}`;
+      } else if (limitedDigits.length <= 7) {
+        const countryCode = limitedDigits.slice(0, -6);
+        const areaCode = limitedDigits.slice(-6, -3);
+        return `+${countryCode} (${areaCode})`;
+      } else if (limitedDigits.length <= 10) {
+        const countryCode = limitedDigits.slice(0, -6);
+        const areaCode = limitedDigits.slice(-6, -3);
+        const firstPart = limitedDigits.slice(-3);
+        return `+${countryCode} (${areaCode}) ${firstPart}`;
+      } else {
+        const countryCode = limitedDigits.slice(0, -10);
+        const areaCode = limitedDigits.slice(-10, -7);
+        const firstPart = limitedDigits.slice(-7, -4);
+        const lastPart = limitedDigits.slice(-4);
+        return `+${countryCode} (${areaCode}) ${firstPart}-${lastPart}`;
       }
-
-      const countryCode = digits.slice(0, countryCodeLength);
-      const remainder = digits.slice(countryCodeLength);
-
-      if (remainder.length === 0) return `+${countryCode}`;
-      if (remainder.length <= 3) return `+${countryCode} (${remainder}`;
-      if (remainder.length <= 6)
-        return `+${countryCode} (${remainder.slice(0, 3)}) ${remainder.slice(3)}`;
-
-      // Full format: +## (###) ###-####
-      const areaCode = remainder.slice(0, 3);
-      const firstPart = remainder.slice(3, 6);
-      const lastPart = remainder.slice(6, 10);
-      return `+${countryCode} (${areaCode}) ${firstPart}-${lastPart}`;
-    }
-
-    // Domestic US format: (###) ###-####
-    const digits = cleanValue.replace(/\D/g, "");
-    if (digits.length <= 3) {
-      return digits.length === 0 ? "" : `(${digits}`;
-    } else if (digits.length <= 6) {
-      return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
     } else {
-      const areaCode = digits.slice(0, 3);
-      const firstPart = digits.slice(3, 6);
-      const lastPart = digits.slice(6, 10);
-      return `(${areaCode}) ${firstPart}-${lastPart}`;
+      // Domestic US format: (###) ###-####
+      if (limitedDigits.length <= 3) {
+        return limitedDigits.length === 0 ? "" : `(${limitedDigits}`;
+      } else if (limitedDigits.length <= 6) {
+        return `(${limitedDigits.slice(0, 3)}) ${limitedDigits.slice(3)}`;
+      } else {
+        const areaCode = limitedDigits.slice(0, 3);
+        const firstPart = limitedDigits.slice(3, 6);
+        const lastPart = limitedDigits.slice(6, 10);
+        return `(${areaCode}) ${firstPart}-${lastPart}`;
+      }
     }
   }
 }

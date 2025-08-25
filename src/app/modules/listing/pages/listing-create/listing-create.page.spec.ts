@@ -30,6 +30,7 @@ import {BehaviorSubject, of} from "rxjs";
 import {Listing} from "@shared/models/listing.model";
 import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 import {MetaService} from "../../../../core/services/meta.service";
+import {TranslateTestingModule} from "../../../../shared/testing/translate-testing.module";
 
 describe("ListingCreatePage", () => {
   let component: ListingCreatePage;
@@ -79,7 +80,7 @@ describe("ListingCreatePage", () => {
 
     await TestBed.configureTestingModule({
       declarations: [ListingCreatePage],
-      imports: [IonicModule.forRoot()],
+      imports: [IonicModule.forRoot(), TranslateTestingModule],
       providers: [
         provideMockStore(),
         {provide: Router, useValue: routerSpy},

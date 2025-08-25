@@ -8,11 +8,11 @@
       size="small"
     >
       <ion-icon name="add" slot="start"></ion-icon>
-      Add Row
+      {{ "common.add_row" | translate }}
     </ion-button>
     <ion-badge *ngIf="readonly" color="success" class="readonly-badge">
       <ion-icon name="checkmark-circle" slot="start"></ion-icon>
-      Approved Week
+      {{ "common.approved_week" | translate }}
     </ion-badge>
   </div>
 
@@ -21,11 +21,13 @@
     <table class="week-grid">
       <thead>
         <tr>
-          <th class="project-column">Project</th>
+          <th class="project-column">
+            {{ "time_tracking.project" | translate }}
+          </th>
           <th *ngFor="let day of days" class="day-column">
             {{ day | date: "EEE MM/dd" }}
           </th>
-          <th class="total-column">Total</th>
+          <th class="total-column">{{ "time_tracking.total" | translate }}</th>
         </tr>
       </thead>
       <tbody>
@@ -36,10 +38,12 @@
                 [value]="row.projectId"
                 (ionChange)="addProjectById(i, $event)"
                 [disabled]="readonly"
-                placeholder="Select Project"
+                [placeholder]="'common.select_project' | translate"
                 interface="popover"
               >
-                <ion-select-option value="">Select...</ion-select-option>
+                <ion-select-option value="" translate
+                  >common.select</ion-select-option
+                >
                 <ion-select-option
                   *ngFor="let proj of availableProjects"
                   [value]="proj.id"
@@ -81,7 +85,9 @@
       </tbody>
       <tfoot>
         <tr class="totals-row">
-          <td class="project-cell"><strong>Total</strong></td>
+          <td class="project-cell">
+            <strong>{{ "time_tracking.total" | translate }}</strong>
+          </td>
           <td *ngFor="let total of columnTotals" class="total-cell">
             <strong>{{ total }}</strong>
           </td>
@@ -106,11 +112,13 @@
                 [value]="row.projectId"
                 (ionChange)="addProjectById(i, $event)"
                 [disabled]="readonly"
-                placeholder="Select Project"
+                [placeholder]="'common.select_project' | translate"
                 interface="popover"
                 fill="outline"
               >
-                <ion-select-option value="">Select...</ion-select-option>
+                <ion-select-option value="" translate
+                  >common.select</ion-select-option
+                >
                 <ion-select-option
                   *ngFor="let proj of availableProjects"
                   [value]="proj.id"
@@ -176,7 +184,9 @@
     <!-- Mobile Totals Card -->
     <ion-card class="totals-card">
       <ion-card-header>
-        <ion-card-title>Daily Totals</ion-card-title>
+        <ion-card-title>{{
+          "time_tracking.daily_totals" | translate
+        }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-grid>
@@ -193,7 +203,11 @@
           </ion-row>
           <ion-row class="grand-total">
             <ion-col size="6">
-              <ion-label><strong>Week Total</strong></ion-label>
+              <ion-label
+                ><strong>{{
+                  "time_tracking.week_total" | translate
+                }}</strong></ion-label
+              >
             </ion-col>
             <ion-col size="6">
               <strong>{{ totalHours }} hours</strong>

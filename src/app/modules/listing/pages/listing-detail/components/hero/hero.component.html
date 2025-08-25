@@ -46,7 +46,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           [name]="listing.remote ? 'cloud-outline' : 'business-outline'"
           color="primary"
         ></ion-icon>
-        <span>{{ listing.remote ? "Remote" : "On-site" }}</span>
+        <span>{{
+          listing.remote
+            ? ("listings.remote" | translate)
+            : ("listings.on_site" | translate)
+        }}</span>
       </div>
       <div class="detail-item">
         <ion-icon name="location-outline" color="primary"></ion-icon>
@@ -70,7 +74,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       [disabled]="listing.status !== 'active'"
       [routerLink]="['/listings', listing.id, 'apply']"
     >
-      Apply Now
+      {{ "listings.apply_now" | translate }}
     </ion-button>
     <ion-button
       *ngIf="isOwner"

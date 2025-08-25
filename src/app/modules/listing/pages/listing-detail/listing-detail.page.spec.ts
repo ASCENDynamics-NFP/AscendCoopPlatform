@@ -49,6 +49,7 @@ import {Store} from "@ngrx/store";
 import {Location} from "@angular/common";
 import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 import {By} from "@angular/platform-browser";
+import {TranslateTestingModule} from "../../../../shared/testing/translate-testing.module";
 
 describe("ListingDetailPage", () => {
   let component: ListingDetailPage;

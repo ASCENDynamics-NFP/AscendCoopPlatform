@@ -24,6 +24,7 @@ import {Router} from "@angular/router";
 import {Store} from "@ngrx/store";
 import {of} from "rxjs";
 import {UnifiedRegistrationComponent} from "./unified-registration.component";
+import {TranslateTestingModule} from "../../../../../../shared/testing/translate-testing.module";
 
 describe("UnifiedRegistrationComponent", () => {
   let component: UnifiedRegistrationComponent;
@@ -37,7 +38,11 @@ describe("UnifiedRegistrationComponent", () => {
 
     await TestBed.configureTestingModule({
       declarations: [UnifiedRegistrationComponent],
-      imports: [ReactiveFormsModule, IonicModule.forRoot()],
+      imports: [
+        ReactiveFormsModule,
+        IonicModule.forRoot(),
+        TranslateTestingModule,
+      ],
       providers: [
         {provide: Store, useValue: storeSpy},
         {provide: Router, useValue: routerSpy},

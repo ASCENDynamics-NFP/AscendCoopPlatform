@@ -163,7 +163,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 >
                   <ion-icon name="calendar-clear-outline"></ion-icon>
                   <span>Flexible Schedule Available</span>
-                  <ion-badge color="success">Flexible</ion-badge>
+                  <ion-badge color="success"
+                    >{{ 'listings.flexible' | translate }}</ion-badge
+                  >
                 </div>
               </div>
             </ion-card-content>
@@ -193,7 +195,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   >
                 </div>
                 <ion-badge *ngIf="listing.remote" color="success"
-                  >Remote Available</ion-badge
+                  >{{ 'listings.remote_available' | translate }}</ion-badge
                 >
               </div>
             </ion-card-content>

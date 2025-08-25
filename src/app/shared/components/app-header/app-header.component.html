@@ -48,11 +48,21 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <img [src]="image | async" alt="User Avatar" />
     </ion-avatar>
     <ng-template #notLoggedIn>
-      <ion-button routerLink="/auth/login" color="primary" fill="outline">
-        Login
+      <ion-button
+        routerLink="/auth/login"
+        color="primary"
+        fill="outline"
+        translate
+      >
+        common.login
       </ion-button>
-      <ion-button routerLink="/auth/signup" color="primary" fill="solid">
-        Sign Up
+      <ion-button
+        routerLink="/auth/signup"
+        color="primary"
+        fill="solid"
+        translate
+      >
+        common.signup
       </ion-button>
     </ng-template>
   </ion-buttons>

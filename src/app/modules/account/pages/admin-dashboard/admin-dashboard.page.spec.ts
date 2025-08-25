@@ -25,6 +25,7 @@ import {IonicModule} from "@ionic/angular";
 import {FormsModule} from "@angular/forms";
 import {of} from "rxjs";
 import {NotificationService} from "../../../messaging/services/notification.service";
+import {TranslateTestingModule} from "../../../../shared/testing/translate-testing.module";
 
 describe("AdminDashboardPage", () => {
   let component: AdminDashboardPage;
@@ -59,7 +60,7 @@ describe("AdminDashboardPage", () => {
 
     await TestBed.configureTestingModule({
       declarations: [AdminDashboardPage],
-      imports: [IonicModule.forRoot(), FormsModule],
+      imports: [IonicModule.forRoot(), FormsModule, TranslateTestingModule],
       providers: [
         provideMockStore({
           initialState: {

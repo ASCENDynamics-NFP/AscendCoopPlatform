@@ -12,7 +12,7 @@
           <!-- Main menu button - allows navigation out of messaging on all screen sizes -->
           <ion-menu-button menu="main" color="primary"> </ion-menu-button>
         </ion-buttons>
-        <ion-title>Messages</ion-title>
+        <ion-title>{{ 'messaging.title' | translate }}</ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="onNewChat()" fill="clear">
             <ion-icon name="add" slot="icon-only"></ion-icon>
@@ -30,11 +30,11 @@
         <!-- Empty state when no chats are available -->
         <div class="empty-state" *ngIf="!hasChats">
           <ion-icon name="chatbubbles-outline" size="large"></ion-icon>
-          <h3>No conversations yet</h3>
-          <p>Start a new conversation to begin messaging</p>
+          <h3>{{ 'messaging.no_conversations' | translate }}</h3>
+          <p>{{ 'messaging.start_conversation' | translate }}</p>
           <ion-button (click)="onNewChat()" fill="outline">
             <ion-icon name="add" slot="start"></ion-icon>
-            New Chat
+            <span>{{ 'messaging.new_chat' | translate }}</span>
           </ion-button>
         </div>
 
@@ -84,18 +84,16 @@
         <div class="info-message" *ngIf="!hasChats">
           <ion-card>
             <ion-card-content>
-              <h4>Getting Started with Messaging</h4>
-              <p>To see real conversations here, you'll need to:</p>
+              <h4>{{ 'messaging.getting_started' | translate }}</h4>
+              <p>{{ 'messaging.getting_started_text' | translate }}</p>
               <ol>
-                <li>Click "New Chat" to start a conversation</li>
-                <li>
-                  Select contacts who have accepted relationship connections
-                </li>
-                <li>Send your first message</li>
+                <li>{{ 'messaging.instruction_1' | translate }}</li>
+                <li>{{ 'messaging.instruction_2' | translate }}</li>
+                <li>{{ 'messaging.instruction_3' | translate }}</li>
               </ol>
               <p>
-                <strong>Note:</strong> You can only message users with whom you
-                have an accepted relationship connection.
+                <strong>{{ 'messaging.note' | translate }}</strong>
+                <span>{{ 'messaging.note_text' | translate }}</span>
               </p>
             </ion-card-content>
           </ion-card>
@@ -117,6 +115,6 @@
   *ngIf="!selectedChatId && isDesktop && !router.url.includes('/messaging/chat') && !router.url.includes('/messaging/new-chat')"
 >
   <ion-icon name="chatbubbles-outline" size="large"></ion-icon>
-  <h2>Select a conversation</h2>
-  <p>Choose a chat from the list to start messaging</p>
+  <h2>{{ 'messaging.select_conversation' | translate }}</h2>
+  <p>{{ 'messaging.choose_chat' | translate }}</p>
 </div>

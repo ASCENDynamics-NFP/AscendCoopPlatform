@@ -22,6 +22,7 @@ import {IonicModule, ModalController} from "@ionic/angular";
 import {ImageUploadModalComponent} from "./image-upload-modal.component";
 import {ImageUploadService} from "../../../core/services/image-upload.service";
 import {DomSanitizer} from "@angular/platform-browser";
+import {TranslateTestingModule} from "../../../shared/testing/translate-testing.module";
 
 describe("ImageUploadModalComponent", () => {
   let component: ImageUploadModalComponent;

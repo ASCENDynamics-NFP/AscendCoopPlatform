@@ -15,11 +15,11 @@
     <div class="search-type-toggle">
       <ion-segment value="user" (ionChange)="onSearchTypeChange($event)">
         <ion-segment-button value="user">
-          <ion-label>Members</ion-label>
+          <ion-label>{{ "forms.members" | translate }}</ion-label>
           <ion-icon name="person"></ion-icon>
         </ion-segment-button>
         <ion-segment-button value="group">
-          <ion-label>Partners</ion-label>
+          <ion-label>{{ "forms.partners" | translate }}</ion-label>
           <ion-icon name="people"></ion-icon>
         </ion-segment-button>
       </ion-segment>
@@ -28,13 +28,15 @@
     <!-- Search Section -->
     <div class="search-section">
       <ion-item>
-        <ion-label position="stacked">Search by Name or Email</ion-label>
+        <ion-label position="stacked">{{
+          "forms.search_by_name_or_email" | translate
+        }}</ion-label>
         <ion-input
           type="text"
           [placeholder]="
             searchType === 'user'
-              ? 'Type user name or email...'
-              : 'Type organization name...'
+              ? ('forms.type_user_name_or_email' | translate)
+              : ('forms.type_organization_name' | translate)
           "
           formControlName="searchTerm"
           (ionInput)="onSearchInput($event)"
@@ -85,18 +87,20 @@
     <div class="search-results">
       <ion-list>
         <ion-list-header>
-          <ion-label>
-            Search Results
+          <ion-label class="results-header">
+            {{ "forms.search_results" | translate }}
             <small
               *ngIf="selectedAccounts.length >= maxSelections"
               style="color: var(--ion-color-warning)"
             >
-              (Maximum {{ maxSelections }} selections reached)
+              {{
+                "forms.maximum_selections_reached"
+                  | translate: {count: maxSelections}
+              }}
             </small>
           </ion-label>
           <ion-spinner *ngIf="loading" size="small"></ion-spinner>
         </ion-list-header>
-
         <div
           *ngIf="(searchResults$ | async)?.length === 0 && !loading"
           class="no-results"
@@ -127,7 +131,13 @@
           <ion-label>
             <h3>{{ account.name }}</h3>
             <p *ngIf="account.tagline">{{ account.tagline }}</p>
-            <p>{{ account.type === "user" ? "Individual" : "Organization" }}</p>
+            <p>
+              {{
+                account.type === "user"
+                  ? ("forms.individual" | translate)
+                  : ("forms.organization" | translate)
+              }}
+            </p>
           </ion-label>
           <ion-icon
             [name]="
@@ -160,7 +170,7 @@
           {{ searchType === "user" ? "Member" : "Partner" }}
           Invitation{{ selectedAccounts.length > 1 ? "s" : "" }}
         </span>
-        <span *ngIf="loading">Sending...</span>
+        <span *ngIf="loading">{{ "forms.sending" | translate }}</span>
         <ion-spinner *ngIf="loading" size="small"></ion-spinner>
       </ion-button>
     </div>

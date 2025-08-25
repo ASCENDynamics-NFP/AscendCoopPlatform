@@ -83,7 +83,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <h3>{{ listing.organization }}</h3>
           <p>{{ listing.description | slice:0:100 }}...</p>
           <ion-badge color="primary">{{ listing.type | titlecase }}</ion-badge>
-          <ion-badge *ngIf="listing.remote" color="success">Remote</ion-badge>
+          <ion-badge *ngIf="listing.remote" color="success"
+            >{{ 'listings.remote' | translate }}</ion-badge
+          >
           <p *ngIf="!listing.remote">{{ getListingLocation(listing) }}</p>
           <ion-note>
             <ion-icon name="time-outline"></ion-icon>
@@ -100,7 +102,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       !(error$ | async)
     "
     >
-      No listings found.
+      No listings found. " translate> listings.no_listings
     </ion-text>
 
     <ion-fab

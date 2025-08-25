@@ -18,14 +18,16 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {TestBed} from "@angular/core/testing";
-
 import {ErrorHandlerService} from "./error-handler.service";
+import {TranslateTestingModule} from "../../shared/testing/translate-testing.module";
 
 describe("ErrorHandlerService", () => {
   let service: ErrorHandlerService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      imports: [TranslateTestingModule],
+    });
     service = TestBed.inject(ErrorHandlerService);
   });
 

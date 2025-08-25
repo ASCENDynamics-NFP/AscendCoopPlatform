@@ -25,13 +25,13 @@
     <ion-card-header>
       <ion-card-title>
         <ion-icon name="add-circle" class="title-icon"></ion-icon>
-        Add New Project
+        {{ 'projects.add_new_project' | translate }}
       </ion-card-title>
     </ion-card-header>
     <ion-card-content>
       <ion-item lines="none">
         <ion-input
-          placeholder="Enter project name..."
+          placeholder="{{ 'projects.enter_project_name' | translate }}"
           [(ngModel)]="newProjectName"
           (keyup.enter)="addProject()"
           clearInput="true"

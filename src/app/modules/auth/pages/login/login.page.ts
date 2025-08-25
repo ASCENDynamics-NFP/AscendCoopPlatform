@@ -25,6 +25,7 @@ import {AlertController} from "@ionic/angular";
 import {Router} from "@angular/router";
 import {Store} from "@ngrx/store";
 import {Observable} from "rxjs";
+import {TranslateService} from "@ngx-translate/core";
 import {
   selectAuthLoading,
   selectAuthError,
@@ -48,6 +49,7 @@ export class LoginPage implements OnInit {
     private metaService: MetaService,
     private router: Router,
     private store: Store,
+    private translate: TranslateService,
   ) {}
 
   // Runs when the page is about to enter the view
@@ -168,7 +170,10 @@ export class LoginPage implements OnInit {
             if (email) {
               this.store.dispatch(AuthActions.sendSignInLinkToEmail({email}));
             } else {
-              console.error("Email is required to send sign-in link");
+              const errorMessage = this.translate.instant(
+                "errors.send_signin_link_error",
+              );
+              console.error(errorMessage);
             }
           },
         },

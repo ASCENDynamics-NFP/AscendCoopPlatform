@@ -13,6 +13,7 @@ import {SuccessHandlerService} from "../../../../core/services/success-handler.s
 import {ErrorHandlerService} from "../../../../core/services/error-handler.service";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
+import {TranslateTestingModule} from "../../../../shared/testing/translate-testing.module";
 
 describe("WeekViewComponent", () => {
   let component: WeekViewComponent;
@@ -23,7 +24,7 @@ describe("WeekViewComponent", () => {
     store = jasmine.createSpyObj("Store", ["dispatch"]);
     await TestBed.configureTestingModule({
       declarations: [WeekViewComponent],
-      imports: [FormsModule, IonicModule.forRoot()],
+      imports: [FormsModule, IonicModule.forRoot(), TranslateTestingModule],
       providers: [
         {provide: Store, useValue: store},
         {

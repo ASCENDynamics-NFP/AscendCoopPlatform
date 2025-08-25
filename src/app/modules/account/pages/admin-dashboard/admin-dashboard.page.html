@@ -64,11 +64,11 @@
         aria-label="Admin dashboard navigation"
       >
         <ion-segment-button value="overview">
-          <ion-label>Overview</ion-label>
+          <ion-label>{{ "admin.overview" | translate }}</ion-label>
           <ion-icon name="analytics-outline"></ion-icon>
         </ion-segment-button>
         <ion-segment-button value="profile">
-          <ion-label>Profile</ion-label>
+          <ion-label>{{ "admin.profile" | translate }}</ion-label>
           <ion-icon name="create-outline"></ion-icon>
         </ion-segment-button>
         <ion-segment-button value="members">
@@ -86,27 +86,27 @@
           <ion-icon name="people-outline"></ion-icon>
         </ion-segment-button>
         <ion-segment-button value="roles">
-          <ion-label>Roles</ion-label>
+          <ion-label>{{ "admin.roles" | translate }}</ion-label>
           <ion-icon name="shield-outline"></ion-icon>
         </ion-segment-button>
         <ion-segment-button value="faqs">
-          <ion-label>FAQs</ion-label>
+          <ion-label>{{ "admin.faqs" | translate }}</ion-label>
           <ion-icon name="help-circle-outline"></ion-icon>
         </ion-segment-button>
         <ion-segment-button value="listings">
-          <ion-label>Listings</ion-label>
+          <ion-label>{{ "admin.listings" | translate }}</ion-label>
           <ion-icon name="list-outline"></ion-icon>
         </ion-segment-button>
         <ion-segment-button value="projects">
-          <ion-label>Projects</ion-label>
+          <ion-label>{{ "admin.projects" | translate }}</ion-label>
           <ion-icon name="folder-outline"></ion-icon>
         </ion-segment-button>
         <ion-segment-button value="time-tracking">
-          <ion-label>Time Tracking</ion-label>
+          <ion-label>{{ "admin.time_tracking" | translate }}</ion-label>
           <ion-icon name="time-outline"></ion-icon>
         </ion-segment-button>
         <ion-segment-button value="settings">
-          <ion-label>Settings</ion-label>
+          <ion-label>{{ "admin.settings" | translate }}</ion-label>
           <ion-icon name="settings-outline"></ion-icon>
         </ion-segment-button>
       </ion-segment>
@@ -253,7 +253,7 @@
               (click)="createNewListing()"
             >
               <ion-icon name="add-circle-outline" slot="start"></ion-icon>
-              Create New Listing
+              {{ 'admin.create_new_listing' | translate }}
             </ion-button>
             <ion-button
               expand="block"
@@ -692,7 +692,7 @@
                 <div slot="end" *ngIf="canManageRoles(member)">
                   <ion-select
                     [value]="getMemberAccessLevel(member)"
-                    placeholder="Select Access Level"
+                    [placeholder]="'common.select_access_level' | translate"
                     (ionChange)="updateMemberAccessLevel(member.id, $event.detail.value)"
                     interface="popover"
                   >
@@ -838,7 +838,7 @@
                 fill="clear"
                 (click)="navigateToRoleManagement()"
               >
-                Create New Role
+                {{ 'admin.create_new_role' | translate }}
                 <ion-icon name="add-outline" slot="end"></ion-icon>
               </ion-button>
               <ion-button
@@ -942,7 +942,7 @@
         <div class="listings-actions">
           <ion-button expand="block" (click)="createNewListing()">
             <ion-icon name="add-outline" slot="start"></ion-icon>
-            Create New Listing
+            {{ 'admin.create_new_listing' | translate }}
           </ion-button>
 
           <ion-button fill="outline" (click)="navigateToListings()">
@@ -1086,8 +1086,8 @@
                 initiatives
               </p>
               <p>
-                <strong>Project Creation:</strong> Create new projects for your
-                group
+                <strong>{{ 'admin.project_creation' | translate }}:</strong> {{
+                'admin.create_new_projects' | translate }} group
               </p>
               <p>
                 <strong>Archive Management:</strong> Review completed projects

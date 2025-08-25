@@ -18,21 +18,58 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {NgModule} from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {FormsModule} from "@angular/forms";
-import {IonicModule} from "@ionic/angular";
-import {TranslateModule} from "@ngx-translate/core";
-import {NewChatPageRoutingModule} from "./new-chat-routing.module";
-import {NewChatPage} from "./new-chat.page";
+import {
+  TranslateModule,
+  TranslateService,
+  TranslateStore,
+  TranslatePipe,
+  TranslateDirective,
+} from "@ngx-translate/core";
+import {of} from "rxjs";
 
+/**
+ * Mock TranslateService for testing
+ */
+export class MockTranslateService {
+  get(key: string, params?: any): any {
+    // Return the key as translation for simplicity in tests
+    return of(key);
+  }
+
+  instant(key: string, params?: any): string {
+    return key;
+  }
+
+  setTranslation(lang: string, translations: any): void {}
+
+  use(lang: string): any {
+    return of(lang);
+  }
+
+  addLangs(langs: string[]): void {}
+
+  setDefaultLang(lang: string): void {}
+
+  getDefaultLang(): string {
+    return "en";
+  }
+
+  getBrowserLang(): string {
+    return "en";
+  }
+
+  onTranslationChange = of();
+  onLangChange = of();
+  onDefaultLangChange = of();
+}
+
+/**
+ * Testing module that provides TranslateModule with mock service
+ * Use this in your test configurations to avoid translation-related errors
+ */
 @NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    TranslateModule,
-    NewChatPageRoutingModule,
-  ],
-  declarations: [NewChatPage],
+  imports: [TranslateModule],
+  providers: [{provide: TranslateService, useClass: MockTranslateService}],
+  exports: [TranslateModule],
 })
-export class NewChatPageModule {}
+export class TranslateTestingModule {}

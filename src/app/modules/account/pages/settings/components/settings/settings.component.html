@@ -23,14 +23,18 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <form [formGroup]="settingsForm">
       <ion-list>
         <ion-item>
-          <ion-label>Privacy Settings</ion-label>
+          <ion-label>{{ "settings.privacy_settings" | translate }}</ion-label>
           <ion-select formControlName="privacy">
-            <ion-select-option value="public">Public</ion-select-option>
-            <ion-select-option value="private">Private</ion-select-option>
+            <ion-select-option value="public">{{
+              "settings.public" | translate
+            }}</ion-select-option>
+            <ion-select-option value="private" translate
+              >settings.private</ion-select-option
+            >
           </ion-select>
         </ion-item>
         <ion-item>
-          <ion-label>Language</ion-label>
+          <ion-label>{{ "settings.language" | translate }}</ion-label>
           <ion-select
             formControlName="language"
             (ionChange)="onLanguageChange()"
@@ -47,8 +51,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-toggle aria-label="Dark Mode" (ionChange)="toggleDarkTheme($event)"></ion-toggle>
         </ion-item> -->
       </ion-list>
-      <ion-button expand="full" (click)="updateSetting()"
-        >Save Changes</ion-button
+      <ion-button expand="full" (click)="updateSetting()" translate
+        >settings.save_changes</ion-button
       >
     </form>
   </ion-card>
@@ -56,28 +60,29 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <!-- Account Deletion Section -->
   <ion-card>
     <ion-card-header>
-      <ion-card-title color="danger">Delete Account</ion-card-title>
-      <ion-card-subtitle>
-        This action cannot be undone. All your data will be permanently deleted.
+      <ion-card-title color="danger" translate
+        >settings.delete_account</ion-card-title
+      >
+      <ion-card-subtitle translate>
+        settings.delete_account_subtitle
       </ion-card-subtitle>
     </ion-card-header>
     <ion-card-content>
       <ion-text>
-        <p>Deleting your account will permanently remove:</p>
+        <p>{{ "settings.delete_account_description" | translate }}</p>
         <ul>
-          <li>Your profile and account information</li>
-          <li>All your listings and postings</li>
-          <li>Your connections and relationships</li>
-          <li>Your chat messages and conversations</li>
+          <li>{{ "settings.delete_item_1" | translate }}</li>
+          <li>{{ "settings.delete_item_2" | translate }}</li>
+          <li>{{ "settings.delete_item_3" | translate }}</li>
+          <li>{{ "settings.delete_item_4" | translate }}</li>
         </ul>
         <p>
-          <strong
-            >Your volunteer time entries will be preserved for organizational
-            records but anonymized</strong
-          >
-          (your name will be replaced with "Deleted User").
+          <strong>{{ "settings.anonymized_note" | translate }}</strong>
+          <span>{{ "settings.anonymized_detail" | translate }}</span>
         </p>
-        <p><strong>This action cannot be undone.</strong></p>
+        <p>
+          <strong>{{ "settings.cannot_be_undone" | translate }}</strong>
+        </p>
       </ion-text>
       <ion-button
         expand="full"
@@ -87,7 +92,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         [disabled]="isDeleting"
       >
         <ion-icon name="trash" slot="start"></ion-icon>
-        {{ isDeleting ? "Deleting Account..." : "Delete My Account" }}
+        {{
+          isDeleting
+            ? ("settings.deleting_account" | translate)
+            : ("settings.delete_my_account" | translate)
+        }}
       </ion-button>
     </ion-card-content>
   </ion-card>

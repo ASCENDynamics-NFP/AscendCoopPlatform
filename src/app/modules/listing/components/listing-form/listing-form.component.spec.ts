@@ -25,6 +25,7 @@ import {By} from "@angular/platform-browser";
 import {Store} from "@ngrx/store";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {Timestamp} from "firebase/firestore";
+import {TranslateTestingModule} from "../../../../shared/testing/translate-testing.module";
 
 describe("ListingFormComponent", () => {
   let component: ListingFormComponent;
@@ -34,7 +35,11 @@ describe("ListingFormComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ListingFormComponent],
-      imports: [IonicModule.forRoot(), ReactiveFormsModule],
+      imports: [
+        IonicModule.forRoot(),
+        ReactiveFormsModule,
+        TranslateTestingModule,
+      ],
       providers: [
         FormBuilder,
         provideMockStore({

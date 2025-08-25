@@ -38,7 +38,7 @@
         class="nav-button"
       >
         <ion-icon name="chevron-back" slot="start"></ion-icon>
-        <span class="nav-text">Previous</span>
+        <span class="nav-text">{{ 'time_tracking.previous' | translate }}</span>
       </ion-button>
 
       <div class="current-week">
@@ -65,7 +65,7 @@
         size="default"
         class="nav-button"
       >
-        <span class="nav-text">Next</span>
+        <span class="nav-text">{{ 'time_tracking.next' | translate }}</span>
         <ion-icon name="chevron-forward" slot="end"></ion-icon>
       </ion-button>
     </div>
@@ -94,7 +94,7 @@
         class="save-button"
       >
         <ion-icon name="save" slot="start"></ion-icon>
-        Save Timesheet
+        {{ 'time_tracking.save_timesheet' | translate }}
       </ion-button>
 
       <ion-button
@@ -106,7 +106,7 @@
         class="submit-button"
       >
         <ion-icon name="send" slot="start"></ion-icon>
-        Submit for Approval
+        {{ 'time_tracking.submit_for_approval' | translate }}
       </ion-button>
 
       <!-- Message for approved weeks -->
@@ -115,7 +115,7 @@
           <div class="approved-content">
             <ion-icon name="checkmark-circle" color="success"></ion-icon>
             <div>
-              <h3>Week Approved</h3>
+              <h3>{{ 'time_tracking.week_approved' | translate }}</h3>
               <p>
                 This week's timesheet has been approved and cannot be modified.
               </p>

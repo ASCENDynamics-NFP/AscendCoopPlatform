@@ -39,6 +39,7 @@ import {
 } from "../../../../state/selectors/listings.selectors";
 import {AppState} from "../../../../state/app.state";
 import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
+import {TranslateTestingModule} from "../../../../shared/testing/translate-testing.module";
 
 describe("ListingsPage", () => {
   let component: ListingsPage;

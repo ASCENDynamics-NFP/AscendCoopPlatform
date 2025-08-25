@@ -56,7 +56,7 @@ describe("AuthNavigationService", () => {
     });
 
     it("should return true for user with valid type", () => {
-      const user: Partial<AuthUser> = {type: "individual"};
+      const user: Partial<AuthUser> = {type: "user"};
       expect(service.hasCompletedRegistration(user as AuthUser)).toBeTrue();
     });
 
@@ -76,7 +76,7 @@ describe("AuthNavigationService", () => {
     });
 
     it("should redirect completed user from registration to profile", () => {
-      const user: Partial<AuthUser> = {uid: "123", type: "individual"};
+      const user: Partial<AuthUser> = {uid: "123", type: "user"};
       const result = service.shouldRedirectFromCurrentRoute(
         user as AuthUser,
         "/account/registration/123",

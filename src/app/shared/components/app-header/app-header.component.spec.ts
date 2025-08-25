@@ -25,6 +25,7 @@ import {of} from "rxjs";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {UserMenuComponent} from "../user-menu/user-menu.component";
+import {TranslateTestingModule} from "../../../shared/testing/translate-testing.module";
 
 describe("AppHeaderComponent", () => {
   let component: AppHeaderComponent;

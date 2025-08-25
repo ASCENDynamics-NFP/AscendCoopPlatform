@@ -21,6 +21,7 @@ import {NgModule} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
+import {TranslateModule} from "@ngx-translate/core";
 
 import {MessagingRoutingModule} from "./messaging-routing.module";
 import {ChatParticipantsModalComponent} from "./components/chat-participants-modal/chat-participants-modal.component";
@@ -36,6 +37,7 @@ import {NotificationSettingsModalComponent} from "./components/notification-sett
     FormsModule,
     ReactiveFormsModule,
     IonicModule,
+    TranslateModule,
     MessagingRoutingModule,
   ],
   providers: [

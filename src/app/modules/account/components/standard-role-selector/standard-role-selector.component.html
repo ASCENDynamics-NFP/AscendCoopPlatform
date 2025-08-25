@@ -23,7 +23,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <!-- <ion-card-header>
     <ion-card-title>Add Role</ion-card-title>
     <ion-card-subtitle
-      >Choose from standard roles or create a custom one</ion-card-subtitle
+      >{{ 'forms.choose_standard_roles' | translate }}</ion-card-subtitle
     >
   </ion-card-header> -->
 
@@ -56,7 +56,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <h5>Available {{ selectedCategory }} Roles</h5>
       <ion-list>
         <ion-item
-          *ngFor="let template of getTemplatesForCategory(selectedCategory); trackBy: trackTemplate"
+          *ngFor="
+            let template of getTemplatesForCategory(selectedCategory);
+            trackBy: trackTemplate
+          "
           button
           [disabled]="isTemplateUsed(template)"
           (click)="selectTemplate(template)"
@@ -98,24 +101,34 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           [name]="showCustomRoleForm ? 'close' : 'add'"
           slot="start"
         ></ion-icon>
-        {{ showCustomRoleForm ? "Cancel Custom Role" : "Create Custom Role" }}
+        {{
+          showCustomRoleForm
+            ? ("forms.cancel_custom_role" | translate)
+            : ("forms.create_custom_role" | translate)
+        }}
       </ion-button>
 
       <div *ngIf="showCustomRoleForm" class="custom-role-form">
         <ion-item>
-          <ion-label position="stacked">Role Name</ion-label>
+          <ion-label position="stacked">{{
+            "forms.role_name" | translate
+          }}</ion-label>
           <ion-input
             [(ngModel)]="customRoleName"
-            placeholder="Enter custom role name"
+            [placeholder]="'forms.custom_role_name_placeholder' | translate"
             maxlength="50"
           ></ion-input>
         </ion-item>
 
         <ion-item>
-          <ion-label position="stacked">Description (Optional)</ion-label>
+          <ion-label position="stacked">{{
+            "forms.description_optional" | translate
+          }}</ion-label>
           <ion-textarea
             [(ngModel)]="customRoleDescription"
-            placeholder="Describe the role's purpose and responsibilities"
+            [placeholder]="
+              'forms.custom_role_description_placeholder' | translate
+            "
             maxlength="200"
             rows="3"
           ></ion-textarea>
@@ -125,7 +138,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-label position="stacked">Category</ion-label>
           <ion-select
             [(ngModel)]="selectedCategory"
-            placeholder="Select category"
+            [placeholder]="'forms.select_category' | translate"
           >
             <ion-select-option
               *ngFor="let category of categorizedTemplates | keyvalue"
@@ -161,7 +174,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           (click)="createCustomRole()"
         >
           <ion-icon name="add" slot="start"></ion-icon>
-          Create Custom Role
+          {{ "forms.create_custom_role" | translate }}
         </ion-button>
       </div>
     </div>

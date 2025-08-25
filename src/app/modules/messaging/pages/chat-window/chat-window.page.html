@@ -74,7 +74,7 @@
             {{ message.text }}
             <div *ngIf="message.editedAt" class="edited-indicator">
               <ion-icon name="create-outline"></ion-icon>
-              edited
+              {{ 'messaging.edited' | translate }}
             </div>
           </div>
 
@@ -285,7 +285,8 @@
             class="send-file-btn"
           >
             <ion-icon name="send" slot="start"></ion-icon>
-            {{ isUploadingFile ? 'Sending...' : 'Send File' }}
+            {{ (isUploadingFile ? 'messaging.sending' : 'messaging.send_file') |
+            translate }}
           </ion-button>
         </div>
       </div>

@@ -25,6 +25,7 @@ $RECYCLE.BIN/
 # === Environment Variables ===
 .env.development
 .env.production
+src/environments/environment.production.ts
 
 # === Compiled Output ===
 /dist
@@ -72,6 +73,10 @@ UserInterfaceState.xcuserstate
 
 # === Firebase ===
 .firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
 
 # === Salesforce ===
 .sfdx

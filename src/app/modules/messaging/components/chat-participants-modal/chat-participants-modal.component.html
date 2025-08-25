@@ -45,18 +45,19 @@
       </ion-item>
       <div class="title-actions">
         <ion-button
-          fill="clear"
           size="small"
+          fill="clear"
+          color="medium"
           (click)="cancelEditingTitle()"
-          [disabled]="isLoading"
         >
           {{ "common.cancel" | translate }}
         </ion-button>
         <ion-button
-          fill="solid"
           size="small"
+          fill="solid"
+          color="primary"
           (click)="saveChatTitle()"
-          [disabled]="isLoading || !editTitleText.trim()"
+          [disabled]="!editTitleText.trim()"
         >
           <ion-spinner
             name="crescent"

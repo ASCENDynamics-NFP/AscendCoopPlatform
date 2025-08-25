@@ -23,7 +23,7 @@ import {Component, OnInit, OnDestroy} from "@angular/core";
 import {Store} from "@ngrx/store";
 import {ActivatedRoute} from "@angular/router";
 import {Observable, Subscription, combineLatest, BehaviorSubject} from "rxjs";
-import {map, filter} from "rxjs/operators";
+import {map, filter, take} from "rxjs/operators";
 import {Timestamp, deleteField} from "firebase/firestore";
 import {TimeEntry} from "@shared/models/time-entry.model";
 import {AuthUser} from "@shared/models/auth-user.model";
@@ -84,6 +84,13 @@ export class ApprovalsPage implements OnInit, OnDestroy {
   viewMode: ViewMode = "by-user";
   showAllWeeks = false;
 
+  // Filter properties
+  statusFilter: "all" | "pending" | "approved" | "rejected" = "all";
+  showPendingOnly = false;
+  sortBy: "date" | "user" | "hours" | "status" = "date";
+  sortDirection: "asc" | "desc" = "desc";
+  isProcessing = false;
+
   // Reactive streams for properties that affect data filtering
   private showAllWeeks$ = new BehaviorSubject<boolean>(false);
   private currentWeekStart$ = new BehaviorSubject<Date>(
@@ -94,6 +101,14 @@ export class ApprovalsPage implements OnInit, OnDestroy {
       return d;
     })(),
   );
+  private statusFilter$ = new BehaviorSubject<
+    "all" | "pending" | "approved" | "rejected"
+  >("all");
+  private showPendingOnly$ = new BehaviorSubject<boolean>(false);
+  private sortBy$ = new BehaviorSubject<"date" | "user" | "hours" | "status">(
+    "date",
+  );
+  private sortDirection$ = new BehaviorSubject<"asc" | "desc">("desc");
 
   private subscriptions = new Subscription();
 
@@ -114,6 +129,10 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     // Initialize reactive streams with current values
     this.showAllWeeks$.next(this.showAllWeeks);
     this.currentWeekStart$.next(this.currentWeekStart);
+    this.statusFilter$.next(this.statusFilter);
+    this.showPendingOnly$.next(this.showPendingOnly);
+    this.sortBy$.next(this.sortBy);
+    this.sortDirection$.next(this.sortDirection);
 
     // Load account and time entries
     this.store.dispatch(
@@ -131,14 +150,47 @@ export class ApprovalsPage implements OnInit, OnDestroy {
       this.account$,
       this.showAllWeeks$,
       this.currentWeekStart$,
+      this.statusFilter$,
+      this.showPendingOnly$,
+      this.sortBy$,
+      this.sortDirection$,
     ]).pipe(
       filter(([entries, account]) => !!entries && !!account),
-      map(([entries, account, showAllWeeks, currentWeekStart]) => {
-        const filteredEntries = showAllWeeks
-          ? entries
-          : this.filterEntriesByWeek(entries, currentWeekStart);
-        return this.groupEntriesByUserAndWeek(filteredEntries, account!);
-      }),
+      map(
+        ([
+          entries,
+          account,
+          showAllWeeks,
+          currentWeekStart,
+          statusFilter,
+          showPendingOnly,
+          sortBy,
+          sortDirection,
+        ]) => {
+          const filteredEntries = showAllWeeks
+            ? entries
+            : this.filterEntriesByWeek(entries, currentWeekStart);
+          let groupedEntries = this.groupEntriesByUserAndWeek(
+            filteredEntries,
+            account!,
+          );
+
+          // Apply status filtering
+          if (statusFilter !== "all") {
+            groupedEntries = groupedEntries.filter(
+              (group) => group.status === statusFilter,
+            );
+          }
+          if (showPendingOnly) {
+            groupedEntries = groupedEntries.filter(
+              (group) => group.status === "pending",
+            );
+          }
+
+          // Apply sorting
+          return this.sortGroupedEntries(groupedEntries, sortBy, sortDirection);
+        },
+      ),
     );
 
     this.projectGroupedEntries$ = combineLatest([
@@ -146,14 +198,54 @@ export class ApprovalsPage implements OnInit, OnDestroy {
       this.account$,
       this.showAllWeeks$,
       this.currentWeekStart$,
+      this.statusFilter$,
+      this.showPendingOnly$,
+      this.sortBy$,
+      this.sortDirection$,
     ]).pipe(
       filter(([entries, account]) => !!entries && !!account),
-      map(([entries, account, showAllWeeks, currentWeekStart]) => {
-        const filteredEntries = showAllWeeks
-          ? entries
-          : this.filterEntriesByWeek(entries, currentWeekStart);
-        return this.groupEntriesByProject(filteredEntries, account!);
-      }),
+      map(
+        ([
+          entries,
+          account,
+          showAllWeeks,
+          currentWeekStart,
+          statusFilter,
+          showPendingOnly,
+          sortBy,
+          sortDirection,
+        ]) => {
+          const filteredEntries = showAllWeeks
+            ? entries
+            : this.filterEntriesByWeek(entries, currentWeekStart);
+          let projectGroupedEntries = this.groupEntriesByProject(
+            filteredEntries,
+            account!,
+          );
+
+          // Apply status filtering at the user level within projects
+          if (statusFilter !== "all" || showPendingOnly) {
+            projectGroupedEntries = projectGroupedEntries
+              .map((project) => ({
+                ...project,
+                users: project.users.filter((user) => {
+                  if (statusFilter !== "all" && user.status !== statusFilter)
+                    return false;
+                  if (showPendingOnly && user.status !== "pending")
+                    return false;
+                  return true;
+                }),
+              }))
+              .filter((project) => project.users.length > 0);
+          }
+
+          return this.sortProjectGroupedEntries(
+            projectGroupedEntries,
+            sortBy,
+            sortDirection,
+          );
+        },
+      ),
     );
   }
 
@@ -515,5 +607,182 @@ export class ApprovalsPage implements OnInit, OnDestroy {
       return "All Weeks";
     }
     return this.getWeekRange(this.currentWeekStart);
+  }
+
+  // Filter control methods
+  setStatusFilter(status: "all" | "pending" | "approved" | "rejected") {
+    this.statusFilter = status;
+    this.statusFilter$.next(status);
+  }
+
+  togglePendingOnly(event: any) {
+    this.showPendingOnly = event.detail.checked;
+    this.showPendingOnly$.next(this.showPendingOnly);
+  }
+
+  setSortBy(sortBy: "date" | "user" | "hours" | "status") {
+    this.sortBy = sortBy;
+    this.sortBy$.next(sortBy);
+  }
+
+  toggleSortDirection() {
+    this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc";
+    this.sortDirection$.next(this.sortDirection);
+  }
+
+  // Sorting methods
+  private sortGroupedEntries(
+    entries: GroupedEntries[],
+    sortBy: "date" | "user" | "hours" | "status",
+    direction: "asc" | "desc",
+  ): GroupedEntries[] {
+    const sortedEntries = [...entries].sort((a, b) => {
+      let comparison = 0;
+
+      switch (sortBy) {
+        case "date":
+          comparison = a.weekStart.getTime() - b.weekStart.getTime();
+          break;
+        case "user":
+          comparison = a.userName.localeCompare(b.userName);
+          break;
+        case "hours":
+          comparison = a.totalHours - b.totalHours;
+          break;
+        case "status":
+          // Sort pending first, then approved, then rejected, then draft
+          const statusOrder = {pending: 1, approved: 2, rejected: 3, draft: 4};
+          comparison = statusOrder[a.status] - statusOrder[b.status];
+          break;
+      }
+
+      return direction === "asc" ? comparison : -comparison;
+    });
+
+    return sortedEntries;
+  }
+
+  private sortProjectGroupedEntries(
+    entries: ProjectGroupedEntries[],
+    sortBy: "date" | "user" | "hours" | "status",
+    direction: "asc" | "desc",
+  ): ProjectGroupedEntries[] {
+    return entries.map((project) => ({
+      ...project,
+      users: [...project.users].sort((a, b) => {
+        let comparison = 0;
+
+        switch (sortBy) {
+          case "user":
+            comparison = a.userName.localeCompare(b.userName);
+            break;
+          case "hours":
+            comparison = a.totalHours - b.totalHours;
+            break;
+          case "status":
+            const statusOrder = {
+              pending: 1,
+              approved: 2,
+              rejected: 3,
+              draft: 4,
+            };
+            comparison = statusOrder[a.status] - statusOrder[b.status];
+            break;
+          case "date":
+            // For projects, sort by first entry date
+            const aFirstDate = a.entries[0]?.date.toDate() || new Date(0);
+            const bFirstDate = b.entries[0]?.date.toDate() || new Date(0);
+            comparison = aFirstDate.getTime() - bFirstDate.getTime();
+            break;
+        }
+
+        return direction === "asc" ? comparison : -comparison;
+      }),
+    }));
+  }
+
+  // Bulk approval methods
+  async bulkApprove() {
+    const alert = await this.alertController.create({
+      header: "Bulk Approve",
+      message: "Approve all pending timesheets?",
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "Approve All",
+          role: "confirm",
+          cssClass: "confirm-button",
+          handler: () => {
+            this.performBulkAction("approved");
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  async bulkReject() {
+    const alert = await this.alertController.create({
+      header: "Bulk Reject",
+      message: "Reject all pending timesheets?",
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "Reject All",
+          role: "confirm",
+          cssClass: "danger-button",
+          handler: () => {
+            this.performBulkAction("rejected");
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  private performBulkAction(status: "approved" | "rejected") {
+    // Prevent multiple clicks
+    if (this.isProcessing) {
+      return;
+    }
+
+    this.isProcessing = true;
+
+    // Use take(1) to get current value and automatically unsubscribe
+    this.groupedEntries$
+      .pipe(take(1))
+      .subscribe((entries: GroupedEntries[]) => {
+        const pendingEntries = entries.filter(
+          (group) => group.status === "pending",
+        );
+
+        if (pendingEntries.length === 0) {
+          this.showToast("No pending timesheets to process", "warning");
+          this.isProcessing = false;
+          return;
+        }
+
+        // Process all entries synchronously since updateTimesheetStatus is void
+        pendingEntries.forEach((group) => {
+          this.updateTimesheetStatus(group, status);
+        });
+
+        // Show completion message and reset processing flag
+        setTimeout(() => {
+          this.showToast(
+            `${pendingEntries.length} timesheets ${status}`,
+            status === "approved" ? "success" : "warning",
+          );
+          this.isProcessing = false;
+        }, 100); // Small delay to ensure all dispatches are processed
+      });
   }
 }

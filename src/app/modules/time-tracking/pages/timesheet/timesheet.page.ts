@@ -52,6 +52,7 @@ export class TimesheetPage implements OnInit, OnDestroy {
   private entriesSub?: Subscription;
   accountId: string = "";
   userId: string = "";
+  isSubmitting: boolean = false;
   currentWeekStart: Date = (() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -134,8 +135,22 @@ export class TimesheetPage implements OnInit, OnDestroy {
   }
 
   nextWeek() {
-    this.currentWeekStart = new Date(this.currentWeekStart);
-    this.currentWeekStart.setDate(this.currentWeekStart.getDate() + 7);
+    const nextWeekStart = new Date(this.currentWeekStart);
+    nextWeekStart.setDate(this.currentWeekStart.getDate() + 7);
+
+    // Check if next week is more than one week in the future
+    const maxFutureWeek = new Date(this.todaysWeekStart);
+    maxFutureWeek.setDate(this.todaysWeekStart.getDate() + 7);
+
+    if (nextWeekStart > maxFutureWeek) {
+      this.showToast(
+        "Cannot navigate more than one week into the future",
+        "warning",
+      );
+      return;
+    }
+
+    this.currentWeekStart = nextWeekStart;
     this.updateEntriesObservable();
     this.loadEntries();
   }
@@ -195,6 +210,90 @@ export class TimesheetPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Check if the current week can be edited (not pending, rejected, or approved)
+   */
+  canEditCurrentWeek(): boolean {
+    if (!this.entries || this.entries.length === 0) {
+      return true; // Can edit if no entries exist
+    }
+
+    const statuses = this.entries.map((entry) => entry.status || "draft");
+    // Can edit if ALL entries are drafts OR rejected (so users can fix rejected timesheets)
+    return statuses.every(
+      (status) => status === "draft" || status === "rejected",
+    );
+  }
+
+  /**
+   * Get the status of the current week for display
+   */
+  getCurrentWeekStatus():
+    | "draft"
+    | "pending"
+    | "approved"
+    | "rejected"
+    | "mixed" {
+    if (!this.entries || this.entries.length === 0) {
+      return "draft";
+    }
+
+    const statuses = this.entries.map((entry) => entry.status || "draft");
+    const uniqueStatuses = [...new Set(statuses)];
+
+    if (uniqueStatuses.length === 1) {
+      return uniqueStatuses[0] as "draft" | "pending" | "approved" | "rejected";
+    }
+
+    return "mixed";
+  }
+
+  /**
+   * Get a user-friendly message explaining why the week cannot be edited
+   */
+  getWeekStatusMessage(): string {
+    const status = this.getCurrentWeekStatus();
+
+    switch (status) {
+      case "pending":
+        return 'This timesheet is pending approval and cannot be edited. Use "Withdraw" to make changes.';
+      case "approved":
+        return "This timesheet has been approved and cannot be modified.";
+      case "rejected":
+        return "This timesheet was rejected. You can now make changes and resubmit.";
+      case "mixed":
+        return "This timesheet has entries with different statuses. You can submit to convert all to pending.";
+      default:
+        return "";
+    }
+  }
+
+  /**
+   * Withdraw a pending submission to allow editing
+   */
+  withdrawSubmission(): void {
+    if (this.getCurrentWeekStatus() !== "pending") {
+      this.showToast("Only pending submissions can be withdrawn", "warning");
+      return;
+    }
+
+    // Change all pending entries back to draft status
+    const draftEntries = this.entries.map((entry) => ({
+      ...entry,
+      status: "draft" as const,
+    }));
+
+    // Dispatch action to update all entries
+    draftEntries.forEach((entry) => {
+      this.store.dispatch(TimeTrackingActions.saveTimeEntry({entry}));
+    });
+
+    this.showToast(
+      "Submission withdrawn. You can now edit your timesheet.",
+      "success",
+    );
+  }
+
+  /**
    * Check if the user is viewing the current week
    */
   isViewingCurrentWeek(): boolean {
@@ -210,9 +309,32 @@ export class TimesheetPage implements OnInit, OnDestroy {
     this.loadEntries();
   }
 
-  saveTimesheet() {
-    // TODO: Implement save functionality
-    console.log("Saving timesheet...");
+  /**
+   * Check if the current week can be submitted for approval
+   */
+  canSubmitCurrentWeek(): boolean {
+    if (!this.entries || this.entries.length === 0) {
+      return false; // Can't submit if no entries exist
+    }
+
+    const status = this.getCurrentWeekStatus();
+    // Can submit if draft, rejected, or mixed (but not pending or approved)
+    return status === "draft" || status === "rejected" || status === "mixed";
+  }
+
+  /**
+   * Get the appropriate submit button text based on current status
+   */
+  getSubmitButtonText(): string {
+    const status = this.getCurrentWeekStatus();
+    switch (status) {
+      case "mixed":
+        return "Submit All for Approval";
+      case "rejected":
+        return "Resubmit for Approval";
+      default:
+        return "Submit for Approval";
+    }
   }
 
   submitForApproval() {
@@ -221,6 +343,20 @@ export class TimesheetPage implements OnInit, OnDestroy {
       return;
     }
 
+    if (!this.canSubmitCurrentWeek()) {
+      this.showToast(
+        "This timesheet cannot be submitted in its current state",
+        "warning",
+      );
+      return;
+    }
+
+    // Set submitting state
+    this.isSubmitting = true;
+
+    // Show immediate loading feedback
+    this.showToast("Submitting timesheet...", "primary");
+
     // Get current user info for display in approval process
     this.store
       .select(selectAuthUser)
@@ -228,12 +364,16 @@ export class TimesheetPage implements OnInit, OnDestroy {
       .subscribe((user) => {
         if (!user) {
           this.showToast("User information not available", "danger");
+          this.isSubmitting = false;
           return;
         }
 
         // Get user display name (prefer displayName, fall back to name or email)
         const userName =
           user.displayName || user.name || user.email || "Unknown User";
+
+        // Get the original status before submission for better success message
+        const originalStatus = this.getCurrentWeekStatus();
 
         // Update all entries with user name, project name, and status
         const pendingEntries = this.entries.map((entry) => {
@@ -245,11 +385,14 @@ export class TimesheetPage implements OnInit, OnDestroy {
 
           return {
             ...entry,
-            status: "pending" as const, // Change from draft to pending for approval
+            status: "pending" as const, // Change from any status to pending for approval
             userName: userName,
             projectName: projectName,
           };
         });
+
+        // Optimistically update local entries for immediate UI feedback
+        this.entries = pendingEntries;
 
         // Dispatch action to submit timesheet
         this.store.dispatch(
@@ -261,7 +404,19 @@ export class TimesheetPage implements OnInit, OnDestroy {
           }),
         );
 
-        this.showToast("Timesheet submitted for approval", "success");
+        // Show success feedback with context based on original status
+        setTimeout(() => {
+          this.isSubmitting = false;
+          let message = `Timesheet submitted! Status changed to "Pending Approval"`;
+
+          if (originalStatus === "mixed") {
+            message = `All time entries submitted! Status changed to "Pending Approval"`;
+          } else if (originalStatus === "rejected") {
+            message = `Timesheet resubmitted! Status changed to "Pending Approval"`;
+          }
+
+          this.showToast(message, "success");
+        }, 500);
       });
   }
 

@@ -49,3 +49,20 @@ export const selectAllEntriesForAccount = (accountId: string) =>
     });
     return allEntries;
   });
+
+export const selectAllEntriesForUser = (userId: string) =>
+  createSelector(selectTimeTrackingState, (state: TimeEntriesState) => {
+    if (!state || !state.entities) {
+      return [];
+    }
+    const allEntries: any[] = [];
+    Object.keys(state.entities).forEach((key) => {
+      const entries = state.entities[key] || [];
+      // Filter entries where this user is the worker
+      const userEntries = entries.filter(
+        (entry: any) => entry.userId === userId,
+      );
+      allEntries.push(...userEntries);
+    });
+    return allEntries;
+  });

@@ -35,7 +35,10 @@ import {firstValueFrom, Observable} from "rxjs";
 import {CreateChatRequest} from "../../../../../messaging/models/chat.model";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 import {TimeEntry} from "../../../../../../../../shared/models/time-entry.model";
-import {selectAllEntriesForAccount} from "../../../../../../state/selectors/time-tracking.selectors";
+import {
+  selectAllEntriesForAccount,
+  selectAllEntriesForUser,
+} from "../../../../../../state/selectors/time-tracking.selectors";
 import {map} from "rxjs/operators";
 
 @Component({
@@ -85,14 +88,26 @@ export class HeroComponent implements OnInit, OnChanges {
   private initializeTimeTracking() {
     if (!this.account?.id) return;
 
-    // Get all approved time entries for this account
-    this.timeEntries$ = this.store
-      .select(selectAllEntriesForAccount(this.account.id))
-      .pipe(
-        map((entries) =>
-          entries.filter((entry: TimeEntry) => entry.status === "approved"),
-        ),
-      );
+    // Get all approved time entries - use different selector based on account type
+    if (this.account.type === "user") {
+      // For user profiles, get entries where this user is the worker
+      this.timeEntries$ = this.store
+        .select(selectAllEntriesForUser(this.account.id))
+        .pipe(
+          map((entries) =>
+            entries.filter((entry: TimeEntry) => entry.status === "approved"),
+          ),
+        );
+    } else {
+      // For group profiles, get entries for the organization
+      this.timeEntries$ = this.store
+        .select(selectAllEntriesForAccount(this.account.id))
+        .pipe(
+          map((entries) =>
+            entries.filter((entry: TimeEntry) => entry.status === "approved"),
+          ),
+        );
+    }
 
     // Calculate total hours
     this.totalHours$ = this.timeEntries$.pipe(

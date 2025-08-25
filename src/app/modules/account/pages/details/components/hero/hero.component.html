@@ -76,6 +76,36 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           {{ trackedHours | number: "1.0-0" }} tracked hours
         </span>
       </div>
+
+      <!-- User volunteer hours -->
+      <div
+        class="hours-compact volunteer-hours"
+        *ngIf="account.type === 'user'"
+      >
+        <!-- Show totalHours from Account if available, otherwise show calculated hours -->
+        <span
+          class="hours-item"
+          *ngIf="getAccountTotalHours > 0; else showCalculatedHours"
+        >
+          <ion-icon name="heart-outline"></ion-icon>
+          {{ getAccountTotalHours | number: "1.0-0" }} volunteer hours
+        </span>
+        <ng-template #showCalculatedHours>
+          <span
+            class="hours-item"
+            *ngIf="totalHours$ | async as trackedHours; else showZeroHours"
+          >
+            <ion-icon name="heart-outline"></ion-icon>
+            {{ trackedHours | number: "1.0-0" }} volunteer hours
+          </span>
+        </ng-template>
+        <ng-template #showZeroHours>
+          <span class="hours-item">
+            <ion-icon name="heart-outline"></ion-icon>
+            0 volunteer hours
+          </span>
+        </ng-template>
+      </div>
     </div>
   </div>
   <div class="profile-actions">

@@ -188,9 +188,10 @@ service cloud.firestore {
       }
 
       function hasValidProject() {
-        // Allow entries without project or validate project exists and is not archived
-        return request.resource.data.projectId == null ||
-               exists(/databases/$(database)/documents/accounts/$(accountId)/projects/$(request.resource.data.projectId));
+        // Require valid project that exists and is not archived
+        return request.resource.data.projectId != null &&
+               exists(/databases/$(database)/documents/accounts/$(accountId)/projects/$(request.resource.data.projectId)) &&
+               get(/databases/$(database)/documents/accounts/$(accountId)/projects/$(request.resource.data.projectId)).data.archived == false;
       }
 
       function canCreateEntry() {
@@ -198,7 +199,7 @@ service cloud.firestore {
       }
 
       function isValidStatus(status) {
-        return status == 'pending' || status == 'draft' || status == 'approved';
+        return status == 'pending' || status == 'draft' || status == 'approved' || status == 'rejected';
       }
 
       allow read: if isGroupAccount() && isGroupMemberOrOwner();
@@ -218,7 +219,9 @@ service cloud.firestore {
           (
             request.auth.uid == resource.data.userId &&
             resource.data.status != 'approved' &&
-            request.resource.data.status != 'approved'
+            resource.data.status != 'rejected' &&
+            request.resource.data.status != 'approved' &&
+            request.resource.data.status != 'rejected'
           )
         );
       allow delete: if isGroupAccount() && isGroupMemberOrOwner() &&

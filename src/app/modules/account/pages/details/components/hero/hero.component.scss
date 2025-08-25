@@ -110,6 +110,19 @@
       color: var(--ion-color-success);
     }
   }
+
+  // Special styling for volunteer hours
+  &.volunteer-hours {
+    .hours-item {
+      background-color: rgba(var(--ion-color-success-rgb), 0.1);
+      color: var(--ion-color-success-shade);
+      border: 1px solid rgba(var(--ion-color-success-rgb), 0.3);
+
+      ion-icon {
+        color: var(--ion-color-success);
+      }
+    }
+  }
 }
 
 .tagline {

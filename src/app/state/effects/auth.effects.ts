@@ -56,6 +56,7 @@ import {
 import {ErrorHandlerService} from "../../core/services/error-handler.service";
 import {SuccessHandlerService} from "../../core/services/success-handler.service";
 import {AuthNavigationService} from "../../core/services/auth-navigation.service";
+import {TranslateService} from "@ngx-translate/core";
 import {Router} from "@angular/router";
 import {
   AlertController,
@@ -92,6 +93,7 @@ export class AuthEffects {
     private store: Store<{auth: AuthState}>,
     private menuCtrl: MenuController,
     private authNavigationService: AuthNavigationService,
+    private translate: TranslateService,
   ) {}
 
   // Initialize Auth and Process Sign-In Link
@@ -110,9 +112,13 @@ export class AuthEffects {
                 if (email) {
                   return of(AuthActions.processSignInLink({email, link: url}));
                 } else {
+                  // Use translation key for error message
+                  const errorMessage = this.translate.instant(
+                    "errors.email_required",
+                  );
                   return of(
                     AuthActions.processSignInLinkFailure({
-                      error: "Email is required to complete sign-in.",
+                      error: errorMessage,
                     }),
                   );
                 }

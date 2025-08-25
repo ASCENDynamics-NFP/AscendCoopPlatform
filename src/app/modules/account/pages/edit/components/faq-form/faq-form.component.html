@@ -36,7 +36,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               class="add-faq-btn"
             >
               <ion-icon name="add-circle-outline" slot="start"></ion-icon>
-              Add FAQ
+              {{ "common.add_faq" | translate }}
             </ion-button>
           </div>
         </ion-col>
@@ -109,7 +109,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                       "
                       color="danger"
                     >
-                      Question is required and must be less than 500 characters.
+                      {{ "messaging.question_validation" | translate }}
                     </ion-note>
                   </ion-col>
                 </ion-row>
@@ -134,7 +134,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                       "
                       color="danger"
                     >
-                      Answer is required and must be less than 2000 characters.
+                      {{ "messaging.answer_validation" | translate }}
                     </ion-note>
                   </ion-col>
                 </ion-row>
@@ -149,11 +149,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <ion-col>
           <div class="empty-state">
             <ion-icon name="help-circle-outline" class="empty-icon"></ion-icon>
-            <h4>No FAQs Yet</h4>
-            <p>Add your first FAQ to help visitors find answers quickly.</p>
+            <h4>{{ "common.no_faqs_yet" | translate }}</h4>
+            <p>{{ "common.add_first_faq_help" | translate }}</p>
             <ion-button fill="outline" (click)="addFAQ()">
               <ion-icon name="add" slot="start"></ion-icon>
-              Add First FAQ
+              {{ "common.add_first_faq" | translate }}
             </ion-button>
           </div>
         </ion-col>

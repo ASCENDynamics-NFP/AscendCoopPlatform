@@ -6,14 +6,14 @@
         defaultHref="/messaging/chats"
       ></ion-back-button>
     </ion-buttons>
-    <ion-title>New Chat</ion-title>
+    <ion-title>{{ 'messaging.new_chat' | translate }}</ion-title>
     <ion-buttons slot="end">
       <ion-button
         (click)="createChat()"
         [disabled]="selectedContacts.length === 0 || isLoading"
         fill="clear"
       >
-        Create
+        {{ 'common.create' | translate }}
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -25,7 +25,7 @@
     <ion-item>
       <ion-input
         [(ngModel)]="groupName"
-        placeholder="Enter group name"
+        [placeholder]="'messaging.enter_group_name' | translate"
         maxlength="50"
         required
         autocomplete="off"
@@ -63,7 +63,7 @@
   <!-- Contacts List -->
   <ion-list>
     <ion-list-header>
-      <ion-label>Select Contacts</ion-label>
+      <ion-label>{{ 'messaging.select_contacts' | translate }}</ion-label>
     </ion-list-header>
 
     <ion-item
@@ -102,13 +102,13 @@
   <!-- Empty State -->
   <div *ngIf="contacts.length === 0" class="empty-state">
     <ion-icon name="people-outline" size="large"></ion-icon>
-    <h3>No contacts available</h3>
-    <p>You need to have accepted connections to start a chat</p>
+    <h3>{{ 'messaging.no_contacts_available' | translate }}</h3>
+    <p>{{ 'messaging.need_connections' | translate }}</p>
   </div>
 
   <!-- Loading Spinner -->
   <div *ngIf="isLoading" class="loading-overlay">
     <ion-spinner></ion-spinner>
-    <p>Creating chat...</p>
+    <p>{{ 'messaging.creating_chat' | translate }}</p>
   </div>
 </ion-content>

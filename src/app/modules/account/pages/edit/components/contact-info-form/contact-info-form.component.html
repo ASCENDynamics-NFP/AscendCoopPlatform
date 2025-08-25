@@ -67,7 +67,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                       "
                       color="danger"
                     >
-                      Please enter a valid email
+                      {{ "messaging.valid_email" | translate }}
                     </ion-note>
                   </ion-col>
                   <ion-col size="1">
@@ -97,7 +97,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-row>
         <ion-col>
           <ion-item-divider>
-            <ion-label color="tertiary">Phone Numbers</ion-label>
+            <ion-label color="tertiary">{{
+              "common.phone_numbers" | translate
+            }}</ion-label>
           </ion-item-divider>
           <div formArrayName="phoneNumbers">
             <div
@@ -127,7 +129,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   </ion-col>
                   <ion-col size="9">
                     <ion-input
-                      label="Phone Number"
+                      [label]="'common.phone_number' | translate"
                       label-placement="floating"
                       fill="outline"
                       formControlName="number"
@@ -141,8 +143,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                         phoneControl.get('number')?.touched
                       "
                     >
-                      Please enter a valid phone number in format +#### (###)
-                      ###-####
+                      {{ "messaging.valid_phone" | translate }}
                     </ion-note>
                   </ion-col>
                 </ion-row>
@@ -176,7 +177,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               "
             >
               <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-              Add Phone Number
+              {{ "common.add_phone_number" | translate }}
             </ion-button>
           </div>
         </ion-col>
@@ -226,7 +227,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                         addressControl.get('street')?.touched
                       "
                     >
-                      Please enter a valid address
+                      {{ "messaging.valid_address" | translate }}
                     </ion-note>
                   </ion-col>
                 </ion-row>
@@ -247,7 +248,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                         addressControl.get('city')?.touched
                       "
                     >
-                      Please enter a valid city name
+                      {{ "messaging.valid_city" | translate }}
                     </ion-note>
                   </ion-col>
                 </ion-row>
@@ -304,7 +305,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                         addressControl.get('zipcode')?.touched
                       "
                     >
-                      Please enter a valid zip code
+                      {{ "messaging.valid_zipcode" | translate }}
                     </ion-note>
                   </ion-col>
                 </ion-row>

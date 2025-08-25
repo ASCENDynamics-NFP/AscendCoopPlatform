@@ -11,7 +11,9 @@
       </ion-card-header>
       <ion-card-content>
         <!-- Display roles grouped by category -->
-        <div *ngFor="let categoryGroup of categorizedRoles$ | async; trackBy: trackCategory">
+        <div
+          *ngFor="let categoryGroup of categorizedRoles$ | async; trackBy: trackCategory"
+        >
           <!-- Category Header -->
           <div
             class="category-header"
@@ -122,11 +124,13 @@
                       >
                         Parent: {{ getParentName(role.parentRoleId, (roles$ |
                         async) || []) || 'None' }}<br />
-                        Type: {{ role.roleType || 'organization' | titlecase }}<br />
+                        Type: {{ role.roleType || 'organization' | titlecase
+                        }}<br />
                         <span *ngIf="role.standardCategory"
                           >Category: {{ role.standardCategory }}</span
                         >
-                        <span *ngIf="
+                        <span
+                          *ngIf="
                           role.standardCategory && role.description
                         "
                           ><br
@@ -195,7 +199,7 @@
 
     <ion-card>
       <ion-card-header>
-        <ion-card-title>Add New Role</ion-card-title>
+        <ion-card-title>{{ 'roles.add_new_role' | translate }}</ion-card-title>
         <ion-card-subtitle
           >Choose from standard templates or create a custom role with proper
           categorization</ion-card-subtitle

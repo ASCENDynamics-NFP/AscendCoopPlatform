@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Chat Participants</ion-title>
+    <ion-title>{{ "messaging.chat_participants" | translate }}</ion-title>
     <ion-buttons slot="end">
       <ion-button fill="clear" (click)="dismiss()">
         <ion-icon name="close" slot="icon-only"></ion-icon>
@@ -45,25 +45,21 @@
       </ion-item>
       <div class="title-actions">
         <ion-button
-          fill="clear"
           size="small"
+          fill="clear"
+          color="medium"
           (click)="cancelEditingTitle()"
-          [disabled]="isLoading"
         >
-          Cancel
+          {{ "common.cancel" | translate }}
         </ion-button>
         <ion-button
-          fill="solid"
           size="small"
+          fill="solid"
+          color="primary"
           (click)="saveChatTitle()"
-          [disabled]="isLoading || !editTitleText.trim()"
+          [disabled]="!editTitleText.trim()"
         >
-          <ion-spinner
-            name="crescent"
-            *ngIf="isLoading"
-            slot="start"
-          ></ion-spinner>
-          Save
+          {{ "common.save" | translate }}
         </ion-button>
       </div>
     </div>
@@ -95,8 +91,11 @@
         <div class="participant-info">
           <div class="participant-name">
             {{ participant.name }}
-            <ion-badge *ngIf="participant.isCurrentUser" color="primary"
-              >You</ion-badge
+            <ion-badge
+              *ngIf="participant.isCurrentUser"
+              color="primary"
+              translate
+              >messaging.you</ion-badge
             >
           </div>
           <div class="participant-email">{{ participant.email }}</div>
@@ -116,7 +115,7 @@
   <div *ngIf="chat.isGroup" class="section">
     <h3 class="section-title">
       <ion-icon name="person-add-outline"></ion-icon>
-      Add Participants
+      {{ "messaging.add_participants" | translate }}
     </h3>
 
     <!-- Search Bar -->
@@ -132,8 +131,8 @@
     <div class="available-users-list">
       <div *ngIf="getFilteredUsers().length === 0" class="no-users-message">
         <ion-icon name="people-outline" class="no-users-icon"></ion-icon>
-        <p>No friends available to add</p>
-        <small>Users must be your friends to be added to group chats</small>
+        <p>{{ "messaging.no_friends_available" | translate }}</p>
+        <small>{{ "messaging.friends_required" | translate }}</small>
       </div>
 
       <div
@@ -172,8 +171,7 @@
     <div class="info-message">
       <ion-icon name="information-circle-outline" class="info-icon"></ion-icon>
       <p>
-        This is a private conversation. To add more people, create a group chat
-        instead.
+        {{ "messaging.private_conversation" | translate }}
       </p>
     </div>
   </div>
@@ -181,6 +179,6 @@
   <!-- Loading Spinner -->
   <div *ngIf="isLoading" class="loading-container">
     <ion-spinner name="crescent"></ion-spinner>
-    <p>Updating chat...</p>
+    <p>{{ "messaging.updating_chat" | translate }}</p>
   </div>
 </ion-content>

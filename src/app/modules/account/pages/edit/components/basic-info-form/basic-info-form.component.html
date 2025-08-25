@@ -43,7 +43,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             "
             color="danger"
           >
-            This field is required
+            {{ "messaging.field_required" | translate }}
           </ion-note>
         </ion-col>
       </ion-row>
@@ -66,7 +66,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             "
             color="danger"
           >
-            This field is required
+            {{ "messaging.field_required" | translate }}
           </ion-note>
         </ion-col>
       </ion-row>
@@ -78,7 +78,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             label-placement="stacked"
             formControlName="groupType"
             interface="popover"
-            placeholder="Select One"
+            [placeholder]="'common.select_one' | translate"
             fill="outline"
           >
             <ion-select-option value="Nonprofit">Nonprofit</ion-select-option>
@@ -133,7 +133,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               fill="outline"
               formControlName="category"
               interface="popover"
-              placeholder="Select One"
+              [placeholder]="'common.select_one' | translate"
             >
               <ion-select-option value="Social Media"
                 >Social Media</ion-select-option
@@ -178,7 +178,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 linkControl.get('url')?.touched
               "
             >
-              Please enter a valid URL including http:// or https://
+              {{ "messaging.valid_url_required" | translate }}
             </ion-note>
           </ion-col>
           <ion-col size="1">
@@ -198,7 +198,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         [disabled]="webLinksFormArray.controls.length >= maxLinks"
       >
         <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-        Add Link
+        {{ "common.add_link" | translate }}
       </ion-button>
     </div>
   </div>

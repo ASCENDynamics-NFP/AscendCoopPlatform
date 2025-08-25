@@ -173,7 +173,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-row>
             <ion-col size="12">
               <ion-item-divider>
-                <ion-label>Email Addresses</ion-label>
+                <ion-label>{{
+                  "common.email_addresses" | translate
+                }}</ion-label>
                 <ion-button
                   fill="clear"
                   slot="end"
@@ -199,7 +201,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   </ion-col>
                   <ion-col size="6">
                     <ion-input
-                      label="Email Address"
+                      [label]="'common.email_address' | translate"
                       label-placement="floating"
                       fill="outline"
                       type="email"
@@ -238,7 +240,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-row>
             <ion-col size="12">
               <ion-item-divider>
-                <ion-label>Phone Numbers</ion-label>
+                <ion-label>{{ "common.phone_numbers" | translate }}</ion-label>
                 <ion-button
                   fill="clear"
                   slot="end"
@@ -258,7 +260,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 >
                   <ion-col size="6">
                     <ion-input
-                      label="Phone Number"
+                      [label]="'common.phone_number' | translate"
                       label-placement="floating"
                       fill="outline"
                       type="tel"

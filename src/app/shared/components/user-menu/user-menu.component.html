@@ -19,7 +19,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <ion-list>
   <ion-item (click)="goToProfile()">
-    <ion-label>Profile</ion-label>
+    <ion-label>{{ "user_menu.profile" | translate }}</ion-label>
     <ion-icon
       aria-hidden="true"
       slot="start"
@@ -28,7 +28,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     ></ion-icon>
   </ion-item>
   <ion-item (click)="goToSettings()">
-    <ion-label>Settings</ion-label>
+    <ion-label>{{ "user_menu.settings" | translate }}</ion-label>
     <ion-icon
       aria-hidden="true"
       slot="start"
@@ -37,7 +37,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     ></ion-icon>
   </ion-item>
   <ion-item (click)="logout()">
-    <ion-label>Logout</ion-label>
+    <ion-label>{{ "user_menu.logout" | translate }}</ion-label>
     <ion-icon
       aria-hidden="true"
       slot="start"

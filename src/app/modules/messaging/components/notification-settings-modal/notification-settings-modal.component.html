@@ -135,9 +135,11 @@
 <ion-footer>
   <ion-toolbar>
     <ion-buttons slot="end">
-      <ion-button fill="clear" (click)="dismiss()"> Cancel </ion-button>
+      <ion-button fill="clear" (click)="dismiss()">{{
+        "common.cancel" | translate
+      }}</ion-button>
       <ion-button fill="solid" (click)="saveSettings()">
-        Save Settings
+        {{ "messaging.save_settings" | translate }}
       </ion-button>
     </ion-buttons>
   </ion-toolbar>

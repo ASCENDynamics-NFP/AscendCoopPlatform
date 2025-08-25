@@ -29,10 +29,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <ion-content class="ion-padding">
   <form [formGroup]="feedbackForm">
     <ion-item *ngIf="!user || feedbackForm.get('name')?.invalid">
-      <ion-label position="floating">Name</ion-label>
+      <ion-label position="floating">{{
+        "feedback.name" | translate
+      }}</ion-label>
       <ion-input type="text" formControlName="name"></ion-input>
       <ion-note *ngIf="feedbackForm.get('name')?.hasError('required')">
-        Name is required.
+        {{ "feedback.name_required" | translate }}
       </ion-note>
     </ion-item>
 

@@ -3,14 +3,16 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/"></ion-back-button>
     </ion-buttons>
-    <ion-title>Time Approvals</ion-title>
+    <ion-title>{{ 'time_tracking.time_approvals' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="approvals-content">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Time Approvals</ion-title>
+      <ion-title size="large"
+        >{{ 'time_tracking.time_approvals' | translate }}</ion-title
+      >
     </ion-toolbar>
   </ion-header>
 
@@ -23,7 +25,7 @@
         </ion-avatar>
         <div class="account-details">
           <h1>{{ account.name }}</h1>
-          <p>Timesheet Approvals</p>
+          <p>{{ 'time_tracking.timesheet_approvals' | translate }}</p>
         </div>
       </div>
     </div>
@@ -39,7 +41,7 @@
           [disabled]="showAllWeeks"
         >
           <ion-icon name="chevron-back" slot="start"></ion-icon>
-          Previous Week
+          {{ 'time_tracking.previous_week' | translate }}
         </ion-button>
 
         <div class="current-period">
@@ -53,7 +55,7 @@
           (click)="nextWeek()"
           [disabled]="showAllWeeks"
         >
-          Next Week
+          {{ 'time_tracking.next_week' | translate }}
           <ion-icon name="chevron-forward" slot="end"></ion-icon>
         </ion-button>
       </div>
@@ -65,15 +67,15 @@
           (ionChange)="setViewMode($event.detail.value)"
         >
           <ion-segment-button value="by-user">
-            <ion-label>By User</ion-label>
+            <ion-label>{{ 'time_tracking.by_user' | translate }}</ion-label>
             <ion-icon name="person"></ion-icon>
           </ion-segment-button>
           <ion-segment-button value="by-project">
-            <ion-label>By Project</ion-label>
+            <ion-label>{{ 'time_tracking.by_project' | translate }}</ion-label>
             <ion-icon name="folder"></ion-icon>
           </ion-segment-button>
           <ion-segment-button value="all">
-            <ion-label>All</ion-label>
+            <ion-label>{{ 'time_tracking.all' | translate }}</ion-label>
             <ion-icon name="list"></ion-icon>
           </ion-segment-button>
         </ion-segment>
@@ -82,7 +84,7 @@
           [checked]="showAllWeeks"
           (ionChange)="toggleShowAllWeeks($event)"
         >
-          Show All Weeks
+          {{ 'time_tracking.show_all_weeks' | translate }}
         </ion-toggle>
       </div>
     </div>
@@ -96,10 +98,10 @@
         <div class="section-header">
           <h2>
             <ion-icon name="person-outline"></ion-icon>
-            Timesheets by User
+            {{ 'time_tracking.timesheets_by_user' | translate }}
           </h2>
           <p *ngIf="groupedEntries.length === 0" class="no-entries">
-            No timesheets for this period
+            {{ 'time_tracking.no_timesheets_period' | translate }}
           </p>
         </div>
 
@@ -121,9 +123,18 @@
               </ion-icon>
 
               <ion-label>
-                <h2>Week: {{ getWeekRange(group.weekStart) }}</h2>
-                <h3>Total Hours: {{ group.totalHours }}</h3>
-                <p>{{ group.entries.length }} time entries</p>
+                <h2>
+                  {{ 'time_tracking.week' | translate }}: {{
+                  getWeekRange(group.weekStart) }}
+                </h2>
+                <h3>
+                  {{ 'time_tracking.total_hours' | translate }}: {{
+                  group.totalHours }}
+                </h3>
+                <p>
+                  {{ group.entries.length }} {{ 'time_tracking.time_entries' |
+                  translate }}
+                </p>
                 <div class="status-badge">
                   <ion-badge [color]="getStatusColor(group.status)">
                     {{ group.status | titlecase }}
@@ -144,7 +155,7 @@
                   (click)="approveTimesheet(group)"
                 >
                   <ion-icon name="checkmark" slot="start"></ion-icon>
-                  Approve
+                  {{ 'time_tracking.approve' | translate }}
                 </ion-button>
                 <ion-button
                   fill="outline"
@@ -153,7 +164,7 @@
                   (click)="rejectTimesheet(group)"
                 >
                   <ion-icon name="close" slot="start"></ion-icon>
-                  Reject
+                  {{ 'time_tracking.reject' | translate }}
                 </ion-button>
               </div>
 
@@ -174,14 +185,15 @@
             <ion-item class="details-item">
               <ion-label>
                 <div class="time-entries-details">
-                  <h4>Time Entry Details:</h4>
+                  <h4>{{ 'time_tracking.time_entry_details' | translate }}</h4>
                   <div class="entries-grid">
                     <div *ngFor="let entry of group.entries" class="entry-row">
                       <span class="date"
                         >{{ entry.date.toDate() | date:'EEE, MMM d' }}</span
                       >
                       <span class="project"
-                        >{{ entry.projectName || 'No Project' }}</span
+                        >{{ entry.projectName || ('time_tracking.no_project' |
+                        translate) }}</span
                       >
                       <span class="hours">{{ entry.hours }}h</span>
                       <span class="notes" *ngIf="entry.notes"
@@ -203,10 +215,10 @@
         <div class="section-header">
           <h2>
             <ion-icon name="folder-outline"></ion-icon>
-            Timesheets by Project
+            {{ 'time_tracking.timesheets_by_project' | translate }}
           </h2>
           <p *ngIf="projectGroups.length === 0" class="no-entries">
-            No project timesheets for this period
+            {{ 'time_tracking.no_project_timesheets_period' | translate }}
           </p>
         </div>
 
@@ -230,8 +242,14 @@
 
                 <ion-label>
                   <h2>{{ user.userName }}</h2>
-                  <h3>Hours: {{ user.totalHours }}</h3>
-                  <p>{{ user.entries.length }} time entries</p>
+                  <h3>
+                    {{ 'time_tracking.hours' | translate }}: {{ user.totalHours
+                    }}
+                  </h3>
+                  <p>
+                    {{ user.entries.length }} {{ 'time_tracking.time_entries' |
+                    translate }}
+                  </p>
                   <div class="status-badge">
                     <ion-badge [color]="getStatusColor(user.status)">
                       {{ user.status | titlecase }}
@@ -253,10 +271,10 @@
           <div class="section-header">
             <h2>
               <ion-icon name="list-outline"></ion-icon>
-              All Timesheets
+              {{ 'time_tracking.all_timesheets' | translate }}
             </h2>
             <p *ngIf="groupedEntries.length === 0" class="no-entries">
-              No timesheets for this period
+              {{ 'time_tracking.no_timesheets_period' | translate }}
             </p>
           </div>
 
@@ -278,9 +296,18 @@
                 </ion-icon>
 
                 <ion-label>
-                  <h2>Week: {{ getWeekRange(group.weekStart) }}</h2>
-                  <h3>Total Hours: {{ group.totalHours }}</h3>
-                  <p>{{ group.entries.length }} time entries</p>
+                  <h2>
+                    {{ 'time_tracking.week' | translate }}: {{
+                    getWeekRange(group.weekStart) }}
+                  </h2>
+                  <h3>
+                    {{ 'time_tracking.total_hours' | translate }}: {{
+                    group.totalHours }}
+                  </h3>
+                  <p>
+                    {{ group.entries.length }} {{ 'time_tracking.time_entries' |
+                    translate }}
+                  </p>
                   <div class="status-badge">
                     <ion-badge [color]="getStatusColor(group.status)">
                       {{ group.status | titlecase }}
@@ -301,7 +328,7 @@
                     (click)="approveTimesheet(group)"
                   >
                     <ion-icon name="checkmark" slot="start"></ion-icon>
-                    Approve
+                    {{ 'time_tracking.approve' | translate }}
                   </ion-button>
                   <ion-button
                     fill="outline"
@@ -310,7 +337,7 @@
                     (click)="rejectTimesheet(group)"
                   >
                     <ion-icon name="close" slot="start"></ion-icon>
-                    Reject
+                    {{ 'time_tracking.reject' | translate }}
                   </ion-button>
                 </div>
 
@@ -331,7 +358,9 @@
               <ion-item class="details-item">
                 <ion-label>
                   <div class="time-entries-details">
-                    <h4>Time Entry Details:</h4>
+                    <h4>
+                      {{ 'time_tracking.time_entry_details' | translate }}
+                    </h4>
                     <div class="entries-grid">
                       <div
                         *ngFor="let entry of group.entries"
@@ -341,7 +370,8 @@
                           >{{ entry.date.toDate() | date:'EEE, MMM d' }}</span
                         >
                         <span class="project"
-                          >{{ entry.projectName || 'No Project' }}</span
+                          >{{ entry.projectName || ('time_tracking.no_project' |
+                          translate) }}</span
                         >
                         <span class="hours">{{ entry.hours }}h</span>
                         <span class="notes" *ngIf="entry.notes"
@@ -360,7 +390,7 @@
       <!-- Loading State -->
       <div class="loading-container" *ngIf="!(groupedEntries$ | async)">
         <ion-spinner></ion-spinner>
-        <p>Loading timesheet data...</p>
+        <p>{{ 'time_tracking.loading_timesheet_data' | translate }}</p>
       </div>
     </div>
   </div>

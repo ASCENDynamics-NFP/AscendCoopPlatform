@@ -21,7 +21,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <ion-toolbar>
     <ion-title>Report User</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="closeModal()">Close</ion-button>
+      <ion-button (click)="closeModal()">{{
+        "common.close" | translate
+      }}</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -43,7 +45,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <!-- Reporter Information (if not logged in) -->
     <div *ngIf="!currentUser">
       <ion-item>
-        <ion-label position="floating">Your Name</ion-label>
+        <ion-label position="floating">{{
+          "messaging.your_name" | translate
+        }}</ion-label>
         <ion-input type="text" formControlName="reporterName"></ion-input>
       </ion-item>
       <ion-note
@@ -53,11 +57,13 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         "
         color="danger"
       >
-        Name is required.
+        {{ "messaging.name_required" | translate }}
       </ion-note>
 
       <ion-item>
-        <ion-label position="floating">Your Email</ion-label>
+        <ion-label position="floating">{{
+          "messaging.your_email" | translate
+        }}</ion-label>
         <ion-input type="email" formControlName="reporterEmail"></ion-input>
       </ion-item>
       <ion-note
@@ -67,7 +73,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         "
         color="danger"
       >
-        Email is required.
+        {{ "messaging.email_required" | translate }}
       </ion-note>
       <ion-note
         *ngIf="
@@ -76,14 +82,17 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         "
         color="danger"
       >
-        Please enter a valid email address.
+        {{ "messaging.valid_email_required" | translate }}
       </ion-note>
     </div>
 
     <!-- Report Reason -->
     <ion-item>
-      <ion-label>Reason for Report</ion-label>
-      <ion-select formControlName="reason" placeholder="Select a reason">
+      <ion-label>{{ "messaging.reason_for_report" | translate }}</ion-label>
+      <ion-select
+        formControlName="reason"
+        [placeholder]="'common.select_reason' | translate"
+      >
         <ion-select-option
           *ngFor="let reason of reportReasons"
           [value]="reason.value"
@@ -104,7 +113,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
     <!-- Description -->
     <ion-item>
-      <ion-label position="floating">Description</ion-label>
+      <ion-label position="floating">{{
+        "messaging.description" | translate
+      }}</ion-label>
       <ion-textarea
         formControlName="description"
         placeholder="Please provide specific details about the inappropriate behavior..."
@@ -119,7 +130,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       "
       color="danger"
     >
-      Description is required.
+      {{ "messaging.description_required" | translate }}
     </ion-note>
     <ion-note
       *ngIf="
@@ -150,25 +161,23 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
     <!-- Submit Button -->
     <ion-button
-      expand="block"
+      type="submit"
+      fill="solid"
       color="danger"
-      [disabled]="reportForm.invalid"
       (click)="submitReport()"
       class="submit-button"
     >
-      <ion-icon name="flag-outline" slot="start"></ion-icon>
-      Submit Report
+      {{ "common.submit" | translate }} Report
     </ion-button>
 
     <!-- Cancel Button -->
     <ion-button
-      expand="block"
-      fill="outline"
-      color="medium"
+      type="button"
+      fill="clear"
       (click)="closeModal()"
       class="cancel-button"
     >
-      Cancel
+      {{ "common.cancel" | translate }}
     </ion-button>
   </form>
 </ion-content>

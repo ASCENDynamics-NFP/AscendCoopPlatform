@@ -29,7 +29,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             alt="ASCENDynamics Logo"
             class="toolbar-logo"
           />
-          <ion-title color="primary" translate>menu.title</ion-title>
+          <ion-title color="primary">{{ "menu.title" | translate }}</ion-title>
         </div>
       </ion-toolbar>
     </ion-header>
@@ -81,14 +81,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               slot="start"
               name="ear-outline"
             ></ion-icon>
-            <ion-label>Give Feedback</ion-label>
+            <ion-label>{{ "info.give_feedback" | translate }}</ion-label>
           </ion-item>
         </ion-menu-toggle>
       </ion-list>
       <!-- Info Pages Section -->
       <ion-list>
         <ion-list-header>
-          <strong>Learn More</strong>
+          <strong>{{ "info.learn_more" | translate }}</strong>
         </ion-list-header>
         <ion-menu-toggle auto-hide="false">
           <ion-item
@@ -111,7 +111,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <!-- Project Links Section -->
       <ion-list>
         <ion-list-header>
-          <strong>Links</strong>
+          <strong>{{ "info.links" | translate }}</strong>
         </ion-list-header>
         <ion-item
           *ngFor="let p of project"

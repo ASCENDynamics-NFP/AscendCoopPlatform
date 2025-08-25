@@ -18,14 +18,14 @@
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
     <ion-spinner name="crescent"></ion-spinner>
-    <p>Loading blocked users...</p>
+    <p>{{ "messaging.loading_blocked_users" | translate }}</p>
   </div>
 
   <!-- Empty State -->
   <div *ngIf="!loading && blockedUsers.length === 0" class="empty-state">
     <ion-icon name="people-outline" size="large"></ion-icon>
-    <h2>No Blocked Users</h2>
-    <p>You haven't blocked any users yet.</p>
+    <h2>{{ "messaging.no_blocked_users" | translate }}</h2>
+    <p>{{ "messaging.no_blocked_users_yet" | translate }}</p>
   </div>
 
   <!-- Blocked Users List -->

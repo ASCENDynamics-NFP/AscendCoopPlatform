@@ -15,7 +15,7 @@
           ></ion-input>
         </ion-item>
         <div class="error-message" *ngIf="isFieldInvalid('name')">
-          Group name is required
+          {{ "messaging.group_name_required" | translate }}
         </div>
 
         <ion-item>
@@ -233,7 +233,7 @@
       <ion-card-content formGroupName="contactInformation">
         <!-- Email Addresses -->
         <div class="section-title">
-          <h3>Email Addresses</h3>
+          <h3>{{ "common.email_addresses" | translate }}</h3>
           <ion-button
             fill="clear"
             size="small"
@@ -275,7 +275,9 @@
                 </ion-input>
               </ion-item>
               <ion-item>
-                <ion-label position="stacked">Email Address</ion-label>
+                <ion-label position="stacked">{{
+                  "common.email_address" | translate
+                }}</ion-label>
                 <ion-input
                   formControlName="email"
                   placeholder="email@example.com"
@@ -289,7 +291,7 @@
 
         <!-- Phone Numbers -->
         <div class="section-title">
-          <h3>Phone Numbers</h3>
+          <h3>{{ "common.phone_numbers" | translate }}</h3>
           <ion-button
             fill="clear"
             size="small"
@@ -332,7 +334,9 @@
                 </ion-select>
               </ion-item>
               <ion-item>
-                <ion-label position="stacked">Phone Number</ion-label>
+                <ion-label position="stacked">{{
+                  "common.phone_number" | translate
+                }}</ion-label>
                 <ion-input
                   formControlName="number"
                   placeholder="(555) 123-4567"

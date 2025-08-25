@@ -51,71 +51,117 @@ export class MenuComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    // Initialize project links
-    this.project = [
-      {
-        title: "Donate",
-        url: "https://buy.stripe.com/bIY5mC9sY1ob4TufYY",
-        icon: "heart-sharp",
-      },
-      {
-        title: "Project Repository",
-        url: "https://github.com/ASCENDynamics-NFP/AscendCoopPlatform",
-        icon: "code-slash",
-      },
-      {
-        title: "Slack Community",
-        url: "https://join.slack.com/t/ascendynamicsnfp/shared_invite/zt-1yqcw1hqa-slT2gWkBEkLOTRnN8zEqdQ",
-        icon: "logo-slack",
-      },
-      {
-        title: "YouTube Channel",
-        url: "https://www.youtube.com/channel/UCkR2Cgrjyi0QPeIKIXzxOvg",
-        icon: "logo-youtube",
-      },
-      {
-        title: "LinkedIn",
-        url: "https://www.linkedin.com/company/ascendynamics-nfp",
-        icon: "logo-linkedin",
-      },
-      {
-        title: "Facebook",
-        url: "https://www.facebook.com/ASCENDynamicsNFP",
-        icon: "logo-facebook",
-      },
-    ];
-
-    // Initialize informational page links
-    this.infoPages = [
-      {title: "Home", url: "/info", icon: "globe-outline"},
-      {title: "About Us", url: "/info/about-us", icon: "information-circle"},
-      {title: "Services", url: "/info/services", icon: "construct"},
-      {title: "Startups", url: "/info/startups", icon: "rocket"},
-      {title: "Event Calendar", url: "/info/event-calendar", icon: "calendar"},
-      {title: "Our Team", url: "/info/team", icon: "people"},
-      {title: "Think Tank", url: "/info/think-tank", icon: "bulb"},
-    ];
+    // Initialize project links and info pages
+    this.updateProjectLinks();
+    this.updateInfoPages();
 
     // Combine authUser and language change observables
     const authUser$ = this.store.select(selectAuthUser);
     const langChange$ = this.translate.onLangChange;
 
-    const menuPages$ = combineLatest([authUser$, langChange$]).subscribe(
-      ([authUser, langChange]) => {
-        this.user = authUser;
-        if (authUser) {
-          this.setUserMenuItems();
-        } else {
-          this.setGuestMenuItems();
-        }
-      },
-    );
+    // Handle auth user changes
+    const authSubscription = authUser$.subscribe((authUser) => {
+      this.user = authUser;
+      if (authUser) {
+        this.setUserMenuItems();
+      } else {
+        this.setGuestMenuItems();
+      }
+    });
 
-    this.subscriptions.add(menuPages$);
+    // Handle language changes separately
+    const langSubscription = langChange$.subscribe(() => {
+      this.updateProjectLinks();
+      this.updateInfoPages();
+      // Refresh menu items with new translations
+      if (this.user) {
+        this.setUserMenuItems();
+      } else {
+        this.setGuestMenuItems();
+      }
+    });
+
+    this.subscriptions.add(authSubscription);
+    this.subscriptions.add(langSubscription);
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+  }
+
+  private updateProjectLinks() {
+    this.project = [
+      {
+        title: this.translate.instant("info.donate"),
+        url: "https://buy.stripe.com/bIY5mC9sY1ob4TufYY",
+        icon: "heart-sharp",
+      },
+      {
+        title: this.translate.instant("info.project_repository"),
+        url: "https://github.com/ASCENDynamics-NFP/AscendCoopPlatform",
+        icon: "code-slash",
+      },
+      {
+        title: this.translate.instant("info.slack_community"),
+        url: "https://join.slack.com/t/ascendynamicsnfp/shared_invite/zt-1yqcw1hqa-slT2gWkBEkLOTRnN8zEqdQ",
+        icon: "logo-slack",
+      },
+      {
+        title: this.translate.instant("info.youtube_channel"),
+        url: "https://www.youtube.com/channel/UCkR2Cgrjyi0QPeIKIXzxOvg",
+        icon: "logo-youtube",
+      },
+      {
+        title: this.translate.instant("info.linkedin"),
+        url: "https://www.linkedin.com/company/ascendynamics-nfp",
+        icon: "logo-linkedin",
+      },
+      {
+        title: this.translate.instant("info.facebook"),
+        url: "https://www.facebook.com/ASCENDynamicsNFP",
+        icon: "logo-facebook",
+      },
+    ];
+  }
+
+  private updateInfoPages() {
+    this.infoPages = [
+      {
+        title: this.translate.instant("info.home"),
+        url: "/info",
+        icon: "globe-outline",
+      },
+      {
+        title: this.translate.instant("info.about_us"),
+        url: "/info/about-us",
+        icon: "information-circle",
+      },
+      {
+        title: this.translate.instant("info.services"),
+        url: "/info/services",
+        icon: "construct",
+      },
+      {
+        title: this.translate.instant("info.startups"),
+        url: "/info/startups",
+        icon: "rocket",
+      },
+      {
+        title: this.translate.instant("info.event_calendar"),
+        url: "/info/event-calendar",
+        icon: "calendar",
+      },
+      {
+        title: this.translate.instant("info.our_team"),
+        url: "/info/team",
+        icon: "people",
+      },
+      {
+        title: this.translate.instant("info.think_tank"),
+        url: "/info/think-tank",
+        icon: "bulb",
+      },
+    ];
   }
 
   private setGuestMenuItems() {

@@ -69,7 +69,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             fill="outline"
             interface="popover"
             multiple="true"
-            placeholder="Select advocacy areas"
+            [placeholder]="'common.select_advocacy_areas' | translate"
           >
             <ion-select-option
               *ngFor="let area of advocacyAreasOptions"
@@ -90,7 +90,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             label-placement="floating"
             fill="outline"
             interface="popover"
-            placeholder="Select experience level"
+            [placeholder]="'common.select_experience_level' | translate"
           >
             <ion-select-option
               *ngFor="let experience of laborRightsExperienceOptions"

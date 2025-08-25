@@ -26,6 +26,7 @@ import {FirestoreService} from "../../../core/services/firestore.service";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {initializeApp} from "firebase/app";
 import {environment} from "../../../../environments/environment";
+import {TranslateTestingModule} from "../../../shared/testing/translate-testing.module";
 
 describe("FeedbackModalComponent", () => {
   let component: FeedbackModalComponent;

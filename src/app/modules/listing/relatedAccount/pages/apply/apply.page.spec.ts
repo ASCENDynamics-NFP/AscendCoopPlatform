@@ -39,6 +39,7 @@ import {Listing} from "@shared/models/listing.model";
 import {Timestamp} from "firebase/firestore";
 import * as ListingsActions from "../../../../../state/actions/listings.actions";
 import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
+import {TranslateTestingModule} from "../../../../../shared/testing/translate-testing.module";
 
 describe("ApplyPage", () => {
   let component: ApplyPage;
@@ -112,6 +113,7 @@ describe("ApplyPage", () => {
         ReactiveFormsModule,
         RouterTestingModule,
         StoreModule.forRoot({}),
+        TranslateTestingModule,
       ],
       providers: [
         FormBuilder,

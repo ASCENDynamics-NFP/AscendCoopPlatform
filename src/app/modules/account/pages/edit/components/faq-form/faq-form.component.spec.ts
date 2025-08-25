@@ -23,6 +23,7 @@ import {ReactiveFormsModule} from "@angular/forms";
 import {Store} from "@ngrx/store";
 import {provideMockStore} from "@ngrx/store/testing";
 import {FaqFormComponent} from "./faq-form.component";
+import {TranslateTestingModule} from "../../../../../../shared/testing/translate-testing.module";
 
 describe("FaqFormComponent", () => {
   let component: FaqFormComponent;
@@ -31,7 +32,11 @@ describe("FaqFormComponent", () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [FaqFormComponent],
-      imports: [IonicModule.forRoot(), ReactiveFormsModule],
+      imports: [
+        IonicModule.forRoot(),
+        ReactiveFormsModule,
+        TranslateTestingModule,
+      ],
       providers: [provideMockStore()],
     }).compileComponents();
 

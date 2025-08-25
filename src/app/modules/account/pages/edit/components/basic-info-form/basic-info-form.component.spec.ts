@@ -23,6 +23,7 @@ import {CommonModule} from "@angular/common";
 import {BasicInfoFormComponent} from "./basic-info-form.component";
 import {provideMockStore} from "@ngrx/store/testing";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
+import {TranslateTestingModule} from "../../../../../../shared/testing/translate-testing.module";
 
 describe("BasicInfoComponent", () => {
   let component: BasicInfoFormComponent;
@@ -31,7 +32,7 @@ describe("BasicInfoComponent", () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [BasicInfoFormComponent],
-      imports: [IonicModule.forRoot(), CommonModule],
+      imports: [IonicModule.forRoot(), CommonModule, TranslateTestingModule],
       providers: [provideMockStore({})],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();

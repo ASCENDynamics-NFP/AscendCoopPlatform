@@ -25,6 +25,7 @@ import {Store, StoreModule} from "@ngrx/store";
 import {of} from "rxjs";
 import * as AuthActions from "../../../state/actions/auth.actions";
 import {AuthUser} from "@shared/models/auth-user.model";
+import {TranslateTestingModule} from "../../../shared/testing/translate-testing.module";
 
 describe("UserMenuComponent", () => {
   let component: UserMenuComponent;
@@ -72,7 +73,7 @@ describe("UserMenuComponent", () => {
         {provide: PopoverController, useValue: mockPopoverCtrl},
         {provide: Store, useValue: mockStore},
       ],
-      imports: [StoreModule.forRoot({})],
+      imports: [StoreModule.forRoot({}), TranslateTestingModule],
     }).compileComponents();
   });
 

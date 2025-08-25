@@ -24,6 +24,7 @@ import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {Timestamp} from "firebase/firestore";
 import {Listing} from "@shared/models/listing.model";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
+import {TranslateTestingModule} from "../../../../../../shared/testing/translate-testing.module";
 
 describe("HeroComponent", () => {
   let component: HeroComponent;
@@ -77,7 +78,7 @@ describe("HeroComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [HeroComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [IonicModule.forRoot(), TranslateTestingModule],
       providers: [
         provideMockStore({
           initialState: {listings: {selectedListing: null}},

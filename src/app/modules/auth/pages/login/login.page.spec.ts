@@ -34,6 +34,7 @@ import {Router} from "@angular/router";
 import {of} from "rxjs";
 import * as AuthActions from "../../../../state/actions/auth.actions";
 import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
+import {TranslateTestingModule} from "../../../../shared/testing/translate-testing.module";
 
 describe("LoginPage", () => {
   let component: LoginPage;
@@ -51,7 +52,11 @@ describe("LoginPage", () => {
 
     TestBed.configureTestingModule({
       declarations: [LoginPage],
-      imports: [IonicModule.forRoot(), ReactiveFormsModule],
+      imports: [
+        IonicModule.forRoot(),
+        ReactiveFormsModule,
+        TranslateTestingModule,
+      ],
       providers: [
         FormBuilder,
         {provide: Store, useValue: storeMock},

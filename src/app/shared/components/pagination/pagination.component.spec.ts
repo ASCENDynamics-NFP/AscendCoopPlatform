@@ -21,6 +21,7 @@ import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
 
 import {PaginationComponent} from "./pagination.component";
+import {TranslateTestingModule} from "../../../shared/testing/translate-testing.module";
 
 describe("PaginationComponent", () => {
   let component: PaginationComponent;

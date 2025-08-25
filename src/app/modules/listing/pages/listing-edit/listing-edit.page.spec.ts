@@ -33,6 +33,7 @@ import {selectListingById} from "../../../../state/selectors/listings.selectors"
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 import {Timestamp} from "firebase/firestore";
+import {TranslateTestingModule} from "../../../../shared/testing/translate-testing.module";
 
 describe("ListingEditPage", () => {
   let component: ListingEditPage;

@@ -18,6 +18,7 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {PhoneFormatPipe} from "./phone-format.pipe";
+import {TranslateTestingModule} from "../../shared/testing/translate-testing.module";
 
 describe("PhoneFormatPipe", () => {
   it("create an instance", () => {

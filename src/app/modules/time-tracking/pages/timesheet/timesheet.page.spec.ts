@@ -10,6 +10,7 @@ import {selectActiveProjectsByAccount} from "../../../../state/selectors/project
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
 import {FormsModule} from "@angular/forms";
 import {TranslateModule} from "@ngx-translate/core";
+import {TranslateTestingModule} from "../../../../shared/testing/translate-testing.module";
 
 describe("TimesheetPage", () => {
   let component: TimesheetPage;

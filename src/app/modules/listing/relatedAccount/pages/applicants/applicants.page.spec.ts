@@ -52,6 +52,7 @@ import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 import {ApplicantDetailsModalComponent} from "./components/applicant-details-modal/applicant-details-modal.component";
 import {MetaService} from "../../../../../core/services/meta.service";
 import {Timestamp} from "firebase/firestore";
+import {TranslateTestingModule} from "../../../../../shared/testing/translate-testing.module";
 
 describe("ApplicantsPage", () => {
   let component: ApplicantsPage;

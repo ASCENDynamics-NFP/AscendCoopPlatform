@@ -24,6 +24,7 @@ import {IonicModule, IonSelect, IonSelectOption} from "@ionic/angular";
 import {provideMockStore} from "@ngrx/store/testing";
 import {Account} from "@shared/models/account.model";
 import {CommonModule} from "@angular/common";
+import {TranslateTestingModule} from "../../../../../../shared/testing/translate-testing.module";
 
 describe("MutualAidCommunityEngagementComponent", () => {
   let component: MutualAidCommunityEngagementFormComponent;
@@ -42,6 +43,7 @@ describe("MutualAidCommunityEngagementComponent", () => {
         ReactiveFormsModule,
         FormsModule,
         IonicModule.forRoot(),
+        TranslateTestingModule,
       ],
       providers: [provideMockStore()],
     }).compileComponents();

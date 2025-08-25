@@ -59,6 +59,11 @@
           (click)="saveChatTitle()"
           [disabled]="!editTitleText.trim()"
         >
+          <ion-spinner
+            name="crescent"
+            *ngIf="isLoading"
+            slot="start"
+          ></ion-spinner>
           {{ "common.save" | translate }}
         </ion-button>
       </div>

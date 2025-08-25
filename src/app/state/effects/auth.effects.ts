@@ -39,7 +39,7 @@ import {
   isSignInWithEmailLink,
   User,
 } from "firebase/auth";
-import {GoogleAuth} from "@codetrix-studio/capacitor-google-auth";
+import {GoogleAuth} from "@southdevs/capacitor-google-auth";
 import {Capacitor} from "@capacitor/core";
 import {
   catchError,
@@ -278,7 +278,11 @@ export class AuthEffects {
       switchMap(() => {
         if (Capacitor.isNativePlatform()) {
           // Use Capacitor Google Auth for native platforms
-          return from(GoogleAuth.signIn()).pipe(
+          return from(
+            GoogleAuth.signIn({
+              scopes: ["profile", "email"],
+            }),
+          ).pipe(
             switchMap(async (result) => {
               if (!result.authentication?.idToken) {
                 throw new Error("No ID token received from Google Auth");

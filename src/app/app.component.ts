@@ -28,7 +28,7 @@ import * as AuthActions from "./state/actions/auth.actions";
 import {Observable} from "rxjs";
 import {tap} from "rxjs/operators";
 import {register} from "swiper/element/bundle";
-import {GoogleAuth} from "@codetrix-studio/capacitor-google-auth";
+import {GoogleAuth} from "@southdevs/capacitor-google-auth";
 import {Capacitor} from "@capacitor/core";
 
 //  Import and Register Swiper

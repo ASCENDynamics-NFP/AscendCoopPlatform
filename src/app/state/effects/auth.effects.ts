@@ -48,10 +48,13 @@ import {
   switchMap,
   of,
   tap,
+  filter,
   exhaustMap,
   withLatestFrom,
   Observable,
   take,
+  timeout,
+  delay,
 } from "rxjs";
 import {ErrorHandlerService} from "../../core/services/error-handler.service";
 import {SuccessHandlerService} from "../../core/services/success-handler.service";
@@ -549,8 +552,43 @@ export class AuthEffects {
     user: User,
     claims: any,
   ): Observable<AuthUser> {
+    // First, try to get the account from the store
     return this.store.select(selectAccountById(user.uid)).pipe(
       take(1),
+      switchMap((account) => {
+        // If account is not in store or has type "new", load it from the database
+        if (!account || account.type === "new") {
+          this.store.dispatch(
+            AccountActions.loadAccount({accountId: user.uid}),
+          );
+          // Wait for the account to be loaded, with a timeout and small delay for race condition
+          return this.store.select(selectAccountById(user.uid)).pipe(
+            delay(200), // Allow time for dispatch to process
+            filter(
+              (updatedAccount) =>
+                updatedAccount !== undefined && updatedAccount.type !== "new",
+            ),
+            timeout(10000), // 10 second timeout
+            take(1),
+            catchError((error) => {
+              // Try one more time with fresh data
+              this.store.dispatch(
+                AccountActions.loadAccount({accountId: user.uid}),
+              );
+              return this.store.select(selectAccountById(user.uid)).pipe(
+                delay(500), // Longer delay on retry
+                timeout(8000),
+                take(1),
+                catchError(() => {
+                  // If all retries fail, use existing account or fallback
+                  return of(account);
+                }),
+              );
+            }),
+          );
+        }
+        return of(account);
+      }),
       map((account) => {
         // Handle undefined account
         const defaultIconImage = user.photoURL || "src/assets/avatar/male1.png";
@@ -560,6 +598,9 @@ export class AuthEffects {
           language: "en",
           theme: "system",
         };
+
+        const finalType = (claims["type"] as string) || account?.type || "new";
+
         return {
           uid: user.uid,
           email: user.email,
@@ -578,7 +619,7 @@ export class AuthEffects {
             defaultHeroImage,
           tagline:
             (claims["tagline"] as string) || account?.tagline || defaultTagline,
-          type: (claims["type"] as string) || account?.type || "",
+          type: finalType,
           createdAt: user.metadata.creationTime
             ? new Date(user.metadata.creationTime)
             : new Date(),
@@ -594,6 +635,7 @@ export class AuthEffects {
             (claims["settings"] as Settings) ||
             account?.settings ||
             defaultSettings,
+          claims,
         };
       }),
     );

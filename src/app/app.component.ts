@@ -28,6 +28,8 @@ import * as AuthActions from "./state/actions/auth.actions";
 import {Observable} from "rxjs";
 import {tap} from "rxjs/operators";
 import {register} from "swiper/element/bundle";
+import {GoogleAuth} from "@codetrix-studio/capacitor-google-auth";
+import {Capacitor} from "@capacitor/core";
 
 //  Import and Register Swiper
 register();
@@ -59,6 +61,16 @@ export class AppComponent implements OnInit {
 
   initializeApp() {
     this.platform.ready().then(() => {
+      // Initialize GoogleAuth plugin for native platforms
+      if (Capacitor.isNativePlatform()) {
+        GoogleAuth.initialize({
+          clientId:
+            "1031671694911-3ejesivnlk5fhr8l29ne74fhp0smdltn.apps.googleusercontent.com",
+          scopes: ["profile", "email"],
+          grantOfflineAccess: true,
+        });
+      }
+
       // Set the default language
       this.translate.setDefaultLang("en");
 

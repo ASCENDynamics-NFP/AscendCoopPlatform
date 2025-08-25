@@ -32,12 +32,15 @@ import {
   createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
+  signInWithCredential,
   signOut,
   sendPasswordResetEmail,
   sendSignInLinkToEmail,
   isSignInWithEmailLink,
   User,
 } from "firebase/auth";
+import {GoogleAuth} from "@codetrix-studio/capacitor-google-auth";
+import {Capacitor} from "@capacitor/core";
 import {
   catchError,
   from,
@@ -266,28 +269,70 @@ export class AuthEffects {
   signInWithGoogle$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.signInWithGoogle),
-      switchMap(() =>
-        from(signInWithPopup(this.auth, new GoogleAuthProvider())).pipe(
-          switchMap(async (result) => {
-            const idTokenResult = await result.user.getIdTokenResult();
-            return {user: result.user, claims: idTokenResult.claims};
-          }),
-          switchMap(({user, claims}) =>
-            this.createAuthUserFromClaims(user, claims).pipe(
-              map((authUser) => {
-                this.store.dispatch(
-                  AuthActions.updateAuthUser({user: authUser}),
-                );
-                return AuthActions.signInSuccess({uid: authUser.uid});
-              }),
+      switchMap(() => {
+        if (Capacitor.isNativePlatform()) {
+          // Use Capacitor Google Auth for native platforms
+          return from(GoogleAuth.signIn()).pipe(
+            switchMap(async (result) => {
+              if (!result.authentication?.idToken) {
+                throw new Error("No ID token received from Google Auth");
+              }
+
+              const credential = GoogleAuthProvider.credential(
+                result.authentication.idToken,
+                result.authentication.accessToken,
+              );
+
+              const firebaseResult = await signInWithCredential(
+                this.auth,
+                credential,
+              );
+              const idTokenResult =
+                await firebaseResult.user.getIdTokenResult();
+              return {user: firebaseResult.user, claims: idTokenResult.claims};
+            }),
+            switchMap(({user, claims}) =>
+              this.createAuthUserFromClaims(user, claims).pipe(
+                map((authUser) => {
+                  this.store.dispatch(
+                    AuthActions.updateAuthUser({user: authUser}),
+                  );
+                  return AuthActions.signInSuccess({uid: authUser.uid});
+                }),
+              ),
             ),
-          ),
-          catchError((error) => {
-            this.errorHandler.handleFirebaseAuthError(error);
-            return of(AuthActions.signInWithGoogleFailure({error}));
-          }),
-        ),
-      ),
+            catchError((error) => {
+              console.error("Google Sign-In Error:", error);
+              this.errorHandler.handleFirebaseAuthError(error);
+              return of(AuthActions.signInWithGoogleFailure({error}));
+            }),
+          );
+        } else {
+          // Use popup for web platforms
+          return from(
+            signInWithPopup(this.auth, new GoogleAuthProvider()),
+          ).pipe(
+            switchMap(async (result) => {
+              const idTokenResult = await result.user.getIdTokenResult();
+              return {user: result.user, claims: idTokenResult.claims};
+            }),
+            switchMap(({user, claims}) =>
+              this.createAuthUserFromClaims(user, claims).pipe(
+                map((authUser) => {
+                  this.store.dispatch(
+                    AuthActions.updateAuthUser({user: authUser}),
+                  );
+                  return AuthActions.signInSuccess({uid: authUser.uid});
+                }),
+              ),
+            ),
+            catchError((error) => {
+              this.errorHandler.handleFirebaseAuthError(error);
+              return of(AuthActions.signInWithGoogleFailure({error}));
+            }),
+          );
+        }
+      }),
     ),
   );
 

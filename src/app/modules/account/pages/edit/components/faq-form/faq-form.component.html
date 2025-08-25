@@ -19,7 +19,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <form [formGroup]="faqForm" (ngSubmit)="onSubmit()">
   <ion-item slot="header">
-    <ion-label>FAQ Management</ion-label>
+    <ion-label>{{ "forms.faq_management" | translate }}</ion-label>
   </ion-item>
 
   <div slot="content">
@@ -80,7 +80,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                     size="small"
                     color="danger"
                     (click)="removeFAQ(i)"
-                    title="Delete FAQ"
+                    [title]="'common.delete_faq' | translate"
                   >
                     <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
                   </ion-button>

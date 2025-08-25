@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/messaging/chats"></ion-back-button>
     </ion-buttons>
-    <ion-title>Blocked Users</ion-title>
+    <ion-title>{{ "messaging.blocked_users" | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -11,7 +11,9 @@
   <!-- Header -->
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Blocked Users</ion-title>
+      <ion-title size="large">{{
+        "messaging.blocked_users" | translate
+      }}</ion-title>
     </ion-toolbar>
   </ion-header>
 
@@ -50,7 +52,7 @@
           <p *ngIf="user.tagline">{{ user.tagline }}</p>
           <p class="blocked-status">
             <ion-icon name="ban-outline" class="blocked-icon"></ion-icon>
-            Blocked
+            {{ "messaging.blocked" | translate }}
           </p>
         </ion-label>
 
@@ -62,7 +64,7 @@
           (click)="unblockUser(user)"
         >
           <ion-icon name="remove-circle-outline" slot="start"></ion-icon>
-          Unblock
+          {{ "messaging.unblock" | translate }}
         </ion-button>
       </ion-item>
 
@@ -83,8 +85,7 @@
     <ion-text color="medium">
       <p>
         <ion-icon name="information-circle-outline"></ion-icon>
-        Unblocking a user will allow them to message you again and see your
-        public content.
+        {{ "messaging.unblock_info" | translate }}
       </p>
     </ion-text>
   </div>

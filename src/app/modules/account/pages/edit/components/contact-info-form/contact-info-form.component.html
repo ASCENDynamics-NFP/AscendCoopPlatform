@@ -19,7 +19,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <form [formGroup]="contactInfoForm" (ngSubmit)="onSubmit()">
   <ion-item slot="header">
-    <ion-label>Contact Information</ion-label>
+    <ion-label>{{ "forms.contact_information" | translate }}</ion-label>
   </ion-item>
   <div slot="content">
     <ion-grid formGroupName="contactInformation">
@@ -27,7 +27,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-row>
         <ion-col>
           <ion-item-divider>
-            <ion-label color="tertiary">Emails</ion-label>
+            <ion-label color="tertiary">{{
+              "forms.emails" | translate
+            }}</ion-label>
           </ion-item-divider>
           <div formArrayName="emails">
             <div
@@ -150,7 +152,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 <ion-row>
                   <ion-col size="11">
                     <ion-item lines="none">
-                      <ion-label>Emergency Contact</ion-label>
+                      <ion-label>{{
+                        "forms.emergency_contact" | translate
+                      }}</ion-label>
                       <ion-checkbox
                         slot="start"
                         formControlName="isEmergencyNumber"
@@ -186,7 +190,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-row>
         <ion-col>
           <ion-item-divider>
-            <ion-label color="tertiary">Addresses</ion-label>
+            <ion-label color="tertiary">{{
+              "forms.addresses" | translate
+            }}</ion-label>
           </ion-item-divider>
           <div formArrayName="addresses">
             <div
@@ -312,7 +318,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 <ion-row>
                   <ion-col size="11">
                     <ion-item lines="none">
-                      <ion-label>Primary Address</ion-label>
+                      <ion-label>{{
+                        "forms.primary_address" | translate
+                      }}</ion-label>
                       <ion-checkbox
                         slot="start"
                         formControlName="isPrimaryAddress"

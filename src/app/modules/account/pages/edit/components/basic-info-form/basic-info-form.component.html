@@ -19,7 +19,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <form [formGroup]="basicInfoForm" (ngSubmit)="onSubmit()">
   <ion-item slot="header">
-    <ion-label>Basic Information</ion-label>
+    <ion-label>{{ "forms.basic_information" | translate }}</ion-label>
   </ion-item>
   <div slot="content">
     <ion-grid>
@@ -117,7 +117,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-row>
     </ion-grid>
     <ion-item-divider>
-      <ion-label color="tertiary">Web Links</ion-label>
+      <ion-label color="tertiary">{{
+        "forms.web_links" | translate
+      }}</ion-label>
     </ion-item-divider>
     <div formArrayName="webLinks">
       <ion-grid

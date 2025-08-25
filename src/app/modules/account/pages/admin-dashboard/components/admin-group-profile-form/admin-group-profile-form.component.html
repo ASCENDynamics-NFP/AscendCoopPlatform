@@ -3,11 +3,15 @@
     <!-- Basic Information Section -->
     <ion-card>
       <ion-card-header>
-        <ion-card-title>Group Basic Information</ion-card-title>
+        <ion-card-title>{{
+          "forms.group_basic_information" | translate
+        }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-item>
-          <ion-label position="stacked">Group Name *</ion-label>
+          <ion-label position="stacked">{{
+            "forms.group_name" | translate
+          }}</ion-label>
           <ion-input
             formControlName="name"
             placeholder="Enter group name"
@@ -19,7 +23,9 @@
         </div>
 
         <ion-item>
-          <ion-label position="stacked">Description</ion-label>
+          <ion-label position="stacked">{{
+            "forms.description" | translate
+          }}</ion-label>
           <ion-textarea
             formControlName="description"
             placeholder="Describe your group's purpose and activities"
@@ -30,7 +36,9 @@
         <!-- Group Details Section -->
         <div formGroupName="groupDetails">
           <ion-item>
-            <ion-label position="stacked">Group Type</ion-label>
+            <ion-label position="stacked">{{
+              "forms.group_type" | translate
+            }}</ion-label>
             <ion-select
               formControlName="groupType"
               placeholder="Select group type"
@@ -49,7 +57,9 @@
           </ion-item>
 
           <ion-item>
-            <ion-label position="stacked">Founding Date</ion-label>
+            <ion-label position="stacked">{{
+              "forms.founding_date" | translate
+            }}</ion-label>
             <ion-datetime
               formControlName="foundingDate"
               presentation="date"
@@ -68,7 +78,9 @@
           </ion-item>
 
           <ion-item>
-            <ion-label position="stacked">Mission Statement</ion-label>
+            <ion-label position="stacked">{{
+              "forms.mission_statement" | translate
+            }}</ion-label>
             <ion-textarea
               formControlName="groupObjectivesMissionStatement"
               placeholder="Enter your group's mission statement"
@@ -77,7 +89,9 @@
           </ion-item>
 
           <ion-item>
-            <ion-label position="stacked">History & Background</ion-label>
+            <ion-label position="stacked">{{
+              "forms.history_background" | translate
+            }}</ion-label>
             <ion-textarea
               formControlName="groupHistoryBackground"
               placeholder="Share your organization's history, founding story, and background"
@@ -86,7 +100,9 @@
           </ion-item>
 
           <ion-item>
-            <ion-label position="stacked">Supported Languages</ion-label>
+            <ion-label position="stacked">{{
+              "forms.supported_languages" | translate
+            }}</ion-label>
             <ion-select
               formControlName="supportedLanguages"
               multiple="true"
@@ -208,7 +224,9 @@
           </ion-item>
 
           <ion-item>
-            <ion-label position="stacked">Google Calendar URL</ion-label>
+            <ion-label position="stacked">{{
+              "forms.google_calendar_url" | translate
+            }}</ion-label>
             <ion-input
               formControlName="googleCalendarUrl"
               type="url"
@@ -228,7 +246,9 @@
     <!-- Contact Information Section -->
     <ion-card>
       <ion-card-header>
-        <ion-card-title>Contact Information</ion-card-title>
+        <ion-card-title>{{
+          "forms.contact_information" | translate
+        }}</ion-card-title>
       </ion-card-header>
       <ion-card-content formGroupName="contactInformation">
         <!-- Email Addresses -->
@@ -266,7 +286,9 @@
             </div>
             <div class="form-fields">
               <ion-item>
-                <ion-label position="stacked">Label</ion-label>
+                <ion-label position="stacked">{{
+                  "forms.label" | translate
+                }}</ion-label>
                 <ion-input
                   formControlName="name"
                   placeholder="e.g., Work, Personal"
@@ -324,7 +346,9 @@
             </div>
             <div class="form-fields">
               <ion-item>
-                <ion-label position="stacked">Type</ion-label>
+                <ion-label position="stacked">{{
+                  "forms.type" | translate
+                }}</ion-label>
                 <ion-select formControlName="type" placeholder="Select type">
                   <ion-select-option value="Mobile">Mobile</ion-select-option>
                   <ion-select-option value="Home">Home</ion-select-option>
@@ -384,7 +408,9 @@
             </div>
             <div class="form-fields">
               <ion-item>
-                <ion-label position="stacked">Address Name</ion-label>
+                <ion-label position="stacked">{{
+                  "forms.address_name" | translate
+                }}</ion-label>
                 <ion-input
                   formControlName="name"
                   placeholder="e.g., Main Office, Home"
@@ -393,7 +419,9 @@
                 </ion-input>
               </ion-item>
               <ion-item>
-                <ion-label position="stacked">Street Address</ion-label>
+                <ion-label position="stacked">{{
+                  "forms.street_address" | translate
+                }}</ion-label>
                 <ion-input
                   formControlName="street"
                   placeholder="Enter street address"
@@ -404,7 +432,9 @@
               <ion-row>
                 <ion-col size="6">
                   <ion-item>
-                    <ion-label position="stacked">City</ion-label>
+                    <ion-label position="stacked">{{
+                      "forms.city" | translate
+                    }}</ion-label>
                     <ion-input
                       formControlName="city"
                       placeholder="Enter city"
@@ -415,7 +445,9 @@
                 </ion-col>
                 <ion-col size="6">
                   <ion-item>
-                    <ion-label position="stacked">State/Province</ion-label>
+                    <ion-label position="stacked">{{
+                      "forms.state_province" | translate
+                    }}</ion-label>
                     <ion-input
                       formControlName="state"
                       placeholder="Enter state/province"
@@ -428,7 +460,9 @@
               <ion-row>
                 <ion-col size="6">
                   <ion-item>
-                    <ion-label position="stacked">ZIP/Postal Code</ion-label>
+                    <ion-label position="stacked">{{
+                      "forms.zip_postal_code" | translate
+                    }}</ion-label>
                     <ion-input
                       formControlName="zipcode"
                       placeholder="Enter ZIP/postal code"
@@ -439,7 +473,9 @@
                 </ion-col>
                 <ion-col size="6">
                   <ion-item>
-                    <ion-label position="stacked">Country</ion-label>
+                    <ion-label position="stacked">{{
+                      "forms.country" | translate
+                    }}</ion-label>
                     <ion-input
                       formControlName="country"
                       placeholder="Enter country"
@@ -450,7 +486,7 @@
                 </ion-col>
               </ion-row>
               <ion-item>
-                <ion-label>Primary Address</ion-label>
+                <ion-label>{{ "forms.primary_address" | translate }}</ion-label>
                 <ion-checkbox
                   slot="start"
                   formControlName="isPrimaryAddress"
@@ -469,7 +505,7 @@
     <!-- Web Links Section -->
     <ion-card>
       <ion-card-header>
-        <ion-card-title>Web Links</ion-card-title>
+        <ion-card-title>{{ "forms.web_links" | translate }}</ion-card-title>
         <ion-card-subtitle>
           Add links to your website, social media, and other online presence
         </ion-card-subtitle>
@@ -477,7 +513,7 @@
       <ion-card-content>
         <!-- Web Links -->
         <div class="section-title">
-          <h3>Web Links</h3>
+          <h3>{{ "forms.web_links" | translate }}</h3>
           <ion-button
             fill="clear"
             size="small"
@@ -510,7 +546,9 @@
             </div>
             <div class="form-fields">
               <ion-item>
-                <ion-label position="stacked">Category</ion-label>
+                <ion-label position="stacked">{{
+                  "forms.category" | translate
+                }}</ion-label>
                 <ion-select
                   formControlName="category"
                   placeholder="Select category"
@@ -536,7 +574,9 @@
                 </ion-select>
               </ion-item>
               <ion-item>
-                <ion-label position="stacked">Name/Title</ion-label>
+                <ion-label position="stacked">{{
+                  "forms.name_title" | translate
+                }}</ion-label>
                 <ion-input
                   formControlName="name"
                   type="text"

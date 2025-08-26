@@ -39,7 +39,7 @@ jobs:
 
       # Step 3: Install dependencies
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       # Step 4: Run linting
       - name: Run lint
@@ -82,7 +82,7 @@ jobs:
       # Step 4: Install dependencies
       - name: Install dependencies
         run: |
-          npm ci                            # Install root project dependencies
+          npm ci --legacy-peer-deps        # Install root project dependencies
           npm --prefix functions ci         # Install functions dependencies
 
       - name: Install Angular CLI, Firebase CLI and Chrome
@@ -153,7 +153,7 @@ jobs:
 
       # Install dependencies
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       # Set environment variables
       - name: Set environment variables

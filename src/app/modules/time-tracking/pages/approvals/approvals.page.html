@@ -4,6 +4,14 @@
       <ion-back-button defaultHref="/"></ion-back-button>
     </ion-buttons>
     <ion-title>{{ 'time_tracking.time_approvals' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        [routerLink]="['/account', accountId, 'time-tracking', 'reports']"
+        fill="outline"
+      >
+        <ion-icon name="analytics-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -87,6 +95,125 @@
           {{ 'time_tracking.show_all_weeks' | translate }}
         </ion-toggle>
       </div>
+
+      <!-- Filter Controls -->
+      <div class="filter-controls">
+        <div class="filter-row">
+          <!-- Status Filter -->
+          <ion-item lines="none" class="filter-item">
+            <ion-label position="stacked"
+              >{{ 'time_tracking.filter_by_status' | translate }}</ion-label
+            >
+            <ion-select
+              [(ngModel)]="statusFilter"
+              (ionChange)="setStatusFilter($event.detail.value)"
+              interface="popover"
+              placeholder="All Statuses"
+            >
+              <ion-select-option value="all"
+                >{{ 'time_tracking.all_statuses' | translate
+                }}</ion-select-option
+              >
+              <ion-select-option value="pending"
+                >{{ 'time_tracking.pending' | translate }}</ion-select-option
+              >
+              <ion-select-option value="approved"
+                >{{ 'time_tracking.approved' | translate }}</ion-select-option
+              >
+              <ion-select-option value="rejected"
+                >{{ 'time_tracking.rejected' | translate }}</ion-select-option
+              >
+            </ion-select>
+          </ion-item>
+
+          <!-- Pending Only Toggle -->
+          <ion-item lines="none" class="filter-item">
+            <ion-label
+              >{{ 'time_tracking.pending_only' | translate }}</ion-label
+            >
+            <ion-toggle
+              [checked]="showPendingOnly"
+              (ionChange)="togglePendingOnly($event)"
+              slot="end"
+            ></ion-toggle>
+          </ion-item>
+        </div>
+
+        <div class="filter-row">
+          <!-- Sort Controls -->
+          <ion-item lines="none" class="filter-item">
+            <ion-label position="stacked"
+              >{{ 'time_tracking.sort_by' | translate }}</ion-label
+            >
+            <ion-select
+              [(ngModel)]="sortBy"
+              (ionChange)="setSortBy($event.detail.value)"
+              interface="popover"
+            >
+              <ion-select-option value="date"
+                >{{ 'time_tracking.date' | translate }}</ion-select-option
+              >
+              <ion-select-option value="user"
+                >{{ 'time_tracking.user' | translate }}</ion-select-option
+              >
+              <ion-select-option value="hours"
+                >{{ 'time_tracking.hours' | translate }}</ion-select-option
+              >
+              <ion-select-option value="status"
+                >{{ 'time_tracking.status' | translate }}</ion-select-option
+              >
+            </ion-select>
+          </ion-item>
+
+          <!-- Sort Direction Toggle -->
+          <ion-item lines="none" class="filter-item">
+            <ion-button
+              fill="clear"
+              size="small"
+              (click)="toggleSortDirection()"
+              class="sort-direction-btn"
+            >
+              <ion-icon
+                [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"
+                slot="start"
+              ></ion-icon>
+              {{ sortDirection === 'asc' ? ('time_tracking.ascending' |
+              translate) : ('time_tracking.descending' | translate) }}
+            </ion-button>
+          </ion-item>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div class="bulk-actions" *ngIf="viewMode === 'by-user'">
+          <ion-button
+            fill="outline"
+            color="success"
+            size="small"
+            [disabled]="isProcessing"
+            (click)="bulkApprove()"
+          >
+            <ion-icon
+              [name]="isProcessing ? 'hourglass' : 'checkmark-done'"
+              slot="start"
+            ></ion-icon>
+            {{ 'time_tracking.approve_all_pending' | translate }}
+          </ion-button>
+
+          <ion-button
+            fill="outline"
+            color="danger"
+            size="small"
+            [disabled]="isProcessing"
+            (click)="bulkReject()"
+          >
+            <ion-icon
+              [name]="isProcessing ? 'hourglass' : 'close-circle'"
+              slot="start"
+            ></ion-icon>
+            {{ 'time_tracking.reject_all_pending' | translate }}
+          </ion-button>
+        </div>
+      </div>
     </div>
 
     <!-- Approvals List -->
@@ -114,11 +241,18 @@
               </ion-label>
             </ion-item-divider>
 
-            <ion-item class="timesheet-item">
+            <ion-item
+              class="timesheet-item"
+              [class.approved]="group.status === 'approved'"
+              [class.rejected]="group.status === 'rejected'"
+              [class.pending]="group.status === 'pending'"
+              [class.draft]="group.status === 'draft'"
+            >
               <ion-icon
                 [name]="getStatusIcon(group.status)"
                 [color]="getStatusColor(group.status)"
                 slot="start"
+                class="status-icon"
               >
               </ion-icon>
 

@@ -29,10 +29,15 @@ import {
 import {Store} from "@ngrx/store";
 import {Timestamp} from "firebase/firestore";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
-import {Project} from "@shared/models/project.model";
-import {TimeEntry} from "@shared/models/time-entry.model";
+import {Project} from "../../../../../../shared/models/project.model";
+import {TimeEntry} from "../../../../../../shared/models/time-entry.model";
 import {SuccessHandlerService} from "../../../../core/services/success-handler.service";
-import {ErrorHandlerService} from "../../../../core/services/error-handler.service";
+import {
+  ToastController,
+  AlertController,
+  ModalController,
+} from "@ionic/angular";
+import {NotesModalComponent} from "../notes-modal/notes-modal.component";
 
 @Component({
   selector: "app-week-view",
@@ -47,6 +52,8 @@ export class WeekViewComponent implements OnInit, OnChanges {
   @Input() userId: string = "";
   @Input() initialRows: {projectId: string | null}[] = [];
   @Input() readonly: boolean = false;
+  @Input() status: "draft" | "pending" | "approved" | "rejected" | "mixed" =
+    "draft";
 
   /** Selected rows referencing project ids */
   rows: {projectId: string | null}[] = [];
@@ -60,7 +67,9 @@ export class WeekViewComponent implements OnInit, OnChanges {
   constructor(
     private store: Store,
     private successHandler: SuccessHandlerService,
-    private errorHandler: ErrorHandlerService,
+    private toastController: ToastController,
+    private alertController: AlertController,
+    private modalController: ModalController,
   ) {}
 
   ngOnInit() {
@@ -74,7 +83,7 @@ export class WeekViewComponent implements OnInit, OnChanges {
     }
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
+  ngOnChanges(changes: SimpleChanges) {
     if (changes["entries"]) {
       // Update totals when entries change from parent component
       this.updateTotals();
@@ -93,8 +102,12 @@ export class WeekViewComponent implements OnInit, OnChanges {
         // Only add empty row if we don't have any rows and no initialRows
         this.initializeEmptyRows();
       }
-    } else if (changes["availableProjects"] && this.rows.length === 0) {
-      this.initializeEmptyRows();
+    } else if (changes["availableProjects"]) {
+      // Handle project changes (including archived projects being filtered out)
+      this.handleProjectChanges();
+      if (this.rows.length === 0) {
+        this.initializeEmptyRows();
+      }
     }
 
     // Ensure there's always at least one row for user input
@@ -138,13 +151,37 @@ export class WeekViewComponent implements OnInit, OnChanges {
 
     const projectId = this.rows[rowIndex]?.projectId;
     if (!projectId) {
+      this.showValidationError(
+        "Please select a project before entering hours.",
+      );
+      target.value = "";
       return;
     }
 
-    const hours = Number(target.value);
-    if (isNaN(hours) || hours < 0 || hours > 24) {
+    // Validate that the project still exists in available projects
+    const projectExists = this.availableProjects.some(
+      (p) => p.id === projectId,
+    );
+    if (!projectExists) {
+      this.showValidationError(
+        "Selected project is no longer available. Please select a different project.",
+      );
+      target.value = "";
       return;
     }
+
+    const inputValue = target.value;
+    const hours = Number(inputValue);
+
+    // Validate input
+    if (inputValue !== "" && (isNaN(hours) || hours < 0 || hours > 24)) {
+      // Show validation error and reset input
+      this.showValidationError("Hours must be between 0 and 24");
+      const existing = this.getEntry(projectId, day);
+      target.value = existing ? existing.hours.toString() : "";
+      return;
+    }
+
     const existing = this.getEntry(projectId, day);
     if (!existing && (!target.value || hours === 0)) {
       return;
@@ -165,7 +202,8 @@ export class WeekViewComponent implements OnInit, OnChanges {
       userId: existing ? existing.userId : this.userId,
       date: existing ? existing.date : Timestamp.fromDate(day),
       hours,
-      status: existing?.status || "draft", // Save as draft until explicitly submitted
+      status:
+        existing?.status === "rejected" ? "draft" : existing?.status || "draft", // Convert rejected back to draft when edited
       notes: existing?.notes || "",
     };
 
@@ -183,6 +221,13 @@ export class WeekViewComponent implements OnInit, OnChanges {
   }
 
   addRow() {
+    if (this.availableProjects.length === 0) {
+      this.showValidationError(
+        "No projects available. Contact an administrator to create projects.",
+      );
+      return;
+    }
+
     this.rows.push({
       projectId:
         this.availableProjects.length === 1
@@ -192,9 +237,68 @@ export class WeekViewComponent implements OnInit, OnChanges {
     this.updateTotals();
   }
 
-  removeRow(index: number) {
+  async removeRow(index: number) {
+    const row = this.rows[index];
+    if (!row.projectId) {
+      // No project selected, safe to remove
+      this.rows.splice(index, 1);
+      this.updateTotals();
+      return;
+    }
+
+    // Check if this row has any time entries with hours > 0
+    const entriesWithHours = this.days
+      .map((day) => this.getEntry(row.projectId!, day))
+      .filter(
+        (entry): entry is TimeEntry => entry !== undefined && entry.hours > 0,
+      );
+
+    if (entriesWithHours.length === 0) {
+      // No hours entered, safe to remove
+      this.rows.splice(index, 1);
+      this.updateTotals();
+      return;
+    }
+
+    // Calculate total hours that will be deleted
+    const totalHours = entriesWithHours.reduce(
+      (sum, entry) => sum + entry.hours,
+      0,
+    );
+
+    // Show confirmation dialog
+    const alert = await this.alertController.create({
+      header: "Delete Time Entries",
+      message: `This will delete ${totalHours} hours of entered time for this project. This action cannot be undone. Continue?`,
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "Delete",
+          role: "destructive",
+          handler: () => {
+            this.deleteRowAndEntries(index, entriesWithHours);
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  private deleteRowAndEntries(index: number, entries: TimeEntry[]) {
+    // Delete all time entries for this project/row
+    entries.forEach((entry) => {
+      this.store.dispatch(TimeTrackingActions.deleteTimeEntry({entry}));
+    });
+
+    // Remove the row from UI
     this.rows.splice(index, 1);
     this.updateTotals();
+
+    this.successHandler.handleSuccess(`Deleted ${entries.length} time entries`);
   }
 
   addProjectById(index: number, event: Event) {
@@ -238,5 +342,105 @@ export class WeekViewComponent implements OnInit, OnChanges {
       this.rowTotals[rowIdx] = rowSum;
       this.totalHours += rowSum;
     });
+  }
+
+  private async showValidationError(message: string) {
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 3000,
+      position: "top",
+      color: "danger",
+    });
+    await toast.present();
+  }
+
+  hasNotes(projectId: string, day: Date): boolean {
+    const entry = this.getEntry(projectId, day);
+    return !!(
+      (entry?.notes && entry.notes.trim().length > 0) ||
+      (entry?.noteHistory && entry.noteHistory.length > 0)
+    );
+  }
+
+  async openNotesModal(projectId: string, day: Date) {
+    const entry = this.getEntry(projectId, day);
+    const project = this.availableProjects.find((p) => p.id === projectId);
+
+    const modal = await this.modalController.create({
+      component: NotesModalComponent,
+      componentProps: {
+        entry: entry,
+        date: day,
+        projectName: project?.name || "Unknown Project",
+        isAdmin: false, // TODO: Get from user role/permissions
+      },
+      cssClass: "notes-modal",
+      backdropDismiss: true,
+    });
+
+    await modal.present();
+  }
+
+  private saveNotes(projectId: string, day: Date, notes: string) {
+    const existing = this.getEntry(projectId, day);
+
+    if (!existing && (!notes || notes.trim().length === 0)) {
+      // No entry exists and no notes to save
+      return;
+    }
+
+    const entry: TimeEntry = {
+      id: existing ? existing.id : "",
+      accountId: this.accountId,
+      projectId,
+      userId: existing ? existing.userId : this.userId,
+      date: existing ? existing.date : Timestamp.fromDate(day),
+      hours: existing?.hours || 0,
+      status: existing?.status || "draft",
+      notes: notes.trim(),
+    };
+
+    this.store.dispatch(TimeTrackingActions.saveTimeEntry({entry}));
+
+    if (notes.trim()) {
+      this.successHandler.handleSuccess("Notes saved!");
+    } else {
+      this.successHandler.handleSuccess("Notes cleared!");
+    }
+  }
+
+  /**
+   * Handle changes to available projects (e.g., when projects are archived)
+   */
+  private handleProjectChanges() {
+    const activeProjectIds = this.availableProjects.map((p) => p.id);
+    let hasOrphanedProjects = false;
+
+    // Check for rows with projects that are no longer available (archived)
+    this.rows.forEach((row, index) => {
+      if (row.projectId && !activeProjectIds.includes(row.projectId)) {
+        // Project was archived or removed
+        hasOrphanedProjects = true;
+
+        // Check if this row has any time entries
+        const hasEntries = this.days.some((day) => {
+          const entry = this.getEntry(row.projectId!, day);
+          return entry && entry.hours > 0;
+        });
+
+        if (hasEntries) {
+          this.showValidationError(
+            `Project "${row.projectId}" is no longer available but has time entries. Contact an administrator.`,
+          );
+        } else {
+          // Remove the row if it has no time entries
+          this.rows.splice(index, 1);
+        }
+      }
+    });
+
+    if (hasOrphanedProjects) {
+      this.updateTotals();
+    }
   }
 }

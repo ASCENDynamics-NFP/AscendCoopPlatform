@@ -22,7 +22,10 @@
         <span class="group-name">{{ account.name }}</span>
       </div>
       <div class="status-info">
-        <ion-badge [color]="getTimesheetStatusColor()">
+        <ion-badge
+          [color]="getTimesheetStatusColor()"
+          [class.badge-pending]="getCurrentWeekStatus() === 'pending'"
+        >
           <ion-icon [name]="getTimesheetStatusIcon()" slot="start"></ion-icon>
           {{ getTimesheetStatusText() }}
         </ion-badge>
@@ -79,50 +82,60 @@
         [accountId]="accountId"
         [userId]="userId"
         [initialRows]="initialRows"
-        [readonly]="isCurrentWeekApproved()"
+        [readonly]="!canEditCurrentWeek()"
+        [status]="getCurrentWeekStatus()"
       >
       </app-week-view>
+
+      <!-- Auto-save info -->
+      <div class="auto-save-info" *ngIf="canEditCurrentWeek()">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <span>{{ 'time_tracking.auto_save_info' | translate }}</span>
+      </div>
+
+      <!-- Status message for non-editable weeks -->
+      <div
+        class="status-message"
+        [class.status-pending]="getCurrentWeekStatus() === 'pending'"
+        [class.status-approved]="getCurrentWeekStatus() === 'approved'"
+        [class.status-rejected]="getCurrentWeekStatus() === 'rejected'"
+        *ngIf="!canEditCurrentWeek()"
+      >
+        <ion-icon [name]="getTimesheetStatusIcon()"></ion-icon>
+        <span>{{ getWeekStatusMessage() }}</span>
+      </div>
     </div>
 
     <!-- Action Buttons -->
     <div class="action-buttons">
       <ion-button
-        *ngIf="!isCurrentWeekApproved()"
+        *ngIf="canSubmitCurrentWeek()"
         expand="block"
         color="primary"
-        (click)="saveTimesheet()"
-        class="save-button"
-      >
-        <ion-icon name="save" slot="start"></ion-icon>
-        {{ 'time_tracking.save_timesheet' | translate }}
-      </ion-button>
-
-      <ion-button
-        *ngIf="!isCurrentWeekApproved()"
-        expand="block"
-        fill="outline"
-        color="secondary"
         (click)="submitForApproval()"
+        [disabled]="isSubmitting"
+        [class.submitting]="isSubmitting"
         class="submit-button"
       >
-        <ion-icon name="send" slot="start"></ion-icon>
-        {{ 'time_tracking.submit_for_approval' | translate }}
+        <ion-icon
+          [name]="isSubmitting ? 'hourglass' : 'send'"
+          slot="start"
+        ></ion-icon>
+        {{ isSubmitting ? 'Submitting...' : getSubmitButtonText() }}
       </ion-button>
 
-      <!-- Message for approved weeks -->
-      <ion-card *ngIf="isCurrentWeekApproved()" class="approved-message">
-        <ion-card-content>
-          <div class="approved-content">
-            <ion-icon name="checkmark-circle" color="success"></ion-icon>
-            <div>
-              <h3>{{ 'time_tracking.week_approved' | translate }}</h3>
-              <p>
-                This week's timesheet has been approved and cannot be modified.
-              </p>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
+      <!-- Optional: Add withdraw button for pending submissions -->
+      <ion-button
+        *ngIf="getCurrentWeekStatus() === 'pending'"
+        expand="block"
+        fill="outline"
+        color="warning"
+        (click)="withdrawSubmission()"
+        class="withdraw-button"
+      >
+        <ion-icon name="arrow-back" slot="start"></ion-icon>
+        {{ 'time_tracking.withdraw_submission' | translate }}
+      </ion-button>
     </div>
   </div>
 </ion-content>

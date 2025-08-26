@@ -41,6 +41,17 @@ export interface TimeEntry extends BaseDocument {
   status?: "draft" | "pending" | "approved" | "rejected";
   notes?: string;
 
+  // Enhanced notes system with conversation history
+  noteHistory?: {
+    id: string;
+    content: string;
+    createdBy: string;
+    createdByName: string;
+    createdAt: Timestamp;
+    type: "user" | "admin" | "system";
+    editedAt?: Timestamp;
+  }[];
+
   // Audit fields for approval workflow
   /** ID of the user who approved/rejected this entry */
   approvedBy?: string;

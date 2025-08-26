@@ -21,7 +21,6 @@
 .header-section {
   margin-bottom: 24px;
   padding: 20px;
-  background: var(--ion-color-primary-tint, #e6f2ff);
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid var(--ion-color-primary-shade, #3171e0);
@@ -457,5 +456,264 @@ ion-button:focus-visible {
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .approvals-content {
     --padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+}
+
+// Filter Controls Styling
+.filter-controls {
+  margin: 16px 0;
+  padding: 16px;
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  border: 1px solid var(--ion-color-light-shade);
+
+  .filter-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 8px;
+      align-items: stretch;
+    }
+  }
+
+  .filter-item {
+    flex: 1;
+    min-width: 140px;
+    --padding-start: 0;
+    --padding-end: 0;
+
+    ion-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--ion-color-medium-shade);
+    }
+
+    ion-select,
+    ion-toggle {
+      margin-top: 4px;
+    }
+
+    @media (max-width: 768px) {
+      min-width: unset;
+    }
+  }
+
+  .sort-direction-btn {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    margin-top: 8px;
+    font-size: 0.875rem;
+  }
+
+  .bulk-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--ion-color-light-shade);
+    justify-content: center;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    ion-button {
+      --padding-start: 16px;
+      --padding-end: 16px;
+    }
+  }
+}
+
+// Enhanced Visual Feedback for Timesheet Items
+.timesheet-item {
+  transition: all 0.3s ease-in-out;
+  position: relative;
+  overflow: hidden;
+
+  // Status-based styling
+  &.approved {
+    background: var(--ion-color-success-tint);
+    border-left: 4px solid var(--ion-color-success);
+    animation: approvalPulse 0.6s ease-out;
+
+    .status-icon {
+      animation: iconBounce 0.5s ease-out;
+    }
+  }
+
+  &.rejected {
+    background: var(--ion-color-danger-tint);
+    border-left: 4px solid var(--ion-color-danger);
+    animation: rejectionShake 0.6s ease-out;
+
+    .status-icon {
+      animation: iconBounce 0.5s ease-out;
+    }
+  }
+
+  &.pending {
+    background: var(--ion-color-warning-tint);
+    border-left: 4px solid var(--ion-color-warning);
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        var(--ion-color-warning) 50%,
+        transparent 100%
+      );
+      animation: pendingPulse 2s ease-in-out infinite;
+    }
+  }
+
+  &.draft {
+    background: var(--ion-color-medium-tint);
+    border-left: 4px solid var(--ion-color-medium);
+    opacity: 0.8;
+  }
+
+  // Enhanced hover effects
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  // Enhanced focus for accessibility
+  &:focus-within {
+    outline: 2px solid var(--ion-color-primary);
+    outline-offset: 2px;
+  }
+}
+
+// Status badge enhancements
+.status-badge {
+  ion-badge {
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+// Action buttons enhancements
+.action-buttons {
+  display: flex;
+  gap: 8px;
+
+  ion-button {
+    --border-radius: 8px;
+    --padding-start: 12px;
+    --padding-end: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
+
+// Animations
+@keyframes approvalPulse {
+  0% {
+    background: var(--ion-color-success);
+  }
+  50% {
+    background: var(--ion-color-success-tint);
+  }
+  100% {
+    background: var(--ion-color-success-tint);
+  }
+}
+
+@keyframes rejectionShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-2px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes pendingPulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes iconBounce {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+// Loading states
+.loading-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: var(--ion-color-medium);
+  font-size: 1rem;
+}
+
+// Empty state styling
+.no-entries {
+  text-align: center;
+  color: var(--ion-color-medium);
+  font-style: italic;
+  padding: 32px 16px;
+  background: var(--ion-color-light-tint);
+  border-radius: 8px;
+  border: 2px dashed var(--ion-color-medium-tint);
+}
+
+// Dark mode specific styles
+@media (prefers-color-scheme: dark) {
+  .filter-controls {
+    background: var(--ion-item-background, #000000);
+    border: 1px solid var(--ion-color-step-250, #404040);
   }
 }

@@ -1,0 +1,271 @@
+:host {
+  display: block;
+}
+
+.notes-content {
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+.notes-container {
+  padding: 16px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.title-icon {
+  margin-right: 8px;
+  font-size: 1.2rem;
+}
+
+.date-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-weight: 500;
+  color: var(--ion-color-medium-shade);
+
+  ion-icon {
+    font-size: 1.1rem;
+    color: var(--ion-color-primary);
+  }
+}
+
+.note-history {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 16px;
+  max-height: 400px;
+}
+
+.note-item {
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--ion-color-light-shade);
+  background: var(--ion-color-light-tint);
+
+  &.note-type-admin {
+    border-left: 4px solid var(--ion-color-warning);
+    background: var(--ion-color-warning-tint);
+  }
+
+  &.note-type-user {
+    border-left: 4px solid var(--ion-color-primary);
+  }
+
+  &.note-type-system {
+    border-left: 4px solid var(--ion-color-medium);
+    background: var(--ion-color-light);
+  }
+}
+
+.note-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.note-avatar {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+
+  ion-icon {
+    font-size: 1.2rem;
+  }
+}
+
+.note-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.note-author {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--ion-color-dark, #000000);
+}
+
+.note-timestamp {
+  font-size: 0.8rem;
+  color: var(--ion-color-medium-shade);
+}
+
+.note-type-chip {
+  align-self: flex-start;
+  font-size: 0.7rem;
+  height: 20px;
+}
+
+.note-content {
+  padding-left: 44px;
+
+  p {
+    margin: 0;
+    line-height: 1.4;
+    color: var(--ion-color-dark-shade, #333333);
+    white-space: pre-wrap;
+  }
+}
+
+.note-edited {
+  font-size: 0.75rem;
+  color: var(--ion-color-medium);
+  font-style: italic;
+  margin-top: 4px;
+  display: block;
+}
+
+.empty-notes {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ion-color-medium);
+
+  .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    color: var(--ion-color-medium-tint);
+  }
+
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.2rem;
+    color: var(--ion-color-medium-shade);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+}
+
+.add-note-section {
+  border-top: 1px solid var(--ion-color-light-shade);
+  padding-top: 16px;
+  margin-top: auto;
+}
+
+.current-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: var(--ion-color-light-tint);
+  border-radius: 8px;
+
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+
+    ion-icon {
+      font-size: 1rem;
+    }
+  }
+
+  .user-name {
+    flex: 1;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--ion-color-dark, #000000);
+  }
+}
+
+.note-input-item {
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-start: 0;
+  --inner-padding-end: 0;
+  margin-bottom: 12px;
+
+  ion-textarea {
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --padding-top: 12px;
+    --padding-bottom: 12px;
+  }
+}
+
+.note-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.add-note-btn {
+  --border-radius: 8px;
+  font-weight: 600;
+
+  ion-icon,
+  ion-spinner {
+    margin-right: 8px;
+  }
+}
+
+// Dark mode styles
+@media (prefers-color-scheme: dark) {
+  .date-header {
+    background: var(--ion-color-step-100);
+    color: var(--ion-color-medium);
+  }
+
+  .note-item {
+    background: var(--ion-color-step-50);
+    border: 1px solid var(--ion-color-step-200);
+
+    &.note-type-admin {
+      background: rgba(255, 213, 52, 0.1);
+    }
+
+    &.note-type-user {
+      background: rgba(74, 144, 226, 0.1);
+    }
+
+    &.note-type-system {
+      background: var(--ion-color-step-100);
+    }
+  }
+
+  .note-author {
+    color: var(--ion-text-color, #ffffff);
+  }
+
+  .note-content p {
+    color: var(--ion-text-color, #ffffff);
+  }
+
+  .note-timestamp {
+    color: var(--ion-color-medium);
+  }
+
+  .current-user-info {
+    background: var(--ion-color-step-100);
+
+    .user-name {
+      color: var(--ion-text-color, #ffffff);
+    }
+  }
+
+  .add-note-section {
+    border-top: 1px solid var(--ion-color-step-200);
+  }
+
+  .empty-notes {
+    h3 {
+      color: var(--ion-color-medium);
+    }
+
+    p {
+      color: var(--ion-color-medium-shade);
+    }
+  }
+}

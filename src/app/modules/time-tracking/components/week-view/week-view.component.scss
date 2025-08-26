@@ -24,6 +24,53 @@
       }
     }
   }
+
+  // No projects available styling
+  .no-projects-message {
+    margin-bottom: 24px;
+
+    ion-card {
+      margin: 0;
+      border-left: 4px solid var(--ion-color-warning);
+
+      ion-card-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 18px;
+        color: var(--ion-color-warning-shade);
+
+        ion-icon {
+          font-size: 24px;
+        }
+      }
+
+      ion-card-content {
+        p {
+          margin: 0 0 12px 0;
+          line-height: 1.5;
+
+          &:last-of-type {
+            margin-bottom: 8px;
+          }
+        }
+
+        ul {
+          margin: 0;
+          padding-left: 20px;
+
+          li {
+            margin-bottom: 4px;
+            line-height: 1.4;
+          }
+        }
+
+        strong {
+          color: var(--ion-color-warning-shade);
+        }
+      }
+    }
+  }
 }
 
 // Desktop/Tablet View
@@ -291,7 +338,6 @@
 
     .grand-total {
       border-top: 2px solid var(--ion-color-primary);
-      background: var(--ion-color-primary-tint);
       border-radius: 8px;
       margin-top: 8px;
       padding: 8px 0;
@@ -399,8 +445,8 @@ ion-select:focus-within {
   box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.2);
 }
 
-// Readonly badge styling
-.readonly-badge {
+// Status badge styling
+.status-badge {
   --padding-start: 12px;
   --padding-end: 12px;
   --padding-top: 6px;
@@ -463,6 +509,81 @@ ion-input[type="number"] {
       -webkit-appearance: none;
       margin: 0;
       display: none;
+    }
+  }
+}
+
+// Notes functionality styles
+.hours-input-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+
+  ion-input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .notes-button {
+    --padding-start: 4px;
+    --padding-end: 4px;
+    --padding-top: 4px;
+    --padding-bottom: 4px;
+    min-width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+
+    ion-icon {
+      font-size: 16px;
+      color: var(--ion-color-medium);
+
+      &.has-notes {
+        color: var(--ion-color-primary);
+      }
+    }
+
+    &:hover {
+      ion-icon {
+        color: var(--ion-color-primary);
+      }
+    }
+  }
+}
+
+.mobile-hours-input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+
+  ion-input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .notes-button {
+    --padding-start: 6px;
+    --padding-end: 6px;
+    --padding-top: 6px;
+    --padding-bottom: 6px;
+    min-width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+
+    ion-icon {
+      font-size: 18px;
+      color: var(--ion-color-medium);
+
+      &.has-notes {
+        color: var(--ion-color-primary);
+      }
+    }
+
+    &:hover {
+      ion-icon {
+        color: var(--ion-color-primary);
+      }
     }
   }
 }

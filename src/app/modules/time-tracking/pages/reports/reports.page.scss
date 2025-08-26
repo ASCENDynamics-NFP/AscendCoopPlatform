@@ -1,0 +1,343 @@
+.reports-container {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.report-controls {
+  margin-bottom: 1rem;
+
+  .action-buttons {
+    margin-top: 1rem;
+
+    ion-button {
+      margin: 0.25rem 0;
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+
+  ion-spinner {
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 1rem;
+  }
+}
+
+.summary-cards {
+  margin-bottom: 1.5rem;
+}
+
+.metric-card {
+  text-align: center;
+
+  .metric-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--ion-color-primary);
+    line-height: 1;
+  }
+
+  .metric-label {
+    font-size: 0.9rem;
+    color: var(--ion-color-medium);
+    margin-top: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+.chart-container {
+  height: 300px;
+  width: 100%;
+  min-height: 250px;
+}
+
+.table-container {
+  overflow-x: auto;
+
+  .report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+
+    th,
+    td {
+      text-align: left;
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--ion-color-light);
+    }
+
+    th {
+      background-color: var(--ion-color-light);
+      font-weight: 600;
+      color: var(--ion-color-dark);
+      position: sticky;
+      top: 0;
+    }
+
+    tr:hover {
+      background-color: var(--ion-color-light-tint);
+    }
+
+    td:last-child {
+      text-align: center;
+    }
+  }
+}
+
+.project-breakdown-item {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--ion-color-light);
+
+  &:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+
+  .project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+
+    h3 {
+      margin: 0;
+      color: var(--ion-color-dark);
+      font-size: 1.1rem;
+    }
+
+    .project-hours {
+      font-weight: 600;
+      color: var(--ion-color-primary);
+    }
+  }
+
+  .project-progress {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+
+    ion-progress-bar {
+      flex: 1;
+      margin-right: 0.75rem;
+      --progress-background: var(--ion-color-primary);
+      --buffer-background: var(--ion-color-light);
+    }
+
+    .percentage {
+      min-width: 40px;
+      text-align: right;
+      font-weight: 500;
+      color: var(--ion-color-primary);
+    }
+  }
+
+  .project-stats {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.user-breakdown-item {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--ion-color-light);
+
+  &:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+
+  .user-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 1rem;
+
+    ion-avatar {
+      width: 48px;
+      height: 48px;
+    }
+
+    .user-info {
+      flex: 1;
+
+      h3 {
+        margin: 0 0 0.25rem 0;
+        color: var(--ion-color-dark);
+        font-size: 1.1rem;
+      }
+
+      p {
+        margin: 0;
+        color: var(--ion-color-medium);
+        font-size: 0.9rem;
+      }
+    }
+
+    .user-score {
+      ion-badge {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+      }
+    }
+  }
+
+  .user-stats {
+    display: flex;
+    justify-content: space-around;
+    gap: 1rem;
+
+    .stat {
+      text-align: center;
+      flex: 1;
+
+      .stat-value {
+        display: block;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--ion-color-primary);
+      }
+
+      .stat-label {
+        font-size: 0.8rem;
+        color: var(--ion-color-medium);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+  }
+}
+
+.no-data-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--ion-color-medium);
+
+  ion-icon {
+    margin-bottom: 1rem;
+    color: var(--ion-color-light);
+  }
+
+  h3 {
+    margin: 1rem 0 0.5rem 0;
+    color: var(--ion-color-dark);
+  }
+
+  p {
+    margin: 0;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .reports-container {
+    padding: 0.5rem;
+  }
+
+  .metric-card .metric-value {
+    font-size: 2rem;
+  }
+
+  .project-header,
+  .user-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .user-stats {
+    justify-content: space-between;
+  }
+
+  .table-container {
+    font-size: 0.9rem;
+
+    .report-table th,
+    .report-table td {
+      padding: 0.5rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .summary-cards ion-col {
+    margin-bottom: 0.5rem;
+  }
+
+  .action-buttons {
+    ion-col {
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  .user-stats {
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-align: left;
+
+      .stat-value {
+        font-size: 1.2rem;
+      }
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .report-table {
+    th {
+      background-color: var(--ion-color-dark);
+      color: var(--ion-color-light);
+    }
+
+    tr:hover {
+      background-color: var(--ion-color-dark-tint);
+    }
+  }
+}
+
+// Print styles
+@media print {
+  .reports-container {
+    padding: 0;
+  }
+
+  .action-buttons {
+    display: none;
+  }
+
+  .chart-container {
+    height: 250px;
+  }
+
+  .summary-cards {
+    break-inside: avoid;
+  }
+
+  .project-breakdown-item,
+  .user-breakdown-item {
+    break-inside: avoid;
+  }
+}

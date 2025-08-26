@@ -162,6 +162,14 @@
               <ion-button
                 fill="outline"
                 size="small"
+                (click)="navigateToTimeTrackingReports()"
+              >
+                <ion-icon name="bar-chart-outline" slot="start"></ion-icon>
+                View Reports
+              </ion-button>
+              <ion-button
+                fill="outline"
+                size="small"
                 (click)="navigateToTab('settings')"
               >
                 <ion-icon name="settings-outline" slot="start"></ion-icon>
@@ -1172,7 +1180,81 @@
                 ></ion-icon>
                 View All Time Approvals
               </ion-button>
+
+              <ion-button
+                expand="block"
+                fill="outline"
+                (click)="navigateToTimeTrackingReports()"
+              >
+                <ion-icon name="bar-chart-outline" slot="start"></ion-icon>
+                View Time Tracking Reports
+              </ion-button>
             </div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Time Tracking Reports -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="bar-chart-outline" class="card-icon"></ion-icon>
+              Time Tracking Reports & Analytics
+            </ion-card-title>
+            <ion-card-subtitle
+              >Comprehensive insights into volunteer
+              contributions</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-card-content>
+            <p>
+              Generate detailed reports to analyze volunteer hours, project
+              progress, and member contributions.
+            </p>
+
+            <div class="report-features">
+              <ul>
+                <li>
+                  <strong>Summary Reports:</strong> Monthly, quarterly, and
+                  yearly volunteer hour summaries
+                </li>
+                <li>
+                  <strong>Project Analytics:</strong> Track time allocation
+                  across different projects
+                </li>
+                <li>
+                  <strong>Member Reports:</strong> Individual volunteer
+                  contribution analysis
+                </li>
+                <li>
+                  <strong>Trend Analysis:</strong> Visualize volunteer
+                  engagement patterns over time
+                </li>
+                <li>
+                  <strong>Export Options:</strong> Download reports in various
+                  formats for external use
+                </li>
+              </ul>
+            </div>
+
+            <div class="time-tracking-actions">
+              <ion-button
+                expand="block"
+                color="primary"
+                (click)="navigateToTimeTrackingReports()"
+              >
+                <ion-icon name="analytics-outline" slot="start"></ion-icon>
+                Access Reports Dashboard
+              </ion-button>
+            </div>
+
+            <ion-text color="medium">
+              <p>
+                <small
+                  >Use advanced filtering to generate custom reports by date
+                  range, project, or volunteer.</small
+                >
+              </p>
+            </ion-text>
           </ion-card-content>
         </ion-card>
 

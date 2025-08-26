@@ -32,6 +32,7 @@ module.exports = {
         "@typescript-eslint/no-var-requires": "off",
         "require-jsdoc": "off",
         "quote-props": "off", // Disable quote-props for test files
+        "no-invalid-this": "off", // Allow 'this' in Mocha test functions
       },
     },
   ],
@@ -41,6 +42,7 @@ module.exports = {
     "import/no-unresolved": 0,
     "indent": ["warn", 2],
     "max-len": ["warn", { "code": 150 }],
-    "operator-linebreak": "off"
+    "operator-linebreak": "off",
+    "space-before-function-paren": "off", // Disable to avoid conflicts with Prettier
   },
 };

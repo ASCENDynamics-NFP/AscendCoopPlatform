@@ -31,6 +31,8 @@ const config: CapacitorConfig = {
       scopes: ["profile", "email"],
       webClientId:
         "1031671694911-3ejesivnlk5fhr8l29ne74fhp0smdltn.apps.googleusercontent.com",
+      androidClientId:
+        "1031671694911-77h9m1a9qrm1a5ud0gb6odu5if2678ki.apps.googleusercontent.com",
       forceCodeForRefreshToken: true,
     },
   },

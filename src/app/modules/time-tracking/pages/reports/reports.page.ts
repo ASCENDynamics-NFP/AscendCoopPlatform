@@ -17,10 +17,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
  *******************************************************************************/
-import {Component, OnInit, OnDestroy} from "@angular/core";
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+} from "@angular/core";
 import {Store} from "@ngrx/store";
 import {ActivatedRoute} from "@angular/router";
-import {Observable, Subject, combineLatest} from "rxjs";
+import {Observable, Subject, combineLatest, Subscription} from "rxjs";
 import {takeUntil, map} from "rxjs/operators";
 import {
   AnalyticsService,
@@ -37,6 +44,7 @@ import {
 import {selectActiveProjectsByAccount} from "../../../../state/selectors/projects.selectors";
 import {selectRelatedAccountsByAccountId} from "../../../../state/selectors/account.selectors";
 import * as ProjectsActions from "../../../../state/actions/projects.actions";
+import {ChartData, ChartOptions, ChartType} from "chart.js";
 
 export interface ReportConfig {
   name: string;
@@ -51,8 +59,168 @@ export interface ReportConfig {
   templateUrl: "./reports.page.html",
   styleUrls: ["./reports.page.scss"],
 })
-export class ReportsPage implements OnInit, OnDestroy {
+export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
+  private analyticsSubscription?: Subscription;
+
+  // Chart data for ng2-charts
+  public statusChartData: ChartData<"doughnut"> = {
+    labels: [],
+    datasets: [],
+  };
+  public statusChartOptions: ChartOptions<"doughnut"> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "bottom",
+        labels: {
+          padding: 20,
+          usePointStyle: true,
+          font: {
+            size: 12,
+          },
+        },
+      },
+      tooltip: {
+        enabled: true,
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        titleColor: "white",
+        bodyColor: "white",
+        callbacks: {
+          label: function (context) {
+            const total = context.dataset.data.reduce(
+              (a: number, b: number) => a + b,
+              0,
+            );
+            const percentage =
+              total > 0 ? Math.round((context.parsed * 100) / total) : 0;
+            return `${context.label}: ${context.parsed} (${percentage}%)`;
+          },
+        },
+      },
+    },
+  };
+  public statusChartType: "doughnut" = "doughnut";
+
+  // Project distribution chart
+  public projectChartData: ChartData<"bar"> = {
+    labels: [],
+    datasets: [],
+  };
+  public projectChartOptions: ChartOptions<"bar"> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        enabled: true,
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        titleColor: "white",
+        bodyColor: "white",
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: "Hours",
+          font: {
+            size: 12,
+            weight: "bold",
+          },
+        },
+        grid: {
+          color: "rgba(0, 0, 0, 0.1)",
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: "Projects",
+          font: {
+            size: 12,
+            weight: "bold",
+          },
+        },
+        grid: {
+          display: false,
+        },
+        ticks: {
+          maxRotation: 45,
+          minRotation: 0,
+        },
+      },
+    },
+  };
+  public projectChartType: "bar" = "bar";
+
+  // Monthly trend chart
+  public trendChartData: ChartData<"line"> = {
+    labels: [],
+    datasets: [],
+  };
+  public trendChartOptions: ChartOptions<"line"> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "top",
+        labels: {
+          usePointStyle: true,
+          font: {
+            size: 12,
+          },
+        },
+      },
+      tooltip: {
+        enabled: true,
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        titleColor: "white",
+        bodyColor: "white",
+        mode: "index",
+        intersect: false,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: "Hours",
+          font: {
+            size: 12,
+            weight: "bold",
+          },
+        },
+        grid: {
+          color: "rgba(0, 0, 0, 0.1)",
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: "Time Period",
+          font: {
+            size: 12,
+            weight: "bold",
+          },
+        },
+        grid: {
+          display: false,
+        },
+      },
+    },
+    interaction: {
+      mode: "nearest",
+      axis: "x",
+      intersect: false,
+    },
+  };
+  public trendChartType: "line" = "line";
 
   // User and account information
   authUser$: Observable<AuthUser | null>;
@@ -62,6 +230,7 @@ export class ReportsPage implements OnInit, OnDestroy {
 
   // Analytics data
   analytics$: Observable<TimeTrackingAnalytics | null> = new Observable();
+  currentAnalytics: TimeTrackingAnalytics | null = null;
   isLoading = false;
   error: string | null = null;
 
@@ -142,7 +311,16 @@ export class ReportsPage implements OnInit, OnDestroy {
     }
   }
 
+  ngAfterViewInit() {
+    // Charts will be initialized when analytics data is loaded
+  }
+
   ngOnDestroy() {
+    // Clean up analytics subscription
+    if (this.analyticsSubscription) {
+      this.analyticsSubscription.unsubscribe();
+    }
+
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -171,6 +349,11 @@ export class ReportsPage implements OnInit, OnDestroy {
    */
   generateReport() {
     if (!this.currentAccountId) return;
+
+    // Unsubscribe from any existing analytics subscription
+    if (this.analyticsSubscription) {
+      this.analyticsSubscription.unsubscribe();
+    }
 
     this.isLoading = true;
     this.error = null;
@@ -237,17 +420,95 @@ export class ReportsPage implements OnInit, OnDestroy {
           this.analyticsService.getTimeTrackingAnalytics(filters);
     }
 
-    // Handle loading state
-    this.analytics$.pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => {
-        this.isLoading = false;
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.error = "Failed to load report data. Please try again.";
-        console.error("Analytics error:", error);
-      },
-    });
+    // Handle loading state and create charts when data is ready
+    this.analyticsSubscription = this.analytics$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (analytics) => {
+          this.isLoading = false;
+          this.currentAnalytics = analytics;
+          if (analytics) {
+            // Update chart data when analytics data is available
+            this.updateChartData(analytics);
+          }
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.error = "Failed to load report data. Please try again.";
+          this.currentAnalytics = null;
+          console.error("Analytics error:", error);
+        },
+      });
+  }
+
+  /**
+   * Updates chart data for ng2-charts
+   */
+  private updateChartData(analytics: TimeTrackingAnalytics) {
+    // Update status chart data
+    const statusEntries = Object.entries(analytics.entriesByStatus);
+    this.statusChartData = {
+      labels: statusEntries.map(
+        ([status]) => status.charAt(0).toUpperCase() + status.slice(1),
+      ),
+      datasets: [
+        {
+          data: statusEntries.map(([, count]) => count),
+          backgroundColor: [
+            "#4CAF50", // Green for approved
+            "#FFC107", // Amber for pending
+            "#F44336", // Red for rejected
+            "#9E9E9E", // Grey for draft
+          ],
+          borderWidth: 0,
+        },
+      ],
+    };
+
+    // Update project distribution chart
+    const projectEntries = Object.entries(analytics.entriesByProject);
+    const topProjects = projectEntries
+      .sort(([, a], [, b]) => b.hours - a.hours)
+      .slice(0, 10); // Show top 10 projects
+
+    this.projectChartData = {
+      labels: topProjects.map(([, project]) => project.name || "Unknown"),
+      datasets: [
+        {
+          label: "Hours",
+          data: topProjects.map(([, project]) => project.hours),
+          backgroundColor: "#3880FF",
+          borderColor: "#3880FF",
+          borderWidth: 1,
+        },
+      ],
+    };
+
+    // Update monthly trend chart
+    const monthlyEntries = Object.entries(analytics.monthlyStats);
+    const sortedMonths = monthlyEntries.sort(([a], [b]) => a.localeCompare(b));
+
+    this.trendChartData = {
+      labels: sortedMonths.map(([month]) => month),
+      datasets: [
+        {
+          label: "Total Hours",
+          data: sortedMonths.map(([, stats]) => stats.hours),
+          borderColor: "#3880FF",
+          backgroundColor: "rgba(56, 128, 255, 0.1)",
+          tension: 0.4,
+          fill: true,
+        },
+        {
+          label: "Approved Hours",
+          data: sortedMonths.map(([, stats]) => stats.approvedHours),
+          borderColor: "#4CAF50",
+          backgroundColor: "rgba(76, 175, 80, 0.1)",
+          tension: 0.4,
+          fill: true,
+        },
+      ],
+    };
   }
 
   /**

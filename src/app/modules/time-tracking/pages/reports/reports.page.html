@@ -115,6 +115,17 @@
             <ion-button
               expand="block"
               fill="outline"
+              (click)="refreshReport()"
+              [disabled]="isLoading"
+            >
+              <ion-icon name="refresh-outline" slot="start"></ion-icon>
+              Refresh
+            </ion-button>
+          </ion-col>
+          <ion-col size="12" size-md="auto">
+            <ion-button
+              expand="block"
+              fill="outline"
               (click)="exportToCSV()"
               [disabled]="!analytics$ || isLoading"
             >
@@ -154,11 +165,11 @@
     </div>
 
     <!-- Report Results -->
-    <div *ngIf="analytics$ | async as analytics" class="report-results">
+    <div *ngIf="currentAnalytics" class="report-results">
       <!-- Summary Cards -->
       <ion-row class="summary-cards">
         <div
-          *ngFor="let stat of getSummaryStats(analytics)"
+          *ngFor="let stat of getSummaryStats(currentAnalytics)"
           class="summary-card"
         >
           <ion-col size="12" size-md="3">
@@ -181,8 +192,15 @@
             </ion-card-header>
             <ion-card-content>
               <div class="chart-container">
-                <!-- Chart implementation would go here -->
-                <p>Chart visualization (Chart.js integration needed)</p>
+                <canvas
+                  baseChart
+                  [data]="statusChartData"
+                  [options]="statusChartOptions"
+                  [type]="statusChartType"
+                  width="400"
+                  height="300"
+                >
+                </canvas>
               </div>
             </ion-card-content>
           </ion-card>
@@ -194,8 +212,39 @@
             </ion-card-header>
             <ion-card-content>
               <div class="chart-container">
-                <!-- Chart implementation would go here -->
-                <p>Chart visualization (Chart.js integration needed)</p>
+                <canvas
+                  baseChart
+                  [data]="trendChartData"
+                  [options]="trendChartOptions"
+                  [type]="trendChartType"
+                  width="400"
+                  height="300"
+                >
+                </canvas>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
+      <!-- Project Distribution Chart -->
+      <ion-row>
+        <ion-col size="12" size-lg="8">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Project Distribution</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="chart-container">
+                <canvas
+                  baseChart
+                  [data]="projectChartData"
+                  [options]="projectChartOptions"
+                  [type]="projectChartType"
+                  width="600"
+                  height="300"
+                >
+                </canvas>
               </div>
             </ion-card-content>
           </ion-card>
@@ -204,14 +253,14 @@
 
       <!-- Project Breakdown -->
       <ion-card
-        *ngIf="analytics.entriesByProject && (analytics.entriesByProject | keyvalue).length > 0"
+        *ngIf="currentAnalytics.entriesByProject && (currentAnalytics.entriesByProject | keyvalue).length > 0"
       >
         <ion-card-header>
           <ion-card-title>Project Breakdown</ion-card-title>
         </ion-card-header>
         <ion-card-content>
           <div
-            *ngFor="let project of analytics.entriesByProject | keyvalue"
+            *ngFor="let project of currentAnalytics.entriesByProject | keyvalue"
             class="project-breakdown-item"
           >
             <div class="project-header">
@@ -229,14 +278,14 @@
 
       <!-- User Performance -->
       <ion-card
-        *ngIf="analytics.entriesByUser && (analytics.entriesByUser | keyvalue).length > 0"
+        *ngIf="currentAnalytics.entriesByUser && (currentAnalytics.entriesByUser | keyvalue).length > 0"
       >
         <ion-card-header>
           <ion-card-title>User Performance</ion-card-title>
         </ion-card-header>
         <ion-card-content>
           <div
-            *ngFor="let user of analytics.entriesByUser | keyvalue"
+            *ngFor="let user of currentAnalytics.entriesByUser | keyvalue"
             class="user-breakdown-item"
           >
             <div class="user-header">
@@ -263,7 +312,10 @@
     </div>
 
     <!-- No Data State -->
-    <div *ngIf="!analytics$ && !isLoading && !error" class="no-data-state">
+    <div
+      *ngIf="!currentAnalytics && !isLoading && !error"
+      class="no-data-state"
+    >
       <ion-icon name="analytics-outline" size="large"></ion-icon>
       <h3>No Report Generated</h3>
       <p>

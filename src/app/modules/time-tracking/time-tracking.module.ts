@@ -26,7 +26,7 @@ import {IonicModule} from "@ionic/angular";
 import {RouterModule} from "@angular/router";
 import {StoreModule} from "@ngrx/store";
 import {EffectsModule} from "@ngrx/effects";
-import {NgChartsModule} from "ng2-charts";
+import {BaseChartDirective} from "ng2-charts";
 import {TimeTrackingRoutingModule} from "./time-tracking-routing.module";
 import {TimesheetPage} from "./pages/timesheet/timesheet.page";
 import {ApprovalsPage} from "./pages/approvals/approvals.page";
@@ -53,7 +53,7 @@ import {TimesheetNotificationService} from "./services/timesheet-notification.se
     RouterModule,
     SharedModule,
     TimeTrackingRoutingModule,
-    NgChartsModule,
+    BaseChartDirective,
     StoreModule.forFeature("timeTracking", timeTrackingReducer),
     EffectsModule.forFeature([TimeTrackingEffects]),
   ],

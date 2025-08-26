@@ -44,7 +44,42 @@ import {
 import {selectActiveProjectsByAccount} from "../../../../state/selectors/projects.selectors";
 import {selectRelatedAccountsByAccountId} from "../../../../state/selectors/account.selectors";
 import * as ProjectsActions from "../../../../state/actions/projects.actions";
-import {ChartData, ChartOptions, ChartType} from "chart.js";
+import {
+  ChartData,
+  ChartOptions,
+  ChartType,
+  Chart,
+  DoughnutController,
+  BarController,
+  LineController,
+  ArcElement,
+  BarElement,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from "chart.js";
+
+// Register Chart.js components
+Chart.register(
+  DoughnutController,
+  BarController,
+  LineController,
+  ArcElement,
+  BarElement,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+);
 
 export interface ReportConfig {
   name: string;

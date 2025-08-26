@@ -32,7 +32,12 @@ import * as TimeTrackingActions from "../../../../state/actions/time-tracking.ac
 import {Project} from "../../../../../../shared/models/project.model";
 import {TimeEntry} from "../../../../../../shared/models/time-entry.model";
 import {SuccessHandlerService} from "../../../../core/services/success-handler.service";
-import {ToastController, AlertController} from "@ionic/angular";
+import {
+  ToastController,
+  AlertController,
+  ModalController,
+} from "@ionic/angular";
+import {NotesModalComponent} from "../notes-modal/notes-modal.component";
 
 @Component({
   selector: "app-week-view",
@@ -64,6 +69,7 @@ export class WeekViewComponent implements OnInit, OnChanges {
     private successHandler: SuccessHandlerService,
     private toastController: ToastController,
     private alertController: AlertController,
+    private modalController: ModalController,
   ) {}
 
   ngOnInit() {
@@ -350,43 +356,29 @@ export class WeekViewComponent implements OnInit, OnChanges {
 
   hasNotes(projectId: string, day: Date): boolean {
     const entry = this.getEntry(projectId, day);
-    return !!(entry?.notes && entry.notes.trim().length > 0);
+    return !!(
+      (entry?.notes && entry.notes.trim().length > 0) ||
+      (entry?.noteHistory && entry.noteHistory.length > 0)
+    );
   }
 
   async openNotesModal(projectId: string, day: Date) {
     const entry = this.getEntry(projectId, day);
-    const currentNotes = entry?.notes || "";
+    const project = this.availableProjects.find((p) => p.id === projectId);
 
-    const alert = await this.alertController.create({
-      header: "Entry Notes",
-      message: `Add notes for ${day.toLocaleDateString()}:`,
-      inputs: [
-        {
-          name: "notes",
-          type: "textarea",
-          placeholder: "Enter notes for this time entry...",
-          value: currentNotes,
-          attributes: {
-            rows: 4,
-            maxlength: 500,
-          },
-        },
-      ],
-      buttons: [
-        {
-          text: "Cancel",
-          role: "cancel",
-        },
-        {
-          text: "Save",
-          handler: (data) => {
-            this.saveNotes(projectId, day, data.notes);
-          },
-        },
-      ],
+    const modal = await this.modalController.create({
+      component: NotesModalComponent,
+      componentProps: {
+        entry: entry,
+        date: day,
+        projectName: project?.name || "Unknown Project",
+        isAdmin: false, // TODO: Get from user role/permissions
+      },
+      cssClass: "notes-modal",
+      backdropDismiss: true,
     });
 
-    await alert.present();
+    await modal.present();
   }
 
   private saveNotes(projectId: string, day: Date, notes: string) {

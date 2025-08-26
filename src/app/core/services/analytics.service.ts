@@ -22,9 +22,10 @@
 import {Injectable} from "@angular/core";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
 import {Observable, combineLatest} from "rxjs";
-import {map, switchMap} from "rxjs/operators";
+import {map, switchMap, catchError} from "rxjs/operators";
 import {GroupRole} from "../../../../shared/models/group-role.model";
 import {Project} from "../../../../shared/models/project.model";
+import {TimeEntry} from "../../../../shared/models/time-entry.model";
 import {StandardRoleCategory} from "../../../../shared/models/standard-role-template.model";
 import {StandardProjectCategory} from "../../../../shared/models/standard-project-template.model";
 
@@ -46,6 +47,65 @@ export interface ProjectAnalytics {
   standardVsCustomProjects: {standard: number; custom: number};
   accountsWithProjects: number;
   averageProjectsPerAccount: number;
+}
+
+export interface TimeTrackingAnalytics {
+  totalEntries: number;
+  totalHours: number;
+  totalApprovedHours: number;
+  entriesByStatus: {[status: string]: number};
+  hoursByStatus: {[status: string]: number};
+  entriesByProject: {
+    [projectId: string]: {name: string; entries: number; hours: number};
+  };
+  entriesByUser: {
+    [userId: string]: {
+      name: string;
+      entries: number;
+      hours: number;
+      approvedHours: number;
+    };
+  };
+  monthlyStats: {
+    [month: string]: {entries: number; hours: number; approvedHours: number};
+  };
+  weeklyStats: {
+    [week: string]: {entries: number; hours: number; approvedHours: number};
+  };
+  averageHoursPerEntry: number;
+  averageApprovalTime: number; // in days
+  mostActiveUsers: Array<{
+    userId: string;
+    userName: string;
+    totalHours: number;
+    approvedHours: number;
+  }>;
+  mostActiveProjects: Array<{
+    projectId: string;
+    projectName: string;
+    totalHours: number;
+    entriesCount: number;
+  }>;
+  approvalMetrics: {
+    approvalRate: number; // percentage of entries approved
+    rejectionRate: number; // percentage of entries rejected
+    pendingRate: number; // percentage of entries pending
+    averageDaysToApproval: number;
+  };
+  timeDistribution: {
+    byDayOfWeek: {[day: string]: number}; // hours by day of week
+    byTimeOfMonth: {[period: string]: number}; // beginning, middle, end of month
+  };
+}
+
+export interface TimeTrackingReportFilters {
+  accountId?: string;
+  userId?: string;
+  projectId?: string;
+  startDate?: Date;
+  endDate?: Date;
+  status?: "draft" | "pending" | "approved" | "rejected";
+  timePeriod?: "week" | "month" | "quarter" | "year";
 }
 
 export interface CrossAccountMetrics {
@@ -393,6 +453,443 @@ export class AnalyticsService {
           );
         }),
       );
+  }
+
+  /**
+   * Get comprehensive time tracking analytics
+   */
+  getTimeTrackingAnalytics(
+    filters?: TimeTrackingReportFilters,
+  ): Observable<TimeTrackingAnalytics> {
+    if (!filters?.accountId) {
+      throw new Error("accountId is required for time tracking analytics");
+    }
+
+    return this.firestore
+      .collection<TimeEntry>(`accounts/${filters.accountId}/timeEntries`)
+      .valueChanges()
+      .pipe(
+        map((entries) => {
+          // Apply additional filters if provided
+          let filteredEntries = entries;
+
+          if (filters) {
+            filteredEntries = entries.filter((entry) => {
+              if (filters.userId && entry.userId !== filters.userId)
+                return false;
+              if (filters.projectId && entry.projectId !== filters.projectId)
+                return false;
+              if (filters.status && entry.status !== filters.status)
+                return false;
+
+              if (filters.startDate || filters.endDate) {
+                const entryDate = entry.date.toDate();
+                if (filters.startDate && entryDate < filters.startDate)
+                  return false;
+                if (filters.endDate && entryDate > filters.endDate)
+                  return false;
+              }
+
+              return true;
+            });
+          }
+
+          return this.calculateTimeTrackingMetrics(filteredEntries);
+        }),
+        catchError((error) => {
+          console.error("Error loading time tracking analytics:", error);
+          throw error;
+        }),
+      );
+  }
+
+  /**
+   * Generate monthly time tracking report
+   */
+  getMonthlyTimeTrackingReport(
+    year: number,
+    month: number,
+    accountId: string,
+  ): Observable<TimeTrackingAnalytics> {
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
+
+    return this.getTimeTrackingAnalytics({
+      accountId,
+      startDate,
+      endDate,
+      timePeriod: "month",
+    });
+  }
+
+  /**
+   * Generate quarterly time tracking report
+   */
+  getQuarterlyTimeTrackingReport(
+    year: number,
+    quarter: number,
+    accountId: string,
+  ): Observable<TimeTrackingAnalytics> {
+    const startMonth = (quarter - 1) * 3;
+    const startDate = new Date(year, startMonth, 1);
+    const endDate = new Date(year, startMonth + 3, 0);
+
+    return this.getTimeTrackingAnalytics({
+      accountId,
+      startDate,
+      endDate,
+      timePeriod: "quarter",
+    });
+  }
+
+  /**
+   * Generate individual volunteer contribution report
+   */
+  getUserTimeTrackingReport(
+    userId: string,
+    accountId?: string,
+    timePeriod?: "month" | "quarter" | "year",
+  ): Observable<TimeTrackingAnalytics> {
+    let startDate: Date | undefined;
+    let endDate: Date | undefined;
+
+    if (timePeriod) {
+      const now = new Date();
+      switch (timePeriod) {
+        case "month":
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+          break;
+        case "quarter":
+          const currentQuarter = Math.floor(now.getMonth() / 3);
+          startDate = new Date(now.getFullYear(), currentQuarter * 3, 1);
+          endDate = new Date(now.getFullYear(), (currentQuarter + 1) * 3, 0);
+          break;
+        case "year":
+          startDate = new Date(now.getFullYear(), 0, 1);
+          endDate = new Date(now.getFullYear(), 11, 31);
+          break;
+      }
+    }
+
+    return this.getTimeTrackingAnalytics({
+      userId,
+      accountId,
+      startDate,
+      endDate,
+      timePeriod,
+    });
+  }
+
+  /**
+   * Generate project-based time tracking report
+   */
+  getProjectTimeTrackingReport(
+    projectId: string,
+    accountId?: string,
+  ): Observable<TimeTrackingAnalytics> {
+    return this.getTimeTrackingAnalytics({
+      projectId,
+      accountId,
+    });
+  }
+
+  /**
+   * Export time tracking data as CSV-ready format
+   */
+  exportTimeTrackingData(
+    filters?: TimeTrackingReportFilters,
+  ): Observable<any[]> {
+    if (!filters?.accountId) {
+      throw new Error("accountId is required for time tracking data export");
+    }
+
+    return this.firestore
+      .collection<TimeEntry>(`accounts/${filters.accountId}/timeEntries`)
+      .valueChanges()
+      .pipe(
+        map((entries) => {
+          // Apply additional filters if provided
+          let filteredEntries = entries;
+
+          if (filters) {
+            filteredEntries = entries.filter((entry) => {
+              if (filters.userId && entry.userId !== filters.userId)
+                return false;
+              if (filters.projectId && entry.projectId !== filters.projectId)
+                return false;
+              if (filters.status && entry.status !== filters.status)
+                return false;
+
+              if (filters.startDate || filters.endDate) {
+                const entryDate = entry.date.toDate();
+                if (filters.startDate && entryDate < filters.startDate)
+                  return false;
+                if (filters.endDate && entryDate > filters.endDate)
+                  return false;
+              }
+
+              return true;
+            });
+          }
+
+          // Convert to CSV-ready format
+          return filteredEntries.map((entry) => ({
+            "Entry ID": entry.id,
+            "Account ID": entry.accountId,
+            "Project ID": entry.projectId,
+            "Project Name": entry.projectName || "",
+            "User ID": entry.userId,
+            "User Name": entry.userName || "",
+            Date: entry.date.toDate().toISOString().split("T")[0],
+            Hours: entry.hours,
+            Status: entry.status || "draft",
+            Notes: entry.notes || "",
+            "Approved By": entry.approvedByName || "",
+            "Approved At": entry.approvedAt?.toDate().toISOString() || "",
+            "Created At":
+              entry.createdAt &&
+              typeof entry.createdAt === "object" &&
+              "toDate" in entry.createdAt
+                ? entry.createdAt.toDate().toISOString()
+                : "",
+            "Last Modified":
+              entry.lastModifiedAt &&
+              typeof entry.lastModifiedAt === "object" &&
+              "toDate" in entry.lastModifiedAt
+                ? entry.lastModifiedAt.toDate().toISOString()
+                : "",
+          }));
+        }),
+      );
+  }
+
+  private calculateTimeTrackingMetrics(
+    entries: TimeEntry[],
+  ): TimeTrackingAnalytics {
+    const totalEntries = entries.length;
+    const totalHours = entries.reduce((sum, entry) => sum + entry.hours, 0);
+    const totalApprovedHours = entries
+      .filter((entry) => entry.status === "approved")
+      .reduce((sum, entry) => sum + entry.hours, 0);
+
+    // Calculate status-based metrics
+    const entriesByStatus: {[status: string]: number} = {};
+    const hoursByStatus: {[status: string]: number} = {};
+
+    entries.forEach((entry) => {
+      const status = entry.status || "draft";
+      entriesByStatus[status] = (entriesByStatus[status] || 0) + 1;
+      hoursByStatus[status] = (hoursByStatus[status] || 0) + entry.hours;
+    });
+
+    // Calculate project-based metrics
+    const entriesByProject: {
+      [projectId: string]: {name: string; entries: number; hours: number};
+    } = {};
+    entries.forEach((entry) => {
+      if (!entriesByProject[entry.projectId]) {
+        entriesByProject[entry.projectId] = {
+          name: entry.projectName || "Unknown Project",
+          entries: 0,
+          hours: 0,
+        };
+      }
+      entriesByProject[entry.projectId].entries++;
+      entriesByProject[entry.projectId].hours += entry.hours;
+    });
+
+    // Calculate user-based metrics
+    const entriesByUser: {
+      [userId: string]: {
+        name: string;
+        entries: number;
+        hours: number;
+        approvedHours: number;
+      };
+    } = {};
+    entries.forEach((entry) => {
+      if (!entriesByUser[entry.userId]) {
+        entriesByUser[entry.userId] = {
+          name: entry.userName || "Unknown User",
+          entries: 0,
+          hours: 0,
+          approvedHours: 0,
+        };
+      }
+      entriesByUser[entry.userId].entries++;
+      entriesByUser[entry.userId].hours += entry.hours;
+      if (entry.status === "approved") {
+        entriesByUser[entry.userId].approvedHours += entry.hours;
+      }
+    });
+
+    // Calculate monthly and weekly stats
+    const monthlyStats: {
+      [month: string]: {entries: number; hours: number; approvedHours: number};
+    } = {};
+    const weeklyStats: {
+      [week: string]: {entries: number; hours: number; approvedHours: number};
+    } = {};
+
+    entries.forEach((entry) => {
+      const date = entry.date.toDate();
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      const weekKey = this.getWeekKey(date);
+
+      // Monthly stats
+      if (!monthlyStats[monthKey]) {
+        monthlyStats[monthKey] = {entries: 0, hours: 0, approvedHours: 0};
+      }
+      monthlyStats[monthKey].entries++;
+      monthlyStats[monthKey].hours += entry.hours;
+      if (entry.status === "approved") {
+        monthlyStats[monthKey].approvedHours += entry.hours;
+      }
+
+      // Weekly stats
+      if (!weeklyStats[weekKey]) {
+        weeklyStats[weekKey] = {entries: 0, hours: 0, approvedHours: 0};
+      }
+      weeklyStats[weekKey].entries++;
+      weeklyStats[weekKey].hours += entry.hours;
+      if (entry.status === "approved") {
+        weeklyStats[weekKey].approvedHours += entry.hours;
+      }
+    });
+
+    // Calculate approval metrics
+    const approvedEntries = entries.filter(
+      (e) => e.status === "approved",
+    ).length;
+    const rejectedEntries = entries.filter(
+      (e) => e.status === "rejected",
+    ).length;
+    const pendingEntries = entries.filter((e) => e.status === "pending").length;
+
+    const approvalRate =
+      totalEntries > 0 ? (approvedEntries / totalEntries) * 100 : 0;
+    const rejectionRate =
+      totalEntries > 0 ? (rejectedEntries / totalEntries) * 100 : 0;
+    const pendingRate =
+      totalEntries > 0 ? (pendingEntries / totalEntries) * 100 : 0;
+
+    // Calculate average approval time
+    const approvedEntriesWithTimes = entries.filter(
+      (e) => e.status === "approved" && e.createdAt && e.approvedAt,
+    );
+    const averageDaysToApproval =
+      approvedEntriesWithTimes.length > 0
+        ? approvedEntriesWithTimes.reduce((sum, entry) => {
+            const created =
+              entry.createdAt &&
+              typeof entry.createdAt === "object" &&
+              "toDate" in entry.createdAt
+                ? entry.createdAt.toDate()
+                : new Date();
+            const approved = entry.approvedAt!.toDate();
+            const daysDiff =
+              (approved.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
+            return sum + daysDiff;
+          }, 0) / approvedEntriesWithTimes.length
+        : 0;
+
+    // Get most active users and projects
+    const mostActiveUsers = Object.entries(entriesByUser)
+      .map(([userId, data]) => ({
+        userId,
+        userName: data.name,
+        totalHours: data.hours,
+        approvedHours: data.approvedHours,
+      }))
+      .sort((a, b) => b.totalHours - a.totalHours)
+      .slice(0, 10);
+
+    const mostActiveProjects = Object.entries(entriesByProject)
+      .map(([projectId, data]) => ({
+        projectId,
+        projectName: data.name,
+        totalHours: data.hours,
+        entriesCount: data.entries,
+      }))
+      .sort((a, b) => b.totalHours - a.totalHours)
+      .slice(0, 10);
+
+    // Calculate time distribution
+    const byDayOfWeek: {[day: string]: number} = {};
+    const dayNames = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+
+    entries.forEach((entry) => {
+      const dayOfWeek = dayNames[entry.date.toDate().getDay()];
+      byDayOfWeek[dayOfWeek] = (byDayOfWeek[dayOfWeek] || 0) + entry.hours;
+    });
+
+    const byTimeOfMonth: {[period: string]: number} = {
+      "Beginning (1-10)": 0,
+      "Middle (11-20)": 0,
+      "End (21-31)": 0,
+    };
+
+    entries.forEach((entry) => {
+      const dayOfMonth = entry.date.toDate().getDate();
+      if (dayOfMonth <= 10) {
+        byTimeOfMonth["Beginning (1-10)"] += entry.hours;
+      } else if (dayOfMonth <= 20) {
+        byTimeOfMonth["Middle (11-20)"] += entry.hours;
+      } else {
+        byTimeOfMonth["End (21-31)"] += entry.hours;
+      }
+    });
+
+    return {
+      totalEntries,
+      totalHours,
+      totalApprovedHours,
+      entriesByStatus,
+      hoursByStatus,
+      entriesByProject,
+      entriesByUser,
+      monthlyStats,
+      weeklyStats,
+      averageHoursPerEntry: totalEntries > 0 ? totalHours / totalEntries : 0,
+      averageApprovalTime: averageDaysToApproval,
+      mostActiveUsers,
+      mostActiveProjects,
+      approvalMetrics: {
+        approvalRate,
+        rejectionRate,
+        pendingRate,
+        averageDaysToApproval,
+      },
+      timeDistribution: {
+        byDayOfWeek,
+        byTimeOfMonth,
+      },
+    };
+  }
+
+  private getWeekKey(date: Date): string {
+    const year = date.getFullYear();
+    const week = this.getWeekNumber(date);
+    return `${year}-W${String(week).padStart(2, "0")}`;
+  }
+
+  private getWeekNumber(date: Date): number {
+    const d = new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+    );
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
   }
 
   private extractAccountIdFromRole(role: GroupRole): string | null {

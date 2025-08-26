@@ -1,0 +1,120 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      <ion-icon name="chatbubble-ellipses" class="title-icon"></ion-icon>
+      Notes - {{ projectName }}
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="notes-content">
+  <div class="notes-container">
+    <!-- Date Header -->
+    <div class="date-header">
+      <ion-icon name="calendar"></ion-icon>
+      <span>{{ date | date: "fullDate" }}</span>
+    </div>
+
+    <!-- Note History -->
+    <div class="note-history" *ngIf="noteHistory.length > 0">
+      <div
+        class="note-item"
+        [ngClass]="'note-type-' + note.type"
+        *ngFor="let note of noteHistory; trackBy: trackByNoteId"
+      >
+        <div class="note-header">
+          <ion-avatar class="note-avatar">
+            <ion-icon
+              [name]="getNoteTypeIcon(note.type)"
+              [color]="getNoteTypeColor(note.type)"
+            ></ion-icon>
+          </ion-avatar>
+          <div class="note-meta">
+            <span class="note-author">{{ note.createdByName }}</span>
+            <span class="note-timestamp">{{
+              formatTimestamp(note.createdAt)
+            }}</span>
+            <ion-chip
+              [color]="getNoteTypeColor(note.type)"
+              class="note-type-chip"
+              size="small"
+            >
+              {{
+                note.type === "admin"
+                  ? "Admin"
+                  : note.type === "user"
+                    ? "User"
+                    : "System"
+              }}
+            </ion-chip>
+          </div>
+        </div>
+        <div class="note-content">
+          <p>{{ note.content }}</p>
+          <span class="note-edited" *ngIf="note.editedAt">
+            (edited {{ formatTimestamp(note.editedAt) }})
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-notes" *ngIf="noteHistory.length === 0">
+      <ion-icon name="chatbubble-outline" class="empty-icon"></ion-icon>
+      <h3>No notes yet</h3>
+      <p>Add the first note to start a conversation about this time entry.</p>
+    </div>
+
+    <!-- Add New Note -->
+    <div class="add-note-section">
+      <div class="current-user-info" *ngIf="currentUser">
+        <ion-avatar class="user-avatar">
+          <ion-icon
+            [name]="isAdmin ? 'shield-checkmark' : 'person'"
+            [color]="isAdmin ? 'warning' : 'primary'"
+          ></ion-icon>
+        </ion-avatar>
+        <span class="user-name">{{
+          currentUser.displayName || currentUser.email
+        }}</span>
+        <ion-chip [color]="isAdmin ? 'warning' : 'primary'" size="small">
+          {{ isAdmin ? "Admin" : "User" }}
+        </ion-chip>
+      </div>
+
+      <ion-item lines="none" class="note-input-item">
+        <ion-textarea
+          [(ngModel)]="newNote"
+          placeholder="Add a note about this time entry..."
+          rows="3"
+          maxlength="1000"
+          counter="true"
+          fill="outline"
+          [disabled]="isSubmitting"
+        ></ion-textarea>
+      </ion-item>
+
+      <div class="note-actions">
+        <ion-button
+          expand="block"
+          [disabled]="!newNote.trim() || isSubmitting"
+          (click)="addNote()"
+          class="add-note-btn"
+        >
+          <ion-icon name="send" slot="start" *ngIf="!isSubmitting"></ion-icon>
+          <ion-spinner
+            name="crescent"
+            slot="start"
+            *ngIf="isSubmitting"
+          ></ion-spinner>
+          {{ isSubmitting ? "Adding Note..." : "Add Note" }}
+        </ion-button>
+      </div>
+    </div>
+  </div>
+</ion-content>

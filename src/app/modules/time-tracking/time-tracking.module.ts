@@ -29,13 +29,22 @@ import {EffectsModule} from "@ngrx/effects";
 import {TimeTrackingRoutingModule} from "./time-tracking-routing.module";
 import {TimesheetPage} from "./pages/timesheet/timesheet.page";
 import {ApprovalsPage} from "./pages/approvals/approvals.page";
+import {ReportsPage} from "./pages/reports/reports.page";
 import {WeekViewComponent} from "./components/week-view/week-view.component";
+import {NotesModalComponent} from "./components/notes-modal/notes-modal.component";
 import {timeTrackingReducer} from "../../state/reducers/time-tracking.reducer";
 import {TimeTrackingEffects} from "../../state/effects/time-tracking.effects";
 import {SharedModule} from "../../shared/shared.module";
+import {TimesheetNotificationService} from "./services/timesheet-notification.service";
 
 @NgModule({
-  declarations: [TimesheetPage, ApprovalsPage, WeekViewComponent],
+  declarations: [
+    TimesheetPage,
+    ApprovalsPage,
+    ReportsPage,
+    WeekViewComponent,
+    NotesModalComponent,
+  ],
   imports: [
     CommonModule,
     FormsModule,
@@ -46,5 +55,6 @@ import {SharedModule} from "../../shared/shared.module";
     StoreModule.forFeature("timeTracking", timeTrackingReducer),
     EffectsModule.forFeature([TimeTrackingEffects]),
   ],
+  providers: [TimesheetNotificationService],
 })
 export class TimeTrackingModule {}

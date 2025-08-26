@@ -1,0 +1,275 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Time Tracking Reports</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/time-tracking"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="reports-container">
+    <!-- Report Controls -->
+    <ion-card class="report-controls">
+      <ion-card-header>
+        <ion-card-title>Report Configuration</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-row>
+          <ion-col size="12" size-md="6">
+            <ion-item>
+              <ion-label position="stacked">Report Type</ion-label>
+              <ion-select
+                [(ngModel)]="selectedReportType"
+                (ionChange)="onReportTypeChange($event.detail.value)"
+              >
+                <ion-select-option
+                  *ngFor="let report of availableReports"
+                  [value]="report.type"
+                >
+                  {{report.name}}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-md="6" *ngIf="selectedReportType === 'user'">
+            <ion-item>
+              <ion-label position="stacked">Select User</ion-label>
+              <ion-select
+                [(ngModel)]="selectedUserId"
+                (ionChange)="onUserSelectionChange($event.detail.value)"
+              >
+                <ion-select-option value="">All Users</ion-select-option>
+                <ion-select-option
+                  *ngFor="let user of availableUsers$ | async"
+                  [value]="user.id"
+                >
+                  {{user.name}}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+
+        <ion-row *ngIf="selectedReportType === 'project'">
+          <ion-col size="12" size-md="6">
+            <ion-item>
+              <ion-label position="stacked">Select Project</ion-label>
+              <ion-select
+                [(ngModel)]="selectedProjectId"
+                (ionChange)="onProjectSelectionChange($event.detail.value)"
+              >
+                <ion-select-option value="">All Projects</ion-select-option>
+                <ion-select-option
+                  *ngFor="let project of availableProjects$ | async"
+                  [value]="project.id"
+                >
+                  {{project.name}}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+
+        <!-- Custom Date Range -->
+        <ion-row *ngIf="selectedReportType === 'custom'">
+          <ion-col size="12" size-md="6">
+            <ion-item>
+              <ion-label position="stacked">Start Date</ion-label>
+              <ion-datetime
+                [(ngModel)]="customStartDate"
+                presentation="date"
+                max="2030-12-31"
+                min="2020-01-01"
+              >
+              </ion-datetime>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-md="6">
+            <ion-item>
+              <ion-label position="stacked">End Date</ion-label>
+              <ion-datetime
+                [(ngModel)]="customEndDate"
+                presentation="date"
+                max="2030-12-31"
+                min="2020-01-01"
+              >
+              </ion-datetime>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+
+        <!-- Action Buttons -->
+        <ion-row class="action-buttons">
+          <ion-col size="12" size-md="auto">
+            <ion-button
+              expand="block"
+              (click)="generateReport()"
+              [disabled]="isLoading"
+            >
+              <ion-icon name="analytics-outline" slot="start"></ion-icon>
+              Generate Report
+            </ion-button>
+          </ion-col>
+          <ion-col size="12" size-md="auto">
+            <ion-button
+              expand="block"
+              fill="outline"
+              (click)="exportToCSV()"
+              [disabled]="!analytics$ || isLoading"
+            >
+              <ion-icon name="download-outline" slot="start"></ion-icon>
+              Export CSV
+            </ion-button>
+          </ion-col>
+          <ion-col size="12" size-md="auto">
+            <ion-button
+              expand="block"
+              fill="outline"
+              (click)="refreshReport()"
+              [disabled]="isLoading"
+            >
+              <ion-icon name="refresh-outline" slot="start"></ion-icon>
+              Refresh
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Generating report...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="error-container">
+      <ion-card color="danger">
+        <ion-card-content>
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          <p>{{error}}</p>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Report Results -->
+    <div *ngIf="analytics$ | async as analytics" class="report-results">
+      <!-- Summary Cards -->
+      <ion-row class="summary-cards">
+        <div
+          *ngFor="let stat of getSummaryStats(analytics)"
+          class="summary-card"
+        >
+          <ion-col size="12" size-md="3">
+            <ion-card class="metric-card">
+              <ion-card-content>
+                <div class="metric-value">{{stat.value}}</div>
+                <div class="metric-label">{{stat.label}}</div>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </div>
+      </ion-row>
+
+      <!-- Charts Section -->
+      <ion-row>
+        <ion-col size="12" size-lg="6">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Hours by Status</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="chart-container">
+                <!-- Chart implementation would go here -->
+                <p>Chart visualization (Chart.js integration needed)</p>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+        <ion-col size="12" size-lg="6">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Monthly Trend</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="chart-container">
+                <!-- Chart implementation would go here -->
+                <p>Chart visualization (Chart.js integration needed)</p>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
+      <!-- Project Breakdown -->
+      <ion-card
+        *ngIf="analytics.entriesByProject && (analytics.entriesByProject | keyvalue).length > 0"
+      >
+        <ion-card-header>
+          <ion-card-title>Project Breakdown</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div
+            *ngFor="let project of analytics.entriesByProject | keyvalue"
+            class="project-breakdown-item"
+          >
+            <div class="project-header">
+              <h3>{{project.value.name}}</h3>
+              <span class="project-hours"
+                >{{project.value.hours | number:'1.1-1'}} hours</span
+              >
+            </div>
+            <div class="project-stats">
+              <span>{{project.value.entries}} entries</span>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- User Performance -->
+      <ion-card
+        *ngIf="analytics.entriesByUser && (analytics.entriesByUser | keyvalue).length > 0"
+      >
+        <ion-card-header>
+          <ion-card-title>User Performance</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div
+            *ngFor="let user of analytics.entriesByUser | keyvalue"
+            class="user-breakdown-item"
+          >
+            <div class="user-header">
+              <div class="user-info">
+                <h3>{{user.value.name}}</h3>
+                <p>{{user.value.hours | number:'1.1-1'}} hours logged</p>
+              </div>
+            </div>
+            <div class="user-stats">
+              <div class="stat">
+                <span class="stat-value">{{user.value.entries}}</span>
+                <span class="stat-label">Entries</span>
+              </div>
+              <div class="stat">
+                <span class="stat-value"
+                  >{{user.value.approvedHours | number:'1.1-1'}}</span
+                >
+                <span class="stat-label">Approved Hours</span>
+              </div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- No Data State -->
+    <div *ngIf="!analytics$ && !isLoading && !error" class="no-data-state">
+      <ion-icon name="analytics-outline" size="large"></ion-icon>
+      <h3>No Report Generated</h3>
+      <p>
+        Configure your report settings and click "Generate Report" to view
+        analytics.
+      </p>
+    </div>
+  </div>
+</ion-content>

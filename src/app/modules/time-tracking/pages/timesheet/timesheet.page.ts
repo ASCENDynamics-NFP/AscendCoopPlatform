@@ -33,8 +33,10 @@ import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectEntries} from "../../../../state/selectors/time-tracking.selectors";
 import {selectActiveProjectsByAccount} from "../../../../state/selectors/projects.selectors";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
+import {selectRelatedAccountsByAccountId} from "../../../../state/selectors/account.selectors";
 import {TimeEntry} from "../../../../../../shared/models/time-entry.model";
 import {AppState} from "../../../../state/app.state";
+import {TimesheetNotificationService} from "../../services/timesheet-notification.service";
 
 @Component({
   selector: "app-timesheet",
@@ -71,6 +73,7 @@ export class TimesheetPage implements OnInit, OnDestroy {
   constructor(
     private store: Store<AppState>,
     private route: ActivatedRoute,
+    private notificationService: TimesheetNotificationService,
   ) {}
 
   ngOnInit() {
@@ -80,6 +83,12 @@ export class TimesheetPage implements OnInit, OnDestroy {
     this.store.dispatch(
       AccountActions.loadAccount({accountId: this.accountId}),
     );
+
+    // Load related accounts to get admin users for notifications
+    this.store.dispatch(
+      AccountActions.loadRelatedAccounts({accountId: this.accountId}),
+    );
+
     this.account$ = this.store.select(selectAccountById(this.accountId));
 
     this.projects$ = this.store.select(
@@ -403,6 +412,26 @@ export class TimesheetPage implements OnInit, OnDestroy {
             entries: pendingEntries,
           }),
         );
+
+        // Notify admins of timesheet submission
+        this.store
+          .select(selectRelatedAccountsByAccountId(this.accountId))
+          .pipe(first())
+          .subscribe((relatedAccounts) => {
+            if (relatedAccounts) {
+              const adminUserIds = relatedAccounts
+                .filter((related) => related.access === "admin")
+                .map((related) => related.accountId);
+
+              if (adminUserIds.length > 0) {
+                this.notificationService.notifyTimesheetSubmitted(
+                  pendingEntries,
+                  this.currentWeekStart,
+                  adminUserIds,
+                );
+              }
+            }
+          });
 
         // Show success feedback with context based on original status
         setTimeout(() => {

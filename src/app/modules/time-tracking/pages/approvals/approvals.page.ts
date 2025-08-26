@@ -35,6 +35,7 @@ import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import {selectAllEntriesForAccount} from "../../../../state/selectors/time-tracking.selectors";
 import {AppState} from "../../../../state/app.state";
 import {AlertController, ToastController} from "@ionic/angular";
+import {TimesheetNotificationService} from "../../services/timesheet-notification.service";
 
 interface GroupedEntries {
   userId: string;
@@ -117,6 +118,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private alertController: AlertController,
     private toastController: ToastController,
+    private notificationService: TimesheetNotificationService,
   ) {}
 
   ngOnInit() {
@@ -486,6 +488,22 @@ export class ApprovalsPage implements OnInit, OnDestroy {
             ...(notes && {reason: notes}), // Only include reason if notes is provided
           };
 
+          // Add to note history for admin actions
+          const noteHistoryEntry = {
+            id: `${status}_${approvalTimestamp.seconds}`,
+            content:
+              status === "approved"
+                ? "Timesheet approved"
+                : notes
+                  ? `Timesheet rejected: ${notes}`
+                  : "Timesheet rejected",
+            createdBy: currentUser!.uid,
+            createdByName:
+              currentUser!.displayName || currentUser!.email || "Unknown",
+            createdAt: approvalTimestamp,
+            type: "admin" as const,
+          };
+
           // Base entry without rejectionReason
           const baseEntry: TimeEntry = {
             ...entry,
@@ -497,6 +515,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
             approvedAt: approvalTimestamp,
             originalHours: entry.originalHours || entry.hours, // Preserve original if not already set
             statusHistory: [...(entry.statusHistory || []), statusChange],
+            noteHistory: [...(entry.noteHistory || []), noteHistoryEntry],
             // Update notes with rejection reason if applicable
             notes:
               notes && status === "rejected"
@@ -516,6 +535,26 @@ export class ApprovalsPage implements OnInit, OnDestroy {
             TimeTrackingActions.updateTimeEntry({entry: updatedEntry}),
           );
         });
+
+        // Send notifications to user
+        if (status === "approved") {
+          this.notificationService.notifyTimesheetApproved(
+            group.userId,
+            group.weekStart,
+            group.totalHours,
+            currentUser!.displayName || currentUser!.email || "Unknown",
+            group.entries[0].accountId,
+          );
+        } else if (status === "rejected") {
+          this.notificationService.notifyTimesheetRejected(
+            group.userId,
+            group.weekStart,
+            group.totalHours,
+            notes || "",
+            currentUser!.displayName || currentUser!.email || "Unknown",
+            group.entries[0].accountId,
+          );
+        }
 
         this.showToast(
           `Timesheet ${status} for ${group.userName}`,

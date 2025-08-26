@@ -338,6 +338,15 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
     ]);
   }
 
+  navigateToTimeTrackingReports() {
+    this.router.navigate([
+      "/account",
+      this.accountId,
+      "time-tracking",
+      "reports",
+    ]);
+  }
+
   navigateToMembers() {
     this.router.navigate(["/account", this.accountId, "related", "user"]);
   }

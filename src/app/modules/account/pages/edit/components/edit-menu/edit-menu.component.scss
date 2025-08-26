@@ -58,34 +58,3 @@ ion-item {
 ion-item.selected {
   border-bottom: 2px solid var(--ion-color-primary);
 }
-
-// Information card styles for group accounts
-.info-card {
-  margin: 16px 0;
-  border-left: 3px solid var(--ion-color-primary);
-
-  .info-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-
-    .info-title {
-      font-weight: 600;
-      color: var(--ion-color-primary);
-    }
-  }
-
-  .info-text {
-    font-size: 14px;
-    line-height: 1.4;
-    color: var(--ion-color-medium-tint);
-    margin-bottom: 12px;
-  }
-
-  .admin-button {
-    --border-radius: 6px;
-    height: 32px;
-    font-size: 13px;
-  }
-}

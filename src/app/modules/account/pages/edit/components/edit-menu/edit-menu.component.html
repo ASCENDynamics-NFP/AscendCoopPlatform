@@ -40,30 +40,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </div>
   <h2>{{ account?.name }}</h2>
 
-  <!-- Information card for group accounts -->
-  <ion-card *ngIf="account?.type === 'group'" class="info-card">
-    <ion-card-content>
-      <div class="info-header">
-        <ion-icon name="information-circle" color="primary"></ion-icon>
-        <span class="info-title">Group Profile Editing</span>
-      </div>
-      <p class="info-text">
-        For comprehensive group management including member approval, role
-        assignment, and administrative settings, visit the
-        <strong>Admin Dashboard</strong>.
-      </p>
-      <ion-button
-        fill="outline"
-        size="small"
-        (click)="navigateToAdminDashboard()"
-        class="admin-button"
-      >
-        <ion-icon name="settings" slot="start"></ion-icon>
-        Go to Admin Dashboard
-      </ion-button>
-    </ion-card-content>
-  </ion-card>
-
   <ion-list>
     <ion-item
       (click)="selectItem('basic')"

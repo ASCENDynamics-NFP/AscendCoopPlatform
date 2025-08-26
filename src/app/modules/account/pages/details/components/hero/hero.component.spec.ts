@@ -191,9 +191,10 @@ describe("HeroComponent", () => {
         collectionName: "accounts",
         docId: mockAccountId,
         firestoreLocation: `accounts/${mockAccountId}/profile`,
-        maxHeight: 300,
-        maxWidth: 900,
+        imageHeight: 300,
+        imageWidth: 900,
         fieldName: "heroImage",
+        currentImageUrl: mockAccount.heroImage,
       },
     });
     const modal =

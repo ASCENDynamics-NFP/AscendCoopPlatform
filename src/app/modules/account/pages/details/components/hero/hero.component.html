@@ -25,7 +25,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     alt="Header Background"
   />
   <ion-button
-    *ngIf="isProfileOwner"
+    *ngIf="shouldShowEditButton"
     fill="outline"
     class="edit-button"
     size="small"
@@ -150,7 +150,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         size="small"
         disabled
       >
-        <ion-icon name="hourglass"></ion-icon> Pending
+        <ion-icon name="hourglass"></ion-icon>
       </ion-button>
       <ion-button
         *ngIf="
@@ -163,7 +163,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         size="small"
         disabled
       >
-        <ion-icon name="checkmark-circle"></ion-icon> Connected
+        <ion-icon name="checkmark-circle"></ion-icon>
       </ion-button>
       <!-- Time Tracking: Only users (type 'user') can enter time for group accounts they're members of -->
       <ion-button
@@ -180,7 +180,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <ion-icon name="time"></ion-icon> Enter Time
       </ion-button>
       <ion-button
-        *ngIf="isProfileOwner"
+        *ngIf="shouldShowEditButton"
         color="primary"
         fill="outline"
         size="small"

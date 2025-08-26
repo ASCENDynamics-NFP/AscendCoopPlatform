@@ -28,13 +28,71 @@ import {AngularFirestore} from "@angular/fire/compat/firestore";
   providedIn: "root",
 })
 export class FirestoreService {
-  constructor(
-    private afs: AngularFirestore,
-  ) {}
+  constructor(private afs: AngularFirestore) {}
 
   // Helper to ensure documents have an id property
   private populateId<T>(data: T, id: string): T {
     return {...data, id} as T;
+  }
+
+  /**
+   * Get a document reference for direct operations
+   * @param collectionName
+   * @param documentId
+   * @returns Document reference
+   */
+  getDocumentReference(collectionName: string, documentId: string) {
+    return this.afs.collection(collectionName).doc(documentId);
+  }
+
+  /**
+   * Update document and verify the update was successful
+   * @param collectionName
+   * @param documentId
+   * @param updatedData
+   * @returns Promise<void>
+   */
+  async updateDocumentWithVerification(
+    collectionName: string,
+    documentId: string,
+    updatedData: any,
+  ): Promise<void> {
+    try {
+      const docRef = this.afs.collection(collectionName).doc(documentId);
+
+      // Check document exists first
+      const beforeSnapshot = await docRef.get().toPromise();
+      const beforeData = beforeSnapshot?.data() as any;
+
+      // Perform the update
+      await docRef.update(updatedData);
+
+      // Verify the update
+      const afterSnapshot = await docRef.get().toPromise();
+
+      // Check if the update was successful
+      const isVerified = Object.keys(updatedData).every((key) => {
+        const expected = updatedData[key];
+        const actualData = afterSnapshot?.data() as any;
+        const actual = actualData?.[key];
+        return actual === expected;
+      });
+
+      if (!isVerified) {
+        throw new Error("Document update verification failed");
+      }
+    } catch (error) {
+      console.error("FirestoreService: Document update failed", {
+        collectionName,
+        documentId,
+        updatedData,
+        error: error,
+      });
+      throw new FirebaseError(
+        "update-document-error",
+        `Error updating document: ${error}`,
+      );
+    }
   }
 
   // Firebase Query Logic (Start) //
@@ -120,11 +178,17 @@ export class FirestoreService {
     updatedData: any,
   ): Promise<void> {
     try {
-      await this.afs
+      const result = await this.afs
         .collection(collectionName)
         .doc(documentId)
         .update(updatedData);
     } catch (error) {
+      console.error("FirestoreService: Document update failed", {
+        collectionName,
+        documentId,
+        updatedData,
+        error: error,
+      });
       throw new FirebaseError(
         "update-document-error",
         `Error updating document: ${error}`,
@@ -184,5 +248,4 @@ export class FirestoreService {
       throw error;
     }
   }
-
 }

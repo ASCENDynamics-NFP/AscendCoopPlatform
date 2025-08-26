@@ -984,3 +984,152 @@ ion-header {
     }
   }
 }
+
+// Image Upload Section Styles
+.image-upload-section {
+  margin-bottom: 20px;
+
+  .image-upload-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      gap: 32px;
+    }
+  }
+
+  .image-upload-item {
+    flex: 1;
+
+    .image-preview-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+
+      @media (min-width: 768px) {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+    }
+
+    .image-preview {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid var(--ion-color-light);
+      background: var(--ion-color-light-shade);
+
+      &.hero-preview {
+        width: 200px;
+        height: 100px;
+
+        @media (min-width: 768px) {
+          width: 240px;
+          height: 120px;
+        }
+      }
+
+      &.icon-preview {
+        width: 100px;
+        height: 100px;
+
+        @media (min-width: 768px) {
+          width: 120px;
+          height: 120px;
+        }
+      }
+
+      .preview-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .placeholder-image {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: var(--ion-color-medium);
+        background: var(--ion-color-light-tint);
+
+        ion-icon {
+          margin-bottom: 8px;
+          opacity: 0.6;
+        }
+
+        p {
+          margin: 0;
+          font-size: 0.85rem;
+          opacity: 0.8;
+        }
+
+        &.hero-placeholder {
+          font-size: 0.9rem;
+        }
+
+        &.icon-placeholder {
+          font-size: 0.8rem;
+        }
+      }
+    }
+
+    .image-info {
+      flex: 1;
+      text-align: center;
+
+      @media (min-width: 768px) {
+        text-align: left;
+        padding-left: 16px;
+      }
+
+      h4 {
+        margin: 0 0 8px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--ion-color-dark);
+      }
+
+      .image-description {
+        margin: 0 0 16px 0;
+        font-size: 0.9rem;
+        color: var(--ion-color-medium);
+        line-height: 1.4;
+      }
+
+      .upload-button {
+        min-width: 120px;
+
+        ion-icon {
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+}
+
+// Dark mode adjustments
+@media (prefers-color-scheme: dark) {
+  .image-upload-section {
+    .image-preview {
+      border-color: var(--ion-color-dark);
+      background: var(--ion-color-dark-shade);
+
+      .placeholder-image {
+        background: var(--ion-color-dark-tint);
+      }
+    }
+
+    .image-info {
+      h4 {
+        color: var(--ion-color-light);
+      }
+    }
+  }
+}

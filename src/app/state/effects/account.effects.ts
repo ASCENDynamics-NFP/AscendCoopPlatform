@@ -106,15 +106,19 @@ export class AccountEffects {
                 .pipe(
                   map((account) => {
                     if (!account) {
+                      // For new users, the account might not exist yet due to Firebase function delay
                       throw new Error("Account not found");
                     }
                     return AccountActions.loadAccountSuccess({account});
                   }),
                   catchError((error) => {
-                    this.showToast(
-                      `Error loading account: ${error.message}`,
-                      "danger",
-                    );
+                    // Don't show toast for "Account not found" - this is expected for new users
+                    if (!error.message.includes("Account not found")) {
+                      this.showToast(
+                        `Error loading account: ${error.message}`,
+                        "danger",
+                      );
+                    }
                     return of(
                       AccountActions.loadAccountFailure({error: error.message}),
                     );

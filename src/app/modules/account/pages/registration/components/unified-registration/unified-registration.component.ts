@@ -18,22 +18,24 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
-import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+} from "@angular/forms";
 import {Router} from "@angular/router";
 import {
   Account,
-  Address,
   Email,
   PhoneNumber,
   WebLink,
-} from "@shared/models/account.model";
-import {formatPhoneNumber} from "../../../../../../core/utils/phone.util";
-import {countries, statesProvinces} from "../../../../../../core/data/country";
+} from "../../../../../../../../shared/models/account.model";
 import {Store} from "@ngrx/store";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 import * as AuthActions from "../../../../../../state/actions/auth.actions";
-import {selectAuthUser} from "../../../../../../state/selectors/auth.selectors";
-import {filter, take} from "rxjs/operators";
+import {formatPhoneNumber} from "../../../../../../core/utils/phone.util";
 
 @Component({
   selector: "app-unified-registration",
@@ -45,13 +47,6 @@ export class UnifiedRegistrationComponent implements OnChanges {
   @Input() accountType: "user" | "group" = "user";
   @Input() redirectSubmit: boolean = false;
 
-  public maxAddresses = 3;
-  public maxEmails = 5;
-  public maxLinks = 10;
-  public maxPhoneNumbers = 5;
-  public countries = countries;
-  public statesProvinces = statesProvinces;
-
   registrationForm!: FormGroup;
 
   constructor(
@@ -60,6 +55,57 @@ export class UnifiedRegistrationComponent implements OnChanges {
     private store: Store,
   ) {
     this.initializeForm();
+  }
+
+  // Custom URL validator
+  private urlValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) {
+      return null; // Allow empty values for optional fields
+    }
+
+    const url = control.value.trim();
+
+    // Check if URL starts with http:// or https://
+    const urlPattern = /^https?:\/\/.+/i;
+
+    if (!urlPattern.test(url)) {
+      return {invalidUrl: {message: "URL must start with http:// or https://"}};
+    }
+
+    // Additional validation to ensure there's content after the protocol
+    const domainPattern = /^https?:\/\/.{3,}/i;
+    if (!domainPattern.test(url)) {
+      return {
+        invalidUrl: {
+          message: "Please enter a complete URL (e.g., https://example.com)",
+        },
+      };
+    }
+
+    return null;
+  }
+
+  // Helper method to get validation error message
+  getUrlErrorMessage(fieldName: string): string {
+    const field = this.registrationForm.get(fieldName);
+    if (field?.errors?.["invalidUrl"]) {
+      return field.errors["invalidUrl"].message;
+    }
+    return "";
+  }
+
+  // Format phone number as user types
+  formatPhoneNumber(event: any): void {
+    const input = event.target;
+    const formattedValue = formatPhoneNumber(input.value);
+
+    // Update the input display value
+    input.value = formattedValue;
+
+    // Update the form control value
+    this.registrationForm
+      .get("contactInformation.primaryPhone")
+      ?.setValue(formattedValue);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -76,47 +122,23 @@ export class UnifiedRegistrationComponent implements OnChanges {
 
   private initializeForm(): void {
     const baseForm = {
-      description: [""],
-      tagline: ["", Validators.required],
       name: ["", Validators.required],
-      webLinks: this.fb.array([this.createWebLinkFormGroup()]),
+      tagline: ["", Validators.required],
+      description: [""],
+      website: ["", this.urlValidator.bind(this)],
+      socialMedia: ["", this.urlValidator.bind(this)],
       contactInformation: this.fb.group({
-        emails: this.fb.array([this.createEmailFormGroup()]),
-        phoneNumbers: this.fb.array([this.createPhoneNumberFormGroup()]),
-        addresses: this.fb.array([this.createAddressFormGroup()]),
-        preferredMethodOfContact: ["Email"],
+        primaryEmail: ["", [Validators.email]],
+        primaryPhone: [""],
       }),
     };
 
     // Add group-specific fields if account type is group
     if (this.accountType === "group") {
-      (baseForm as any).groupDetails = this.fb.group({
-        groupType: [],
-        googleCalendarUrl: [],
-      });
+      (baseForm as any).groupType = ["", Validators.required];
     }
 
     this.registrationForm = this.fb.group(baseForm);
-  }
-
-  get addressesFormArray(): FormArray {
-    return this.registrationForm.get(
-      "contactInformation.addresses",
-    ) as FormArray;
-  }
-
-  get phoneNumbersFormArray(): FormArray {
-    return this.registrationForm.get(
-      "contactInformation.phoneNumbers",
-    ) as FormArray;
-  }
-
-  get emailsFormArray(): FormArray {
-    return this.registrationForm.get("contactInformation.emails") as FormArray;
-  }
-
-  get webLinksFormArray(): FormArray {
-    return this.registrationForm.get("webLinks") as FormArray;
   }
 
   get isGroupRegistration(): boolean {
@@ -133,57 +155,25 @@ export class UnifiedRegistrationComponent implements OnChanges {
 
       const baseAccount: Account = {
         ...this.account,
-        ...formValue,
         type: this.accountType,
         name: formValue.name!,
         tagline: formValue.tagline!,
         description: formValue.description || "",
-        webLinks:
-          formValue.webLinks?.map((link: Partial<WebLink>) => ({
-            name: link.name,
-            url: link.url,
-            category: link.category || "",
-          })) || [],
+        webLinks: this.buildWebLinksFromForm(formValue),
         contactInformation: {
           ...this.account.contactInformation,
-          ...formValue.contactInformation,
-          emails:
-            formValue.contactInformation!.emails?.map(
-              (email: Partial<Email>) => ({
-                name: email.name ?? null,
-                email: email.email!,
-              }),
-            ) ?? [],
-          phoneNumbers:
-            formValue.contactInformation!.phoneNumbers?.map(
-              (phone: Partial<PhoneNumber>) => ({
-                number: phone.number ?? null,
-                type: phone.type ?? null,
-                isEmergencyNumber: phone.isEmergencyNumber || false,
-              }),
-            ) ?? [],
-          addresses:
-            formValue.contactInformation!.addresses?.map(
-              (address: Partial<Address>) => ({
-                name: address?.name ?? null,
-                street: address?.street ?? null,
-                city: address?.city ?? null,
-                state: address?.state ?? null,
-                zipcode: address?.zipcode ?? null,
-                country: address?.country ?? null,
-              }),
-            ) ?? [],
-          preferredMethodOfContact:
-            formValue.contactInformation?.preferredMethodOfContact || "Email",
+          emails: this.buildEmailsFromForm(formValue),
+          phoneNumbers: this.buildPhoneNumbersFromForm(formValue),
+          addresses: [], // Keep existing addresses
+          preferredMethodOfContact: "Email",
         },
       };
 
       // Add group-specific details if it's a group
-      if (this.isGroupRegistration && formValue.groupDetails) {
+      if (this.isGroupRegistration && formValue.groupType) {
         baseAccount.groupDetails = {
           ...this.account.groupDetails,
-          ...formValue.groupDetails,
-          groupType: formValue.groupDetails?.groupType || "Nonprofit",
+          groupType: formValue.groupType,
         };
       }
 
@@ -191,243 +181,96 @@ export class UnifiedRegistrationComponent implements OnChanges {
 
       if (this.redirectSubmit && this.account?.id) {
         // Force token refresh after account update to get updated custom claims
+        // The auth effects will handle navigation after the token is refreshed
         setTimeout(() => {
           this.store.dispatch(AuthActions.refreshToken({forceRefresh: true}));
         }, 1000); // Small delay to allow server-side function to complete
-
-        // Wait for the AuthUser to be synced with the updated account type before redirecting
-        this.store
-          .select(selectAuthUser)
-          .pipe(
-            filter(
-              (authUser) =>
-                authUser?.type !== undefined && authUser.type !== "new",
-            ),
-            take(1),
-          )
-          .subscribe(() => {
-            // Both user and group registrations should redirect to the profile page
-            const redirectPath = `/account/${this.account!.id}`;
-            this.router.navigateByUrl(redirectPath);
-          });
       }
     }
+  }
+
+  private buildWebLinksFromForm(formValue: any): WebLink[] {
+    const links: WebLink[] = [];
+
+    if (formValue.website) {
+      links.push({
+        name: "Website",
+        url: formValue.website,
+        category: "Website",
+      });
+    }
+
+    if (formValue.socialMedia) {
+      links.push({
+        name: "Social Media",
+        url: formValue.socialMedia,
+        category: "Social Media",
+      });
+    }
+
+    return links;
+  }
+
+  private buildEmailsFromForm(formValue: any): Email[] {
+    const emails: Email[] = [];
+
+    if (formValue.contactInformation?.primaryEmail) {
+      emails.push({
+        name: "Contact",
+        email: formValue.contactInformation.primaryEmail,
+      });
+    }
+
+    return emails;
+  }
+
+  private buildPhoneNumbersFromForm(formValue: any): PhoneNumber[] {
+    const phones: PhoneNumber[] = [];
+
+    if (formValue.contactInformation?.primaryPhone) {
+      phones.push({
+        number: formValue.contactInformation.primaryPhone,
+        type: "mobile",
+        isEmergencyNumber: false,
+      });
+    }
+
+    return phones;
   }
 
   loadFormData() {
     if (!this.account) return;
 
-    // Reset form arrays
-    this.clearFormArrays();
+    // Extract data from existing account structure
+    const website =
+      this.account.webLinks?.find((link) => link.category === "Website")?.url ||
+      "";
+    const socialMedia =
+      this.account.webLinks?.find((link) => link.category === "Social Media")
+        ?.url || "";
+    const primaryEmail =
+      this.account.contactInformation?.emails?.[0]?.email || "";
+    const primaryPhone =
+      this.account.contactInformation?.phoneNumbers?.[0]?.number || "";
 
-    // Load web links
-    this.account.webLinks?.forEach((webLink) => {
-      this.webLinksFormArray.push(
-        this.fb.group({
-          name: [webLink.name],
-          url: [
-            webLink.url,
-            [
-              Validators.pattern(
-                /^(https?:\/\/)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}([\/?].*)?$/,
-              ),
-            ],
-          ],
-          category: [webLink.category],
-        }),
-      );
-    });
-
-    if (this.webLinksFormArray.length === 0) {
-      this.addWebLink();
-    }
-
-    // Load emails
-    this.account.contactInformation?.emails?.forEach((email) => {
-      this.emailsFormArray.push(
-        this.fb.group({
-          name: [email.name],
-          email: [email.email, Validators.email],
-        }),
-      );
-    });
-    if (this.emailsFormArray.length === 0) {
-      this.addEmail();
-    }
-
-    // Load phone numbers
-    this.account.contactInformation?.phoneNumbers?.forEach((phone) => {
-      this.phoneNumbersFormArray.push(
-        this.fb.group({
-          number: [
-            phone.number,
-            [Validators.pattern("^[+]?[0-9()\\s-]{10,25}$")],
-          ],
-          type: [phone.type],
-          isEmergencyNumber: [phone.isEmergencyNumber],
-        }),
-      );
-    });
-    if (this.phoneNumbersFormArray.length === 0) {
-      this.addPhoneNumber();
-    }
-
-    // Load addresses
-    this.account.contactInformation?.addresses?.forEach((address) => {
-      this.addressesFormArray.push(
-        this.fb.group({
-          name: [address?.name],
-          street: [address?.street, Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
-          city: [address?.city, Validators.pattern("^[a-zA-Z\\s]*$")],
-          state: [address?.state],
-          zipcode: [address?.zipcode, Validators.pattern("^[0-9]*$")],
-          country: [address?.country],
-        }),
-      );
-    });
-    if (this.addressesFormArray.length === 0) {
-      this.addAddress();
-    }
-
-    // Patch form values
-    const formValues: any = {
-      name: this.account.name,
-      description: this.account.description,
-      tagline: this.account.tagline,
+    // Patch the form with existing data
+    this.registrationForm.patchValue({
+      name: this.account.name || "",
+      tagline: this.account.tagline || "",
+      description: this.account.description || "",
+      website: website,
+      socialMedia: socialMedia,
       contactInformation: {
-        emails: this.account.contactInformation?.emails?.map((email) => ({
-          name: email.name,
-          email: email.email,
-        })) || [this.createEmailFormGroup()],
-        phoneNumbers: this.account.contactInformation?.phoneNumbers?.map(
-          (phone) => ({
-            number: phone.number,
-            type: phone.type,
-            isEmergencyNumber: phone.isEmergencyNumber,
-          }),
-        ) || [this.createPhoneNumberFormGroup()],
-        addresses: this.account.contactInformation?.addresses || [
-          this.createAddressFormGroup(),
-        ],
+        primaryEmail: primaryEmail,
+        primaryPhone: primaryPhone,
       },
-    };
+    });
 
-    // Add group details if it's a group
+    // Handle group-specific data
     if (this.isGroupRegistration && this.account.groupDetails) {
-      formValues.groupDetails = {
-        groupType: this.account.groupDetails.groupType,
-        googleCalendarUrl: this.account.groupDetails.googleCalendarUrl,
-      };
+      this.registrationForm.patchValue({
+        groupType: this.account.groupDetails.groupType || "",
+      });
     }
-
-    this.registrationForm.patchValue(formValues);
-  }
-
-  private clearFormArrays(): void {
-    while (this.webLinksFormArray.length !== 0) {
-      this.webLinksFormArray.removeAt(0);
-    }
-    while (this.emailsFormArray.length !== 0) {
-      this.emailsFormArray.removeAt(0);
-    }
-    while (this.phoneNumbersFormArray.length !== 0) {
-      this.phoneNumbersFormArray.removeAt(0);
-    }
-    while (this.addressesFormArray.length !== 0) {
-      this.addressesFormArray.removeAt(0);
-    }
-  }
-
-  // Email methods
-  addEmail(): void {
-    if (this.emailsFormArray.length < this.maxEmails) {
-      this.emailsFormArray.push(this.createEmailFormGroup());
-    }
-  }
-
-  removeEmail(index: number): void {
-    this.emailsFormArray.removeAt(index);
-  }
-
-  private createEmailFormGroup(): FormGroup {
-    return this.fb.group({
-      name: [""],
-      email: ["", [Validators.email]],
-    });
-  }
-
-  // Phone number methods
-  createPhoneNumberFormGroup(): FormGroup {
-    return this.fb.group({
-      number: ["", [Validators.pattern("^[+]?[0-9()\\s-]{10,25}$")]],
-      type: [""],
-      isEmergencyNumber: [false],
-    });
-  }
-
-  addPhoneNumber(): void {
-    if (this.phoneNumbersFormArray.length < this.maxPhoneNumbers) {
-      this.phoneNumbersFormArray.push(this.createPhoneNumberFormGroup());
-    }
-  }
-
-  removePhoneNumber(index: number): void {
-    this.phoneNumbersFormArray.removeAt(index);
-  }
-
-  formatPhoneNumber(event: any, index: number): void {
-    const input = event.target.value;
-    const formatted = formatPhoneNumber(input);
-
-    // Update the form control value
-    const phoneControl = this.phoneNumbersFormArray.at(index);
-    phoneControl.get("number")?.setValue(formatted, {emitEvent: false});
-  }
-
-  // Web link methods
-  createWebLinkFormGroup(): FormGroup {
-    return this.fb.group({
-      name: ["", []],
-      url: [
-        "",
-        [
-          Validators.pattern(
-            /^(https?:\/\/)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}([\/?].*)?$/,
-          ),
-        ],
-      ],
-      category: [""],
-    });
-  }
-
-  addWebLink(): void {
-    if (this.webLinksFormArray.length < this.maxLinks) {
-      this.webLinksFormArray.push(this.createWebLinkFormGroup());
-    }
-  }
-
-  removeWebLink(index: number): void {
-    this.webLinksFormArray.removeAt(index);
-  }
-
-  // Address methods
-  createAddressFormGroup(): FormGroup {
-    return this.fb.group({
-      name: [""],
-      street: ["", Validators.pattern("^[a-zA-Z0-9\\s,]*$")],
-      city: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-      state: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-      zipcode: ["", Validators.pattern("^[0-9]*$")],
-      country: ["", Validators.pattern("^[a-zA-Z\\s]*$")],
-      isPrimaryAddress: [false],
-    });
-  }
-
-  addAddress(): void {
-    this.addressesFormArray.push(this.createAddressFormGroup());
-  }
-
-  removeAddress(index: number): void {
-    this.addressesFormArray.removeAt(index);
   }
 }

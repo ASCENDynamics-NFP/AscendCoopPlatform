@@ -17,50 +17,614 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-.registration-description {
-  text-align: center;
-  margin: 20px 0;
+
+// ================================
+// VARIABLES - LIGHT & DARK MODE
+// ================================
+:root {
+  --registration-primary: #e87121;
+  --registration-primary-light: #f39c4c;
+  --registration-success: #2dd36f;
+  --registration-radius: 12px;
+  --registration-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-ion-card {
+// Light mode colors
+:root {
+  --registration-border: #e1e5e9;
+  --registration-text: #3c4043;
+  --registration-text-light: #5f6368;
+  --registration-bg: #f8f9fa;
+  --registration-card-bg: #ffffff;
+  --registration-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --registration-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+// Dark mode colors
+@media (prefers-color-scheme: dark) {
+  :root {
+    --registration-border: #3c4043;
+    --registration-text: #e8eaed;
+    --registration-text-light: #9aa0a6;
+    --registration-bg: #202124;
+    --registration-card-bg: #303134;
+    --registration-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --registration-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.4);
+  }
+}
+
+// Manual dark mode class support
+.dark {
+  --registration-border: #3c4043;
+  --registration-text: #e8eaed;
+  --registration-text-light: #9aa0a6;
+  --registration-bg: #202124;
+  --registration-card-bg: #303134;
+  --registration-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --registration-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+// ================================
+// LAYOUT CONTAINERS - ENHANCED
+// ================================
+.registration-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: calc(100vh - 120px);
+  background: var(--registration-bg);
+  position: relative;
+  overflow: hidden;
+
+  // Subtle background pattern
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(
+        circle at 20% 50%,
+        rgba(232, 113, 33, 0.03) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 80% 20%,
+        rgba(243, 156, 76, 0.03) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 40% 80%,
+        rgba(232, 113, 33, 0.02) 0%,
+        transparent 50%
+      );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (max-width: 768px) {
+    padding: 16px;
+    min-height: calc(100vh - 80px);
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px;
+  }
+}
+
+// ================================
+// PROGRESS STEPS
+// ================================
+.progress-container {
+  margin-bottom: 40px;
+  padding: 20px 0;
+}
+
+.progress-steps {
   display: flex;
-  flex-direction: column;
-  flex-grow: 1;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-  border: 1px solid #333;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
-ion-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+
+  .step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--registration-card-bg);
+    color: var(--registration-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+    transition: var(--registration-transition);
+    border: 2px solid var(--registration-border);
+    box-shadow: var(--registration-shadow);
+  }
+
+  .step-label {
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--registration-text-light);
+    text-align: center;
+    transition: var(--registration-transition);
+  }
+
+  &.active {
+    .step-number {
+      background: var(--registration-primary);
+      color: var(--ion-color-primary);
+      border-color: var(--registration-primary);
+      transform: scale(1.1);
+    }
+
+    .step-label {
+      color: var(--ion-color-primary);
+      font-weight: 600;
+    }
+  }
+
+  &.completed {
+    .step-number {
+      background: var(--registration-success);
+      color: var(--ion-color-primary);
+    }
+
+    .step-label {
+      color: var(--registration-success);
+    }
+  }
 }
 
-ion-card-content {
+.step-connector {
+  height: 3px;
+  background: var(--registration-border);
+  flex: 1;
+  margin: 0 20px;
+  transition: var(--registration-transition);
+  border-radius: 2px;
+
+  &.completed {
+    background: var(--registration-success);
+  }
+}
+
+// ================================
+// WELCOME SECTION
+// ================================
+.welcome-section {
   text-align: center;
+  margin-bottom: 40px;
+  animation: fadeInUp 0.6s ease-out;
 }
 
-ion-icon {
-  font-size: 3em;
-  margin-bottom: 15px;
+.welcome-content {
+  max-width: 600px;
+  margin: 0 auto;
+
+  .welcome-icon {
+    font-size: 4rem;
+    color: var(--registration-primary);
+    margin-bottom: 20px;
+    animation: pulse 2s infinite;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--registration-text);
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+
+  .welcome-description {
+    font-size: 1.1rem;
+    color: var(--registration-text-light);
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
 }
 
-ion-card-title {
-  font-size: 1.2em;
-  font-weight: bold;
-  margin-bottom: 10px;
+// ================================
+// TYPE SELECTION
+// ================================
+.type-selection {
+  margin-bottom: 40px;
+  transition: var(--registration-transition);
+
+  &.compact {
+    margin-bottom: 20px;
+
+    .type-grid {
+      margin-top: 10px;
+    }
+  }
 }
 
-.app-unified-registration {
-  margin-top: 30px;
+.section-title {
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--registration-text);
+  margin-bottom: 30px;
 }
 
-.selected-card {
-  border: 2px solid #e87121;
+.section-title-small {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--registration-text);
+  margin-bottom: 20px;
+
+  .change-type-btn {
+    --color: var(--registration-primary);
+  }
+}
+
+.type-grid {
+  margin-top: 20px;
+}
+
+// ================================
+// TYPE CARDS - ENHANCED THEMING
+// ================================
+.type-card {
+  background: var(--registration-card-bg);
+  border-radius: var(--registration-radius);
+  border: 2px solid var(--registration-border);
+  padding: 0;
+  cursor: pointer;
+  transition: var(--registration-transition);
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  backdrop-filter: blur(10px);
+
+  // Subtle glow effect
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(232, 113, 33, 0.05) 0%,
+      transparent 50%,
+      rgba(243, 156, 76, 0.05) 100%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  &:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--registration-shadow-hover);
+    border-color: var(--registration-primary-light);
+
+    &::before {
+      opacity: 1;
+    }
+
+    .card-content {
+      background: var(--registration-card-bg);
+    }
+
+    .card-icon {
+      transform: scale(1.1) rotate(5deg);
+    }
+  }
+
+  &.selected {
+    border-color: var(--registration-primary);
+    box-shadow:
+      0 0 0 4px rgba(232, 113, 33, 0.2),
+      var(--registration-shadow-hover);
+    transform: translateY(-2px) scale(1.02);
+
+    &::before {
+      opacity: 1;
+      background: linear-gradient(
+        135deg,
+        rgba(232, 113, 33, 0.1) 0%,
+        rgba(243, 156, 76, 0.05) 100%
+      );
+    }
+
+    .card-content {
+      background: var(--registration-card-bg);
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-icon {
+      background: linear-gradient(
+        135deg,
+        var(--registration-primary),
+        var(--registration-primary-light)
+      );
+      box-shadow: 0 4px 12px rgba(232, 113, 33, 0.3);
+
+      ion-icon {
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+      }
+    }
+
+    .feature-list li::before {
+      background: var(--registration-primary);
+    }
+  }
+
+  &.compact {
+    height: auto;
+
+    .card-content {
+      padding: 15px;
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+
+      ion-icon {
+        font-size: 20px;
+      }
+    }
+
+    .feature-list {
+      display: none;
+    }
+
+    h3 {
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    p {
+      font-size: 0.85rem;
+      margin-bottom: 0;
+    }
+  }
+}
+
+.card-content {
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  height: 100%;
+  position: relative;
+  transition: var(--registration-transition);
+}
+
+.card-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    var(--registration-primary),
+    var(--registration-primary-light)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  transition: var(--registration-transition);
+  box-shadow: 0 4px 12px rgba(232, 113, 33, 0.2);
+
+  ion-icon {
+    font-size: 28px;
+    transition: var(--registration-transition);
+    // Ensure better visibility in all contexts
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transform: none !important;
+  }
+}
+
+.card-info {
+  flex: 1;
+
+  h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--registration-text);
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 0.95rem;
+    color: var(--registration-text-light);
+    margin-bottom: 20px;
+    line-height: 1.4;
+  }
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    padding: 6px 0;
+    font-size: 0.9rem;
+    color: var(--registration-text-light);
+    position: relative;
+    padding-left: 20px;
+    transition: var(--registration-transition);
+
+    &::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--registration-success);
+      font-weight: 600;
+      transition: var(--registration-transition);
+    }
+
+    &:hover {
+      color: var(--registration-text);
+      transform: translateX(2px);
+
+      &::before {
+        color: var(--registration-primary);
+        transform: scale(1.1);
+      }
+    }
+  }
+}
+
+.card-action {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+
+  ion-icon {
+    font-size: 24px;
+  }
+}
+
+// ================================
+// FORM SECTION
+// ================================
+.form-section {
+  animation: slideInUp 0.5s ease-out;
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 30px;
+
+  h2 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--registration-text);
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: var(--registration-text-light);
+    font-size: 1rem;
+  }
+}
+
+.registration-form {
+  background: var(--registration-card-bg);
+  border-radius: var(--registration-radius);
+  padding: 30px;
+  box-shadow: var(--registration-shadow);
+  border: 1px solid var(--registration-border);
+}
+
+// ================================
+// ANIMATIONS
+// ================================
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+// ================================
+// RESPONSIVE DESIGN
+// ================================
+@media (max-width: 768px) {
+  .registration-container {
+    padding: 16px;
+  }
+
+  .welcome-content {
+    h1 {
+      font-size: 2rem;
+    }
+
+    .welcome-description {
+      font-size: 1rem;
+    }
+  }
+
+  .type-card .card-content {
+    padding: 20px 15px;
+  }
+
+  .registration-form {
+    padding: 20px;
+  }
+
+  .progress-steps {
+    .step-connector {
+      margin: 0 10px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .step-connector {
+    margin: 0 8px !important;
+  }
+
+  .type-grid {
+    ion-col {
+      padding: 8px;
+    }
+  }
+
+  .welcome-content h1 {
+    font-size: 1.7rem;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+  }
 }

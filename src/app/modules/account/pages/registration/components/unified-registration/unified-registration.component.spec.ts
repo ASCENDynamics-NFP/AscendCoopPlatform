@@ -75,7 +75,7 @@ describe("UnifiedRegistrationComponent", () => {
       },
     });
 
-    expect(component.registrationForm.get("groupDetails")).toBeNull();
+    expect(component.registrationForm.get("groupType")).toBeNull();
     expect(component.nameLabel).toBe("Name");
     expect(component.isGroupRegistration).toBe(false);
   });
@@ -91,8 +91,36 @@ describe("UnifiedRegistrationComponent", () => {
       },
     });
 
-    expect(component.registrationForm.get("groupDetails")).toBeTruthy();
+    expect(component.registrationForm.get("groupType")).toBeTruthy();
     expect(component.nameLabel).toBe("Group Name");
     expect(component.isGroupRegistration).toBe(true);
+  });
+
+  it("should format phone number correctly", () => {
+    component.accountType = "user";
+    component.ngOnChanges({
+      accountType: {
+        currentValue: "user",
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+
+    // Mock input event
+    const mockEvent = {
+      target: {
+        value: "1234567890",
+      },
+    };
+
+    // Call formatPhoneNumber
+    component.formatPhoneNumber(mockEvent);
+
+    // Check that the formatted value is set
+    expect(mockEvent.target.value).toBe("(123) 456-7890");
+    expect(
+      component.registrationForm.get("contactInformation.primaryPhone")?.value,
+    ).toBe("(123) 456-7890");
   });
 });

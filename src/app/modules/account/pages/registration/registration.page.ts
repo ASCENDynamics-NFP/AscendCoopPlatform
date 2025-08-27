@@ -21,7 +21,7 @@
 
 import {Component, OnInit, OnDestroy} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
-import {Account} from "@shared/models/account.model";
+import {Account} from "../../../../../../shared/models/account.model";
 import {Store} from "@ngrx/store";
 import {
   selectAccountById,
@@ -49,7 +49,6 @@ export class RegistrationPage implements OnInit, OnDestroy {
   public selectedType: "user" | "group" | "" = "";
   public account$!: Observable<Account | undefined>;
   public loading$!: Observable<boolean>;
-  public isDataReady$!: Observable<boolean>;
   private accountId$!: Observable<string>;
 
   constructor(
@@ -84,13 +83,6 @@ export class RegistrationPage implements OnInit, OnDestroy {
       switchMap((accountId) => this.store.select(selectAccountById(accountId))),
     );
 
-    // For registration page, show content immediately after initial setup
-    // Use a timeout to give the observables time to initialize
-    this.isDataReady$ = this.accountId$.pipe(
-      map(() => true), // Once we have accountId, we're ready
-      startWith(false), // Brief initial loading state
-    );
-
     // Check if user has completed registration and redirect if needed
     this.checkRegistrationStatus();
   }
@@ -115,26 +107,26 @@ export class RegistrationPage implements OnInit, OnDestroy {
   }
 
   ionViewWillEnter() {
-    // Default Meta Tags
+    // Enhanced Meta Tags with better descriptions
     this.metaService.updateMetaTags(
-      "Registration | ASCENDynamics NFP",
-      "Create your account and join the ASCENDynamics NFP community today.",
-      "registration, sign up, volunteer, nonprofits",
+      "Complete Your Registration | ASCENDynamics NFP",
+      "Join the ASCENDynamics NFP community. Create your profile and start making a difference today.",
+      "registration, volunteer, nonprofit, community, social impact",
       {
-        title: "Registration | ASCENDynamics NFP",
+        title: "Complete Your Registration | ASCENDynamics NFP",
         description:
-          "Sign up for ASCENDynamics NFP to explore and connect with impactful opportunities.",
+          "Create your ASCENDynamics NFP profile and connect with meaningful opportunities to make a positive impact.",
         url: "https://app.ASCENDynamics.org/registration",
         image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Fregistration-og.png?alt=media",
       },
       {
         card: "summary_large_image",
-        title: "Join ASCENDynamics NFP",
+        title: "Join ASCENDynamics NFP Community",
         description:
-          "Sign up to connect with meaningful opportunities and start making a difference.",
+          "Create your profile and start connecting with impactful volunteer opportunities.",
         image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Fregistration-twitter.png?alt=media",
       },
     );
   }
@@ -145,8 +137,10 @@ export class RegistrationPage implements OnInit, OnDestroy {
   }
 
   selectType(type: "user" | "group") {
+    // Enhanced type selection with smooth scroll to form
+    this.selectedType = type;
+
     // Reload account data when user selects a type to ensure fresh data is available
-    // Only if accountId$ is initialized
     if (this.accountId$) {
       this.accountId$.pipe(take(1)).subscribe((accountId) => {
         if (accountId) {
@@ -155,6 +149,40 @@ export class RegistrationPage implements OnInit, OnDestroy {
       });
     }
 
-    this.selectedType = type;
+    // Smooth scroll to form section after a brief delay
+    setTimeout(() => {
+      const formSection = document.querySelector(".form-section");
+      if (formSection) {
+        formSection.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+          inline: "nearest",
+        });
+      }
+    }, 300);
+  }
+
+  resetSelection() {
+    // Allow users to change their account type selection
+    this.selectedType = "";
+
+    // Scroll back to top with smooth animation
+    setTimeout(() => {
+      const typeSelection = document.querySelector(".type-selection");
+      if (typeSelection) {
+        typeSelection.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+          inline: "nearest",
+        });
+      }
+    }, 100);
+  }
+
+  // Add success feedback when registration completes
+  onRegistrationSuccess() {
+    // This could be called from the unified registration component
+    // Add success animation or feedback here
+    console.log("Registration completed successfully!");
   }
 }

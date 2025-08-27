@@ -43,6 +43,8 @@ const requiredEnvVars = [
   "FIREBASE_APP_ID",
   "FIREBASE_MEASUREMENT_ID",
   "FIREBASE_API_URL",
+  "GOOGLE_AUTH_WEB_CLIENT_ID",
+  "GOOGLE_AUTH_ANDROID_CLIENT_ID",
 ];
 
 requiredEnvVars.forEach((varName) => {
@@ -71,6 +73,10 @@ export const environment = {
     appId: '${process.env.FIREBASE_APP_ID || ""}',
     measurementId: '${process.env.FIREBASE_MEASUREMENT_ID || ""}',
     apiUrl: '${process.env.FIREBASE_API_URL || ""}',
+  },
+  googleAuth: {
+    webClientId: '${process.env.GOOGLE_AUTH_WEB_CLIENT_ID || ""}',
+    androidClientId: '${process.env.GOOGLE_AUTH_ANDROID_CLIENT_ID || ""}',
   }
 };
 `;

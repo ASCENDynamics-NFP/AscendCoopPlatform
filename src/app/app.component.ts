@@ -30,6 +30,7 @@ import {tap} from "rxjs/operators";
 import {register} from "swiper/element/bundle";
 import {GoogleAuth} from "@southdevs/capacitor-google-auth";
 import {Capacitor} from "@capacitor/core";
+import {environment} from "../environments/environment";
 
 //  Import and Register Swiper
 register();
@@ -64,8 +65,7 @@ export class AppComponent implements OnInit {
       // Initialize GoogleAuth plugin for native platforms
       if (Capacitor.isNativePlatform()) {
         GoogleAuth.initialize({
-          clientId:
-            "1031671694911-3ejesivnlk5fhr8l29ne74fhp0smdltn.apps.googleusercontent.com",
+          clientId: environment.googleAuth.webClientId,
           scopes: ["profile", "email"],
           grantOfflineAccess: true,
         });

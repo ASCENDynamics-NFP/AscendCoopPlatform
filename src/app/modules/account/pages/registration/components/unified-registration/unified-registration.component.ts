@@ -35,6 +35,7 @@ import {
 import {Store} from "@ngrx/store";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 import * as AuthActions from "../../../../../../state/actions/auth.actions";
+import {formatPhoneNumber} from "../../../../../../core/utils/phone.util";
 
 @Component({
   selector: "app-unified-registration",
@@ -91,6 +92,20 @@ export class UnifiedRegistrationComponent implements OnChanges {
       return field.errors["invalidUrl"].message;
     }
     return "";
+  }
+
+  // Format phone number as user types
+  formatPhoneNumber(event: any): void {
+    const input = event.target;
+    const formattedValue = formatPhoneNumber(input.value);
+
+    // Update the input display value
+    input.value = formattedValue;
+
+    // Update the form control value
+    this.registrationForm
+      .get("contactInformation.primaryPhone")
+      ?.setValue(formattedValue);
   }
 
   ngOnChanges(changes: SimpleChanges): void {

@@ -105,17 +105,19 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               fill="outline"
               class="required-field"
             >
-              <ion-select-option value="Nonprofit"
-                >Nonprofit Organization</ion-select-option
-              >
+              <ion-select-option value="Business">Business</ion-select-option>
               <ion-select-option value="Community"
                 >Community Group</ion-select-option
               >
-              <ion-select-option value="Initiative"
-                >Social Initiative</ion-select-option
-              >
               <ion-select-option value="Cooperative"
                 >Cooperative</ion-select-option
+              >
+              <ion-select-option value="Government"
+                >Government</ion-select-option
+              >
+              <ion-select-option value="Nonprofit">Nonprofit</ion-select-option>
+              <ion-select-option value="Initiative"
+                >Social Initiative</ion-select-option
               >
               <ion-select-option value="Other">Other</ion-select-option>
             </ion-select>
@@ -209,8 +211,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                     label-placement="floating"
                     fill="outline"
                     type="tel"
+                    inputmode="tel"
                     formControlName="primaryPhone"
                     placeholder="+1 (555) 123-4567"
+                    maxlength="19"
+                    (ionInput)="formatPhoneNumber($event)"
                   ></ion-input>
                 </ion-col>
               </ion-row>

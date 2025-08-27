@@ -169,13 +169,13 @@
   &.active {
     .step-number {
       background: var(--registration-primary);
-      // color: var(--registration-primary);
+      color: var(--ion-color-primary);
       border-color: var(--registration-primary);
       transform: scale(1.1);
     }
 
     .step-label {
-      color: var(--registration-primary);
+      color: var(--ion-color-primary);
       font-weight: 600;
     }
   }
@@ -183,7 +183,7 @@
   &.completed {
     .step-number {
       background: var(--registration-success);
-      // color: var(--registration-primary);
+      color: var(--ion-color-primary);
     }
 
     .step-label {

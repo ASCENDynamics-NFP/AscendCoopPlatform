@@ -75,7 +75,7 @@ describe("UnifiedRegistrationComponent", () => {
       },
     });
 
-    expect(component.registrationForm.get("groupDetails")).toBeNull();
+    expect(component.registrationForm.get("groupType")).toBeNull();
     expect(component.nameLabel).toBe("Name");
     expect(component.isGroupRegistration).toBe(false);
   });
@@ -91,7 +91,7 @@ describe("UnifiedRegistrationComponent", () => {
       },
     });
 
-    expect(component.registrationForm.get("groupDetails")).toBeTruthy();
+    expect(component.registrationForm.get("groupType")).toBeTruthy();
     expect(component.nameLabel).toBe("Group Name");
     expect(component.isGroupRegistration).toBe(true);
   });

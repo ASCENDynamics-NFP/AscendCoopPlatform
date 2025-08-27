@@ -62,7 +62,11 @@ describe("EditMenuComponent", () => {
   });
 
   it("should open image upload modal if account id is present", async () => {
-    const mockModal = jasmine.createSpyObj("Modal", ["present"]);
+    const mockModal = jasmine.createSpyObj("Modal", [
+      "present",
+      "onDidDismiss",
+    ]);
+    mockModal.onDidDismiss.and.returnValue(Promise.resolve({data: null}));
     modalControllerSpy.create.and.returnValue(Promise.resolve(mockModal));
 
     component.account = {id: "test-account-id"};

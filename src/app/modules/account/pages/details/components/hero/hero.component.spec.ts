@@ -80,6 +80,7 @@ describe("HeroComponent", () => {
       "present",
       "onDidDismiss",
     ]);
+    modalSpy.onDidDismiss.and.returnValue(Promise.resolve({data: null}));
 
     // Create all the required mocks
     mockModalController = jasmine.createSpyObj("ModalController", ["create"]);

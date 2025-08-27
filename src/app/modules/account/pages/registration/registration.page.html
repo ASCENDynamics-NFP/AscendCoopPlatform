@@ -23,70 +23,137 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div *ngIf="isDataReady$ | async; else loading">
-    <!-- Only show content if account exists -->
-    <!-- <ion-header collapse="condense">
-      <ion-toolbar>
-      <ion-title size="large">Registration</ion-title>
-    </ion-toolbar>
-  </ion-header> -->
+  <!-- Progress Steps -->
+  <div class="progress-container">
+    <div class="progress-steps">
+      <div class="step" [class.active]="selectedType === ''">
+        <div class="step-number">1</div>
+        <div class="step-label">Choose Type</div>
+      </div>
+      <div class="step-connector" [class.completed]="selectedType !== ''"></div>
+      <div
+        class="step"
+        [class.active]="selectedType !== ''"
+        [class.completed]="false"
+      >
+        <div class="step-number">2</div>
+        <div class="step-label">Complete Profile</div>
+      </div>
+    </div>
+  </div>
 
-    <div class="registration-description">
-      <ion-text>
-        <h2>Get Started</h2>
-        <p>Choose an account type to create:</p>
-      </ion-text>
+  <div class="registration-container">
+    <!-- Welcome Section -->
+    <div class="welcome-section" *ngIf="selectedType === ''">
+      <div class="welcome-content">
+        <ion-icon name="sparkles" class="welcome-icon"></ion-icon>
+        <h1>Welcome to ASCENDynamics NFP!</h1>
+        <p class="welcome-description">
+          Join our community of changemakers. Choose how you'd like to
+          participate:
+        </p>
+      </div>
     </div>
 
-    <ion-grid>
-      <ion-row>
-        <ion-col size-md="6">
-          <ion-card
-            (click)="selectType('user')"
-            [class.selected-card]="selectedType === 'user'"
-          >
-            <ion-card-content>
-              <ion-icon name="person-outline" size="large"></ion-icon>
-              <ion-card-title>User</ion-card-title>
-              <p>Create a personal user account.</p>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-        <ion-col size-md="6">
-          <ion-card
-            (click)="selectType('group')"
-            [class.selected-card]="selectedType === 'group'"
-          >
-            <ion-card-content>
-              <ion-icon name="people-outline" size="large"></ion-icon>
-              <ion-card-title>Group</ion-card-title>
-              <p>Create a group or organization.</p>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col size="12">
-          <div *ngIf="selectedType">
-            <!-- Unified Registration Component -->
-            <app-unified-registration
-              [account]="(account$ | async) || undefined"
-              [accountType]="selectedType"
-              [redirectSubmit]="true"
+    <!-- Account Type Selection -->
+    <div class="type-selection" [class.compact]="selectedType !== ''">
+      <h2 *ngIf="selectedType === ''" class="section-title">
+        Choose Your Account Type
+      </h2>
+      <h3 *ngIf="selectedType !== ''" class="section-title-small">
+        Creating {{ selectedType === 'user' ? 'User' : 'Organization' }} Account
+        <ion-button
+          fill="clear"
+          size="small"
+          (click)="resetSelection()"
+          class="change-type-btn"
+        >
+          <ion-icon name="pencil" slot="icon-only"></ion-icon>
+        </ion-button>
+      </h3>
+
+      <ion-grid class="type-grid">
+        <ion-row>
+          <ion-col size="12" size-md="6">
+            <div
+              class="type-card"
+              [class.selected]="selectedType === 'user'"
+              [class.compact]="selectedType !== '' && selectedType !== 'user'"
+              (click)="selectType('user')"
             >
-            </app-unified-registration>
-          </div>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+              <div class="card-content">
+                <div class="card-icon">
+                  <ion-icon name="person"></ion-icon>
+                </div>
+                <div class="card-info">
+                  <h3>Individual User</h3>
+                  <p>For volunteers, advocates, and changemakers</p>
+                  <ul
+                    class="feature-list"
+                    *ngIf="selectedType === '' || selectedType === 'user'"
+                  >
+                    <li>Connect with organizations</li>
+                    <li>Find volunteer opportunities</li>
+                    <li>Track your impact</li>
+                  </ul>
+                </div>
+                <div class="card-action" *ngIf="selectedType === 'user'">
+                  <ion-icon name="checkmark-circle" color="success"></ion-icon>
+                </div>
+              </div>
+            </div>
+          </ion-col>
+
+          <ion-col size="12" size-md="6">
+            <div
+              class="type-card"
+              [class.selected]="selectedType === 'group'"
+              [class.compact]="selectedType !== '' && selectedType !== 'group'"
+              (click)="selectType('group')"
+            >
+              <div class="card-content">
+                <div class="card-icon">
+                  <ion-icon name="business"></ion-icon>
+                </div>
+                <div class="card-info">
+                  <h3>Organization</h3>
+                  <p>For nonprofits, community groups, and initiatives</p>
+                  <ul
+                    class="feature-list"
+                    *ngIf="selectedType === '' || selectedType === 'group'"
+                  >
+                    <li>Recruit volunteers</li>
+                    <li>Manage projects</li>
+                    <li>Build community</li>
+                  </ul>
+                </div>
+                <div class="card-action" *ngIf="selectedType === 'group'">
+                  <ion-icon name="checkmark-circle" color="success"></ion-icon>
+                </div>
+              </div>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+
+    <!-- Registration Form -->
+    <div class="form-section" *ngIf="selectedType">
+      <div class="form-header">
+        <h2>
+          Complete Your {{ selectedType === 'user' ? 'Profile' : 'Organization
+          Profile' }}
+        </h2>
+        <p>Tell us about yourself to get started</p>
+      </div>
+
+      <app-unified-registration
+        [account]="(account$ | async) || undefined"
+        [accountType]="selectedType"
+        [redirectSubmit]="true"
+        class="registration-form"
+      >
+      </app-unified-registration>
+    </div>
   </div>
 </ion-content>
-
-<ng-template #loading>
-  <ion-content [fullscreen]="true">
-    <div class="ion-padding ion-text-center">
-      <ion-spinner></ion-spinner>
-      <p>Loading your account...</p>
-    </div>
-  </ion-content>
-</ng-template>

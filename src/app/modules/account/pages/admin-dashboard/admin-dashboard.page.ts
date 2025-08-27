@@ -39,6 +39,7 @@ import {
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {NotificationService} from "../../../messaging/services/notification.service";
+import {ImageUploadModalComponent} from "../../../../shared/components/image-upload-modal/image-upload-modal.component";
 
 @Component({
   selector: "app-admin-dashboard",
@@ -1085,6 +1086,54 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
       return isNaN(date.getTime()) ? null : date;
     }
     return null;
+  }
+
+  // Image upload methods
+  async openImageUploadModal(imageType: "hero" | "icon") {
+    this.account$.pipe(take(1)).subscribe(async (account) => {
+      if (!account) return;
+
+      const modal = await this.modalController.create({
+        component: ImageUploadModalComponent,
+        componentProps: {
+          collectionName: "accounts",
+          docId: account.id,
+          firestoreLocation: `accounts/${account.id}`,
+          fieldName: imageType === "hero" ? "heroImage" : "iconImage",
+          imageWidth: imageType === "hero" ? 1200 : 400,
+          imageHeight: imageType === "hero" ? 600 : 400,
+          title:
+            imageType === "hero" ? "Upload Hero Image" : "Upload Icon Image",
+          acceptedFormats: "image/*",
+        },
+      });
+
+      await modal.present();
+
+      const {data} = await modal.onDidDismiss();
+      if (data) {
+        // Update the local account object to reflect the new image
+        const updatedAccount = {
+          ...account,
+          [imageType === "hero" ? "heroImage" : "iconImage"]: data,
+        };
+
+        // Dispatch action to update the store
+        this.store.dispatch(
+          AccountActions.updateAccount({
+            account: updatedAccount,
+          }),
+        );
+
+        // Show success message
+        const toast = await this.toastController.create({
+          message: `${imageType === "hero" ? "Hero" : "Icon"} image updated successfully!`,
+          duration: 3000,
+          color: "success",
+        });
+        await toast.present();
+      }
+    });
   }
 
   goBackToProfile() {

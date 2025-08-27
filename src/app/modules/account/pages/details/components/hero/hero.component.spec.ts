@@ -80,6 +80,7 @@ describe("HeroComponent", () => {
       "present",
       "onDidDismiss",
     ]);
+    modalSpy.onDidDismiss.and.returnValue(Promise.resolve({data: null}));
 
     // Create all the required mocks
     mockModalController = jasmine.createSpyObj("ModalController", ["create"]);
@@ -191,9 +192,10 @@ describe("HeroComponent", () => {
         collectionName: "accounts",
         docId: mockAccountId,
         firestoreLocation: `accounts/${mockAccountId}/profile`,
-        maxHeight: 300,
-        maxWidth: 900,
+        imageHeight: 300,
+        imageWidth: 900,
         fieldName: "heroImage",
+        currentImageUrl: mockAccount.heroImage,
       },
     });
     const modal =

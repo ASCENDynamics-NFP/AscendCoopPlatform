@@ -19,32 +19,166 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <ion-header>
   <ion-toolbar>
-    <ion-title>Upload Image</ion-title>
+    <ion-title>
+      <ion-icon [name]="imageTypeConfig.icon" class="title-icon"></ion-icon>
+      {{ imageTypeConfig.title }}
+    </ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="closeModal()">Close</ion-button>
+      <ion-button fill="clear" (click)="closeModal()" [disabled]="isUploading">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-grid style="height: 100%">
-    <ion-row class="ion-align-items-center" style="flex: 1">
-      <ion-col size="12" class="ion-text-center">
-        <ion-item>
-          <ion-label>Select Image</ion-label>
-          <ion-input type="file" (change)="onImageSelected($event)"></ion-input>
-        </ion-item>
-        <img
-          *ngIf="imagePreview"
-          [src]="imagePreviewString"
-          alt="Image Preview"
-          style="max-width: 100%; max-height: 70vh"
-        />
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+  <div class="upload-container">
+    <!-- Image Type Info -->
+    <div class="image-info-card">
+      <div class="info-header">
+        <ion-icon [name]="imageTypeConfig.icon" color="primary"></ion-icon>
+        <div class="info-text">
+          <h3>{{ imageTypeConfig.title }}</h3>
+          <p>{{ imageTypeConfig.subtitle }}</p>
+        </div>
+      </div>
+      <div class="info-details">
+        <div class="detail-item">
+          <ion-icon name="resize-outline" color="medium"></ion-icon>
+          <span>Recommended: {{ imageTypeConfig.recommendedSize }}</span>
+        </div>
+        <div class="detail-item">
+          <ion-icon name="documents-outline" color="medium"></ion-icon>
+          <span>Max size: {{ imageTypeConfig.maxFileSize }}MB</span>
+        </div>
+        <div class="detail-item">
+          <ion-icon name="crop-outline" color="medium"></ion-icon>
+          <span>Aspect ratio: {{ imageTypeConfig.aspectRatio }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Current Image Display (if exists) -->
+    <div class="current-image-section" *ngIf="currentImageUrl && !selectedFile">
+      <h4>Current Image</h4>
+      <div
+        class="current-image-container"
+        [ngClass]="{'hero-aspect': isHeroImage, 'icon-aspect': isIconImage}"
+      >
+        <img [src]="currentImageUrl" alt="Current image" />
+        <div class="overlay">
+          <p>This image will be replaced</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Area -->
+    <div class="upload-section">
+      <div
+        class="drop-zone"
+        [class.drag-over]="isDragOver"
+        [class.has-file]="selectedFile"
+        [class.hero-preview]="isHeroImage && selectedFile"
+        [class.icon-preview]="isIconImage && selectedFile"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)"
+      >
+        <!-- No file selected state -->
+        <div class="empty-state" *ngIf="!selectedFile">
+          <ion-icon name="cloud-upload-outline" class="upload-icon"></ion-icon>
+          <h3>Drop your image here</h3>
+          <p>or click to browse</p>
+          <ion-button fill="outline" size="default" class="browse-button">
+            <ion-icon name="folder-open-outline" slot="start"></ion-icon>
+            Browse Files
+          </ion-button>
+          <input
+            type="file"
+            accept="image/*"
+            (change)="onFileInput($event)"
+            class="file-input"
+            #fileInput
+          />
+        </div>
+
+        <!-- File selected state -->
+        <div class="preview-state" *ngIf="selectedFile && imagePreview">
+          <div
+            class="preview-container"
+            [ngClass]="{'hero-aspect': isHeroImage, 'icon-aspect': isIconImage}"
+          >
+            <img [src]="imagePreviewString" alt="Preview" />
+          </div>
+
+          <div class="file-info">
+            <div class="file-details">
+              <ion-icon name="document-text-outline" color="primary"></ion-icon>
+              <div class="file-text">
+                <h4>{{ selectedFile.name }}</h4>
+                <p>{{ (selectedFile.size / 1024 / 1024).toFixed(2) }}MB</p>
+              </div>
+            </div>
+
+            <ion-button
+              fill="clear"
+              size="small"
+              color="danger"
+              (click)="clearSelection()"
+              [disabled]="isUploading"
+            >
+              <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <ion-text color="danger" *ngIf="errorMessage" class="error-message">
+        <p>
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          {{ errorMessage }}
+        </p>
+      </ion-text>
+
+      <!-- Upload Progress -->
+      <div class="progress-section" *ngIf="isUploading">
+        <div class="progress-info">
+          <ion-icon name="cloud-upload-outline" color="primary"></ion-icon>
+          <span>Uploading image...</span>
+        </div>
+        <ion-progress-bar [value]="uploadProgress / 100"></ion-progress-bar>
+      </div>
+    </div>
+  </div>
 </ion-content>
 
 <ion-footer>
-  <ion-button expand="full" (click)="uploadImage()">Upload</ion-button>
+  <ion-toolbar>
+    <div class="footer-actions">
+      <ion-button
+        fill="clear"
+        size="default"
+        (click)="closeModal()"
+        [disabled]="isUploading"
+      >
+        Cancel
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        size="default"
+        [disabled]="!selectedFile || isUploading"
+        (click)="uploadImage()"
+        class="upload-button"
+      >
+        <ion-icon
+          [name]="isUploading ? 'hourglass-outline' : 'cloud-upload-outline'"
+          slot="start"
+        >
+        </ion-icon>
+        {{ isUploading ? "Uploading..." : "Upload Image" }}
+      </ion-button>
+    </div>
+  </ion-toolbar>
 </ion-footer>

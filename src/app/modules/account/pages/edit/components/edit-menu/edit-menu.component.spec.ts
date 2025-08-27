@@ -62,7 +62,11 @@ describe("EditMenuComponent", () => {
   });
 
   it("should open image upload modal if account id is present", async () => {
-    const mockModal = jasmine.createSpyObj("Modal", ["present"]);
+    const mockModal = jasmine.createSpyObj("Modal", [
+      "present",
+      "onDidDismiss",
+    ]);
+    mockModal.onDidDismiss.and.returnValue(Promise.resolve({data: null}));
     modalControllerSpy.create.and.returnValue(Promise.resolve(mockModal));
 
     component.account = {id: "test-account-id"};
@@ -75,9 +79,10 @@ describe("EditMenuComponent", () => {
         collectionName: "accounts",
         docId: "test-account-id",
         firestoreLocation: `accounts/test-account-id/profile`,
-        maxHeight: 200,
-        maxWidth: 200,
+        imageHeight: 200,
+        imageWidth: 200,
         fieldName: "iconImage",
+        currentImageUrl: component.account?.iconImage,
       },
     });
     expect(mockModal.present).toHaveBeenCalled();

@@ -62,9 +62,19 @@ export class ImageUploadService {
         maxWidth,
         maxHeight,
       );
-      const filePath = `${firestoreLocation}/${new Date().toISOString()}_${
-        file.name
-      }`;
+
+      // Use consistent filenames based on field type for easy overriding
+      let fileName: string;
+      if (fieldName === "heroImage") {
+        fileName = "hero-image.jpg";
+      } else if (fieldName === "iconImage") {
+        fileName = "avatar-image.jpg";
+      } else {
+        // Fallback to timestamp-based naming for other field types
+        fileName = `${new Date().toISOString()}_${file.name}`;
+      }
+
+      const filePath = `${firestoreLocation}/${fileName}`;
       const storageRef = ref(this.storage, filePath);
       const uploadTask = uploadBytesResumable(storageRef, resizedImageBlob);
 
@@ -113,26 +123,28 @@ export class ImageUploadService {
     });
   }
 
-  private async saveImageToFirestore(
+  async saveImageToFirestore(
     collectionName: string,
     docId: string,
-    downloadURL: string,
+    imageUrl: string,
     fieldName: string,
   ): Promise<void> {
-    if (!docId) {
-      throw new Error("Missing document ID");
+    if (!imageUrl) {
+      throw new Error("No image URL provided");
     }
-    if (!downloadURL) {
-      throw new Error("Missing download URL");
+
+    try {
+      await this.firestoreService.updateDocumentWithVerification(
+        collectionName,
+        docId,
+        {[fieldName]: imageUrl},
+      );
+    } catch (error: any) {
+      console.error("Error updating Firestore document:", error);
+      throw new Error(
+        `Failed to update ${fieldName}: ${error.message || error}`,
+      );
     }
-    if (!fieldName) {
-      throw new Error("Missing field name");
-    }
-    if (!collectionName) {
-      throw new Error("Missing collection name");
-    }
-    const docData = {[fieldName]: downloadURL};
-    await this.firestoreService.updateDocument(collectionName, docId, docData);
   }
 
   private async showErrorToast(message: string): Promise<void> {

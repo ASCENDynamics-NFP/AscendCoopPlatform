@@ -531,6 +531,98 @@
           presence.
         </p>
 
+        <!-- Image Upload Section -->
+        <ion-card class="image-upload-section">
+          <ion-card-header>
+            <ion-card-title>Profile Images</ion-card-title>
+            <ion-card-subtitle
+              >Upload your organization's hero and icon
+              images</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-card-content>
+            <div
+              class="image-upload-container"
+              *ngIf="account$ | async as account"
+            >
+              <!-- Hero Image Upload -->
+              <div class="image-upload-item">
+                <div class="image-preview-container">
+                  <div class="image-preview hero-preview">
+                    <img
+                      *ngIf="account.heroImage"
+                      [src]="account.heroImage"
+                      alt="Hero Image"
+                      class="preview-image"
+                    />
+                    <div
+                      *ngIf="!account.heroImage"
+                      class="placeholder-image hero-placeholder"
+                    >
+                      <ion-icon name="image-outline" size="large"></ion-icon>
+                      <p>No hero image</p>
+                    </div>
+                  </div>
+                  <div class="image-info">
+                    <h4>Hero Image</h4>
+                    <p class="image-description">
+                      Main banner image (1200x600px recommended)
+                    </p>
+                    <ion-button
+                      fill="outline"
+                      size="small"
+                      (click)="openImageUploadModal('hero')"
+                      class="upload-button"
+                    >
+                      <ion-icon name="camera-outline" slot="start"></ion-icon>
+                      {{ account.heroImage ? 'Change' : 'Upload' }} Hero
+                    </ion-button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Icon Image Upload -->
+              <div class="image-upload-item">
+                <div class="image-preview-container">
+                  <div class="image-preview icon-preview">
+                    <img
+                      *ngIf="account.iconImage"
+                      [src]="account.iconImage"
+                      alt="Icon Image"
+                      class="preview-image"
+                    />
+                    <div
+                      *ngIf="!account.iconImage"
+                      class="placeholder-image icon-placeholder"
+                    >
+                      <ion-icon
+                        name="person-circle-outline"
+                        size="large"
+                      ></ion-icon>
+                      <p>No icon image</p>
+                    </div>
+                  </div>
+                  <div class="image-info">
+                    <h4>Icon Image</h4>
+                    <p class="image-description">
+                      Profile avatar (400x400px recommended)
+                    </p>
+                    <ion-button
+                      fill="outline"
+                      size="small"
+                      (click)="openImageUploadModal('icon')"
+                      class="upload-button"
+                    >
+                      <ion-icon name="camera-outline" slot="start"></ion-icon>
+                      {{ account.iconImage ? 'Change' : 'Upload' }} Icon
+                    </ion-button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
         <!-- Group profile form -->
         <app-admin-group-profile-form
           [account]="(account$ | async) || null"

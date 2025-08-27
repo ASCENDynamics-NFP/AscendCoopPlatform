@@ -64,6 +64,7 @@ describe("ImageUploadModalComponent", () => {
     component.imageHeight = 100;
     component.imageWidth = 100;
     component.fieldName = "testField";
+    component.currentImageUrl = "test-current-image.jpg";
     fixture.detectChanges();
   });
 

@@ -198,6 +198,26 @@ export class HeroComponent implements OnInit, OnChanges {
     return this.account?.totalHours || 0;
   }
 
+  /**
+   * Determines whether the Edit button should be shown
+   * Hide edit button for group accounts since they should use Admin Dashboard
+   * Only show edit button for individual user accounts when they are the profile owner
+   */
+  get shouldShowEditButton(): boolean {
+    // Don't show edit button if not profile owner
+    if (!this.isProfileOwner) {
+      return false;
+    }
+
+    // Don't show edit button for group accounts (they should use Admin Dashboard)
+    if (this.account?.type === "group") {
+      return false;
+    }
+
+    // Show edit button for individual users who own their profile
+    return true;
+  }
+
   async openImageUploadModal(): Promise<void> {
     if (!this.account.id || !this.isProfileOwner) return;
     const modal = await this.modalController.create({
@@ -206,10 +226,25 @@ export class HeroComponent implements OnInit, OnChanges {
         collectionName: "accounts",
         docId: this.account.id,
         firestoreLocation: `accounts/${this.account.id}/profile`,
-        maxHeight: 300,
-        maxWidth: 900,
+        imageHeight: 300,
+        imageWidth: 900,
         fieldName: "heroImage",
+        currentImageUrl: this.account.heroImage,
       },
+    });
+
+    modal.onDidDismiss().then((result) => {
+      if (result.data) {
+        // Image upload was successful, update the local account object
+        console.log("Hero image upload successful, new URL:", result.data);
+        if (this.account) {
+          // Create a new account object to avoid readonly property errors
+          this.account = {
+            ...this.account,
+            heroImage: result.data,
+          };
+        }
+      }
     });
 
     await modal.present();

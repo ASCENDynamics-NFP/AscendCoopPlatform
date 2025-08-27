@@ -17,3 +17,412 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+
+// Header styling
+ion-header {
+  ion-toolbar {
+    --background: var(--ion-color-primary);
+    --color: var(--ion-color-primary-contrast);
+
+    ion-title {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .title-icon {
+        font-size: 1.2rem;
+      }
+    }
+  }
+}
+
+// Main container
+.upload-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+// Image info card
+.image-info-card {
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  border: 1px solid var(--ion-color-light-shade);
+
+  .info-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+
+    ion-icon {
+      font-size: 2rem;
+      margin-top: 4px;
+    }
+
+    .info-text {
+      flex: 1;
+
+      h3 {
+        margin: 0 0 4px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--ion-color-dark);
+      }
+
+      p {
+        margin: 0;
+        color: var(--ion-color-medium);
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+    }
+  }
+
+  .info-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--ion-color-medium);
+
+      ion-icon {
+        font-size: 1rem;
+      }
+    }
+  }
+}
+
+// Current image section
+.current-image-section {
+  margin-bottom: 24px;
+
+  h4 {
+    margin: 0 0 12px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+    text-align: center;
+  }
+
+  .current-image-container {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid var(--ion-color-light-shade);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      p {
+        color: white;
+        font-weight: 500;
+        margin: 0;
+        padding: 8px 16px;
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 4px;
+        font-size: 0.9rem;
+      }
+    }
+
+    &.hero-aspect {
+      aspect-ratio: 3 / 1;
+      max-height: 120px;
+      margin: 0 auto;
+    }
+
+    &.icon-aspect {
+      aspect-ratio: 1 / 1;
+      max-width: 120px;
+      margin: 0 auto;
+    }
+  }
+}
+
+// Upload section
+.upload-section {
+  .drop-zone {
+    border: 2px dashed var(--ion-color-medium);
+    border-radius: 12px;
+    padding: 32px 24px;
+    text-align: center;
+    transition: all 0.3s ease;
+    background: var(--ion-color-light);
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+
+    &.drag-over {
+      border-color: var(--ion-color-primary);
+      background: var(--ion-color-primary-tint);
+      transform: scale(1.02);
+    }
+
+    &.has-file {
+      border-color: var(--ion-color-success);
+      padding: 20px;
+    }
+
+    // Empty state styling
+    .empty-state {
+      .upload-icon {
+        font-size: 4rem;
+        color: var(--ion-color-medium);
+        margin-bottom: 16px;
+      }
+
+      h3 {
+        margin: 0 0 8px 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--ion-color-dark);
+      }
+
+      p {
+        margin: 0 0 24px 0;
+        color: var(--ion-color-medium);
+        font-size: 0.9rem;
+      }
+
+      .browse-button {
+        --border-radius: 8px;
+        margin-bottom: 16px;
+      }
+
+      .file-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0;
+        cursor: pointer;
+      }
+    }
+
+    // Preview state styling
+    .preview-state {
+      width: 100%;
+
+      .preview-container {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin: 0 auto 16px auto;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+
+        &.hero-aspect {
+          aspect-ratio: 3 / 1;
+          max-height: 150px;
+        }
+
+        &.icon-aspect {
+          aspect-ratio: 1 / 1;
+          max-width: 150px;
+          margin: 0 auto 16px auto;
+        }
+      }
+
+      .file-info {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        border: 1px solid var(--ion-color-light-shade);
+
+        .file-details {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          flex: 1;
+
+          ion-icon {
+            font-size: 1.5rem;
+          }
+
+          .file-text {
+            h4 {
+              margin: 0 0 2px 0;
+              font-size: 0.9rem;
+              font-weight: 600;
+              color: var(--ion-color-dark);
+              word-break: break-all;
+            }
+
+            p {
+              margin: 0;
+              font-size: 0.8rem;
+              color: var(--ion-color-medium);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Error message
+  .error-message {
+    margin-top: 16px;
+
+    p {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      font-size: 0.9rem;
+
+      ion-icon {
+        font-size: 1.1rem;
+      }
+    }
+  }
+
+  // Progress section
+  .progress-section {
+    margin-top: 20px;
+    padding: 16px;
+    background: var(--ion-color-light);
+    border-radius: 8px;
+
+    .progress-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+      color: var(--ion-color-primary);
+      font-weight: 500;
+
+      ion-icon {
+        font-size: 1.2rem;
+      }
+    }
+
+    ion-progress-bar {
+      height: 6px;
+      --background: var(--ion-color-light-shade);
+      --progress-background: var(--ion-color-primary);
+    }
+  }
+}
+
+// Footer styling
+ion-footer {
+  ion-toolbar {
+    --background: transparent;
+    --border-color: var(--ion-color-light-shade);
+    padding: 16px;
+
+    .footer-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+
+      .upload-button {
+        flex: 1;
+        --border-radius: 8px;
+        height: 44px;
+        font-weight: 600;
+
+        &:disabled {
+          opacity: 0.6;
+        }
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 576px) {
+  .upload-container {
+    padding: 0 8px;
+  }
+
+  .image-info-card {
+    padding: 16px;
+    margin-bottom: 20px;
+
+    .info-details {
+      .detail-item {
+        font-size: 0.8rem;
+      }
+    }
+  }
+
+  .drop-zone {
+    padding: 24px 16px !important;
+
+    .empty-state {
+      .upload-icon {
+        font-size: 3rem;
+      }
+
+      h3 {
+        font-size: 1.1rem;
+      }
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .image-info-card {
+    border-color: var(--ion-color-dark-shade);
+  }
+
+  .drop-zone {
+    background: var(--ion-color-dark);
+    border-color: var(--ion-color-medium-shade);
+
+    &.drag-over {
+      background: var(--ion-color-primary-shade);
+    }
+
+    &.has-file {
+      border-color: #4a7c59; // Muted green for dark mode
+      background: rgba(74, 124, 89, 0.15); // Very subtle green background
+    }
+  }
+
+  .file-info {
+    background: rgba(74, 124, 89, 0.15) !important;
+    border-color: var(--ion-color-medium-shade) !important;
+  }
+
+  .progress-section {
+    background: var(--ion-color-dark) !important;
+  }
+}

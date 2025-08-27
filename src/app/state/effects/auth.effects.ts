@@ -591,7 +591,41 @@ export class AuthEffects {
       }),
       map((account) => {
         // Handle undefined account
-        const defaultIconImage = user.photoURL || "src/assets/avatar/male1.png";
+        // Only use Google photo as fallback if user doesn't have an existing icon
+        const hasExistingIcon =
+          account?.iconImage &&
+          !account.iconImage.includes("assets/avatar/") &&
+          !account.iconImage.includes(
+            "ASCENDynamics NFP-logos_transparent.png",
+          );
+
+        // Fix Google profile image URL to get higher quality image
+        const getHighQualityGoogleImage = (
+          photoURL: string | null,
+        ): string | null => {
+          if (!photoURL) return null;
+
+          try {
+            if (photoURL.includes("googleusercontent.com")) {
+              // Remove size parameters and add high quality ones
+              // Also ensure the URL is properly formatted
+              let cleanUrl = photoURL
+                .replace(/=s\d+-c$/, "")
+                .replace(/=s\d+$/, "");
+              return `${cleanUrl}=s400-c`;
+            }
+            return photoURL;
+          } catch (error) {
+            console.warn("Error processing Google image URL:", error);
+            return null;
+          }
+        };
+
+        const defaultIconImage = hasExistingIcon
+          ? account.iconImage
+          : getHighQualityGoogleImage(user.photoURL) ||
+            "assets/image/logo/ASCENDynamics NFP-logos_transparent.png";
+
         const defaultHeroImage = "src/assets/image/orghero.png";
         const defaultTagline = "Helping others at ASCENDynamics NFP.";
         const defaultSettings: Settings = {

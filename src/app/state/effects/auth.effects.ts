@@ -366,6 +366,51 @@ export class AuthEffects {
     {dispatch: false},
   );
 
+  // Refresh Token Success Effect: Navigate after registration completion
+  refreshTokenSuccess$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(AuthActions.refreshTokenSuccess),
+        // Navigation is now handled by authStateChange$ effect
+        switchMap(() => of(null)),
+      ),
+    {dispatch: false},
+  );
+
+  // Auth State Change Effect: Handle navigation when auth state updates
+  authStateChange$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(
+          AuthActions.updateAuthUser,
+          AuthActions.refreshTokenSuccess,
+          AuthActions.updateAuthUserSuccess,
+        ),
+        delay(100), // Reduced delay from 200ms to 100ms
+        withLatestFrom(this.store.select(selectAuthUser)),
+        switchMap(([action, authUser]) => {
+          if (authUser) {
+            const currentUrl = this.router.url;
+
+            // Check if we need to redirect from current route
+            const redirectInfo =
+              this.authNavigationService.shouldRedirectFromCurrentRoute(
+                authUser,
+                currentUrl,
+              );
+
+            if (redirectInfo.shouldRedirect && redirectInfo.redirectTo) {
+              this.router.navigateByUrl(redirectInfo.redirectTo, {
+                replaceUrl: true,
+              });
+            }
+          }
+          return of(null);
+        }),
+      ),
+    {dispatch: false},
+  );
+
   // Sign-Out Effect
   signOut$ = createEffect(() =>
     this.actions$.pipe(
@@ -556,41 +601,49 @@ export class AuthEffects {
     return this.store.select(selectAccountById(user.uid)).pipe(
       take(1),
       switchMap((account) => {
-        // If account is not in store or has type "new", load it from the database
-        if (!account || account.type === "new") {
-          this.store.dispatch(
-            AccountActions.loadAccount({accountId: user.uid}),
-          );
-          // Wait for the account to be loaded, with a timeout and small delay for race condition
-          return this.store.select(selectAccountById(user.uid)).pipe(
-            delay(200), // Allow time for dispatch to process
-            filter(
-              (updatedAccount) =>
-                updatedAccount !== undefined && updatedAccount.type !== "new",
-            ),
-            timeout(10000), // 10 second timeout
-            take(1),
+        // If account is not in store, load it from the database
+        if (!account) {
+          // For new users, we need to wait for the Firebase function to create the account
+          // This is especially important for Google sign-in where there can be a race condition
+          return this.waitForAccountCreation(user.uid).pipe(
             catchError((error) => {
-              // Try one more time with fresh data
-              this.store.dispatch(
-                AccountActions.loadAccount({accountId: user.uid}),
-              );
-              return this.store.select(selectAccountById(user.uid)).pipe(
-                delay(500), // Longer delay on retry
-                timeout(8000),
-                take(1),
-                catchError(() => {
-                  // If all retries fail, use existing account or fallback
-                  return of(account);
-                }),
-              );
+              // If all attempts fail, create a minimal AuthUser with "new" type
+              // This ensures the user can still navigate but will be directed to registration
+              return of(null); // Will be handled in the map function below
             }),
           );
         }
         return of(account);
       }),
       map((account) => {
-        // Handle undefined account
+        // Handle case where account couldn't be loaded
+        if (!account) {
+          // Create minimal AuthUser for new user who hasn't completed registration
+          return {
+            uid: user.uid,
+            email: user.email,
+            emailVerified: user.emailVerified,
+            displayName: user.displayName || user.email?.split("@")[0] || "",
+            iconImage:
+              user.photoURL ||
+              "assets/image/logo/ASCENDynamics NFP-logos_transparent.png",
+            heroImage: "src/assets/image/orghero.png",
+            tagline: "New and looking to help!",
+            type: "new", // This will ensure they go to registration
+            createdAt: user.metadata.creationTime
+              ? new Date(user.metadata.creationTime)
+              : new Date(),
+            lastLoginAt: user.metadata.lastSignInTime
+              ? new Date(user.metadata.lastSignInTime)
+              : new Date(),
+            phoneNumber: user.phoneNumber || null,
+            providerData: user.providerData,
+            settings: {language: "en", theme: "system"},
+            claims: {},
+          } as AuthUser;
+        }
+
+        // Handle existing account
         // Only use Google photo as fallback if user doesn't have an existing icon
         const hasExistingIcon =
           account?.iconImage &&
@@ -673,5 +726,38 @@ export class AuthEffects {
         };
       }),
     );
+  }
+
+  /**
+   * Wait for account creation with multiple retries
+   * This handles the race condition between Firebase Auth user creation
+   * and the Firebase function that creates the account document
+   */
+  private waitForAccountCreation(userId: string): Observable<any> {
+    let retryCount = 0;
+    const maxRetries = 3; // Reduced from 5 to 3
+    const baseDelay = 500; // Reduced from 1000ms to 500ms
+
+    const tryLoadAccount = (): Observable<any> => {
+      this.store.dispatch(AccountActions.loadAccount({accountId: userId}));
+
+      return this.store.select(selectAccountById(userId)).pipe(
+        delay(baseDelay + retryCount * 300), // Linear backoff instead of exponential: 500ms, 800ms, 1100ms
+        filter((account) => account !== undefined),
+        timeout(2000), // Reduced timeout from 3000ms to 2000ms
+        take(1),
+        catchError((error) => {
+          retryCount++;
+          if (retryCount < maxRetries) {
+            return tryLoadAccount();
+          } else {
+            // After 3 retries (total ~2.4 seconds), give up and create minimal user
+            throw error;
+          }
+        }),
+      );
+    };
+
+    return tryLoadAccount();
   }
 }

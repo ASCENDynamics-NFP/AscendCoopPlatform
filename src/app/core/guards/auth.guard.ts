@@ -55,21 +55,19 @@ export class AuthGuard {
       return false;
     }
 
-    // Check registration completion for specific routes using the service
+    // Check registration completion for specific routes
     if (route && this.requiresCompletedRegistration(route)) {
       const accountId = route.paramMap.get("accountId");
       const isOwnProfile = accountId === authUser.uid;
 
       if (isOwnProfile) {
-        const currentUrl = this.router.url;
-        const redirectInfo =
-          this.authNavigationService.shouldRedirectFromCurrentRoute(
-            authUser,
-            currentUrl,
-          );
+        // For own profile routes, only allow access if registration is completed
+        const hasCompleted =
+          this.authNavigationService.hasCompletedRegistration(authUser);
 
-        if (redirectInfo.shouldRedirect && redirectInfo.redirectTo) {
-          this.router.navigate([redirectInfo.redirectTo]);
+        if (!hasCompleted) {
+          // Don't navigate here - let the auth effects handle navigation
+          // Just block access to the route
           return false;
         }
       }

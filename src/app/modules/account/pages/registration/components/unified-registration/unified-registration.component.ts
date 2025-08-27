@@ -191,25 +191,10 @@ export class UnifiedRegistrationComponent implements OnChanges {
 
       if (this.redirectSubmit && this.account?.id) {
         // Force token refresh after account update to get updated custom claims
+        // The auth effects will handle navigation after the token is refreshed
         setTimeout(() => {
           this.store.dispatch(AuthActions.refreshToken({forceRefresh: true}));
         }, 1000); // Small delay to allow server-side function to complete
-
-        // Wait for the AuthUser to be synced with the updated account type before redirecting
-        this.store
-          .select(selectAuthUser)
-          .pipe(
-            filter(
-              (authUser) =>
-                authUser?.type !== undefined && authUser.type !== "new",
-            ),
-            take(1),
-          )
-          .subscribe(() => {
-            // Both user and group registrations should redirect to the profile page
-            const redirectPath = `/account/${this.account!.id}`;
-            this.router.navigateByUrl(redirectPath);
-          });
       }
     }
   }

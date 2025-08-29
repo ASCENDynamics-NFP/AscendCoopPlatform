@@ -6,6 +6,12 @@ import {Store} from "@ngrx/store";
 import {AlertController} from "@ionic/angular";
 import {Project} from "@shared/models/project.model";
 import {Account} from "@shared/models/account.model";
+import {
+  StandardProjectCategory,
+  STANDARD_PROJECT_TEMPLATES,
+  STANDARD_PROJECT_CATEGORIES_INFO,
+  StandardProjectTemplate,
+} from "@shared/models/standard-project-template.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {
   selectRelatedAccountsByAccountId,
@@ -39,6 +45,18 @@ export class ProjectsPage implements OnInit {
   newProjectName = "";
   /** Lower-cased names of active projects for quick duplicate checks */
   private activeProjectNames: string[] = [];
+
+  // Category-based project creation (always visible)
+  selectedCategory?: StandardProjectCategory;
+  availableTemplates: StandardProjectTemplate[] = [];
+  selectedTemplate?: StandardProjectTemplate;
+  projectCategories = STANDARD_PROJECT_CATEGORIES_INFO;
+
+  // Category filtering and grouping
+  selectedCategoryFilter: StandardProjectCategory | "all" = "all";
+  groupByCategory = false;
+  filteredProjects$!: Observable<Project[]>;
+  groupedProjects$!: Observable<{[key: string]: Project[]}>;
 
   constructor(
     private route: ActivatedRoute,
@@ -112,12 +130,54 @@ export class ProjectsPage implements OnInit {
     this.loading$ = this.store.select(selectProjectsLoading);
     this.error$ = this.store.select(selectProjectsError);
 
+    // Set up filtered and grouped projects
+    this.setupFilteredProjects();
+
     this.store.dispatch(
       ProjectsActions.loadProjects({accountId: this.accountId}),
     );
   }
 
+  private setupFilteredProjects() {
+    this.filteredProjects$ = this.activeProjects$.pipe(
+      map((projects) => {
+        if (this.selectedCategoryFilter === "all") {
+          return projects;
+        }
+        return projects.filter(
+          (project) => project.standardCategory === this.selectedCategoryFilter,
+        );
+      }),
+    );
+
+    this.groupedProjects$ = this.filteredProjects$.pipe(
+      map((projects) => {
+        const grouped: {[key: string]: Project[]} = {};
+
+        projects.forEach((project) => {
+          const category = project.standardCategory || "general";
+          if (!grouped[category]) {
+            grouped[category] = [];
+          }
+          grouped[category].push(project);
+        });
+
+        return grouped;
+      }),
+    );
+  }
+
   addProject() {
+    // Ensure category is selected before creating project
+    if (!this.selectedCategory) {
+      this.errorHandler.handleFirebaseAuthError({
+        code: "category-required",
+        message:
+          "Please select a project category before creating the project.",
+      });
+      return;
+    }
+
     const name = this.newProjectName.trim();
     if (!name) return;
     const lower = name.toLowerCase();
@@ -147,14 +207,62 @@ export class ProjectsPage implements OnInit {
           accountId: this.accountId,
           createdBy: user.uid,
           lastModifiedBy: user.uid,
+          standardCategory: this.selectedCategory,
+          description: this.selectedTemplate?.description || "",
+          icon: this.selectedTemplate?.icon || "folder",
+          color: this.selectedTemplate?.color || "#666666",
+          complexity: this.selectedTemplate?.complexity || "Simple",
+          timeframe: this.selectedTemplate?.estimatedTimeframe || "Short-term",
+          goals: this.selectedTemplate?.defaultTasks || [],
+          requiredRoles: this.selectedTemplate?.requiredRoles || [],
         } as Project;
+
+        // Only add standardProjectTemplateId if template is selected
+        if (this.selectedTemplate?.id) {
+          (project as any).standardProjectTemplateId = this.selectedTemplate.id;
+        }
 
         this.store.dispatch(
           ProjectsActions.createProject({accountId: this.accountId, project}),
         );
-        this.newProjectName = "";
+        this.resetProjectCreation();
         this.successHandler.handleSuccess("Project created!");
       });
+  }
+
+  onCategorySelected(category: StandardProjectCategory | string) {
+    if (!category) {
+      this.selectedCategory = undefined;
+      this.availableTemplates = [];
+      return;
+    }
+
+    this.selectedCategory = category as StandardProjectCategory;
+    this.availableTemplates = STANDARD_PROJECT_TEMPLATES.filter(
+      (template) => template.category === this.selectedCategory,
+    );
+
+    // If there's only one template, auto-select it
+    if (this.availableTemplates.length === 1) {
+      this.selectedTemplate = this.availableTemplates[0];
+      this.newProjectName = this.selectedTemplate.name;
+    }
+  }
+
+  onTemplateSelected(template: StandardProjectTemplate) {
+    this.selectedTemplate = template;
+    this.newProjectName = template.name;
+  }
+
+  resetProjectCreation() {
+    this.newProjectName = "";
+    this.selectedCategory = undefined;
+    this.selectedTemplate = undefined;
+    this.availableTemplates = [];
+  }
+
+  cancelCategorySelection() {
+    this.resetProjectCreation();
   }
 
   updateProject(project: Project, name: string | null | undefined) {
@@ -218,5 +326,41 @@ export class ProjectsPage implements OnInit {
 
   trackById(_: number, proj: Project) {
     return proj.id;
+  }
+
+  // Category filtering methods
+  onCategoryFilterChange() {
+    this.setupFilteredProjects();
+  }
+
+  toggleGroupByCategory() {
+    this.groupByCategory = !this.groupByCategory;
+  }
+
+  getCategoryInfo(category: string) {
+    const categoryInfo =
+      this.projectCategories[category as StandardProjectCategory];
+    if (categoryInfo) {
+      return {
+        name: category,
+        description: categoryInfo.description,
+        icon: categoryInfo.icon,
+        color: categoryInfo.color,
+      };
+    }
+    return {
+      name: "General",
+      description: "General projects",
+      icon: "folder",
+      color: "#666666",
+    };
+  }
+
+  getCategoryKeys(groupedProjects: {[key: string]: Project[]}): string[] {
+    return Object.keys(groupedProjects).sort();
+  }
+
+  getAvailableCategoryKeys(): string[] {
+    return Object.keys(this.projectCategories);
   }
 }

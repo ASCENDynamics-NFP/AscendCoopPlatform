@@ -59,6 +59,7 @@ import {RoleManagementPage} from "./pages/role-management/role-management.page";
 import {RoleHierarchyPage} from "./pages/role-hierarchy/role-hierarchy.page";
 import {ProjectsPage} from "./pages/projects/projects.page";
 import {SafeUrlPipe} from "../../shared/pipes/safe-url.pipe";
+import {CategorySelectorComponent} from "../../shared/components/project-category/category-selector.component";
 import {GroupCalendarComponent} from "./pages/details/components/group-calendar/group-calendar.component";
 import {StandardRoleSelectorComponent} from "./components/standard-role-selector/standard-role-selector.component";
 import {FaqSectionComponent} from "./pages/details/components/faq-section/faq-section.component";
@@ -105,6 +106,7 @@ import {InviteMemberModalComponent} from "./components/invite-member-modal/invit
     FaqFormComponent,
     InviteMemberModalComponent,
     SafeUrlPipe,
+    CategorySelectorComponent,
   ],
   imports: [
     AccountRoutingModule,

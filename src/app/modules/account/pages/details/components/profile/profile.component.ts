@@ -38,7 +38,8 @@ export class ProfileComponent {
     if (this.account.type === "user") {
       return "Profile";
     }
-    return "Organization (" + this.account.groupDetails?.groupType + ")";
+    const groupType = this.account?.groupDetails?.groupType || "Group";
+    return `Organization (${groupType})`;
   }
 
   getWebLinks(category: string): WebLink[] {

@@ -70,35 +70,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           </ion-note>
         </ion-col>
       </ion-row>
-      <ion-row *ngIf="account?.type === 'group'" formGroupName="groupDetails">
-        <ion-col>
-          <!-- <ion-label position="stacked">Group Type</ion-label> -->
-          <ion-select
-            label="Group Type"
-            label-placement="stacked"
-            formControlName="groupType"
-            interface="popover"
-            [placeholder]="'common.select_one' | translate"
-            fill="outline"
-          >
-            <ion-select-option value="Nonprofit">Nonprofit</ion-select-option>
-            <ion-select-option value="Community">Community</ion-select-option>
-            <ion-select-option value="Business">Business</ion-select-option>
-            <ion-select-option value="Government">Government</ion-select-option>
-            <ion-select-option value="Other">Other</ion-select-option>
-          </ion-select>
-        </ion-col>
-      </ion-row>
-      <ion-row *ngIf="account?.type === 'group'" formGroupName="groupDetails">
-        <ion-col>
-          <ion-input
-            label="Google Calendar URL"
-            label-placement="stacked"
-            formControlName="googleCalendarUrl"
-            fill="outline"
-          ></ion-input>
-        </ion-col>
-      </ion-row>
       <ion-row>
         <ion-col>
           <!-- <ion-label position="stacked">Description</ion-label> -->

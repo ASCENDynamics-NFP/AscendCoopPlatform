@@ -526,16 +526,13 @@ ion-input[type="number"] {
   }
 
   .notes-button {
-    --padding-start: 4px;
-    --padding-end: 4px;
-    --padding-top: 4px;
-    --padding-bottom: 4px;
-    min-width: 32px;
-    height: 32px;
+    margin: 0;
+    min-width: 36px;
+    height: 36px;
     flex-shrink: 0;
 
     ion-icon {
-      font-size: 16px;
+      font-size: 18px;
       color: var(--ion-color-medium);
 
       &.has-notes {
@@ -546,6 +543,40 @@ ion-input[type="number"] {
     &:hover {
       ion-icon {
         color: var(--ion-color-primary);
+      }
+    }
+  }
+
+  // Category-enhanced project selection styles
+  .project-cell {
+    ion-select {
+      ::ng-deep {
+        .category-header {
+          .select-text {
+            font-weight: 600;
+            color: var(--ion-color-dark);
+            opacity: 0.7;
+          }
+        }
+
+        .category-header-content {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-weight: 600;
+          color: var(--ion-color-dark);
+
+          ion-icon {
+            font-size: 1rem;
+          }
+        }
+
+        .project-option {
+          .select-text {
+            padding-left: 24px;
+            color: var(--ion-color-dark);
+          }
+        }
       }
     }
   }

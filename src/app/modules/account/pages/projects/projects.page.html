@@ -20,35 +20,105 @@
     </ion-label>
   </ion-item>
 
-  <!-- Add New Project (Admin Only) -->
+  <!-- Add New Project -->
   <ion-card *ngIf="(isGroupAdmin$ | async)" class="add-project-card">
     <ion-card-header>
       <ion-card-title>
         <ion-icon name="add-circle" class="title-icon"></ion-icon>
-        {{ 'projects.add_new_project' | translate }}
+        Add New Project
       </ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <ion-item lines="none">
+      <app-category-selector
+        [selectedCategory]="selectedCategory"
+        (categoryChange)="onCategorySelected($event)"
+        placeholder="Choose a category for your project"
+      ></app-category-selector>
+
+      <!-- Project Name Input (shown after category is selected) -->
+      <ion-item
+        *ngIf="selectedCategory"
+        lines="none"
+        class="project-name-input"
+      >
+        <ion-label position="stacked">Project Name</ion-label>
         <ion-input
-          placeholder="{{ 'projects.enter_project_name' | translate }}"
+          placeholder="Enter your project name here"
           [(ngModel)]="newProjectName"
           (keyup.enter)="addProject()"
           clearInput="true"
         ></ion-input>
+      </ion-item>
+
+      <!-- Template Selection (if multiple templates available) -->
+      <div
+        *ngIf="selectedCategory && availableTemplates.length > 1"
+        class="template-selection"
+      >
+        <ion-item lines="none">
+          <ion-label position="stacked">
+            Project Template (Optional)
+            <p class="template-help-text">
+              Templates provide pre-built tasks, roles, and metrics to help you
+              get started faster
+            </p>
+          </ion-label>
+          <ion-select
+            [(ngModel)]="selectedTemplate"
+            placeholder="Choose a template"
+            interface="popover"
+          >
+            <ion-select-option
+              *ngFor="let template of availableTemplates"
+              [value]="template"
+            >
+              {{ template.name }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- Template Preview (when template is selected) -->
+        <div *ngIf="selectedTemplate" class="template-preview">
+          <ion-chip color="secondary" class="template-chip">
+            <ion-icon name="document-text"></ion-icon>
+            <ion-label>{{ selectedTemplate.name }}</ion-label>
+          </ion-chip>
+          <p class="template-preview-description">
+            {{ selectedTemplate.description }}
+          </p>
+          <div class="template-details">
+            <small>
+              <strong>Complexity:</strong> {{ selectedTemplate.complexity }} |
+              <strong>Timeframe:</strong> {{ selectedTemplate.estimatedTimeframe
+              }}
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="add-project-actions" *ngIf="selectedCategory">
         <ion-button
-          slot="end"
-          (click)="addProject()"
-          [disabled]="!newProjectName.trim()"
+          fill="clear"
+          size="small"
+          (click)="resetProjectCreation()"
+          class="cancel-button"
+        >
+          Clear
+        </ion-button>
+        <ion-button
           fill="solid"
           size="small"
+          (click)="addProject()"
+          [disabled]="!newProjectName.trim()"
+          class="create-button"
         >
-          <ion-icon name="add" slot="icon-only"></ion-icon>
+          <ion-icon name="add" slot="start"></ion-icon>
+          Create Project
         </ion-button>
-      </ion-item>
+      </div>
     </ion-card-content>
   </ion-card>
-
   <!-- Active Projects Section -->
   <ion-card *ngIf="!(loading$ | async)" class="projects-section">
     <ion-card-header class="section-header">
@@ -56,23 +126,133 @@
         <ion-icon name="folder-open" class="title-icon"></ion-icon>
         Active Projects
         <ion-badge color="primary" class="count-badge">
-          {{ (activeProjects$ | async)?.length || 0 }}
+          {{ (filteredProjects$ | async)?.length || 0 }}
         </ion-badge>
       </ion-card-title>
     </ion-card-header>
 
+    <!-- Project Filters and Controls -->
+    <div
+      class="project-controls"
+      *ngIf="(activeProjects$ | async)?.length! > 0"
+    >
+      <ion-item lines="none" class="filter-item">
+        <ion-select
+          [(ngModel)]="selectedCategoryFilter"
+          (ngModelChange)="onCategoryFilterChange()"
+          placeholder="Filter by category"
+          interface="popover"
+        >
+          <ion-select-option value="all">All Categories</ion-select-option>
+          <ion-select-option
+            *ngFor="let categoryKey of getAvailableCategoryKeys()"
+            [value]="categoryKey"
+          >
+            {{ categoryKey }}
+          </ion-select-option>
+        </ion-select>
+        <ion-label slot="start">Filter:</ion-label>
+      </ion-item>
+
+      <ion-item lines="none" class="group-toggle">
+        <ion-checkbox
+          [(ngModel)]="groupByCategory"
+          (ngModelChange)="toggleGroupByCategory()"
+        ></ion-checkbox>
+        <ion-label slot="start">Group by Category</ion-label>
+      </ion-item>
+    </div>
+
     <ion-card-content class="no-padding">
-      <div *ngIf="(activeProjects$ | async)?.length === 0" class="empty-state">
+      <div
+        *ngIf="(filteredProjects$ | async)?.length === 0"
+        class="empty-state"
+      >
         <ion-icon name="folder-open-outline" class="empty-icon"></ion-icon>
-        <p>No active projects yet</p>
+        <p>No projects match the selected category</p>
         <p class="empty-subtitle" *ngIf="!(isGroupAdmin$ | async)">
           Contact your group admin to create projects
         </p>
       </div>
 
-      <ion-list *ngIf="(activeProjects$ | async)?.length! > 0" lines="none">
+      <!-- Grouped View -->
+      <div *ngIf="groupByCategory && (groupedProjects$ | async) as grouped">
+        <div
+          *ngFor="let categoryKey of getCategoryKeys(grouped)"
+          class="category-group"
+        >
+          <ion-item-divider class="category-divider">
+            <ion-icon
+              [name]="getCategoryInfo(categoryKey).icon"
+              slot="start"
+              [style.color]="getCategoryInfo(categoryKey).color"
+            ></ion-icon>
+            <ion-label>
+              {{ getCategoryInfo(categoryKey).name }}
+              <ion-badge color="medium"
+                >{{ grouped[categoryKey].length }}</ion-badge
+              >
+            </ion-label>
+          </ion-item-divider>
+
+          <ion-list lines="none">
+            <ion-item
+              *ngFor="let proj of grouped[categoryKey]; trackBy: trackById"
+              class="project-item active-project"
+            >
+              <ion-icon
+                name="radio-button-on"
+                slot="start"
+                color="success"
+              ></ion-icon>
+
+              <div class="project-content">
+                <ng-container
+                  *ngIf="(isGroupAdmin$ | async); else viewProjectGrouped"
+                >
+                  <ion-input
+                    [value]="proj.name"
+                    (ionChange)="updateProject(proj, $event.detail.value)"
+                    class="project-name-input"
+                  ></ion-input>
+                </ng-container>
+
+                <ng-template #viewProjectGrouped>
+                  <div class="project-details">
+                    <ion-label class="project-name">{{ proj.name }}</ion-label>
+                    <p *ngIf="proj.description" class="project-description">
+                      {{ proj.description }}
+                    </p>
+                  </div>
+                </ng-template>
+              </div>
+
+              <div
+                class="project-actions"
+                slot="end"
+                *ngIf="(isGroupAdmin$ | async)"
+              >
+                <ion-button
+                  fill="clear"
+                  size="small"
+                  (click)="toggleArchive(proj, true)"
+                  color="medium"
+                >
+                  <ion-icon name="archive" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+            </ion-item>
+          </ion-list>
+        </div>
+      </div>
+
+      <!-- Normal List View -->
+      <ion-list
+        *ngIf="!groupByCategory && (filteredProjects$ | async)?.length! > 0"
+        lines="none"
+      >
         <ion-item
-          *ngFor="let proj of (activeProjects$ | async); trackBy: trackById"
+          *ngFor="let proj of (filteredProjects$ | async); trackBy: trackById"
           class="project-item active-project"
         >
           <ion-icon
@@ -91,13 +271,29 @@
             </ng-container>
 
             <ng-template #viewProject>
-              <ion-label class="project-name">{{ proj.name }}</ion-label>
+              <div class="project-details">
+                <ion-label class="project-name">{{ proj.name }}</ion-label>
+                <ion-chip
+                  *ngIf="proj.standardCategory && projectCategories[proj.standardCategory]"
+                  [style.background-color]="projectCategories[proj.standardCategory].color"
+                  class="project-category-badge"
+                >
+                  <ion-icon
+                    [name]="projectCategories[proj.standardCategory].icon"
+                    class="category-icon"
+                  ></ion-icon>
+                  <ion-label>{{ proj.standardCategory }}</ion-label>
+                </ion-chip>
+                <p *ngIf="proj.description" class="project-description">
+                  {{ proj.description }}
+                </p>
+              </div>
             </ng-template>
           </div>
 
           <div
-            slot="end"
             class="project-actions"
+            slot="end"
             *ngIf="(isGroupAdmin$ | async)"
           >
             <ion-button

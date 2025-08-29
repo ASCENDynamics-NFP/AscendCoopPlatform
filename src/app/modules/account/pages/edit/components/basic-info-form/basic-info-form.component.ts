@@ -39,16 +39,12 @@ export class BasicInfoFormComponent implements OnChanges {
     private fb: FormBuilder,
     private store: Store,
   ) {
-    // Initialize the form in ngOnInit after fb is initialized
+    // Initialize the form - simplified for user accounts only
     this.basicInfoForm = this.fb.group({
       description: [""],
       tagline: ["", Validators.required],
       name: ["", Validators.required],
       webLinks: this.fb.array([this.createWebLinkFormGroup()]),
-      groupDetails: this.fb.group({
-        groupType: [""],
-        googleCalendarUrl: [""],
-      }),
     });
   }
 
@@ -99,10 +95,6 @@ export class BasicInfoFormComponent implements OnChanges {
               category: link.category ?? "",
             };
           }) ?? [],
-        groupDetails: {
-          ...formValue.groupDetails,
-          groupType: formValue.groupDetails?.groupType || "Nonprofit",
-        },
       };
 
       this.store.dispatch(
@@ -143,22 +135,7 @@ export class BasicInfoFormComponent implements OnChanges {
       name: this.account.name,
       description: this.account.description,
       tagline: this.account.tagline,
-      groupDetails: {
-        googleCalendarUrl: this.account.groupDetails?.googleCalendarUrl,
-      },
     });
-
-    if (
-      this.account?.type === "group" &&
-      this.account?.groupDetails?.groupType
-    ) {
-      this.basicInfoForm
-        .get("groupDetails.groupType")
-        ?.setValue(this.account.groupDetails?.groupType);
-      this.basicInfoForm
-        .get("groupDetails.googleCalendarUrl")
-        ?.setValue(this.account.groupDetails?.googleCalendarUrl);
-    }
   }
 
   addWebLink(): void {

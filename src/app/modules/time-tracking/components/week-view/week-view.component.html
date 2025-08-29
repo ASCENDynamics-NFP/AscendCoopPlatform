@@ -101,13 +101,26 @@
                   <ion-select-option value="" translate
                     >common.select</ion-select-option
                   >
-                  <ion-select-option
-                    *ngFor="let proj of availableProjects"
-                    [value]="proj.id"
-                    [disabled]="isSelected(proj.id, i)"
-                  >
-                    {{ proj.name }}
-                  </ion-select-option>
+                  <!-- Group projects by category -->
+                  <ng-container *ngFor="let categoryKey of getCategoryKeys()">
+                    <ion-select-option disabled class="category-header">
+                      <div class="category-header-content">
+                        <ion-icon
+                          [name]="getCategoryInfo(categoryKey).icon"
+                          [style.color]="getCategoryInfo(categoryKey).color"
+                        ></ion-icon>
+                        {{ getCategoryInfo(categoryKey).name }}
+                      </div>
+                    </ion-select-option>
+                    <ion-select-option
+                      *ngFor="let proj of groupedProjects[categoryKey]"
+                      [value]="proj.id"
+                      [disabled]="isSelected(proj.id, i)"
+                      class="project-option"
+                    >
+                      {{ proj.name }}
+                    </ion-select-option>
+                  </ng-container>
                 </ion-select>
               </ng-container>
               <ng-template #single>

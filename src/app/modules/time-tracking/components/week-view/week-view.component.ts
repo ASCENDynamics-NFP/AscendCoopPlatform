@@ -31,6 +31,10 @@ import {Timestamp} from "firebase/firestore";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
 import {Project} from "../../../../../../shared/models/project.model";
 import {TimeEntry} from "../../../../../../shared/models/time-entry.model";
+import {
+  StandardProjectCategory,
+  STANDARD_PROJECT_CATEGORIES_INFO,
+} from "../../../../../../shared/models/standard-project-template.model";
 import {SuccessHandlerService} from "../../../../core/services/success-handler.service";
 import {
   ToastController,
@@ -442,5 +446,50 @@ export class WeekViewComponent implements OnInit, OnChanges {
     if (hasOrphanedProjects) {
       this.updateTotals();
     }
+  }
+
+  // Category-related methods for enhanced project selection
+  get groupedProjects(): {[category: string]: Project[]} {
+    const grouped: {[category: string]: Project[]} = {};
+
+    this.availableProjects.forEach((project) => {
+      const category = project.standardCategory || "general";
+      if (!grouped[category]) {
+        grouped[category] = [];
+      }
+      grouped[category].push(project);
+    });
+
+    return grouped;
+  }
+
+  getCategoryKeys(): string[] {
+    return Object.keys(this.groupedProjects).sort();
+  }
+
+  getCategoryInfo(category: string) {
+    const categoryInfo =
+      STANDARD_PROJECT_CATEGORIES_INFO[category as StandardProjectCategory];
+    if (categoryInfo) {
+      return {
+        name: category,
+        description: categoryInfo.description,
+        icon: categoryInfo.icon,
+        color: categoryInfo.color,
+      };
+    }
+    return {
+      name: "General",
+      description: "General projects",
+      icon: "folder",
+      color: "#666666",
+    };
+  }
+
+  getProjectDisplayName(project: Project): string {
+    if (project.standardCategory) {
+      return `${project.name} (${project.standardCategory})`;
+    }
+    return project.name;
   }
 }

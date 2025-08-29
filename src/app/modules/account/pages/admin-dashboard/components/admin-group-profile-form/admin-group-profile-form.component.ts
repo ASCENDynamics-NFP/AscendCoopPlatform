@@ -83,7 +83,7 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
         googleCalendarUrl: [""],
         groupObjectivesMissionStatement: ["", [Validators.maxLength(2000)]],
         groupHistoryBackground: ["", [Validators.maxLength(2000)]],
-        foundingDate: [""],
+        foundingDate: ["", [Validators.required]],
       }),
 
       // Contact Information
@@ -424,9 +424,11 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
           groupObjectivesMissionStatement:
             formValue.groupDetails.groupObjectivesMissionStatement,
           groupHistoryBackground: formValue.groupDetails.groupHistoryBackground,
-          dateFounded: this.safeToTimestamp(
-            formValue.groupDetails.foundingDate,
-          ),
+          ...(formValue.groupDetails.foundingDate && {
+            dateFounded: this.safeToTimestamp(
+              formValue.groupDetails.foundingDate,
+            ),
+          }),
         },
         contactInformation: {
           ...this.account?.contactInformation,

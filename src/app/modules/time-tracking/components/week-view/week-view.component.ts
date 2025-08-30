@@ -31,6 +31,10 @@ import {Timestamp} from "firebase/firestore";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
 import {Project} from "../../../../../../shared/models/project.model";
 import {TimeEntry} from "../../../../../../shared/models/time-entry.model";
+import {
+  StandardProjectCategory,
+  STANDARD_PROJECT_CATEGORIES_INFO,
+} from "../../../../../../shared/models/standard-project-template.model";
 import {SuccessHandlerService} from "../../../../core/services/success-handler.service";
 import {
   ToastController,
@@ -47,6 +51,7 @@ import {NotesModalComponent} from "../notes-modal/notes-modal.component";
 export class WeekViewComponent implements OnInit, OnChanges {
   @Input() weekStart: Date = new Date();
   @Input() availableProjects: Project[] = [];
+  @Input() allProjects: Project[] = []; // Include archived projects for time entry display
   @Input() entries: TimeEntry[] = [];
   @Input() accountId: string = "";
   @Input() userId: string = "";
@@ -117,11 +122,8 @@ export class WeekViewComponent implements OnInit, OnChanges {
   }
 
   private initializeEmptyRows() {
-    if (this.availableProjects.length === 1) {
-      this.rows.push({projectId: this.availableProjects[0].id});
-    } else {
-      this.rows.push({projectId: null});
-    }
+    // Always start with no project selected - user must explicitly choose
+    this.rows.push({projectId: null});
   }
 
   private calculateDays() {
@@ -228,11 +230,9 @@ export class WeekViewComponent implements OnInit, OnChanges {
       return;
     }
 
+    // Always add a new row without pre-selecting a project
     this.rows.push({
-      projectId:
-        this.availableProjects.length === 1
-          ? this.availableProjects[0].id
-          : null,
+      projectId: null,
     });
     this.updateTotals();
   }
@@ -410,16 +410,37 @@ export class WeekViewComponent implements OnInit, OnChanges {
   }
 
   /**
+   * Check if a project is archived (no longer in active projects)
+   */
+  isProjectArchived(projectId: string): boolean {
+    const activeProjectIds = this.availableProjects.map((p) => p.id);
+    return !activeProjectIds.includes(projectId);
+  }
+
+  /**
+   * Get project details (including archived ones)
+   */
+  getProjectDetails(projectId: string): Project | undefined {
+    // First check active projects
+    let project = this.availableProjects.find((p) => p.id === projectId);
+    if (!project && this.allProjects) {
+      // If not found in active, check all projects (including archived)
+      project = this.allProjects.find((p) => p.id === projectId);
+    }
+    return project;
+  }
+
+  /**
    * Handle changes to available projects (e.g., when projects are archived)
    */
   private handleProjectChanges() {
     const activeProjectIds = this.availableProjects.map((p) => p.id);
     let hasOrphanedProjects = false;
 
-    // Check for rows with projects that are no longer available (archived)
+    // Check for rows with projects that are no longer active (archived)
     this.rows.forEach((row, index) => {
       if (row.projectId && !activeProjectIds.includes(row.projectId)) {
-        // Project was archived or removed
+        // Project was archived
         hasOrphanedProjects = true;
 
         // Check if this row has any time entries
@@ -429,9 +450,9 @@ export class WeekViewComponent implements OnInit, OnChanges {
         });
 
         if (hasEntries) {
-          this.showValidationError(
-            `Project "${row.projectId}" is no longer available but has time entries. Contact an administrator.`,
-          );
+          // Keep the row but mark it as archived
+          // The UI will show it with a special indicator
+          // Users can view existing entries but can't add new ones
         } else {
           // Remove the row if it has no time entries
           this.rows.splice(index, 1);
@@ -442,5 +463,50 @@ export class WeekViewComponent implements OnInit, OnChanges {
     if (hasOrphanedProjects) {
       this.updateTotals();
     }
+  }
+
+  // Category-related methods for enhanced project selection
+  get groupedProjects(): {[category: string]: Project[]} {
+    const grouped: {[category: string]: Project[]} = {};
+
+    this.availableProjects.forEach((project) => {
+      const category = project.standardCategory || "general";
+      if (!grouped[category]) {
+        grouped[category] = [];
+      }
+      grouped[category].push(project);
+    });
+
+    return grouped;
+  }
+
+  getCategoryKeys(): string[] {
+    return Object.keys(this.groupedProjects).sort();
+  }
+
+  getCategoryInfo(category: string) {
+    const categoryInfo =
+      STANDARD_PROJECT_CATEGORIES_INFO[category as StandardProjectCategory];
+    if (categoryInfo) {
+      return {
+        name: category,
+        description: categoryInfo.description,
+        icon: categoryInfo.icon,
+        color: categoryInfo.color,
+      };
+    }
+    return {
+      name: "General",
+      description: "General projects",
+      icon: "folder",
+      color: "#666666",
+    };
+  }
+
+  getProjectDisplayName(project: Project): string {
+    if (project.standardCategory) {
+      return `${project.name} (${project.standardCategory})`;
+    }
+    return project.name;
   }
 }

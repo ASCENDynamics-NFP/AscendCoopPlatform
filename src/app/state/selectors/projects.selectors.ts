@@ -21,7 +21,7 @@
 
 import {createFeatureSelector, createSelector} from "@ngrx/store";
 import {ProjectsState} from "../reducers/projects.reducer";
-import {Project} from "@shared/models/project.model";
+import {Project} from "../../../../shared/models/project.model";
 
 export const selectProjectsState =
   createFeatureSelector<ProjectsState>("projects");
@@ -35,6 +35,17 @@ export const selectProjectsByAccount = (accountId: string) =>
 export const selectActiveProjectsByAccount = (accountId: string) =>
   createSelector(selectProjectsByAccount(accountId), (projects: Project[]) =>
     projects.filter((p) => !p.archived),
+  );
+
+export const selectArchivedProjectsByAccount = (accountId: string) =>
+  createSelector(selectProjectsByAccount(accountId), (projects: Project[]) =>
+    projects.filter((p) => p.archived),
+  );
+
+export const selectAllProjectsByAccount = (accountId: string) =>
+  createSelector(
+    selectProjectsByAccount(accountId),
+    (projects: Project[]): Project[] => projects,
   );
 
 export const selectProjectsLoading = createSelector(

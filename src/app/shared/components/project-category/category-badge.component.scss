@@ -1,0 +1,47 @@
+.category-badge {
+  color: white !important;
+  font-weight: 500;
+  border-radius: 16px;
+
+  .category-badge-icon {
+    color: white;
+  }
+
+  .category-badge-label {
+    color: white;
+    font-size: inherit;
+  }
+
+  &.category-badge-small {
+    font-size: 0.7rem;
+    height: 20px;
+
+    .category-badge-icon {
+      font-size: 0.8rem;
+    }
+  }
+
+  &.category-badge-medium {
+    font-size: 0.8rem;
+    height: 24px;
+
+    .category-badge-icon {
+      font-size: 1rem;
+    }
+  }
+
+  &.category-badge-large {
+    font-size: 0.9rem;
+    height: 32px;
+    padding: 0 12px;
+
+    .category-badge-icon {
+      font-size: 1.2rem;
+    }
+  }
+}
+
+// Ensure high contrast
+.category-badge ion-label {
+  color: white !important;
+}

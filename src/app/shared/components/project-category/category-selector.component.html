@@ -1,0 +1,39 @@
+<ion-item>
+  <ion-label position="stacked">Project Category</ion-label>
+  <ion-select
+    [value]="selectedCategory"
+    (ionChange)="onCategorySelect($event.detail.value)"
+    [placeholder]="placeholder"
+    [disabled]="disabled"
+    interface="popover"
+    [class.required]="required"
+  >
+    <ion-select-option
+      *ngFor="let option of categoryOptions"
+      [value]="option.value"
+    >
+      <div class="category-option">
+        <ion-icon
+          [name]="option.icon"
+          [style.color]="option.color"
+          class="category-icon"
+        ></ion-icon>
+        <span class="category-label">{{ option.label }}</span>
+      </div>
+    </ion-select-option>
+  </ion-select>
+</ion-item>
+
+<!-- Category Preview (when category is selected) -->
+<div *ngIf="selectedCategory" class="category-preview">
+  <ion-chip
+    [style.background-color]="getCategoryInfo(selectedCategory).color"
+    class="category-chip"
+  >
+    <ion-icon [name]="getCategoryInfo(selectedCategory).icon"></ion-icon>
+    <ion-label>{{ selectedCategory }}</ion-label>
+  </ion-chip>
+  <p class="category-preview-description">
+    {{ getCategoryInfo(selectedCategory).description }}
+  </p>
+</div>

@@ -122,11 +122,15 @@ export class FaqFormComponent implements OnInit {
 
       const updatedAccount = {
         ...this.account,
-        groupDetails: {
+      } as any;
+
+      // Only update groupDetails for group accounts
+      if (this.account.type === "group") {
+        updatedAccount.groupDetails = {
           ...this.account.groupDetails,
           faqs: faqs,
-        },
-      } as any;
+        };
+      }
 
       this.store.dispatch(
         AccountActions.updateAccount({account: updatedAccount}),

@@ -1,0 +1,298 @@
+.template-preview-content {
+  --background: var(--ion-color-light-shade);
+}
+
+.preview-container {
+  padding: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.template-header {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 24px;
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  .template-icon-large {
+    margin-bottom: 16px;
+
+    ion-icon {
+      font-size: 4rem;
+    }
+  }
+
+  .template-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    color: var(--ion-color-dark);
+  }
+
+  .template-description {
+    font-size: 1rem;
+    color: var(--ion-color-medium);
+    margin: 0 0 16px 0;
+    line-height: 1.5;
+  }
+
+  .category-chip {
+    color: white;
+    font-weight: 600;
+  }
+}
+
+.template-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+
+  .detail-card {
+    margin: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    ion-card-header {
+      padding-bottom: 8px;
+
+      ion-card-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1rem;
+        color: var(--ion-color-dark);
+
+        ion-icon {
+          font-size: 1.2rem;
+          color: var(--ion-color-primary);
+        }
+      }
+    }
+
+    ion-card-content {
+      padding-top: 8px;
+
+      .complexity-badge {
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      .timeframe-text {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--ion-color-dark);
+      }
+
+      .group-types {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+    }
+  }
+}
+
+.tasks-card,
+.roles-card,
+.metrics-card {
+  margin: 0 0 16px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  ion-card-header {
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--ion-color-dark);
+
+      ion-icon {
+        font-size: 1.2rem;
+        color: var(--ion-color-primary);
+      }
+
+      ion-badge {
+        margin-left: auto;
+      }
+    }
+
+    ion-card-subtitle {
+      color: var(--ion-color-medium);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+  }
+}
+
+.tasks-list {
+  background: transparent;
+
+  .task-item {
+    --background: var(--ion-color-light-shade);
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--ion-color-light-tint);
+
+    ion-label {
+      h3 {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: var(--ion-color-dark);
+        margin: 0;
+      }
+
+      p {
+        font-size: 0.8rem;
+        color: var(--ion-color-medium);
+        margin: 2px 0 0 0;
+      }
+    }
+  }
+}
+
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+
+  .role-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: var(--ion-color-light-shade);
+    border-radius: 8px;
+    border: 1px solid var(--ion-color-light-tint);
+
+    ion-icon {
+      color: var(--ion-color-primary);
+      font-size: 1.2rem;
+    }
+
+    span {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--ion-color-dark);
+    }
+  }
+}
+
+.metrics-list {
+  background: transparent;
+
+  .metric-item {
+    --background: var(--ion-color-light-shade);
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--ion-color-light-tint);
+
+    ion-label {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--ion-color-dark);
+    }
+  }
+}
+
+.footer-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  gap: 12px;
+
+  ion-button {
+    flex: 1;
+    height: 44px;
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .template-preview-content {
+    --background: var(--ion-color-dark-shade);
+  }
+
+  .template-header {
+    background: var(--ion-color-dark-tint);
+
+    .template-name {
+      color: var(--ion-color-light);
+    }
+  }
+
+  .detail-card,
+  .tasks-card,
+  .roles-card,
+  .metrics-card {
+    background: var(--ion-color-dark-tint);
+
+    ion-card-header ion-card-title {
+      color: var(--ion-color-light);
+    }
+  }
+
+  .tasks-list .task-item {
+    --background: var(--ion-color-dark-shade);
+    border-color: var(--ion-color-medium);
+
+    ion-label h3 {
+      color: var(--ion-color-light);
+    }
+  }
+
+  .roles-grid .role-item {
+    background: var(--ion-color-dark-shade);
+    border-color: var(--ion-color-medium);
+
+    span {
+      color: var(--ion-color-light);
+    }
+  }
+
+  .metrics-list .metric-item {
+    --background: var(--ion-color-dark-shade);
+    border-color: var(--ion-color-medium);
+
+    ion-label {
+      color: var(--ion-color-light);
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .preview-container {
+    padding: 12px;
+  }
+
+  .template-details {
+    grid-template-columns: 1fr;
+  }
+
+  .roles-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-actions {
+    flex-direction: column;
+
+    ion-button {
+      width: 100%;
+    }
+  }
+}
+
+// Modal specific styles
+:host {
+  --width: 90vw;
+  --max-width: 800px;
+  --height: 90vh;
+  --max-height: 800px;
+}
+
+.title-icon {
+  margin-right: 8px;
+  color: var(--ion-color-primary);
+}

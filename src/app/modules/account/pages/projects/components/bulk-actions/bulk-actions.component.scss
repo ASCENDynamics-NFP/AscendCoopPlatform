@@ -1,0 +1,595 @@
+// ================================
+// COMPACT BULK ACTIONS DESIGN
+// ================================
+
+.bulk-actions-card {
+  margin: 8px 0;
+  border-radius: 8px;
+  background: var(--ion-color-light);
+  border: 1px solid var(--ion-color-medium-tint);
+  animation: slideInRight 0.3s ease-out;
+
+  @media (prefers-color-scheme: dark) {
+    // background: var(--ion-color-dark);
+    border-color: var(--ion-color-medium-shade);
+    color: white;
+  }
+
+  ion-card-content {
+    padding: 8px 12px;
+  }
+}
+
+.bulk-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+
+  .selection-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ion-color-primary);
+    font-weight: 500;
+    font-size: 0.9rem;
+
+    .selection-icon {
+      font-size: 1.1rem;
+    }
+
+    .selection-text {
+      color: var(--ion-color-dark);
+
+      @media (prefers-color-scheme: dark) {
+        color: var(--ion-color-dark);
+      }
+    }
+  }
+
+  .toolbar-actions {
+    display: flex;
+    gap: 4px;
+
+    .action-btn {
+      --border-radius: 6px;
+      height: 32px;
+      width: 32px;
+      --background: transparent;
+      --color: var(--ion-color-medium);
+
+      &:hover {
+        --background: var(--ion-color-primary-tint);
+        --color: var(--ion-color-primary);
+      }
+
+      &.archive-btn:hover {
+        --background: var(--ion-color-warning-tint);
+        --color: var(--ion-color-warning);
+      }
+
+      &.delete-btn:hover {
+        --background: var(--ion-color-danger-tint);
+        --color: var(--ion-color-danger);
+      }
+
+      &.select-all-btn:hover {
+        --background: var(--ion-color-success-tint);
+        --color: var(--ion-color-success);
+      }
+
+      &.clear-btn:hover {
+        --background: var(--ion-color-medium-tint);
+        --color: var(--ion-color-dark);
+      }
+
+      ion-icon {
+        font-size: 1rem;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 8px;
+
+    .toolbar-actions {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
+
+.category-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ion-color-medium-tint);
+
+  @media (prefers-color-scheme: dark) {
+    border-color: var(--ion-color-medium-shade);
+  }
+
+  .category-select {
+    flex: 1;
+    --placeholder-color: var(--ion-color-medium);
+    --color: var(--ion-color-dark);
+    border: 1px solid var(--ion-color-medium-tint);
+    border-radius: 6px;
+    padding: 0 8px;
+    height: 32px;
+    font-size: 0.8rem;
+
+    @media (prefers-color-scheme: dark) {
+      --color: var(--ion-color-light);
+      border-color: var(--ion-color-medium-shade);
+    }
+  }
+
+  .apply-btn {
+    --border-radius: 6px;
+    height: 32px;
+    font-size: 0.8rem;
+    --background: var(--ion-color-primary);
+    --color: white;
+
+    &:disabled {
+      --background: var(--ion-color-medium-tint);
+      --color: var(--ion-color-medium);
+    }
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: stretch;
+
+    .apply-btn {
+      width: 100%;
+    }
+  }
+}
+
+// Animation
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.bulk-actions-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--projects-border);
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .selection-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    @media (max-width: 768px) {
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .selection-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(
+        135deg,
+        var(--projects-primary),
+        var(--projects-primary-light)
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(232, 113, 33, 0.3);
+
+      ion-icon {
+        font-size: 1.5rem;
+        color: white;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+      }
+    }
+
+    .selection-details {
+      .selection-count {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--projects-text);
+        margin-bottom: 4px;
+      }
+
+      .selection-label {
+        font-size: 0.95rem;
+        color: var(--projects-text-light);
+      }
+    }
+  }
+
+  .clear-selection-btn {
+    --background: transparent;
+    --color: var(--projects-text-light);
+    --border-color: var(--projects-border);
+    --border-radius: 8px;
+    transition: var(--projects-transition);
+
+    &:hover {
+      --background: var(--projects-danger);
+      --color: white;
+      --border-color: var(--projects-danger);
+    }
+  }
+}
+
+.selection-actions {
+  .action-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .action-card {
+      background: var(--projects-card-bg);
+      border: 2px solid var(--projects-border);
+      border-radius: 10px;
+      padding: 20px;
+      cursor: pointer;
+      transition: var(--projects-transition);
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(232, 113, 33, 0.02) 0%,
+          transparent 50%
+        );
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+      }
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--projects-shadow-hover);
+        border-color: var(--projects-primary-light);
+
+        &::before {
+          opacity: 1;
+        }
+
+        .action-icon {
+          transform: scale(1.1) rotate(5deg);
+        }
+      }
+
+      &.archive-action {
+        .action-icon {
+          background: linear-gradient(135deg, var(--projects-warning), #ffb347);
+        }
+
+        &:hover {
+          border-color: var(--projects-warning);
+        }
+      }
+
+      &.delete-action {
+        .action-icon {
+          background: linear-gradient(135deg, var(--projects-danger), #ff6b7a);
+        }
+
+        &:hover {
+          border-color: var(--projects-danger);
+        }
+      }
+
+      &.category-action {
+        .action-icon {
+          background: linear-gradient(135deg, var(--projects-success), #4ecdc4);
+        }
+
+        &:hover {
+          border-color: var(--projects-success);
+        }
+      }
+
+      .action-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(
+          135deg,
+          var(--projects-primary),
+          var(--projects-primary-light)
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        transition: var(--projects-transition);
+        box-shadow: 0 4px 12px rgba(232, 113, 33, 0.2);
+
+        ion-icon {
+          font-size: 1.8rem;
+          color: white;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+      }
+
+      .action-content {
+        position: relative;
+        z-index: 1;
+
+        .action-title {
+          font-size: 1.2rem;
+          font-weight: 600;
+          color: var(--projects-text);
+          margin-bottom: 8px;
+        }
+
+        .action-description {
+          font-size: 0.9rem;
+          color: var(--projects-text-light);
+          line-height: 1.4;
+        }
+      }
+    }
+  }
+}
+
+.bulk-category-selector {
+  background: var(--projects-card-bg);
+  border: 2px solid var(--projects-border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: var(--projects-transition);
+
+  &:hover {
+    border-color: var(--projects-primary-light);
+    box-shadow: var(--projects-shadow);
+  }
+
+  .category-selector-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+
+    .category-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--projects-success), #4ecdc4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+      box-shadow: 0 2px 8px rgba(45, 211, 111, 0.2);
+
+      ion-icon {
+        font-size: 1rem;
+        color: white;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+      }
+    }
+
+    .category-label {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--projects-text);
+    }
+  }
+
+  ion-select {
+    --placeholder-color: var(--projects-text-light);
+    --color: var(--projects-text);
+    border: 2px solid var(--projects-border);
+    border-radius: 8px;
+    padding: 12px;
+    transition: var(--projects-transition);
+
+    &:hover {
+      border-color: var(--projects-primary-light);
+    }
+  }
+
+  .apply-category-btn {
+    margin-top: 16px;
+    width: 100%;
+    --background: var(--projects-success);
+    --color: white;
+    --border-radius: 8px;
+    font-weight: 600;
+    transition: var(--projects-transition);
+
+    &:hover {
+      --background: #28a745;
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.quick-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  ion-button {
+    --border-radius: 10px;
+    --padding-start: 20px;
+    --padding-end: 20px;
+    font-weight: 600;
+    transition: var(--projects-transition);
+
+    &.select-all-btn {
+      --background: var(--projects-primary);
+      --color: white;
+
+      &:hover {
+        --background: var(--projects-primary-light);
+        transform: translateY(-2px);
+      }
+    }
+
+    &.deselect-all-btn {
+      --background: transparent;
+      --color: var(--projects-text-light);
+      --border-color: var(--projects-border);
+
+      &:hover {
+        --background: var(--projects-border);
+        --color: var(--projects-text);
+        transform: translateY(-2px);
+      }
+    }
+  }
+}
+
+// ================================
+// RESPONSIVE DESIGN
+// ================================
+@media (max-width: 480px) {
+  .bulk-actions-card {
+    margin: 12px 0;
+
+    ion-card-content {
+      padding: 16px;
+    }
+  }
+
+  .bulk-actions-toolbar {
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+  }
+
+  .selection-actions .action-cards {
+    margin-bottom: 20px;
+
+    .action-card {
+      padding: 16px;
+
+      .action-icon {
+        width: 50px;
+        height: 50px;
+        margin-bottom: 12px;
+
+        ion-icon {
+          font-size: 1.5rem;
+        }
+      }
+
+      .action-content {
+        .action-title {
+          font-size: 1.1rem;
+        }
+
+        .action-description {
+          font-size: 0.85rem;
+        }
+      }
+    }
+  }
+
+  .bulk-category-selector {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+}
+
+// ================================
+// ANIMATIONS
+// ================================
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.selection-actions .action-card:hover .action-icon {
+  animation: pulse 1s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bulk-actions-card {
+    animation: none;
+  }
+
+  .selection-actions .action-card {
+    transition: none;
+
+    &:hover {
+      transform: none;
+      animation: none;
+    }
+
+    .action-icon {
+      transition: none;
+      animation: none !important;
+
+      &:hover {
+        transform: none;
+      }
+    }
+  }
+
+  .quick-actions ion-button {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}

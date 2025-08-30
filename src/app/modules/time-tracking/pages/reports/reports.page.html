@@ -71,6 +71,27 @@
           </ion-col>
         </ion-row>
 
+        <!-- Category Filtering (available for all report types) -->
+        <ion-row>
+          <ion-col size="12" size-md="6">
+            <ion-item>
+              <ion-label position="stacked">Filter by Category</ion-label>
+              <ion-select
+                [(ngModel)]="selectedCategoryId"
+                (ionChange)="onCategorySelectionChange($event.detail.value)"
+              >
+                <ion-select-option value="">All Categories</ion-select-option>
+                <ion-select-option
+                  *ngFor="let category of availableCategories"
+                  [value]="category"
+                >
+                  {{category}}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+
         <!-- Custom Date Range -->
         <ion-row *ngIf="selectedReportType === 'custom'">
           <ion-col size="12" size-md="6">
@@ -240,6 +261,32 @@
         </ion-col>
       </ion-row>
 
+      <!-- Category Distribution Chart (shown for category reports or when category data exists) -->
+      <ion-row
+        *ngIf="selectedReportType === 'category' || categoryChartData.datasets.length > 0"
+      >
+        <ion-col size="12" size-lg="6">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Time Distribution by Category</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="chart-container">
+                <canvas
+                  baseChart
+                  [data]="categoryChartData"
+                  [options]="categoryChartOptions"
+                  [type]="categoryChartType"
+                  width="600"
+                  height="300"
+                >
+                </canvas>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
       <!-- Project Breakdown -->
       <ion-card
         *ngIf="currentAnalytics.entriesByProject && (currentAnalytics.entriesByProject | keyvalue).length > 0"
@@ -293,6 +340,42 @@
                   >{{user.value.approvedHours | number:'1.1-1'}}</span
                 >
                 <span class="stat-label">Approved Hours</span>
+              </div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Category Breakdown (shown for category reports) -->
+      <ion-card
+        *ngIf="selectedReportType === 'category' && categoryChartData.datasets.length > 0"
+      >
+        <ion-card-header>
+          <ion-card-title>Category Breakdown</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="category-breakdown">
+            <div
+              *ngFor="let category of categoryChartData.labels; index as i"
+              class="category-breakdown-item"
+            >
+              <div class="category-header">
+                <div class="category-info">
+                  <div
+                    class="category-color-indicator"
+                    [style.background-color]="getCategoryColor(i)"
+                  ></div>
+                  <h3>{{category}}</h3>
+                  <span class="category-hours">
+                    {{getCategoryHours(i) | number:'1.1-1'}} hours
+                  </span>
+                </div>
+              </div>
+              <div class="category-stats">
+                <span class="category-percentage">
+                  {{(getCategoryHours(i) / getTotalCategoryHours() * 100) |
+                  number:'1.1-1'}}% of total time
+                </span>
               </div>
             </div>
           </div>

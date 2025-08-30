@@ -1,0 +1,339 @@
+// ================================
+// COMPONENT VARIABLES - CONSISTENT WITH REGISTRATION
+// ================================
+:root {
+  --projects-primary: #e87121;
+  --projects-primary-light: #f39c4c;
+  --projects-success: #2dd36f;
+  --projects-radius: 12px;
+  --projects-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Light mode colors
+:root {
+  --projects-border: #e1e5e9;
+  --projects-text: #3c4043;
+  --projects-text-light: #5f6368;
+  --projects-bg: #f8f9fa;
+  --projects-card-bg: #ffffff;
+  --projects-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --projects-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+// Dark mode colors
+@media (prefers-color-scheme: dark) {
+  :root {
+    --projects-border: #3c4043;
+    --projects-text: #e8eaed;
+    --projects-text-light: #9aa0a6;
+    --projects-bg: #202124;
+    --projects-card-bg: #303134;
+    --projects-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --projects-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.4);
+  }
+}
+
+.dark {
+  --projects-border: #3c4043;
+  --projects-text: #e8eaed;
+  --projects-text-light: #9aa0a6;
+  --projects-bg: #202124;
+  --projects-card-bg: #303134;
+  --projects-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --projects-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.category-suggestions {
+  background: var(--projects-card-bg);
+  border: 2px solid var(--projects-border);
+  border-radius: var(--projects-radius);
+  margin: 20px 0;
+  overflow: hidden;
+  position: relative;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--projects-shadow);
+  transition: var(--projects-transition);
+  animation: slideInUp 0.6s ease-out;
+
+  // Subtle glow effect
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(232, 113, 33, 0.05) 0%,
+      transparent 50%,
+      rgba(243, 156, 76, 0.05) 100%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  &:hover {
+    box-shadow: var(--projects-shadow-hover);
+    border-color: var(--projects-primary-light);
+
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  .suggestions-header {
+    display: flex;
+    align-items: center;
+    padding: 20px 24px;
+    background: linear-gradient(
+      135deg,
+      var(--projects-primary),
+      var(--projects-primary-light)
+    );
+    font-weight: 600;
+    color: white;
+    position: relative;
+    z-index: 1;
+
+    ion-icon {
+      margin-right: 12px;
+      font-size: 1.2rem;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+    }
+
+    span {
+      flex: 1;
+      font-size: 1.1rem;
+    }
+
+    ion-button {
+      --color: white;
+      --background: rgba(255, 255, 255, 0.1);
+      --border-radius: 8px;
+      margin: 0;
+      backdrop-filter: blur(10px);
+
+      &:hover {
+        --background: rgba(255, 255, 255, 0.2);
+      }
+    }
+  }
+
+  .suggestions-list {
+    padding: 16px;
+    position: relative;
+    z-index: 1;
+
+    .suggestion-item {
+      padding: 20px;
+      margin: 12px 0;
+      background: var(--projects-card-bg);
+      border: 1px solid var(--projects-border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: var(--projects-transition);
+      position: relative;
+      overflow: hidden;
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(232, 113, 33, 0.02) 0%,
+          transparent 50%
+        );
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+      }
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--projects-shadow-hover);
+        border-color: var(--projects-primary-light);
+
+        &::before {
+          opacity: 1;
+        }
+      }
+
+      .suggestion-content {
+        position: relative;
+        z-index: 1;
+
+        .suggestion-category {
+          display: flex;
+          align-items: center;
+          margin-bottom: 12px;
+
+          .category-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(
+              135deg,
+              var(--projects-primary),
+              var(--projects-primary-light)
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            box-shadow: 0 4px 12px rgba(232, 113, 33, 0.2);
+            transition: var(--projects-transition);
+
+            ion-icon {
+              font-size: 1.2rem;
+              color: white;
+              filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+            }
+          }
+
+          .category-name {
+            flex: 1;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--projects-text);
+          }
+
+          .confidence-badge {
+            font-size: 0.8rem;
+            --padding-start: 8px;
+            --padding-end: 8px;
+            --background: var(--projects-success);
+            --color: white;
+            --border-radius: 12px;
+          }
+        }
+
+        .suggestion-reason {
+          margin: 0 0 16px 0;
+          font-size: 0.95rem;
+          color: var(--projects-text-light);
+          line-height: 1.5;
+        }
+
+        .suggestion-actions {
+          display: flex;
+          gap: 12px;
+          justify-content: flex-end;
+
+          ion-button {
+            --border-radius: 8px;
+
+            &.use-suggestion {
+              --background: var(--projects-primary);
+              --color: white;
+
+              &:hover {
+                --background: var(--projects-primary-light);
+              }
+            }
+
+            &.dismiss-suggestion {
+              --background: transparent;
+              --color: var(--projects-text-light);
+              --border-color: var(--projects-border);
+
+              &:hover {
+                --background: var(--projects-border);
+                --color: var(--projects-text);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// ================================
+// ANIMATIONS
+// ================================
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ================================
+// RESPONSIVE DESIGN
+// ================================
+@media (max-width: 768px) {
+  .category-suggestions {
+    margin: 16px 0;
+
+    .suggestions-header {
+      padding: 16px 20px;
+
+      span {
+        font-size: 1rem;
+      }
+    }
+
+    .suggestions-list {
+      padding: 12px;
+
+      .suggestion-item {
+        padding: 16px;
+
+        .suggestion-content {
+          .suggestion-category {
+            .category-icon {
+              width: 36px;
+              height: 36px;
+              margin-right: 12px;
+
+              ion-icon {
+                font-size: 1.1rem;
+              }
+            }
+
+            .category-name {
+              font-size: 1.1rem;
+            }
+          }
+
+          .suggestion-reason {
+            font-size: 0.9rem;
+          }
+
+          .suggestion-actions {
+            flex-direction: column;
+            gap: 8px;
+
+            ion-button {
+              margin: 0;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .category-suggestions {
+    animation: none;
+  }
+
+  .category-suggestions .suggestion-item {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}

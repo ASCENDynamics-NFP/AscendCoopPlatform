@@ -1,0 +1,101 @@
+<!--
+/***********************************************************************************************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+*
+* This file is part of Nonprofit Social Networking Platform.
+*
+* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+
+* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+
+* You should have received a copy of the GNU Affero General Public License
+* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+***********************************************************************************************/
+-->
+
+<ion-card *ngIf="showBulkActions" class="bulk-actions-card">
+  <ion-card-content>
+    <!-- Compact Toolbar -->
+    <div class="bulk-toolbar">
+      <div class="selection-info">
+        <ion-icon name="checkmark-circle" class="selection-icon"></ion-icon>
+        <span class="selection-text">{{ selectedCount }} selected</span>
+      </div>
+
+      <div class="toolbar-actions">
+        <ion-button
+          fill="clear"
+          size="small"
+          (click)="onArchiveProjects(); $event.stopPropagation()"
+          class="action-btn archive-btn"
+          title="Archive Projects"
+        >
+          <ion-icon name="archive" slot="icon-only"></ion-icon>
+        </ion-button>
+
+        <!-- <ion-button
+          fill="clear"
+          size="small"
+          (click)="onDeleteProjects(); $event.stopPropagation()"
+          class="action-btn delete-btn"
+          title="Delete Projects"
+        >
+          <ion-icon name="trash" slot="icon-only"></ion-icon>
+        </ion-button> -->
+
+        <ion-button
+          fill="clear"
+          size="small"
+          (click)="onSelectAll(); $event.stopPropagation()"
+          class="action-btn select-all-btn"
+          title="Select All Projects"
+        >
+          <ion-icon name="checkmark-done-circle" slot="icon-only"></ion-icon>
+        </ion-button>
+
+        <ion-button
+          fill="clear"
+          size="small"
+          (click)="onClearSelection(); $event.stopPropagation()"
+          class="action-btn clear-btn"
+          title="Clear Selection"
+        >
+          <ion-icon name="close" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Category Selector (shown when needed) -->
+    <div *ngIf="showCategorySelector" class="category-selector">
+      <ion-select
+        [(ngModel)]="selectedNewCategory"
+        placeholder="Choose category"
+        interface="popover"
+        class="category-select"
+      >
+        <ion-select-option
+          *ngFor="let category of categoryKeys"
+          [value]="category"
+        >
+          {{ category }}
+        </ion-select-option>
+      </ion-select>
+
+      <ion-button
+        size="small"
+        (click)="onApplyBulkCategory()"
+        [disabled]="!selectedNewCategory"
+        class="apply-btn"
+      >
+        Apply
+      </ion-button>
+    </div>
+  </ion-card-content>
+</ion-card>

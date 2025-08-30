@@ -57,9 +57,9 @@
           </ion-item>
 
           <ion-item>
-            <ion-label position="stacked">{{
-              "forms.founding_date" | translate
-            }}</ion-label>
+            <ion-label position="stacked"
+              >{{ "forms.founding_date" | translate }} *</ion-label
+            >
             <ion-datetime
               formControlName="foundingDate"
               presentation="date"
@@ -75,6 +75,15 @@
                 {{ getFormattedFoundingDate() || "Select Date" }}
               </ion-button>
             </ion-datetime>
+            <ion-note
+              slot="error"
+              *ngIf="
+                profileForm.get('groupDetails.foundingDate')?.invalid &&
+                profileForm.get('groupDetails.foundingDate')?.touched
+              "
+            >
+              Founding date is required
+            </ion-note>
           </ion-item>
 
           <ion-item>

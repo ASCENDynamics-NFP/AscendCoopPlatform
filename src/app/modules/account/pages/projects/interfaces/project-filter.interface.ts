@@ -17,45 +17,21 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, Input} from "@angular/core";
-import {Account, WebLink} from "@shared/models/account.model";
 
-@Component({
-  selector: "app-profile",
-  templateUrl: "./profile.component.html",
-  styleUrls: ["./profile.component.scss"],
-})
-export class ProfileComponent {
-  @Input() account: Partial<Account> = {
-    type: "user",
-    description: "",
-    webLinks: [],
-  };
+import {StandardProjectCategory} from "../../../../../../../shared/models/standard-project-template.model";
 
-  constructor() {}
-
-  get getSectionTitle() {
-    if (this.account.type === "user") {
-      return "Profile";
-    }
-    const groupType = this.account?.groupDetails?.groupType || "Group";
-    return `Organization (${groupType})`;
-  }
-
-  getWebLinks(category: string): WebLink[] {
-    if (!this.account || !this.account.webLinks) {
-      return [];
-    }
-    return this.account.webLinks.filter((link) => link.category === category);
-  }
-
-  getOtherWebLinks(): WebLink[] {
-    if (!this.account || !this.account.webLinks) {
-      return [];
-    }
-    return this.account.webLinks.filter(
-      (link) =>
-        !["Donation", "Social Media", "Website"].includes(link.category),
-    );
-  }
+export interface ProjectFilter {
+  searchTerm: string;
+  selectedCategory: StandardProjectCategory | "all";
+  sortBy: "name" | "category" | "created";
+  sortDirection: "asc" | "desc";
+  showGrouped: boolean;
 }
+
+export const DEFAULT_PROJECT_FILTER: ProjectFilter = {
+  searchTerm: "",
+  selectedCategory: "all",
+  sortBy: "name",
+  sortDirection: "asc",
+  showGrouped: false,
+};

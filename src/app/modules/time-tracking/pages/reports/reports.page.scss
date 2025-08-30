@@ -341,3 +341,76 @@
     break-inside: avoid;
   }
 }
+
+// Category Breakdown Styles
+.category-breakdown {
+  .category-breakdown-item {
+    padding: 1rem;
+    border-radius: 8px;
+    background: var(--ion-color-light);
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .category-header {
+      .category-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+
+        .category-color-indicator {
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+
+        h3 {
+          margin: 0;
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: var(--ion-color-dark);
+          flex: 1;
+        }
+
+        .category-hours {
+          font-size: 1.1rem;
+          font-weight: 500;
+          color: var(--ion-color-primary);
+        }
+      }
+    }
+
+    .category-stats {
+      margin-left: 2rem;
+
+      .category-percentage {
+        font-size: 0.9rem;
+        color: var(--ion-color-medium);
+        font-style: italic;
+      }
+    }
+  }
+}
+
+// Dark mode support for category breakdown
+@media (prefers-color-scheme: dark) {
+  .category-breakdown {
+    .category-breakdown-item {
+      background: var(--ion-color-dark-shade);
+
+      .category-header .category-info h3 {
+        color: var(--ion-color-light);
+      }
+
+      &:hover {
+        background: var(--ion-color-dark-tint);
+      }
+    }
+  }
+}

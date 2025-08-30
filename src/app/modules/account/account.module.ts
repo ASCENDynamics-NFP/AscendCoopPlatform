@@ -59,6 +59,7 @@ import {RoleManagementPage} from "./pages/role-management/role-management.page";
 import {RoleHierarchyPage} from "./pages/role-hierarchy/role-hierarchy.page";
 import {ProjectsPage} from "./pages/projects/projects.page";
 import {SafeUrlPipe} from "../../shared/pipes/safe-url.pipe";
+import {CategorySelectorComponent} from "../../shared/components/project-category/category-selector.component";
 import {GroupCalendarComponent} from "./pages/details/components/group-calendar/group-calendar.component";
 import {StandardRoleSelectorComponent} from "./components/standard-role-selector/standard-role-selector.component";
 import {FaqSectionComponent} from "./pages/details/components/faq-section/faq-section.component";
@@ -66,6 +67,11 @@ import {FaqFormComponent} from "./pages/edit/components/faq-form/faq-form.compon
 import {AdminDashboardPage} from "./pages/admin-dashboard/admin-dashboard.page";
 import {AdminGroupProfileFormComponent} from "./pages/admin-dashboard/components/admin-group-profile-form/admin-group-profile-form.component";
 import {InviteMemberModalComponent} from "./components/invite-member-modal/invite-member-modal.component";
+import {SmartCategorySuggestionsComponent} from "./pages/projects/components/smart-category-suggestions/smart-category-suggestions.component";
+import {ProjectFiltersComponent} from "./pages/projects/components/project-filters/project-filters.component";
+import {BulkActionsComponent} from "./pages/projects/components/bulk-actions/bulk-actions.component";
+import {ProjectCreationComponent} from "./pages/projects/components/project-creation/project-creation.component";
+import {TemplatePreviewModalComponent} from "./pages/projects/components/template-preview-modal/template-preview-modal.component";
 
 @NgModule({
   declarations: [
@@ -104,7 +110,13 @@ import {InviteMemberModalComponent} from "./components/invite-member-modal/invit
     FaqSectionComponent,
     FaqFormComponent,
     InviteMemberModalComponent,
+    SmartCategorySuggestionsComponent,
+    ProjectFiltersComponent,
+    BulkActionsComponent,
+    ProjectCreationComponent,
+    TemplatePreviewModalComponent,
     SafeUrlPipe,
+    CategorySelectorComponent,
   ],
   imports: [
     AccountRoutingModule,

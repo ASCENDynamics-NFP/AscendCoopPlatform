@@ -31,7 +31,10 @@ import * as ProjectsActions from "../../../../state/actions/projects.actions";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectEntries} from "../../../../state/selectors/time-tracking.selectors";
-import {selectActiveProjectsByAccount} from "../../../../state/selectors/projects.selectors";
+import {
+  selectActiveProjectsByAccount,
+  selectAllProjectsByAccount,
+} from "../../../../state/selectors/projects.selectors";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import {selectRelatedAccountsByAccountId} from "../../../../state/selectors/account.selectors";
 import {TimeEntry} from "../../../../../../shared/models/time-entry.model";
@@ -48,6 +51,8 @@ export class TimesheetPage implements OnInit, OnDestroy {
   entries$!: Observable<TimeEntry[]>;
   account$!: Observable<Account | undefined>;
   availableProjects: Project[] = [];
+  allProjects: Project[] = []; // Add this property
+  allProjectsForValidation: Project[] = []; // New property for validation including archived
   entries: TimeEntry[] = [];
   initialRows: {projectId: string}[] = [];
   private subscriptions = new Subscription();
@@ -95,10 +100,20 @@ export class TimesheetPage implements OnInit, OnDestroy {
       selectActiveProjectsByAccount(this.accountId),
     );
 
-    const projSub = this.projects$.subscribe((projects) => {
-      this.availableProjects = projects;
+    // Subscribe to active projects for dropdown selection
+    const activeProjectsSub = this.projects$.subscribe((projects) => {
+      this.availableProjects = projects; // Only active projects for selection
     });
-    this.subscriptions.add(projSub);
+    this.subscriptions.add(activeProjectsSub);
+
+    // Get all projects (including archived) for validation and time entry display
+    const allProjectsSub = this.store
+      .select(selectAllProjectsByAccount(this.accountId))
+      .subscribe((projects) => {
+        this.allProjectsForValidation = projects; // All projects for validation
+        this.allProjects = projects;
+      });
+    this.subscriptions.add(allProjectsSub);
 
     const authSub = this.store
       .select(selectAuthUser)
@@ -326,15 +341,56 @@ export class TimesheetPage implements OnInit, OnDestroy {
       return false; // Can't submit if no entries exist
     }
 
+    // Check if any entries are for archived projects
+    if (this.hasArchivedProjectEntries()) {
+      return false; // Can't submit if any entries are for archived projects
+    }
+
     const status = this.getCurrentWeekStatus();
     // Can submit if draft, rejected, or mixed (but not pending or approved)
     return status === "draft" || status === "rejected" || status === "mixed";
   }
 
   /**
+   * Check if there are any time entries for archived projects
+   */
+  hasArchivedProjectEntries(): boolean {
+    return this.entries.some((entry) => {
+      const project = this.allProjectsForValidation.find(
+        (p) => p.id === entry.projectId,
+      );
+      return project?.archived === true;
+    });
+  }
+
+  /**
+   * Get list of archived projects that have time entries
+   */
+  getArchivedProjectsWithEntries(): Project[] {
+    const archivedProjectIds = new Set(
+      this.entries
+        .filter((entry) => {
+          const project = this.allProjectsForValidation.find(
+            (p) => p.id === entry.projectId,
+          );
+          return project?.archived === true;
+        })
+        .map((entry) => entry.projectId),
+    );
+
+    return this.allProjectsForValidation.filter(
+      (project) => project.archived && archivedProjectIds.has(project.id),
+    );
+  }
+
+  /**
    * Get the appropriate submit button text based on current status
    */
   getSubmitButtonText(): string {
+    if (this.hasArchivedProjectEntries()) {
+      return "Cannot Submit (Archived Projects)";
+    }
+
     const status = this.getCurrentWeekStatus();
     switch (status) {
       case "mixed":
@@ -346,9 +402,35 @@ export class TimesheetPage implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Get warning message for archived projects
+   */
+  getArchivedProjectWarning(): string {
+    if (!this.hasArchivedProjectEntries()) {
+      return "";
+    }
+
+    const archivedProjects = this.getArchivedProjectsWithEntries();
+    const projectNames = archivedProjects.map((p) => p.name);
+
+    return `Warning: Time entries exist for archived ${projectNames.length === 1 ? "project" : "projects"}: ${projectNames.join(", ")}. These entries cannot be submitted.`;
+  }
+
   submitForApproval() {
     if (this.entries.length === 0) {
       this.showToast("No time entries to submit", "warning");
+      return;
+    }
+
+    // Check for archived project entries specifically
+    if (this.hasArchivedProjectEntries()) {
+      const archivedProjects = this.getArchivedProjectsWithEntries();
+      const projectNames = archivedProjects.map((p) => p.name);
+
+      this.showToast(
+        `Cannot submit timesheet: ${projectNames.join(", ")} ${projectNames.length === 1 ? "is" : "are"} archived. Please remove time entries for archived projects before submitting.`,
+        "danger",
+      );
       return;
     }
 
@@ -387,7 +469,7 @@ export class TimesheetPage implements OnInit, OnDestroy {
         // Update all entries with user name, project name, and status
         const pendingEntries = this.entries.map((entry) => {
           // Find the project for this entry to get the project name
-          const project = this.availableProjects.find(
+          const project = this.allProjectsForValidation.find(
             (p) => p.id === entry.projectId,
           );
           const projectName = project?.name || "Unknown Project";

@@ -90,7 +90,25 @@
         <tbody>
           <tr *ngFor="let row of rows; let i = index">
             <td class="project-cell">
-              <ng-container *ngIf="availableProjects.length > 1; else single">
+              <!-- Show archived project name with indicator if it has time entries -->
+              <div
+                *ngIf="row.projectId && isProjectArchived(row.projectId)"
+                class="archived-project-display"
+              >
+                <ion-icon
+                  name="archive"
+                  color="medium"
+                  class="archived-icon"
+                ></ion-icon>
+                <span class="archived-project-name">{{
+                  getProjectDetails(row.projectId)?.name || "Archived Project"
+                }}</span>
+                <ion-badge color="medium" size="small">Archived</ion-badge>
+              </div>
+              <!-- Regular project selection for active projects -->
+              <ng-container
+                *ngIf="!row.projectId || !isProjectArchived(row.projectId)"
+              >
                 <ion-select
                   [value]="row.projectId"
                   (ionChange)="addProjectById(i, $event)"
@@ -123,11 +141,6 @@
                   </ng-container>
                 </ion-select>
               </ng-container>
-              <ng-template #single>
-                <span class="single-project">{{
-                  availableProjects.length > 0 ? availableProjects[0].name : ""
-                }}</span>
-              </ng-template>
               <ion-button
                 *ngIf="!readonly"
                 (click)="removeRow(i)"
@@ -147,8 +160,15 @@
                     row.projectId ? getEntry(row.projectId, day)?.hours : ''
                   "
                   (ionChange)="onHoursChange(i, day, $event)"
-                  [disabled]="!row.projectId || readonly"
-                  [readonly]="readonly"
+                  [disabled]="
+                    !row.projectId ||
+                    readonly ||
+                    (row.projectId && isProjectArchived(row.projectId))
+                  "
+                  [readonly]="
+                    readonly ||
+                    (row.projectId && isProjectArchived(row.projectId))
+                  "
                   placeholder="0"
                   min="0"
                   max="24"
@@ -203,8 +223,24 @@
         <ion-card-header>
           <div class="project-header">
             <div class="project-selector">
+              <!-- Show archived project name with indicator if it has time entries -->
+              <div
+                *ngIf="row.projectId && isProjectArchived(row.projectId)"
+                class="archived-project-display"
+              >
+                <ion-icon
+                  name="archive"
+                  color="medium"
+                  class="archived-icon"
+                ></ion-icon>
+                <span class="archived-project-name">{{
+                  getProjectDetails(row.projectId)?.name || "Archived Project"
+                }}</span>
+                <ion-badge color="medium" size="small">Archived</ion-badge>
+              </div>
+              <!-- Regular project selection for active projects -->
               <ng-container
-                *ngIf="availableProjects.length > 1; else singleMobile"
+                *ngIf="!row.projectId || !isProjectArchived(row.projectId)"
               >
                 <ion-select
                   [value]="row.projectId"
@@ -217,24 +253,28 @@
                   <ion-select-option value="" translate
                     >common.select</ion-select-option
                   >
-                  <ion-select-option
-                    *ngFor="let proj of availableProjects"
-                    [value]="proj.id"
-                    [disabled]="isSelected(proj.id, i)"
-                  >
-                    {{ proj.name }}
-                  </ion-select-option>
+                  <!-- Group projects by category -->
+                  <ng-container *ngFor="let categoryKey of getCategoryKeys()">
+                    <ion-select-option disabled class="category-header">
+                      <div class="category-header-content">
+                        <ion-icon
+                          [name]="getCategoryInfo(categoryKey).icon"
+                          [style.color]="getCategoryInfo(categoryKey).color"
+                        ></ion-icon>
+                        {{ getCategoryInfo(categoryKey).name }}
+                      </div>
+                    </ion-select-option>
+                    <ion-select-option
+                      *ngFor="let proj of groupedProjects[categoryKey]"
+                      [value]="proj.id"
+                      [disabled]="isSelected(proj.id, i)"
+                      class="project-option"
+                    >
+                      {{ proj.name }}
+                    </ion-select-option>
+                  </ng-container>
                 </ion-select>
               </ng-container>
-              <ng-template #singleMobile>
-                <h3>
-                  {{
-                    availableProjects.length > 0
-                      ? availableProjects[0].name
-                      : "No Project"
-                  }}
-                </h3>
-              </ng-template>
             </div>
             <ion-button
               *ngIf="!readonly"
@@ -268,8 +308,15 @@
                       row.projectId ? getEntry(row.projectId, day)?.hours : ''
                     "
                     (ionChange)="onHoursChange(i, day, $event)"
-                    [disabled]="!row.projectId || readonly"
-                    [readonly]="readonly"
+                    [disabled]="
+                      !row.projectId ||
+                      readonly ||
+                      (row.projectId && isProjectArchived(row.projectId))
+                    "
+                    [readonly]="
+                      readonly ||
+                      (row.projectId && isProjectArchived(row.projectId))
+                    "
                     placeholder="0"
                     min="0"
                     max="24"

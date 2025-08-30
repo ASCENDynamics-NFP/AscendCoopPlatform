@@ -353,5 +353,27 @@ service cloud.firestore {
       // Allow other users to read public keys for encryption purposes
       allow read: if request.auth != null;
     }
+
+    // Notifications collection rules
+    match /notifications/{notificationId} {
+      // Allow authenticated users to create notifications if they are the sender
+      allow create: if request.auth != null && 
+                    request.auth.uid == request.resource.data.fromUserId;
+      
+      // Allow users to read their own notifications (recipient) or notifications they sent
+      allow read: if request.auth != null && 
+                  (request.auth.uid == resource.data.userId ||
+                   request.auth.uid == resource.data.fromUserId);
+      
+      // Allow users to update their own notifications (recipient) or notifications they sent
+      allow update: if request.auth != null && 
+                    (request.auth.uid == resource.data.userId ||
+                     request.auth.uid == resource.data.fromUserId);
+      
+      // Allow users to delete their own notifications (recipient) or notifications they sent
+      allow delete: if request.auth != null && 
+                    (request.auth.uid == resource.data.userId ||
+                     request.auth.uid == resource.data.fromUserId);
+    }
   }
 }

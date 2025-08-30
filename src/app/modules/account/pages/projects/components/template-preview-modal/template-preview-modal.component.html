@@ -1,0 +1,211 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      <ion-icon
+        [name]="template.icon || 'document'"
+        class="title-icon"
+      ></ion-icon>
+      Template Preview
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="dismiss()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="template-preview-content">
+  <div class="preview-container">
+    <!-- Template Header -->
+    <div class="template-header">
+      <div class="template-icon-large">
+        <ion-icon
+          [name]="template.icon || 'document'"
+          [style.color]="template.color || '#666'"
+        ></ion-icon>
+      </div>
+      <h1 class="template-name">{{ template.name }}</h1>
+      <p class="template-description">{{ template.description }}</p>
+
+      <!-- Category Badge -->
+      <ion-chip
+        class="category-chip"
+        [style.background-color]="template.color || '#666'"
+      >
+        <ion-label>{{ template.category }}</ion-label>
+      </ion-chip>
+    </div>
+
+    <!-- Template Details Grid -->
+    <div class="template-details">
+      <!-- Complexity Card -->
+      <ion-card class="detail-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="layers-outline"></ion-icon>
+            Complexity
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-badge [color]="getComplexityColor()" class="complexity-badge">
+            {{ template.complexity }}
+          </ion-badge>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Timeframe Card -->
+      <ion-card class="detail-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon [name]="getTimeframeIcon()"></ion-icon>
+            Timeframe
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <span class="timeframe-text">{{ template.estimatedTimeframe }}</span>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Applicable Groups Card -->
+      <ion-card
+        class="detail-card"
+        *ngIf="
+          template.applicableGroupTypes &&
+          template.applicableGroupTypes.length > 0
+        "
+      >
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="people-outline"></ion-icon>
+            Applicable Groups
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="group-types">
+            <ion-chip
+              *ngFor="let groupType of template.applicableGroupTypes"
+              color="primary"
+              outline
+            >
+              <ion-label>{{ groupType }}</ion-label>
+            </ion-chip>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Default Tasks Section -->
+    <ion-card
+      *ngIf="template.defaultTasks && template.defaultTasks.length > 0"
+      class="tasks-card"
+    >
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="checkbox-outline"></ion-icon>
+          Default Tasks
+          <ion-badge color="medium">{{
+            template.defaultTasks.length
+          }}</ion-badge>
+        </ion-card-title>
+        <ion-card-subtitle>
+          These tasks will be automatically created for your project
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none" class="tasks-list">
+          <ion-item
+            *ngFor="let task of template.defaultTasks; let i = index"
+            class="task-item"
+          >
+            <ion-icon
+              name="checkmark-circle-outline"
+              slot="start"
+              color="success"
+            ></ion-icon>
+            <ion-label>
+              <h3>{{ task }}</h3>
+              <p>Task {{ i + 1 }} of {{ template.defaultTasks.length }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Required Roles Section -->
+    <ion-card
+      *ngIf="template.requiredRoles && template.requiredRoles.length > 0"
+      class="roles-card"
+    >
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="person-outline"></ion-icon>
+          Required Roles
+          <ion-badge color="medium">{{
+            template.requiredRoles.length
+          }}</ion-badge>
+        </ion-card-title>
+        <ion-card-subtitle>
+          Recommended team roles for this project
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="roles-grid">
+          <div *ngFor="let role of template.requiredRoles" class="role-item">
+            <ion-icon name="person-circle-outline"></ion-icon>
+            <span>{{ role }}</span>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Suggested Metrics Section -->
+    <ion-card
+      *ngIf="template.suggestedMetrics && template.suggestedMetrics.length > 0"
+      class="metrics-card"
+    >
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="analytics-outline"></ion-icon>
+          Suggested Metrics
+          <ion-badge color="medium">{{
+            template.suggestedMetrics.length
+          }}</ion-badge>
+        </ion-card-title>
+        <ion-card-subtitle>
+          Key performance indicators to track project success
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none" class="metrics-list">
+          <ion-item
+            *ngFor="let metric of template.suggestedMetrics"
+            class="metric-item"
+          >
+            <ion-icon
+              name="trending-up-outline"
+              slot="start"
+              color="primary"
+            ></ion-icon>
+            <ion-label>{{ metric }}</ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <div class="footer-actions">
+      <ion-button fill="outline" (click)="dismiss()" color="medium">
+        <ion-icon name="close" slot="start"></ion-icon>
+        Close Preview
+      </ion-button>
+      <ion-button fill="solid" (click)="dismiss()" color="primary">
+        <ion-icon name="checkmark" slot="start"></ion-icon>
+        Use This Template
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>

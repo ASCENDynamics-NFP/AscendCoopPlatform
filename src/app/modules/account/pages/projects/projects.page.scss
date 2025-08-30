@@ -1458,3 +1458,29 @@
 }
 
 // Category suggestions styles moved to smart-category-suggestions.component.scss
+
+// Template Preview Modal Styles
+.template-preview-modal {
+  --width: 90vw;
+  --max-width: 800px;
+  --height: 90vh;
+  --max-height: 900px;
+  --border-radius: 12px;
+
+  ion-backdrop {
+    background: rgba(0, 0, 0, 0.6);
+  }
+
+  .modal-wrapper {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+}
+
+@media (max-width: 768px) {
+  .template-preview-modal {
+    --width: 95vw;
+    --height: 95vh;
+  }
+}

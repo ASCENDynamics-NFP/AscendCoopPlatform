@@ -19,6 +19,7 @@
 ***********************************************************************************************/
 
 import {Component, EventEmitter, Input, Output, OnInit} from "@angular/core";
+import {ModalController} from "@ionic/angular";
 import {
   StandardProjectCategory,
   StandardProjectTemplate,
@@ -31,6 +32,7 @@ import {
   ProjectCreationState,
   DEFAULT_PROJECT_CREATION_STATE,
 } from "../../interfaces/project-creation.interface";
+import {TemplatePreviewModalComponent} from "../template-preview-modal/template-preview-modal.component";
 
 @Component({
   selector: "app-project-creation",
@@ -47,6 +49,8 @@ export class ProjectCreationComponent implements OnInit {
     StandardProjectTemplate | undefined
   >();
   @Output() stateChange = new EventEmitter<ProjectCreationState>();
+
+  constructor(private modalController: ModalController) {}
 
   // Creation mode property
   creationMode: "single" | null = null;
@@ -71,9 +75,20 @@ export class ProjectCreationComponent implements OnInit {
   }
 
   // Preview action
-  onPreview(): void {
-    // Implement preview functionality
-    console.log("Preview project creation");
+  async onPreview(): Promise<void> {
+    if (!this.state.selectedTemplate) {
+      return;
+    }
+
+    const modal = await this.modalController.create({
+      component: TemplatePreviewModalComponent,
+      componentProps: {
+        template: this.state.selectedTemplate,
+      },
+      cssClass: "template-preview-modal",
+    });
+
+    await modal.present();
   }
 
   // Get create button text

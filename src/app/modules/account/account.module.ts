@@ -71,6 +71,7 @@ import {SmartCategorySuggestionsComponent} from "./pages/projects/components/sma
 import {ProjectFiltersComponent} from "./pages/projects/components/project-filters/project-filters.component";
 import {BulkActionsComponent} from "./pages/projects/components/bulk-actions/bulk-actions.component";
 import {ProjectCreationComponent} from "./pages/projects/components/project-creation/project-creation.component";
+import {TemplatePreviewModalComponent} from "./pages/projects/components/template-preview-modal/template-preview-modal.component";
 
 @NgModule({
   declarations: [
@@ -113,6 +114,7 @@ import {ProjectCreationComponent} from "./pages/projects/components/project-crea
     ProjectFiltersComponent,
     BulkActionsComponent,
     ProjectCreationComponent,
+    TemplatePreviewModalComponent,
     SafeUrlPipe,
     CategorySelectorComponent,
   ],

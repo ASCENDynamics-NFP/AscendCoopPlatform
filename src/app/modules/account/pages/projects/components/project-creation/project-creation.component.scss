@@ -1,0 +1,345 @@
+/***********************************************************************************************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+*
+* This file is part of Nonprofit Social Networking Platform.
+*
+* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+
+* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+
+* You should have received a copy of the GNU Affero General Public License
+* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+***********************************************************************************************/
+
+.project-creation-card {
+  margin: 16px 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--ion-color-light-shade);
+
+  @media (prefers-color-scheme: dark) {
+    background: var(--ion-color-dark);
+    border-color: var(--ion-color-medium-shade);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  ion-card-header {
+    padding: 20px 20px 16px;
+
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.3em;
+      font-weight: 600;
+      color: var(--ion-color-primary);
+
+      .title-icon {
+        font-size: 1.4em;
+      }
+    }
+  }
+
+  ion-card-content {
+    padding: 0 20px 20px;
+  }
+}
+
+.project-name-input {
+  margin: 16px 0;
+  --background: var(--ion-color-light);
+  border-radius: 8px;
+  border: 1px solid var(--ion-color-medium);
+
+  @media (prefers-color-scheme: dark) {
+    --background: var(--ion-color-dark-tint);
+    border-color: var(--ion-color-medium-shade);
+  }
+
+  ion-label {
+    font-weight: 500;
+    color: var(--ion-color-medium-shade);
+  }
+
+  ion-input {
+    font-size: 1em;
+  }
+}
+
+.template-selection {
+  margin: 24px 0;
+  padding: 16px;
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  border: 1px solid var(--ion-color-medium);
+
+  @media (prefers-color-scheme: dark) {
+    background: var(--ion-color-dark-tint);
+    border-color: var(--ion-color-medium-shade);
+  }
+
+  ion-label {
+    h4 {
+      margin: 0 0 8px 0;
+      font-size: 1.1em;
+      font-weight: 600;
+      color: var(--ion-color-primary);
+    }
+
+    p {
+      margin: 0 0 16px 0;
+      font-size: 0.9em;
+      color: var(--ion-color-medium-shade);
+      line-height: 1.4;
+    }
+  }
+}
+
+.templates-grid {
+  display: grid;
+  gap: 12px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
+.template-option {
+  --background: var(--ion-color-step-50);
+  border-radius: 8px;
+  border: 1px solid var(--ion-color-medium);
+  transition: all 0.2s ease;
+
+  &:hover {
+    --background: var(--ion-color-step-100);
+    border-color: var(--ion-color-primary-tint);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    --background: var(--ion-color-step-150);
+    border-color: var(--ion-color-medium-shade);
+
+    &:hover {
+      --background: var(--ion-color-step-200);
+      border-color: var(--ion-color-primary-shade);
+    }
+  }
+
+  .template-info {
+    h3 {
+      margin: 0 0 8px 0;
+      font-size: 1em;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+
+      @media (prefers-color-scheme: dark) {
+        color: var(--ion-color-light);
+      }
+    }
+
+    p {
+      margin: 0 0 12px 0;
+      font-size: 0.85em;
+      color: var(--ion-color-medium-shade);
+      line-height: 1.3;
+    }
+  }
+}
+
+.template-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+
+  ion-chip {
+    --background: var(--ion-color-light-shade);
+    --color: var(--ion-color-medium-shade);
+    font-size: 0.75em;
+    height: 24px;
+
+    @media (prefers-color-scheme: dark) {
+      --background: var(--ion-color-dark-shade);
+      --color: var(--ion-color-light-tint);
+    }
+  }
+}
+
+.add-project-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ion-color-medium);
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .cancel-button {
+    --color: var(--ion-color-medium-shade);
+
+    &:hover {
+      --background: var(--ion-color-light-shade);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      --color: var(--ion-color-medium-tint);
+
+      &:hover {
+        --background: var(--ion-color-dark-shade);
+      }
+    }
+  }
+
+  .bulk-toggle-button {
+    --color: var(--ion-color-primary);
+    --border-color: var(--ion-color-primary);
+
+    &:hover {
+      --background: var(--ion-color-primary-tint);
+    }
+  }
+
+  .create-button {
+    --background: var(--ion-color-primary);
+    --color: white;
+    font-weight: 600;
+
+    &:hover {
+      --background: var(--ion-color-primary-shade);
+    }
+
+    &[disabled] {
+      --background: var(--ion-color-medium);
+      --color: var(--ion-color-medium-shade);
+    }
+  }
+}
+
+.bulk-create-section {
+  margin-top: 24px;
+  padding: 16px;
+  background: var(--ion-color-light-tint);
+  border-radius: 12px;
+  border: 1px solid var(--ion-color-medium);
+
+  @media (prefers-color-scheme: dark) {
+    background: var(--ion-color-dark-shade);
+    border-color: var(--ion-color-medium-shade);
+  }
+
+  ion-label {
+    h4 {
+      margin: 0 0 8px 0;
+      font-size: 1.1em;
+      font-weight: 600;
+      color: var(--ion-color-primary);
+    }
+
+    p {
+      margin: 0 0 16px 0;
+      font-size: 0.9em;
+      color: var(--ion-color-medium-shade);
+      line-height: 1.4;
+    }
+  }
+}
+
+.bulk-projects-list {
+  margin: 16px 0;
+}
+
+.bulk-project-item {
+  --background: var(--ion-color-step-50);
+  border-radius: 8px;
+  border: 1px solid var(--ion-color-medium);
+  margin-bottom: 12px;
+
+  @media (prefers-color-scheme: dark) {
+    --background: var(--ion-color-step-150);
+    border-color: var(--ion-color-medium-shade);
+  }
+
+  ion-label {
+    font-weight: 500;
+    color: var(--ion-color-medium-shade);
+  }
+
+  ion-input {
+    font-size: 0.95em;
+  }
+
+  ion-button[slot="end"] {
+    --color: var(--ion-color-danger);
+
+    &:hover {
+      --background: var(--ion-color-danger-tint);
+    }
+  }
+}
+
+.add-bulk-project-btn {
+  --color: var(--ion-color-primary);
+  --border-color: var(--ion-color-primary);
+  margin-top: 8px;
+
+  &:hover {
+    --background: var(--ion-color-primary-tint);
+  }
+}
+
+// Responsive design
+@media (max-width: 576px) {
+  .project-creation-card {
+    margin: 8px 0;
+
+    ion-card-header {
+      padding: 16px 16px 12px;
+
+      ion-card-title {
+        font-size: 1.2em;
+      }
+    }
+
+    ion-card-content {
+      padding: 0 16px 16px;
+    }
+  }
+
+  .template-selection,
+  .bulk-create-section {
+    padding: 12px;
+    margin: 16px 0;
+  }
+
+  .templates-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Animation for smooth appearance
+.project-creation-card {
+  animation: slideInDown 0.3s ease-out;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -67,6 +67,10 @@ import {FaqFormComponent} from "./pages/edit/components/faq-form/faq-form.compon
 import {AdminDashboardPage} from "./pages/admin-dashboard/admin-dashboard.page";
 import {AdminGroupProfileFormComponent} from "./pages/admin-dashboard/components/admin-group-profile-form/admin-group-profile-form.component";
 import {InviteMemberModalComponent} from "./components/invite-member-modal/invite-member-modal.component";
+import {SmartCategorySuggestionsComponent} from "./pages/projects/components/smart-category-suggestions/smart-category-suggestions.component";
+import {ProjectFiltersComponent} from "./pages/projects/components/project-filters/project-filters.component";
+import {BulkActionsComponent} from "./pages/projects/components/bulk-actions/bulk-actions.component";
+import {ProjectCreationComponent} from "./pages/projects/components/project-creation/project-creation.component";
 
 @NgModule({
   declarations: [
@@ -105,6 +109,10 @@ import {InviteMemberModalComponent} from "./components/invite-member-modal/invit
     FaqSectionComponent,
     FaqFormComponent,
     InviteMemberModalComponent,
+    SmartCategorySuggestionsComponent,
+    ProjectFiltersComponent,
+    BulkActionsComponent,
+    ProjectCreationComponent,
     SafeUrlPipe,
     CategorySelectorComponent,
   ],

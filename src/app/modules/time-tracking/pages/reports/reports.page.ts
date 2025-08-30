@@ -44,6 +44,7 @@ import {
 import {selectActiveProjectsByAccount} from "../../../../state/selectors/projects.selectors";
 import {selectRelatedAccountsByAccountId} from "../../../../state/selectors/account.selectors";
 import * as ProjectsActions from "../../../../state/actions/projects.actions";
+import {StandardProjectCategory} from "../../../../../../shared/models/standard-project-template.model";
 import {
   ChartData,
   ChartOptions,
@@ -84,7 +85,14 @@ Chart.register(
 export interface ReportConfig {
   name: string;
   description: string;
-  type: "monthly" | "quarterly" | "yearly" | "custom" | "user" | "project";
+  type:
+    | "monthly"
+    | "quarterly"
+    | "yearly"
+    | "custom"
+    | "user"
+    | "project"
+    | "category";
   icon: string;
   enabled: boolean;
 }
@@ -307,6 +315,13 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
       enabled: true,
     },
     {
+      name: "Category Report",
+      description: "Analyze time distribution across project categories",
+      type: "category",
+      icon: "pie-chart-outline",
+      enabled: true,
+    },
+    {
       name: "Custom Report",
       description: "Generate custom reports with date ranges and filters",
       type: "custom",
@@ -319,8 +334,63 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
   selectedReportType: ReportConfig["type"] = "monthly";
   selectedUserId: string = "";
   selectedProjectId: string = "";
+  selectedCategoryId: StandardProjectCategory | "" = "";
   customStartDate: string = "";
   customEndDate: string = "";
+
+  // Available categories for filtering
+  availableCategories: StandardProjectCategory[] = [
+    "Volunteer",
+    "Fundraising",
+    "Event",
+    "Education",
+    "Outreach",
+    "Research",
+    "Operations",
+    "Marketing",
+    "Technology",
+    "General",
+  ];
+
+  // Category-based analytics
+  categoryChartData: ChartData<"doughnut"> = {
+    labels: [],
+    datasets: [],
+  };
+  categoryChartOptions: ChartOptions<"doughnut"> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "bottom",
+        labels: {
+          padding: 20,
+          usePointStyle: true,
+          font: {
+            size: 12,
+          },
+        },
+      },
+      tooltip: {
+        enabled: true,
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        titleColor: "white",
+        bodyColor: "white",
+        callbacks: {
+          label: function (context) {
+            const total = context.dataset.data.reduce(
+              (a: number, b: number) => a + b,
+              0,
+            );
+            const percentage =
+              total > 0 ? Math.round((context.parsed * 100) / total) : 0;
+            return `${context.label}: ${context.parsed} hrs (${percentage}%)`;
+          },
+        },
+      },
+    },
+  };
+  categoryChartType: "doughnut" = "doughnut";
 
   constructor(
     private store: Store,
@@ -397,6 +467,20 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
       accountId: this.currentAccountId,
     };
 
+    // Add common filters that apply to all report types
+    if (this.selectedUserId && this.selectedReportType !== "user") {
+      filters.userId = this.selectedUserId;
+    }
+    if (this.selectedProjectId && this.selectedReportType !== "project") {
+      filters.projectId = this.selectedProjectId;
+    }
+    if (this.customStartDate) {
+      filters.startDate = new Date(this.customStartDate);
+    }
+    if (this.customEndDate) {
+      filters.endDate = new Date(this.customEndDate);
+    }
+
     // Add filters based on report type
     switch (this.selectedReportType) {
       case "monthly":
@@ -435,6 +519,13 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
         if (this.selectedProjectId) {
           filters.projectId = this.selectedProjectId;
         }
+        this.analytics$ =
+          this.analyticsService.getTimeTrackingAnalytics(filters);
+        break;
+
+      case "category":
+        // For category reports, we'll get all data and process it client-side
+        // to group by categories
         this.analytics$ =
           this.analyticsService.getTimeTrackingAnalytics(filters);
         break;
@@ -544,6 +635,74 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
         },
       ],
     };
+
+    // Update category chart data (for category reports)
+    this.updateCategoryChartData(analytics);
+  }
+
+  /**
+   * Update category chart data based on project categories
+   */
+  private updateCategoryChartData(analytics: TimeTrackingAnalytics) {
+    // Get projects data and group by category
+    const categoryHours: Record<StandardProjectCategory, number> = {
+      Volunteer: 0,
+      Fundraising: 0,
+      Event: 0,
+      Education: 0,
+      Outreach: 0,
+      Research: 0,
+      Operations: 0,
+      Marketing: 0,
+      Technology: 0,
+      General: 0,
+    };
+
+    // Subscribe to projects to get category information
+    this.availableProjects$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((projects) => {
+        // Reset category hours
+        Object.keys(categoryHours).forEach((key) => {
+          categoryHours[key as StandardProjectCategory] = 0;
+        });
+
+        // Group project hours by category
+        Object.entries(analytics.entriesByProject).forEach(
+          ([projectId, projectData]) => {
+            const project = projects.find((p) => p.id === projectId);
+            const category = project?.standardCategory || "General";
+            categoryHours[category] += projectData.hours;
+          },
+        );
+
+        // Create chart data for categories with hours > 0
+        const categoryEntries = Object.entries(categoryHours).filter(
+          ([, hours]) => hours > 0,
+        );
+
+        this.categoryChartData = {
+          labels: categoryEntries.map(([category]) => category),
+          datasets: [
+            {
+              data: categoryEntries.map(([, hours]) => hours),
+              backgroundColor: [
+                "#FF6B6B", // Volunteer - Red
+                "#4ECDC4", // Fundraising - Teal
+                "#45B7D1", // Event - Blue
+                "#96CEB4", // Education - Green
+                "#FFEAA7", // Outreach - Yellow
+                "#DDA0DD", // Research - Plum
+                "#FFB347", // Operations - Orange
+                "#87CEEB", // Marketing - Sky Blue
+                "#98D8C8", // Technology - Mint
+                "#F7DC6F", // General - Light Yellow
+              ],
+              borderWidth: 0,
+            },
+          ],
+        };
+      });
   }
 
   /**
@@ -575,6 +734,53 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
+   * Handle category selection for category filtering
+   */
+  onCategorySelectionChange(categoryId: StandardProjectCategory | "") {
+    this.selectedCategoryId = categoryId;
+    // Category filtering can be applied to any report type
+    this.generateReport();
+  }
+
+  /**
+   * Get total hours across all categories for percentage calculations
+   */
+  getTotalCategoryHours(): number {
+    if (this.categoryChartData.datasets.length === 0) return 0;
+
+    return this.categoryChartData.datasets[0].data.reduce(
+      (total: number, hours: number) => total + hours,
+      0,
+    );
+  }
+
+  /**
+   * Get category color for a specific index
+   */
+  getCategoryColor(index: number): string {
+    if (
+      this.categoryChartData.datasets.length === 0 ||
+      !this.categoryChartData.datasets[0].backgroundColor ||
+      !Array.isArray(this.categoryChartData.datasets[0].backgroundColor)
+    ) {
+      return "#3880FF"; // Default color
+    }
+
+    const colors = this.categoryChartData.datasets[0]
+      .backgroundColor as string[];
+    return colors[index] || "#3880FF";
+  }
+
+  /**
+   * Get category hours for a specific index
+   */
+  getCategoryHours(index: number): number {
+    if (this.categoryChartData.datasets.length === 0) return 0;
+
+    return (this.categoryChartData.datasets[0].data[index] as number) || 0;
+  }
+
+  /**
    * Export current report data as CSV
    */
   async exportToCSV() {
@@ -588,6 +794,10 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
       // Apply current report filters
       if (this.selectedUserId) filters.userId = this.selectedUserId;
       if (this.selectedProjectId) filters.projectId = this.selectedProjectId;
+      if (this.selectedCategoryId) {
+        // Note: Category filtering may need to be handled client-side
+        // depending on analytics service capabilities
+      }
       if (this.customStartDate)
         filters.startDate = new Date(this.customStartDate);
       if (this.customEndDate) filters.endDate = new Date(this.customEndDate);

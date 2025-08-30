@@ -95,21 +95,21 @@
       </ion-card>
     </div>
 
-    <!-- Default Tasks Section -->
+    <!-- Task Suggestions Section -->
     <ion-card
       *ngIf="template.defaultTasks && template.defaultTasks.length > 0"
       class="tasks-card"
     >
       <ion-card-header>
         <ion-card-title>
-          <ion-icon name="checkbox-outline"></ion-icon>
-          Default Tasks
+          <ion-icon name="bulb-outline"></ion-icon>
+          Suggested Tasks
           <ion-badge color="medium">{{
             template.defaultTasks.length
           }}</ion-badge>
         </ion-card-title>
         <ion-card-subtitle>
-          These tasks will be automatically created for your project
+          These are suggested tasks to help guide your project planning
         </ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
@@ -119,13 +119,15 @@
             class="task-item"
           >
             <ion-icon
-              name="checkmark-circle-outline"
+              name="library-outline"
               slot="start"
-              color="success"
+              color="primary"
             ></ion-icon>
             <ion-label>
               <h3>{{ task }}</h3>
-              <p>Task {{ i + 1 }} of {{ template.defaultTasks.length }}</p>
+              <p>
+                Suggestion {{ i + 1 }} of {{ template.defaultTasks.length }}
+              </p>
             </ion-label>
           </ion-item>
         </ion-list>

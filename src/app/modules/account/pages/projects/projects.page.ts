@@ -110,6 +110,9 @@ export class ProjectsPage implements OnInit {
   // Project Creation Toggle
   showProjectCreation = false;
 
+  // Filters Toggle
+  showFilters = true; // Default to showing filters
+
   constructor(
     private route: ActivatedRoute,
     private store: Store,
@@ -402,14 +405,21 @@ export class ProjectsPage implements OnInit {
 
   /**
    * Toggle project creation form display
+   * When activated, hides filters and analytics
    */
   toggleProjectCreation(): void {
-    this.showProjectCreation = true;
+    this.showProjectCreation = !this.showProjectCreation;
 
-    // Reset the project creation state for single project mode only
-    this.projectCreationState = {
-      ...DEFAULT_PROJECT_CREATION_STATE,
-    };
+    if (this.showProjectCreation) {
+      // Hide other sections
+      this.showFilters = false;
+      this.showCategoryOverview = false;
+
+      // Reset the project creation state for single project mode only
+      this.projectCreationState = {
+        ...DEFAULT_PROJECT_CREATION_STATE,
+      };
+    }
   }
 
   /**
@@ -418,6 +428,20 @@ export class ProjectsPage implements OnInit {
   closeProjectCreation(): void {
     this.showProjectCreation = false;
     this.resetProjectCreationState();
+  }
+
+  /**
+   * Toggle filters display
+   * When activated, hides project creation and analytics
+   */
+  toggleFilters(): void {
+    this.showFilters = !this.showFilters;
+
+    if (this.showFilters) {
+      // Hide other sections
+      this.showProjectCreation = false;
+      this.showCategoryOverview = false;
+    }
   }
 
   // ====================================
@@ -806,8 +830,18 @@ export class ProjectsPage implements OnInit {
     }
   }
 
+  /**
+   * Toggle category overview (analytics) display
+   * When activated, hides project creation and filters
+   */
   toggleCategoryOverview() {
     this.showCategoryOverview = !this.showCategoryOverview;
+
+    if (this.showCategoryOverview) {
+      // Hide other sections
+      this.showProjectCreation = false;
+      this.showFilters = false;
+    }
   }
 
   toggleGroupByCategory() {

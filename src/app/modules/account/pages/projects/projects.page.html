@@ -20,53 +20,84 @@
     </ion-label>
   </ion-item>
 
-  <!-- Create New Project Toggle -->
-  <div *ngIf="(isGroupAdmin$ | async)" class="create-project-section">
-    <!-- Toggle Button -->
-    <div class="create-project-toggle" *ngIf="!showProjectCreation">
-      <ion-button
-        fill="outline"
-        color="primary"
-        (click)="toggleProjectCreation()"
-        class="create-toggle-btn"
-      >
-        <ion-icon name="add" slot="start"></ion-icon>
-        Create New Project
-      </ion-button>
+  <!-- Quick Actions Card -->
+  <div *ngIf="!(loading$ | async)" class="quick-actions-section">
+    <div class="quick-actions-card">
+      <div class="card-header">
+        <h3>Quick Actions</h3>
+        <ion-icon name="flash-outline"></ion-icon>
+      </div>
+      <div class="actions-grid">
+        <button
+          class="action-button"
+          [class.active]="showProjectCreation"
+          (click)="toggleProjectCreation()"
+          *ngIf="(isGroupAdmin$ | async)"
+        >
+          <ion-icon name="add-circle-outline"></ion-icon>
+          <span>New Project</span>
+        </button>
+        <button
+          class="action-button"
+          [class.active]="showFilters"
+          (click)="toggleFilters()"
+        >
+          <ion-icon name="filter-outline"></ion-icon>
+          <span>Filter Projects</span>
+        </button>
+        <button
+          class="action-button"
+          [class.active]="showCategoryOverview"
+          (click)="toggleCategoryOverview()"
+        >
+          <ion-icon name="analytics-outline"></ion-icon>
+          <span>Analytics</span>
+        </button>
+        <!-- <button class="action-button" (click)="selectCategoryFilter('all')">
+          <ion-icon name="list-outline"></ion-icon>
+          <span>View All</span>
+        </button> -->
+      </div>
     </div>
-
-    <!-- Project Creation Form (Collapsed by default) -->
-    <ion-card *ngIf="showProjectCreation" class="creation-form-card">
-      <ion-card-header>
-        <ion-card-title class="creation-form-title">
-          <span>Create New Project</span>
-          <ion-button
-            fill="clear"
-            color="medium"
-            (click)="closeProjectCreation()"
-            class="close-btn"
-          >
-            <ion-icon name="close"></ion-icon>
-          </ion-button>
-        </ion-card-title>
-      </ion-card-header>
-
-      <ion-card-content>
-        <app-project-creation
-          [state]="projectCreationState"
-          (projectCreate)="onProjectCreate($event)"
-          (categoryChange)="onCategorySelectedFromComponent($event)"
-          (projectNameChange)="onProjectNameChangeFromComponent($event)"
-          (templateSelected)="onTemplateSelectedFromComponent($event)"
-          (stateChange)="onProjectCreationStateChange($event)"
-        ></app-project-creation>
-      </ion-card-content>
-    </ion-card>
   </div>
 
-  <!-- Search and Filter Controls -->
+  <!-- Project Creation Form (Collapsible) -->
+  <ion-card
+    *ngIf="showProjectCreation && (isGroupAdmin$ | async)"
+    class="projects-section creation-form-card"
+  >
+    <ion-card-header class="section-header">
+      <ion-card-title>
+        <ion-icon name="add-circle" class="title-icon"></ion-icon>
+        Create New Project
+        <ion-badge color="success" class="count-badge">New</ion-badge>
+        <ion-button
+          fill="clear"
+          color="medium"
+          (click)="closeProjectCreation()"
+          class="close-btn"
+          slot="end"
+        >
+          <ion-icon name="close" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <app-project-creation
+        [state]="projectCreationState"
+        (projectCreate)="onProjectCreate($event)"
+        (categoryChange)="onCategorySelectedFromComponent($event)"
+        (projectNameChange)="onProjectNameChangeFromComponent($event)"
+        (templateSelected)="onTemplateSelectedFromComponent($event)"
+        (stateChange)="onProjectCreationStateChange($event)"
+      ></app-project-creation>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Search and Filter Controls (Collapsible) -->
   <app-project-filters
-    *ngIf="!(loading$ | async)"
+    *ngIf="showFilters && !(loading$ | async)"
     [searchTerm]="currentProjectFilter.searchTerm"
     [selectedCategory]="currentProjectFilter.selectedCategory"
     [sortBy]="currentProjectFilter.sortBy"
@@ -80,6 +111,7 @@
 
   <!-- Bulk Actions Component -->
   <app-bulk-actions
+    *ngIf="!showCategoryOverview"
     [selectedProjects]="selectedProjects"
     [showBulkActions]="true"
     (bulkAction)="onBulkAction($event)"
@@ -197,63 +229,81 @@
           </div>
         </div>
       </div>
-
-      <!-- Quick Actions Card -->
-      <!-- <div class="quick-actions-card">
-        <div class="card-header">
-          <h3>Quick Actions</h3>
-          <ion-icon name="flash-outline"></ion-icon>
-        </div>
-        <div class="actions-grid">
-          <button class="action-button" (click)="openProjectCreation()">
-            <ion-icon name="add-circle-outline"></ion-icon>
-            <span>New Project</span>
-          </button>
-          <button class="action-button" (click)="selectCategoryFilter('all')">
-            <ion-icon name="list-outline"></ion-icon>
-            <span>View All</span>
-          </button>
-          <button class="action-button" (click)="toggleGroupByCategory()">
-            <ion-icon name="grid-outline"></ion-icon>
-            <span>Group View</span>
-          </button>
-          <button class="action-button" (click)="exportAnalytics()">
-            <ion-icon name="download-outline"></ion-icon>
-            <span>Export</span>
-          </button>
-        </div>
-      </div> -->
     </div>
   </div>
 
   <!-- Active Projects Section -->
-  <ion-card *ngIf="!(loading$ | async)" class="projects-section">
-    <ion-card-header class="section-header">
-      <ion-card-title>
-        <ion-icon name="folder-open" class="title-icon"></ion-icon>
-        Active Projects
-        <ion-badge color="primary" class="count-badge">
-          {{ (filteredProjects$ | async)?.length || 0 }}
-        </ion-badge>
-      </ion-card-title>
+  <ion-card
+    *ngIf="!(loading$ | async) && !showCategoryOverview"
+    class="projects-section active-projects-section"
+  >
+    <ion-card-header class="section-header enhanced-header">
+      <div class="header-content">
+        <div class="header-title-group">
+          <ion-icon name="folder-open" class="title-icon"></ion-icon>
+          <div class="title-info">
+            <ion-card-title>Active Projects</ion-card-title>
+            <ion-card-subtitle class="section-subtitle">
+              Currently ongoing projects
+            </ion-card-subtitle>
+          </div>
+        </div>
+        <div class="header-stats">
+          <ion-badge color="primary" class="count-badge">
+            {{ (filteredProjects$ | async)?.length || 0 }}
+          </ion-badge>
+          <ion-button
+            fill="clear"
+            size="small"
+            class="sort-button"
+            [disabled]="(filteredProjects$ | async)?.length === 0"
+          >
+            <ion-icon name="swap-vertical" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
     </ion-card-header>
-    <ion-card-content>
+    <ion-card-content class="enhanced-card-content">
       <!-- No Projects Message -->
       <div
         *ngIf="(filteredProjects$ | async)?.length === 0"
-        class="no-projects-message"
+        class="no-projects-message enhanced-empty-state"
       >
-        <ion-icon
-          name="folder-open-outline"
-          class="no-projects-icon"
-        ></ion-icon>
-        <h3>No Projects Found</h3>
-        <p *ngIf="searchTerm || selectedCategoryFilter !== 'all'">
-          Try adjusting your search or filter criteria.
-        </p>
-        <p *ngIf="!searchTerm && selectedCategoryFilter === 'all'">
-          Create your first project to get started!
-        </p>
+        <div class="empty-state-container">
+          <div class="empty-state-icon-wrapper">
+            <ion-icon
+              name="folder-open-outline"
+              class="no-projects-icon"
+            ></ion-icon>
+          </div>
+          <div class="empty-state-content">
+            <h3 class="empty-state-title">No Active Projects</h3>
+            <p
+              class="empty-state-description"
+              *ngIf="searchTerm || selectedCategoryFilter !== 'all'"
+            >
+              No projects match your current search or filter criteria. Try
+              adjusting your filters or search terms.
+            </p>
+            <p
+              class="empty-state-description"
+              *ngIf="!searchTerm && selectedCategoryFilter === 'all'"
+            >
+              You haven't created any projects yet. Get started by creating your
+              first project!
+            </p>
+            <ion-button
+              *ngIf="!searchTerm && selectedCategoryFilter === 'all'"
+              fill="outline"
+              color="primary"
+              class="empty-state-action"
+              (click)="toggleProjectCreation()"
+            >
+              <ion-icon name="add" slot="start"></ion-icon>
+              Create Your First Project
+            </ion-button>
+          </div>
+        </div>
       </div>
 
       <!-- Grouped View -->
@@ -277,29 +327,37 @@
             </ion-label>
           </ion-item-divider>
 
-          <ion-list lines="none">
+          <ion-list lines="none" class="enhanced-grouped-list">
             <ion-item
               *ngFor="let proj of grouped[categoryKey]; trackBy: trackById"
-              class="project-item active-project"
+              class="project-item active-project enhanced-grouped-item"
               [class.selected]="selectedProjects.has(proj.id)"
             >
-              <!-- Selection Checkbox -->
-              <ion-checkbox
-                *ngIf="(isGroupAdmin$ | async)"
-                slot="start"
-                [checked]="selectedProjects.has(proj.id)"
-                (ionChange)="toggleProjectSelection(proj.id)"
-                class="project-checkbox"
-              ></ion-checkbox>
+              <!-- Selection Checkbox or Status Indicator -->
+              <div class="project-status-container" slot="start">
+                <ion-checkbox
+                  *ngIf="(isGroupAdmin$ | async)"
+                  [checked]="selectedProjects.has(proj.id)"
+                  (ionChange)="toggleProjectSelection(proj.id)"
+                  class="project-checkbox"
+                ></ion-checkbox>
 
-              <ion-icon
-                *ngIf="!(isGroupAdmin$ | async)"
-                name="radio-button-on"
-                slot="start"
-                color="success"
-              ></ion-icon>
+                <div *ngIf="!(isGroupAdmin$ | async)" class="status-indicator">
+                  <ion-icon
+                    [name]="proj.icon || 'folder'"
+                    [style.color]="proj.color || projectCategories[categoryKey].color || 'var(--ion-color-primary)'"
+                    class="project-icon"
+                  ></ion-icon>
+                  <div
+                    class="status-dot"
+                    [class.active]="proj.status === 'Active'"
+                    [class.planning]="proj.status === 'Planning'"
+                    [class.on-hold]="proj.status === 'On Hold'"
+                  ></div>
+                </div>
+              </div>
 
-              <div class="project-content">
+              <div class="project-content enhanced-project-content">
                 <ng-container
                   *ngIf="(isGroupAdmin$ | async); else viewProjectGrouped"
                 >
@@ -311,33 +369,61 @@
                 </ng-container>
 
                 <ng-template #viewProjectGrouped>
-                  <div class="project-details">
-                    <ion-label class="project-name">{{ proj.name }}</ion-label>
-                    <ion-chip
-                      *ngIf="proj.standardCategory && projectCategories[proj.standardCategory]"
-                      [style.background-color]="projectCategories[proj.standardCategory].color"
-                      class="project-category-badge"
+                  <div class="project-main-info">
+                    <div class="project-header">
+                      <ion-label class="project-name"
+                        >{{ proj.name }}</ion-label
+                      >
+                      <div class="project-badges">
+                        <ion-badge
+                          *ngIf="proj.priority"
+                          [color]="proj.priority === 'Critical' ? 'danger' : proj.priority === 'High' ? 'warning' : proj.priority === 'Medium' ? 'primary' : 'medium'"
+                          class="priority-badge"
+                          size="small"
+                        >
+                          {{ proj.priority }}
+                        </ion-badge>
+                      </div>
+                    </div>
+                    <div
+                      class="project-meta"
+                      *ngIf="proj.description || proj.status || proj.startDate"
                     >
-                      <ion-icon
-                        [name]="projectCategories[proj.standardCategory].icon"
-                        class="category-icon"
-                      ></ion-icon>
-                      <ion-label>{{ proj.standardCategory }}</ion-label>
-                    </ion-chip>
+                      <p *ngIf="proj.description" class="project-description">
+                        {{ proj.description }}
+                      </p>
+                      <div class="project-status-info">
+                        <span *ngIf="proj.status" class="status-text">
+                          <ion-icon name="flag-outline"></ion-icon>
+                          {{ proj.status }}
+                        </span>
+                        <span *ngIf="proj.startDate" class="date-text">
+                          <ion-icon name="calendar-outline"></ion-icon>
+                          Started: {{ proj.startDate | date:'shortDate' }}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </ng-template>
               </div>
 
               <div
                 slot="end"
-                class="project-actions"
+                class="project-actions enhanced-project-actions"
                 *ngIf="(isGroupAdmin$ | async)"
               >
+                <div class="project-stats">
+                  <span *ngIf="proj.budget" class="budget-info">
+                    <ion-icon name="wallet-outline"></ion-icon>
+                    ${{ proj.budget | number:'1.0-0' }}
+                  </span>
+                </div>
                 <ion-button
                   fill="clear"
                   size="small"
                   (click)="toggleArchive(proj, true)"
                   color="warning"
+                  class="archive-button"
                 >
                   <ion-icon name="archive" slot="icon-only"></ion-icon>
                 </ion-button>
@@ -351,29 +437,38 @@
       <ion-list
         *ngIf="!groupByCategory && (filteredProjects$ | async) && (filteredProjects$ | async)!.length > 0"
         lines="none"
+        class="enhanced-projects-list"
       >
         <ion-item
           *ngFor="let proj of (filteredProjects$ | async); trackBy: trackById"
-          class="project-item active-project"
+          class="project-item active-project enhanced-project-item"
           [class.selected]="selectedProjects.has(proj.id)"
         >
-          <!-- Selection Checkbox -->
-          <ion-checkbox
-            *ngIf="(isGroupAdmin$ | async)"
-            slot="start"
-            [checked]="selectedProjects.has(proj.id)"
-            (ionChange)="toggleProjectSelection(proj.id)"
-            class="project-checkbox"
-          ></ion-checkbox>
+          <!-- Selection Checkbox or Status Indicator -->
+          <div class="project-status-container" slot="start">
+            <ion-checkbox
+              *ngIf="(isGroupAdmin$ | async)"
+              [checked]="selectedProjects.has(proj.id)"
+              (ionChange)="toggleProjectSelection(proj.id)"
+              class="project-checkbox"
+            ></ion-checkbox>
 
-          <ion-icon
-            *ngIf="!(isGroupAdmin$ | async)"
-            name="radio-button-on"
-            slot="start"
-            color="success"
-          ></ion-icon>
+            <div *ngIf="!(isGroupAdmin$ | async)" class="status-indicator">
+              <ion-icon
+                [name]="proj.icon || 'folder'"
+                [style.color]="proj.color || 'var(--ion-color-primary)'"
+                class="project-icon"
+              ></ion-icon>
+              <div
+                class="status-dot"
+                [class.active]="proj.status === 'Active'"
+                [class.planning]="proj.status === 'Planning'"
+                [class.on-hold]="proj.status === 'On Hold'"
+              ></div>
+            </div>
+          </div>
 
-          <div class="project-content">
+          <div class="project-content enhanced-project-content">
             <ng-container *ngIf="(isGroupAdmin$ | async); else viewProject">
               <ion-input
                 [value]="proj.name"
@@ -383,36 +478,272 @@
             </ng-container>
 
             <ng-template #viewProject>
-              <div class="project-details">
-                <ion-label class="project-name">{{ proj.name }}</ion-label>
-                <ion-chip
-                  *ngIf="proj.standardCategory && projectCategories[proj.standardCategory]"
-                  [style.background-color]="projectCategories[proj.standardCategory].color"
-                  class="project-category-badge"
+              <div class="project-main-info modern-project-info">
+                <div class="project-header modern-project-header">
+                  <div class="project-title-section">
+                    <h3 class="project-name modern-project-name">
+                      {{ proj.name }}
+                    </h3>
+                    <div class="project-badges modern-badges">
+                      <ion-chip
+                        *ngIf="proj.standardCategory && projectCategories[proj.standardCategory]"
+                        class="project-category-badge modern-category-badge"
+                        [style.--background]="projectCategories[proj.standardCategory].color + '20'"
+                        [style.--color]="projectCategories[proj.standardCategory].color"
+                      >
+                        <ion-icon
+                          [name]="projectCategories[proj.standardCategory].icon"
+                          class="category-icon"
+                        ></ion-icon>
+                        <ion-label>{{ proj.standardCategory }}</ion-label>
+                      </ion-chip>
+                      <ion-badge
+                        *ngIf="proj.priority"
+                        [color]="proj.priority === 'Critical' ? 'danger' : proj.priority === 'High' ? 'warning' : proj.priority === 'Medium' ? 'primary' : 'medium'"
+                        class="priority-badge modern-priority-badge"
+                      >
+                        <ion-icon name="flag" class="priority-icon"></ion-icon>
+                        {{ proj.priority }}
+                      </ion-badge>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  class="project-details modern-project-details"
+                  *ngIf="proj.description || proj.status || proj.startDate || proj.endDate || proj.complexity || proj.timeframe || proj.goals || proj.requiredRoles"
                 >
-                  <ion-icon
-                    [name]="projectCategories[proj.standardCategory].icon"
-                    class="category-icon"
-                  ></ion-icon>
-                  <ion-label>{{ proj.standardCategory }}</ion-label>
-                </ion-chip>
+                  <p
+                    *ngIf="proj.description"
+                    class="project-description modern-description"
+                  >
+                    {{ proj.description }}
+                  </p>
+
+                  <!-- Enhanced Project Metadata -->
+                  <div
+                    class="project-metadata modern-metadata"
+                    *ngIf="proj.complexity || proj.timeframe || proj.goals?.length || proj.requiredRoles?.length"
+                  >
+                    <div class="metadata-row">
+                      <div class="metadata-item" *ngIf="proj.complexity">
+                        <ion-icon
+                          name="layers-outline"
+                          color="medium"
+                        ></ion-icon>
+                        <span class="metadata-label">Complexity:</span>
+                        <ion-badge
+                          [color]="proj.complexity === 'Complex' ? 'danger' : proj.complexity === 'Moderate' ? 'warning' : 'success'"
+                          class="complexity-badge"
+                        >
+                          {{ proj.complexity }}
+                        </ion-badge>
+                      </div>
+                      <div class="metadata-item" *ngIf="proj.timeframe">
+                        <ion-icon
+                          name="hourglass-outline"
+                          color="medium"
+                        ></ion-icon>
+                        <span class="metadata-label">Duration:</span>
+                        <span class="metadata-value">{{ proj.timeframe }}</span>
+                      </div>
+                    </div>
+                    <div
+                      class="metadata-row"
+                      *ngIf="proj.goals?.length || proj.requiredRoles?.length"
+                    >
+                      <div class="metadata-item" *ngIf="proj.goals?.length">
+                        <ion-icon
+                          name="target-outline"
+                          color="medium"
+                        ></ion-icon>
+                        <span class="metadata-label">Goals:</span>
+                        <span class="metadata-value"
+                          >{{ proj.goals?.length }} objective{{
+                          (proj.goals?.length || 0) > 1 ? 's' : '' }}</span
+                        >
+                      </div>
+                      <div
+                        class="metadata-item"
+                        *ngIf="proj.requiredRoles?.length"
+                      >
+                        <ion-icon
+                          name="people-outline"
+                          color="medium"
+                        ></ion-icon>
+                        <span class="metadata-label">Roles needed:</span>
+                        <span class="metadata-value"
+                          >{{ proj.requiredRoles?.length }}</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Project Timeline -->
+                  <div
+                    class="project-timeline modern-timeline"
+                    *ngIf="proj.status || proj.startDate || proj.endDate"
+                  >
+                    <div class="timeline-item" *ngIf="proj.status">
+                      <ion-icon
+                        [name]="proj.status === 'Active' ? 'play-circle' : proj.status === 'Planning' ? 'construct' : proj.status === 'On Hold' ? 'pause-circle' : 'checkmark-circle'"
+                        [color]="proj.status === 'Active' ? 'success' : proj.status === 'Planning' ? 'warning' : proj.status === 'On Hold' ? 'medium' : 'primary'"
+                        class="timeline-icon"
+                      ></ion-icon>
+                      <span class="timeline-text">{{ proj.status }}</span>
+                    </div>
+                    <div class="timeline-item" *ngIf="proj.startDate">
+                      <ion-icon
+                        name="calendar-outline"
+                        color="medium"
+                        class="timeline-icon"
+                      ></ion-icon>
+                      <span class="timeline-text"
+                        >Started {{ proj.startDate | date:'MMM d, y' }}</span
+                      >
+                    </div>
+                    <div class="timeline-item" *ngIf="proj.endDate">
+                      <ion-icon
+                        name="time-outline"
+                        color="medium"
+                        class="timeline-icon"
+                      ></ion-icon>
+                      <span class="timeline-text"
+                        >Due {{ proj.endDate | date:'MMM d, y' }}</span
+                      >
+                    </div>
+                  </div>
+
+                  <!-- Progress and Budget Information -->
+                  <div
+                    class="project-progress modern-progress"
+                    *ngIf="proj.budget || proj.actualSpending || proj.metrics?.length"
+                  >
+                    <div class="progress-row">
+                      <div class="progress-item" *ngIf="proj.budget">
+                        <div class="budget-display">
+                          <div class="budget-info">
+                            <ion-icon
+                              name="wallet-outline"
+                              color="success"
+                            ></ion-icon>
+                            <span class="budget-label">Budget:</span>
+                            <span class="budget-amount"
+                              >${{ proj.budget | number:'1.0-0' }}</span
+                            >
+                          </div>
+                          <div
+                            class="spending-info"
+                            *ngIf="proj.actualSpending"
+                          >
+                            <span class="spending-label">Spent:</span>
+                            <span
+                              class="spending-amount"
+                              [class.over-budget]="proj.actualSpending > proj.budget"
+                            >
+                              ${{ proj.actualSpending | number:'1.0-0' }}
+                            </span>
+                            <span
+                              class="spending-percentage"
+                              [class.over-budget]="proj.actualSpending > proj.budget"
+                            >
+                              ({{ (proj.actualSpending / proj.budget * 100) |
+                              number:'1.0-0' }}%)
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="progress-item" *ngIf="proj.metrics?.length">
+                        <ion-icon
+                          name="analytics-outline"
+                          color="primary"
+                        ></ion-icon>
+                        <span class="metrics-label">Metrics tracked:</span>
+                        <span class="metrics-count"
+                          >{{ proj.metrics?.length }}</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Tags Display -->
+                  <div
+                    class="project-tags modern-tags"
+                    *ngIf="proj.tags && proj.tags.length > 0"
+                  >
+                    <div class="tags-header">
+                      <ion-icon
+                        name="pricetag-outline"
+                        color="medium"
+                      ></ion-icon>
+                      <span class="tags-label">Tags:</span>
+                    </div>
+                    <div class="tags-list">
+                      <ion-chip
+                        *ngFor="let tag of proj.tags.slice(0, 3)"
+                        class="project-tag"
+                        color="light"
+                      >
+                        {{ tag }}
+                      </ion-chip>
+                      <ion-chip
+                        *ngIf="proj.tags.length > 3"
+                        class="project-tag more-tags"
+                        color="medium"
+                      >
+                        +{{ proj.tags.length - 3 }} more
+                      </ion-chip>
+                    </div>
+                  </div>
+                </div>
               </div>
             </ng-template>
           </div>
 
           <div
             slot="end"
-            class="project-actions"
+            class="project-actions enhanced-project-actions modern-actions"
             *ngIf="(isGroupAdmin$ | async)"
           >
-            <ion-button
-              fill="clear"
-              size="small"
-              (click)="toggleArchive(proj, true)"
-              color="warning"
-            >
-              <ion-icon name="archive" slot="icon-only"></ion-icon>
-            </ion-button>
+            <div class="project-quick-stats modern-quick-stats">
+              <div class="quick-stats-row">
+                <span
+                  *ngIf="proj.priority"
+                  class="priority-indicator"
+                  [class.high-priority]="proj.priority === 'Critical' || proj.priority === 'High'"
+                >
+                  <ion-icon
+                    name="alert-circle"
+                    [color]="proj.priority === 'Critical' ? 'danger' : proj.priority === 'High' ? 'warning' : 'medium'"
+                  ></ion-icon>
+                </span>
+                <span *ngIf="proj.endDate" class="deadline-indicator">
+                  <ion-icon name="time" color="medium"></ion-icon>
+                </span>
+              </div>
+            </div>
+            <div class="action-buttons">
+              <!-- <ion-button
+                fill="clear"
+                size="small"
+                color="medium"
+                class="quick-action-btn"
+              >
+                <ion-icon
+                  name="ellipsis-horizontal"
+                  slot="icon-only"
+                ></ion-icon>
+              </ion-button> -->
+              <ion-button
+                fill="clear"
+                size="small"
+                (click)="toggleArchive(proj, true)"
+                color="warning"
+                class="archive-button"
+              >
+                <ion-icon name="archive" slot="icon-only"></ion-icon>
+              </ion-button>
+            </div>
           </div>
         </ion-item>
       </ion-list>
@@ -421,48 +752,111 @@
 
   <!-- Archived Projects Section -->
   <div
-    *ngIf="(archivedProjects$ | async) && (archivedProjects$ | async)!.length > 0"
+    *ngIf="(archivedProjects$ | async) && (archivedProjects$ | async)!.length > 0 && !showCategoryOverview"
     class="archived-section"
   >
-    <ion-card class="archived-projects-card">
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="archive" class="title-icon"></ion-icon>
-          Archived Projects
-          <ion-badge color="medium" class="count-badge">
-            {{ (archivedProjects$ | async)?.length }}
-          </ion-badge>
-        </ion-card-title>
+    <ion-card class="archived-projects-card enhanced-archived-card">
+      <ion-card-header class="enhanced-header">
+        <div class="header-content">
+          <div class="header-title-group">
+            <ion-icon name="archive" class="title-icon"></ion-icon>
+            <div class="title-info">
+              <ion-card-title>Archived Projects</ion-card-title>
+              <ion-card-subtitle class="section-subtitle">
+                Completed or inactive projects
+              </ion-card-subtitle>
+            </div>
+          </div>
+          <div class="header-stats">
+            <ion-badge color="medium" class="count-badge">
+              {{ (archivedProjects$ | async)?.length }}
+            </ion-badge>
+            <ion-button fill="clear" size="small" class="expand-button">
+              <ion-icon name="chevron-down" slot="icon-only"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
       </ion-card-header>
-      <ion-card-content>
-        <ion-list lines="none">
+      <ion-card-content class="enhanced-archived-content">
+        <ion-list lines="none" class="enhanced-archived-list">
           <ion-item
             *ngFor="let proj of (archivedProjects$ | async); trackBy: trackById"
-            class="project-item archived-project"
+            class="project-item archived-project enhanced-archived-item modern-archived-card"
           >
-            <ion-icon name="archive" slot="start" color="medium"></ion-icon>
+            <div class="project-icon-container" slot="start">
+              <div class="archived-project-avatar">
+                <ion-icon
+                  [name]="proj.icon || 'folder'"
+                  class="project-icon"
+                  [style.color]="proj.color || 'var(--ion-color-medium)'"
+                ></ion-icon>
+              </div>
+            </div>
 
-            <div class="project-content">
-              <ion-label class="project-name">
-                {{ proj.name }}
-                <ion-badge color="medium" class="archived-badge"
-                  >Archived</ion-badge
+            <div
+              class="project-content enhanced-content modern-archived-content"
+            >
+              <div class="project-main-info">
+                <div class="archived-project-header">
+                  <h4 class="project-name modern-archived-name">
+                    {{ proj.name }}
+                  </h4>
+                  <div class="archived-project-badges">
+                    <ion-chip
+                      *ngIf="proj.standardCategory"
+                      class="category-chip modern-archived-category"
+                      [style.--background]="(projectCategories[proj.standardCategory].color || 'var(--ion-color-medium)') + '20'"
+                      [style.--color]="projectCategories[proj.standardCategory].color || 'var(--ion-color-medium)'"
+                    >
+                      <ion-icon
+                        *ngIf="projectCategories[proj.standardCategory]?.icon"
+                        [name]="projectCategories[proj.standardCategory].icon"
+                        class="category-icon"
+                      ></ion-icon>
+                      <ion-label>{{ proj.standardCategory }}</ion-label>
+                    </ion-chip>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="project-details modern-archived-details"
+                *ngIf="proj.description || proj.endDate"
+              >
+                <p
+                  *ngIf="proj.description"
+                  class="project-description modern-archived-description"
                 >
-              </ion-label>
+                  {{ proj.description }}
+                </p>
+                <div
+                  class="project-dates modern-archived-dates"
+                  *ngIf="proj.endDate"
+                >
+                  <div class="date-item">
+                    <ion-icon
+                      name="calendar-check-outline"
+                      color="medium"
+                    ></ion-icon>
+                    <span>Completed {{ proj.endDate | date:'MMM d, y' }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div
               slot="end"
-              class="project-actions"
+              class="project-actions enhanced-actions modern-archived-actions"
               *ngIf="(isGroupAdmin$ | async)"
             >
               <ion-button
-                fill="clear"
+                fill="outline"
                 size="small"
                 (click)="toggleArchive(proj, false)"
                 color="primary"
+                class="restore-button modern-restore-btn"
               >
-                <ion-icon name="arrow-undo" slot="icon-only"></ion-icon>
+                <ion-icon name="refresh" slot="start"></ion-icon>
+                Restore
               </ion-button>
             </div>
           </ion-item>

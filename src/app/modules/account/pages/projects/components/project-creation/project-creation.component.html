@@ -21,33 +21,43 @@
 -->
 
 <div class="project-creation">
-  <!-- Project Name Row -->
-  <div class="project-name-row">
-    <div class="form-field project-name-field">
-      <ion-label class="required-label">Project Name</ion-label>
-      <ion-input
-        placeholder="Enter your project name"
-        [value]="state.newProjectName"
-        (ionInput)="onProjectNameChange($event.detail.value || '')"
-        (keyup.enter)="createProject()"
-        clearInput="true"
-        class="borderless-input"
-        required
-      ></ion-input>
-    </div>
-  </div>
+  <!-- Project Details Section -->
+  <div class="form-section">
+    <ion-grid>
+      <!-- Project Name Row -->
+      <ion-row>
+        <ion-col>
+          <ion-input
+            label="Project Name"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter your project name"
+            [value]="state.newProjectName"
+            (ionInput)="onProjectNameChange($event.detail.value || '')"
+            (keyup.enter)="createProject()"
+            clearInput="true"
+            required
+          >
+            <ion-note slot="helper">Required field</ion-note>
+          </ion-input>
+        </ion-col>
+      </ion-row>
 
-  <!-- Project Category Row -->
-  <div class="project-category-row">
-    <div class="form-field project-category-field">
-      <ion-label class="required-label">Project Category</ion-label>
-      <app-category-selector
-        [selectedCategory]="state.selectedCategory"
-        (categoryChange)="onCategorySelected($event)"
-        placeholder="Choose category"
-        [required]="true"
-      ></app-category-selector>
-    </div>
+      <!-- Project Category Row -->
+      <ion-row>
+        <ion-col>
+          <div class="category-selector-container">
+            <app-category-selector
+              [selectedCategory]="state.selectedCategory"
+              (categoryChange)="onCategorySelected($event)"
+              placeholder="Choose category"
+              [required]="true"
+            ></app-category-selector>
+            <ion-note color="medium">Required field</ion-note>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
   </div>
 
   <!-- Smart Category Suggestions -->
@@ -58,72 +68,128 @@
     (dismissed)="dismissCategorySuggestions()"
   ></app-smart-category-suggestions>
 
-  <!-- Template Selection Row -->
+  <!-- Template Selection Section -->
   <div
-    class="template-selection"
+    class="template-section"
     *ngIf="state.selectedCategory && state.availableTemplates.length > 0"
   >
-    <div class="template-row">
-      <div class="template-field">
-        <ion-label class="template-label">Choose Template (Optional)</ion-label>
-        <div class="template-options">
-          <div
-            *ngFor="let template of state.availableTemplates"
-            class="template-option"
-            [class.selected]="state.selectedTemplate === template"
-            (click)="onTemplateSelected(template)"
-          >
-            <div class="template-icon">
-              <ion-icon [name]="template.icon || 'document'"></ion-icon>
-            </div>
-            <div class="template-info">
-              <span class="template-name">{{ template.name }}</span>
-              <span class="template-description">{{
-                template.description
-              }}</span>
-            </div>
-          </div>
-          <div
-            class="template-option no-template"
-            [class.selected]="!state.selectedTemplate"
-            (click)="onTemplateSelected(undefined)"
-          >
-            <div class="template-icon">
-              <ion-icon name="create"></ion-icon>
-            </div>
-            <div class="template-info">
-              <span class="template-name">Start from scratch</span>
-              <span class="template-description">Create a custom project</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <ion-card class="template-selection-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="library-outline" class="section-icon"></ion-icon>
+          Choose Template (Optional)
+        </ion-card-title>
+        <ion-card-subtitle>
+          Select a template to get started quickly, or create from scratch
+        </ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <!-- Available Templates -->
+            <ion-col
+              size="12"
+              size-md="6"
+              *ngFor="let template of state.availableTemplates"
+            >
+              <div
+                class="template-option"
+                [class.selected]="state.selectedTemplate === template"
+                (click)="onTemplateSelected(template)"
+              >
+                <div class="template-header">
+                  <div class="template-icon">
+                    <ion-icon
+                      [name]="template.icon || 'document-outline'"
+                    ></ion-icon>
+                  </div>
+                  <div class="template-info">
+                    <h3>{{ template.name }}</h3>
+                    <p>{{ template.description }}</p>
+                  </div>
+                </div>
+                <div
+                  class="template-selection-indicator"
+                  *ngIf="state.selectedTemplate === template"
+                >
+                  <ion-icon name="checkmark-circle" color="success"></ion-icon>
+                </div>
+              </div>
+            </ion-col>
+
+            <!-- Start from Scratch Option -->
+            <ion-col size="12" size-md="6">
+              <div
+                class="template-option custom-option"
+                [class.selected]="!state.selectedTemplate"
+                (click)="onTemplateSelected(undefined)"
+              >
+                <div class="template-header">
+                  <div class="template-icon">
+                    <ion-icon name="create-outline"></ion-icon>
+                  </div>
+                  <div class="template-info">
+                    <h3>Start from Scratch</h3>
+                    <p>Create a custom project with your own structure</p>
+                  </div>
+                </div>
+                <div
+                  class="template-selection-indicator"
+                  *ngIf="!state.selectedTemplate"
+                >
+                  <ion-icon name="checkmark-circle" color="success"></ion-icon>
+                </div>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
   </div>
 
   <!-- Action Buttons -->
-  <div class="creation-actions" *ngIf="canCreateProject()">
-    <ion-button fill="outline" (click)="onCancel()">
-      <ion-icon name="close" slot="start"></ion-icon>
-      Cancel
-    </ion-button>
+  <div class="action-buttons" *ngIf="canCreateProject()">
+    <ion-grid>
+      <ion-row>
+        <ion-col size="12" size-md="auto">
+          <ion-button
+            fill="outline"
+            color="medium"
+            expand="block"
+            (click)="onCancel()"
+          >
+            <ion-icon name="close" slot="start"></ion-icon>
+            Cancel
+          </ion-button>
+        </ion-col>
 
-    <ion-button
-      fill="outline"
-      (click)="onPreview()"
-      *ngIf="state.selectedTemplate"
-    >
-      <ion-icon name="eye" slot="start"></ion-icon>
-      Preview Template
-    </ion-button>
+        <ion-col size="12" size-md="auto" *ngIf="state.selectedTemplate">
+          <ion-button
+            fill="outline"
+            color="primary"
+            expand="block"
+            (click)="onPreview()"
+          >
+            <ion-icon name="eye" slot="start"></ion-icon>
+            Preview Template
+          </ion-button>
+        </ion-col>
 
-    <ion-button
-      (click)="createProject()"
-      [disabled]="!canCreateProject()"
-      class="create-button"
-    >
-      <ion-icon name="add-circle" slot="start"></ion-icon>
-      {{ getCreateButtonText() }}
-    </ion-button>
+        <ion-col size="12" size-md="">
+          <ion-button
+            fill="solid"
+            color="primary"
+            expand="block"
+            (click)="createProject()"
+            [disabled]="!canCreateProject()"
+            class="create-button"
+          >
+            <ion-icon name="add-circle" slot="start"></ion-icon>
+            {{ getCreateButtonText() }}
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
   </div>
 </div>

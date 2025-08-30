@@ -25,9 +25,8 @@ import {
 import {CategorySuggestion} from "../../../../../core/constants/category-keywords.constant";
 
 export interface ProjectCreationEvent {
-  type: "single" | "bulk";
-  projectName?: string;
-  projectNames?: string[];
+  type: "single";
+  projectName: string;
   category: StandardProjectCategory;
   template?: StandardProjectTemplate;
 }
@@ -37,9 +36,6 @@ export interface ProjectCreationState {
   selectedCategory?: StandardProjectCategory;
   selectedTemplate?: StandardProjectTemplate;
   availableTemplates: StandardProjectTemplate[];
-  bulkCreateProjects: boolean;
-  bulkCreateNames: string[];
-  bulkCreateCount: number;
   suggestedCategories: CategorySuggestion[];
   showCategorySuggestions: boolean;
 }
@@ -49,9 +45,6 @@ export const DEFAULT_PROJECT_CREATION_STATE: ProjectCreationState = {
   selectedCategory: undefined,
   selectedTemplate: undefined,
   availableTemplates: [],
-  bulkCreateProjects: false,
-  bulkCreateNames: [""],
-  bulkCreateCount: 1,
   suggestedCategories: [],
   showCategorySuggestions: false,
 };

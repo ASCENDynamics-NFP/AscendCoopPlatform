@@ -44,6 +44,19 @@ export class SmartCategorySuggestionsComponent {
     this.dismissed.emit();
   }
 
+  dismissSuggestion(suggestion: CategorySuggestion): void {
+    // Remove the specific suggestion from the list
+    const index = this.suggestions.indexOf(suggestion);
+    if (index > -1) {
+      this.suggestions.splice(index, 1);
+    }
+
+    // If no suggestions left, hide the component
+    if (this.suggestions.length === 0) {
+      this.dismissed.emit();
+    }
+  }
+
   dismiss(): void {
     this.dismissed.emit();
   }

@@ -23,6 +23,7 @@ import {
   StandardProjectCategory,
   StandardProjectTemplate,
   STANDARD_PROJECT_TEMPLATES,
+  STANDARD_PROJECT_CATEGORIES_INFO,
 } from "../../../../../../../../shared/models/standard-project-template.model";
 import {CategorySuggestion} from "../../../../../../core/constants/category-keywords.constant";
 import {
@@ -42,11 +43,42 @@ export class ProjectCreationComponent implements OnInit {
   @Output() projectCreate = new EventEmitter<ProjectCreationEvent>();
   @Output() categoryChange = new EventEmitter<StandardProjectCategory>();
   @Output() projectNameChange = new EventEmitter<string>();
-  @Output() templateSelected = new EventEmitter<StandardProjectTemplate>();
+  @Output() templateSelected = new EventEmitter<
+    StandardProjectTemplate | undefined
+  >();
   @Output() stateChange = new EventEmitter<ProjectCreationState>();
+
+  // Creation mode property
+  creationMode: "single" | null = null;
 
   ngOnInit() {
     this.updateAvailableTemplates();
+  }
+
+  // Creation mode methods
+  setCreationMode(mode: "single"): void {
+    this.creationMode = mode;
+  }
+
+  // Check if can create project
+  canCreateProject(): boolean {
+    return !this.isCreateDisabled;
+  }
+
+  // Cancel action
+  onCancel(): void {
+    this.resetProjectCreation();
+  }
+
+  // Preview action
+  onPreview(): void {
+    // Implement preview functionality
+    console.log("Preview project creation");
+  }
+
+  // Get create button text
+  getCreateButtonText(): string {
+    return "Create Project";
   }
 
   onCategorySelected(category: StandardProjectCategory): void {
@@ -69,7 +101,7 @@ export class ProjectCreationComponent implements OnInit {
     this.emitStateChange();
   }
 
-  onTemplateSelected(template: StandardProjectTemplate): void {
+  onTemplateSelected(template: StandardProjectTemplate | undefined): void {
     this.state = {
       ...this.state,
       selectedTemplate: template,
@@ -90,79 +122,18 @@ export class ProjectCreationComponent implements OnInit {
     this.emitStateChange();
   }
 
-  toggleBulkCreate(): void {
-    const bulkCreateProjects = !this.state.bulkCreateProjects;
-    this.state = {
-      ...this.state,
-      bulkCreateProjects,
-      bulkCreateCount: bulkCreateProjects ? 3 : 1,
-      bulkCreateNames: bulkCreateProjects
-        ? ["Project 1", "Project 2", "Project 3"]
-        : [this.state.newProjectName || ""],
-    };
-    this.emitStateChange();
-  }
-
-  addBulkCreateProject(): void {
-    const newCount = this.state.bulkCreateCount + 1;
-    this.state = {
-      ...this.state,
-      bulkCreateCount: newCount,
-      bulkCreateNames: [...this.state.bulkCreateNames, `Project ${newCount}`],
-    };
-    this.emitStateChange();
-  }
-
-  removeBulkCreateProject(index: number): void {
-    if (this.state.bulkCreateNames.length > 1) {
-      const newNames = [...this.state.bulkCreateNames];
-      newNames.splice(index, 1);
-      this.state = {
-        ...this.state,
-        bulkCreateNames: newNames,
-        bulkCreateCount: newNames.length,
-      };
-      this.emitStateChange();
-    }
-  }
-
-  updateBulkProjectName(index: number, name: string): void {
-    const newNames = [...this.state.bulkCreateNames];
-    newNames[index] = name;
-    this.state = {
-      ...this.state,
-      bulkCreateNames: newNames,
-    };
-    this.emitStateChange();
-  }
-
   createProject(): void {
     if (!this.state.selectedCategory || !this.state.newProjectName.trim())
       return;
 
+    this.createSingleProject();
+  }
+
+  createSingleProject(): void {
     const event: ProjectCreationEvent = {
       type: "single",
       projectName: this.state.newProjectName.trim(),
-      category: this.state.selectedCategory,
-      template: this.state.selectedTemplate,
-    };
-
-    this.projectCreate.emit(event);
-  }
-
-  createBulkProjects(): void {
-    if (!this.state.selectedCategory) return;
-
-    const validNames = this.state.bulkCreateNames
-      .map((name) => name.trim())
-      .filter((name) => name.length > 0);
-
-    if (validNames.length === 0) return;
-
-    const event: ProjectCreationEvent = {
-      type: "bulk",
-      projectNames: validNames,
-      category: this.state.selectedCategory,
+      category: this.state.selectedCategory!,
       template: this.state.selectedTemplate,
     };
 
@@ -200,10 +171,22 @@ export class ProjectCreationComponent implements OnInit {
     return !this.state.newProjectName.trim() || !this.state.selectedCategory;
   }
 
-  get isBulkCreateDisabled(): boolean {
-    return (
-      !this.state.selectedCategory ||
-      this.state.bulkCreateNames.every((name) => !name.trim())
-    );
+  getCategoryDescription(): string {
+    if (!this.state.selectedCategory) return "";
+
+    const categoryInfo =
+      STANDARD_PROJECT_CATEGORIES_INFO[this.state.selectedCategory];
+    return categoryInfo?.description || "";
+  }
+
+  getCategoryInfo(): {icon: string; color: string} {
+    if (!this.state.selectedCategory) return {icon: "folder", color: "#666"};
+
+    const categoryInfo =
+      STANDARD_PROJECT_CATEGORIES_INFO[this.state.selectedCategory];
+    return {
+      icon: categoryInfo?.icon || "folder",
+      color: categoryInfo?.color || "#666",
+    };
   }
 }

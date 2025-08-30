@@ -20,176 +20,110 @@
 ***********************************************************************************************/
 -->
 
-<ion-card class="project-creation-card">
-  <ion-card-header>
-    <ion-card-title>
-      <ion-icon name="add-circle" class="title-icon"></ion-icon>
-      Add New Project
-    </ion-card-title>
-  </ion-card-header>
-
-  <ion-card-content>
-    <!-- Category Selection -->
-    <app-category-selector
-      [selectedCategory]="state.selectedCategory"
-      (categoryChange)="onCategorySelected($event)"
-      placeholder="Choose a category for your project"
-    ></app-category-selector>
-
-    <!-- Project Name Input -->
-    <ion-item lines="none" class="project-name-input">
-      <ion-label position="stacked">Project Name</ion-label>
+<div class="project-creation">
+  <!-- Project Name Row -->
+  <div class="project-name-row">
+    <div class="form-field project-name-field">
+      <ion-label class="required-label">Project Name</ion-label>
       <ion-input
-        placeholder="Enter your project name here (suggestions will appear)"
+        placeholder="Enter your project name"
         [value]="state.newProjectName"
         (ionInput)="onProjectNameChange($event.detail.value || '')"
         (keyup.enter)="createProject()"
         clearInput="true"
+        class="borderless-input"
+        required
       ></ion-input>
-    </ion-item>
+    </div>
+  </div>
 
-    <!-- Smart Category Suggestions -->
-    <app-smart-category-suggestions
-      [suggestions]="state.suggestedCategories"
-      [visible]="state.showCategorySuggestions"
-      (categorySelected)="onCategorySuggestionSelected($event)"
-      (dismissed)="dismissCategorySuggestions()"
-    ></app-smart-category-suggestions>
+  <!-- Project Category Row -->
+  <div class="project-category-row">
+    <div class="form-field project-category-field">
+      <ion-label class="required-label">Project Category</ion-label>
+      <app-category-selector
+        [selectedCategory]="state.selectedCategory"
+        (categoryChange)="onCategorySelected($event)"
+        placeholder="Choose category"
+        [required]="true"
+      ></app-category-selector>
+    </div>
+  </div>
 
-    <!-- Template Selection -->
-    <div
-      *ngIf="state.selectedCategory && state.availableTemplates.length > 0"
-      class="template-selection"
-    >
-      <ion-label>
-        <h4>Choose Template (Optional)</h4>
-        <p>
-          Select a template to pre-populate your project with common settings
-        </p>
-      </ion-label>
+  <!-- Smart Category Suggestions -->
+  <app-smart-category-suggestions
+    [suggestions]="state.suggestedCategories"
+    [visible]="state.showCategorySuggestions"
+    (categorySelected)="onCategorySuggestionSelected($event)"
+    (dismissed)="dismissCategorySuggestions()"
+  ></app-smart-category-suggestions>
 
-      <ion-radio-group [value]="state.selectedTemplate">
-        <div class="templates-grid">
-          <ion-item
+  <!-- Template Selection Row -->
+  <div
+    class="template-selection"
+    *ngIf="state.selectedCategory && state.availableTemplates.length > 0"
+  >
+    <div class="template-row">
+      <div class="template-field">
+        <ion-label class="template-label">Choose Template (Optional)</ion-label>
+        <div class="template-options">
+          <div
             *ngFor="let template of state.availableTemplates"
             class="template-option"
-            lines="none"
+            [class.selected]="state.selectedTemplate === template"
+            (click)="onTemplateSelected(template)"
           >
-            <ion-radio
-              slot="start"
-              [value]="template"
-              (ionSelect)="onTemplateSelected(template)"
-            ></ion-radio>
-
-            <ion-label class="template-info">
-              <h3>{{ template.name }}</h3>
-              <p>{{ template.description }}</p>
-              <div class="template-meta">
-                <ion-chip color="light" size="small">
-                  {{ template.complexity }}
-                </ion-chip>
-                <ion-chip color="light" size="small">
-                  {{ template.estimatedTimeframe }}
-                </ion-chip>
-              </div>
-            </ion-label>
-          </ion-item>
+            <div class="template-icon">
+              <ion-icon [name]="template.icon || 'document'"></ion-icon>
+            </div>
+            <div class="template-info">
+              <span class="template-name">{{ template.name }}</span>
+              <span class="template-description">{{
+                template.description
+              }}</span>
+            </div>
+          </div>
+          <div
+            class="template-option no-template"
+            [class.selected]="!state.selectedTemplate"
+            (click)="onTemplateSelected(undefined)"
+          >
+            <div class="template-icon">
+              <ion-icon name="create"></ion-icon>
+            </div>
+            <div class="template-info">
+              <span class="template-name">Start from scratch</span>
+              <span class="template-description">Create a custom project</span>
+            </div>
+          </div>
         </div>
-      </ion-radio-group>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="add-project-actions" *ngIf="state.selectedCategory">
-      <ion-button
-        fill="clear"
-        size="small"
-        (click)="resetProjectCreation()"
-        class="cancel-button"
-      >
-        Clear
-      </ion-button>
-
-      <!-- Bulk Create Toggle -->
-      <ion-button
-        fill="outline"
-        size="small"
-        (click)="toggleBulkCreate()"
-        class="bulk-toggle-button"
-      >
-        <ion-icon
-          [name]="state.bulkCreateProjects ? 'remove' : 'copy'"
-          slot="start"
-        ></ion-icon>
-        {{ state.bulkCreateProjects ? "Single Project" : "Multiple Projects" }}
-      </ion-button>
-
-      <!-- Create Button -->
-      <ion-button
-        fill="solid"
-        size="small"
-        (click)="
-          state.bulkCreateProjects ? createBulkProjects() : createProject()
-        "
-        [disabled]="
-          state.bulkCreateProjects ? isBulkCreateDisabled : isCreateDisabled
-        "
-        class="create-button"
-      >
-        <ion-icon name="add" slot="start"></ion-icon>
-        {{
-          state.bulkCreateProjects
-            ? "Create " + state.bulkCreateNames.length + " Projects"
-            : "Create Project"
-        }}
-      </ion-button>
-    </div>
-
-    <!-- Bulk Creation Interface -->
-    <div
-      *ngIf="state.selectedCategory && state.bulkCreateProjects"
-      class="bulk-create-section"
-    >
-      <ion-label>
-        <h4>Multiple Project Creation</h4>
-        <p>
-          Create multiple projects at once with the same category and template
-        </p>
-      </ion-label>
-
-      <div class="bulk-projects-list">
-        <ion-item
-          *ngFor="let name of state.bulkCreateNames; let i = index"
-          lines="none"
-          class="bulk-project-item"
-        >
-          <ion-label position="stacked">Project {{ i + 1 }} Name</ion-label>
-          <ion-input
-            [value]="name"
-            (ionInput)="updateBulkProjectName(i, $event.detail.value || '')"
-            placeholder="Enter project name"
-            clearInput="true"
-          ></ion-input>
-          <ion-button
-            *ngIf="state.bulkCreateNames.length > 1"
-            fill="clear"
-            size="small"
-            slot="end"
-            (click)="removeBulkCreateProject(i)"
-          >
-            <ion-icon name="trash" color="danger"></ion-icon>
-          </ion-button>
-        </ion-item>
       </div>
-
-      <ion-button
-        fill="outline"
-        size="small"
-        (click)="addBulkCreateProject()"
-        class="add-bulk-project-btn"
-      >
-        <ion-icon name="add" slot="start"></ion-icon>
-        Add Another Project
-      </ion-button>
     </div>
-  </ion-card-content>
-</ion-card>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="creation-actions" *ngIf="canCreateProject()">
+    <ion-button fill="outline" (click)="onCancel()">
+      <ion-icon name="close" slot="start"></ion-icon>
+      Cancel
+    </ion-button>
+
+    <ion-button
+      fill="outline"
+      (click)="onPreview()"
+      *ngIf="state.selectedTemplate"
+    >
+      <ion-icon name="eye" slot="start"></ion-icon>
+      Preview Template
+    </ion-button>
+
+    <ion-button
+      (click)="createProject()"
+      [disabled]="!canCreateProject()"
+      class="create-button"
+    >
+      <ion-icon name="add-circle" slot="start"></ion-icon>
+      {{ getCreateButtonText() }}
+    </ion-button>
+  </div>
+</div>

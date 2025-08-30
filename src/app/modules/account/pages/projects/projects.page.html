@@ -20,211 +20,209 @@
     </ion-label>
   </ion-item>
 
-  <!-- Add New Project -->
-  <ion-card *ngIf="(isGroupAdmin$ | async)" class="add-project-card">
-    <ion-card-header>
-      <ion-card-title>
-        <ion-icon name="add-circle" class="title-icon"></ion-icon>
-        Add New Project
-      </ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <app-category-selector
-        [selectedCategory]="selectedCategory"
-        (categoryChange)="onCategorySelected($event)"
-        placeholder="Choose a category for your project"
-      ></app-category-selector>
-
-      <!-- Project Name Input (always shown first for smart suggestions) -->
-      <ion-item lines="none" class="project-name-input">
-        <ion-label position="stacked">Project Name</ion-label>
-        <ion-input
-          placeholder="Enter your project name here (suggestions will appear)"
-          [(ngModel)]="newProjectName"
-          (ionInput)="onProjectNameChange($event.detail.value)"
-          (keyup.enter)="addProject()"
-          clearInput="true"
-        ></ion-input>
-      </ion-item>
-
-      <!-- Smart Category Suggestions -->
-      <app-smart-category-suggestions
-        [suggestions]="suggestedCategories"
-        [visible]="showCategorySuggestions"
-        (categorySelected)="onCategorySelected($event)"
-        (dismissed)="dismissCategorySuggestions()"
-      ></app-smart-category-suggestions>
-
-      <!-- Template Selection (shown after category is selected) -->
-      <div
-        *ngIf="selectedCategory && availableTemplates.length > 0"
-        class="template-selection"
+  <!-- Create New Project Toggle -->
+  <div *ngIf="(isGroupAdmin$ | async)" class="create-project-section">
+    <!-- Toggle Button -->
+    <div class="create-project-toggle" *ngIf="!showProjectCreation">
+      <ion-button
+        fill="outline"
+        color="primary"
+        (click)="toggleProjectCreation()"
+        class="create-toggle-btn"
       >
-        <ion-label>
-          <h4>Choose Template (Optional)</h4>
-          <p>
-            Select a template to pre-populate your project with common settings
-          </p>
-        </ion-label>
+        <ion-icon name="add" slot="start"></ion-icon>
+        Create New Project
+      </ion-button>
+    </div>
 
-        <ion-radio-group [(ngModel)]="selectedTemplate">
-          <div class="templates-grid">
-            <ion-item
-              *ngFor="let template of availableTemplates"
-              class="template-option"
-              lines="none"
-            >
-              <ion-radio
-                slot="start"
-                [value]="template"
-                (ionSelect)="onTemplateSelected(template)"
-              ></ion-radio>
-
-              <ion-label class="template-info">
-                <h3>{{ template.name }}</h3>
-                <p>{{ template.description }}</p>
-                <div class="template-meta">
-                  <ion-chip color="light" size="small"
-                    >{{ template.complexity }}</ion-chip
-                  >
-                  <ion-chip color="light" size="small"
-                    >{{ template.estimatedTimeframe }}</ion-chip
-                  >
-                </div>
-              </ion-label>
-            </ion-item>
-          </div>
-        </ion-radio-group>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="add-project-actions" *ngIf="selectedCategory">
-        <ion-button
-          fill="clear"
-          size="small"
-          (click)="resetProjectCreation()"
-          class="cancel-button"
-        >
-          Clear
-        </ion-button>
-
-        <!-- Advanced Options Toggle -->
-        <ion-button
-          fill="outline"
-          size="small"
-          (click)="toggleBulkCreate()"
-          class="bulk-toggle-button"
-        >
-          <ion-icon
-            [name]="bulkCreateProjects ? 'remove' : 'copy'"
-            slot="start"
-          ></ion-icon>
-          {{ bulkCreateProjects ? 'Single Project' : 'Multiple Projects' }}
-        </ion-button>
-
-        <ion-button
-          fill="solid"
-          size="small"
-          (click)="bulkCreateProjects ? createBulkProjects() : addProject()"
-          [disabled]="!newProjectName.trim()"
-          class="create-button"
-        >
-          <ion-icon name="add" slot="start"></ion-icon>
-          {{ bulkCreateProjects ? 'Create ' + bulkCreateNames.length + '
-          Projects' : 'Create Project' }}
-        </ion-button>
-      </div>
-
-      <!-- Bulk Creation Interface -->
-      <div
-        *ngIf="selectedCategory && bulkCreateProjects"
-        class="bulk-create-section"
-      >
-        <ion-label>
-          <h4>Multiple Project Creation</h4>
-          <p>
-            Create multiple projects at once with the same category and template
-          </p>
-        </ion-label>
-
-        <div class="bulk-projects-list">
-          <ion-item
-            *ngFor="let name of bulkCreateNames; let i = index"
-            lines="none"
-            class="bulk-project-item"
+    <!-- Project Creation Form (Collapsed by default) -->
+    <ion-card *ngIf="showProjectCreation" class="creation-form-card">
+      <ion-card-header>
+        <ion-card-title class="creation-form-title">
+          <span>Create New Project</span>
+          <ion-button
+            fill="clear"
+            color="medium"
+            (click)="closeProjectCreation()"
+            class="close-btn"
           >
-            <ion-label position="stacked">Project {{ i + 1 }} Name</ion-label>
-            <ion-input
-              [(ngModel)]="bulkCreateNames[i]"
-              placeholder="Enter project name"
-              clearInput="true"
-            ></ion-input>
-            <ion-button
-              *ngIf="bulkCreateNames.length > 1"
-              fill="clear"
-              size="small"
-              slot="end"
-              (click)="removeBulkCreateProject(i)"
-            >
-              <ion-icon name="trash" color="danger"></ion-icon>
-            </ion-button>
-          </ion-item>
-        </div>
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+        </ion-card-title>
+      </ion-card-header>
 
-        <ion-button
-          fill="outline"
-          size="small"
-          (click)="addBulkCreateProject()"
-          class="add-bulk-project-btn"
-        >
-          <ion-icon name="add" slot="start"></ion-icon>
-          Add Another Project
-        </ion-button>
-      </div>
-    </ion-card-content>
-  </ion-card>
+      <ion-card-content>
+        <app-project-creation
+          [state]="projectCreationState"
+          (projectCreate)="onProjectCreate($event)"
+          (categoryChange)="onCategorySelectedFromComponent($event)"
+          (projectNameChange)="onProjectNameChangeFromComponent($event)"
+          (templateSelected)="onTemplateSelectedFromComponent($event)"
+          (stateChange)="onProjectCreationStateChange($event)"
+        ></app-project-creation>
+      </ion-card-content>
+    </ion-card>
+  </div>
 
   <!-- Search and Filter Controls -->
   <app-project-filters
     *ngIf="!(loading$ | async)"
-    [currentFilter]="currentProjectFilter"
+    [searchTerm]="currentProjectFilter.searchTerm"
+    [selectedCategory]="currentProjectFilter.selectedCategory"
+    [sortBy]="currentProjectFilter.sortBy"
+    [sortDirection]="currentProjectFilter.sortDirection"
+    [groupByCategory]="currentProjectFilter.showGrouped"
+    [projectCount]="(filteredProjects$ | async)?.length || 0"
+    [showCategoryOverview]="showCategoryOverview"
     (filterChange)="onProjectFilterChange($event)"
+    (toggleCategoryOverview)="toggleCategoryOverview()"
   ></app-project-filters>
 
   <!-- Bulk Actions Component -->
   <app-bulk-actions
     [selectedProjects]="selectedProjects"
-    [showBulkActions]="showBulkActions"
+    [showBulkActions]="true"
     (bulkAction)="onBulkAction($event)"
   ></app-bulk-actions>
 
-  <!-- Category Overview Cards -->
+  <!-- Category Overview Analytics Dashboard -->
   <div
     *ngIf="showCategoryOverview && (categoryOverview$ | async) as overview"
-    class="category-overview"
+    class="analytics-dashboard"
   >
-    <div class="category-grid">
-      <div
-        *ngFor="let categoryKey of templateCategories"
-        class="category-card"
-        (click)="selectCategoryFilter(categoryKey)"
-      >
-        <div class="category-header">
-          <ion-icon
-            [name]="projectCategories[categoryKey].icon"
-            [style.color]="projectCategories[categoryKey].color"
-          ></ion-icon>
-          <h3>{{ categoryKey }}</h3>
-        </div>
-        <div class="category-stats">
-          <p class="project-count">
-            {{ (overview[categoryKey].count || 0) }} projects
-          </p>
-          <p class="hours-count" *ngIf="overview[categoryKey].hours">
-            {{ (overview[categoryKey].hours || 0) }} hours logged
-          </p>
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+      <div class="header-content">
+        <ion-icon name="analytics-outline" class="dashboard-icon"></ion-icon>
+        <div class="header-text">
+          <h2>Project Analytics</h2>
+          <p>Overview of your projects by category</p>
         </div>
       </div>
+      <div class="total-stats">
+        <div class="total-stat">
+          <span class="stat-number">{{ getTotalProjects(overview) }}</span>
+          <span class="stat-label">Total Projects</span>
+        </div>
+        <div class="total-stat">
+          <span class="stat-number">{{ getActiveCategories(overview) }}</span>
+          <span class="stat-label">Active Categories</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Grid -->
+    <div class="analytics-grid">
+      <!-- Main Chart/Stats Card -->
+      <div class="main-analytics-card">
+        <div class="card-header">
+          <h3>Category Distribution</h3>
+          <ion-badge color="medium"
+            >{{ getTotalProjects(overview) }} total</ion-badge
+          >
+        </div>
+        <div class="chart-container">
+          <!-- Donut Chart Representation -->
+          <div class="donut-chart">
+            <div class="donut-inner">
+              <span class="donut-total">{{ getTotalProjects(overview) }}</span>
+              <span class="donut-label">Projects</span>
+            </div>
+          </div>
+          <!-- Legend -->
+          <div class="chart-legend">
+            <div
+              *ngFor="let categoryKey of getTopCategories(overview)"
+              class="legend-item"
+              (click)="selectCategoryFilter(categoryKey)"
+            >
+              <div
+                class="legend-color"
+                [style.background-color]="getCategoryInfo(categoryKey).color || '#6c757d'"
+              ></div>
+              <span class="legend-label">{{ categoryKey }}</span>
+              <span class="legend-value"
+                >{{ overview[categoryKey].count || 0 }}</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Cards Grid -->
+      <div class="category-cards-grid">
+        <div
+          *ngFor="let categoryKey of templateCategories"
+          class="analytics-category-card"
+          [class.has-projects]="(overview[categoryKey].count || 0) > 0"
+          (click)="selectCategoryFilter(categoryKey)"
+        >
+          <div class="card-header">
+            <div class="category-icon-wrapper">
+              <ion-icon
+                [name]="getCategoryInfo(categoryKey).icon || 'folder-outline'"
+                [style.color]="getCategoryInfo(categoryKey).color || '#6c757d'"
+                class="category-icon"
+              ></ion-icon>
+            </div>
+            <h4>{{ categoryKey }}</h4>
+          </div>
+
+          <div class="card-stats">
+            <div class="primary-stat">
+              <span class="stat-number"
+                >{{ overview[categoryKey].count || 0 }}</span
+              >
+              <span class="stat-label">Projects</span>
+            </div>
+
+            <div class="secondary-stats">
+              <div class="secondary-stat">
+                <ion-icon name="time-outline"></ion-icon>
+                <span>{{ overview[categoryKey].hours || 0 }}h</span>
+              </div>
+              <div class="secondary-stat">
+                <ion-icon name="trending-up-outline"></ion-icon>
+                <span>{{ getProjectPercentage(overview, categoryKey) }}%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-progress">
+            <div
+              class="progress-bar"
+              [style.width.%]="getProjectPercentage(overview, categoryKey)"
+              [style.background-color]="getCategoryInfo(categoryKey).color || '#6c757d'"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions Card -->
+      <!-- <div class="quick-actions-card">
+        <div class="card-header">
+          <h3>Quick Actions</h3>
+          <ion-icon name="flash-outline"></ion-icon>
+        </div>
+        <div class="actions-grid">
+          <button class="action-button" (click)="openProjectCreation()">
+            <ion-icon name="add-circle-outline"></ion-icon>
+            <span>New Project</span>
+          </button>
+          <button class="action-button" (click)="selectCategoryFilter('all')">
+            <ion-icon name="list-outline"></ion-icon>
+            <span>View All</span>
+          </button>
+          <button class="action-button" (click)="toggleGroupByCategory()">
+            <ion-icon name="grid-outline"></ion-icon>
+            <span>Group View</span>
+          </button>
+          <button class="action-button" (click)="exportAnalytics()">
+            <ion-icon name="download-outline"></ion-icon>
+            <span>Export</span>
+          </button>
+        </div>
+      </div> -->
     </div>
   </div>
 

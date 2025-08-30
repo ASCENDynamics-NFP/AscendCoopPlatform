@@ -1,6 +1,6 @@
 <div *ngIf="visible && suggestions.length > 0" class="category-suggestions">
   <div class="suggestions-header">
-    <ion-icon name="bulb" color="primary"></ion-icon>
+    <ion-icon name="bulb"></ion-icon>
     <span>Smart Category Suggestions</span>
     <ion-button fill="clear" size="small" (click)="dismiss()">
       <ion-icon name="close" slot="icon-only"></ion-icon>
@@ -15,10 +15,11 @@
     >
       <div class="suggestion-content">
         <div class="suggestion-category">
-          <ion-icon
-            [name]="projectCategories[suggestion.category].icon"
-            [style.color]="projectCategories[suggestion.category].color"
-          ></ion-icon>
+          <div class="category-icon">
+            <ion-icon
+              [name]="projectCategories[suggestion.category].icon"
+            ></ion-icon>
+          </div>
           <span class="category-name">{{ suggestion.category }}</span>
           <ion-badge
             [color]="getConfidenceColor(suggestion.confidence)"
@@ -28,6 +29,28 @@
           </ion-badge>
         </div>
         <p class="suggestion-reason">{{ suggestion.reason }}</p>
+        <div class="suggestion-actions">
+          <ion-button
+            class="use-suggestion"
+            size="small"
+            fill="solid"
+            (click)="
+              applySuggestedCategory(suggestion); $event.stopPropagation()
+            "
+          >
+            <ion-icon name="checkmark" slot="start"></ion-icon>
+            Use This
+          </ion-button>
+          <ion-button
+            class="dismiss-suggestion"
+            size="small"
+            fill="outline"
+            (click)="dismissSuggestion(suggestion); $event.stopPropagation()"
+          >
+            <ion-icon name="close" slot="start"></ion-icon>
+            Dismiss
+          </ion-button>
+        </div>
       </div>
     </div>
   </div>

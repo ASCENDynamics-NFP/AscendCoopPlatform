@@ -21,7 +21,12 @@
 import {StandardProjectCategory} from "../../../../../../../shared/models/standard-project-template.model";
 
 export interface BulkActionEvent {
-  type: "archive" | "delete" | "changeCategory" | "clearSelection";
+  type:
+    | "archive"
+    | "delete"
+    | "changeCategory"
+    | "clearSelection"
+    | "selectAll";
   selectedProjectIds: string[];
   newCategory?: StandardProjectCategory;
 }

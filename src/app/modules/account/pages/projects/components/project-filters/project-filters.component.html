@@ -1,7 +1,8 @@
 <div class="project-filters">
-  <!-- Search and Basic Controls -->
-  <div class="filters-header">
-    <div class="search-container">
+  <!-- Main Filter Row -->
+  <div class="main-filter-row">
+    <!-- Search -->
+    <div class="search-section">
       <ion-searchbar
         [(ngModel)]="searchTerm"
         (ionInput)="onSearchChange($event.detail.value!)"
@@ -11,101 +12,89 @@
       ></ion-searchbar>
     </div>
 
-    <div class="filter-controls">
+    <!-- Category & Sort Controls -->
+    <div class="controls-section">
       <!-- Category Filter -->
-      <ion-item lines="none" class="category-filter">
-        <ion-label position="stacked">Filter by Category</ion-label>
-        <ion-select
-          [(ngModel)]="selectedCategory"
-          (ionSelectionChange)="
-            onCategoryFilterChange($any($event).detail.value)
-          "
-          placeholder="All Categories"
-          interface="popover"
+      <ion-select
+        [(ngModel)]="selectedCategory"
+        (ionSelectionChange)="onCategoryFilterChange($any($event).detail.value)"
+        placeholder="All Categories"
+        interface="popover"
+        class="category-select"
+      >
+        <ion-select-option value="all">All Categories</ion-select-option>
+        <ion-select-option
+          *ngFor="let category of categoryKeys"
+          [value]="category"
         >
-          <ion-select-option value="all">All Categories</ion-select-option>
-          <ion-select-option
-            *ngFor="let category of categoryKeys"
-            [value]="category"
-          >
-            <ion-icon
-              [name]="projectCategories[category].icon"
-              [style.color]="projectCategories[category].color"
-              class="category-icon"
-            ></ion-icon>
-            {{ category }}
-          </ion-select-option>
-        </ion-select>
-      </ion-item>
+          {{ category }}
+        </ion-select-option>
+      </ion-select>
 
       <!-- Sort Controls -->
-      <ion-item lines="none" class="sort-controls">
-        <ion-label position="stacked">Sort By</ion-label>
-        <div class="sort-buttons">
-          <ion-segment
-            [(ngModel)]="sortBy"
-            (ionChange)="onSortChange($any($event).detail.value)"
-            class="sort-segment"
-          >
-            <ion-segment-button value="name">
-              <ion-label>Name</ion-label>
-            </ion-segment-button>
-            <ion-segment-button value="category">
-              <ion-label>Category</ion-label>
-            </ion-segment-button>
-            <ion-segment-button value="created">
-              <ion-label>Created</ion-label>
-            </ion-segment-button>
-          </ion-segment>
+      <div class="sort-controls">
+        <ion-segment
+          [(ngModel)]="sortBy"
+          (ionChange)="onSortChange($any($event).detail.value)"
+          class="sort-segment"
+        >
+          <ion-segment-button value="name">Name</ion-segment-button>
+          <ion-segment-button value="category">Category</ion-segment-button>
+          <ion-segment-button value="created">Created</ion-segment-button>
+        </ion-segment>
 
-          <ion-button
-            fill="clear"
-            size="small"
-            (click)="onSortDirectionToggle()"
-            class="sort-direction-btn"
-          >
-            <ion-icon [name]="getSortIcon()" slot="icon-only"></ion-icon>
-          </ion-button>
-        </div>
-      </ion-item>
+        <ion-button
+          fill="clear"
+          size="small"
+          (click)="onSortDirectionToggle()"
+          class="sort-direction-btn"
+        >
+          <ion-icon [name]="getSortIcon()" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
     </div>
   </div>
 
-  <!-- Advanced Controls -->
-  <div class="advanced-controls">
+  <!-- Secondary Actions Row -->
+  <div class="actions-row">
+    <!-- Toggle Controls -->
     <div class="toggle-controls">
-      <!-- Group by Category Toggle -->
-      <ion-item lines="none" class="toggle-item">
-        <ion-checkbox
-          [(ngModel)]="groupByCategory"
-          (ionChange)="onGroupByCategoryToggle()"
+      <ion-button
+        [fill]="groupByCategory ? 'solid' : 'outline'"
+        [color]="groupByCategory ? 'primary' : 'medium'"
+        size="small"
+        (click)="onGroupByCategoryToggle()"
+        class="toggle-btn"
+      >
+        <ion-icon
+          [name]="groupByCategory ? 'checkmark-circle' : 'albums-outline'"
           slot="start"
-        ></ion-checkbox>
-        <ion-label>
-          <h3>Group by Category</h3>
-          <p>Organize projects into category sections</p>
-        </ion-label>
-      </ion-item>
+        ></ion-icon>
+        Group
+      </ion-button>
 
-      <!-- Category Overview Toggle -->
-      <ion-item lines="none" class="toggle-item">
-        <ion-checkbox
-          [checked]="showCategoryOverview"
-          (ionChange)="onToggleCategoryOverview()"
+      <ion-button
+        [fill]="showCategoryOverview ? 'solid' : 'outline'"
+        [color]="showCategoryOverview ? 'primary' : 'medium'"
+        size="small"
+        (click)="onToggleCategoryOverview()"
+        class="toggle-btn"
+      >
+        <ion-icon
+          [name]="
+            showCategoryOverview ? 'checkmark-circle' : 'analytics-outline'
+          "
           slot="start"
-        ></ion-checkbox>
-        <ion-label>
-          <h3>Category Overview</h3>
-          <p>Show category statistics and analytics</p>
-        </ion-label>
-      </ion-item>
+        ></ion-icon>
+        Analytics
+      </ion-button>
     </div>
 
-    <!-- Filter Status and Actions -->
-    <div class="filter-status">
-      <div class="project-count">
-        <ion-badge color="primary">{{ projectCount }} projects</ion-badge>
-      </div>
+    <!-- Status & Actions -->
+    <div class="status-actions">
+      <ion-badge color="primary" class="project-count">
+        {{ projectCount }} projects
+      </ion-badge>
 
       <ion-button
         *ngIf="hasActiveFilters()"
@@ -113,10 +102,10 @@
         size="small"
         color="medium"
         (click)="clearFilters()"
-        class="clear-filters-btn"
+        class="clear-btn"
       >
         <ion-icon name="close-circle" slot="start"></ion-icon>
-        Clear Filters
+        Clear
       </ion-button>
     </div>
   </div>

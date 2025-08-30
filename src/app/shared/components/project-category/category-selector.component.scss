@@ -43,10 +43,3 @@
 .required ion-select {
   --border-color: var(--ion-color-danger);
 }
-
-// Dark mode support
-@media (prefers-color-scheme: dark) {
-  .category-preview {
-    background: var(--ion-color-dark-tint);
-  }
-}

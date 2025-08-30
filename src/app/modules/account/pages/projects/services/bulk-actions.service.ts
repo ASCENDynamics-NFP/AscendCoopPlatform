@@ -34,6 +34,7 @@ import {SuccessHandlerService} from "../../../../../core/services/success-handle
 
 export interface BulkActionCallbacks {
   onClearSelection: () => void;
+  onSelectAll?: () => void;
   onToggleSelectMode?: () => void;
 }
 
@@ -52,8 +53,13 @@ export class BulkActionsService {
     accountId: string,
     callbacks: BulkActionCallbacks,
   ): Promise<void> {
+    console.log("handleBulkAction called with:", event, accountId);
     switch (event.type) {
       case "archive":
+        console.log(
+          "Executing archive with projectIds:",
+          event.selectedProjectIds,
+        );
         await this.handleBulkArchive(
           event.selectedProjectIds,
           accountId,
@@ -61,6 +67,10 @@ export class BulkActionsService {
         );
         break;
       case "delete":
+        console.log(
+          "Executing delete with projectIds:",
+          event.selectedProjectIds,
+        );
         await this.handleBulkDelete(
           event.selectedProjectIds,
           accountId,
@@ -74,6 +84,11 @@ export class BulkActionsService {
           callbacks,
         );
         break;
+      case "selectAll":
+        if (callbacks.onSelectAll) {
+          callbacks.onSelectAll();
+        }
+        break;
       case "clearSelection":
         callbacks.onClearSelection();
         break;
@@ -85,6 +100,7 @@ export class BulkActionsService {
     accountId: string,
     callbacks: BulkActionCallbacks,
   ): Promise<void> {
+    console.log("handleBulkArchive called, creating alert...");
     const alert = await this.alertController.create({
       header: "Archive Projects",
       message: `Are you sure you want to archive ${projectIds.length} selected project(s)?`,
@@ -92,15 +108,20 @@ export class BulkActionsService {
         {
           text: "Cancel",
           role: "cancel",
+          handler: () => {
+            console.log("Archive cancelled by user");
+          },
         },
         {
           text: "Archive",
           handler: () => {
+            console.log("Archive confirmed by user");
             this.executeArchiveProjects(projectIds, accountId, callbacks);
           },
         },
       ],
     });
+    console.log("Presenting archive alert...");
     await alert.present();
   }
 
@@ -109,6 +130,7 @@ export class BulkActionsService {
     accountId: string,
     callbacks: BulkActionCallbacks,
   ): Promise<void> {
+    console.log("handleBulkDelete called, creating alert...");
     const alert = await this.alertController.create({
       header: "Delete Projects",
       message: `Are you sure you want to permanently delete ${projectIds.length} selected project(s)? This action cannot be undone.`,
@@ -116,16 +138,21 @@ export class BulkActionsService {
         {
           text: "Cancel",
           role: "cancel",
+          handler: () => {
+            console.log("Delete cancelled by user");
+          },
         },
         {
           text: "Delete",
           cssClass: "danger",
           handler: () => {
+            console.log("Delete confirmed by user");
             this.executeDeleteProjects(projectIds, accountId, callbacks);
           },
         },
       ],
     });
+    console.log("Presenting delete alert...");
     await alert.present();
   }
 
@@ -175,19 +202,26 @@ export class BulkActionsService {
     accountId: string,
     callbacks: BulkActionCallbacks,
   ): void {
+    console.log("executeArchiveProjects called with:", projectIds, accountId);
     this.store
       .select(selectAuthUser)
       .pipe(first())
       .subscribe((user: any) => {
-        if (!user) return;
+        console.log("User from store:", user);
+        if (!user) {
+          console.error("No user found for archive operation");
+          return;
+        }
 
         projectIds.forEach((projectId) => {
+          console.log("Dispatching archive action for project:", projectId);
           this.store.dispatch(
             ProjectsActions.updateProject({
               accountId,
               projectId,
               changes: {
                 status: "Cancelled",
+                archived: true,
                 lastModifiedBy: user.uid,
               },
             }),
@@ -206,12 +240,17 @@ export class BulkActionsService {
     accountId: string,
     callbacks: BulkActionCallbacks,
   ): void {
+    console.log("executeDeleteProjects called with:", projectIds, accountId);
     projectIds.forEach((projectId) => {
+      console.log("Dispatching delete action for project:", projectId);
       this.store.dispatch(
         ProjectsActions.updateProject({
           accountId,
           projectId,
-          changes: {status: "Cancelled"},
+          changes: {
+            status: "Cancelled",
+            archived: true,
+          },
         }),
       );
     });

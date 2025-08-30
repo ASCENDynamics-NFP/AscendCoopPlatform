@@ -35,6 +35,11 @@ import {
 import {CategorySuggestion} from "../../../../core/constants/category-keywords.constant";
 import {BulkActionEvent} from "./interfaces/bulk-actions.interface";
 import {BulkActionsService} from "./services/bulk-actions.service";
+import {
+  ProjectCreationEvent,
+  ProjectCreationState,
+  DEFAULT_PROJECT_CREATION_STATE,
+} from "./interfaces/project-creation.interface";
 
 @Component({
   selector: "app-projects",
@@ -94,13 +99,16 @@ export class ProjectsPage implements OnInit {
 
   // Project creation modes
   createFromTemplate = false;
-  bulkCreateProjects = false;
-  bulkCreateCount = 1;
-  bulkCreateNames: string[] = [""];
 
   // Smart category suggestions
   suggestedCategories: CategorySuggestion[] = [];
   showCategorySuggestions = false;
+
+  // Project Creation Component State
+  projectCreationState: ProjectCreationState = DEFAULT_PROJECT_CREATION_STATE;
+
+  // Project Creation Toggle
+  showProjectCreation = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -388,6 +396,165 @@ export class ProjectsPage implements OnInit {
     this.resetProjectCreation();
   }
 
+  // ====================================
+  // PROJECT CREATION TOGGLE METHODS
+  // ====================================
+
+  /**
+   * Toggle project creation form display
+   */
+  toggleProjectCreation(): void {
+    this.showProjectCreation = true;
+
+    // Reset the project creation state for single project mode only
+    this.projectCreationState = {
+      ...DEFAULT_PROJECT_CREATION_STATE,
+    };
+  }
+
+  /**
+   * Close project creation form
+   */
+  closeProjectCreation(): void {
+    this.showProjectCreation = false;
+    this.resetProjectCreationState();
+  }
+
+  // ====================================
+  // NEW PROJECT CREATION COMPONENT INTEGRATION
+  // ====================================
+
+  /**
+   * Handle project creation events from the new component
+   */
+  onProjectCreate(event: ProjectCreationEvent): void {
+    // Only handle single project creation
+    if (event.type === "single") {
+      this.createSingleProjectFromComponent(event);
+    }
+  }
+
+  private createSingleProjectFromComponent(event: ProjectCreationEvent): void {
+    if (!event.projectName || !event.category) return;
+
+    const project = {
+      name: event.projectName,
+      standardCategory: event.category,
+      accountId: this.accountId,
+    } as Partial<Project>;
+
+    // Add template data if selected
+    if (event.template) {
+      project.description = event.template.description;
+      project.tags = event.template.defaultTasks || [];
+      project.standardProjectTemplateId = event.template.id;
+      project.complexity = event.template.complexity;
+      project.timeframe = event.template.estimatedTimeframe;
+      project.requiredRoles = event.template.requiredRoles;
+      project.icon = event.template.icon;
+      project.color = event.template.color;
+    }
+
+    this.store.dispatch(
+      ProjectsActions.createProject({
+        accountId: this.accountId,
+        project: project as Project,
+      }),
+    );
+    this.successHandler.handleSuccess("Project created successfully!");
+    this.closeProjectCreation();
+  }
+
+  /**
+   * Handle category changes from the component
+   */
+  onCategorySelectedFromComponent(category: StandardProjectCategory): void {
+    this.projectCreationState = {
+      ...this.projectCreationState,
+      selectedCategory: category,
+      selectedTemplate: undefined,
+    };
+    this.updateAvailableTemplates();
+  }
+
+  /**
+   * Handle project name changes from the component
+   */
+  onProjectNameChangeFromComponent(name: string): void {
+    this.projectCreationState = {
+      ...this.projectCreationState,
+      newProjectName: name,
+    };
+
+    // Generate category suggestions for names > 2 characters
+    if (name.trim().length > 2) {
+      this.generateCategorySuggestionsForComponent(name);
+    } else {
+      this.projectCreationState = {
+        ...this.projectCreationState,
+        suggestedCategories: [],
+        showCategorySuggestions: false,
+      };
+    }
+  }
+
+  /**
+   * Handle template selection from the component
+   */
+  onTemplateSelectedFromComponent(
+    template: StandardProjectTemplate | undefined,
+  ): void {
+    this.projectCreationState = {
+      ...this.projectCreationState,
+      selectedTemplate: template,
+    };
+  }
+
+  /**
+   * Handle state changes from the component
+   */
+  onProjectCreationStateChange(state: ProjectCreationState): void {
+    this.projectCreationState = state;
+  }
+
+  private generateCategorySuggestionsForComponent(projectName: string): void {
+    const suggestions =
+      this.categorySuggestionService.generateSuggestions(projectName);
+    this.projectCreationState = {
+      ...this.projectCreationState,
+      suggestedCategories: suggestions,
+      showCategorySuggestions: suggestions.length > 0,
+    };
+  }
+
+  private updateAvailableTemplates(): void {
+    if (this.projectCreationState.selectedCategory) {
+      const templates = STANDARD_PROJECT_TEMPLATES.filter(
+        (template) =>
+          template.category === this.projectCreationState.selectedCategory,
+      );
+      this.projectCreationState = {
+        ...this.projectCreationState,
+        availableTemplates: templates,
+      };
+    } else {
+      this.projectCreationState = {
+        ...this.projectCreationState,
+        availableTemplates: [],
+      };
+    }
+  }
+
+  private resetProjectCreationState(): void {
+    this.projectCreationState = {
+      ...DEFAULT_PROJECT_CREATION_STATE,
+    };
+  }
+
+  // ====================================
+  // END PROJECT CREATION COMPONENT INTEGRATION
+  // ====================================
+
   updateProject(project: Project, name: string | null | undefined) {
     if (!project.id || !name) return;
     const trimmed = name.trim();
@@ -488,6 +655,7 @@ export class ProjectsPage implements OnInit {
   async onBulkAction(event: BulkActionEvent) {
     await this.bulkActionsService.handleBulkAction(event, this.accountId, {
       onClearSelection: () => this.clearAllSelections(),
+      onSelectAll: () => this.selectAllProjects(),
       onToggleSelectMode: () => this.toggleSelectMode(),
     });
   }
@@ -628,129 +796,14 @@ export class ProjectsPage implements OnInit {
     this.createFromTemplate = false;
   }
 
-  // Bulk project creation
-  toggleBulkCreate() {
-    this.bulkCreateProjects = !this.bulkCreateProjects;
-    if (this.bulkCreateProjects) {
-      this.bulkCreateCount = 3;
-      this.bulkCreateNames = ["Project 1", "Project 2", "Project 3"];
-    } else {
-      this.bulkCreateCount = 1;
-      this.bulkCreateNames = [""];
-    }
-  }
-
-  addBulkCreateProject() {
-    this.bulkCreateCount++;
-    this.bulkCreateNames.push(`Project ${this.bulkCreateCount}`);
-  }
-
-  removeBulkCreateProject(index: number) {
-    if (this.bulkCreateNames.length > 1) {
-      this.bulkCreateNames.splice(index, 1);
-      this.bulkCreateCount--;
-    }
-  }
-
-  async createBulkProjects() {
+  async createSingleProject() {
     if (!this.selectedCategory) {
       this.errorHandler.handleFirebaseAuthError({
         code: "category-required",
-        message: "Please select a category for bulk project creation.",
+        message: "Please select a category for project creation.",
       });
       return;
     }
-
-    const validNames = this.bulkCreateNames
-      .map((name) => name.trim())
-      .filter((name) => name.length > 0);
-
-    if (validNames.length === 0) {
-      this.errorHandler.handleFirebaseAuthError({
-        code: "names-required",
-        message: "Please provide at least one project name.",
-      });
-      return;
-    }
-
-    // Check for duplicates within the bulk list
-    const uniqueNames = new Set(validNames.map((name) => name.toLowerCase()));
-    if (uniqueNames.size !== validNames.length) {
-      this.errorHandler.handleFirebaseAuthError({
-        code: "duplicate-names",
-        message: "Duplicate project names found in the list.",
-      });
-      return;
-    }
-
-    // Check against existing projects
-    this.activeProjects$.pipe(first()).subscribe((existingProjects) => {
-      const existingNames = existingProjects.map((p) => p.name.toLowerCase());
-      const conflicts = validNames.filter((name) =>
-        existingNames.includes(name.toLowerCase()),
-      );
-
-      if (conflicts.length > 0) {
-        this.errorHandler.handleFirebaseAuthError({
-          code: "duplicate-project-names",
-          message: `Projects with these names already exist: ${conflicts.join(", ")}`,
-        });
-        return;
-      }
-
-      // Create all projects
-      this.store
-        .select(selectAuthUser)
-        .pipe(first())
-        .subscribe((user: any) => {
-          if (!user) {
-            this.errorHandler.handleFirebaseAuthError({
-              code: "auth-required",
-              message: "Authentication required to create projects.",
-            });
-            return;
-          }
-
-          const categoryInfo =
-            STANDARD_PROJECT_CATEGORIES_INFO[this.selectedCategory!];
-          const template = this.selectedTemplate;
-
-          validNames.forEach((name) => {
-            const project: Project = {
-              name,
-              accountId: this.accountId,
-              createdBy: user.uid,
-              lastModifiedBy: user.uid,
-              standardCategory: this.selectedCategory,
-              description:
-                template?.description || `${this.selectedCategory} project`,
-              icon: template?.icon || categoryInfo.icon,
-              color: template?.color || categoryInfo.color,
-              complexity: template?.complexity || "Simple",
-              timeframe: template?.estimatedTimeframe || "Short-term",
-              goals: template?.defaultTasks || [],
-              requiredRoles: template?.requiredRoles || [],
-            } as Project;
-
-            if (template?.id) {
-              (project as any).standardProjectTemplateId = template.id;
-            }
-
-            this.store.dispatch(
-              ProjectsActions.createProject({
-                accountId: this.accountId,
-                project,
-              }),
-            );
-          });
-
-          this.successHandler.handleSuccess(
-            `${validNames.length} projects created successfully!`,
-          );
-          this.resetProjectCreation();
-          this.toggleBulkCreate();
-        });
-    });
   }
 
   toggleCategoryOverview() {
@@ -759,6 +812,51 @@ export class ProjectsPage implements OnInit {
 
   toggleGroupByCategory() {
     this.groupByCategory = !this.groupByCategory;
+  }
+
+  // Analytics helper methods
+  getTotalProjects(overview: {
+    [key: string]: {count: number; hours?: number};
+  }): number {
+    return Object.values(overview).reduce(
+      (total, category) => total + category.count,
+      0,
+    );
+  }
+
+  getActiveCategories(overview: {
+    [key: string]: {count: number; hours?: number};
+  }): number {
+    return Object.values(overview).filter((category) => category.count > 0)
+      .length;
+  }
+
+  getTopCategories(overview: {
+    [key: string]: {count: number; hours?: number};
+  }): string[] {
+    return Object.entries(overview)
+      .filter(([_, data]) => data.count > 0)
+      .sort(([_, a], [__, b]) => b.count - a.count)
+      .slice(0, 5)
+      .map(([key, _]) => key);
+  }
+
+  getProjectPercentage(
+    overview: {[key: string]: {count: number; hours?: number}},
+    categoryKey: string,
+  ): number {
+    const total = this.getTotalProjects(overview);
+    const categoryCount = overview[categoryKey]?.count || 0;
+    return total > 0 ? Math.round((categoryCount / total) * 100) : 0;
+  }
+
+  openProjectCreation(): void {
+    this.showProjectCreation = true;
+  }
+
+  exportAnalytics(): void {
+    // TODO: Implement analytics export functionality
+    console.log("Export analytics functionality to be implemented");
   }
 
   getCategoryInfo(category: string) {
@@ -786,71 +884,6 @@ export class ProjectsPage implements OnInit {
 
   getAvailableCategoryKeys(): string[] {
     return Object.keys(this.projectCategories);
-  }
-
-  // Modal and UI Methods
-  showBulkCreationModal() {
-    this.bulkCreateProjects = true;
-    this.bulkCreateNames = [""];
-    this.bulkCreateCount = 1;
-  }
-
-  closeBulkCreationModal() {
-    this.bulkCreateProjects = false;
-    this.bulkCreateNames = [""];
-    this.bulkCreateCount = 1;
-  }
-
-  updateBulkCreateInputs() {
-    const count = this.bulkCreateCount || 1;
-    const newNames = Array(count)
-      .fill("")
-      .map((_, index) => this.bulkCreateNames[index] || "");
-    this.bulkCreateNames = newNames;
-  }
-
-  async executeBulkCreateProjects() {
-    const validNames = this.bulkCreateNames.filter((name) => name.trim());
-    if (validNames.length === 0) return;
-
-    if (!this.selectedCategory) {
-      // Show error alert
-      const alert = await this.alertController.create({
-        header: "Error",
-        message: "Please select a category first",
-        buttons: ["OK"],
-      });
-      await alert.present();
-      return;
-    }
-
-    for (const name of validNames) {
-      if (name.trim()) {
-        const project: Partial<Project> = {
-          name: name.trim(),
-          description: "",
-          accountId: this.accountId,
-          standardCategory: this.selectedCategory,
-          archived: false,
-        };
-
-        if (this.selectedTemplate) {
-          project.description = this.selectedTemplate.description;
-        }
-
-        this.store.dispatch(
-          ProjectsActions.createProject({
-            accountId: this.accountId,
-            project: project as Project,
-          }),
-        );
-      }
-    }
-
-    this.successHandler.handleSuccess(
-      `Created ${validNames.length} projects successfully`,
-    );
-    this.closeBulkCreationModal();
   }
 
   showTemplateSelectionModal() {

@@ -37,35 +37,64 @@ export class BulkActionsComponent {
   @Output() bulkAction = new EventEmitter<BulkActionEvent>();
 
   projectCategories = STANDARD_PROJECT_CATEGORIES_INFO;
+  showCategorySelector = false;
+  selectedNewCategory: string | null = null;
 
   get selectedCount(): number {
     return this.selectedProjects.size;
   }
 
+  get categoryKeys(): string[] {
+    return Object.keys(this.projectCategories);
+  }
+
   onArchiveProjects(): void {
+    console.log("Archive button clicked", this.selectedProjects);
     this.emitBulkAction("archive");
   }
 
   onDeleteProjects(): void {
+    console.log("Delete button clicked", this.selectedProjects);
     this.emitBulkAction("delete");
   }
 
   onChangeCategoryProjects(): void {
-    this.emitBulkAction("changeCategory");
+    console.log("Change category button clicked");
+    this.showCategorySelector = !this.showCategorySelector;
+  }
+
+  onApplyBulkCategory(): void {
+    console.log("Apply category clicked", this.selectedNewCategory);
+    if (this.selectedNewCategory) {
+      this.emitBulkAction(
+        "changeCategory",
+        this.selectedNewCategory as StandardProjectCategory,
+      );
+      this.showCategorySelector = false;
+      this.selectedNewCategory = null;
+    }
+  }
+
+  onSelectAll(): void {
+    console.log("Select all button clicked");
+    this.emitBulkAction("selectAll");
   }
 
   onClearSelection(): void {
+    console.log("Clear selection button clicked");
     this.emitBulkAction("clearSelection");
+    this.showCategorySelector = false;
+    this.selectedNewCategory = null;
   }
 
   private emitBulkAction(
     type: BulkActionEvent["type"],
     newCategory?: StandardProjectCategory,
   ): void {
-    const selectedProjectIds = Array.from(this.selectedProjects);
+    console.log("Emitting bulk action:", type, newCategory);
     this.bulkAction.emit({
       type,
-      selectedProjectIds,
+      selectedProjectIds: Array.from(this.selectedProjects),
       newCategory,
     });
   }

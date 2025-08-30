@@ -20,53 +20,82 @@
 ***********************************************************************************************/
 -->
 
-<ion-card
-  *ngIf="showBulkActions && selectedCount > 0"
-  class="bulk-actions-card"
->
+<ion-card *ngIf="showBulkActions" class="bulk-actions-card">
   <ion-card-content>
-    <div class="bulk-actions-toolbar">
+    <!-- Compact Toolbar -->
+    <div class="bulk-toolbar">
       <div class="selection-info">
-        <ion-icon name="checkmark-circle" color="primary"></ion-icon>
-        <span>{{ selectedCount }} project(s) selected</span>
+        <ion-icon name="checkmark-circle" class="selection-icon"></ion-icon>
+        <span class="selection-text">{{ selectedCount }} selected</span>
       </div>
 
-      <div class="bulk-actions-buttons">
+      <div class="toolbar-actions">
         <ion-button
-          fill="outline"
+          fill="clear"
           size="small"
-          (click)="onArchiveProjects()"
-          color="warning"
+          (click)="onArchiveProjects(); $event.stopPropagation()"
+          class="action-btn archive-btn"
+          title="Archive Projects"
         >
-          <ion-icon name="archive" slot="start"></ion-icon>
-          Archive
+          <ion-icon name="archive" slot="icon-only"></ion-icon>
+        </ion-button>
+
+        <!-- <ion-button
+          fill="clear"
+          size="small"
+          (click)="onDeleteProjects(); $event.stopPropagation()"
+          class="action-btn delete-btn"
+          title="Delete Projects"
+        >
+          <ion-icon name="trash" slot="icon-only"></ion-icon>
+        </ion-button> -->
+
+        <ion-button
+          fill="clear"
+          size="small"
+          (click)="onSelectAll(); $event.stopPropagation()"
+          class="action-btn select-all-btn"
+          title="Select All Projects"
+        >
+          <ion-icon name="checkmark-done-circle" slot="icon-only"></ion-icon>
         </ion-button>
 
         <ion-button
-          fill="outline"
+          fill="clear"
           size="small"
-          (click)="onChangeCategoryProjects()"
-          color="primary"
+          (click)="onClearSelection(); $event.stopPropagation()"
+          class="action-btn clear-btn"
+          title="Clear Selection"
         >
-          <ion-icon name="swap-horizontal" slot="start"></ion-icon>
-          Change Category
-        </ion-button>
-
-        <ion-button
-          fill="outline"
-          size="small"
-          (click)="onDeleteProjects()"
-          color="danger"
-        >
-          <ion-icon name="trash" slot="start"></ion-icon>
-          Delete
-        </ion-button>
-
-        <ion-button fill="clear" size="small" (click)="onClearSelection()">
-          <ion-icon name="close" slot="start"></ion-icon>
-          Clear Selection
+          <ion-icon name="close" slot="icon-only"></ion-icon>
         </ion-button>
       </div>
+    </div>
+
+    <!-- Category Selector (shown when needed) -->
+    <div *ngIf="showCategorySelector" class="category-selector">
+      <ion-select
+        [(ngModel)]="selectedNewCategory"
+        placeholder="Choose category"
+        interface="popover"
+        class="category-select"
+      >
+        <ion-select-option
+          *ngFor="let category of categoryKeys"
+          [value]="category"
+        >
+          {{ category }}
+        </ion-select-option>
+      </ion-select>
+
+      <ion-button
+        size="small"
+        (click)="onApplyBulkCategory()"
+        [disabled]="!selectedNewCategory"
+        class="apply-btn"
+      >
+        Apply
+      </ion-button>
     </div>
   </ion-card-content>
 </ion-card>

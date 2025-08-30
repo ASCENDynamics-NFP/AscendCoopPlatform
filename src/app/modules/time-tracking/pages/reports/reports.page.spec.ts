@@ -127,7 +127,7 @@ describe("ReportsPage", () => {
   });
 
   it("should have available reports configured", () => {
-    expect(component.availableReports).toHaveSize(6);
+    expect(component.availableReports).toHaveSize(7);
     expect(component.availableReports[0].type).toBe("monthly");
     expect(component.availableReports[0].enabled).toBeTrue();
   });

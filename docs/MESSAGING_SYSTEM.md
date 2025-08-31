@@ -398,6 +398,77 @@ getNetworkQuality(): Observable<NetworkQuality>
 ```
 
 ---
+### Encryption Justification
+
+# Why use RSA-OAEP for a messaging system?
+
+**TL;DR:** Use **RSA-OAEP** to securely deliver a **per-message
+symmetric key** to each recipient. It's the modern, CCA-secure padding
+for RSA and is ideal for the key-wrapping step in a hybrid design.
+
+## Benefits
+
+-   **IND-CCA2 security (chosen-ciphertext safe):** OAEP ("Optimal
+    Asymmetric Encryption Padding") fixes classic RSA padding flaws and
+    resists padding-oracle attacks that broke PKCS#1 v1.5.\
+-   **Randomized encryption:** Encrypting the same value twice yields
+    different ciphertexts, blocking replay/guessing.\
+-   **Interoperability & auditability:** Standardized (PKCS#1 v2.2),
+    supported by HSMs and common libraries as "RSA-OAEP" /
+    "RSA-OAEP-256," typically with **MGF1** and a hash like
+    **SHA-256**.\
+-   **Great for hybrid crypto:** RSA is slow for big payloads, but OAEP
+    excels at encrypting a small blob---e.g., a randomly generated
+    AES/ChaCha20 key---after which the message body is protected with a
+    fast AEAD.
+
+## Where it fits: hybrid ("envelope") encryption
+
+1.  Generate a random **content-encryption key (CEK)**.\
+
+2.  Encrypt the message with an **AEAD** (e.g., AES-GCM or
+    ChaCha20-Poly1305) using that CEK.\
+
+3.  **Wrap** the CEK with the recipient's **RSA-OAEP** public key.\
+
+4.  Send:
+
+    ``` json
+    {
+      "wrapped_cek": "<RSA-OAEP ciphertext>",
+      "ciphertext": "<AEAD ciphertext>",
+      "nonce": "<AEAD nonce/iv>",
+      "tag": "<AEAD auth tag>"
+    }
+    ```
+
+5.  Recipient unwraps the CEK with their RSA private key, then
+    AEAD-decrypts the message.
+
+## Best practices & caveats
+
+-   **Use AEAD for the message body**; use RSA-OAEP only to wrap the
+    CEK.\
+-   **Strong parameters:** Prefer **SHA-256 (or better)** for OAEP's
+    hash and MGF1; avoid SHA-1.\
+-   **Signatures:** If also signing, use **RSA-PSS** (not PKCS#1 v1.5
+    signatures).\
+-   **Forward Secrecy:** Plain RSA-OAEP **does not** provide PFS---if a
+    recipient's RSA private key later leaks, old wrapped keys can be
+    decrypted. For PFS (typical in modern messengers), use **ephemeral
+    Diffie-Hellman** (e.g., X25519 + HKDF) to derive per-message/session
+    keys, keeping RSA-OAEP only for compatibility/bootstrap if needed.\
+-   **Key sizes & performance:** Use ≥ **2048-bit RSA** (3072/4096
+    common today). For mobile/low-latency systems, **X25519/X448 KEMs**
+    are typically faster and PFS-friendly.
+
+## In short
+
+Use **RSA-OAEP** to **safely and interoperably wrap symmetric keys** in
+a messaging system. If you need **forward secrecy** (you probably do),
+combine it with---or migrate to---an **ephemeral DH/KEM** approach and
+reserve OAEP for legacy or bootstrapping paths.
+
 
 ## 📞 Support
 

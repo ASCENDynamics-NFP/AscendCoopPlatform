@@ -131,3 +131,49 @@ ion-card-title {
   font-size: 1rem;
   line-height: 1.6;
 }
+
+/* Team grid and member cards */
+.team-grid {
+  --gap: 1rem;
+}
+
+.member-card {
+  text-align: center;
+  height: 100%;
+}
+
+.member-card ion-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.avatar {
+  width: 84px;
+  height: 84px;
+  background: var(--ion-color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-initials {
+  color: var(--ion-color-primary-contrast);
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+}
+
+.name {
+  margin: 0.25rem 0 0;
+  font-size: 1.05rem;
+}
+
+.role {
+  margin: 0;
+  color: var(--ion-color-medium);
+  font-size: 0.95rem;
+}

@@ -30,6 +30,26 @@ import {MetaService} from "../../../../core/services/meta.service";
 export class TeamPage implements OnInit {
   currentYear: number = new Date().getFullYear();
 
+  // Team data used to render members
+  boardMembers = [
+    {
+      name: "Marcin Ufniarz",
+      role: "Board Member · Software Engineer",
+      initials: "MU",
+    },
+    {
+      name: "Tim Watson",
+      role: "Board Member · Software Engineer",
+      initials: "TW",
+    },
+    {name: "Matt Washington", role: "Board Member · Manager", initials: "MW"},
+    {name: "Ewa Mankowski", role: "Board Member · Manager", initials: "EM"},
+  ];
+
+  coreMembers = [
+    {name: "Nyero Eseurhobo", role: "Product Manager", initials: "NE"},
+  ];
+
   constructor(private metaService: MetaService) {}
 
   ionViewWillEnter() {

@@ -17,3 +17,117 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+// Header styling similar to other modals
+ion-header {
+  ion-toolbar {
+    --background: var(--ion-color-primary);
+    --color: var(--ion-color-primary-contrast);
+
+    ion-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+
+      .title-icon {
+        font-size: 1.2rem;
+      }
+    }
+  }
+}
+
+.feedback-container {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.intro-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--ion-card-background, var(--ion-color-light));
+  border: 1px solid var(--ion-border-color, var(--ion-color-light-shade));
+  border-radius: 12px;
+  padding: 16px;
+
+  ion-icon {
+    font-size: 1.6rem;
+  }
+
+  .intro-text {
+    h3 {
+      margin: 0 0 4px 0;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+    }
+    p {
+      margin: 0;
+      color: var(--ion-color-medium);
+    }
+  }
+}
+
+ion-item {
+  --background: transparent;
+  border-radius: 8px;
+}
+
+.attachment-card {
+  background: var(--ion-card-background, var(--ion-color-light));
+  border: 1px solid var(--ion-border-color, var(--ion-color-light-shade));
+  border-radius: 12px;
+  padding: 12px;
+
+  .attachment-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ion-color-medium);
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+  }
+
+  .attachment-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  ion-note {
+    display: block;
+    margin-top: 6px;
+  }
+}
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+@media (max-width: 576px) {
+  .feedback-container {
+    padding: 0 4px;
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .intro-card,
+  .attachment-card {
+    background: var(--ion-card-background, var(--ion-color-step-100));
+    border-color: var(--ion-border-color, var(--ion-color-step-250));
+  }
+}

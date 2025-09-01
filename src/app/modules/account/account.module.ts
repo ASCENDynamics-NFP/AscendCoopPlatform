@@ -50,9 +50,7 @@ import {VolunteerPreferenceInfoFormComponent} from "./pages/edit/components/volu
 import {AccountRoutingModule} from "./account-routing.module";
 import {RegistrationPage} from "./pages/registration/registration.page";
 import {UnifiedRegistrationComponent} from "./pages/registration/components/unified-registration/unified-registration.component";
-import {GroupListPage} from "./pages/group-list/group-list.page";
 import {DirectoryPage} from "./pages/directory/directory.page";
-import {UsersPage} from "./pages/users/users.page";
 import {ListPage} from "./relatedAccount/pages/list/list.page";
 import {RelatedListingsComponent} from "./pages/details/components/related-listings/related-listings.component";
 import {ListingsListPage} from "./relatedListings/pages/listings-list/listings-list.page";
@@ -96,9 +94,7 @@ import {TemplatePreviewModalComponent} from "./pages/projects/components/templat
     MutualAidCommunityInfoComponent,
     RegistrationPage,
     UnifiedRegistrationComponent,
-    GroupListPage,
     DirectoryPage,
-    UsersPage,
     ListingsListPage,
     ListPage,
     RelatedListingsComponent,

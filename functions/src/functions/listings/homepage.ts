@@ -119,7 +119,7 @@ export const getHomepageListings = onRequest(
     const allowedOrigins = [
       "http://localhost:8100",
       "http://localhost:4200",
-      "https://app.ascendynamics.org",
+      "https://ascendynamics.org",
       "https://ascendcoopplatform.web.app",
       "https://ascendcoopplatform.firebaseapp.com",
       "https://ascendcoopplatform-dev.web.app",

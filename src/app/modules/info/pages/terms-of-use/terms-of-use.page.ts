@@ -20,7 +20,7 @@ export class TermsOfUsePage {
         title: "Terms of Use | ASCENDynamics NFP",
         description:
           "ASCENDynamics NFP's terms of use governing the use of our collaborative platform and services.",
-        url: "https://app.ASCENDynamics.org/info/terms-of-use",
+        url: "https://ascendynamics.org/info/terms-of-use",
       },
       {
         card: "summary",

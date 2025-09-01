@@ -211,7 +211,7 @@ export class ProjectsPage implements OnInit {
       {
         title: "Projects | ASCENDynamics NFP",
         description: "Manage projects for your account on ASCENDynamics NFP.",
-        url: `https://app.ASCENDynamics.org/account/${this.accountId}/projects`,
+        url: `https://ascendynamics.org/account/${this.accountId}/projects`,
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },

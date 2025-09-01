@@ -41,7 +41,7 @@ export class EventCalendarPage implements OnInit {
         title: "Upcoming Events | ASCENDynamics NFP",
         description:
           "Join ASCENDynamics NFP for community events and SEO training sessions.",
-        url: "https://app.ASCENDynamics.org/info/event-calendar",
+        url: "https://ascendynamics.org/info/event-calendar",
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
       },
@@ -62,15 +62,15 @@ export class EventCalendarPage implements OnInit {
       name: "ASCENDynamics NFP Community Events",
       description:
         "Community events and SEO workshops hosted by ASCENDynamics NFP",
-      url: "https://app.ASCENDynamics.org/info/event-calendar",
+      url: "https://ascendynamics.org/info/event-calendar",
       organizer: {
         "@type": "Organization",
         name: "ASCENDynamics NFP",
-        url: "https://app.ASCENDynamics.org",
+        url: "https://ascendynamics.org",
       },
       location: {
         "@type": "VirtualLocation",
-        url: "https://app.ASCENDynamics.org",
+        url: "https://ascendynamics.org",
       },
     });
   }

@@ -116,7 +116,7 @@ export class RegistrationPage implements OnInit, OnDestroy {
         title: "Complete Your Registration | ASCENDynamics NFP",
         description:
           "Create your ASCENDynamics NFP profile and connect with meaningful opportunities to make a positive impact.",
-        url: "https://app.ASCENDynamics.org/registration",
+        url: "https://ascendynamics.org/registration",
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Fregistration-og.png?alt=media",
       },

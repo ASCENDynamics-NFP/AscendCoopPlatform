@@ -20,7 +20,7 @@ export class PrivacyPolicyPage {
         title: "Privacy Policy | ASCENDynamics NFP",
         description:
           "ASCENDynamics NFP's privacy policy outlines how we protect and handle your personal information on our platform.",
-        url: "https://app.ASCENDynamics.org/info/privacy-policy",
+        url: "https://ascendynamics.org/info/privacy-policy",
       },
       {
         card: "summary",

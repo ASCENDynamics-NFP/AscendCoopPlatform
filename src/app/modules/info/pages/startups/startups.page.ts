@@ -41,7 +41,7 @@ export class StartupsPage implements OnInit {
         title: "Startup Resources | ASCENDynamics NFP",
         description:
           "Find tools and SEO advice for your worker-owned startup at ASCENDynamics NFP.",
-        url: "https://app.ASCENDynamics.org/info/startups",
+        url: "https://ascendynamics.org/info/startups",
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
       },
@@ -62,7 +62,7 @@ export class StartupsPage implements OnInit {
       name: "Startup Resources | ASCENDynamics NFP",
       description:
         "Launch your cooperative with ASCENDynamics NFP and learn SEO fundamentals.",
-      url: "https://app.ASCENDynamics.org/info/startups",
+      url: "https://ascendynamics.org/info/startups",
       mainEntity: {
         "@type": "Service",
         name: "Cooperative Startup Support",

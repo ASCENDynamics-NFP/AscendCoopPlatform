@@ -41,7 +41,7 @@ export class ThinkTankPage implements OnInit {
         title: "Think Tank | ASCENDynamics NFP",
         description:
           "Join our think tank to collaborate on cooperative research and SEO outreach.",
-        url: "https://app.ASCENDynamics.org/info/think-tank",
+        url: "https://ascendynamics.org/info/think-tank",
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
       },
@@ -62,7 +62,7 @@ export class ThinkTankPage implements OnInit {
       name: "ASCENDynamics NFP Think Tank",
       description:
         "Research and SEO strategies for cooperative development and community projects.",
-      url: "https://app.ASCENDynamics.org/info/think-tank",
+      url: "https://ascendynamics.org/info/think-tank",
       fundedItem: {
         "@type": "Organization",
         name: "ASCENDynamics NFP",

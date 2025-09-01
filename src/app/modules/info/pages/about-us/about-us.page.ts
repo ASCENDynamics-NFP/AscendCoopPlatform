@@ -41,7 +41,7 @@ export class AboutUsPage implements OnInit {
         title: "About ASCENDynamics NFP | Cooperative Incubator",
         description:
           "Discover the mission and values of ASCENDynamics NFP and our dedication to SEO for social impact.",
-        url: "https://app.ASCENDynamics.org/info/about-us",
+        url: "https://ascendynamics.org/info/about-us",
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
       },
@@ -60,16 +60,16 @@ export class AboutUsPage implements OnInit {
       "@context": "https://schema.org",
       "@type": "Organization",
       name: "ASCENDynamics NFP",
-      url: "https://app.ASCENDynamics.org",
+      url: "https://ascendynamics.org",
       logo: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
       description:
         "ASCENDynamics NFP is a cooperative incubator that empowers worker-owned cooperatives through SEO-focused strategies and community resources.",
       foundingDate: "2023",
-      sameAs: ["https://app.ASCENDynamics.org/info/about-us"],
+      sameAs: ["https://ascendynamics.org/info/about-us"],
       contactPoint: {
         "@type": "ContactPoint",
         contactType: "customer service",
-        url: "https://app.ASCENDynamics.org",
+        url: "https://ascendynamics.org",
       },
     });
   }

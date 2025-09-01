@@ -224,7 +224,7 @@ export class ListPage implements OnInit {
       {
         title: title,
         description: description,
-        url: `https://app.ASCENDynamics.org/account/${this.accountId}/related/${this.listType}`,
+        url: `https://ascendynamics.org/account/${this.accountId}/related/${this.listType}`,
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },

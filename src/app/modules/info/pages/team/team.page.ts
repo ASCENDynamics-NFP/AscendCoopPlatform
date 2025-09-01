@@ -61,7 +61,7 @@ export class TeamPage implements OnInit {
         title: "Our Team | ASCENDynamics NFP",
         description:
           "Learn about the passionate team working to grow cooperatives and enhance SEO outreach.",
-        url: "https://app.ASCENDynamics.org/info/team",
+        url: "https://ascendynamics.org/info/team",
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
       },
@@ -81,11 +81,11 @@ export class TeamPage implements OnInit {
       name: "Our Team | ASCENDynamics NFP",
       description:
         "Meet the volunteers, developers, and SEO experts behind ASCENDynamics NFP.",
-      url: "https://app.ASCENDynamics.org/info/team",
+      url: "https://ascendynamics.org/info/team",
       mainEntity: {
         "@type": "Organization",
         name: "ASCENDynamics NFP",
-        url: "https://app.ASCENDynamics.org",
+        url: "https://ascendynamics.org",
         description:
           "Team of volunteers and SEO specialists supporting cooperative development",
       },

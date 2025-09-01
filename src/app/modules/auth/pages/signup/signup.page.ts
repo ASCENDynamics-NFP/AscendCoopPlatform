@@ -69,7 +69,7 @@ export class SignupPage implements OnInit {
         title: "Sign Up for ASCENDynamics NFP",
         description:
           "Join ASCENDynamics NFP to start making an impact in your community today.",
-        url: "https://app.ASCENDynamics.org/signup",
+        url: "https://ascendynamics.org/signup",
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
@@ -90,15 +90,15 @@ export class SignupPage implements OnInit {
       name: "Sign Up | ASCENDynamics NFP",
       description:
         "Create an account on ASCENDynamics NFP to find volunteer opportunities and connect with nonprofits.",
-      url: "https://app.ASCENDynamics.org/signup",
+      url: "https://ascendynamics.org/signup",
       isPartOf: {
         "@type": "WebSite",
         name: "ASCENDynamics NFP",
-        url: "https://app.ASCENDynamics.org",
+        url: "https://ascendynamics.org",
       },
       potentialAction: {
         "@type": "RegisterAction",
-        target: "https://app.ASCENDynamics.org/signup",
+        target: "https://ascendynamics.org/signup",
       },
     });
   }

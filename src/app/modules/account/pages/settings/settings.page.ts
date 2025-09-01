@@ -65,7 +65,7 @@ export class SettingsPage {
         title: "Settings | ASCENDynamics NFP",
         description:
           "Manage your preferences and account settings on ASCENDynamics NFP.",
-        url: "https://app.ASCENDynamics.org/settings",
+        url: "https://ascendynamics.org/settings",
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },

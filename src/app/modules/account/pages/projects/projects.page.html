@@ -106,7 +106,6 @@
     [projectCount]="(filteredProjects$ | async)?.length || 0"
     [showCategoryOverview]="showCategoryOverview"
     (filterChange)="onProjectFilterChange($event)"
-    (toggleCategoryOverview)="toggleCategoryOverview()"
   ></app-project-filters>
 
   <!-- Bulk Actions Component -->
@@ -140,6 +139,15 @@
           <span class="stat-number">{{ getActiveCategories(overview) }}</span>
           <span class="stat-label">Active Categories</span>
         </div>
+        <ion-item lines="none" class="include-archived-toggle">
+          <ion-icon name="archive-outline" slot="start"></ion-icon>
+          <ion-label>Include Archived</ion-label>
+          <ion-toggle
+            slot="end"
+            [checked]="includeArchivedInAnalytics"
+            (ionChange)="toggleIncludeArchivedInAnalytics($event.detail.checked)"
+          ></ion-toggle>
+        </ion-item>
       </div>
     </div>
 
@@ -252,14 +260,6 @@
           <ion-badge color="primary" class="count-badge">
             {{ (filteredProjects$ | async)?.length || 0 }}
           </ion-badge>
-          <ion-button
-            fill="clear"
-            size="small"
-            class="sort-button"
-            [disabled]="(filteredProjects$ | async)?.length === 0"
-          >
-            <ion-icon name="swap-vertical" slot="icon-only"></ion-icon>
-          </ion-button>
         </div>
       </div>
     </ion-card-header>
@@ -434,11 +434,12 @@
       </div>
 
       <!-- Normal List View -->
-      <ion-list
-        *ngIf="!groupByCategory && (filteredProjects$ | async) && (filteredProjects$ | async)!.length > 0"
-        lines="none"
-        class="enhanced-projects-list"
-      >
+      <ng-container *ngIf="entriesByProjectCount$ | async as entryCounts">
+        <ion-list
+          *ngIf="!groupByCategory && (filteredProjects$ | async) && (filteredProjects$ | async)!.length > 0"
+          lines="none"
+          class="enhanced-projects-list"
+        >
         <ion-item
           *ngFor="let proj of (filteredProjects$ | async); trackBy: trackById"
           class="project-item active-project enhanced-project-item"
@@ -743,10 +744,24 @@
               >
                 <ion-icon name="archive" slot="icon-only"></ion-icon>
               </ion-button>
+              <ion-button
+                *ngIf="(isGroupAdmin$ | async)"
+                fill="clear"
+                size="small"
+                color="danger"
+                [disabled]="!entriesAccessAllowed || entryCounts[proj.id] > 0"
+                [title]="entryCounts[proj.id] > 0 ? 'Delete disabled — project has time entries' : 'Delete project'"
+                (click)="deleteProject(proj)"
+                class="delete-button"
+                aria-label="Delete project"
+              >
+                <ion-icon name="trash" slot="icon-only"></ion-icon>
+              </ion-button>
             </div>
           </div>
         </ion-item>
-      </ion-list>
+        </ion-list>
+      </ng-container>
     </ion-card-content>
   </ion-card>
 
@@ -778,7 +793,8 @@
         </div>
       </ion-card-header>
       <ion-card-content class="enhanced-archived-content">
-        <ion-list lines="none" class="enhanced-archived-list">
+        <ng-container *ngIf="entriesByProjectCount$ | async as entryCounts">
+          <ion-list lines="none" class="enhanced-archived-list">
           <ion-item
             *ngFor="let proj of (archivedProjects$ | async); trackBy: trackById"
             class="project-item archived-project enhanced-archived-item modern-archived-card"
@@ -858,9 +874,22 @@
                 <ion-icon name="refresh" slot="start"></ion-icon>
                 Restore
               </ion-button>
+              <ion-button
+                fill="clear"
+                size="small"
+                color="danger"
+                [disabled]="!entriesAccessAllowed || entryCounts[proj.id] > 0"
+                [title]="entryCounts[proj.id] > 0 ? 'Delete disabled — project has time entries' : 'Delete project'"
+                (click)="deleteProject(proj)"
+                class="delete-button"
+                aria-label="Delete project"
+              >
+                <ion-icon name="trash" slot="icon-only"></ion-icon>
+              </ion-button>
             </div>
           </ion-item>
-        </ion-list>
+          </ion-list>
+        </ng-container>
       </ion-card-content>
     </ion-card>
   </div>

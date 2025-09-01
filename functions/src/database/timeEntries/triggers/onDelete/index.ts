@@ -36,6 +36,8 @@ async function handleTimeEntryDelete(
   const entry = snapshot.data();
   const userId = entry.userId;
   const hours = entry.hours || 0;
+  const projectId = entry.projectId;
+  const accountId = event.params.accountId;
 
   if (!userId) {
     logger.error("Time entry missing userId");
@@ -53,5 +55,22 @@ async function handleTimeEntryDelete(
     } catch (error) {
       logger.error("Error updating total hours:", error);
     }
+  }
+
+  // Maintain per-project timeEntryCount aggregate
+  if (projectId && accountId) {
+    try {
+      await admin
+        .firestore()
+        .doc(`accounts/${accountId}/projects/${projectId}`)
+        .update({
+          timeEntryCount: admin.firestore.FieldValue.increment(-1),
+          lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+    } catch (error) {
+      logger.error("Error decrementing project timeEntryCount:", error);
+    }
+  } else {
+    logger.error("Time entry missing projectId or accountId for aggregation");
   }
 }

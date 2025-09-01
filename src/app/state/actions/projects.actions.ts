@@ -70,3 +70,19 @@ export const updateProjectFailure = createAction(
 );
 
 export const clearProjects = createAction("[Projects] Clear Projects");
+
+// Delete Project
+export const deleteProject = createAction(
+  "[Projects] Delete Project",
+  props<{accountId: string; projectId: string}>(),
+);
+
+export const deleteProjectSuccess = createAction(
+  "[Projects] Delete Project Success",
+  props<{accountId: string; projectId: string}>(),
+);
+
+export const deleteProjectFailure = createAction(
+  "[Projects] Delete Project Failure",
+  props<{error: any}>(),
+);

@@ -1,5 +1,6 @@
 .template-preview-content {
-  --background: var(--ion-color-light-shade);
+  /* Respect global theme background */
+  --background: var(--ion-background-color);
 }
 
 .preview-container {
@@ -12,7 +13,7 @@
   text-align: center;
   margin-bottom: 24px;
   padding: 24px;
-  background: var(--ion-color-light);
+  background: var(--ion-card-background);
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
@@ -28,18 +29,18 @@
     font-size: 1.5rem;
     font-weight: 600;
     margin: 0 0 8px 0;
-    color: var(--ion-color-dark);
+    color: var(--ion-text-color);
   }
 
   .template-description {
     font-size: 1rem;
-    color: var(--ion-color-medium);
+    color: var(--ion-color-step-600, var(--ion-color-medium));
     margin: 0 0 16px 0;
     line-height: 1.5;
   }
 
   .category-chip {
-    color: white;
+    color: var(--ion-color-primary-contrast);
     font-weight: 600;
   }
 }
@@ -62,7 +63,7 @@
         align-items: center;
         gap: 8px;
         font-size: 1rem;
-        color: var(--ion-color-dark);
+        color: var(--ion-text-color);
 
         ion-icon {
           font-size: 1.2rem;
@@ -82,7 +83,7 @@
       .timeframe-text {
         font-size: 1rem;
         font-weight: 500;
-        color: var(--ion-color-dark);
+        color: var(--ion-text-color);
       }
 
       .group-types {
@@ -105,7 +106,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      color: var(--ion-color-dark);
+      color: var(--ion-text-color);
 
       ion-icon {
         font-size: 1.2rem;
@@ -118,7 +119,7 @@
     }
 
     ion-card-subtitle {
-      color: var(--ion-color-medium);
+      color: var(--ion-color-step-600, var(--ion-color-medium));
       font-size: 0.9rem;
       margin-top: 4px;
     }
@@ -129,22 +130,22 @@
   background: transparent;
 
   .task-item {
-    --background: var(--ion-color-light-shade);
+    --background: var(--ion-item-background, var(--ion-card-background));
     margin-bottom: 8px;
     border-radius: 8px;
-    border: 1px solid var(--ion-color-light-tint);
+    border: 1px solid var(--ion-border-color);
 
     ion-label {
       h3 {
         font-size: 0.95rem;
         font-weight: 500;
-        color: var(--ion-color-dark);
+        color: var(--ion-text-color);
         margin: 0;
       }
 
       p {
         font-size: 0.8rem;
-        color: var(--ion-color-medium);
+        color: var(--ion-color-step-600, var(--ion-color-medium));
         margin: 2px 0 0 0;
       }
     }
@@ -161,9 +162,9 @@
     align-items: center;
     gap: 8px;
     padding: 12px;
-    background: var(--ion-color-light-shade);
+    background: var(--ion-item-background, var(--ion-card-background));
     border-radius: 8px;
-    border: 1px solid var(--ion-color-light-tint);
+    border: 1px solid var(--ion-border-color);
 
     ion-icon {
       color: var(--ion-color-primary);
@@ -173,7 +174,7 @@
     span {
       font-size: 0.9rem;
       font-weight: 500;
-      color: var(--ion-color-dark);
+      color: var(--ion-text-color);
     }
   }
 }
@@ -182,15 +183,15 @@
   background: transparent;
 
   .metric-item {
-    --background: var(--ion-color-light-shade);
+    --background: var(--ion-item-background, var(--ion-card-background));
     margin-bottom: 8px;
     border-radius: 8px;
-    border: 1px solid var(--ion-color-light-tint);
+    border: 1px solid var(--ion-border-color);
 
     ion-label {
       font-size: 0.95rem;
       font-weight: 500;
-      color: var(--ion-color-dark);
+      color: var(--ion-text-color);
     }
   }
 }
@@ -208,58 +209,7 @@
   }
 }
 
-// Dark mode support
-@media (prefers-color-scheme: dark) {
-  .template-preview-content {
-    --background: var(--ion-color-dark-shade);
-  }
-
-  .template-header {
-    background: var(--ion-color-dark-tint);
-
-    .template-name {
-      color: var(--ion-color-light);
-    }
-  }
-
-  .detail-card,
-  .tasks-card,
-  .roles-card,
-  .metrics-card {
-    background: var(--ion-color-dark-tint);
-
-    ion-card-header ion-card-title {
-      color: var(--ion-color-light);
-    }
-  }
-
-  .tasks-list .task-item {
-    --background: var(--ion-color-dark-shade);
-    border-color: var(--ion-color-medium);
-
-    ion-label h3 {
-      color: var(--ion-color-light);
-    }
-  }
-
-  .roles-grid .role-item {
-    background: var(--ion-color-dark-shade);
-    border-color: var(--ion-color-medium);
-
-    span {
-      color: var(--ion-color-light);
-    }
-  }
-
-  .metrics-list .metric-item {
-    --background: var(--ion-color-dark-shade);
-    border-color: var(--ion-color-medium);
-
-    ion-label {
-      color: var(--ion-color-light);
-    }
-  }
-}
+/* Dark mode handled by CSS variables above; no media query needed */
 
 // Responsive design
 @media (max-width: 768px) {

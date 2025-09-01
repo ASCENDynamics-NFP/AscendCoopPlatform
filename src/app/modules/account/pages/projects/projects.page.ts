@@ -538,9 +538,6 @@ export class ProjectsPage implements OnInit {
       await alert.present();
       const result = await alert.onDidDismiss();
       if (result.role !== "confirm") return;
-
-      // Previously we prevented archiving the last active project.
-      // Per new requirement, allow archiving regardless of remaining active count.
     }
 
     this.store.dispatch(

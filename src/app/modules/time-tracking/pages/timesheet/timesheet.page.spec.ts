@@ -1,4 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 import {IonicModule} from "@ionic/angular";
 import {TimesheetPage} from "./timesheet.page";
 import {WeekViewComponent} from "../../components/week-view/week-view.component";
@@ -34,6 +35,7 @@ describe("TimesheetPage", () => {
     await TestBed.configureTestingModule({
       declarations: [TimesheetPage, WeekViewComponent],
       imports: [IonicModule.forRoot(), FormsModule, TranslateModule.forRoot()],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
         provideMockStore({
           initialState: {

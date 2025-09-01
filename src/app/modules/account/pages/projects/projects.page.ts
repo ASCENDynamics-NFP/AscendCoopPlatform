@@ -538,6 +538,20 @@ export class ProjectsPage implements OnInit {
       await alert.present();
       const result = await alert.onDidDismiss();
       if (result.role !== "confirm") return;
+
+      // Prevent archiving the last active project
+      const currentName = (project.name || "").trim().toLowerCase();
+      const otherActive = this.activeProjectNames.filter(
+        (n) => n && n !== currentName,
+      );
+      if (otherActive.length === 0) {
+        this.errorHandler.handleFirebaseAuthError({
+          code: "last-active-project",
+          message:
+            "You must keep at least one active project. Create another project or restore a project before archiving this one.",
+        });
+        return;
+      }
     }
 
     this.store.dispatch(

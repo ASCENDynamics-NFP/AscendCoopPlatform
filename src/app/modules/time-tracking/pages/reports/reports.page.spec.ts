@@ -18,6 +18,7 @@
  * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
  ********************************************************************************/
 import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 import {ReportsPage} from "./reports.page";
 import {
   AnalyticsService,
@@ -82,6 +83,7 @@ describe("ReportsPage", () => {
     await TestBed.configureTestingModule({
       declarations: [ReportsPage],
       imports: [IonicModule.forRoot(), FormsModule],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
         {provide: AnalyticsService, useValue: analyticsServiceSpy},
         {provide: Store, useValue: storeSpy},

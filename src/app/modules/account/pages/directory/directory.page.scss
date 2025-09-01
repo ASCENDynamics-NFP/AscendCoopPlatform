@@ -1,0 +1,55 @@
+/***********************************************************************************************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+***********************************************************************************************/
+
+.filters-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 8px;
+
+  ion-segment {
+    margin-bottom: 4px;
+  }
+
+  .toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+
+    .sort-item {
+      --inner-padding-end: 0;
+    }
+  }
+}
+
+.results-list {
+  ion-item {
+    --min-height: 60px;
+  }
+
+  h3 {
+    margin: 0 0 2px 0;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0;
+    color: var(--ion-color-medium);
+  }
+
+  .status-icons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .filters-toolbar {
+    background: var(--ion-card-background, var(--ion-color-step-100));
+  }
+}

@@ -35,20 +35,20 @@ import {RoleManagementPage} from "./pages/role-management/role-management.page";
 import {RoleHierarchyPage} from "./pages/role-hierarchy/role-hierarchy.page";
 import {ProjectsPage} from "./pages/projects/projects.page";
 import {AdminDashboardPage} from "./pages/admin-dashboard/admin-dashboard.page";
+import {DirectoryPage} from "./pages/directory/directory.page";
 
 const routes: Routes = [
-  {
-    path: "group-list",
-    component: GroupListPage,
-  },
   {
     path: "settings",
     component: SettingsPage,
     canActivate: [AuthGuard],
   },
+  // Legacy routes redirected to unified directory
+  {path: "group-list", redirectTo: "directory", pathMatch: "full"},
+  {path: "users", redirectTo: "directory", pathMatch: "full"},
   {
-    path: "users",
-    component: UsersPage,
+    path: "directory",
+    component: DirectoryPage,
     canActivate: [AuthGuard],
   },
   {

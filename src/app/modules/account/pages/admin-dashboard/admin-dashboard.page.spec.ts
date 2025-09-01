@@ -18,6 +18,7 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 import {AdminDashboardPage} from "./admin-dashboard.page";
 import {provideMockStore, MockStore} from "@ngrx/store/testing";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -61,6 +62,7 @@ describe("AdminDashboardPage", () => {
     await TestBed.configureTestingModule({
       declarations: [AdminDashboardPage],
       imports: [IonicModule.forRoot(), FormsModule, TranslateTestingModule],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
         provideMockStore({
           initialState: {

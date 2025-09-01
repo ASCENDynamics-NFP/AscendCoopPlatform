@@ -210,16 +210,9 @@ export class MenuComponent implements OnInit, OnDestroy {
         buttonIcon: "add",
       },
       {
-        title: this.translate.instant("menu.groups"),
-        url: "/account/group-list",
-        icon: "business",
-        // hasButton: true,
-        // buttonIcon: "add",
-      },
-      {
-        title: this.translate.instant("menu.users"),
-        url: "/account/users",
-        icon: "people",
+        title: this.translate.instant("menu.directory") || "Directory",
+        url: "/account/directory",
+        icon: "search",
       },
       {
         title: this.translate.instant("menu.settings"),

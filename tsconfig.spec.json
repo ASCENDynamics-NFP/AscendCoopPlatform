@@ -3,7 +3,13 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
-    "types": ["jasmine"]
+    "types": ["jasmine"],
+    "paths": {
+      "@southdevs/capacitor-google-auth": [
+        "src/testing/capacitor-google-auth.mock.ts"
+      ],
+      "@shared/*": ["shared/*"]
+    }
   },
   "files": ["src/test.ts", "src/polyfills.ts"],
   "include": ["src/**/*.spec.ts", "src/**/*.d.ts"]

@@ -62,8 +62,12 @@ export class AppComponent implements OnInit {
 
   initializeApp() {
     this.platform.ready().then(() => {
-      // Initialize GoogleAuth plugin for native platforms
+      // Initialize GoogleAuth
+      // - Web requires clientId
+      // - Native does not require options; initialization without args is sufficient
       if (Capacitor.isNativePlatform()) {
+        GoogleAuth.initialize();
+      } else {
         GoogleAuth.initialize({
           clientId: environment.googleAuth.webClientId,
           scopes: ["profile", "email"],

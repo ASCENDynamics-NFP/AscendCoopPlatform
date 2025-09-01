@@ -60,6 +60,7 @@ import {TimeAgoPipe} from "../../shared/pipes/time-ago.pipe";
     LeadFormComponent,
     TimeAgoPipe,
   ],
+  exports: [InfoFooterComponent],
   imports: [
     CommonModule,
     FormsModule,

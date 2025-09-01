@@ -26,6 +26,7 @@ export interface ProjectFilter {
   sortBy: "name" | "category" | "created";
   sortDirection: "asc" | "desc";
   showGrouped: boolean;
+  includeArchivedInAnalytics?: boolean;
 }
 
 export const DEFAULT_PROJECT_FILTER: ProjectFilter = {
@@ -34,4 +35,5 @@ export const DEFAULT_PROJECT_FILTER: ProjectFilter = {
   sortBy: "name",
   sortDirection: "asc",
   showGrouped: false,
+  includeArchivedInAnalytics: false,
 };

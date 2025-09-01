@@ -277,7 +277,7 @@ export class ListingsListPage implements OnInit {
         title: "Volunteer Listings | ASCENDynamics NFP",
         description:
           "Browse and apply for volunteer roles on ASCENDynamics NFP.",
-        url: "https://app.ASCENDynamics.org/listings",
+        url: "https://ascendynamics.org/listings",
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },

@@ -33,7 +33,7 @@
   margin-bottom: 20px;
 
   .quick-actions-card {
-    background: var(--ion-color-light);
+    background: var(--ion-card-background);
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -48,7 +48,7 @@
         margin: 0;
         font-size: 1.2rem;
         font-weight: 600;
-        color: var(--ion-color-dark);
+        color: var(--ion-text-color);
       }
 
       ion-icon {
@@ -63,8 +63,8 @@
       gap: 12px;
 
       .action-button {
-        background: var(--ion-color-light-shade);
-        border: 1px solid var(--ion-color-light-tint);
+        background: var(--ion-item-background, var(--ion-card-background));
+        border: 1px solid var(--ion-border-color);
         border-radius: 8px;
         padding: 16px 12px;
         display: flex;
@@ -73,7 +73,7 @@
         gap: 8px;
         cursor: pointer;
         transition: all 0.2s ease;
-        color: var(--ion-color-dark);
+        color: var(--ion-text-color);
 
         &:hover {
           background: var(--ion-color-primary-tint);
@@ -108,249 +108,11 @@
   }
 }
 
-// Add project card
-.add-project-card {
-  margin-bottom: 20px;
+// Removed unused legacy "Add project card" styles
 
-  .title-icon {
-    margin-right: 8px;
-    color: var(--ion-color-primary);
-  }
+// Removed unused legacy "Category creation" styles
 
-  ion-item {
-    --padding-start: 0;
-    --inner-padding-end: 0;
-  }
-
-  ion-input {
-    --padding-start: 12px;
-    --padding-end: 8px;
-  }
-
-  .project-name-input {
-    margin-top: 16px;
-    --padding-start: 0;
-    --padding-end: 0;
-    --background: var(--ion-color-light);
-    border: 2px solid var(--ion-color-primary);
-    border-radius: 8px;
-    margin-bottom: 8px;
-
-    ion-input {
-      --padding-start: 16px;
-      --padding-end: 16px;
-      --padding-top: 12px;
-      --padding-bottom: 12px;
-      font-size: 16px;
-      font-weight: 500;
-    }
-
-    ion-label {
-      font-weight: 600;
-      color: var(--ion-color-primary);
-      margin-bottom: 8px;
-    }
-  }
-
-  .template-selection {
-    margin-top: 12px;
-
-    ion-item {
-      --padding-start: 0;
-      --padding-end: 0;
-    }
-
-    .template-help-text {
-      font-size: 12px;
-      color: var(--ion-color-medium);
-      font-style: italic;
-      margin-top: 4px;
-      margin-bottom: 0;
-    }
-
-    .template-preview {
-      margin-top: 12px;
-      padding: 12px;
-      background: var(--ion-color-light);
-      border-radius: 8px;
-      border-left: 4px solid var(--ion-color-secondary);
-
-      .template-chip {
-        margin-bottom: 8px;
-      }
-
-      .template-preview-description {
-        margin: 8px 0;
-        font-size: 14px;
-        color: var(--ion-color-dark);
-      }
-
-      .template-details {
-        margin-top: 8px;
-
-        small {
-          color: var(--ion-color-medium);
-        }
-      }
-    }
-  }
-
-  .add-project-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 20px;
-
-    .cancel-button {
-      color: var(--ion-color-medium);
-    }
-
-    .create-button {
-      margin-left: auto;
-    }
-  }
-}
-
-// Category creation section
-.category-creation-section {
-  .category-selection {
-    .category-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 12px;
-      margin: 16px 0;
-
-      .category-option-button {
-        --border-radius: 12px;
-        --padding-start: 16px;
-        --padding-end: 16px;
-        height: auto;
-        min-height: 80px;
-
-        .category-option-content {
-          display: flex;
-          align-items: center;
-          width: 100%;
-          text-align: left;
-
-          .category-option-icon {
-            font-size: 1.5rem;
-            margin-right: 16px;
-            flex-shrink: 0;
-          }
-
-          .category-option-text {
-            flex: 1;
-
-            .category-option-title {
-              font-weight: 600;
-              margin-bottom: 4px;
-              color: var(--ion-color-dark);
-            }
-
-            .category-option-description {
-              font-size: 0.8rem;
-              color: var(--ion-color-medium);
-              line-height: 1.3;
-            }
-          }
-        }
-      }
-    }
-
-    .cancel-button {
-      margin-top: 16px;
-    }
-  }
-
-  .template-selection,
-  .direct-creation {
-    .selected-category-header {
-      margin-bottom: 20px;
-      padding: 16px;
-      background: var(--ion-color-light, #f5f5f5);
-      border-radius: 8px;
-
-      h4 {
-        margin: 0 0 8px 0;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      p {
-        margin: 0;
-        color: var(--ion-color-medium);
-        font-size: 0.9rem;
-      }
-    }
-
-    .template-options {
-      margin: 20px 0;
-
-      ion-item {
-        --padding-start: 0;
-        margin-bottom: 12px;
-
-        ion-label {
-          h3 {
-            margin: 0 0 4px 0;
-            font-size: 1rem;
-          }
-
-          p {
-            margin: 0 0 8px 0;
-            color: var(--ion-color-medium);
-            font-size: 0.85rem;
-          }
-
-          .template-meta {
-            display: flex;
-            gap: 8px;
-
-            ion-badge {
-              font-size: 0.7rem;
-            }
-          }
-        }
-      }
-    }
-
-    .template-actions,
-    .direct-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 20px;
-
-      .back-button {
-        margin-right: auto;
-      }
-    }
-  }
-}
-
-// Create Project Toggle Section
-.create-project-section {
-  margin-bottom: 20px;
-
-  .create-project-toggle {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 0;
-    padding: 16px 0;
-
-    .create-toggle-btn {
-      flex: 1;
-      height: 48px;
-      font-weight: 500;
-
-      ion-icon {
-        margin-right: 8px;
-      }
-    }
-  }
-}
+// Removed unused legacy "Create project toggle" styles
 
 // Projects section cards
 // Projects section cards
@@ -395,44 +157,7 @@
     }
   }
 
-  // Project filtering and controls
-  .project-controls {
-    padding: 0 16px 16px;
-    border-bottom: 1px solid var(--ion-color-light);
-
-    .filter-item {
-      --padding-start: 0;
-      --padding-end: 0;
-      margin-bottom: 8px;
-
-      ion-label {
-        margin-right: 12px;
-        font-weight: 500;
-        color: var(--ion-color-medium);
-        min-width: 50px;
-      }
-
-      ion-select {
-        flex: 1;
-        --padding-start: 12px;
-        --padding-end: 12px;
-      }
-    }
-
-    .group-toggle {
-      --padding-start: 0;
-      --padding-end: 0;
-
-      ion-checkbox {
-        margin-right: 12px;
-      }
-
-      ion-label {
-        font-weight: 500;
-        color: var(--ion-color-dark);
-      }
-    }
-  }
+  // Removed unused project filtering/controls styles (handled by components)
 
   // Category grouping styles
   .category-group {
@@ -598,8 +323,8 @@
     --min-height: auto;
     margin-bottom: 16px;
     border-radius: 16px;
-    --background: var(--ion-color-light);
-    border: 1px solid var(--ion-color-light-shade);
+    --background: var(--ion-card-background);
+    border: 1px solid var(--ion-border-color);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
     overflow: hidden;
@@ -647,7 +372,7 @@
           width: 12px;
           height: 12px;
           border-radius: 50%;
-          border: 3px solid var(--ion-color-light);
+          border: 3px solid var(--ion-background-color);
 
           &.active {
             background-color: var(--ion-color-success);
@@ -680,7 +405,7 @@
             .modern-project-name {
               font-size: 1.25rem;
               font-weight: 600;
-              color: var(--ion-color-dark);
+              color: var(--ion-text-color);
               margin: 0 0 8px 0;
               line-height: 1.3;
             }
@@ -736,9 +461,9 @@
           .modern-metadata {
             margin: 12px 0;
             padding: 12px;
-            background: rgba(var(--ion-color-light-rgb), 0.5);
+            background: var(--ion-item-background, var(--ion-card-background));
             border-radius: 8px;
-            border: 1px solid var(--ion-color-light-shade);
+            border: 1px solid var(--ion-border-color);
 
             .metadata-row {
               display: flex;
@@ -761,12 +486,12 @@
                 }
 
                 .metadata-label {
-                  color: var(--ion-color-medium);
+                  color: var(--ion-color-step-600, var(--ion-color-medium));
                   font-weight: 500;
                 }
 
                 .metadata-value {
-                  color: var(--ion-color-dark);
+                  color: var(--ion-text-color);
                   font-weight: 500;
                 }
 
@@ -790,7 +515,7 @@
               align-items: center;
               gap: 6px;
               font-size: 0.85rem;
-              color: var(--ion-color-medium);
+              color: var(--ion-color-step-600, var(--ion-color-medium));
 
               .timeline-icon {
                 font-size: 1rem;
@@ -806,9 +531,14 @@
           .modern-progress {
             margin: 12px 0;
             padding: 12px;
-            background: rgba(var(--ion-color-success-rgb), 0.05);
+            background: color-mix(
+              in oklab,
+              var(--ion-color-success) 5%,
+              transparent
+            );
             border-radius: 8px;
-            border: 1px solid rgba(var(--ion-color-success-rgb), 0.2);
+            border: 1px solid
+              color-mix(in oklab, var(--ion-color-success) 20%, transparent);
 
             .progress-row {
               display: flex;
@@ -1312,8 +1042,8 @@
       --min-height: auto;
       margin-bottom: 8px;
       border-radius: 12px;
-      --background: rgba(var(--ion-color-medium-rgb), 0.05);
-      border: 1px solid rgba(var(--ion-color-medium-rgb), 0.2);
+      --background: var(--ion-item-background, var(--ion-card-background));
+      border: 1px solid var(--ion-border-color);
       opacity: 0.9;
 
       .project-icon-container {
@@ -1331,7 +1061,7 @@
         .project-main-info {
           .project-name {
             font-weight: 500;
-            color: var(--ion-color-medium-shade);
+            color: var(--ion-color-step-700, var(--ion-text-color));
             margin-bottom: 4px;
           }
 
@@ -1359,7 +1089,7 @@
 
             .project-description {
               margin: 4px 0 8px 0;
-              color: var(--ion-color-medium);
+              color: var(--ion-color-step-600, var(--ion-color-medium));
               font-size: 0.9rem;
               line-height: 1.4;
               display: -webkit-box;
@@ -1622,74 +1352,10 @@
       font-size: 0.95rem;
     }
   }
-
-  .add-project-card {
-    ion-card-header {
-      padding-bottom: 8px;
-    }
-  }
 }
 
 // Enhanced Project Controls
-.project-controls {
-  padding: 12px 16px;
-  background: var(--ion-color-light);
-  border-radius: 8px;
-  margin-bottom: 16px;
-
-  .search-item {
-    margin-bottom: 8px;
-    --background: transparent;
-
-    ion-searchbar {
-      --background: var(--ion-color-lightest);
-      --border-radius: 8px;
-      padding: 0;
-    }
-  }
-
-  .filter-controls {
-    margin: 0;
-
-    ion-col {
-      padding: 4px 8px;
-    }
-  }
-
-  .filter-item,
-  .sort-item,
-  .view-toggles {
-    --background: transparent;
-    --padding-start: 0;
-    --inner-padding-end: 0;
-    font-size: 0.9rem;
-
-    ion-label {
-      font-weight: 500;
-      color: var(--ion-color-dark);
-      min-width: fit-content;
-    }
-
-    ion-select {
-      flex: 1;
-      --placeholder-color: var(--ion-color-medium);
-    }
-
-    ion-button {
-      margin: 0 0 0 8px;
-    }
-  }
-
-  .view-toggles {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    ion-checkbox {
-      margin-right: 4px;
-    }
-  }
-}
+// Removed unused page-level project controls styles
 
 // Analytics Dashboard
 .analytics-dashboard {
@@ -2153,389 +1819,9 @@
   }
 }
 
-// Dark mode support for new components
-@media (prefers-color-scheme: dark) {
-  .project-controls {
-    background: var(--ion-color-dark-shade);
+// Removed dark mode overrides for deleted controls
 
-    .search-item ion-searchbar {
-      --background: var(--ion-color-dark-tint);
-    }
-
-    .filter-item ion-label,
-    .sort-item ion-label,
-    .view-toggles ion-label {
-      color: var(--ion-color-light);
-    }
-  }
-
-  .category-overview .category-card {
-    .category-header h3 {
-      color: var(--ion-color-light);
-    }
-
-    &:hover {
-      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
-    }
-  }
-}
-
-// Advanced Project Management Styles
-.advanced-creation-options {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  flex-wrap: wrap;
-
-  .template-button,
-  .bulk-button {
-    flex: 1;
-    min-width: 120px;
-  }
-}
-
-.bulk-create-section {
-  margin-top: 16px;
-  padding: 16px;
-  background: var(--ion-color-light-tint);
-  border-radius: 8px;
-  border: 1px solid var(--ion-color-light-shade);
-
-  h3 {
-    margin: 0 0 4px 0;
-    color: var(--ion-color-primary);
-  }
-
-  p {
-    margin: 0 0 16px 0;
-    color: var(--ion-color-medium);
-    font-size: 0.9rem;
-  }
-
-  .bulk-projects-list {
-    margin-bottom: 16px;
-
-    .bulk-project-item {
-      --padding-start: 0;
-      --padding-end: 0;
-      margin-bottom: 8px;
-
-      ion-input {
-        --padding-start: 12px;
-      }
-    }
-  }
-
-  .bulk-actions {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-  }
-}
-
-.management-card {
-  margin-bottom: 20px;
-
-  .title-icon {
-    margin-right: 8px;
-    color: var(--ion-color-primary);
-  }
-
-  .management-actions {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-  }
-
-  .bulk-actions-panel {
-    padding: 16px;
-    background: var(--ion-color-primary-tint);
-    border-radius: 8px;
-    border: 1px solid var(--ion-color-primary-shade);
-
-    h4 {
-      margin: 0 0 12px 0;
-      color: var(--ion-color-primary-contrast);
-    }
-
-    .bulk-action-buttons {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-  }
-}
-
-.project-selection-checkbox {
-  margin-right: 8px;
-}
-
-// Template Modal Styles
-.template-selection-card,
-.templates-card,
-.no-templates-card {
-  margin-bottom: 16px;
-}
-
-.template-categories-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-  margin-top: 16px;
-
-  .template-category-button {
-    height: auto;
-    min-height: 80px;
-
-    .template-category-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      padding: 12px;
-
-      .template-category-icon {
-        font-size: 24px;
-      }
-
-      .template-category-label {
-        font-size: 0.9rem;
-        text-align: center;
-      }
-    }
-  }
-}
-
-.templates-list {
-  .template-item {
-    --padding-start: 16px;
-    --padding-end: 16px;
-    margin-bottom: 8px;
-    border: 1px solid var(--ion-color-light-shade);
-    border-radius: 8px;
-
-    .template-icon {
-      font-size: 32px;
-      margin-right: 16px;
-    }
-
-    ion-label {
-      h3 {
-        margin: 0 0 4px 0;
-        color: var(--ion-color-primary);
-      }
-
-      p {
-        margin: 0 0 8px 0;
-        color: var(--ion-color-medium);
-        font-size: 0.9rem;
-      }
-
-      .template-complexity,
-      .template-timeframe {
-        margin-right: 8px;
-        font-size: 0.8rem;
-      }
-    }
-
-    &:hover {
-      --background: var(--ion-color-light-tint);
-    }
-  }
-}
-
-.no-templates-message {
-  text-align: center;
-  padding: 32px 16px;
-
-  .no-templates-icon {
-    font-size: 64px;
-    color: var(--ion-color-medium);
-    margin-bottom: 16px;
-  }
-
-  h3 {
-    margin: 0 0 8px 0;
-    color: var(--ion-color-primary);
-  }
-
-  p {
-    margin: 0 0 24px 0;
-    color: var(--ion-color-medium);
-  }
-}
-
-// Responsive design for advanced features
-@media (max-width: 768px) {
-  .advanced-creation-options {
-    .template-button,
-    .bulk-button {
-      flex: 1 1 100%;
-      min-width: unset;
-    }
-  }
-
-  .management-actions {
-    ion-button {
-      flex: 1 1 calc(50% - 4px);
-      margin: 0;
-    }
-  }
-
-  .bulk-action-buttons {
-    ion-button {
-      flex: 1 1 100%;
-      margin: 0 0 8px 0;
-    }
-  }
-
-  .template-categories-grid {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  }
-}
-
-// Dark mode adjustments for advanced features
-@media (prefers-color-scheme: dark) {
-  .bulk-create-section {
-    background: var(--ion-color-dark-tint);
-    border-color: var(--ion-color-dark-shade);
-  }
-
-  .bulk-actions-panel {
-    background: var(--ion-color-primary-shade);
-  }
-
-  .template-item {
-    border-color: var(--ion-color-dark-shade);
-
-    &:hover {
-      --background: var(--ion-color-dark-tint);
-    }
-  }
-}
-
-// Bulk Operations and Selection Styling
-.bulk-toggle-button {
-  margin: 0 8px;
-}
-
-.bulk-create-section {
-  margin-top: 16px;
-  padding: 16px;
-  border: 1px dashed var(--ion-color-medium);
-  border-radius: 8px;
-  background: var(--ion-color-light);
-
-  ion-label h4 {
-    margin: 0 0 8px 0;
-    color: var(--ion-color-primary);
-  }
-
-  ion-label p {
-    margin: 0 0 16px 0;
-    font-size: 0.9em;
-    color: var(--ion-color-medium-shade);
-  }
-}
-
-.bulk-projects-list {
-  margin-bottom: 16px;
-
-  .bulk-project-item {
-    margin-bottom: 8px;
-    --padding-start: 0;
-  }
-}
-
-.add-bulk-project-btn {
-  width: 100%;
-  margin: 0;
-}
-
-// Bulk Actions Toolbar
-.bulk-actions-card {
-  margin: 0 0 16px 0;
-  background: var(--ion-color-primary-tint);
-  border: 2px solid var(--ion-color-primary);
-}
-
-.bulk-actions-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-
-  .selection-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-    color: var(--ion-color-primary-shade);
-
-    ion-icon {
-      font-size: 1.2em;
-    }
-  }
-
-  .bulk-actions-buttons {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-
-    ion-button {
-      margin: 0;
-    }
-  }
-}
-
-// Project Selection Styling
-.project-item {
-  &.selected {
-    --background: var(--ion-color-primary-tint);
-    border-left: 4px solid var(--ion-color-primary);
-  }
-
-  .project-checkbox {
-    margin-right: 12px;
-  }
-}
-
-.select-all-toggle {
-  margin-left: 8px;
-}
-
-// Responsive adjustments for bulk operations
-@media (max-width: 768px) {
-  .bulk-actions-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-
-    .selection-info {
-      justify-content: center;
-    }
-
-    .bulk-actions-buttons {
-      justify-content: center;
-      gap: 4px;
-
-      ion-button {
-        flex: 1 1 calc(50% - 2px);
-        font-size: 0.8em;
-      }
-    }
-  }
-
-  .bulk-create-section {
-    .bulk-actions-buttons {
-      ion-button {
-        flex: 1 1 100%;
-        margin: 0 0 8px 0;
-      }
-    }
-  }
-}
+// Removed multiple unused bulk/management/template selection styles for minimal page stylesheet
 
 // Category suggestions styles moved to smart-category-suggestions.component.scss
 

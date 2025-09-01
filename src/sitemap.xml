@@ -2,14 +2,14 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Landing Page (now in info module) -->
   <url>
-    <loc>https://app.ASCENDynamics.org/</loc>
+    <loc>https://ascendynamics.org/</loc>
     <lastmod>2025-08-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
   <url>
-    <loc>https://app.ASCENDynamics.org/info</loc>
+    <loc>https://ascendynamics.org/info</loc>
     <lastmod>2025-08-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
@@ -17,14 +17,14 @@
 
   <!-- Authentication Pages -->
   <url>
-    <loc>https://app.ASCENDynamics.org/auth/login</loc>
+    <loc>https://ascendynamics.org/auth/login</loc>
     <lastmod>2025-08-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://app.ASCENDynamics.org/auth/signup</loc>
+    <loc>https://ascendynamics.org/auth/signup</loc>
     <lastmod>2025-08-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -32,7 +32,7 @@
 
   <!-- Listings Page -->
   <url>
-    <loc>https://app.ASCENDynamics.org/listings</loc>
+    <loc>https://ascendynamics.org/listings</loc>
     <lastmod>2025-08-13</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
@@ -40,42 +40,42 @@
 
   <!-- Info Pages -->
   <url>
-    <loc>https://app.ASCENDynamics.org/info/about-us</loc>
+    <loc>https://ascendynamics.org/info/about-us</loc>
     <lastmod>2025-08-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://app.ASCENDynamics.org/info/services</loc>
+    <loc>https://ascendynamics.org/info/services</loc>
     <lastmod>2025-08-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://app.ASCENDynamics.org/info/startups</loc>
+    <loc>https://ascendynamics.org/info/startups</loc>
     <lastmod>2025-08-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://app.ASCENDynamics.org/info/event-calendar</loc>
+    <loc>https://ascendynamics.org/info/event-calendar</loc>
     <lastmod>2025-08-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://app.ASCENDynamics.org/info/team</loc>
+    <loc>https://ascendynamics.org/info/team</loc>
     <lastmod>2025-08-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
-    <loc>https://app.ASCENDynamics.org/info/think-tank</loc>
+    <loc>https://ascendynamics.org/info/think-tank</loc>
     <lastmod>2025-08-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -83,14 +83,14 @@
 
   <!-- Legal Pages -->
   <url>
-    <loc>https://app.ASCENDynamics.org/info/privacy-policy</loc>
+    <loc>https://ascendynamics.org/info/privacy-policy</loc>
     <lastmod>2025-08-13</lastmod>
     <changefreq>quarterly</changefreq>
     <priority>0.5</priority>
   </url>
 
   <url>
-    <loc>https://app.ASCENDynamics.org/info/terms-of-use</loc>
+    <loc>https://ascendynamics.org/info/terms-of-use</loc>
     <lastmod>2025-08-13</lastmod>
     <changefreq>quarterly</changefreq>
     <priority>0.5</priority>

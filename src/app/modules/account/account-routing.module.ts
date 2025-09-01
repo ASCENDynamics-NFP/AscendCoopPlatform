@@ -26,29 +26,27 @@ import {ProfileOwnerGuard} from "../../core/guards/profile-owner.guard";
 import {DetailsPage} from "./pages/details/details.page";
 import {EditPage} from "./pages/edit/edit.page";
 import {RegistrationPage} from "./pages/registration/registration.page";
-import {GroupListPage} from "./pages/group-list/group-list.page";
 import {SettingsPage} from "./pages/settings/settings.page";
-import {UsersPage} from "./pages/users/users.page";
 import {ListPage} from "./relatedAccount/pages/list/list.page";
 import {ListingsListPage} from "./relatedListings/pages/listings-list/listings-list.page";
 import {RoleManagementPage} from "./pages/role-management/role-management.page";
 import {RoleHierarchyPage} from "./pages/role-hierarchy/role-hierarchy.page";
 import {ProjectsPage} from "./pages/projects/projects.page";
 import {AdminDashboardPage} from "./pages/admin-dashboard/admin-dashboard.page";
+import {DirectoryPage} from "./pages/directory/directory.page";
 
 const routes: Routes = [
-  {
-    path: "group-list",
-    component: GroupListPage,
-  },
   {
     path: "settings",
     component: SettingsPage,
     canActivate: [AuthGuard],
   },
+  // Legacy routes redirected to unified directory
+  {path: "group-list", redirectTo: "directory", pathMatch: "full"},
+  {path: "users", redirectTo: "directory", pathMatch: "full"},
   {
-    path: "users",
-    component: UsersPage,
+    path: "directory",
+    component: DirectoryPage,
     canActivate: [AuthGuard],
   },
   {

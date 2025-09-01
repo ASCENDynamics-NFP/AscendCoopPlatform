@@ -193,29 +193,7 @@
           }
         }
 
-        .sort-direction-btn {
-          --background: transparent;
-          --color: var(--ion-color-medium);
-          --border-radius: 6px;
-          height: 36px;
-          min-height: 36px;
-          max-height: 36px;
-          width: 36px;
-          border: 1px solid var(--ion-color-medium-tint);
-
-          @media (prefers-color-scheme: dark) {
-            border-color: var(--ion-color-medium-shade);
-          }
-
-          &:hover {
-            --background: var(--ion-color-primary);
-            --color: white;
-          }
-
-          ion-icon {
-            font-size: 1rem;
-          }
-        }
+        /* removed .sort-direction-btn (no longer used) */
       }
     }
   }

@@ -69,7 +69,7 @@ export class LandingPage {
         title: "ASCENDynamics NFP Collaborative Platform",
         description:
           "An open-source collaboration platform connecting volunteers and nonprofits to foster community growth and address fundamental human needs.",
-        url: "https://app.ASCENDynamics.org/",
+        url: "https://ascendynamics.org/",
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
@@ -89,7 +89,7 @@ export class LandingPage {
       "@type": "Organization",
       name: "ASCENDynamics NFP",
       alternateName: "ASCENDynamics Nonprofit",
-      url: "https://app.ASCENDynamics.org",
+      url: "https://ascendynamics.org",
       logo: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       description:
         "An open-source collaboration platform connecting volunteers and nonprofits to foster community growth and address fundamental human needs through meaningful partnerships.",
@@ -102,7 +102,7 @@ export class LandingPage {
         "Community Impact",
         "Social Networking",
       ],
-      sameAs: ["https://app.ASCENDynamics.org"],
+      sameAs: ["https://ascendynamics.org"],
     });
   }
 

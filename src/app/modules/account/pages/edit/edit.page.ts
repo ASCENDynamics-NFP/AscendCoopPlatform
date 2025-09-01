@@ -58,7 +58,7 @@ export class EditPage implements OnInit {
         title: "Account | ASCENDynamics NFP",
         description:
           "Access and manage your account details on ASCENDynamics NFP.",
-        url: "https://app.ASCENDynamics.org/account",
+        url: "https://ascendynamics.org/account",
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },

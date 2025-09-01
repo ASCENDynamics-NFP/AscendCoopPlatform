@@ -21,19 +21,11 @@
 -->
 
 <ion-header [translucent]="true" class="ion-no-border">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button (click)="goBackToProfile()">
-        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    <ion-title>Admin Dashboard</ion-title>
-    <ion-buttons slot="end">
-      <ion-button fill="clear" (click)="goBackToProfile()">
-        <ion-icon name="eye-outline" slot="icon-only"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
+  <app-header [title]="'Admin Dashboard'" [hideMenu]="true">
+    <ion-button header-end fill="clear" (click)="goBackToProfile()">
+      <ion-icon name="eye-outline" slot="icon-only"></ion-icon>
+    </ion-button>
+  </app-header>
 </ion-header>
 
 <ion-content [fullscreen]="true">

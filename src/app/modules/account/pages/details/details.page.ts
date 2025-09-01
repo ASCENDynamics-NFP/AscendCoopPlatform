@@ -296,7 +296,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
       {
         title: `${account.name} | ASCENDynamics NFP`,
         description: descriptionPrefix,
-        url: `https://app.ASCENDynamics.org/account/${account.id}`,
+        url: `https://ascendynamics.org/account/${account.id}`,
         image:
           account.iconImage ||
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
@@ -320,7 +320,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         description:
           account.description ||
           `${account.name}'s profile on ASCENDynamics NFP`,
-        url: `https://app.ASCENDynamics.org/account/${account.id}`,
+        url: `https://ascendynamics.org/account/${account.id}`,
         image:
           account.iconImage ||
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
@@ -338,7 +338,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         description:
           account.description ||
           `${account.name} organization on ASCENDynamics NFP`,
-        url: `https://app.ASCENDynamics.org/account/${account.id}`,
+        url: `https://ascendynamics.org/account/${account.id}`,
         logo:
           account.iconImage ||
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
@@ -361,7 +361,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         title: "Profile | ASCENDynamics NFP",
         description:
           "Manage your profile and connect with volunteering opportunities on ASCENDynamics NFP.",
-        url: "https://app.ASCENDynamics.org/",
+        url: "https://ascendynamics.org/",
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
@@ -382,15 +382,15 @@ export class DetailsPage implements OnInit, ViewWillEnter {
       name: "Profile | ASCENDynamics NFP",
       description:
         "View and manage your profile details, volunteering history, and preferences on ASCENDynamics NFP.",
-      url: "https://app.ASCENDynamics.org/profile",
+      url: "https://ascendynamics.org/profile",
       isPartOf: {
         "@type": "WebSite",
         name: "ASCENDynamics NFP",
-        url: "https://app.ASCENDynamics.org",
+        url: "https://ascendynamics.org",
       },
       potentialAction: {
         "@type": "ViewAction",
-        target: "https://app.ASCENDynamics.org/profile",
+        target: "https://ascendynamics.org/profile",
       },
     });
   }

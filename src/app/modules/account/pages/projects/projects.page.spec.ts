@@ -4,6 +4,7 @@ import {
   fakeAsync,
   tick,
 } from "@angular/core/testing";
+import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 import {AlertController, IonicModule} from "@ionic/angular";
 import {ProjectsPage} from "./projects.page";
 import {provideMockStore, MockStore} from "@ngrx/store/testing";
@@ -41,6 +42,7 @@ describe("ProjectsPage", () => {
     await TestBed.configureTestingModule({
       declarations: [ProjectsPage],
       imports: [IonicModule.forRoot()],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
         provideMockStore({
           initialState: {

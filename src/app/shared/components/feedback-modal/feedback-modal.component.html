@@ -19,85 +19,116 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <ion-header>
   <ion-toolbar>
-    <ion-title>Feedback</ion-title>
+    <ion-title>
+      <ion-icon name="chatbubbles-outline" class="title-icon"></ion-icon>
+      Feedback
+    </ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="closeModal()">Close</ion-button>
+      <ion-button fill="clear" (click)="closeModal()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
-</ion-header>
+  </ion-header>
 
 <ion-content class="ion-padding">
-  <form [formGroup]="feedbackForm">
-    <ion-item *ngIf="!user || feedbackForm.get('name')?.invalid">
-      <ion-label position="floating">{{
-        "feedback.name" | translate
-      }}</ion-label>
-      <ion-input type="text" formControlName="name"></ion-input>
-      <ion-note *ngIf="feedbackForm.get('name')?.hasError('required')">
-        {{ "feedback.name_required" | translate }}
-      </ion-note>
-    </ion-item>
+  <div class="feedback-container">
+    <div class="intro-card">
+      <ion-icon name="sparkles-outline" color="primary"></ion-icon>
+      <div class="intro-text">
+        <h3>We value your feedback</h3>
+        <p>Tell us what’s working well and what we can improve.</p>
+      </div>
+    </div>
 
-    <ion-item *ngIf="!user || feedbackForm.get('email')?.invalid">
-      <ion-label position="floating">Email</ion-label>
-      <ion-input type="email" formControlName="email"></ion-input>
-      <ion-note *ngIf="feedbackForm.get('email')?.hasError('required')">
-        Email is required.
-      </ion-note>
-      <ion-note *ngIf="feedbackForm.get('email')?.hasError('email')">
-        Please enter a valid email address.
-      </ion-note>
-    </ion-item>
+    <form [formGroup]="feedbackForm" (ngSubmit)="submitFeedback()">
+      <!-- Name / Email for guests -->
+      <ion-item *ngIf="!user" lines="full">
+        <ion-label position="stacked">{{ 'feedback.name' | translate }}</ion-label>
+        <ion-input type="text" formControlName="name" autocomplete="name"></ion-input>
+        <ion-note color="danger" *ngIf="feedbackForm.get('name')?.hasError('required')">
+          {{ 'feedback.name_required' | translate }}
+        </ion-note>
+      </ion-item>
 
-    <ion-item>
-      <ion-label>Category</ion-label>
-      <ion-select formControlName="category">
-        <ion-select-option value="Bug Report">Bug Report</ion-select-option>
-        <ion-select-option value="Feature Request"
-          >Feature Request</ion-select-option
-        >
-        <ion-select-option value="General Feedback"
-          >General Feedback</ion-select-option
-        >
-      </ion-select>
-    </ion-item>
+      <ion-item *ngIf="!user" lines="full">
+        <ion-label position="stacked">Email</ion-label>
+        <ion-input type="email" formControlName="email" autocomplete="email"></ion-input>
+        <ion-note color="danger" *ngIf="feedbackForm.get('email')?.hasError('required')">
+          Email is required.
+        </ion-note>
+        <ion-note color="danger" *ngIf="feedbackForm.get('email')?.hasError('email')">
+          Please enter a valid email address.
+        </ion-note>
+      </ion-item>
 
-    <ion-item>
-      <ion-label>Feedback</ion-label>
-      <ion-textarea formControlName="feedback"></ion-textarea>
-      <ion-note *ngIf="feedbackForm.get('feedback')?.hasError('required')">
-        Feedback is required.
-      </ion-note>
-    </ion-item>
+      <!-- Category -->
+      <ion-item lines="full">
+        <ion-label position="stacked">Category</ion-label>
+        <ion-select formControlName="category" interface="popover">
+          <ion-select-option value="Bug Report">Bug Report</ion-select-option>
+          <ion-select-option value="Feature Request">Feature Request</ion-select-option>
+          <ion-select-option value="General Feedback">General Feedback</ion-select-option>
+        </ion-select>
+      </ion-item>
 
-    <ion-item>
-      <ion-label>Attachments</ion-label>
-      <input type="file" (change)="onFileChange($event)" />
-      <ion-note
-        *ngIf="feedbackForm.get('attachment')?.hasError('invalidImageType')"
-      >
-        Please select a valid image file (JPEG, PNG, GIF).
-      </ion-note>
-      <ion-note
-        *ngIf="feedbackForm.get('attachment')?.hasError('invalidFileSize')"
-      >
-        The file size should be less than 5MB.
-      </ion-note>
-    </ion-item>
+      <!-- Feedback text -->
+      <ion-item lines="full">
+        <ion-label position="stacked">Feedback</ion-label>
+        <ion-textarea formControlName="feedback" auto-grow="true" rows="5" placeholder="Share your thoughts..."></ion-textarea>
+        <ion-note color="danger" *ngIf="feedbackForm.get('feedback')?.hasError('required')">
+          Feedback is required.
+        </ion-note>
+      </ion-item>
 
-    <ion-item>
-      <ion-label>Rating</ion-label>
-      <ion-range formControlName="rating" min="1" max="5" step="1" snaps="true">
-        <ion-icon size="small" slot="start" name="star-outline"></ion-icon>
-        <ion-icon slot="end" name="star"></ion-icon>
-      </ion-range>
-    </ion-item>
+      <!-- Attachment -->
+      <div class="attachment-card">
+        <div class="attachment-header">
+          <ion-icon name="attach-outline" color="medium"></ion-icon>
+          <span>Add a screenshot (optional)</span>
+        </div>
+        <div class="attachment-actions">
+          <ion-button fill="outline" size="small" (click)="fileInput.click()">
+            <ion-icon name="folder-open-outline" slot="start"></ion-icon>
+            Choose File
+          </ion-button>
+          <input #fileInput type="file" accept="image/*" (change)="onFileChange($event)" hidden />
+          <ion-chip *ngIf="feedbackForm.get('attachment')?.value as file">
+            <ion-icon name="image-outline"></ion-icon>
+            <ion-label>{{ file?.name }}</ion-label>
+          </ion-chip>
+        </div>
+        <ion-note color="danger" *ngIf="feedbackForm.get('attachment')?.hasError('invalidImageType')">
+          Please select a valid image file (JPEG, PNG, GIF).
+        </ion-note>
+        <ion-note color="danger" *ngIf="feedbackForm.get('attachment')?.hasError('invalidFileSize')">
+          The file size should be less than 5MB.
+        </ion-note>
+      </div>
 
-    <ion-button
-      [disabled]="isUploading || !feedbackForm.valid"
-      expand="full"
-      (click)="submitFeedback()"
-      >Submit Feedback</ion-button
-    >
-  </form>
+      <!-- Rating -->
+      <ion-item lines="none">
+        <ion-label>Rating</ion-label>
+        <ion-range formControlName="rating" min="1" max="5" step="1" snaps="true">
+          <ion-icon size="small" slot="start" name="star-outline"></ion-icon>
+          <ion-icon slot="end" name="star"></ion-icon>
+        </ion-range>
+      </ion-item>
+
+      <!-- Upload progress -->
+      <div class="progress" *ngIf="isUploading">
+        <ion-progress-bar type="indeterminate"></ion-progress-bar>
+        <ion-text color="medium">Uploading attachment...</ion-text>
+      </div>
+
+      <!-- Footer actions -->
+      <div class="footer-actions">
+        <ion-button fill="clear" type="button" (click)="closeModal()" [disabled]="isUploading">Cancel</ion-button>
+        <ion-button color="primary" type="submit" [disabled]="isUploading || !feedbackForm.valid">
+          <ion-icon name="send-outline" slot="start"></ion-icon>
+          Submit Feedback
+        </ion-button>
+      </div>
+    </form>
+  </div>
 </ion-content>

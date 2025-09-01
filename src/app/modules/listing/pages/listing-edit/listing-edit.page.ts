@@ -86,7 +86,7 @@ export class ListingEditPage implements OnInit {
         title: "Edit Listing | ASCENDynamics NFP",
         description:
           "Make updates to your listing to enhance visibility and engagement.",
-        url: "https://app.ASCENDynamics.org/listings",
+        url: "https://ascendynamics.org/listings",
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },

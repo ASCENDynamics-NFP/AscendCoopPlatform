@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, Input} from "@angular/core";
+import {Component, Input, HostBinding} from "@angular/core";
 import {PopoverController} from "@ionic/angular";
 import {UserMenuComponent} from "../user-menu/user-menu.component";
 import {Store} from "@ngrx/store";
@@ -32,9 +32,17 @@ import {AuthUser} from "@shared/models/auth-user.model";
 })
 export class AppHeaderComponent {
   @Input() title?: string = "ASCENDynamics NFP";
+  // When provided, this bypasses translation and renders the text as-is
+  @Input() plainTitle?: string;
   @Input() defaultHref?: string;
   @Input() showLogo?: boolean = false;
   @Input() hideMenu?: boolean = false;
+  // Hide avatar/login area on desktop view when true (still visible on mobile)
+  @Input() hideAvatarOnDesktop: boolean = false;
+  @HostBinding("class.hide-avatar-desktop")
+  get hideAvatarDesktopClass() {
+    return this.hideAvatarOnDesktop;
+  }
 
   authUser$: Observable<AuthUser | null>; // Declare type for clarity
   public popoverEvent: any;

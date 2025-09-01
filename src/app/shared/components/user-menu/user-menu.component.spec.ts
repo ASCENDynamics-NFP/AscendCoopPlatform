@@ -73,7 +73,11 @@ describe("UserMenuComponent", () => {
         {provide: PopoverController, useValue: mockPopoverCtrl},
         {provide: Store, useValue: mockStore},
       ],
-      imports: [StoreModule.forRoot({}), TranslateTestingModule],
+      imports: [
+        StoreModule.forRoot({}),
+        TranslateTestingModule,
+        (await import("@ionic/angular")).IonicModule.forRoot(),
+      ],
     }).compileComponents();
   });
 

@@ -4,6 +4,7 @@ import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {TranslateModule} from "@ngx-translate/core";
 import {MessagingPageRoutingModule} from "./messaging-routing.module";
+import {SharedModule} from "../../../../shared/shared.module";
 import {MessagingPage} from "./messaging.page";
 
 @NgModule({
@@ -12,6 +13,7 @@ import {MessagingPage} from "./messaging.page";
     FormsModule,
     IonicModule,
     TranslateModule,
+    SharedModule,
     MessagingPageRoutingModule,
   ],
   declarations: [MessagingPage],

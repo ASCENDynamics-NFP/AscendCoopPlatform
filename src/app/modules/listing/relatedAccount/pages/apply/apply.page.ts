@@ -101,7 +101,7 @@ export class ApplyPage implements OnInit {
         title: "Apply to Listing | ASCENDynamics NFP",
         description:
           "Fill out your application and connect with organizations to make a difference.",
-        url: "https://app.ASCENDynamics.org/listings",
+        url: "https://ascendynamics.org/listings",
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },

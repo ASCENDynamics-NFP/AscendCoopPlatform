@@ -41,7 +41,7 @@ export class ServicesPage implements OnInit {
         title: "Our Services | ASCENDynamics NFP",
         description:
           "Learn how ASCENDynamics NFP supports cooperatives with funding, networking, and SEO expertise.",
-        url: "https://app.ASCENDynamics.org/info/services",
+        url: "https://ascendynamics.org/info/services",
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
       },
@@ -63,12 +63,12 @@ export class ServicesPage implements OnInit {
       provider: {
         "@type": "Organization",
         name: "ASCENDynamics NFP",
-        url: "https://app.ASCENDynamics.org",
+        url: "https://ascendynamics.org",
       },
       name: "Cooperative Development Services",
       description:
         "Technical assistance, development, and SEO-driven marketing services for cooperatives and nonprofits.",
-      url: "https://app.ASCENDynamics.org/info/services",
+      url: "https://ascendynamics.org/info/services",
       offers: {
         "@type": "Offer",
         description:

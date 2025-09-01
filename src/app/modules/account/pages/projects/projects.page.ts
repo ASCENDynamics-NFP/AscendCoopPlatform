@@ -1,7 +1,7 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {Observable, combineLatest} from "rxjs";
-import {map, first} from "rxjs/operators";
+import {map, first, filter, take} from "rxjs/operators";
 import {Store} from "@ngrx/store";
 import {AlertController} from "@ionic/angular";
 import {Project} from "@shared/models/project.model";
@@ -13,9 +13,11 @@ import {
   StandardProjectTemplate,
 } from "@shared/models/standard-project-template.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import * as AccountActions from "../../../../state/actions/account.actions";
 import {
   selectRelatedAccountsByAccountId,
   selectAccountById,
+  selectAreRelatedAccountsFresh,
 } from "../../../../state/selectors/account.selectors";
 import * as ProjectsActions from "../../../../state/actions/projects.actions";
 import {
@@ -25,6 +27,9 @@ import {
   selectProjectsError,
 } from "../../../../state/selectors/projects.selectors";
 import {MetaService} from "../../../../core/services/meta.service";
+import {TimeEntry} from "@shared/models/time-entry.model";
+import {selectAllEntriesForAccount} from "../../../../state/selectors/time-tracking.selectors";
+import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
 import {SuccessHandlerService} from "../../../../core/services/success-handler.service";
 import {ErrorHandlerService} from "../../../../core/services/error-handler.service";
 import {CategorySuggestionService} from "../../../../core/services/category-suggestion.service";
@@ -51,18 +56,21 @@ export class ProjectsPage implements OnInit {
   projects$!: Observable<Project[]>;
   activeProjects$!: Observable<Project[]>;
   archivedProjects$!: Observable<Project[]>;
+  // Time entries for this account (all users)
+  timeEntries$!: Observable<TimeEntry[]>;
+  // Map of projectId -> entry count for delete gating
+  entriesByProjectCount$!: Observable<{[projectId: string]: number}>;
+  // Access flags
+  entriesAccessAllowed = false;
+  projectsAccessAllowed = false;
   account$!: Observable<Account | undefined>;
   loading$!: Observable<boolean>;
   error$!: Observable<any>;
   isGroupAdmin$!: Observable<boolean>;
-  newProjectName = "";
   /** Lower-cased names of active projects for quick duplicate checks */
   private activeProjectNames: string[] = [];
 
-  // Category-based project creation (always visible)
-  selectedCategory?: StandardProjectCategory;
-  availableTemplates: StandardProjectTemplate[] = [];
-  selectedTemplate?: StandardProjectTemplate;
+  // Category-based project creation handled by child component state
   projectCategories = STANDARD_PROJECT_CATEGORIES_INFO;
 
   // Category filtering and grouping
@@ -70,6 +78,7 @@ export class ProjectsPage implements OnInit {
   groupByCategory = false;
   filteredProjects$!: Observable<Project[]>;
   groupedProjects$!: Observable<{[key: string]: Project[]}>;
+  allProjects$!: Observable<Project[]>;
 
   // Search functionality
   searchTerm = "";
@@ -83,24 +92,20 @@ export class ProjectsPage implements OnInit {
     [key: string]: {count: number; hours?: number};
   }>;
   showCategoryOverview = false;
+  includeArchivedInAnalytics = false;
 
   // Advanced project management
   selectedProjects: Set<string> = new Set();
   showBulkActions = false;
   isSelectMode = false;
-  showTemplateModal = false;
   templateCategories = Object.keys(
     STANDARD_PROJECT_CATEGORIES_INFO,
   ) as StandardProjectCategory[];
-  templatesForSelectedCategory: StandardProjectTemplate[] = [];
 
   // New filter system integration
   currentProjectFilter: ProjectFilter = DEFAULT_PROJECT_FILTER;
 
-  // Project creation modes
-  createFromTemplate = false;
-
-  // Smart category suggestions
+  // Smart category suggestions (component-driven)
   suggestedCategories: CategorySuggestion[] = [];
   showCategorySuggestions = false;
 
@@ -126,13 +131,62 @@ export class ProjectsPage implements OnInit {
 
   ngOnInit() {
     this.accountId = this.route.snapshot.paramMap.get("accountId") || "";
-    this.loadProjects();
+    // Set account$ before using in combineLatest
+    this.account$ = this.store.select(selectAccountById(this.accountId));
+    // Ensure account and relatedAccounts are fetched
+    this.store.dispatch(
+      AccountActions.loadAccount({accountId: this.accountId}),
+    );
+    this.store.dispatch(
+      AccountActions.loadRelatedAccounts({accountId: this.accountId}),
+    );
+    // Always try to load projects early; effect handles permission-denied gracefully
+    this.store.dispatch(
+      ProjectsActions.loadProjects({accountId: this.accountId}),
+    );
 
+    // Load time entries only for group accounts where user is owner or member
     const currentUser$ = this.store.select(selectAuthUser);
     const relatedAccounts$ = this.store.select(
       selectRelatedAccountsByAccountId(this.accountId),
     );
-    this.account$ = this.store.select(selectAccountById(this.accountId));
+    const relFresh$ = this.store.select(
+      selectAreRelatedAccountsFresh(this.accountId),
+    );
+    combineLatest([this.account$, currentUser$, relatedAccounts$, relFresh$])
+      .pipe(
+        // wait until related accounts freshness computed true (loaded) and we have account+user
+        filter(
+          ([account, user, _rel, fresh]) => !!account && !!user && !!fresh,
+        ),
+        take(1),
+      )
+      .subscribe(([account, user, related]) => {
+        const isOwnerId = !!(
+          account &&
+          user &&
+          account.id === (user as any).uid
+        );
+        const isMemberRel = !!related?.some(
+          (ra) =>
+            user && ra.id === (user as any).uid && ra.status === "accepted",
+        );
+        this.projectsAccessAllowed = isOwnerId || isMemberRel;
+
+        // Time entries only for group accounts and allowed members/owners
+        this.entriesAccessAllowed =
+          account?.type === "group" && this.projectsAccessAllowed;
+        if (this.entriesAccessAllowed) {
+          this.store.dispatch(
+            TimeTrackingActions.loadAllTimeEntriesForAccount({
+              accountId: this.accountId,
+            }),
+          );
+        }
+      });
+
+    // Now compute admin status and load the rest
+    this.loadProjects();
     this.isGroupAdmin$ = combineLatest([
       currentUser$,
       relatedAccounts$,
@@ -157,7 +211,7 @@ export class ProjectsPage implements OnInit {
       {
         title: "Projects | ASCENDynamics NFP",
         description: "Manage projects for your account on ASCENDynamics NFP.",
-        url: `https://app.ASCENDynamics.org/account/${this.accountId}/projects`,
+        url: `https://ascendynamics.org/account/${this.accountId}/projects`,
         image:
           "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
       },
@@ -186,13 +240,29 @@ export class ProjectsPage implements OnInit {
     );
     this.loading$ = this.store.select(selectProjectsLoading);
     this.error$ = this.store.select(selectProjectsError);
+    // Select all time entries for this account (across users)
+    this.timeEntries$ = this.store.select(
+      selectAllEntriesForAccount(this.accountId),
+    );
+    this.entriesByProjectCount$ = this.timeEntries$.pipe(
+      map((entries) => {
+        const counts: {[projectId: string]: number} = {};
+        entries.forEach((e) => {
+          counts[e.projectId] = (counts[e.projectId] || 0) + 1;
+        });
+        return counts;
+      }),
+    );
 
     // Set up filtered and grouped projects
     this.setupFilteredProjects();
-
-    this.store.dispatch(
-      ProjectsActions.loadProjects({accountId: this.accountId}),
+    // Prepare allProjects stream and category overview
+    this.allProjects$ = this.store.select(
+      selectProjectsByAccount(this.accountId),
     );
+    this.setupCategoryOverview();
+
+    // Dispatching moved to permission gate above
   }
 
   private setupFilteredProjects() {
@@ -244,160 +314,12 @@ export class ProjectsPage implements OnInit {
       }),
     );
 
-    // Set up category overview analytics
-    this.categoryOverview$ = this.activeProjects$.pipe(
-      map((projects) => {
-        const overview: {[key: string]: {count: number; hours?: number}} = {};
-
-        // Initialize with all available categories
-        Object.keys(this.projectCategories).forEach((category) => {
-          overview[category] = {count: 0, hours: 0};
-        });
-        overview["general"] = {count: 0, hours: 0};
-
-        // Count projects by category
-        projects.forEach((project) => {
-          const category = project.standardCategory || "general";
-          if (!overview[category]) {
-            overview[category] = {count: 0, hours: 0};
-          }
-          overview[category].count++;
-          // TODO: Add hours calculation when time tracking data is available
-        });
-
-        // Return overview with all categories (including 0 counts for better UX)
-        return overview;
-      }),
-    );
+    // Category overview stream uses toggle; recomputed in setupCategoryOverview
   }
 
-  addProject() {
-    // Ensure category is selected before creating project
-    if (!this.selectedCategory) {
-      this.errorHandler.handleFirebaseAuthError({
-        code: "category-required",
-        message:
-          "Please select a project category before creating the project.",
-      });
-      return;
-    }
+  // Legacy project creation helper removed (handled by component)
 
-    const name = this.newProjectName.trim();
-    if (!name) return;
-    const lower = name.toLowerCase();
-    if (this.activeProjectNames.includes(lower)) {
-      this.errorHandler.handleFirebaseAuthError({
-        code: "duplicate-project-name",
-        message: "A project with that name already exists.",
-      });
-      return;
-    }
-
-    // Get current user to set createdBy and lastModifiedBy
-    this.store
-      .select(selectAuthUser)
-      .pipe(first())
-      .subscribe((user: any) => {
-        if (!user) {
-          this.errorHandler.handleFirebaseAuthError({
-            code: "auth-required",
-            message: "Authentication required to create projects.",
-          });
-          return;
-        }
-
-        const project: Project = {
-          name,
-          accountId: this.accountId,
-          createdBy: user.uid,
-          lastModifiedBy: user.uid,
-          standardCategory: this.selectedCategory,
-          description: this.selectedTemplate?.description || "",
-          icon: this.selectedTemplate?.icon || "folder",
-          color: this.selectedTemplate?.color || "#666666",
-          complexity: this.selectedTemplate?.complexity || "Simple",
-          timeframe: this.selectedTemplate?.estimatedTimeframe || "Short-term",
-          goals: this.selectedTemplate?.defaultTasks || [],
-          requiredRoles: this.selectedTemplate?.requiredRoles || [],
-        } as Project;
-
-        // Only add standardProjectTemplateId if template is selected
-        if (this.selectedTemplate?.id) {
-          (project as any).standardProjectTemplateId = this.selectedTemplate.id;
-        }
-
-        this.store.dispatch(
-          ProjectsActions.createProject({accountId: this.accountId, project}),
-        );
-        this.resetProjectCreation();
-        this.successHandler.handleSuccess("Project created!");
-      });
-  }
-
-  onCategorySelected(category: StandardProjectCategory | string) {
-    if (!category) {
-      this.selectedCategory = undefined;
-      this.availableTemplates = [];
-      return;
-    }
-
-    this.selectedCategory = category as StandardProjectCategory;
-    this.availableTemplates = STANDARD_PROJECT_TEMPLATES.filter(
-      (template) => template.category === this.selectedCategory,
-    );
-
-    // If there's only one template, auto-select it
-    if (this.availableTemplates.length === 1) {
-      this.selectedTemplate = this.availableTemplates[0];
-      this.newProjectName = this.selectedTemplate.name;
-    }
-  }
-
-  onTemplateSelected(template: StandardProjectTemplate) {
-    this.selectedTemplate = template;
-    this.newProjectName = template.name;
-  }
-
-  resetProjectCreation() {
-    this.newProjectName = "";
-    this.selectedCategory = undefined;
-    this.selectedTemplate = undefined;
-    this.availableTemplates = [];
-    this.suggestedCategories = [];
-    this.showCategorySuggestions = false;
-  }
-
-  // Smart Category Suggestion Methods
-  onProjectNameChange(projectName: string | null | undefined) {
-    const name = projectName || "";
-    this.newProjectName = name;
-    if (name.trim().length > 2) {
-      this.generateCategorySuggestions(name);
-    } else {
-      this.suggestedCategories = [];
-      this.showCategorySuggestions = false;
-    }
-  }
-
-  generateCategorySuggestions(projectName: string) {
-    this.suggestedCategories =
-      this.categorySuggestionService.generateSuggestions(projectName);
-    this.showCategorySuggestions = this.suggestedCategories.length > 0;
-  }
-
-  applySuggestedCategory(category: StandardProjectCategory) {
-    this.onCategorySelected(category);
-    this.dismissCategorySuggestions();
-  }
-
-  dismissCategorySuggestions() {
-    this.showCategorySuggestions = false;
-    this.suggestedCategories = [];
-  }
-
-  cancelCategorySelection() {
-    this.resetProjectCreation();
-  }
+  // Legacy category/template selection and suggestion methods removed
 
   // ====================================
   // PROJECT CREATION TOGGLE METHODS
@@ -617,10 +539,16 @@ export class ProjectsPage implements OnInit {
       const result = await alert.onDidDismiss();
       if (result.role !== "confirm") return;
 
-      if (this.activeProjectNames.length <= 1) {
+      // Prevent archiving the last active project
+      const currentName = (project.name || "").trim().toLowerCase();
+      const otherActive = this.activeProjectNames.filter(
+        (n) => n && n !== currentName,
+      );
+      if (otherActive.length === 0) {
         this.errorHandler.handleFirebaseAuthError({
           code: "last-active-project",
-          message: "You must have at least one active project.",
+          message:
+            "You must keep at least one active project. Create another project or restore a project before archiving this one.",
         });
         return;
       }
@@ -636,6 +564,54 @@ export class ProjectsPage implements OnInit {
     this.successHandler.handleSuccess(
       archived ? "Project archived" : "Project restored",
     );
+  }
+
+  async deleteProject(project: Project) {
+    if (!project.id) return;
+    // Defensive: prevent deletion if project has any time entries
+    try {
+      const counts = await this.entriesByProjectCount$
+        .pipe(take(1))
+        .toPromise();
+      const hasEntries = !!counts && counts[project.id] > 0;
+      if (hasEntries || !this.entriesAccessAllowed) {
+        this.errorHandler.handleFirebaseAuthError({
+          code: "project-has-entries",
+          message:
+            "This project has time entries associated with it and cannot be deleted.",
+        });
+        return;
+      }
+    } catch (_) {
+      // If we cannot determine counts, fail safe and block deletion
+      this.errorHandler.handleFirebaseAuthError({
+        code: "project-delete-unknown",
+        message:
+          "Unable to verify time entries for this project. Please try again.",
+      });
+      return;
+    }
+    // Confirm deletion
+    const alert = await this.alertController.create({
+      header: "Delete Project?",
+      message:
+        "This will permanently delete the project. This action cannot be undone.",
+      buttons: [
+        {text: "Cancel", role: "cancel"},
+        {text: "Delete", role: "destructive"},
+      ],
+    });
+    await alert.present();
+    const result = await alert.onDidDismiss();
+    if (result.role !== "destructive") return;
+
+    this.store.dispatch(
+      ProjectsActions.deleteProject({
+        accountId: this.accountId,
+        projectId: project.id,
+      }),
+    );
+    // Success and failure notifications are handled in ProjectsEffects
   }
 
   trackById(_: number, proj: Project) {
@@ -671,8 +647,10 @@ export class ProjectsPage implements OnInit {
     this.searchTerm = filter.searchTerm;
     this.selectedSortBy = filter.sortBy;
     this.selectedSortDirection = filter.sortDirection;
+    this.includeArchivedInAnalytics = !!filter.includeArchivedInAnalytics;
     // Trigger the existing filter update
     this.setupFilteredProjects();
+    this.setupCategoryOverview();
   }
 
   // New bulk actions handler
@@ -709,6 +687,55 @@ export class ProjectsPage implements OnInit {
 
       return this.selectedSortDirection === "desc" ? -comparison : comparison;
     });
+  }
+
+  private setupCategoryOverview() {
+    const projectsSource$ = this.includeArchivedInAnalytics
+      ? this.allProjects$
+      : this.activeProjects$;
+
+    this.categoryOverview$ = combineLatest([
+      projectsSource$,
+      this.timeEntries$,
+    ]).pipe(
+      map(([projects, entries]) => {
+        const overview: {[key: string]: {count: number; hours: number}} = {};
+
+        // Initialize with all available categories
+        Object.keys(this.projectCategories).forEach((category) => {
+          overview[category] = {count: 0, hours: 0};
+        });
+        overview["general"] = {count: 0, hours: 0};
+
+        // Map projectId -> category for chosen project set
+        const projectCategoryMap = new Map<string, string>();
+        projects.forEach((project) => {
+          const category = project.standardCategory || "general";
+          if (project.id) projectCategoryMap.set(project.id, category);
+          if (!overview[category]) overview[category] = {count: 0, hours: 0};
+          overview[category].count++;
+        });
+
+        // Sum hours by category using all entries for included projects
+        entries.forEach((entry) => {
+          const category = projectCategoryMap.get(entry.projectId);
+          if (!category) return;
+          overview[category].hours += entry.hours || 0;
+        });
+
+        return overview;
+      }),
+    );
+  }
+
+  toggleIncludeArchivedInAnalytics(checked: boolean) {
+    this.includeArchivedInAnalytics = checked;
+    // Keep current filter state in sync
+    this.currentProjectFilter = {
+      ...this.currentProjectFilter,
+      includeArchivedInAnalytics: checked,
+    };
+    this.setupCategoryOverview();
   }
 
   private getDateValue(dateField: any): number {
@@ -771,64 +798,7 @@ export class ProjectsPage implements OnInit {
     this.showBulkActions = this.selectedProjects.size > 0;
   }
 
-  // Template-based project creation
-  openTemplateModal() {
-    this.showTemplateModal = true;
-    this.resetTemplateSelection();
-  }
-
-  closeTemplateModal() {
-    this.showTemplateModal = false;
-    this.resetTemplateSelection();
-  }
-
-  selectTemplateCategory(category: StandardProjectCategory) {
-    this.selectedCategory = category;
-    this.templatesForSelectedCategory = STANDARD_PROJECT_TEMPLATES.filter(
-      (template) => template.category === category,
-    );
-  }
-
-  createProjectFromTemplate(template: StandardProjectTemplate) {
-    this.selectedTemplate = template;
-    this.selectedCategory = template.category;
-
-    // Generate a default name or allow customization
-    const baseName = template.name;
-    let projectName = baseName;
-    let counter = 1;
-
-    // Check for existing projects with similar names
-    this.activeProjects$.pipe(first()).subscribe((projects) => {
-      const existingNames = projects.map((p) => p.name.toLowerCase());
-
-      while (existingNames.includes(projectName.toLowerCase())) {
-        counter++;
-        projectName = `${baseName} ${counter}`;
-      }
-
-      this.newProjectName = projectName;
-      this.addProject();
-      this.closeTemplateModal();
-    });
-  }
-
-  private resetTemplateSelection() {
-    this.selectedCategory = undefined;
-    this.selectedTemplate = undefined;
-    this.templatesForSelectedCategory = [];
-    this.createFromTemplate = false;
-  }
-
-  async createSingleProject() {
-    if (!this.selectedCategory) {
-      this.errorHandler.handleFirebaseAuthError({
-        code: "category-required",
-        message: "Please select a category for project creation.",
-      });
-      return;
-    }
-  }
+  // Template-based project creation (legacy) removed
 
   /**
    * Toggle category overview (analytics) display
@@ -844,9 +814,7 @@ export class ProjectsPage implements OnInit {
     }
   }
 
-  toggleGroupByCategory() {
-    this.groupByCategory = !this.groupByCategory;
-  }
+  // Group by toggle handled via filters component
 
   // Analytics helper methods
   getTotalProjects(overview: {
@@ -884,14 +852,7 @@ export class ProjectsPage implements OnInit {
     return total > 0 ? Math.round((categoryCount / total) * 100) : 0;
   }
 
-  openProjectCreation(): void {
-    this.showProjectCreation = true;
-  }
-
-  exportAnalytics(): void {
-    // TODO: Implement analytics export functionality
-    console.log("Export analytics functionality to be implemented");
-  }
+  // Legacy helpers removed: openProjectCreation, exportAnalytics
 
   getCategoryInfo(category: string) {
     const categoryInfo =
@@ -920,16 +881,5 @@ export class ProjectsPage implements OnInit {
     return Object.keys(this.projectCategories);
   }
 
-  showTemplateSelectionModal() {
-    this.showTemplateModal = true;
-  }
-
-  createCustomProject() {
-    this.closeTemplateModal();
-    // Scroll to the project creation form
-    const createCard = document.querySelector(".add-project-card");
-    if (createCard) {
-      createCard.scrollIntoView({behavior: "smooth"});
-    }
-  }
+  // Legacy template modal helpers removed
 }

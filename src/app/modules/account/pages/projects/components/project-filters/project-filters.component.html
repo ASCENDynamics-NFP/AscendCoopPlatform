@@ -33,24 +33,32 @@
 
       <!-- Sort Controls -->
       <div class="sort-controls">
-        <ion-segment
-          [(ngModel)]="sortBy"
-          (ionChange)="onSortChange($any($event).detail.value)"
-          class="sort-segment"
-        >
-          <ion-segment-button value="name">Name</ion-segment-button>
-          <ion-segment-button value="category">Category</ion-segment-button>
-          <ion-segment-button value="created">Created</ion-segment-button>
+        <ion-segment [(ngModel)]="sortBy" class="sort-segment">
+          <ion-segment-button value="name" (click)="onSortButtonClick('name')">
+            <ion-label>Name</ion-label>
+            <ion-icon
+              [name]="getSortIcon()"
+              slot="end"
+              [style.visibility]="sortBy === 'name' ? 'visible' : 'hidden'"
+            ></ion-icon>
+          </ion-segment-button>
+          <ion-segment-button value="category" (click)="onSortButtonClick('category')">
+            <ion-label>Category</ion-label>
+            <ion-icon
+              [name]="getSortIcon()"
+              slot="end"
+              [style.visibility]="sortBy === 'category' ? 'visible' : 'hidden'"
+            ></ion-icon>
+          </ion-segment-button>
+          <ion-segment-button value="created" (click)="onSortButtonClick('created')">
+            <ion-label>Created</ion-label>
+            <ion-icon
+              [name]="getSortIcon()"
+              slot="end"
+              [style.visibility]="sortBy === 'created' ? 'visible' : 'hidden'"
+            ></ion-icon>
+          </ion-segment-button>
         </ion-segment>
-
-        <ion-button
-          fill="clear"
-          size="small"
-          (click)="onSortDirectionToggle()"
-          class="sort-direction-btn"
-        >
-          <ion-icon [name]="getSortIcon()" slot="icon-only"></ion-icon>
-        </ion-button>
       </div>
     </div>
   </div>
@@ -72,22 +80,6 @@
         ></ion-icon>
         Group
       </ion-button>
-
-      <ion-button
-        [fill]="showCategoryOverview ? 'solid' : 'outline'"
-        [color]="showCategoryOverview ? 'primary' : 'medium'"
-        size="small"
-        (click)="onToggleCategoryOverview()"
-        class="toggle-btn"
-      >
-        <ion-icon
-          [name]="
-            showCategoryOverview ? 'checkmark-circle' : 'analytics-outline'
-          "
-          slot="start"
-        ></ion-icon>
-        Analytics
-      </ion-button>
     </div>
 
     <!-- Status & Actions -->
@@ -107,6 +99,7 @@
         <ion-icon name="close-circle" slot="start"></ion-icon>
         Clear
       </ion-button>
+
     </div>
   </div>
 </div>

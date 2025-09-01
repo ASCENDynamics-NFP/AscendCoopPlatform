@@ -46,7 +46,7 @@ export class ChildSafetyPage implements OnInit {
       {
         title,
         description,
-        url: "https://app.ASCENDynamics.org/info/child-safety",
+        url: "https://ascendynamics.org/info/child-safety",
       },
       {
         card: "summary",

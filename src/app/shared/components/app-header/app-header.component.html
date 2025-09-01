@@ -29,6 +29,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       color="primary"
       [defaultHref]="defaultHref"
     ></ion-back-button>
+    <!-- Custom start content projection -->
+    <ng-content select="[header-start]"></ng-content>
   </ion-buttons>
   <div class="toolbar-content">
     <img
@@ -37,33 +39,41 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       alt="ASCENDynamics Logo"
       class="toolbar-logo"
     />
-    <ion-title class="header-title" translate>{{ title }}</ion-title>
+    <ion-title *ngIf="!plainTitle" class="header-title" translate>{{ title }}</ion-title>
+    <ion-title *ngIf="plainTitle" class="header-title">{{ plainTitle }}</ion-title>
+    <!-- Optional extra content next to title (e.g., badges) -->
+    <ng-content select="[header-title-extra]"></ng-content>
   </div>
   <ion-buttons slot="end" class="toolbar-buttons">
-    <ion-avatar
-      *ngIf="image && authUser$ | async as authUser; else notLoggedIn"
-      class="padded-avatar"
-      (click)="presentPopover($event)"
-    >
-      <img [src]="image | async" alt="User Avatar" />
-    </ion-avatar>
-    <ng-template #notLoggedIn>
-      <ion-button
-        routerLink="/auth/login"
-        color="primary"
-        fill="outline"
-        translate
+    <!-- Custom end content projection (left of avatar/login) -->
+    <ng-content select="[header-end]"></ng-content>
+
+    <div class="auth-area">
+      <ion-avatar
+        *ngIf="image && authUser$ | async as authUser; else notLoggedIn"
+        class="padded-avatar"
+        (click)="presentPopover($event)"
       >
-        common.login
-      </ion-button>
-      <ion-button
-        routerLink="/auth/signup"
-        color="primary"
-        fill="solid"
-        translate
-      >
-        common.signup
-      </ion-button>
-    </ng-template>
+        <img [src]="image | async" alt="User Avatar" />
+      </ion-avatar>
+      <ng-template #notLoggedIn>
+        <ion-button
+          routerLink="/auth/login"
+          color="primary"
+          fill="outline"
+          translate
+        >
+          common.login
+        </ion-button>
+        <ion-button
+          routerLink="/auth/signup"
+          color="primary"
+          fill="solid"
+          translate
+        >
+          common.signup
+        </ion-button>
+      </ng-template>
+    </div>
   </ion-buttons>
 </ion-toolbar>

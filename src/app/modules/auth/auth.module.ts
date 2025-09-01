@@ -31,6 +31,7 @@ import {StoreModule} from "@ngrx/store";
 import {authReducer} from "../../state/reducers/auth.reducer";
 import {AuthEffects} from "../../state/effects/auth.effects";
 import {SharedModule} from "../../shared/shared.module";
+import {InfoModule} from "../info/info.module";
 
 @NgModule({
   declarations: [LoginPage, SignupPage],
@@ -42,6 +43,7 @@ import {SharedModule} from "../../shared/shared.module";
     RouterModule,
     ReactiveFormsModule,
     TranslateModule,
+    InfoModule,
     StoreModule.forFeature("auth", authReducer),
     EffectsModule.forFeature([AuthEffects]),
   ],

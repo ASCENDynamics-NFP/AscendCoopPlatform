@@ -53,13 +53,29 @@ service cloud.firestore {
         get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
     }
 
+    // Generic membership helper: any accepted relatedAccount regardless of type
+    function isMember(accId) {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
+    }
+
     // Project subcollections within accounts
     match /accounts/{accountId}/projects {
-      allow list: if isAccountOwner(accountId) || isAcceptedGroup(accountId) || isAcceptedFriend(accountId);
+      // Allow listing projects to the owner or any accepted member
+      allow list: if isAccountOwner(accountId) || isMember(accountId);
     }
     match /accounts/{accountId}/projects/{projectId} {
-      allow read: if isAccountOwner(accountId) || isAcceptedGroup(accountId) || isAcceptedFriend(accountId);
-      allow create, update, delete: if isAccountAdmin(accountId);
+      // Allow reading a project to the owner or any accepted member
+      allow read: if isAccountOwner(accountId) || isMember(accountId);
+      // Only admins can create/update
+      allow create, update: if isAccountAdmin(accountId);
+      // Prevent delete when there are associated time entries by requiring counter == 0
+      allow delete: if isAccountAdmin(accountId) &&
+        (
+          !resource.data.keys().hasAny(['timeEntryCount']) ||
+          resource.data.timeEntryCount == 0
+        );
     }
 
     match /accounts {
@@ -131,6 +147,10 @@ service cloud.firestore {
     }
 
     // Rules for relatedAccount
+    // Allow listing the relatedAccounts subcollection for authenticated users
+    match /accounts/{accountId}/relatedAccounts {
+      allow list: if request.auth != null;
+    }
     match /accounts/{accountId}/relatedAccounts/{relatedAccountId} {
       function isAccountOwner() {
         return request.auth != null && request.auth.uid == accountId;
@@ -155,6 +175,10 @@ service cloud.firestore {
       allow create, write, delete: if isAccountOwner() || isGroupAdmin() || isRelatedToAccount();
     }
 
+    // Allow listing the relatedListings subcollection for authenticated users
+    match /accounts/{accountId}/relatedListings {
+      allow list: if request.auth.uid != null;
+    }
     match /accounts/{accountId}/relatedListings/{listingId} {
       allow create, read, write, delete: if request.auth.uid != null;  // Only authenticated users
     }

@@ -98,7 +98,7 @@ export class ListingDetailPage implements OnInit {
             {
               title: `${listing.title} | ASCENDynamics NFP`,
               description: `Explore the ${listing.type} opportunity at ${listing.organization}. ${listing.description}`,
-              url: `https://app.ASCENDynamics.org/listing/${listing.id}`,
+              url: `https://ascendynamics.org/listing/${listing.id}`,
               image:
                 listing.heroImage ||
                 listing.iconImage ||
@@ -126,7 +126,7 @@ export class ListingDetailPage implements OnInit {
             title: "Discover Opportunities | ASCENDynamics NFP",
             description:
               "Explore a variety of opportunities to contribute and grow your skills. Join our community today!",
-            url: `https://app.ASCENDynamics.org/listing/${listingId}`,
+            url: `https://ascendynamics.org/listing/${listingId}`,
             image:
               "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
           },

@@ -23,6 +23,7 @@ import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {TranslateModule} from "@ngx-translate/core";
 import {NewChatPageRoutingModule} from "./new-chat-routing.module";
+import {SharedModule} from "../../../../shared/shared.module";
 import {NewChatPage} from "./new-chat.page";
 
 @NgModule({
@@ -31,6 +32,7 @@ import {NewChatPage} from "./new-chat.page";
     FormsModule,
     IonicModule,
     TranslateModule,
+    SharedModule,
     NewChatPageRoutingModule,
   ],
   declarations: [NewChatPage],

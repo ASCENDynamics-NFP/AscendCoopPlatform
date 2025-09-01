@@ -7,21 +7,14 @@
     type="push"
   >
     <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <!-- Main menu button - allows navigation out of messaging on all screen sizes -->
-          <ion-menu-button menu="main" color="primary"> </ion-menu-button>
-        </ion-buttons>
-        <ion-title>{{ 'messaging.title' | translate }}</ion-title>
-        <ion-buttons slot="end">
-          <ion-button (click)="onNewChat()" fill="clear">
-            <ion-icon name="add" slot="icon-only"></ion-icon>
-          </ion-button>
-          <ion-button (click)="showMessagingOptions()" fill="clear">
-            <ion-icon name="ellipsis-vertical" slot="icon-only"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
+      <app-header [title]="'messaging.title'" [hideAvatarOnDesktop]="true">
+        <ion-button header-end (click)="onNewChat()" fill="clear">
+          <ion-icon name="add" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button header-end (click)="showMessagingOptions()" fill="clear">
+          <ion-icon name="ellipsis-vertical" slot="icon-only"></ion-icon>
+        </ion-button>
+      </app-header>
     </ion-header>
 
     <ion-content>

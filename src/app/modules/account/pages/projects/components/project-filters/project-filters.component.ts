@@ -44,9 +44,7 @@ export class ProjectFiltersComponent {
   @Input() groupByCategory = false;
   @Input() projectCount = 0;
   @Input() showCategoryOverview = false;
-
   @Output() filterChange = new EventEmitter<ProjectFilter>();
-  @Output() toggleCategoryOverview = new EventEmitter<void>();
 
   projectCategories = STANDARD_PROJECT_CATEGORIES_INFO;
   categoryKeys = Object.keys(
@@ -68,18 +66,26 @@ export class ProjectFiltersComponent {
     this.emitFilterChange();
   }
 
-  onSortDirectionToggle(): void {
-    this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc";
+  // Direction toggling handled by onSortButtonClick
+
+  /**
+   * Handle clicks on sort segment buttons.
+   * - Clicking the currently selected sort toggles direction.
+   * - Clicking a new sort sets it active and resets direction to ascending.
+   */
+  onSortButtonClick(sortBy: "name" | "category" | "created"): void {
+    if (this.sortBy === sortBy) {
+      this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc";
+    } else {
+      this.sortBy = sortBy;
+      this.sortDirection = "asc";
+    }
     this.emitFilterChange();
   }
 
   onGroupByCategoryToggle(): void {
     this.groupByCategory = !this.groupByCategory;
     this.emitFilterChange();
-  }
-
-  onToggleCategoryOverview(): void {
-    this.toggleCategoryOverview.emit();
   }
 
   clearFilters(): void {

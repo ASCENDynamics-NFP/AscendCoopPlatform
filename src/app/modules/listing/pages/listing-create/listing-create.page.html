@@ -18,15 +18,10 @@ You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button></ion-back-button>
-    </ion-buttons>
-    <ion-title
-      >{{ templateListing ? ('listings.form.duplicate_listing' | translate) :
-      ('listings.form.create_new_listing' | translate) }}</ion-title
-    >
-  </ion-toolbar>
+  <app-header
+    [title]="templateListing ? 'listings.form.duplicate_listing' : 'listings.form.create_new_listing'"
+    [defaultHref]="'/listings'"
+  ></app-header>
 </ion-header>
 
 <ion-content>

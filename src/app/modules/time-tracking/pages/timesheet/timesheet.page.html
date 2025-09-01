@@ -1,10 +1,5 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button menu="main"></ion-menu-button>
-    </ion-buttons>
-    <ion-title>{{ 'menu.timesheet' | translate }}</ion-title>
-  </ion-toolbar>
+  <app-header [title]="'menu.timesheet'"></app-header>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="timesheet-content">

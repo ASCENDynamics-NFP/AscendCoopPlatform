@@ -1,21 +1,17 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Messages
-      <ion-badge
-        *ngIf="(totalUnreadCount$ | async) && (totalUnreadCount$ | async)! > 0"
-        color="danger"
-        class="total-unread-badge"
-      >
-        {{ totalUnreadCount$ | async }}
-      </ion-badge>
-    </ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="startNewChat()" fill="clear">
-        <ion-icon name="create-outline" slot="icon-only"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
+  <app-header [title]="'messaging.title'">
+    <ion-badge
+      header-title-extra
+      *ngIf="(totalUnreadCount$ | async) && (totalUnreadCount$ | async)! > 0"
+      color="danger"
+      class="total-unread-badge"
+    >
+      {{ totalUnreadCount$ | async }}
+    </ion-badge>
+    <ion-button header-end (click)="startNewChat()" fill="clear">
+      <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+    </ion-button>
+  </app-header>
 </ion-header>
 
 <ion-content [fullscreen]="true">

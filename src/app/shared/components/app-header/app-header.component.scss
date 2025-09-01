@@ -52,6 +52,12 @@ ion-toolbar {
   gap: 8px; /* Spacing between buttons/avatars */
 }
 
+.auth-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .padded-avatar {
   max-height: 40px;
   max-width: 40px;
@@ -71,6 +77,13 @@ ion-buttons ion-button {
 
 @media (max-width: 500px) {
   .toolbar-logo {
+    display: none;
+  }
+}
+
+/* Hide avatar/login area on desktop when host has class */
+@media (min-width: 768px) {
+  :host(.hide-avatar-desktop) .auth-area {
     display: none;
   }
 }

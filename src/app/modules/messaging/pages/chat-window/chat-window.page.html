@@ -1,26 +1,15 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button
-        (click)="goBack()"
-        defaultHref="/messaging/chats"
-      ></ion-back-button>
+  <app-header
+    [plainTitle]="getChatDisplayName(chat$ | async)"
+    [defaultHref]="'/messaging/chats'"
+  >
+    <!-- Connection Status -->
+    <app-connection-status header-end [compactMode]="true"></app-connection-status>
 
-      <!-- Main menu button - allows navigation out of messaging on all screen sizes -->
-      <ion-menu-button menu="main" color="primary"> </ion-menu-button>
-    </ion-buttons>
-
-    <ion-title>{{ getChatDisplayName(chat$ | async) }}</ion-title>
-
-    <ion-buttons slot="end">
-      <!-- Connection Status -->
-      <app-connection-status [compactMode]="true"></app-connection-status>
-
-      <ion-button (click)="showChatOptions()" fill="clear">
-        <ion-icon name="ellipsis-vertical" slot="icon-only"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
+    <ion-button header-end (click)="showChatOptions()" fill="clear">
+      <ion-icon name="ellipsis-vertical" slot="icon-only"></ion-icon>
+    </ion-button>
+  </app-header>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="chat-content">

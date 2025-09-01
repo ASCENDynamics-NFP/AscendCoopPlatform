@@ -1,22 +1,14 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button
-        (click)="goBack()"
-        defaultHref="/messaging/chats"
-      ></ion-back-button>
-    </ion-buttons>
-    <ion-title>{{ 'messaging.new_chat' | translate }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button
-        (click)="createChat()"
-        [disabled]="selectedContacts.length === 0 || isLoading"
-        fill="clear"
-      >
-        {{ 'common.create' | translate }}
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
+  <app-header [title]="'messaging.new_chat'" [defaultHref]="'/messaging/chats'">
+    <ion-button
+      header-end
+      (click)="createChat()"
+      [disabled]="selectedContacts.length === 0 || isLoading"
+      fill="clear"
+    >
+      {{ 'common.create' | translate }}
+    </ion-button>
+  </app-header>
 </ion-header>
 
 <ion-content [fullscreen]="true">

@@ -21,11 +21,18 @@ import {NgModule} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
+import {SharedModule} from "../../../../shared/shared.module";
 import {ChatListPageRoutingModule} from "./chat-list-routing.module";
 import {ChatListPage} from "./chat-list.page";
 
 @NgModule({
-  imports: [CommonModule, FormsModule, IonicModule, ChatListPageRoutingModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    SharedModule,
+    ChatListPageRoutingModule,
+  ],
   declarations: [ChatListPage],
   exports: [ChatListPage], // Export the component for use in other modules
 })

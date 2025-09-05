@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 // src/app/modules/account/pages/settings/settings.page.ts
 
-import {Component} from "@angular/core";
+import {Component, inject} from "@angular/core";
 import {Observable} from "rxjs";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {Account} from "@shared/models/account.model";
@@ -27,6 +27,7 @@ import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import {switchMap} from "rxjs/operators";
+import {ActivatedRoute} from "@angular/router";
 import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
@@ -38,6 +39,11 @@ export class SettingsPage {
   authUser$: Observable<AuthUser | null>;
   account$: Observable<Account | undefined>;
 
+  // Optional route via inject to keep tests simple
+  private route = inject(ActivatedRoute, {
+    optional: true,
+  }) as ActivatedRoute | null;
+
   constructor(
     private metaService: MetaService,
     private store: Store,
@@ -45,15 +51,20 @@ export class SettingsPage {
     // Get the authUser observable
     this.authUser$ = this.store.select(selectAuthUser);
 
-    // Use switchMap to load the account and select the account observable based on authUser
-    this.account$ = this.authUser$.pipe(
-      switchMap((authUser) => {
-        if (authUser?.uid) {
-          return this.store.select(selectAccountById(authUser.uid));
-        }
-        return [undefined];
-      }),
-    );
+    const paramAccountId = this.route?.snapshot.paramMap.get("accountId");
+    if (paramAccountId) {
+      this.account$ = this.store.select(selectAccountById(paramAccountId));
+    } else {
+      // Fallback to current user's account
+      this.account$ = this.authUser$.pipe(
+        switchMap((authUser) => {
+          if (authUser?.uid) {
+            return this.store.select(selectAccountById(authUser.uid));
+          }
+          return [undefined];
+        }),
+      );
+    }
   }
 
   ionViewWillEnter() {

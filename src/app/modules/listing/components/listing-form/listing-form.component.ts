@@ -25,7 +25,14 @@ import {Store} from "@ngrx/store";
 import {filter, first, switchMap, take, tap} from "rxjs";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
-import {Account} from "@shared/models/account.model";
+import {
+  Account,
+  ContactInformation,
+  Email,
+  PhoneNumber,
+  Address,
+} from "@shared/models/account.model";
+import {AccountSectionsService} from "../../../account/services/account-sections.service";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import {AuthUser} from "@shared/models/auth-user.model";
 
@@ -39,6 +46,9 @@ export class ListingFormComponent implements OnInit {
   @Output() formSubmit = new EventEmitter<any>();
   currentStep = 1; // Start at the first step
   authUser: AuthUser | null = null;
+  useAccountContactInfo = false;
+  private backupContactInfo: ContactInformation | null = null;
+  private currentAccount?: Account;
 
   listingForm!: FormGroup;
   listingTypes = ["volunteer", "job", "internship", "gig"];
@@ -47,6 +57,7 @@ export class ListingFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private store: Store,
+    private sections: AccountSectionsService,
   ) {
     this.initForm();
   }
@@ -140,19 +151,35 @@ export class ListingFormComponent implements OnInit {
           take(1),
         )
         .subscribe((account) => {
-          // Only call one initialization method
-          this.initializeFormFromAccount(account);
+          // Set organization name only; do NOT prefill contact info.
+          // Users can use the toggle to import their account contact info.
+          this.currentAccount = account;
+          this.listingForm.patchValue({organization: account.name});
         });
     }
   }
 
-  private initializeFormFromAccount(account: Account) {
-    this.listingForm.patchValue({
-      organization: account.name,
-    });
+  private initializeFormFromAccount(
+    account: Account,
+    contactInfo?: ContactInformation | null,
+  ) {
+    this.listingForm.patchValue({organization: account.name});
+    if (this.useAccountContactInfo) {
+      this.setContactInfoFromSource(contactInfo ?? account.contactInformation);
+    }
+  }
 
-    // Initialize contact information arrays
-    account.contactInformation?.emails?.forEach((email) => {
+  private setContactInfoFromSource(source?: ContactInformation | null) {
+    // Clear current arrays
+    (this.listingForm.get("contactInformation.emails") as FormArray).clear();
+    (
+      this.listingForm.get("contactInformation.phoneNumbers") as FormArray
+    ).clear();
+    (this.listingForm.get("contactInformation.addresses") as FormArray).clear();
+
+    if (!source) return;
+
+    source.emails?.forEach((email) => {
       const emailForm = this.fb.group({
         name: [email.name],
         email: [email.email],
@@ -162,7 +189,7 @@ export class ListingFormComponent implements OnInit {
       );
     });
 
-    account.contactInformation?.phoneNumbers?.forEach((phone) => {
+    source.phoneNumbers?.forEach((phone) => {
       const phoneForm = this.fb.group({
         type: [phone.type],
         number: [phone.number],
@@ -172,7 +199,7 @@ export class ListingFormComponent implements OnInit {
       ).push(phoneForm);
     });
 
-    account.contactInformation?.addresses?.forEach((address) => {
+    source.addresses?.forEach((address) => {
       const addressForm = this.fb.group({
         name: [address?.name],
         street: [address?.street],
@@ -186,6 +213,86 @@ export class ListingFormComponent implements OnInit {
         addressForm,
       );
     });
+  }
+
+  onToggleUseAccountContactInfo(checked: boolean) {
+    this.useAccountContactInfo = checked;
+    if (checked) {
+      // Backup current manual entries
+      this.backupContactInfo = this.getContactInfoFromForm();
+      if (!this.authUser?.uid) return;
+      // Re-pull from sections/contactInfo and populate
+      this.sections
+        .contactInfo$(this.authUser.uid)
+        .pipe(take(1))
+        .subscribe((ci: ContactInformation | null) => {
+          if (ci) {
+            this.setContactInfoFromSource(ci);
+          } else if (this.currentAccount?.contactInformation) {
+            // Fallback to base account contact info if subdoc missing
+            this.setContactInfoFromSource(
+              this.currentAccount.contactInformation,
+            );
+          } else {
+            // Nothing to load; keep backup intact so user can toggle off
+          }
+        });
+    } else {
+      // Restore backup if available, else clear
+      if (this.backupContactInfo) {
+        this.setContactInfoFromSource(this.backupContactInfo);
+      } else {
+        this.setContactInfoFromSource({
+          emails: [],
+          phoneNumbers: [],
+          addresses: [],
+          preferredMethodOfContact: "Email",
+        } as ContactInformation);
+      }
+      this.backupContactInfo = null;
+    }
+  }
+
+  private getContactInfoFromForm(): ContactInformation {
+    const emailsCtrl = this.listingForm.get(
+      "contactInformation.emails",
+    ) as FormArray;
+    const phonesCtrl = this.listingForm.get(
+      "contactInformation.phoneNumbers",
+    ) as FormArray;
+    const addressesCtrl = this.listingForm.get(
+      "contactInformation.addresses",
+    ) as FormArray;
+
+    const emails: Email[] = (emailsCtrl?.value || []).map((e: any) => ({
+      name: e?.name ?? null,
+      email: e?.email ?? null,
+    }));
+    const phoneNumbers: PhoneNumber[] = (phonesCtrl?.value || []).map(
+      (p: any) => ({
+        type: p?.type ?? null,
+        number: p?.number ?? null,
+        isEmergencyNumber: false,
+      }),
+    );
+    const addresses: (Address | null)[] = (addressesCtrl?.value || []).map(
+      (a: any) => ({
+        name: a?.name ?? null,
+        street: a?.street ?? null,
+        city: a?.city ?? null,
+        state: a?.state ?? null,
+        country: a?.country ?? null,
+        zipcode: a?.zipcode ?? null,
+        isPrimaryAddress: !!a?.isPrimaryAddress,
+      }),
+    );
+
+    return {
+      emails,
+      phoneNumbers,
+      addresses,
+      preferredMethodOfContact: "Email",
+    } as ContactInformation;
   }
 
   private markFormGroupTouched(formGroup: FormGroup) {

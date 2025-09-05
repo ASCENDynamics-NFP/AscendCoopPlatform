@@ -96,7 +96,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <!-- Profile/About Section -->
       <div *ngIf="selectedSegment === 'profile'" class="segment-section">
         <app-profile [account]="account"></app-profile>
-        <app-contact-information [account]="account"></app-contact-information>
+        <app-contact-information
+          [account]="account"
+          [isProfileOwner]="(isProfileOwner$ | async) ?? false"
+          [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+          [privacySettings]="account.privacySettings"
+        ></app-contact-information>
         <app-group-calendar
           *ngIf="account.type === 'group'"
           [account]="account"
@@ -119,6 +124,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           [account]="account"
           [relatedAccounts]="(relatedAccounts$ | async) ?? []"
           type="user"
+          [isProfileOwner]="(isProfileOwner$ | async) ?? false"
+          [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+          [privacySettings]="account.privacySettings"
         ></app-related-accounts>
       </div>
 
@@ -128,6 +136,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           [account]="account"
           [relatedAccounts]="(relatedAccounts$ | async) ?? []"
           type="group"
+          [isProfileOwner]="(isProfileOwner$ | async) ?? false"
+          [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+          [privacySettings]="account.privacySettings"
         ></app-related-accounts>
       </div>
 

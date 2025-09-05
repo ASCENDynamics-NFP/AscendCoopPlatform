@@ -60,6 +60,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
   hasRelationship$!: Observable<boolean>;
   error$!: Observable<any>;
   selectedSegment: string = "profile";
+  isOwnerOrAdmin$!: Observable<boolean>;
 
   constructor(
     private metaService: MetaService,
@@ -225,6 +226,12 @@ export class DetailsPage implements OnInit, ViewWillEnter {
             return filteredListings;
           }),
         );
+
+        // Owner or admin convenience observable
+        this.isOwnerOrAdmin$ = combineLatest([
+          this.isProfileOwner$,
+          this.isGroupAdmin$,
+        ]).pipe(map(([own, admin]) => own || admin));
       }
     });
 
@@ -238,6 +245,15 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         this.setDefaultMeta();
       },
     });
+  }
+
+  // Helper methods for template
+  hasAllowlists(badges: any[]): boolean {
+    return badges?.some((x) => x.allowCount > 0) ?? false;
+  }
+
+  hasBlocklists(badges: any[]): boolean {
+    return badges?.some((x) => x.blockCount > 0) ?? false;
   }
 
   ionViewWillLeave() {
@@ -393,5 +409,21 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         target: "https://ascendynamics.org/profile",
       },
     });
+  }
+
+  // Map visibility to display text and badge color
+  private mapVisibility(v: string): {text: string; color: string} {
+    const map: Record<string, {text: string; color: string}> = {
+      public: {text: "Public", color: "success"},
+      authenticated: {text: "Authenticated", color: "medium"},
+      related: {text: "Related", color: "primary"},
+      groups: {text: "Groups", color: "tertiary"},
+      friends: {text: "Friends", color: "tertiary"},
+      members: {text: "Members", color: "tertiary"},
+      partners: {text: "Partners", color: "tertiary"},
+      admins: {text: "Admins", color: "warning"},
+      custom: {text: "Custom", color: "dark"},
+    };
+    return map[v] || {text: v, color: "medium"};
   }
 }

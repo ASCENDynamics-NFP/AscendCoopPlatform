@@ -101,6 +101,10 @@
           <ion-label>{{ "admin.settings" | translate }}</ion-label>
           <ion-icon name="settings-outline"></ion-icon>
         </ion-segment-button>
+        <ion-segment-button value="privacy">
+          <ion-label>Privacy</ion-label>
+          <ion-icon name="lock-closed-outline"></ion-icon>
+        </ion-segment-button>
       </ion-segment>
     </div>
 
@@ -1691,6 +1695,17 @@
             </div>
           </ion-card-content>
         </ion-card>
+      </div>
+
+      <!-- Privacy Section -->
+      <div *ngIf="selectedSegment === 'privacy'" class="settings-section">
+        <h3>Privacy</h3>
+        <app-settings-form
+          *ngIf="account$ | async as account"
+          [authUser]="(currentUser$ | async) || null"
+          [account]="account"
+          [privacyOnly]="true"
+        ></app-settings-form>
       </div>
     </div>
   </div>

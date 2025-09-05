@@ -33,6 +33,14 @@
     "search_groups": "Search Groups",
     "home": "Home"
   },
+
+  "privacy": {
+    "private_list_notice": "This list may be private or you might not have access.",
+    "override_contact_info": "Allow Contact Info",
+    "override_members_list": "Allow Members List",
+    "override_partners_list": "Allow Partners List",
+    "override_friends_list": "Allow Friends List"
+  },
   "common": {
     "login": "Login",
     "signup": "Sign Up",
@@ -403,6 +411,11 @@
     "public": "Public",
     "private": "Private",
     "language": "Language",
+    "allowlist": "Allowlist",
+    "blocklist": "Blocklist",
+    "related": "Related",
+    "groups": "Groups",
+    "pick_accounts": "Pick Accounts",
     "save_changes": "Save Changes",
     "delete_account": "Delete Account",
     "delete_account_subtitle": "This action cannot be undone. All your data will be permanently deleted.",

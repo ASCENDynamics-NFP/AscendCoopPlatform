@@ -19,91 +19,98 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <ion-card class="contact-info-card">
   <ion-card-header>
-    <ion-card-title>Contact Information</ion-card-title>
+    <div class="title-with-privacy">
+      <ion-card-title>Contact Information</ion-card-title>
+      <ion-chip
+        *ngIf="isOwnerOrAdmin"
+        [color]="contactInfoPrivacyData.color"
+        size="small"
+        class="privacy-indicator"
+      >
+        <ion-icon
+          [name]="
+            contactInfoPrivacyData.visibility === 'public'
+              ? 'globe'
+              : 'lock-closed'
+          "
+          size="small"
+        ></ion-icon>
+        <ion-label>{{ contactInfoPrivacyData.label }}</ion-label>
+      </ion-chip>
+    </div>
   </ion-card-header>
   <ion-card-content>
     <ion-grid>
       <ion-row>
         <ion-col size="6">
-          <div class="info-block">
-            <h2>
-              Phone
-              <ion-button
-                *ngIf="hasMoreThanOnePhoneNumber"
-                fill="clear"
-                size="small"
-                (click)="toggleShow('phone')"
-              >
-                {{ showMore.phone ? "Hide" : "Show" }} More
-              </ion-button>
-            </h2>
-            <p>{{ getFirstPhoneNumber() }}</p>
-            <div *ngIf="showMore.phone">
-              <p
-                *ngFor="
-                  let phone of account?.contactInformation?.phoneNumbers?.slice(
-                    1
-                  )
-                "
-              >
-                {{ formatPhoneNumber(phone) }}
-              </p>
+          <div
+            class="info-block"
+            *ngIf="resolvedContactInfo as _; else contactInfoPrivate"
+          >
+            <div class="info-block">
+              <h2>
+                Phone
+                <ion-button
+                  *ngIf="hasMoreThanOnePhoneNumber"
+                  fill="clear"
+                  size="small"
+                  (click)="toggleShow('phone')"
+                >
+                  {{ showMore.phone ? "Hide" : "Show" }} More
+                </ion-button>
+              </h2>
+              <p>{{ getFirstPhoneNumber() }}</p>
+              <div *ngIf="showMore.phone">
+                <p *ngFor="let phone of otherPhoneNumbers">
+                  {{ formatPhoneNumber(phone) }}
+                </p>
+              </div>
             </div>
-          </div>
-          <div class="info-block">
-            <h2>
-              Email Address
-              <ion-button
-                *ngIf="hasMoreThanOneEmail"
-                fill="clear"
-                size="small"
-                (click)="toggleShow('email')"
-              >
-                {{ showMore.email ? "Hide" : "Show" }} More
-              </ion-button>
-            </h2>
-            <p>{{ getFirstEmail() }}</p>
-            <div *ngIf="showMore.email">
-              <p
-                *ngFor="
-                  let email of account?.contactInformation?.emails?.slice(1)
-                "
-              >
-                {{ formatEmail(email) }}
-              </p>
+            <div class="info-block">
+              <h2>
+                Email Address
+                <ion-button
+                  *ngIf="hasMoreThanOneEmail"
+                  fill="clear"
+                  size="small"
+                  (click)="toggleShow('email')"
+                >
+                  {{ showMore.email ? "Hide" : "Show" }} More
+                </ion-button>
+              </h2>
+              <p>{{ getFirstEmail() }}</p>
+              <div *ngIf="showMore.email">
+                <p *ngFor="let email of otherEmails">
+                  {{ formatEmail(email) }}
+                </p>
+              </div>
             </div>
-          </div>
-          <div class="info-block">
-            <h2>
-              Mailing Address
-              <ion-button
-                *ngIf="hasMoreThanOneAddress"
-                fill="clear"
-                size="small"
-                (click)="toggleShow('address')"
-              >
-                {{ showMore.address ? "Hide" : "Show" }} More
-              </ion-button>
-            </h2>
-            <p [innerText]="getFirstAddress()"></p>
-            <div *ngIf="showMore.address">
-              <p
-                *ngFor="
-                  let address of account?.contactInformation?.addresses?.slice(
-                    1
-                  )
-                "
-                [innerText]="address ? formatAddress(address) : '-'"
-              ></p>
+            <div class="info-block">
+              <h2>
+                Mailing Address
+                <ion-button
+                  *ngIf="hasMoreThanOneAddress"
+                  fill="clear"
+                  size="small"
+                  (click)="toggleShow('address')"
+                >
+                  {{ showMore.address ? "Hide" : "Show" }} More
+                </ion-button>
+              </h2>
+              <p [innerText]="getFirstAddress()"></p>
+              <div *ngIf="showMore.address">
+                <p
+                  *ngFor="let address of otherAddresses"
+                  [innerText]="address ? formatAddress(address) : '-'"
+                ></p>
+              </div>
             </div>
           </div>
         </ion-col>
         <ion-col size="6">
           <div class="info-block">
             <h2>Preferred Method of Contact</h2>
-            <p>
-              {{ account?.contactInformation?.preferredMethodOfContact ?? "-" }}
-            </p>
+            <p>{{ preferredMethodOfContact }}</p>
           </div>
 
           <!-- Supported Languages for groups -->
@@ -122,3 +129,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     </ion-grid>
   </ion-card-content>
 </ion-card>
+
+<ng-template #contactInfoPrivate>
+  <div class="info-block">
+    <ion-text color="medium">
+      Contact information is private or unavailable.
+    </ion-text>
+  </div>
+  <!-- TODO: Add CTA to request access in future iteration -->
+</ng-template>

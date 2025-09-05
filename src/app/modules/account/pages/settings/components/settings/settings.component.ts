@@ -21,11 +21,18 @@ import {Component, EventEmitter, Input, OnChanges, Output} from "@angular/core";
 import {FormBuilder, FormGroup, FormControl, Validators} from "@angular/forms";
 import {TranslateService} from "@ngx-translate/core";
 import {AuthUser} from "@shared/models/auth-user.model";
-import {Account} from "@shared/models/account.model";
+import {
+  Account,
+  PrivacySettings,
+  RelatedAccount,
+} from "@shared/models/account.model";
 import {Store} from "@ngrx/store";
 import {AlertController} from "@ionic/angular";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 import * as AuthActions from "../../../../../../state/actions/auth.actions";
+import {Observable, of} from "rxjs";
+import {map} from "rxjs/operators";
+import {selectRelatedAccountsByAccountId} from "../../../../../../state/selectors/account.selectors";
 
 @Component({
   selector: "app-settings-form",
@@ -35,13 +42,25 @@ import * as AuthActions from "../../../../../../state/actions/auth.actions";
 export class SettingsComponent implements OnChanges {
   @Input() authUser?: AuthUser | null;
   @Input() account?: Account;
+  @Input() privacyOnly: boolean = false;
   @Output() languageChange = new EventEmitter<string>();
 
   isDeleting = false;
+  relatedAccountsOptions$?: Observable<{id: string; name: string}[]>;
+  selectedAllow: {[section: string]: string[]} = {};
+  selectedBlock: {[section: string]: string[]} = {};
 
   settingsForm: FormGroup<{
     privacy: FormControl<"public" | "private">;
     language: FormControl<string>;
+    // flattened privacySettings controls for simplicity
+    contactInformationVisibility: FormControl<string>;
+    membersListVisibility: FormControl<string>;
+    partnersListVisibility: FormControl<string>;
+    friendsListVisibility: FormControl<string>;
+    roleHierarchyVisibility: FormControl<string>;
+    projectsVisibility: FormControl<string>;
+    webLinksVisibility: FormControl<string>;
   }>;
 
   languageList = [
@@ -58,14 +77,53 @@ export class SettingsComponent implements OnChanges {
     this.settingsForm = this.fb.group({
       privacy: ["public", Validators.required],
       language: ["en"],
+      contactInformationVisibility: ["private"],
+      membersListVisibility: ["members"],
+      partnersListVisibility: ["members"],
+      friendsListVisibility: ["friends"],
+      roleHierarchyVisibility: ["members"],
+      projectsVisibility: ["members"],
+      webLinksVisibility: ["public"],
     }) as FormGroup<{
       privacy: FormControl<"public" | "private">;
       language: FormControl<string>;
+      contactInformationVisibility: FormControl<string>;
+      membersListVisibility: FormControl<string>;
+      partnersListVisibility: FormControl<string>;
+      friendsListVisibility: FormControl<string>;
+      roleHierarchyVisibility: FormControl<string>;
+      projectsVisibility: FormControl<string>;
+      webLinksVisibility: FormControl<string>;
     }>;
   }
 
   ngOnChanges() {
     this.loadFormData();
+    if (this.account?.id) {
+      this.store.dispatch(
+        AccountActions.loadRelatedAccounts({accountId: this.account.id}),
+      );
+      this.relatedAccountsOptions$ = this.store
+        .select(selectRelatedAccountsByAccountId(this.account.id))
+        .pipe(
+          map((list: Partial<RelatedAccount>[]) =>
+            list.map((ra) => ({
+              id: ra.id as string,
+              name: ra.name || (ra.id as string),
+            })),
+          ),
+        );
+    } else {
+      this.relatedAccountsOptions$ = of([]);
+    }
+  }
+
+  onAllowlistIdsChange(section: string, ids: string[]) {
+    this.selectedAllow[section] = ids || [];
+  }
+
+  onBlocklistIdsChange(section: string, ids: string[]) {
+    this.selectedBlock[section] = ids || [];
   }
 
   onLanguageChange() {
@@ -78,6 +136,44 @@ export class SettingsComponent implements OnChanges {
     if (this.authUser?.uid && this.account) {
       const formValue = this.settingsForm.value;
 
+      const pickIds = (section: string) => this.selectedAllow[section] || [];
+      const pickBlock = (section: string) => this.selectedBlock[section] || [];
+
+      const privacySettings: PrivacySettings = {
+        contactInformation: {
+          visibility:
+            (formValue.contactInformationVisibility as any) || "private",
+          allowlist: pickIds("contactInformation"),
+          blocklist: pickBlock("contactInformation"),
+        },
+        membersList: {
+          visibility: (formValue.membersListVisibility as any) || "members",
+          allowlist: pickIds("membersList"),
+          blocklist: pickBlock("membersList"),
+        },
+        partnersList: {
+          visibility: (formValue.partnersListVisibility as any) || "members",
+          allowlist: pickIds("partnersList"),
+          blocklist: pickBlock("partnersList"),
+        },
+        friendsList: {
+          visibility: (formValue.friendsListVisibility as any) || "friends",
+          allowlist: pickIds("friendsList"),
+          blocklist: pickBlock("friendsList"),
+        },
+        roleHierarchy: {
+          visibility: (formValue.roleHierarchyVisibility as any) || "members",
+        },
+        projects: {
+          visibility: (formValue.projectsVisibility as any) || "members",
+        },
+        webLinks: {
+          visibility: (formValue.webLinksVisibility as any) || "public",
+        },
+        messaging: {receiveFrom: "related"},
+        discoverability: {searchable: true},
+      };
+
       const updatedAccount: Account = {
         ...this.account,
         privacy: formValue.privacy || "public",
@@ -86,6 +182,7 @@ export class SettingsComponent implements OnChanges {
           theme: this.account.settings?.theme || "light",
           language: formValue.language || "en",
         },
+        privacySettings,
       };
 
       // Dispatch action to update the account
@@ -97,11 +194,109 @@ export class SettingsComponent implements OnChanges {
 
   loadFormData() {
     if (!this.account) return;
+    const isUser = this.account.type === "user";
+    const isGroup = this.account.type === "group";
+
+    const sanitizeForUser = (v: string | undefined, fallback: string) => {
+      const allowed = [
+        "public",
+        "authenticated",
+        "friends",
+        "groups",
+        "related",
+      ];
+      return v && allowed.includes(v) ? v : fallback;
+    };
+    const sanitizeForGroup = (v: string | undefined, fallback: string) => {
+      const allowed = [
+        "public",
+        "authenticated",
+        "members",
+        "partners",
+        "admins",
+        "custom",
+        "related",
+      ];
+      // Explicitly disallow friends for groups
+      return v && allowed.includes(v) ? v : fallback;
+    };
+
     // Update the form with the account data
     this.settingsForm.patchValue({
       privacy: this.account.privacy || "public",
       language: this.account.accessibility?.preferredLanguage ?? "en",
+      contactInformationVisibility: isUser
+        ? sanitizeForUser(
+            this.account.privacySettings?.contactInformation?.visibility,
+            "related",
+          )
+        : sanitizeForGroup(
+            this.account.privacySettings?.contactInformation?.visibility,
+            "members",
+          ),
+      membersListVisibility: isUser
+        ? sanitizeForUser(
+            this.account.privacySettings?.membersList?.visibility,
+            "related",
+          )
+        : sanitizeForGroup(
+            this.account.privacySettings?.membersList?.visibility,
+            "members",
+          ),
+      partnersListVisibility: sanitizeForGroup(
+        this.account.privacySettings?.partnersList?.visibility,
+        "members",
+      ),
+      friendsListVisibility: sanitizeForUser(
+        this.account.privacySettings?.friendsList?.visibility,
+        "friends",
+      ),
+      roleHierarchyVisibility: isUser
+        ? sanitizeForUser(
+            this.account.privacySettings?.roleHierarchy?.visibility,
+            "related",
+          )
+        : sanitizeForGroup(
+            this.account.privacySettings?.roleHierarchy?.visibility,
+            "members",
+          ),
+      projectsVisibility: isUser
+        ? sanitizeForUser(
+            this.account.privacySettings?.projects?.visibility,
+            "related",
+          )
+        : sanitizeForGroup(
+            this.account.privacySettings?.projects?.visibility,
+            "members",
+          ),
+      webLinksVisibility: isUser
+        ? sanitizeForUser(
+            this.account.privacySettings?.webLinks?.visibility,
+            "public",
+          )
+        : sanitizeForGroup(
+            this.account.privacySettings?.webLinks?.visibility,
+            "public",
+          ),
     });
+
+    // Initialize picker selections from existing privacySettings arrays
+    this.selectedAllow["contactInformation"] =
+      this.account.privacySettings?.contactInformation?.allowlist || [];
+    this.selectedBlock["contactInformation"] =
+      this.account.privacySettings?.contactInformation?.blocklist || [];
+    this.selectedAllow["membersList"] =
+      this.account.privacySettings?.membersList?.allowlist || [];
+    this.selectedBlock["membersList"] =
+      this.account.privacySettings?.membersList?.blocklist || [];
+    this.selectedAllow["partnersList"] =
+      this.account.privacySettings?.partnersList?.allowlist || [];
+    this.selectedBlock["partnersList"] =
+      this.account.privacySettings?.partnersList?.blocklist || [];
+    this.selectedAllow["friendsList"] =
+      this.account.privacySettings?.friendsList?.allowlist || [];
+    this.selectedBlock["friendsList"] =
+      this.account.privacySettings?.friendsList?.blocklist || [];
   }
 
   toggleDarkTheme(event: CustomEvent) {

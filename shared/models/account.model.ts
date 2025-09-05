@@ -97,6 +97,37 @@ export interface ContactInformation {
   preferredMethodOfContact: "Email" | "Phone" | "SMS" | "Fax";
 }
 
+// Section-level privacy types
+export type PrivacyAudience =
+  | "public"
+  | "authenticated"
+  | "related"
+  | "groups"
+  | "friends"
+  | "members"
+  | "partners"
+  | "admins"
+  | "custom";
+
+export interface SectionPrivacy {
+  visibility: PrivacyAudience;
+  allowedRoleIds?: string[];
+  allowlist?: string[];
+  blocklist?: string[];
+}
+
+export interface PrivacySettings {
+  contactInformation?: SectionPrivacy;
+  membersList?: SectionPrivacy;
+  partnersList?: SectionPrivacy;
+  friendsList?: SectionPrivacy;
+  roleHierarchy?: SectionPrivacy;
+  projects?: SectionPrivacy;
+  webLinks?: SectionPrivacy;
+  messaging?: {receiveFrom: "public" | "related" | "none"};
+  discoverability?: {searchable: boolean};
+}
+
 interface Accessibility {
   preferredLanguage?: string;
   accessibilityNeeds?: string[];
@@ -245,6 +276,8 @@ export interface Account extends BaseDocument, Group, User {
    */
   totalHours?: number;
   settings?: Settings; // User-specific settings
+  /** Granular section-level privacy on top of global privacy. */
+  privacySettings?: PrivacySettings;
 }
 
 export interface RelatedAccount extends BaseDocument {
@@ -279,6 +312,10 @@ export interface RelatedAccount extends BaseDocument {
   initiatorId?: string; // ID of the account who initiated the request
   targetId?: string; // ID of the account who received the request
   canAccessContactInfo?: boolean; // Whether the related account can access the contact information
+  // Per-section overrides for this relationship
+  sectionOverrides?: {
+    [sectionKey: string]: {allow: boolean; expiresAt?: Timestamp};
+  };
 }
 
 export interface Settings {

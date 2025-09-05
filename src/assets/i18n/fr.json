@@ -33,6 +33,14 @@
     "search_groups": "Rechercher des groupes",
     "home": "Accueil"
   },
+
+  "privacy": {
+    "private_list_notice": "Cette liste peut être privée ou vous n'y avez pas accès.",
+    "override_contact_info": "Autoriser les infos de contact",
+    "override_members_list": "Autoriser la liste des membres",
+    "override_partners_list": "Autoriser la liste des partenaires",
+    "override_friends_list": "Autoriser la liste d'amis"
+  },
   "common": {
     "login": "Connexion",
     "signup": "S'inscrire",
@@ -355,6 +363,11 @@
     "public": "Public",
     "private": "Privé",
     "language": "Langue",
+    "allowlist": "Liste autorisée",
+    "blocklist": "Liste bloquée",
+    "related": "Connexions",
+    "groups": "Groupes",
+    "pick_accounts": "Sélectionner des comptes",
     "save_changes": "Enregistrer les modifications",
     "delete_account": "Supprimer le compte",
     "delete_account_subtitle": "Cette action ne peut pas être annulée. Toutes vos données seront définitivement supprimées.",

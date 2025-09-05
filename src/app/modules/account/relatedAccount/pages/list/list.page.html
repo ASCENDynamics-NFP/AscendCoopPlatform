@@ -60,6 +60,22 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             </ion-buttons>
           </ion-card-header>
 
+          <!-- Visibility badge for owner -->
+          <div *ngIf="(isOwner$ | async) && (ownerListBadge$ | async) as badge" class="ion-padding-start ion-padding-end ion-padding-top">
+            <ion-chip [color]="badge.color" outline>
+              <ion-icon name="eye-outline"></ion-icon>
+              <ion-label>
+                {{ badge.sectionLabel }} visible to: {{ badge.text }}
+              </ion-label>
+            </ion-chip>
+            <ion-badge color="success" *ngIf="badge.allowCount > 0" class="ion-margin-start">
+              Allow {{ badge.allowCount }}
+            </ion-badge>
+            <ion-badge color="danger" *ngIf="badge.blockCount > 0" class="ion-margin-start">
+              Block {{ badge.blockCount }}
+            </ion-badge>
+          </div>
+
           <!-- Unwrap currentRelatedAccountsList$ -->
           <ng-container
             *ngIf="(currentRelatedAccountsList$ | async) as currentList"
@@ -122,6 +138,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                     </ion-select-option>
                   </ion-select>
                 </ng-container>
+                
+                
                 <ion-select
                   disabled="true"
                   [value]="relatedAccount.relationship"
@@ -155,6 +173,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 </ion-button>
               </ion-item>
             </ion-list>
+            <ion-text color="medium" *ngIf="(showPrivateNotice$ | async)" class="ion-padding">
+              {{ 'privacy.private_list_notice' | translate }}
+            </ion-text>
           </ng-container>
         </ion-card>
 

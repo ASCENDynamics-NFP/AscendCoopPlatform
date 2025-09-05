@@ -49,21 +49,31 @@ export class ListPage implements OnInit {
 
   // Observables
   currentUser$!: Observable<AuthUser | null>;
-  account$!: Observable<Partial<Account> | undefined>;
-  relatedAccounts$!: Observable<Partial<RelatedAccount>[]>;
-  currentRelatedAccountsList$!: Observable<Partial<RelatedAccount>[]>;
-  pendingRelatedAccountsList$!: Observable<Partial<RelatedAccount>[]>;
-  isOwner$!: Observable<boolean>;
-  title$!: Observable<string>;
-  isGroupAdmin$!: Observable<boolean>;
-  canManageRoles$!: Observable<boolean>;
-  showAccessControls$!: Observable<boolean>;
-  showRoleControls$!: Observable<boolean>;
+  account$: Observable<Partial<Account> | undefined> = of(undefined);
+  relatedAccounts$: Observable<Partial<RelatedAccount>[]> = of([]);
+  currentRelatedAccountsList$: Observable<Partial<RelatedAccount>[]> = of([]);
+  pendingRelatedAccountsList$: Observable<Partial<RelatedAccount>[]> = of([]);
+  isOwner$: Observable<boolean> = of(false);
+  title$: Observable<string> = of("");
+  isGroupAdmin$: Observable<boolean> = of(false);
+  canManageRoles$: Observable<boolean> = of(false);
+  showAccessControls$: Observable<boolean> = of(false);
+  showRoleControls$: Observable<boolean> = of(false);
   accessOptions = ["admin", "moderator", "member"] as const;
   customRoles$!: Observable<GroupRole[]>;
   filteredUserRoles$!: Observable<GroupRole[]>;
   filteredOrganizationRoles$!: Observable<GroupRole[]>;
   relationshipOptions = ["friend", "member", "partner", "family"] as const;
+  // UI privacy helpers
+  listVisibility$: Observable<string> = of("public");
+  showPrivateNotice$: Observable<boolean> = of(false);
+  ownerListBadge$: Observable<{
+    sectionLabel: string;
+    text: string;
+    color: string;
+    allowCount: number;
+    blockCount: number;
+  } | null> = of(null);
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -115,6 +125,66 @@ export class ListPage implements OnInit {
             return "Organizations";
           }
           return "";
+        }),
+      );
+
+      // Determine section visibility configured for this list
+      this.listVisibility$ = this.account$.pipe(
+        map((account) => {
+          const vis = account?.privacySettings;
+          if (!vis) return "public";
+          const type = account?.type;
+          if (type === "group") {
+            return this.listType === "user"
+              ? (vis.membersList?.visibility as string) || "members"
+              : (vis.partnersList?.visibility as string) || "members";
+          }
+          if (type === "user") {
+            return this.listType === "user"
+              ? (vis.friendsList?.visibility as string) || "friends"
+              : (vis.membersList?.visibility as string) || "authenticated";
+          }
+          return "public";
+        }),
+      );
+
+      // Show a gentle notice if list is empty and the audience isn't public/authenticated
+      this.showPrivateNotice$ = combineLatest([
+        this.currentRelatedAccountsList$,
+        this.listVisibility$,
+      ]).pipe(
+        map(([items, visibility]) => {
+          const empty = (items?.length || 0) === 0;
+          const isRestricted =
+            visibility !== "public" && visibility !== "authenticated";
+          return empty && isRestricted;
+        }),
+      );
+
+      // Owner badge showing who can see this section (members/partners/friends)
+      this.ownerListBadge$ = combineLatest([
+        this.account$,
+        this.listVisibility$,
+        combineLatest([this.isOwner$, this.isGroupAdmin$]).pipe(
+          map(([own, admin]) => own || admin),
+        ),
+      ]).pipe(
+        map(([account, vis, canSee]) => {
+          if (!account || !canSee) return null;
+          const sectionKey = this.getSectionKeyForList(account.type || "user");
+          const sectionLabel = this.getSectionLabelForList(
+            account.type || "user",
+          );
+          const ps: any = account.privacySettings || {};
+          const section = ps[sectionKey] || {};
+          const allowCount = Array.isArray(section.allowlist)
+            ? section.allowlist.length
+            : 0;
+          const blockCount = Array.isArray(section.blocklist)
+            ? section.blocklist.length
+            : 0;
+          const {text, color} = this.mapVisibility(vis);
+          return {sectionLabel, text, color, allowCount, blockCount};
         }),
       );
 
@@ -200,6 +270,63 @@ export class ListPage implements OnInit {
         AccountActions.loadGroupRoles({groupId: this.accountId}),
       );
     }
+  }
+
+  private getSectionKeyForList(accountType: string): string {
+    // Map current list type + account type to privacySettings section key
+    if (accountType === "group") {
+      return this.listType === "user" ? "membersList" : "partnersList";
+    }
+    // user account
+    return this.listType === "user" ? "friendsList" : "membersList"; // "Groups"
+  }
+
+  private getSectionLabelForList(accountType: string): string {
+    if (accountType === "group") {
+      return this.listType === "user" ? "Members List" : "Partners List";
+    }
+    return this.listType === "user" ? "Friends List" : "Groups";
+  }
+
+  private mapVisibility(v: string): {text: string; color: string} {
+    const map: Record<string, {text: string; color: string}> = {
+      public: {text: "Public", color: "success"},
+      authenticated: {text: "Authenticated", color: "medium"},
+      related: {text: "Related", color: "primary"},
+      groups: {text: "Groups", color: "tertiary"},
+      friends: {text: "Friends", color: "tertiary"},
+      members: {text: "Members", color: "tertiary"},
+      partners: {text: "Partners", color: "tertiary"},
+      admins: {text: "Admins", color: "warning"},
+      custom: {text: "Custom", color: "dark"},
+    };
+    return map[v] || {text: v, color: "medium"};
+  }
+
+  updateSectionOverride(
+    request: Partial<RelatedAccount>,
+    sectionKey: string,
+    allow: boolean,
+  ) {
+    if (!this.accountId || !request.id) return;
+    const updated: RelatedAccount = {
+      ...(request as RelatedAccount),
+      accountId: this.accountId,
+      sectionOverrides: {
+        ...(request.sectionOverrides || {}),
+        [sectionKey]: {allow},
+      },
+      // keep legacy flag in sync for contact info
+      ...(sectionKey === "contactInformation"
+        ? {canAccessContactInfo: allow}
+        : {}),
+    };
+    this.store.dispatch(
+      AccountActions.updateRelatedAccount({
+        accountId: this.accountId,
+        relatedAccount: updated,
+      }),
+    );
   }
 
   ionViewWillEnter() {

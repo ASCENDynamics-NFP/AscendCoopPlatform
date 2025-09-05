@@ -30,6 +30,9 @@ export class RelatedAccountsComponent {
   @Input() account: Account = {} as Account;
   @Input() relatedAccounts: RelatedAccount[] = [];
   @Input() type: "user" | "group" = "user";
+  @Input() isProfileOwner: boolean = false;
+  @Input() isGroupAdmin: boolean = false;
+  @Input() privacySettings: any = null;
 
   constructor(private router: Router) {}
 
@@ -48,9 +51,37 @@ export class RelatedAccountsComponent {
 
   goToRelatedAccount(id: string | undefined) {
     if (id) {
-      this.router.navigate([`/account/${id}`]);
-    } else {
-      console.error("Invalid ID provided for navigation.");
+      this.router.navigate(["/account", id]);
+    }
+  }
+
+  get isOwnerOrAdmin(): boolean {
+    return this.isProfileOwner || this.isGroupAdmin;
+  }
+
+  get privacyData(): {visibility: string; color: string; label: string} {
+    if (!this.privacySettings) {
+      return {visibility: "public", color: "success", label: "Public"};
+    }
+
+    const sectionKey = this.type === "user" ? "friendsList" : "membersList";
+    const section = this.privacySettings[sectionKey] || {};
+    const visibility = section.visibility || "public";
+    const {text, color} = this.mapVisibility(visibility);
+
+    return {visibility, color, label: text};
+  }
+
+  private mapVisibility(v: string): {text: string; color: string} {
+    switch (v) {
+      case "public":
+        return {text: "Public", color: "success"};
+      case "friends":
+        return {text: "Friends", color: "warning"};
+      case "private":
+        return {text: "Private", color: "danger"};
+      default:
+        return {text: "Public", color: "success"};
     }
   }
 

@@ -23,7 +23,6 @@ import {
   CanActivate,
   ActivatedRouteSnapshot,
   RouterStateSnapshot,
-  Router,
 } from "@angular/router";
 import {Store} from "@ngrx/store";
 import {Observable, combineLatest} from "rxjs";
@@ -38,10 +37,7 @@ import {
   providedIn: "root",
 })
 export class ProfileOwnerGuard implements CanActivate {
-  constructor(
-    private store: Store,
-    private router: Router,
-  ) {}
+  constructor(private store: Store) {}
 
   canActivate(
     route: ActivatedRouteSnapshot,
@@ -57,21 +53,13 @@ export class ProfileOwnerGuard implements CanActivate {
       take(1),
       map(([authUser, account, relatedAccounts]) => {
         // Check if user is authenticated
-        if (!authUser) {
-          this.router.navigate(["/auth/login"]);
-          return false;
-        }
+        if (!authUser) return false;
 
         // Check if account exists
-        if (!account) {
-          this.router.navigate(["/"]);
-          return false;
-        }
+        if (!account) return false;
 
         // Check if user is the direct owner of the profile
-        if (authUser.uid === account.id) {
-          return true;
-        }
+        if (authUser.uid === account.id) return true;
 
         // For group accounts, redirect admins/moderators to admin dashboard
         if (account.type === "group") {
@@ -80,15 +68,9 @@ export class ProfileOwnerGuard implements CanActivate {
             relation?.status === "accepted" &&
             (relation.access === "admin" || relation.access === "moderator");
 
-          if (isAdmin) {
-            // Redirect group admins to admin dashboard instead of edit page
-            this.router.navigate(["/account", accountId, "admin"]);
-            return false;
-          }
+          if (isAdmin) return false;
         }
 
-        // If none of the conditions are met, redirect to the account profile view
-        this.router.navigate(["/account", accountId]);
         return false;
       }),
     );

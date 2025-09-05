@@ -23,7 +23,6 @@ import {
   CanActivate,
   ActivatedRouteSnapshot,
   RouterStateSnapshot,
-  Router,
 } from "@angular/router";
 import {Store} from "@ngrx/store";
 import {Observable, combineLatest} from "rxjs";
@@ -38,10 +37,7 @@ import {
   providedIn: "root",
 })
 export class AdminGroupOwnerGuard implements CanActivate {
-  constructor(
-    private store: Store,
-    private router: Router,
-  ) {}
+  constructor(private store: Store) {}
 
   canActivate(
     route: ActivatedRouteSnapshot,
@@ -57,21 +53,14 @@ export class AdminGroupOwnerGuard implements CanActivate {
       take(1),
       map(([authUser, account, relatedAccounts]) => {
         // Check if user is authenticated
-        if (!authUser) {
-          this.router.navigate(["/auth/login"]);
-          return false;
-        }
+        if (!authUser) return false;
 
         // Check if account exists
-        if (!account) {
-          this.router.navigate(["/"]);
-          return false;
-        }
+        if (!account) return false;
 
         // Check if user is the owner of a group account
-        if (authUser.uid === account.id && account.type === "group") {
+        if (authUser.uid === account.id && account.type === "group")
           return true;
-        }
 
         // Check if user is admin/moderator through relatedAccounts
         const relation = relatedAccounts.find((ra) => ra.id === authUser.uid);
@@ -79,12 +68,7 @@ export class AdminGroupOwnerGuard implements CanActivate {
           relation?.status === "accepted" &&
           (relation.access === "admin" || relation.access === "moderator");
 
-        if (isAdmin) {
-          return true;
-        }
-
-        // If none of the conditions are met, redirect to unauthorized
-        this.router.navigate(["/account", accountId]);
+        if (isAdmin) return true;
         return false;
       }),
     );

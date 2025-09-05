@@ -33,6 +33,7 @@ import {RoleManagementPage} from "./pages/role-management/role-management.page";
 import {RoleHierarchyPage} from "./pages/role-hierarchy/role-hierarchy.page";
 import {ProjectsPage} from "./pages/projects/projects.page";
 import {AdminDashboardPage} from "./pages/admin-dashboard/admin-dashboard.page";
+import {OwnerOrAdminGuard} from "../../core/guards/owner-or-admin.guard";
 import {DirectoryPage} from "./pages/directory/directory.page";
 
 const routes: Routes = [
@@ -53,6 +54,11 @@ const routes: Routes = [
     path: ":accountId/projects",
     component: ProjectsPage,
     canActivate: [AuthGuard, AdminGroupOwnerGuard],
+  },
+  {
+    path: ":accountId/settings",
+    component: SettingsPage,
+    canActivate: [AuthGuard, OwnerOrAdminGuard],
   },
   {
     path: ":accountId/admin",

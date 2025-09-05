@@ -27,6 +27,7 @@ import {map, catchError, switchMap, take} from "rxjs/operators";
 import {selectAccountById} from "../../state/selectors/account.selectors";
 import {AuthUser} from "../../../../shared/models/auth-user.model";
 import {Settings} from "../../../../shared/models/account.model";
+import {AccountSectionsService} from "../../modules/account/services/account-sections.service";
 
 @Injectable({
   providedIn: "root",
@@ -34,7 +35,10 @@ import {Settings} from "../../../../shared/models/account.model";
 export class TokenRefreshService {
   private auth = getAuth();
 
-  constructor(private store: Store) {}
+  constructor(
+    private store: Store,
+    private sections: AccountSectionsService,
+  ) {}
 
   /**
    * Force refresh the user's ID token to get updated custom claims
@@ -79,7 +83,13 @@ export class TokenRefreshService {
   ): Observable<AuthUser> {
     return this.store.select(selectAccountById(user.uid)).pipe(
       take(1),
-      map((account) => {
+      switchMap((account) =>
+        this.sections.contactInfo$(user.uid).pipe(
+          take(1),
+          map((contactInfo) => ({account, contactInfo})),
+        ),
+      ),
+      map(({account, contactInfo}) => {
         // Only use Google photo as fallback if user doesn't have an existing icon
         const hasExistingIcon =
           account?.iconImage &&
@@ -149,6 +159,7 @@ export class TokenRefreshService {
             : new Date(),
           phoneNumber:
             user.phoneNumber ||
+            contactInfo?.phoneNumbers?.[0]?.number ||
             account?.contactInformation?.phoneNumbers?.[0]?.number ||
             null,
           providerData: user.providerData,

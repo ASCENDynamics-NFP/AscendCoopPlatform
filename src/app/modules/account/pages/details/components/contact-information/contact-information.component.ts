@@ -17,61 +17,119 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, Input} from "@angular/core";
+import {Component, Input, OnDestroy} from "@angular/core";
 import {
   Account,
   Address,
   Email,
   PhoneNumber,
+  ContactInformation,
 } from "@shared/models/account.model";
+import {AccountSectionsService} from "../../../../services/account-sections.service";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: "app-contact-information",
   templateUrl: "./contact-information.component.html",
   styleUrls: ["./contact-information.component.scss"],
 })
-export class ContactInformationComponent {
+export class ContactInformationComponent implements OnDestroy {
   _account!: Partial<Account>;
+  private contactInfoSub?: Subscription;
+  contactInfo: ContactInformation | null = null;
+  contactInfoLoadTried = false;
   showMore = {
     phone: false,
     email: false,
     address: false,
   };
 
+  @Input() isProfileOwner: boolean = false;
+  @Input() isGroupAdmin: boolean = false;
+  @Input() privacySettings: any = null;
+
   get account() {
     return this._account;
   }
+
+  constructor(private sections: AccountSectionsService) {}
 
   @Input() set account(account: Partial<Account> | undefined) {
     if (!account) {
       return;
     }
     this._account = account;
+    // Attempt to load gated contact info from sections with graceful fallback
+    if (this.contactInfoSub) {
+      this.contactInfoSub.unsubscribe();
+    }
+    if (account.id) {
+      this.contactInfoLoadTried = true;
+      this.contactInfoSub = this.sections
+        .contactInfo$(account.id)
+        .subscribe((ci) => (this.contactInfo = ci));
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.contactInfoSub?.unsubscribe();
+  }
+
+  get isOwnerOrAdmin(): boolean {
+    return this.isProfileOwner || this.isGroupAdmin;
+  }
+
+  get contactInfoPrivacyData(): {
+    visibility: string;
+    color: string;
+    label: string;
+  } {
+    if (!this.privacySettings) {
+      return {visibility: "public", color: "success", label: "Public"};
+    }
+
+    const section = this.privacySettings.contactInformation || {};
+    const visibility = section.visibility || "public";
+    const {text, color} = this.mapVisibility(visibility);
+
+    return {visibility, color, label: text};
+  }
+
+  private mapVisibility(v: string): {text: string; color: string} {
+    switch (v) {
+      case "public":
+        return {text: "Public", color: "success"};
+      case "friends":
+        return {text: "Friends", color: "warning"};
+      case "private":
+        return {text: "Private", color: "danger"};
+      default:
+        return {text: "Public", color: "success"};
+    }
+  }
+
+  get resolvedContactInfo(): ContactInformation | undefined {
+    // Prefer gated section; fallback to legacy field during migration
+    return this.contactInfo ?? this._account?.contactInformation ?? undefined;
   }
 
   get hasMoreThanOnePhoneNumber(): boolean {
-    return (
-      this.account?.contactInformation?.phoneNumbers?.length !== undefined &&
-      this.account.contactInformation.phoneNumbers.length > 1
-    );
+    const ci = this.resolvedContactInfo;
+    return !!(ci?.phoneNumbers && ci.phoneNumbers.length > 1);
   }
 
   get hasMoreThanOneEmail(): boolean {
-    return (
-      this.account?.contactInformation?.emails?.length !== undefined &&
-      this.account.contactInformation.emails.length > 1
-    );
+    const ci = this.resolvedContactInfo;
+    return !!(ci?.emails && ci.emails.length > 1);
   }
 
   get hasMoreThanOneAddress(): boolean {
-    return (
-      this.account?.contactInformation?.addresses?.length !== undefined &&
-      this.account.contactInformation.addresses.length > 1
-    );
+    const ci = this.resolvedContactInfo;
+    return !!(ci?.addresses && ci.addresses.length > 1);
   }
 
   getFirstPhoneNumber(): string {
-    const phoneNumbers = this.account?.contactInformation?.phoneNumbers;
+    const phoneNumbers = this.resolvedContactInfo?.phoneNumbers;
     if (!phoneNumbers || phoneNumbers.length === 0) {
       return "-";
     }
@@ -89,7 +147,7 @@ export class ContactInformationComponent {
   }
 
   getFirstEmail(): string {
-    const emails = this.account?.contactInformation?.emails;
+    const emails = this.resolvedContactInfo?.emails;
     if (!emails || emails.length === 0) {
       return "-";
     }
@@ -102,7 +160,7 @@ export class ContactInformationComponent {
   }
 
   getFirstAddress(): string {
-    const addresses = this.account?.contactInformation?.addresses;
+    const addresses = this.resolvedContactInfo?.addresses;
     if (!addresses || addresses.length === 0) {
       return "-";
     }
@@ -117,5 +175,25 @@ export class ContactInformationComponent {
 
   toggleShow(type: "phone" | "email" | "address") {
     this.showMore[type] = !this.showMore[type];
+  }
+
+  get otherPhoneNumbers(): PhoneNumber[] {
+    const nums = this.resolvedContactInfo?.phoneNumbers ?? [];
+    return nums.slice(1);
+  }
+
+  get otherEmails(): Email[] {
+    const items = this.resolvedContactInfo?.emails ?? [];
+    return items.slice(1);
+  }
+
+  get otherAddresses(): (Address | null)[] {
+    const items = this.resolvedContactInfo?.addresses ?? [];
+    return items.slice(1);
+  }
+
+  get preferredMethodOfContact(): string {
+    const pref = this.resolvedContactInfo?.preferredMethodOfContact;
+    return pref ?? "-";
   }
 }

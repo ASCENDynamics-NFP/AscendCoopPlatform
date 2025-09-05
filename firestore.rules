@@ -60,6 +60,79 @@ service cloud.firestore {
         get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
     }
 
+    // ===== Section-level privacy helpers =====
+    function relationForViewer(accId) {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data
+        : null;
+    }
+
+    function hasOverride(accId, section) {
+      let r = relationForViewer(accId);
+      return r != null && (
+        (r.sectionOverrides != null && r.sectionOverrides[section] != null && r.sectionOverrides[section].allow == true) ||
+        (r.canAccessContactInfo == true && section == 'contactInformation')
+      );
+    }
+
+    function isPartner(accId) {
+      let r = relationForViewer(accId);
+      return r != null && r.status == 'accepted' && r.relationship == 'partner';
+    }
+
+    function isFriend(accId) {
+      let r = relationForViewer(accId);
+      return r != null && r.status == 'accepted' && r.relationship == 'friend';
+    }
+
+    function isGroupRelation(accId) {
+      let r = relationForViewer(accId);
+      return r != null && r.status == 'accepted' && r.type == 'group';
+    }
+
+    function sectionVisibility(accId, section) {
+      let acc = get(/databases/$(database)/documents/accounts/$(accId)).data;
+      return acc.privacySettings != null && acc.privacySettings[section] != null && acc.privacySettings[section].visibility != null
+        ? acc.privacySettings[section].visibility
+        : 'public';
+    }
+
+    function isAllowedByAudience(accId, section) {
+      let v = sectionVisibility(accId, section);
+      return (v == 'public') ||
+        (v == 'authenticated' && request.auth != null) ||
+        (v == 'related' && isMember(accId)) ||
+        (v == 'groups' && isGroupRelation(accId)) ||
+        (v == 'admins' && isAccountAdmin(accId)) ||
+        (v == 'members' && isMember(accId)) ||
+        (v == 'partners' && isPartner(accId)) ||
+        (v == 'friends' && isFriend(accId));
+    }
+
+    // Account-level allow/block lists
+    function inAllowlist(accId, section) {
+      let acc = get(/databases/$(database)/documents/accounts/$(accId)).data;
+      return request.auth != null && acc.privacySettings != null && acc.privacySettings[section] != null && acc.privacySettings[section].allowlist != null && request.auth.uid in acc.privacySettings[section].allowlist;
+    }
+
+    function inBlocklist(accId, section) {
+      let acc = get(/databases/$(database)/documents/accounts/$(accId)).data;
+      return request.auth != null && acc.privacySettings != null && acc.privacySettings[section] != null && acc.privacySettings[section].blocklist != null && request.auth.uid in acc.privacySettings[section].blocklist;
+    }
+
+    function canViewSection(accId, section) {
+      return (
+        // Owner/admins always allowed
+        (isAccountOwner(accId) || isAccountAdmin(accId)) ||
+        // Allowlist grants access regardless of audience
+        inAllowlist(accId, section) ||
+        // Blocklist denies access, otherwise audience or explicit override applies
+        (!inBlocklist(accId, section) &&
+          (isAllowedByAudience(accId, section) || hasOverride(accId, section)))
+      );
+    }
+
     // Project subcollections within accounts
     match /accounts/{accountId}/projects {
       // Allow listing projects to the owner or any accepted member
@@ -146,9 +219,20 @@ service cloud.firestore {
       allow delete: if isAccountOwner();
     }
 
+    // Gated sections under accounts
+    match /accounts/{accountId}/sections {
+      allow list: if false; // prevent listing sections collections
+    }
+    match /accounts/{accountId}/sections/contactInfo {
+      allow read: if canViewSection(accountId, 'contactInformation');
+      allow create, update: if isAccountOwner(accountId) || isAccountAdmin(accountId);
+      allow delete: if isAccountOwner(accountId) || isAccountAdmin(accountId);
+    }
+
     // Rules for relatedAccount
     // Allow listing the relatedAccounts subcollection for authenticated users
     match /accounts/{accountId}/relatedAccounts {
+      // Listing is allowed; per-document read rules below filter visibility
       allow list: if request.auth != null;
     }
     match /accounts/{accountId}/relatedAccounts/{relatedAccountId} {
@@ -171,7 +255,16 @@ service cloud.firestore {
           (request.auth.uid == accountId || request.auth.uid == relatedAccountId);
       }
 
-      allow read: if request.auth.uid != null;
+      // Read only if owner/admin, the subject of the relation, or audience for that relationship type
+      allow read: if (
+        isAccountOwner() ||
+        isGroupAdmin() ||
+        (request.auth != null && request.auth.uid == relatedAccountId) ||
+        (resource.data.relationship == 'member' && canViewSection(accountId, 'membersList')) ||
+        (resource.data.relationship == 'partner' && canViewSection(accountId, 'partnersList')) ||
+        (resource.data.relationship == 'friend' && canViewSection(accountId, 'friendsList'))
+      );
+
       allow create, write, delete: if isAccountOwner() || isGroupAdmin() || isRelatedToAccount();
     }
 

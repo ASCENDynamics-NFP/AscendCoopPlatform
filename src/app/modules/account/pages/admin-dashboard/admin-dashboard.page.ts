@@ -828,22 +828,32 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
     memberId: string,
     newAccessLevel: string,
   ) {
-    // TODO: Implement actual access level update when RelatedAccount update actions are available
-    // For now, show success feedback
-    const toast = await this.toastController.create({
-      message: `Member access level updated to ${newAccessLevel}`,
-      duration: 2000,
-      color: "success",
-      position: "bottom",
-    });
-    await toast.present();
+    // Dispatch update to relatedAccount document
+    const accessVal = newAccessLevel as "admin" | "moderator" | "member";
+    this.currentUser$.pipe(take(1)).subscribe(async (authUser) => {
+      const relatedAccountUpdate: RelatedAccount = {
+        id: memberId,
+        accountId: this.accountId,
+        access: accessVal,
+        lastModifiedBy: authUser?.uid || undefined,
+      } as RelatedAccount;
 
-    // Future implementation would be:
-    // this.store.dispatch(AccountActions.updateRelatedAccount({
-    //   accountId: this.accountId,
-    //   relatedAccountId: memberId,
-    //   updates: { access: newAccessLevel as 'admin' | 'moderator' | 'member' }
-    // }));
+      this.store.dispatch(
+        AccountActions.updateRelatedAccount({
+          accountId: this.accountId,
+          relatedAccount: relatedAccountUpdate,
+        }),
+      );
+
+      // Show success feedback
+      const toast = await this.toastController.create({
+        message: `Member access level updated to ${newAccessLevel}`,
+        duration: 2000,
+        color: "success",
+        position: "bottom",
+      });
+      await toast.present();
+    });
   }
 
   private async showErrorToast(message: string) {

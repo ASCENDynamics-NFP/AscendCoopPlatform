@@ -5,13 +5,11 @@
 import {Injectable} from "@angular/core";
 import {CanActivate, ActivatedRouteSnapshot} from "@angular/router";
 import {Store} from "@ngrx/store";
-import {Observable, combineLatest} from "rxjs";
-import {map, take} from "rxjs/operators";
+import {Observable, combineLatest, of} from "rxjs";
+import {take, switchMap} from "rxjs/operators";
 import {selectAuthUser} from "../../state/selectors/auth.selectors";
-import {
-  selectAccountById,
-  selectRelatedAccountsByAccountId,
-} from "../../state/selectors/account.selectors";
+import {selectAccountById} from "../../state/selectors/account.selectors";
+// No longer need to read a relation document; rely on adminIds/moderatorIds
 
 @Injectable({providedIn: "root"})
 export class OwnerOrAdminGuard implements CanActivate {
@@ -22,24 +20,25 @@ export class OwnerOrAdminGuard implements CanActivate {
     return combineLatest([
       this.store.select(selectAuthUser),
       this.store.select(selectAccountById(accountId)),
-      this.store.select(selectRelatedAccountsByAccountId(accountId)),
     ]).pipe(
       take(1),
-      map(([authUser, account, related]) => {
+      switchMap(([authUser, account]) => {
         if (!authUser || !account) {
-          return false;
+          return of(false);
         }
         // Owner can always edit
-        if (authUser.uid === account.id) return true;
+        if (authUser.uid === account.id) return of(true);
         // For group accounts, allow admins/moderators
         if (account.type === "group") {
-          const rel = related.find((r) => r.id === authUser.uid);
-          const isAdmin =
-            rel?.status === "accepted" &&
-            (rel.access === "admin" || rel.access === "moderator");
-          if (isAdmin) return true;
+          const inAdmins =
+            Array.isArray((account as any).adminIds) &&
+            (account as any).adminIds.includes(authUser.uid);
+          const inModerators =
+            Array.isArray((account as any).moderatorIds) &&
+            (account as any).moderatorIds.includes(authUser.uid);
+          return of(inAdmins || inModerators);
         }
-        return false;
+        return of(false);
       }),
     );
   }

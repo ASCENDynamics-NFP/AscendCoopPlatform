@@ -60,7 +60,6 @@ export class SettingsComponent implements OnChanges {
     friendsListVisibility: FormControl<string>;
     roleHierarchyVisibility: FormControl<string>;
     projectsVisibility: FormControl<string>;
-    webLinksVisibility: FormControl<string>;
   }>;
 
   languageList = [
@@ -83,7 +82,6 @@ export class SettingsComponent implements OnChanges {
       friendsListVisibility: ["friends"],
       roleHierarchyVisibility: ["members"],
       projectsVisibility: ["members"],
-      webLinksVisibility: ["public"],
     }) as FormGroup<{
       privacy: FormControl<"public" | "private">;
       language: FormControl<string>;
@@ -93,7 +91,6 @@ export class SettingsComponent implements OnChanges {
       friendsListVisibility: FormControl<string>;
       roleHierarchyVisibility: FormControl<string>;
       projectsVisibility: FormControl<string>;
-      webLinksVisibility: FormControl<string>;
     }>;
   }
 
@@ -167,9 +164,6 @@ export class SettingsComponent implements OnChanges {
         projects: {
           visibility: (formValue.projectsVisibility as any) || "members",
         },
-        webLinks: {
-          visibility: (formValue.webLinksVisibility as any) || "public",
-        },
         messaging: {receiveFrom: "related"},
         discoverability: {searchable: true},
       };
@@ -197,27 +191,9 @@ export class SettingsComponent implements OnChanges {
     const isUser = this.account.type === "user";
     const isGroup = this.account.type === "group";
 
-    const sanitizeForUser = (v: string | undefined, fallback: string) => {
-      const allowed = [
-        "public",
-        "authenticated",
-        "friends",
-        "groups",
-        "related",
-      ];
-      return v && allowed.includes(v) ? v : fallback;
-    };
-    const sanitizeForGroup = (v: string | undefined, fallback: string) => {
-      const allowed = [
-        "public",
-        "authenticated",
-        "members",
-        "partners",
-        "admins",
-        "custom",
-        "related",
-      ];
-      // Explicitly disallow friends for groups
+    // Unified allowed set for both users and groups.
+    const sanitize = (v: string | undefined, fallback: string) => {
+      const allowed = ["public", "authenticated", "related", "private"];
       return v && allowed.includes(v) ? v : fallback;
     };
 
@@ -225,59 +201,30 @@ export class SettingsComponent implements OnChanges {
     this.settingsForm.patchValue({
       privacy: this.account.privacy || "public",
       language: this.account.accessibility?.preferredLanguage ?? "en",
-      contactInformationVisibility: isUser
-        ? sanitizeForUser(
-            this.account.privacySettings?.contactInformation?.visibility,
-            "related",
-          )
-        : sanitizeForGroup(
-            this.account.privacySettings?.contactInformation?.visibility,
-            "members",
-          ),
-      membersListVisibility: isUser
-        ? sanitizeForUser(
-            this.account.privacySettings?.membersList?.visibility,
-            "related",
-          )
-        : sanitizeForGroup(
-            this.account.privacySettings?.membersList?.visibility,
-            "members",
-          ),
-      partnersListVisibility: sanitizeForGroup(
+      contactInformationVisibility: sanitize(
+        this.account.privacySettings?.contactInformation?.visibility,
+        "related",
+      ),
+      membersListVisibility: sanitize(
+        this.account.privacySettings?.membersList?.visibility,
+        "related",
+      ),
+      partnersListVisibility: sanitize(
         this.account.privacySettings?.partnersList?.visibility,
-        "members",
+        "related",
       ),
-      friendsListVisibility: sanitizeForUser(
+      friendsListVisibility: sanitize(
         this.account.privacySettings?.friendsList?.visibility,
-        "friends",
+        "related",
       ),
-      roleHierarchyVisibility: isUser
-        ? sanitizeForUser(
-            this.account.privacySettings?.roleHierarchy?.visibility,
-            "related",
-          )
-        : sanitizeForGroup(
-            this.account.privacySettings?.roleHierarchy?.visibility,
-            "members",
-          ),
-      projectsVisibility: isUser
-        ? sanitizeForUser(
-            this.account.privacySettings?.projects?.visibility,
-            "related",
-          )
-        : sanitizeForGroup(
-            this.account.privacySettings?.projects?.visibility,
-            "members",
-          ),
-      webLinksVisibility: isUser
-        ? sanitizeForUser(
-            this.account.privacySettings?.webLinks?.visibility,
-            "public",
-          )
-        : sanitizeForGroup(
-            this.account.privacySettings?.webLinks?.visibility,
-            "public",
-          ),
+      roleHierarchyVisibility: sanitize(
+        this.account.privacySettings?.roleHierarchy?.visibility,
+        "related",
+      ),
+      projectsVisibility: sanitize(
+        this.account.privacySettings?.projects?.visibility,
+        "related",
+      ),
     });
 
     // Initialize picker selections from existing privacySettings arrays

@@ -126,6 +126,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           type="user"
           [isProfileOwner]="(isProfileOwner$ | async) ?? false"
           [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+          [isRelatedViewer]="(hasRelationship$ | async) ?? false"
+          [viewerId]="(authUser$ | async)?.uid ?? null"
           [privacySettings]="account.privacySettings"
         ></app-related-accounts>
       </div>
@@ -138,6 +140,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           type="group"
           [isProfileOwner]="(isProfileOwner$ | async) ?? false"
           [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+          [isRelatedViewer]="(hasRelationship$ | async) ?? false"
+          [viewerId]="(authUser$ | async)?.uid ?? null"
           [privacySettings]="account.privacySettings"
         ></app-related-accounts>
       </div>

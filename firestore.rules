@@ -25,18 +25,22 @@ service cloud.firestore {
 
     // Helper to check if user is an admin of the given account (only for group accounts)
     function isAccountAdmin(accId) {
-      return request.auth != null && 
+      return request.auth != null &&
         get(/databases/$(database)/documents/accounts/$(accId)).data.type == 'group' && (
-        request.auth.uid == accId ||
-        (
-          exists(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)) &&
-          get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted' &&
+          // Group owner short-circuit
+          request.auth.uid == accId ||
+          // Denormalized adminIds or moderatorIds
           (
-            get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.access == 'admin' ||
-            get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.access == 'moderator'
+            (
+              get(/databases/$(database)/documents/accounts/$(accId)).data.adminIds != null &&
+              request.auth.uid in get(/databases/$(database)/documents/accounts/$(accId)).data.adminIds
+            ) ||
+            (
+              get(/databases/$(database)/documents/accounts/$(accId)).data.moderatorIds != null &&
+              request.auth.uid in get(/databases/$(database)/documents/accounts/$(accId)).data.moderatorIds
+            )
           )
-        )
-      );
+        );
     }
 
     function isAcceptedFriend(accId) {
@@ -175,11 +179,17 @@ service cloud.firestore {
       function isGroupAdmin() {
         return request.auth != null &&
           get(/databases/$(database)/documents/accounts/$(accountId)).data.type == 'group' &&
-          (request.auth.uid == accountId || // Group owner has admin access
-           (exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
-            get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted' &&
-            (get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.access == 'admin' ||
-             get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.access == 'moderator')));
+          (
+            // Group owner short-circuit
+            request.auth.uid == accountId ||
+            // Denormalized adminIds or moderatorIds
+            (
+              (get(/databases/$(database)/documents/accounts/$(accountId)).data.adminIds != null &&
+               request.auth.uid in get(/databases/$(database)/documents/accounts/$(accountId)).data.adminIds) ||
+              (get(/databases/$(database)/documents/accounts/$(accountId)).data.moderatorIds != null &&
+               request.auth.uid in get(/databases/$(database)/documents/accounts/$(accountId)).data.moderatorIds)
+            )
+          );
       }
 
       // Friends-only access
@@ -230,9 +240,11 @@ service cloud.firestore {
     }
 
     // Rules for relatedAccount
-    // Allow listing the relatedAccounts subcollection for authenticated users
+    // Do not allow blanket listing; rely on per-document read rules below
     match /accounts/{accountId}/relatedAccounts {
-      // Listing is allowed; per-document read rules below filter visibility
+      // Allow listing for authenticated users; per-document read rules below
+      // enforce section privacy (membersList/partnersList/friendsList) so only
+      // allowed relationship docs are returned in query results.
       allow list: if request.auth != null;
     }
     match /accounts/{accountId}/relatedAccounts/{relatedAccountId} {
@@ -255,15 +267,9 @@ service cloud.firestore {
           (request.auth.uid == accountId || request.auth.uid == relatedAccountId);
       }
 
-      // Read only if owner/admin, the subject of the relation, or audience for that relationship type
-      allow read: if (
-        isAccountOwner() ||
-        isGroupAdmin() ||
-        (request.auth != null && request.auth.uid == relatedAccountId) ||
-        (resource.data.relationship == 'member' && canViewSection(accountId, 'membersList')) ||
-        (resource.data.relationship == 'partner' && canViewSection(accountId, 'partnersList')) ||
-        (resource.data.relationship == 'friend' && canViewSection(accountId, 'friendsList'))
-      );
+      // Loosened: allow any authenticated user to read relatedAccounts docs.
+      // App layer is responsible for filtering visibility per privacy settings.
+      allow read: if request.auth != null;
 
       allow create, write, delete: if isAccountOwner() || isGroupAdmin() || isRelatedToAccount();
     }

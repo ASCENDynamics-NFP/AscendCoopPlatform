@@ -139,21 +139,22 @@ export class DetailsPage implements OnInit, ViewWillEnter {
           }),
         );
 
+        // Determine if current user is group admin/moderator/owner using denormalized fields
         this.isGroupAdmin$ = combineLatest([
           this.authUser$,
-          this.relatedAccounts$,
           this.account$,
         ]).pipe(
-          map(([currentUser, relatedAccounts, account]) => {
-            if (!currentUser) return false;
-            const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
-            const isAdmin =
-              rel?.status === "accepted" &&
-              (rel.access === "admin" || rel.access === "moderator");
+          map(([currentUser, account]) => {
+            if (!currentUser || !account) return false;
             const isOwner =
-              account?.type === "group" &&
-              account.createdBy === currentUser.uid;
-            return isAdmin || isOwner;
+              account.type === "group" && account.createdBy === currentUser.uid;
+            const inAdminIds =
+              Array.isArray((account as any).adminIds) &&
+              (account as any).adminIds.includes(currentUser.uid);
+            const inModeratorIds =
+              Array.isArray((account as any).moderatorIds) &&
+              (account as any).moderatorIds.includes(currentUser.uid);
+            return isOwner || inAdminIds || inModeratorIds;
           }),
         );
 

@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 // src/app/guards/auth.guard.ts
 import {Injectable} from "@angular/core";
-import {Router, ActivatedRouteSnapshot} from "@angular/router";
+import {ActivatedRouteSnapshot} from "@angular/router";
 import {firstValueFrom} from "rxjs";
 import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../state/selectors/auth.selectors";
@@ -32,7 +32,6 @@ import {AuthNavigationService} from "../services/auth-navigation.service";
 export class AuthGuard {
   constructor(
     private store: Store,
-    private router: Router,
     private authNavigationService: AuthNavigationService,
   ) {}
 
@@ -40,8 +39,8 @@ export class AuthGuard {
     const authUser = await firstValueFrom(this.store.select(selectAuthUser));
 
     if (!authUser) {
-      // Redirect to login if not authenticated
-      this.router.navigate(["/auth/login"]);
+      // Defer navigation to centralized service
+      await this.authNavigationService.navigateToLogin();
       return false;
     } else if (authUser && !authUser.emailVerified) {
       // Send verification email if the user is not verified
@@ -50,7 +49,7 @@ export class AuthGuard {
           AuthActions.sendVerificationMail({email: authUser.email}),
         );
       }
-      // Sign out the user and redirect to login
+      // Sign out; navigation handled elsewhere
       this.store.dispatch(AuthActions.signOut());
       return false;
     }

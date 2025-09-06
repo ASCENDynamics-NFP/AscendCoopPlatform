@@ -24,6 +24,7 @@ import {
 import {admin} from "../../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
+import {syncAdminIdsForAccount} from "../adminIds";
 
 // Initialize the Firebase admin SDK
 // Reference to the Firestore database
@@ -126,6 +127,12 @@ export const onCreateRelatedAccount = onDocumentCreated(
           initiatorId: accountId,
           targetId: relatedAccountId,
         });
+
+      // Keep adminIds denormalized in sync (safe to run for both sides)
+      await Promise.all([
+        syncAdminIdsForAccount(accountId),
+        syncAdminIdsForAccount(relatedAccountId),
+      ]);
 
       logger.info(
         `Successfully created reciprocal relationship between ${accountId} and ${relatedAccountId}`,

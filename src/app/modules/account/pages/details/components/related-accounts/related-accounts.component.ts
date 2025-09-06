@@ -33,6 +33,9 @@ export class RelatedAccountsComponent {
   @Input() isProfileOwner: boolean = false;
   @Input() isGroupAdmin: boolean = false;
   @Input() privacySettings: any = null;
+  // Viewer context for privacy evaluation
+  @Input() isRelatedViewer: boolean = false;
+  @Input() viewerId: string | null = null;
 
   constructor(private router: Router) {}
 
@@ -43,10 +46,26 @@ export class RelatedAccountsComponent {
     return "Organizations";
   }
 
+  private matchesList(ra: RelatedAccount): boolean {
+    if (ra.status !== "accepted") return false;
+    const accountType = this.account?.type;
+    // Component list 'user' means show people; 'group' means organizations
+    if (this.type === "user") {
+      // On user profile, 'Connections' = friends; on group profile, 'Members' = members
+      if (accountType === "user") return ra.relationship === "friend";
+      if (accountType === "group") return ra.relationship === "member";
+    } else if (this.type === "group") {
+      // On user profile, 'Organizations' = groups where user is member
+      if (accountType === "user") return ra.relationship === "member";
+      // On group profile, 'Organizations' section usually lists partners
+      if (accountType === "group") return ra.relationship === "partner";
+    }
+    // Fallback to legacy type matching if present
+    return (ra as any).type === this.type;
+  }
+
   get filteredRelatedAccounts() {
-    return this.relatedAccounts.filter(
-      (ra) => ra.type === this.type && ra.status === "accepted",
-    );
+    return this.relatedAccounts.filter((ra) => this.matchesList(ra));
   }
 
   goToRelatedAccount(id: string | undefined) {
@@ -59,13 +78,72 @@ export class RelatedAccountsComponent {
     return this.isProfileOwner || this.isGroupAdmin;
   }
 
+  private get sectionKey(): string {
+    // Map the displayed list (type) and profile account type to the correct privacy section
+    const accType = this.account?.type || "user";
+    if (accType === "user") {
+      // On a user profile: "Connections" (type=user) => friendsList, "Organizations" (type=group) => membersList
+      return this.type === "user" ? "friendsList" : "membersList";
+    }
+    // On a group profile: "Members" (type=user) => membersList, "Organizations" (type=group) => partnersList
+    return this.type === "user" ? "membersList" : "partnersList";
+  }
+
+  private get sectionVisibility(): string {
+    const section = this.privacySettings?.[this.sectionKey] || {};
+    return section.visibility || "public";
+  }
+
+  private inAllowlist(): boolean {
+    if (!this.viewerId) return false;
+    const section = this.privacySettings?.[this.sectionKey] || {};
+    return Array.isArray(section.allowlist)
+      ? section.allowlist.includes(this.viewerId)
+      : false;
+  }
+
+  private inBlocklist(): boolean {
+    if (!this.viewerId) return false;
+    const section = this.privacySettings?.[this.sectionKey] || {};
+    return Array.isArray(section.blocklist)
+      ? section.blocklist.includes(this.viewerId)
+      : false;
+  }
+
+  private canViewSection(): boolean {
+    if (this.isOwnerOrAdmin) return true;
+    if (!this.privacySettings) return true; // legacy default public
+    if (this.inAllowlist()) return true;
+    if (this.inBlocklist()) return false;
+    const v = this.sectionVisibility;
+    switch (v) {
+      case "public":
+        return true;
+      case "authenticated":
+        return true; // page requires auth
+      case "related":
+        return this.isRelatedViewer;
+      case "private":
+      default:
+        return false;
+    }
+  }
+
+  // Expose visibility to the template without leaking implementation
+  get canView(): boolean {
+    return this.canViewSection();
+  }
+
+  get visibleRelatedAccounts() {
+    return this.canViewSection() ? this.filteredRelatedAccounts : [];
+  }
+
   get privacyData(): {visibility: string; color: string; label: string} {
     if (!this.privacySettings) {
       return {visibility: "public", color: "success", label: "Public"};
     }
 
-    const sectionKey = this.type === "user" ? "friendsList" : "membersList";
-    const section = this.privacySettings[sectionKey] || {};
+    const section = this.privacySettings[this.sectionKey] || {};
     const visibility = section.visibility || "public";
     const {text, color} = this.mapVisibility(visibility);
 
@@ -76,12 +154,14 @@ export class RelatedAccountsComponent {
     switch (v) {
       case "public":
         return {text: "Public", color: "success"};
-      case "friends":
-        return {text: "Friends", color: "warning"};
+      case "authenticated":
+        return {text: "Authorized", color: "medium"};
+      case "related":
+        return {text: "Related", color: "primary"};
       case "private":
         return {text: "Private", color: "danger"};
       default:
-        return {text: "Public", color: "success"};
+        return {text: v, color: "medium"};
     }
   }
 

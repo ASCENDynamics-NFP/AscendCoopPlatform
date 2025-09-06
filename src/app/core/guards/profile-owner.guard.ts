@@ -25,13 +25,11 @@ import {
   RouterStateSnapshot,
 } from "@angular/router";
 import {Store} from "@ngrx/store";
-import {Observable, combineLatest} from "rxjs";
-import {map, take} from "rxjs/operators";
+import {Observable, combineLatest, of} from "rxjs";
+import {take, switchMap} from "rxjs/operators";
 import {selectAuthUser} from "../../state/selectors/auth.selectors";
-import {
-  selectAccountById,
-  selectRelatedAccountsByAccountId,
-} from "../../state/selectors/account.selectors";
+import {selectAccountById} from "../../state/selectors/account.selectors";
+// No relation fallback; use adminIds/moderatorIds only
 
 @Injectable({
   providedIn: "root",
@@ -48,30 +46,29 @@ export class ProfileOwnerGuard implements CanActivate {
     return combineLatest([
       this.store.select(selectAuthUser),
       this.store.select(selectAccountById(accountId)),
-      this.store.select(selectRelatedAccountsByAccountId(accountId)),
     ]).pipe(
       take(1),
-      map(([authUser, account, relatedAccounts]) => {
+      switchMap(([authUser, account]) => {
         // Check if user is authenticated
-        if (!authUser) return false;
+        if (!authUser) return of(false);
 
         // Check if account exists
-        if (!account) return false;
+        if (!account) return of(false);
 
         // Check if user is the direct owner of the profile
-        if (authUser.uid === account.id) return true;
+        if (authUser.uid === account.id) return of(true);
 
         // For group accounts, redirect admins/moderators to admin dashboard
         if (account.type === "group") {
-          const relation = relatedAccounts.find((ra) => ra.id === authUser.uid);
-          const isAdmin =
-            relation?.status === "accepted" &&
-            (relation.access === "admin" || relation.access === "moderator");
-
-          if (isAdmin) return false;
+          const inAdmins =
+            Array.isArray((account as any).adminIds) &&
+            (account as any).adminIds.includes(authUser.uid);
+          const inModerators =
+            Array.isArray((account as any).moderatorIds) &&
+            (account as any).moderatorIds.includes(authUser.uid);
+          return of(!(inAdmins || inModerators));
         }
-
-        return false;
+        return of(false);
       }),
     );
   }

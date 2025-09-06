@@ -309,10 +309,10 @@ export class AccountEffects {
   loadRelatedAccounts$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.loadRelatedAccounts),
-      mergeMap(({accountId}) =>
+      mergeMap(({accountId, forceReload}) =>
         this.store.select(selectAreRelatedAccountsFresh(accountId)).pipe(
           take(1),
-          filter((areFresh) => !areFresh),
+          filter((areFresh) => !areFresh || !!forceReload),
           switchMap(() =>
             this.accountsService.getRelatedAccounts(accountId).pipe(
               map((relatedAccounts) =>

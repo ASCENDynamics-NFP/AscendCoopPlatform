@@ -74,6 +74,7 @@ export class ListPage implements OnInit {
     allowCount: number;
     blockCount: number;
   } | null> = of(null);
+  canViewList$: Observable<boolean> = of(true);
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -95,6 +96,10 @@ export class ListPage implements OnInit {
       this.store.dispatch(
         AccountActions.loadAccount({accountId: this.accountId}),
       );
+      // Ensure related accounts are loaded for privacy/access evaluation
+      this.store.dispatch(
+        AccountActions.loadRelatedAccounts({accountId: this.accountId}),
+      );
 
       // Select the specific account by ID
       this.account$ = this.store.select(selectAccountById(this.accountId));
@@ -110,6 +115,25 @@ export class ListPage implements OnInit {
         of(this.accountId),
       ]).pipe(
         map(([currentUser, accountId]) => currentUser?.uid === accountId),
+      );
+
+      // Determine group admin/moderator (denormalized on account)
+      this.isGroupAdmin$ = combineLatest([
+        this.currentUser$,
+        this.account$,
+      ]).pipe(
+        map(([currentUser, account]) => {
+          if (!currentUser || !account) return false;
+          if (account.type !== "group") return false;
+          const inAdmins = Array.isArray((account as any).adminIds)
+            ? (account as any).adminIds.includes(currentUser.uid)
+            : false;
+          const inModerators = Array.isArray((account as any).moderatorIds)
+            ? (account as any).moderatorIds.includes(currentUser.uid)
+            : false;
+          const isOwner = account.id === currentUser.uid;
+          return isOwner || inAdmins || inModerators;
+        }),
       );
 
       // Determine the title based on listType and account.type
@@ -269,6 +293,135 @@ export class ListPage implements OnInit {
       this.store.dispatch(
         AccountActions.loadGroupRoles({groupId: this.accountId}),
       );
+      // Compute current and pending lists (status-based)
+      this.currentRelatedAccountsList$ = combineLatest([
+        this.relatedAccounts$,
+        this.account$,
+        of(this.listType),
+      ]).pipe(
+        map(([list, account, listType]) => {
+          const accType = account?.type || "user";
+          return (list || []).filter((ra) => {
+            if (ra.status !== "accepted") return false;
+            if (accType === "user" && listType === "user") {
+              return ra.relationship === "friend";
+            }
+            if (accType === "user" && listType === "group") {
+              return ra.relationship === "member";
+            }
+            if (accType === "group" && listType === "user") {
+              return ra.relationship === "member";
+            }
+            if (accType === "group" && listType === "group") {
+              return ra.relationship === "partner";
+            }
+            // Fallback to legacy type if present
+            return (ra as any).type === listType;
+          });
+        }),
+      );
+      this.pendingRelatedAccountsList$ = this.relatedAccounts$.pipe(
+        map((list) => (list || []).filter((ra) => ra.status === "pending")),
+      );
+
+      // Determine section key and label for this list
+      const sectionKey$ = this.account$.pipe(
+        map((acc) =>
+          acc?.type ? this.getSectionKeyForList(acc.type) : "membersList",
+        ),
+      );
+
+      // Visibility value for the section
+      this.listVisibility$ = combineLatest([this.account$, sectionKey$]).pipe(
+        map(([acc, key]) => {
+          const v = (acc as any)?.privacySettings?.[key]?.visibility as
+            | string
+            | undefined;
+          return v || "public";
+        }),
+      );
+
+      // Owner-only badge mirroring details page styling
+      this.ownerListBadge$ = combineLatest([
+        this.account$,
+        sectionKey$,
+        this.listVisibility$,
+      ]).pipe(
+        map(([acc, key, vis]) => {
+          if (!acc) return null;
+          const {text, color} = this.mapVisibility(vis);
+          const section = (acc as any)?.privacySettings?.[key] || {};
+          const allowCount = Array.isArray(section.allowlist)
+            ? section.allowlist.length
+            : 0;
+          const blockCount = Array.isArray(section.blocklist)
+            ? section.blocklist.length
+            : 0;
+          return {
+            sectionLabel: this.getSectionLabelForList(acc.type || "user"),
+            text,
+            color,
+            allowCount,
+            blockCount,
+          };
+        }),
+      );
+
+      // Can current viewer access this section?
+      const canView$ = combineLatest([
+        this.account$,
+        this.currentUser$,
+        this.relatedAccounts$,
+        sectionKey$,
+        this.listVisibility$,
+      ]).pipe(
+        map(([acc, user, rels, key, vis]) => {
+          if (!acc) return false;
+          // Owner always
+          if (user?.uid === acc.id) return true;
+          // Allow/Block lists
+          const section = (acc as any)?.privacySettings?.[key] || {};
+          const allow = Array.isArray(section.allowlist)
+            ? section.allowlist.includes(user?.uid)
+            : false;
+          const block = Array.isArray(section.blocklist)
+            ? section.blocklist.includes(user?.uid)
+            : false;
+          if (allow) return true;
+          if (block) return false;
+          // Audience
+          switch (vis) {
+            case "public":
+              return true;
+            case "authenticated":
+              return !!user;
+            case "related": {
+              const isRelated = (rels || []).some(
+                (r) => r.id === user?.uid && r.status === "accepted",
+              );
+              return isRelated;
+            }
+            case "private":
+            default:
+              return false;
+          }
+        }),
+      );
+
+      // Expose canView$ for template
+      this.canViewList$ = canView$;
+
+      // Show private notice only when viewer lacks access (not owner) and list is empty
+      this.showPrivateNotice$ = combineLatest([
+        this.isOwner$,
+        canView$,
+        this.currentRelatedAccountsList$,
+      ]).pipe(
+        map(
+          ([isOwner, canView, list]) =>
+            !isOwner && !canView && (list || []).length === 0,
+        ),
+      );
     }
   }
 
@@ -291,14 +444,9 @@ export class ListPage implements OnInit {
   private mapVisibility(v: string): {text: string; color: string} {
     const map: Record<string, {text: string; color: string}> = {
       public: {text: "Public", color: "success"},
-      authenticated: {text: "Authenticated", color: "medium"},
+      authenticated: {text: "Authorized", color: "medium"},
       related: {text: "Related", color: "primary"},
-      groups: {text: "Groups", color: "tertiary"},
-      friends: {text: "Friends", color: "tertiary"},
-      members: {text: "Members", color: "tertiary"},
-      partners: {text: "Partners", color: "tertiary"},
-      admins: {text: "Admins", color: "warning"},
-      custom: {text: "Custom", color: "dark"},
+      private: {text: "Private", color: "danger"},
     };
     return map[v] || {text: v, color: "medium"};
   }

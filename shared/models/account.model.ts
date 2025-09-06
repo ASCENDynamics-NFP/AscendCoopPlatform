@@ -98,16 +98,12 @@ export interface ContactInformation {
 }
 
 // Section-level privacy types
+// Simplified audience set used across all sections
 export type PrivacyAudience =
   | "public"
   | "authenticated"
   | "related"
-  | "groups"
-  | "friends"
-  | "members"
-  | "partners"
-  | "admins"
-  | "custom";
+  | "private";
 
 export interface SectionPrivacy {
   visibility: PrivacyAudience;
@@ -123,7 +119,6 @@ export interface PrivacySettings {
   friendsList?: SectionPrivacy;
   roleHierarchy?: SectionPrivacy;
   projects?: SectionPrivacy;
-  webLinks?: SectionPrivacy;
   messaging?: {receiveFrom: "public" | "related" | "none"};
   discoverability?: {searchable: boolean};
 }
@@ -271,6 +266,16 @@ export interface Account extends BaseDocument, Group, User {
   webLinks: WebLink[]; // Links to social media, websites, etc.
   lastLoginAt: Timestamp;
   email: string;
+  /**
+   * Denormalized list of admin user IDs for group accounts.
+   * Used to simplify guards and security rules.
+   */
+  adminIds?: string[];
+  /**
+   * Denormalized list of moderator user IDs for group accounts.
+   * Used where moderators should have elevated access.
+   */
+  moderatorIds?: string[];
   /**
    * Total volunteer hours logged for this account
    */

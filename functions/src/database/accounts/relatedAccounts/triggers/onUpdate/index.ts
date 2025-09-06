@@ -25,6 +25,7 @@ import {
 import {admin} from "../../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
+import {syncAdminIdsForAccount} from "../adminIds";
 
 // Initialize the Firebase admin SDK
 // Reference to the Firestore database
@@ -85,6 +86,11 @@ export const onUpdateRelatedAccount = onDocumentUpdated(
           logger.info("Related accounts updated successfully.");
         }
       }
+      // Keep adminIds in sync for both sides
+      await Promise.all([
+        syncAdminIdsForAccount(accountId),
+        syncAdminIdsForAccount(relatedAccountId),
+      ]);
     } catch (error) {
       logger.error("Error updating related accounts: ", error);
     }

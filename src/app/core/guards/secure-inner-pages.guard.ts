@@ -18,9 +18,7 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Injectable} from "@angular/core";
-import {Router} from "@angular/router";
 import {firstValueFrom} from "rxjs";
-import {NavController} from "@ionic/angular";
 import {Store} from "@ngrx/store";
 import {
   selectIsLoggedIn,
@@ -34,8 +32,6 @@ import {AuthNavigationService} from "../services/auth-navigation.service";
 export class SecureInnerPagesGuard {
   constructor(
     private store: Store,
-    private navCtrl: NavController,
-    private router: Router,
     private authNavigationService: AuthNavigationService,
   ) {}
 
@@ -46,14 +42,12 @@ export class SecureInnerPagesGuard {
     if (isLoggedIn) {
       const authUser = await firstValueFrom(this.store.select(selectAuthUser));
 
-      if (this.router.getCurrentNavigation()?.previousNavigation) {
-        this.navCtrl.back();
-      } else if (authUser) {
+      if (authUser) {
         // Use the navigation service to determine where to redirect
         await this.authNavigationService.navigateAfterAuth(authUser);
       } else {
-        // Fallback if no user
-        this.navCtrl.navigateForward("/info");
+        // Fallback if no user; centralized helper
+        await this.authNavigationService.navigateTo("/info", false);
       }
       return false;
     }

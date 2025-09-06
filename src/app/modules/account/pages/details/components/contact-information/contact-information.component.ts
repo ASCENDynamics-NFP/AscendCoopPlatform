@@ -99,18 +99,20 @@ export class ContactInformationComponent implements OnDestroy {
     switch (v) {
       case "public":
         return {text: "Public", color: "success"};
-      case "friends":
-        return {text: "Friends", color: "warning"};
+      case "authenticated":
+        return {text: "Authorized", color: "medium"};
+      case "related":
+        return {text: "Related", color: "primary"};
       case "private":
         return {text: "Private", color: "danger"};
       default:
-        return {text: "Public", color: "success"};
+        return {text: v, color: "medium"};
     }
   }
 
   get resolvedContactInfo(): ContactInformation | undefined {
-    // Prefer gated section; fallback to legacy field during migration
-    return this.contactInfo ?? this._account?.contactInformation ?? undefined;
+    // Only use gated section; no fallback to base field
+    return this.contactInfo ?? undefined;
   }
 
   get hasMoreThanOnePhoneNumber(): boolean {

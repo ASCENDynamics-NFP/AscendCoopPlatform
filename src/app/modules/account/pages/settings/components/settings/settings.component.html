@@ -53,14 +53,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-label>Visibility</ion-label>
           <ion-select formControlName="contactInformationVisibility">
             <ion-select-option value="public">Public</ion-select-option>
-            <ion-select-option value="authenticated">Authenticated</ion-select-option>
+            <ion-select-option value="authenticated">Authorized</ion-select-option>
             <ion-select-option value="related">{{ 'settings.related' | translate }}</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'user'" value="groups">{{ 'settings.groups' | translate }}</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'user'" value="friends">Friends</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'group'" value="members">Members</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'group'" value="partners">Partners</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'group'" value="admins">Admins</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'group'" value="custom">Custom</ion-select-option>
+            <ion-select-option value="private">Private</ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item>
@@ -99,14 +94,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             <ion-label>Visibility</ion-label>
             <ion-select formControlName="membersListVisibility">
               <ion-select-option value="public">Public</ion-select-option>
-              <ion-select-option value="authenticated">Authenticated</ion-select-option>
+              <ion-select-option value="authenticated">Authorized</ion-select-option>
               <ion-select-option value="related">{{ 'settings.related' | translate }}</ion-select-option>
-              <ion-select-option *ngIf="account?.type === 'user'" value="groups">{{ 'settings.groups' | translate }}</ion-select-option>
-              <ion-select-option *ngIf="account?.type === 'user'" value="friends">Friends</ion-select-option>
-              <ion-select-option *ngIf="account?.type === 'group'" value="members">Members</ion-select-option>
-              <ion-select-option *ngIf="account?.type === 'group'" value="partners">Partners</ion-select-option>
-              <ion-select-option *ngIf="account?.type === 'group'" value="admins">Admins</ion-select-option>
-              <ion-select-option *ngIf="account?.type === 'group'" value="custom">Custom</ion-select-option>
+              <ion-select-option value="private">Private</ion-select-option>
             </ion-select>
           </ion-item>
           <ion-item>
@@ -137,12 +127,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             <ion-label>Visibility</ion-label>
             <ion-select formControlName="partnersListVisibility">
               <ion-select-option value="public">Public</ion-select-option>
-              <ion-select-option value="authenticated">Authenticated</ion-select-option>
+              <ion-select-option value="authenticated">Authorized</ion-select-option>
               <ion-select-option value="related">{{ 'settings.related' | translate }}</ion-select-option>
-              <ion-select-option value="members">Members</ion-select-option>
-              <ion-select-option value="partners">Partners</ion-select-option>
-              <ion-select-option value="admins">Admins</ion-select-option>
-              <ion-select-option value="custom">Custom</ion-select-option>
+              <ion-select-option value="private">Private</ion-select-option>
             </ion-select>
           </ion-item>
           <ion-item>
@@ -171,11 +158,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           </ion-item>
           <ion-item>
             <ion-label>Visibility</ion-label>
-            <ion-select formControlName="friendsListVisibility">
+          <ion-select formControlName="friendsListVisibility">
               <ion-select-option value="public">Public</ion-select-option>
-              <ion-select-option value="authenticated">Authenticated</ion-select-option>
+              <ion-select-option value="authenticated">Authorized</ion-select-option>
               <ion-select-option value="related">{{ 'settings.related' | translate }}</ion-select-option>
-              <ion-select-option value="friends">Friends</ion-select-option>
+              <ion-select-option value="private">Private</ion-select-option>
             </ion-select>
           </ion-item>
           <ion-item>
@@ -205,14 +192,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-label>Visibility</ion-label>
           <ion-select formControlName="roleHierarchyVisibility">
             <ion-select-option value="public">Public</ion-select-option>
-            <ion-select-option value="authenticated">Authenticated</ion-select-option>
-              <ion-select-option value="related">{{ 'settings.related' | translate }}</ion-select-option>
-              <ion-select-option *ngIf="account?.type === 'user'" value="groups">{{ 'settings.groups' | translate }}</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'user'" value="friends">Friends</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'group'" value="members">Members</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'group'" value="partners">Partners</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'group'" value="admins">Admins</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'group'" value="custom">Custom</ion-select-option>
+            <ion-select-option value="authenticated">Authorized</ion-select-option>
+            <ion-select-option value="related">{{ 'settings.related' | translate }}</ion-select-option>
+            <ion-select-option value="private">Private</ion-select-option>
           </ion-select>
         </ion-item>
 
@@ -223,34 +205,13 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <ion-label>Visibility</ion-label>
           <ion-select formControlName="projectsVisibility">
             <ion-select-option value="public">Public</ion-select-option>
-            <ion-select-option value="authenticated">Authenticated</ion-select-option>
-              <ion-select-option value="related">{{ 'settings.related' | translate }}</ion-select-option>
-              <ion-select-option *ngIf="account?.type === 'user'" value="groups">{{ 'settings.groups' | translate }}</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'user'" value="friends">Friends</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'group'" value="members">Members</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'group'" value="partners">Partners</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'group'" value="admins">Admins</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'group'" value="custom">Custom</ion-select-option>
+            <ion-select-option value="authenticated">Authorized</ion-select-option>
+            <ion-select-option value="related">{{ 'settings.related' | translate }}</ion-select-option>
+            <ion-select-option value="private">Private</ion-select-option>
           </ion-select>
         </ion-item>
 
-        <ion-item lines="full">
-          <ion-label><strong>Privacy: Web Links</strong></ion-label>
-        </ion-item>
-        <ion-item>
-          <ion-label>Visibility</ion-label>
-          <ion-select formControlName="webLinksVisibility">
-            <ion-select-option value="public">Public</ion-select-option>
-            <ion-select-option value="authenticated">Authenticated</ion-select-option>
-            <ion-select-option value="related">{{ 'settings.related' | translate }}</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'user'" value="groups">{{ 'settings.groups' | translate }}</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'user'" value="friends">Friends</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'group'" value="members">Members</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'group'" value="partners">Partners</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'group'" value="admins">Admins</ion-select-option>
-            <ion-select-option *ngIf="account?.type === 'group'" value="custom">Custom</ion-select-option>
-          </ion-select>
-        </ion-item>
+        
         <!-- <ion-item>
           <ion-label>Dark Mode</ion-label>
           <ion-toggle aria-label="Dark Mode" (ionChange)="toggleDarkTheme($event)"></ion-toggle>

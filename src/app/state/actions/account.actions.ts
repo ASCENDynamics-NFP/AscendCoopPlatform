@@ -162,7 +162,7 @@ export const deleteRelatedAccountFailure = createAction(
 // Load Related Accounts
 export const loadRelatedAccounts = createAction(
   "[Account] Load Related Accounts",
-  props<{accountId: string}>(),
+  props<{accountId: string; forceReload?: boolean}>(),
 );
 
 export const loadRelatedAccountsSuccess = createAction(

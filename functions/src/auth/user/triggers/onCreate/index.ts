@@ -61,7 +61,6 @@ async function saveAccountToFirestore(
     heroImage: "assets/image/userhero.png",
     type: "new", // New accounts need to complete registration
     contactInformation: {
-      privacy: "private",
       emails: [{email: user.email}],
       phoneNumbers: [],
       addresses: [],

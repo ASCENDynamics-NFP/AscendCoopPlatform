@@ -91,7 +91,6 @@ export interface Email {
 }
 
 export interface ContactInformation {
-  privacy?: "public" | "private";
   addresses?: Nullable<Address>[];
   phoneNumbers: PhoneNumber[];
   emails: Email[];
@@ -264,7 +263,6 @@ interface Group {
 }
 
 export interface Account extends BaseDocument, Group, User {
-  privacy: "public" | "private"; // Simplified: Public (anyone can view) or Private (members only)
   type: "user" | "group" | "new"; // Account type: user, group, or new (needs registration)
   status?: "active" | "inactive" | "suspended"; // Account status
   name: string;

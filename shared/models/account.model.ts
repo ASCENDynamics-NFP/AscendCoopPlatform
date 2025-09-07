@@ -114,6 +114,8 @@ export interface SectionPrivacy {
 }
 
 export interface PrivacySettings {
+  /** Overall account/profile visibility */
+  profile?: SectionPrivacy;
   contactInformation?: SectionPrivacy;
   membersList?: SectionPrivacy;
   partnersList?: SectionPrivacy;

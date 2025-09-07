@@ -44,7 +44,7 @@ export class AccountsService {
       collectionName,
       (ref) => {
         let queryRef = ref
-          .where("privacy", "==", "public")
+          .where("privacySettings.profile.visibility", "==", "public")
           .where("type", "in", ["user", "group"]);
 
         queryRef = queryRef
@@ -87,7 +87,7 @@ export class AccountsService {
     return this.afs
       .collection<Account>("accounts", (ref) =>
         ref
-          .where("privacy", "==", "public")
+          .where("privacySettings.profile.visibility", "==", "public")
           .where("type", "in", ["user", "group"]),
       )
       .snapshotChanges()

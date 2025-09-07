@@ -175,14 +175,25 @@ service cloud.firestore {
     match /accounts {
       allow list: if isPublicUser() || isPublicGroup();
 
-      // Public Group access
-      function isPublicGroup() {
-        return (resource.data.privacy == 'public' && resource.data.type == 'group');
+      // Determine account/profile visibility with fallback for legacy data
+      function accountVisibility(acc) {
+        return acc.privacySettings != null &&
+               acc.privacySettings.profile != null &&
+               acc.privacySettings.profile.visibility != null
+               ? acc.privacySettings.profile.visibility
+               : 'public';
       }
 
-      // Public User access
+      // Public Group access
+      function isPublicGroup() {
+        let acc = resource.data;
+        return (accountVisibility(acc) == 'public' && acc.type == 'group');
+      }
+
+      // Public User access (requires auth for now)
       function isPublicUser() {
-        return (request.auth != null && resource.data.privacy == 'public' && resource.data.type == 'user');
+        let acc = resource.data;
+        return (request.auth != null && accountVisibility(acc) == 'public' && acc.type == 'user');
       }
     }
 

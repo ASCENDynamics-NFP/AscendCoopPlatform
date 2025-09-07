@@ -606,8 +606,17 @@ export class AccountEffects {
   }
 
   private async createAccountWithResume(account: Account): Promise<Account> {
+    const defaultVisibility =
+      (account as any)?.privacySettings?.profile?.visibility || "public";
     const newAccount: any = {
       ...account,
+      privacySettings: {
+        ...(account as any)?.privacySettings,
+        profile: {
+          ...((account as any)?.privacySettings?.profile || {}),
+          visibility: defaultVisibility,
+        },
+      },
       totalHours: account.totalHours ?? 0,
       createdAt: serverTimestamp(),
       lastModifiedAt: serverTimestamp(),

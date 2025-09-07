@@ -137,6 +137,9 @@ export class SettingsComponent implements OnChanges {
       const pickBlock = (section: string) => this.selectedBlock[section] || [];
 
       const privacySettings: PrivacySettings = {
+        profile: {
+          visibility: (formValue.privacy as any) || "public",
+        },
         contactInformation: {
           visibility:
             (formValue.contactInformationVisibility as any) || "private",
@@ -170,7 +173,6 @@ export class SettingsComponent implements OnChanges {
 
       const updatedAccount: Account = {
         ...this.account,
-        privacy: formValue.privacy || "public",
         accessibility: {preferredLanguage: formValue.language},
         settings: {
           theme: this.account.settings?.theme || "light",
@@ -199,7 +201,8 @@ export class SettingsComponent implements OnChanges {
 
     // Update the form with the account data
     this.settingsForm.patchValue({
-      privacy: this.account.privacy || "public",
+      privacy:
+        (this.account.privacySettings as any)?.profile?.visibility || "public",
       language: this.account.accessibility?.preferredLanguage ?? "en",
       contactInformationVisibility: sanitize(
         this.account.privacySettings?.contactInformation?.visibility,

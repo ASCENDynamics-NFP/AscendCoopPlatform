@@ -1,6 +1,17 @@
 <ion-card class="calendar-card" *ngIf="calendarUrl">
   <ion-card-header>
-    <ion-card-title>Upcoming Events</ion-card-title>
+    <div class="title-with-privacy">
+      <ion-card-title>Upcoming Events</ion-card-title>
+      <ion-chip
+        *ngIf="isOwnerOrAdmin"
+        color="success"
+        size="small"
+        class="privacy-indicator"
+      >
+        <ion-icon name="globe" size="small"></ion-icon>
+        <ion-label>Public</ion-label>
+      </ion-chip>
+    </div>
   </ion-card-header>
   <ion-card-content>
     <iframe

@@ -232,14 +232,22 @@
             <ion-card-content>
               <div
                 class="stat-value profile-visibility"
-                [class.public]="account.privacy === 'public'"
-                [class.private]="account.privacy === 'private'"
+                [class.public]="account.privacySettings?.profile?.visibility === 'public'"
+                [class.private]="account.privacySettings?.profile?.visibility === 'private'"
               >
-                {{ account.privacy === 'public' ? 'Public' : 'Private' }}
+                {{
+                  account.privacySettings?.profile?.visibility === 'public'
+                    ? 'Public'
+                    : 'Private'
+                }}
               </div>
               <div class="stat-label">Privacy</div>
               <ion-icon
-                [name]="account.privacy === 'public' ? 'globe-outline' : 'lock-closed-outline'"
+                [name]="
+                  account.privacySettings?.profile?.visibility === 'public'
+                    ? 'globe-outline'
+                    : 'lock-closed-outline'
+                "
                 class="stat-icon"
               >
               </ion-icon>
@@ -1409,7 +1417,7 @@
                 </ion-label>
                 <ion-select
                   *ngIf="account$ | async as account"
-                  [value]="account.privacy || 'public'"
+                  [value]="account.privacySettings?.profile?.visibility || 'public'"
                   (ionChange)="updatePrivacy($event.detail.value)"
                   interface="popover"
                 >

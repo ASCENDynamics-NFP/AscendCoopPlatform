@@ -451,7 +451,13 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
       if (account) {
         const updatedAccount = {
           ...account,
-          privacy: value as "public" | "private",
+          privacySettings: {
+            ...(account.privacySettings || {}),
+            profile: {
+              ...((account.privacySettings as any)?.profile || {}),
+              visibility: value as "public" | "private",
+            },
+          },
           lastModified: new Date(),
         };
         this.store.dispatch(

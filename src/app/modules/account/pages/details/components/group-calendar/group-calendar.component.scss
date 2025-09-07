@@ -26,6 +26,16 @@
   margin-bottom: 16px;
 }
 
+.title-with-privacy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .privacy-indicator {
+    margin-left: auto;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   .calendar-card ion-card-title {
     color: #fff;

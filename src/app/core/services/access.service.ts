@@ -83,6 +83,51 @@ export class AccessService {
     return this.isAdminByAccountFields(account, authUser);
   }
 
+  /** True when the given userId appears as an accepted related account */
+  isAcceptedMember(
+    relatedAccounts: Array<{id?: string; status?: string}> | undefined,
+    userId: string | undefined | null,
+  ): boolean {
+    if (!relatedAccounts || !userId) return false;
+    const rel = relatedAccounts.find((ra) => ra.id === userId);
+    return rel?.status === "accepted";
+  }
+
+  /** Generic creator check for entities that expose createdBy */
+  isCreator(
+    entity: {createdBy?: string} | undefined,
+    authUser: AuthUser | null | undefined,
+  ): boolean {
+    return (
+      !!entity?.createdBy &&
+      !!authUser?.uid &&
+      entity.createdBy === authUser.uid
+    );
+  }
+
+  /**
+   * Listing owner/admin convenience.
+   * Returns true if the user is the creator of the listing OR an admin/moderator
+   * of the creator account (when provided).
+   */
+  isListingOwner(
+    listing:
+      | {createdBy?: string; ownerAccountId?: string; ownerAccountType?: string}
+      | undefined,
+    authUser: AuthUser | null | undefined,
+    ownerAccount?: Account | undefined,
+    creatorAccount?: Account | undefined,
+  ): boolean {
+    if (!listing) return false;
+    // Prefer explicit owner when present (no fallback per decision)
+    if (listing.ownerAccountId) {
+      if (authUser?.uid && listing.ownerAccountId === authUser.uid) return true;
+      if (ownerAccount) return this.isOwnerOrAdmin(ownerAccount, authUser);
+      return false;
+    }
+    return false;
+  }
+
   /**
    * Determines if a role category should be visible to the viewer based on account privacy settings.
    * Defaults to public when no explicit setting exists.

@@ -58,7 +58,8 @@ async function handleListingCreate(
   }
 
   const listing = snapshot.data();
-  const accountId = listing.createdBy;
+  // Prefer explicit owner account when present; fallback to creator for legacy listings
+  const accountId = listing.ownerAccountId || listing.createdBy;
 
   if (!accountId) {
     logger.error(`No authenticated user found for listing ${listingId}`);

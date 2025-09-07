@@ -33,6 +33,9 @@ import {
   selectLoading,
 } from "../../../../state/selectors/listings.selectors";
 import {MetaService} from "../../../../core/services/meta.service";
+import {selectAccountById} from "../../../../state/selectors/account.selectors";
+import {of, switchMap, catchError} from "rxjs";
+import {AccessService} from "../../../../core/services/access.service";
 
 @Component({
   selector: "app-listing-detail",
@@ -50,19 +53,30 @@ export class ListingDetailPage implements OnInit {
     private metaService: MetaService,
     private store: Store<AppState>,
     private route: ActivatedRoute,
+    private access: AccessService,
   ) {
     this.listingId = this.route.snapshot.paramMap.get("id") || "";
     this.listing$ = this.store.select(selectListingById(this.listingId));
     this.loading$ = this.store.select(selectLoading);
 
-    // Determine if current user is the listing creator
+    // Determine if current user is the listing owner/admin of owner account
+    const ownerAccount$ = this.listing$.pipe(
+      map((l) => l?.ownerAccountId),
+      switchMap((ownerId) =>
+        ownerId
+          ? this.store
+              .select(selectAccountById(ownerId))
+              .pipe(catchError(() => of(undefined)))
+          : of(undefined),
+      ),
+    );
     this.isOwner$ = combineLatest([
       this.store.select(selectAuthUser),
       this.listing$,
+      ownerAccount$,
     ]).pipe(
-      map(
-        ([user, listing]) =>
-          !!(user && listing && listing.createdBy === user.uid),
+      map(([user, listing, ownerAccount]) =>
+        this.access.isListingOwner(listing, user, ownerAccount as any),
       ),
     );
   }

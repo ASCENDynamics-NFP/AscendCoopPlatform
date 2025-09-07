@@ -19,6 +19,7 @@
 ***********************************************************************************************/
 import {Component, Input} from "@angular/core";
 import {Router} from "@angular/router";
+import {PrivacyService} from "../../../../../../core/services/privacy.service";
 import {Account, RelatedAccount} from "@shared/models/account.model";
 
 @Component({
@@ -37,7 +38,10 @@ export class RelatedAccountsComponent {
   @Input() isRelatedViewer: boolean = false;
   @Input() viewerId: string | null = null;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private privacy: PrivacyService,
+  ) {}
 
   get title() {
     if (this.type === "user") {
@@ -89,44 +93,12 @@ export class RelatedAccountsComponent {
     return this.type === "user" ? "membersList" : "partnersList";
   }
 
-  private get sectionVisibility(): string {
-    const section = this.privacySettings?.[this.sectionKey] || {};
-    return section.visibility || "public";
-  }
-
-  private inAllowlist(): boolean {
-    if (!this.viewerId) return false;
-    const section = this.privacySettings?.[this.sectionKey] || {};
-    return Array.isArray(section.allowlist)
-      ? section.allowlist.includes(this.viewerId)
-      : false;
-  }
-
-  private inBlocklist(): boolean {
-    if (!this.viewerId) return false;
-    const section = this.privacySettings?.[this.sectionKey] || {};
-    return Array.isArray(section.blocklist)
-      ? section.blocklist.includes(this.viewerId)
-      : false;
-  }
-
   private canViewSection(): boolean {
-    if (this.isOwnerOrAdmin) return true;
-    if (!this.privacySettings) return true; // legacy default public
-    if (this.inAllowlist()) return true;
-    if (this.inBlocklist()) return false;
-    const v = this.sectionVisibility;
-    switch (v) {
-      case "public":
-        return true;
-      case "authenticated":
-        return true; // page requires auth
-      case "related":
-        return this.isRelatedViewer;
-      case "private":
-      default:
-        return false;
-    }
+    return this.privacy.canViewSection(this.privacySettings, this.sectionKey, {
+      isOwnerOrAdmin: this.isOwnerOrAdmin,
+      isRelated: this.isRelatedViewer,
+      viewerId: this.viewerId,
+    });
   }
 
   // Expose visibility to the template without leaking implementation
@@ -143,8 +115,10 @@ export class RelatedAccountsComponent {
       return {visibility: "public", color: "success", label: "Public"};
     }
 
-    const section = this.privacySettings[this.sectionKey] || {};
-    const visibility = section.visibility || "public";
+    const visibility = this.privacy.getSectionVisibility(
+      this.privacySettings,
+      this.sectionKey,
+    );
     const {text, color} = this.mapVisibility(visibility);
 
     return {visibility, color, label: text};

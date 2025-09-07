@@ -155,14 +155,12 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         ]).pipe(
           map(([currentUser, relatedAccounts, account]) => {
             if (!currentUser) return false;
-            // Check if user is the group owner
-            const isOwner =
-              account?.type === "group" &&
-              account.createdBy === currentUser.uid;
-            // Check if user is an accepted member
-            const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
-            const isMember = rel?.status === "accepted";
-            return isOwner || isMember;
+            const owner = this.access.isOwner(account as any, currentUser);
+            const member = this.access.isAcceptedMember(
+              relatedAccounts,
+              currentUser.uid,
+            );
+            return owner || member;
           }),
         );
 

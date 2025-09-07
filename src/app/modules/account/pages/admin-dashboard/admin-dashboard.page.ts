@@ -39,6 +39,7 @@ import {
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {NotificationService} from "../../../messaging/services/notification.service";
+import {AccessService} from "../../../../core/services/access.service";
 import {ImageUploadModalComponent} from "../../../../shared/components/image-upload-modal/image-upload-modal.component";
 
 @Component({
@@ -88,6 +89,7 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
     private alertController: AlertController,
     private modalController: ModalController,
     private notificationService: NotificationService,
+    private access: AccessService,
   ) {
     this.accountId = this.route.snapshot.paramMap.get("accountId") || "";
 
@@ -189,13 +191,11 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
     );
 
     // Initialize role/access controls
-    this.showAccessControls$ = this.currentUser$.pipe(
-      map((user) => {
-        // Show access controls if the current user is an admin of this group
-        // This checks if the current user has admin access in the related accounts
-        return true; // For now, always show for admin dashboard access
-        // TODO: Implement proper permission checking
-      }),
+    this.showAccessControls$ = combineLatest([
+      this.currentUser$,
+      this.account$,
+    ]).pipe(
+      map(([user, account]) => this.access.isGroupAdmin(account as any, user)),
     );
 
     this.activeMembers$ = this.relatedAccounts$.pipe(
@@ -205,21 +205,13 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
     );
 
     // Calculate admin count (including owner + members with admin access)
-    this.adminCount$ = combineLatest([
-      this.relatedAccounts$,
-      this.currentUser$,
-      this.account$,
-    ]).pipe(
-      map(([relatedAccounts, currentUser, account]) => {
-        if (!currentUser || !account) return 1; // At minimum, the owner
-
-        // Count members with admin access
-        const adminMembers = relatedAccounts.filter(
-          (ra) => ra.status === "accepted" && ra.access === "admin",
-        );
-
-        // Always include the owner (current user) + admin members
-        return 1 + adminMembers.length;
+    this.adminCount$ = this.account$.pipe(
+      map((account) => {
+        const adminIds = Array.isArray((account as any)?.adminIds)
+          ? ((account as any).adminIds as string[])
+          : [];
+        // Include 1 for the owner
+        return 1 + adminIds.length;
       }),
     );
 

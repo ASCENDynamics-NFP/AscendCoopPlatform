@@ -44,6 +44,9 @@ export interface Listing extends BaseDocument {
   type: ListingType;
   organization: string;
   remote: boolean;
+  /** The owning account for this listing (user or group) */
+  ownerAccountId?: string;
+  ownerAccountType?: "user" | "group";
   skills: SkillRequirement[];
   timeCommitment: TimeCommitment;
   requirements: string[];

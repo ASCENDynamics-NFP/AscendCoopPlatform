@@ -22,7 +22,16 @@ import {FormBuilder, FormGroup, Validators, FormArray} from "@angular/forms";
 import {Listing, SkillRequirement} from "@shared/models/listing.model";
 import {Timestamp} from "firebase/firestore";
 import {Store} from "@ngrx/store";
-import {filter, first, switchMap, take, tap} from "rxjs";
+import {
+  combineLatest,
+  filter,
+  first,
+  switchMap,
+  take,
+  tap,
+  map,
+  of,
+} from "rxjs";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {
@@ -33,7 +42,10 @@ import {
   Address,
 } from "@shared/models/account.model";
 import {AccountSectionsService} from "../../../account/services/account-sections.service";
-import {selectAccountById} from "../../../../state/selectors/account.selectors";
+import {
+  selectAccountById,
+  selectAllAccounts,
+} from "../../../../state/selectors/account.selectors";
 import {AuthUser} from "@shared/models/auth-user.model";
 
 @Component({
@@ -53,6 +65,9 @@ export class ListingFormComponent implements OnInit {
   listingForm!: FormGroup;
   listingTypes = ["volunteer", "job", "internship", "gig"];
   skillLevels = ["beginner", "intermediate", "advanced"];
+  ownerAccounts$ = of([] as Account[]);
+  /** Cached accounts to use inside event handlers */
+  private ownerAccountsCache: Account[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -83,6 +98,8 @@ export class ListingFormComponent implements OnInit {
       type: ["volunteer", Validators.required],
       organization: ["", [Validators.required, Validators.minLength(2)]],
       remote: [false],
+      ownerAccountId: [""],
+      ownerAccountType: ["user"],
       timeCommitment: this.fb.group(
         {
           hoursPerWeek: [
@@ -133,7 +150,7 @@ export class ListingFormComponent implements OnInit {
       this.listingForm.patchValue(formValue);
       this.initializeFormArrays(this.listing);
     } else {
-      // New listing - populate from account
+      // New listing - populate from account and owner choices
       this.store
         .select(selectAuthUser)
         .pipe(
@@ -143,6 +160,8 @@ export class ListingFormComponent implements OnInit {
               this.store.dispatch(
                 AccountActions.loadAccount({accountId: user.uid}),
               );
+              // Fetch accounts to populate owner selection
+              this.store.dispatch(AccountActions.loadAccounts());
               this.authUser = user;
             }
           }),
@@ -154,9 +173,47 @@ export class ListingFormComponent implements OnInit {
           // Set organization name only; do NOT prefill contact info.
           // Users can use the toggle to import their account contact info.
           this.currentAccount = account;
-          this.listingForm.patchValue({organization: account.name});
+          this.listingForm.patchValue({
+            organization: account.name,
+            ownerAccountId: account.id,
+            ownerAccountType: account.type,
+          });
         });
+
+      // Build list of accounts user can post as: self + groups where user is admin/moderator
+      this.ownerAccounts$ = combineLatest([
+        this.store.select(selectAuthUser),
+        this.store.select(selectAllAccounts),
+      ]).pipe(
+        map(([user, accounts]) => {
+          if (!user) return [] as Account[];
+          return (accounts || []).filter((acc) => {
+            if (!acc) return false;
+            if (acc.id === user.uid) return true;
+            const anyAcc: any = acc as any;
+            const inAdmins = Array.isArray(anyAcc.adminIds)
+              ? anyAcc.adminIds.includes(user.uid)
+              : false;
+            const inModerators = Array.isArray(anyAcc.moderatorIds)
+              ? anyAcc.moderatorIds.includes(user.uid)
+              : false;
+            return acc.type === "group" && (inAdmins || inModerators);
+          });
+        }),
+      );
+
+      // Keep a live cache for use in event handlers (can't use pipes there)
+      this.ownerAccounts$.subscribe((accs) => (this.ownerAccountsCache = accs));
     }
+  }
+
+  onOwnerAccountChange(event: CustomEvent) {
+    const selectedId = (event as any)?.detail?.value as string | undefined;
+    const selected = this.ownerAccountsCache.find((a) => a.id === selectedId);
+    const ownerAccountType = selected?.type || "user";
+    const organization =
+      selected?.name || this.listingForm.get("organization")?.value;
+    this.listingForm.patchValue({ownerAccountType, organization});
   }
 
   private initializeFormFromAccount(
@@ -449,7 +506,6 @@ export class ListingFormComponent implements OnInit {
                 : null,
             },
             status,
-            accountId: user?.uid,
             iconImage: user?.iconImage || "",
             heroImage: user?.heroImage || "",
             lastModifiedBy: user?.uid,

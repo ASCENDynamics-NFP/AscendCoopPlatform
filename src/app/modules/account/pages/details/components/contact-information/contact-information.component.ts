@@ -27,6 +27,7 @@ import {
 } from "@shared/models/account.model";
 import {AccountSectionsService} from "../../../../services/account-sections.service";
 import {Subscription} from "rxjs";
+import {PrivacyService} from "../../../../../../core/services/privacy.service";
 
 @Component({
   selector: "app-contact-information",
@@ -52,7 +53,10 @@ export class ContactInformationComponent implements OnDestroy {
     return this._account;
   }
 
-  constructor(private sections: AccountSectionsService) {}
+  constructor(
+    private sections: AccountSectionsService,
+    private privacy: PrivacyService,
+  ) {}
 
   @Input() set account(account: Partial<Account> | undefined) {
     if (!account) {
@@ -88,8 +92,10 @@ export class ContactInformationComponent implements OnDestroy {
       return {visibility: "public", color: "success", label: "Public"};
     }
 
-    const section = this.privacySettings.contactInformation || {};
-    const visibility = section.visibility || "public";
+    const visibility = this.privacy.getSectionVisibility(
+      this.privacySettings,
+      "contactInformation",
+    );
     const {text, color} = this.mapVisibility(visibility);
 
     return {visibility, color, label: text};

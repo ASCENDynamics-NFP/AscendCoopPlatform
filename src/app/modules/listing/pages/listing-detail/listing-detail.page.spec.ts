@@ -103,7 +103,8 @@ describe("ListingDetailPage", () => {
     responsibilities: ["Responsibility 1"],
     benefits: ["Benefit 1"],
     status: "active",
-    createdBy: "user-123",
+    ownerAccountId: "user-123",
+    ownerAccountType: "user",
   };
 
   const mockAuthUser: AuthUser = {

@@ -143,6 +143,26 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             </ion-col>
           </ion-row>
 
+          <!-- Post As (Owner Account) -->
+          <ion-row>
+            <ion-col size="12" size-md="6">
+              <ion-select
+                label="Post As"
+                label-placement="stacked"
+                formControlName="ownerAccountId"
+                fill="outline"
+                (ionChange)="onOwnerAccountChange($event)"
+              >
+                <ion-select-option
+                  *ngFor="let acc of ownerAccounts$ | async"
+                  [value]="acc.id"
+                >
+                  {{ acc.name }} ({{ acc.type | titlecase }})
+                </ion-select-option>
+              </ion-select>
+            </ion-col>
+          </ion-row>
+
           <!-- Description Field -->
           <ion-row>
             <ion-col size="12">

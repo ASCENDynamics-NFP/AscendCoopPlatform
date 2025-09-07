@@ -22,14 +22,24 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
-import {combineLatest, map, Observable, of, tap} from "rxjs";
+import {
+  combineLatest,
+  map,
+  Observable,
+  of,
+  tap,
+  switchMap,
+  catchError,
+} from "rxjs";
 import {Listing} from "@shared/models/listing.model";
 import * as ListingsActions from "../../../../state/actions/listings.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {AppState} from "../../../../state/app.state";
 import {selectListingById} from "../../../../state/selectors/listings.selectors";
+import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {MetaService} from "../../../../core/services/meta.service";
+import {AccessService} from "../../../../core/services/access.service";
 
 @Component({
   selector: "app-listing-edit",
@@ -40,6 +50,7 @@ export class ListingEditPage implements OnInit {
   authUser$: Observable<AuthUser | null>;
   listing$: Observable<Listing | null>;
   isOwner$: Observable<boolean>;
+  ownerAccount$!: Observable<any | undefined>;
   listingId: string | null;
 
   constructor(
@@ -47,6 +58,7 @@ export class ListingEditPage implements OnInit {
     private store: Store<AppState>,
     private route: ActivatedRoute,
     private router: Router,
+    private access: AccessService,
   ) {
     this.authUser$ = this.store.select(selectAuthUser);
     this.listingId = this.route.snapshot.paramMap.get("id");
@@ -55,10 +67,29 @@ export class ListingEditPage implements OnInit {
           .select(selectListingById(this.listingId))
           .pipe(map((listing) => listing || null)) // Map undefined to null
       : of(null);
-    this.isOwner$ = combineLatest([this.authUser$, this.listing$]).pipe(
-      map(
-        ([user, listing]) =>
-          !!(user && listing && listing.createdBy === user.uid),
+    // Resolve owner account (preferred when present)
+    this.ownerAccount$ = this.listing$.pipe(
+      map((l) => l?.ownerAccountId),
+      switchMap((ownerId) =>
+        ownerId
+          ? this.store
+              .select(selectAccountById(ownerId))
+              .pipe(catchError(() => of(undefined)))
+          : of(undefined),
+      ),
+    );
+
+    this.isOwner$ = combineLatest([
+      this.authUser$,
+      this.listing$,
+      this.ownerAccount$,
+    ]).pipe(
+      map(([user, listing, ownerAccount]) =>
+        this.access.isListingOwner(
+          listing || undefined,
+          user,
+          ownerAccount as any,
+        ),
       ),
       tap((isOwner) => {
         if (!isOwner) {

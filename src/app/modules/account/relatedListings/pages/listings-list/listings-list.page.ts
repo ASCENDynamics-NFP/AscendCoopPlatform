@@ -38,6 +38,7 @@ import {selectListingById} from "../../../../../state/selectors/listings.selecto
 import * as AccountActions from "../../../../../state/actions/account.actions";
 import * as ListingsActions from "../../../../../state/actions/listings.actions";
 import {MetaService} from "../../../../../core/services/meta.service";
+import {AccessService} from "../../../../../core/services/access.service";
 
 @Component({
   selector: "app-listings-list",
@@ -76,6 +77,7 @@ export class ListingsListPage implements OnInit {
     private popoverController: PopoverController,
     private router: Router,
     private store: Store,
+    private access: AccessService,
   ) {
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
 
@@ -102,30 +104,17 @@ export class ListingsListPage implements OnInit {
         selectRelatedAccountsByAccountId(this.accountId),
       );
 
-      this.isOwner$ = combineLatest([
-        this.currentUser$,
-        of(this.accountId),
-      ]).pipe(
-        map(([currentUser, accountId]) => currentUser?.uid === accountId),
+      this.isOwner$ = combineLatest([this.currentUser$, this.account$]).pipe(
+        map(([user, account]) => this.access.isOwner(account as any, user)),
       );
 
       this.isGroupAdmin$ = combineLatest([
         this.currentUser$,
-        this.relatedAccounts$,
         this.account$,
       ]).pipe(
-        map(([currentUser, relatedAccounts, account]) => {
-          if (!currentUser) return false;
-          const rel = relatedAccounts.find(
-            (ra: any) => ra.id === currentUser.uid,
-          );
-          const isAdmin =
-            rel?.status === "accepted" &&
-            (rel.access === "admin" || rel.access === "moderator");
-          const isOwner =
-            account?.type === "group" && account.createdBy === currentUser.uid;
-          return isAdmin || isOwner;
-        }),
+        map(([user, account]) =>
+          this.access.isGroupAdmin(account as any, user),
+        ),
       );
 
       // Add privacy filtering to relatedListings$ to prevent unauthorized access to applicant data

@@ -13,6 +13,8 @@ This document reflects the privacy features implemented in the app today: audien
 Accounts may include `privacySettings` with per‑section configuration. The sections currently used are:
 
 - `contactInformation` (gated subdocument)
+- `professionalInformation` (gated subdocument)
+- `laborRights` (gated subdocument)
 - `membersList` (groups) / “Groups” (users)
 - `partnersList` (groups)
 - `friendsList` (users)
@@ -54,6 +56,7 @@ accounts/{accountId}/relatedAccounts/{relatedAccountId} {
 Notes
 
 - The Firestore rules also support finer‑grained audiences (e.g., `friends`, `members`, `partners`, `groups`, `admins`) for future UI expansion. The current UI and `PrivacyService` intentionally normalize to the four values above.
+- Volunteer Preferences are always treated as public in the UI today and display a “Public” indicator (not configurable yet).
 
 ## Firestore Rules Enforcement
 
@@ -64,6 +67,8 @@ Sensitive data is moved to subdocuments that rules can gate, and allow/block lis
   - Is allowed by allowlist, or
   - Is not blocklisted and matches the section `visibility` audience, or
   - Has an explicit per‑relationship override.
+- Professional Information is stored at `accounts/{accountId}/sections/professionalInfo`. Reads are gated by `privacySettings.professionalInformation.visibility`. Writes are restricted to the owner.
+- Labor Rights is stored at `accounts/{accountId}/sections/laborRights`. Reads are gated by `privacySettings.laborRights.visibility`. Writes are restricted to the owner.
 - Related accounts docs are readable to authenticated users; the app filters what is shown per privacy settings.
 - Keep sensitive fields out of the base account document.
 
@@ -81,12 +86,18 @@ The Settings page exposes per‑section visibility and allow/block lists using t
 - All accounts: Public, Authorized, Related, Private
 - “Members List” on groups appears as “Groups” on user profiles (both map to `membersList`).
 - Contact Info UI reads from `sections/contactInfo`; if access is denied it displays a private/unavailable state.
-- Allowlist/blocklist pickers let you target specific related accounts for each section.
+- Professional Information and Labor Rights are editable by the owner and mirrored to their gated subdocuments.
+- Allowlist/blocklist pickers let you target specific related accounts for each section (Contact Info, Professional Information, Labor Rights, Members/Partners/Friends).
+- Details page hides the Professional, Labor Rights, Connections, and Organizations segments if the viewer lacks access (owners/admins always see them).
 
 ## Defaults
 
-- If a section’s visibility is missing, the UI treats it as `related` for convenience; saving Settings writes normalized values.
-- When an account already has base‐level contact information, a Cloud Function syncs it to `sections/contactInfo` for rules‑based access.
+- If a section’s visibility is missing, the `PrivacyService` defaults to `public` for legacy safety, while the Settings form sanitizes missing values to sensible defaults when saving:
+  - Contact Information → `related`
+  - Professional Information → `private`
+  - Labor Rights → `private`
+  - Members/Partners/Friends/Role Hierarchy/Projects → `related`
+- When an account already has base‐level contact information, the UI and effects mirror to `sections/contactInfo` for rules‑based access.
 
 ## File Pointers
 
@@ -94,7 +105,10 @@ The Settings page exposes per‑section visibility and allow/block lists using t
 - Rules: `firestore.rules`
 - Privacy service (decision logic): `src/app/core/services/privacy.service.ts`
 - Contact Info UI: `src/app/modules/account/pages/details/components/contact-information/contact-information.component.*`
+- Professional Info UI: `src/app/modules/account/pages/details/components/professional-info/*`
+- Labor Rights UI: `src/app/modules/account/pages/details/components/labor-rights-info/*`
 - Settings UI: `src/app/modules/account/pages/settings/components/settings/settings.component.*`
+- Gated section reads: `src/app/modules/account/services/account-sections.service.ts`
 
 ## Diagrams
 
@@ -114,6 +128,7 @@ graph TD
   D1 --> CI[ContactInformation]
   D1 --> RC[RelatedAccounts]
   D1 --> PI[ProfessionalInfo]
+  D1 --> LR[LaborRights]
   D1 --> VAC[VolunteerPreferenceInfo]
   D1 --> MA[MutualAidCommunityInfo]
   D1 --> FAQ[FAQ Section]
@@ -139,22 +154,22 @@ sequenceDiagram
   Store-->>Form: state updated
 ```
 
-### Viewing Contact Information (Gated Section)
+### Viewing Gated Sections (Contact/Professional/Labor)
 
 ```mermaid
 sequenceDiagram
   actor Viewer
   participant Page as DetailsPage
-  participant Cmp as ContactInformationComponent
+  participant Cmp as SectionComponent
   participant Svc as AccountSectionsService
-  participant Doc as accounts/{accountId}/sections/contactInfo
+  participant Doc as accounts/{accountId}/sections/(contactInfo|professionalInfo|laborRights)
   participant Rules as Firestore Rules
 
   Viewer->>Page: Open profile
   Page->>Cmp: Render
-  Cmp->>Svc: contactInfo$(accountId)
+  Cmp->>Svc: section$(accountId)
   Svc->>Doc: get()
-  Doc->>Rules: canViewSection(accountId, 'contactInformation')
+  Doc->>Rules: canViewSection(accountId, sectionKey)
   alt Allowed
     Rules-->>Doc: allow
     Doc-->>Svc: data
@@ -231,6 +246,8 @@ graph LR
 
   subgraph Sections
     CI[contactInformation]
+    PF[professionalInformation]
+    LR[laborRights]
     ML[membersList / Groups]
     PL[partnersList]
     FL[friendsList]
@@ -239,6 +256,8 @@ graph LR
   end
 
   Related --> CI
+  Related --> PF
+  Related --> LR
   Related --> ML
   Related --> PL
   Related --> FL

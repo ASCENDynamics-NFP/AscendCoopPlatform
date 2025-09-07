@@ -1,12 +1,12 @@
 <!-- role-hierarchy.page.html -->
-<ion-header>
+<ion-header *ngIf="!embedded">
   <app-header
     [title]="'Role Hierarchy'"
     [defaultHref]="'account/'+groupId"
   ></app-header>
 </ion-header>
 
-<ion-content>
+<ng-template #hierarchyBody>
   <!-- Controls Section -->
   <div class="controls-section">
     <ion-card>
@@ -79,6 +79,19 @@
                 <ion-label>{{ node.accounts.length }}</ion-label>
               </ion-chip>
             </div>
+
+            <!-- Visibility indicator for owners/admins: Public (globe) / Private (lock) -->
+            <ng-container *ngIf="account$ | async as account">
+              <ng-container *ngIf="authUser$ | async as authUser">
+                <ion-icon
+                  *ngIf="access.isOwnerOrAdmin(account, authUser)"
+                  [name]="getCategoryPrivacyForRole(account, node.role) === 'private' ? 'lock-closed' : 'globe-outline'"
+                  [color]="getCategoryPrivacyForRole(account, node.role) === 'private' ? 'danger' : 'medium'"
+                  [title]="getCategoryPrivacyForRole(account, node.role) === 'private' ? 'Private category' : 'Public category'"
+                  style="font-size: 18px; margin-right: 6px;"
+                ></ion-icon>
+              </ng-container>
+            </ng-container>
 
             <ion-button
               *ngIf="node.accounts.length > 0"
@@ -153,4 +166,12 @@
       </ul>
     </li>
   </ng-template>
+</ng-template>
+
+<ion-content *ngIf="!embedded">
+  <ng-container *ngTemplateOutlet="hierarchyBody"></ng-container>
 </ion-content>
+
+<div *ngIf="embedded">
+  <ng-container *ngTemplateOutlet="hierarchyBody"></ng-container>
+</div>

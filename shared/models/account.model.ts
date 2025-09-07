@@ -20,6 +20,7 @@
 import {BaseDocument} from "./base-document";
 import {GeoPoint, Timestamp} from "firebase/firestore";
 import {GroupRole} from "./group-role.model";
+import {StandardRoleCategory} from "./standard-role-template.model";
 
 // Define a type for optional and nullable fields
 type Nullable<T> = T | null;
@@ -121,6 +122,14 @@ export interface PrivacySettings {
   projects?: SectionPrivacy;
   messaging?: {receiveFrom: "public" | "related" | "none"};
   discoverability?: {searchable: boolean};
+  /**
+   * Per-category privacy for role hierarchy visibility.
+   * If a category is set to "private", only the profile owner or group admins can view it.
+   * Unset categories are treated as "public" by default.
+   */
+  roleCategories?: {
+    [K in StandardRoleCategory]?: "public" | "private";
+  };
 }
 
 interface Accessibility {

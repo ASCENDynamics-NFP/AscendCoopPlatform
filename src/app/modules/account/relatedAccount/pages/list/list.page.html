@@ -28,7 +28,24 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-grid>
+  <!-- Segmented View Switcher -->
+  <ion-segment
+    class="ion-padding-start ion-padding-end ion-padding-top"
+    [value]="activeView"
+    (ionChange)="onViewChange($event)"
+  >
+    <ion-segment-button value="list">
+      <ion-label>List</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="roles" *ngIf="canManageRoles$ | async">
+      <ion-label>Roles</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="hierarchy">
+      <ion-label>Hierarchy</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+  <!-- List View -->
+  <ion-grid *ngIf="activeView === 'list'">
     <ion-row>
       <ion-col>
         <!-- Current Related Accounts -->
@@ -39,26 +56,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               {{ (currentRelatedAccountsList$ | async)?.length }} {{ (title$ |
               async)?.toLowerCase() }}
             </ion-card-subtitle>
-            <ion-buttons class="ion-padding-top">
-              <ion-button
-                *ngIf="(canManageRoles$ | async)"
-                color="primary"
-                fill="outline"
-                size="small"
-                (click)="navigateToRoles()"
-              >
-                Manage Roles
-              </ion-button>
-              <ion-button
-                *ngIf="(isOwner$ | async) || (isGroupAdmin$ | async)"
-                color="primary"
-                fill="outline"
-                size="small"
-                (click)="navigateToHierarchy()"
-              >
-                Hierarchy Tree
-              </ion-button>
-            </ion-buttons>
+            <!-- Segment tabs handle navigation between views -->
           </ion-card-header>
 
           <!-- Visibility badge for owner -->
@@ -334,4 +332,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-col>
     </ion-row>
   </ion-grid>
+  <!-- Roles Management View (embedded, owner/admin only) -->
+  <div *ngIf="(canManageRoles$ | async) && activeView === 'roles'" class="ion-padding">
+    <app-role-management [embedded]="true"></app-role-management>
+  </div>
+
+  <!-- Role Hierarchy View (embedded) -->
+  <div *ngIf="activeView === 'hierarchy'" class="ion-padding">
+    <app-role-hierarchy [embedded]="true"></app-role-hierarchy>
+  </div>
+
 </ion-content>

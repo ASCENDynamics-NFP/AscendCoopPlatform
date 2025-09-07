@@ -75,6 +75,14 @@ export class ListPage implements OnInit {
     blockCount: number;
   } | null> = of(null);
   canViewList$: Observable<boolean> = of(true);
+  // Segmented views: list (default), roles, hierarchy
+  activeView: "list" | "roles" | "hierarchy" = "list";
+
+  onViewChange(ev: CustomEvent) {
+    const v = (ev as any)?.detail?.value;
+    this.activeView =
+      v === "roles" || v === "hierarchy" || v === "list" ? v : "list";
+  }
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -807,24 +815,6 @@ export class ListPage implements OnInit {
   goToRelatedAccount(id: string | null | undefined) {
     if (id) {
       this.router.navigate([`/account/${id}`]);
-    }
-  }
-
-  /**
-   * Navigates to the roles management page.
-   */
-  navigateToRoles() {
-    if (this.accountId) {
-      this.router.navigate([`/account/${this.accountId}/roles`]);
-    }
-  }
-
-  /**
-   * Navigates to the hierarchy true page.
-   */
-  navigateToHierarchy() {
-    if (this.accountId) {
-      this.router.navigate([`/account/${this.accountId}/hierarchy`]);
     }
   }
 }

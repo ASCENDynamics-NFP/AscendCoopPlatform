@@ -61,7 +61,7 @@ function requiresCompletedRegistration(route: ActivatedRouteSnapshot): boolean {
   const routesRequiringRegistration = [
     ":accountId",
     ":accountId/edit",
-    "settings",
+    ":accountId/settings",
   ];
   const currentPath = route.routeConfig?.path || "";
   return routesRequiringRegistration.includes(currentPath);

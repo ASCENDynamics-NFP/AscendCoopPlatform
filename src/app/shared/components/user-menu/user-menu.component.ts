@@ -58,7 +58,14 @@ export class UserMenuComponent {
   }
 
   async goToSettings() {
-    await this.popoverCtrl.dismiss(); // Await the popover dismissal
-    this.router.navigate(["/account/settings"]);
+    await this.popoverCtrl.dismiss();
+    try {
+      const user = await firstValueFrom(this.authUser$);
+      if (user?.uid) {
+        this.router.navigate([`/account/${user.uid}/settings`]);
+      }
+    } catch (error) {
+      console.error("Error navigating to settings:", error);
+    }
   }
 }

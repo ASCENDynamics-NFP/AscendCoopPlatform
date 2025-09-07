@@ -38,6 +38,7 @@ import {MetaService} from "../../../../core/services/meta.service";
 export class SettingsPage {
   authUser$: Observable<AuthUser | null>;
   account$: Observable<Account | undefined>;
+  private initialAccountId: string | null = null;
 
   // Optional route via inject to keep tests simple
   private route = inject(ActivatedRoute, {
@@ -52,8 +53,11 @@ export class SettingsPage {
     this.authUser$ = this.store.select(selectAuthUser);
 
     const paramAccountId = this.route?.snapshot.paramMap.get("accountId");
-    if (paramAccountId) {
-      this.account$ = this.store.select(selectAccountById(paramAccountId));
+    this.initialAccountId = paramAccountId ?? null;
+    if (this.initialAccountId) {
+      this.account$ = this.store.select(
+        selectAccountById(this.initialAccountId),
+      );
     } else {
       // Fallback to current user's account
       this.account$ = this.authUser$.pipe(
@@ -68,26 +72,42 @@ export class SettingsPage {
   }
 
   ionViewWillEnter() {
-    this.metaService.updateMetaTags(
-      "Settings | ASCENDynamics NFP",
-      "Customize your settings and preferences on ASCENDynamics NFP.",
-      "settings, preferences, account, customization",
-      {
-        title: "Settings | ASCENDynamics NFP",
-        description:
-          "Manage your preferences and account settings on ASCENDynamics NFP.",
-        url: "https://ascendynamics.org/settings",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
-      },
-      {
-        card: "summary",
-        title: "Settings | ASCENDynamics NFP",
-        description:
-          "Update your account preferences and settings on ASCENDynamics NFP.",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
-      },
-    );
+    const setMeta = (accountId?: string | null) => {
+      const url = accountId
+        ? `https://ascendynamics.org/account/${accountId}/settings`
+        : `https://ascendynamics.org/account/settings`;
+      this.metaService.updateMetaTags(
+        "Settings | ASCENDynamics NFP",
+        "Customize your settings and preferences on ASCENDynamics NFP.",
+        "settings, preferences, account, customization",
+        {
+          title: "Settings | ASCENDynamics NFP",
+          description:
+            "Manage your preferences and account settings on ASCENDynamics NFP.",
+          url,
+          image:
+            "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        },
+        {
+          card: "summary",
+          title: "Settings | ASCENDynamics NFP",
+          description:
+            "Update your account preferences and settings on ASCENDynamics NFP.",
+          image:
+            "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        },
+      );
+    };
+
+    if (this.initialAccountId) {
+      setMeta(this.initialAccountId);
+    } else {
+      // Fallback to current user
+      this.authUser$
+        .pipe(switchMap((u) => [u?.uid || null]))
+        .subscribe((uid) => {
+          setMeta(uid);
+        });
+    }
   }
 }

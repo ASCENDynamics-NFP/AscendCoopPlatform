@@ -36,11 +36,6 @@ import {AdminDashboardPage} from "./pages/admin-dashboard/admin-dashboard.page";
 import {DirectoryPage} from "./pages/directory/directory.page";
 
 const routes: Routes = [
-  {
-    path: "settings",
-    component: SettingsPage,
-    canActivate: [authGuard],
-  },
   // Legacy routes redirected to unified directory
   {path: "group-list", redirectTo: "directory", pathMatch: "full"},
   {path: "users", redirectTo: "directory", pathMatch: "full"},

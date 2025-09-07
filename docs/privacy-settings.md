@@ -103,8 +103,7 @@ The Settings page exposes per‑section visibility and allow/block lists using t
 ```mermaid
 graph TD
   A[AppRoutingModule] --> B[AccountModule]
-  B -->|/account/settings| S1[SettingsPage]
-  B -->|/account/:accountId/settings| S2[SettingsPage (OwnerOrAdminGuard)]
+  B -->|/account/:accountId/settings| S1[SettingsPage (OwnerOrAdminGuard)]
   B -->|/account/:accountId| D1[DetailsPage]
 
   S1 --> SF[SettingsComponent]

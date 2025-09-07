@@ -202,7 +202,10 @@ export class MessagingPage implements OnInit, OnDestroy {
           text: "Settings",
           icon: "settings",
           handler: () => {
-            this.router.navigate(["/account/settings"]);
+            const uid = this.getCurrentUserId();
+            if (uid) {
+              this.router.navigate([`/account/${uid}/settings`]);
+            }
           },
         },
         {

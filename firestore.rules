@@ -1,6 +1,21 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // ===== Shared helpers available to all matches =====
+    // Determine account/profile visibility; default public when missing
+    function accountVisibility(acc) {
+      return acc.privacySettings != null &&
+             acc.privacySettings.profile != null &&
+             acc.privacySettings.profile.visibility != null
+             ? acc.privacySettings.profile.visibility
+             : 'public';
+    }
+
+    // True when the current document (resource) is a public account and not a 'new' placeholder
+    function isPublicAccount() {
+      let acc = resource.data;
+      return accountVisibility(acc) == 'public' && acc.type != null && acc.type != 'new';
+    }
     match /listings {
       allow list: if true;  // Allow listing collection queries, essential for features like filtering and pagination.
     }
@@ -173,28 +188,8 @@ service cloud.firestore {
     }
 
     match /accounts {
-      allow list: if isPublicUser() || isPublicGroup();
-
-      // Determine account/profile visibility with fallback for legacy data
-      function accountVisibility(acc) {
-        return acc.privacySettings != null &&
-               acc.privacySettings.profile != null &&
-               acc.privacySettings.profile.visibility != null
-               ? acc.privacySettings.profile.visibility
-               : 'public';
-      }
-
-      // Public Group access
-      function isPublicGroup() {
-        let acc = resource.data;
-        return (accountVisibility(acc) == 'public' && acc.type == 'group');
-      }
-
-      // Public User access (requires auth for now)
-      function isPublicUser() {
-        let acc = resource.data;
-        return (request.auth != null && accountVisibility(acc) == 'public' && acc.type == 'user');
-      }
+      // Allow listing by authenticated users; per-doc read checks apply
+      allow list: if request.auth != null && isPublicAccount();
     }
 
     // Match the Account collection
@@ -236,18 +231,8 @@ service cloud.firestore {
           get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
       }
 
-      // Public Group access
-      function isPublicGroup() {
-        return (resource.data.privacy == 'public' && resource.data.type == 'group');
-      }
-
-      // Public User access
-      function isPublicUser() {
-        return (request.auth != null && resource.data.privacy == 'public' && resource.data.type == 'user');
-      }
-
-      // Allow read if the user is accessing their own account
-      allow read: if (isAccountOwner() || isAcceptedFriend() || isAcceptedGroup() || isPublicGroup() || isPublicUser());
+      // Allow read if owner/related or account is public (non-'new')
+      allow read: if (isAccountOwner() || isAcceptedFriend() || isAcceptedGroup() || isPublicAccount());
 
       // General write rule allows owners or group admins/moderators
       // For account owners, allow all operations (create, update, delete)
@@ -265,6 +250,20 @@ service cloud.firestore {
       allow read: if canViewSection(accountId, 'contactInformation');
       allow create, update: if isAccountOwner(accountId) || isAccountAdmin(accountId);
       allow delete: if isAccountOwner(accountId) || isAccountAdmin(accountId);
+    }
+
+    // Professional info section (read gated by privacySettings.professionalInformation)
+    match /accounts/{accountId}/sections/professionalInfo {
+      allow read: if canViewSection(accountId, 'professionalInformation');
+      // Only the owner can write
+      allow create, update, delete: if isAccountOwner(accountId);
+    }
+
+    // Labor rights section (read gated by privacySettings.laborRights)
+    match /accounts/{accountId}/sections/laborRights {
+      allow read: if canViewSection(accountId, 'laborRights');
+      // Only the owner can write
+      allow create, update, delete: if isAccountOwner(accountId);
     }
 
     // Rules for relatedAccount

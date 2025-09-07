@@ -684,6 +684,26 @@ export class AccountEffects {
       updatedAccount,
     );
 
+    try {
+      if (updatedAccount.professionalInformation) {
+        await this.firestoreService.setDocument(
+          `accounts/${account.id}/sections/professionalInfo`,
+          updatedAccount.professionalInformation,
+          {merge: true},
+        );
+      }
+      if (updatedAccount.laborRights) {
+        await this.firestoreService.setDocument(
+          `accounts/${account.id}/sections/laborRights`,
+          updatedAccount.laborRights,
+          {merge: true},
+        );
+      }
+    } catch (e) {
+      // non-fatal; section sync best-effort
+      console.warn("Section sync failed", e);
+    }
+
     return updatedAccount as Account;
   }
 

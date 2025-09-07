@@ -118,7 +118,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         class="segment-section"
       >
         <app-professional-info
-          [professionalInfo]="account.professionalInformation"
+          [professionalInfo]="professionalInfo$ | async"
+          [privacySettings]="account.privacySettings"
+          [isOwnerOrAdmin]="(isOwnerOrAdmin$ | async) || false"
         ></app-professional-info>
       </div>
 

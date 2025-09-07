@@ -19,6 +19,7 @@
 ***********************************************************************************************/
 import {Component, Input} from "@angular/core";
 import {ProfessionalInformation} from "@shared/models/account.model";
+import {PrivacyService} from "../../../../../../core/services/privacy.service";
 
 @Component({
   selector: "app-professional-info",
@@ -26,7 +27,31 @@ import {ProfessionalInformation} from "@shared/models/account.model";
   styleUrls: ["./professional-info.component.scss"],
 })
 export class ProfessionalInfoComponent {
-  @Input() professionalInfo?: ProfessionalInformation;
+  @Input() professionalInfo?: ProfessionalInformation | null;
+  @Input() privacySettings: any = null;
+  @Input() isOwnerOrAdmin: boolean = false;
+  constructor(private privacy: PrivacyService) {}
 
-  constructor() {}
+  get privacyData(): {visibility: string; color: string; label: string} {
+    const visibility = this.privacy.getSectionVisibility(
+      this.privacySettings,
+      "professionalInformation",
+    );
+    const {text, color} = this.mapVisibility(visibility);
+    return {visibility, color, label: text};
+  }
+
+  private mapVisibility(v: string): {text: string; color: string} {
+    switch (v) {
+      case "public":
+        return {text: "Public", color: "success"};
+      case "authenticated":
+        return {text: "Authorized", color: "medium"};
+      case "related":
+        return {text: "Related", color: "primary"};
+      case "private":
+      default:
+        return {text: "Private", color: "danger"};
+    }
+  }
 }

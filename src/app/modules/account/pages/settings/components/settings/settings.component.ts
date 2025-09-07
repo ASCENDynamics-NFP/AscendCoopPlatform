@@ -55,6 +55,8 @@ export class SettingsComponent implements OnChanges {
     language: FormControl<string>;
     // flattened privacySettings controls for simplicity
     contactInformationVisibility: FormControl<string>;
+    professionalInformationVisibility: FormControl<string>;
+    laborRightsVisibility: FormControl<string>;
     membersListVisibility: FormControl<string>;
     partnersListVisibility: FormControl<string>;
     friendsListVisibility: FormControl<string>;
@@ -77,6 +79,8 @@ export class SettingsComponent implements OnChanges {
       privacy: ["public", Validators.required],
       language: ["en"],
       contactInformationVisibility: ["private"],
+      professionalInformationVisibility: ["private"],
+      laborRightsVisibility: ["private"],
       membersListVisibility: ["members"],
       partnersListVisibility: ["members"],
       friendsListVisibility: ["friends"],
@@ -86,6 +90,8 @@ export class SettingsComponent implements OnChanges {
       privacy: FormControl<"public" | "private">;
       language: FormControl<string>;
       contactInformationVisibility: FormControl<string>;
+      professionalInformationVisibility: FormControl<string>;
+      laborRightsVisibility: FormControl<string>;
       membersListVisibility: FormControl<string>;
       partnersListVisibility: FormControl<string>;
       friendsListVisibility: FormControl<string>;
@@ -145,6 +151,17 @@ export class SettingsComponent implements OnChanges {
             (formValue.contactInformationVisibility as any) || "private",
           allowlist: pickIds("contactInformation"),
           blocklist: pickBlock("contactInformation"),
+        },
+        professionalInformation: {
+          visibility:
+            (formValue.professionalInformationVisibility as any) || "private",
+          allowlist: pickIds("professionalInformation"),
+          blocklist: pickBlock("professionalInformation"),
+        },
+        laborRights: {
+          visibility: (formValue.laborRightsVisibility as any) || "private",
+          allowlist: pickIds("laborRights"),
+          blocklist: pickBlock("laborRights"),
         },
         membersList: {
           visibility: (formValue.membersListVisibility as any) || "members",
@@ -208,6 +225,14 @@ export class SettingsComponent implements OnChanges {
         this.account.privacySettings?.contactInformation?.visibility,
         "related",
       ),
+      professionalInformationVisibility: sanitize(
+        this.account.privacySettings?.professionalInformation?.visibility,
+        "private",
+      ),
+      laborRightsVisibility: sanitize(
+        this.account.privacySettings?.laborRights?.visibility,
+        "private",
+      ),
       membersListVisibility: sanitize(
         this.account.privacySettings?.membersList?.visibility,
         "related",
@@ -235,6 +260,14 @@ export class SettingsComponent implements OnChanges {
       this.account.privacySettings?.contactInformation?.allowlist || [];
     this.selectedBlock["contactInformation"] =
       this.account.privacySettings?.contactInformation?.blocklist || [];
+    this.selectedAllow["professionalInformation"] =
+      this.account.privacySettings?.professionalInformation?.allowlist || [];
+    this.selectedBlock["professionalInformation"] =
+      this.account.privacySettings?.professionalInformation?.blocklist || [];
+    this.selectedAllow["laborRights"] =
+      this.account.privacySettings?.laborRights?.allowlist || [];
+    this.selectedBlock["laborRights"] =
+      this.account.privacySettings?.laborRights?.blocklist || [];
     this.selectedAllow["membersList"] =
       this.account.privacySettings?.membersList?.allowlist || [];
     this.selectedBlock["membersList"] =

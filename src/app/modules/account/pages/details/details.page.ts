@@ -39,6 +39,8 @@ import {IonContent, ViewWillEnter, ToastController} from "@ionic/angular";
 import {RelatedListing} from "@shared/models/related-listing.model";
 import {MetaService} from "../../../../core/services/meta.service";
 import {AccessService} from "../../../../core/services/access.service";
+import {AccountSectionsService} from "../../services/account-sections.service";
+import {ProfessionalInformation} from "@shared/models/account.model";
 
 @Component({
   selector: "app-details",
@@ -62,6 +64,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
   error$!: Observable<any>;
   selectedSegment: string = "profile";
   isOwnerOrAdmin$!: Observable<boolean>;
+  professionalInfo$!: Observable<ProfessionalInformation | null>;
 
   constructor(
     private metaService: MetaService,
@@ -71,6 +74,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
     private toastController: ToastController,
     private store: Store,
     private access: AccessService,
+    private sections: AccountSectionsService,
   ) {}
 
   ngOnInit(): void {
@@ -99,6 +103,10 @@ export class DetailsPage implements OnInit, ViewWillEnter {
 
         // Select account and related accounts from the store
         this.account$ = this.store.select(selectAccountById(this.accountId));
+        // Read professional info from gated sections
+        this.professionalInfo$ = this.sections.professionalInfo$(
+          this.accountId,
+        );
         this.relatedAccounts$ = this.store.select(
           selectRelatedAccountsByAccountId(this.accountId),
         );

@@ -40,19 +40,13 @@ export class AccountsService {
     collectionName: string,
     searchTerm: string,
   ): Observable<Account[]> {
-    const collectionRef = this.afs.collection<Account>(
-      collectionName,
-      (ref) => {
-        let queryRef = ref
-          .where("privacySettings.profile.visibility", "==", "public")
-          .where("type", "in", ["user", "group"]);
-
-        queryRef = queryRef
-          .orderBy("name")
-          .startAt(searchTerm)
-          .endAt(searchTerm + "\uf8ff");
-        return queryRef;
-      },
+    const collectionRef = this.afs.collection<Account>(collectionName, (ref) =>
+      ref
+        .where("type", "in", ["user", "group"]) // only user/group accounts
+        .where("privacySettings.profile.visibility", "==", "public") // must align with rules
+        .orderBy("name")
+        .startAt(searchTerm)
+        .endAt(searchTerm + "\uf8ff"),
     );
 
     return collectionRef.valueChanges({idField: "id"}).pipe(

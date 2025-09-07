@@ -58,6 +58,68 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             <ion-select-option value="private">Private</ion-select-option>
           </ion-select>
         </ion-item>
+
+        <ion-item lines="full">
+          <ion-label><strong>Privacy: Professional Information</strong></ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>Visibility</ion-label>
+          <ion-select formControlName="professionalInformationVisibility">
+            <ion-select-option value="public">Public</ion-select-option>
+            <ion-select-option value="authenticated">Authorized</ion-select-option>
+            <ion-select-option value="related">{{ 'settings.related' | translate }}</ion-select-option>
+            <ion-select-option value="private">Private</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">{{ 'settings.allowlist' | translate }}</ion-label>
+          <ion-select multiple interface="popover" placeholder="{{ 'settings.pick_accounts' | translate }}"
+            [value]="selectedAllow['professionalInformation']"
+            (ionChange)="onAllowlistIdsChange('professionalInformation', $event.detail.value)"
+          >
+            <ion-select-option *ngFor="let opt of (relatedAccountsOptions$ | async)" [value]="opt.id">{{opt.name}}</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">{{ 'settings.blocklist' | translate }}</ion-label>
+          <ion-select multiple interface="popover" placeholder="{{ 'settings.pick_accounts' | translate }}"
+            [value]="selectedBlock['professionalInformation']"
+            (ionChange)="onBlocklistIdsChange('professionalInformation', $event.detail.value)"
+          >
+            <ion-select-option *ngFor="let opt of (relatedAccountsOptions$ | async)" [value]="opt.id">{{opt.name}}</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item lines="full">
+          <ion-label><strong>Privacy: Labor Rights</strong></ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>Visibility</ion-label>
+          <ion-select formControlName="laborRightsVisibility">
+            <ion-select-option value="public">Public</ion-select-option>
+            <ion-select-option value="authenticated">Authorized</ion-select-option>
+            <ion-select-option value="related">{{ 'settings.related' | translate }}</ion-select-option>
+            <ion-select-option value="private">Private</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">{{ 'settings.allowlist' | translate }}</ion-label>
+          <ion-select multiple interface="popover" placeholder="{{ 'settings.pick_accounts' | translate }}"
+            [value]="selectedAllow['laborRights']"
+            (ionChange)="onAllowlistIdsChange('laborRights', $event.detail.value)"
+          >
+            <ion-select-option *ngFor="let opt of (relatedAccountsOptions$ | async)" [value]="opt.id">{{opt.name}}</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">{{ 'settings.blocklist' | translate }}</ion-label>
+          <ion-select multiple interface="popover" placeholder="{{ 'settings.pick_accounts' | translate }}"
+            [value]="selectedBlock['laborRights']"
+            (ionChange)="onBlocklistIdsChange('laborRights', $event.detail.value)"
+          >
+            <ion-select-option *ngFor="let opt of (relatedAccountsOptions$ | async)" [value]="opt.id">{{opt.name}}</ion-select-option>
+          </ion-select>
+        </ion-item>
         <ion-item>
           <ion-label position="stacked">{{ 'settings.allowlist' | translate }}</ion-label>
           <ion-select multiple interface="popover" placeholder="{{ 'settings.pick_accounts' | translate }}"

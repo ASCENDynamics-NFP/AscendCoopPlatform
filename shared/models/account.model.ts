@@ -116,6 +116,8 @@ export interface PrivacySettings {
   /** Overall account/profile visibility */
   profile?: SectionPrivacy;
   contactInformation?: SectionPrivacy;
+  professionalInformation?: SectionPrivacy;
+  laborRights?: SectionPrivacy;
   membersList?: SectionPrivacy;
   partnersList?: SectionPrivacy;
   friendsList?: SectionPrivacy;

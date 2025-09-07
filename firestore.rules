@@ -8,9 +8,26 @@ service cloud.firestore {
     // Listings collection rules
     match /listings/{listingId} {
       allow read: if true; // Anyone can view listings
-      allow create: if request.auth != null; // Must be logged in to create
-      allow update, delete: if request.auth != null && 
-        request.auth.uid == resource.data.createdBy; // Only creator can modify
+
+      // Create is allowed for:
+      // - Any authenticated user when no explicit ownerAccountId is set (legacy)
+      // - The owner account (user) when ownerAccountId == auth.uid
+      // - A group admin/moderator when ownerAccountId references a group account
+      allow create: if request.auth != null &&
+        request.resource.data.ownerAccountId != null &&
+        (
+          request.resource.data.ownerAccountId == request.auth.uid ||
+          isAccountAdmin(request.resource.data.ownerAccountId)
+        );
+
+      // Updates/deletes are allowed for the listing owner account or its group admins.
+      // Fallback to legacy createdBy for older documents without ownerAccountId.
+      allow update, delete: if request.auth != null &&
+        resource.data.ownerAccountId != null &&
+        (
+          request.auth.uid == resource.data.ownerAccountId ||
+          isAccountAdmin(resource.data.ownerAccountId)
+        );
     }
 
     // Allow authenticated users to apply for listings

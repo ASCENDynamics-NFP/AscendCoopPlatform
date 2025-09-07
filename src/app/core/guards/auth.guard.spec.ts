@@ -18,18 +18,17 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {TestBed} from "@angular/core/testing";
-import {Router} from "@angular/router";
-import {AuthGuard} from "./auth.guard";
+import {authGuard} from "./auth.guard";
+import {AuthNavigationService} from "../services/auth-navigation.service";
 import * as AuthActions from "../../state/actions/auth.actions";
 import {selectAuthUser} from "../../state/selectors/auth.selectors";
 import {RouterTestingModule} from "@angular/router/testing";
 import {provideMockStore, MockStore} from "@ngrx/store/testing";
 import {AuthUser} from "@shared/models/auth-user.model";
 
-describe("AuthGuard", () => {
-  let guard: AuthGuard;
+describe("authGuard (functional)", () => {
   let store: MockStore;
-  let router: Router;
+  let authNav: jasmine.SpyObj<AuthNavigationService>;
 
   const mockAuthUser: AuthUser = {
     uid: "12345",
@@ -53,47 +52,61 @@ describe("AuthGuard", () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [RouterTestingModule],
-      providers: [AuthGuard, provideMockStore()],
+      providers: [
+        provideMockStore(),
+        {
+          provide: AuthNavigationService,
+          useValue: jasmine.createSpyObj("AuthNavigationService", [
+            "navigateToLogin",
+            "navigateTo",
+            "hasCompletedRegistration",
+          ]),
+        },
+      ],
     });
-
-    guard = TestBed.inject(AuthGuard);
     store = TestBed.inject(MockStore);
-    router = TestBed.inject(Router);
-
-    spyOn(router, "navigate").and.returnValue(Promise.resolve(true));
+    authNav = TestBed.inject(
+      AuthNavigationService,
+    ) as jasmine.SpyObj<AuthNavigationService>;
     spyOn(store, "dispatch");
   });
 
   it("should redirect to login if user is not authenticated", async () => {
     store.overrideSelector(selectAuthUser, null);
 
-    const result = await guard.canActivate();
+    const result = await TestBed.runInInjectionContext(async () =>
+      authGuard({} as any, {} as any),
+    );
 
     expect(result).toBeFalse();
-    expect(router.navigate).toHaveBeenCalledWith(["/auth/login"]);
+    expect(authNav.navigateToLogin).toHaveBeenCalled();
   });
 
   it("should send verification email and redirect to login if user is not verified", async () => {
     store.overrideSelector(selectAuthUser, mockAuthUser);
 
-    const result = await guard.canActivate();
+    const result = await TestBed.runInInjectionContext(async () =>
+      authGuard({} as any, {} as any),
+    );
 
     expect(result).toBeFalse();
     expect(store.dispatch).toHaveBeenCalledWith(
       AuthActions.sendVerificationMail({email: mockAuthUser.email!}),
     );
     expect(store.dispatch).toHaveBeenCalledWith(AuthActions.signOut());
-    // expect(router.navigate).toHaveBeenCalledWith(["/auth/login"]);
+    // navigation handled by signOut/auth effects; no direct call expected here
   });
   it("should allow navigation if user is authenticated and verified", async () => {
     // Set emailVerified to true to test the successful navigation
     const verifiedUser = {...mockAuthUser, emailVerified: true};
     store.overrideSelector(selectAuthUser, verifiedUser);
 
-    const result = await guard.canActivate();
+    const result = await TestBed.runInInjectionContext(async () =>
+      authGuard({} as any, {} as any),
+    );
 
     expect(result).toBeTrue();
-    expect(router.navigate).not.toHaveBeenCalled();
+    expect(authNav.navigateToLogin).not.toHaveBeenCalled();
     expect(store.dispatch).not.toHaveBeenCalled();
   });
 });

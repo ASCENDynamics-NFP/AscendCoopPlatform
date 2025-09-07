@@ -36,6 +36,7 @@ import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../../state/actions/account.actions";
 import {take} from "rxjs/operators";
 import {MetaService} from "../../../../../core/services/meta.service";
+import {AccessService} from "../../../../../core/services/access.service";
 
 @Component({
   selector: "app-list",
@@ -89,6 +90,7 @@ export class ListPage implements OnInit {
     private router: Router,
     private metaService: MetaService,
     private store: Store,
+    private access: AccessService,
   ) {
     // Extract route parameters
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
@@ -130,18 +132,9 @@ export class ListPage implements OnInit {
         this.currentUser$,
         this.account$,
       ]).pipe(
-        map(([currentUser, account]) => {
-          if (!currentUser || !account) return false;
-          if (account.type !== "group") return false;
-          const inAdmins = Array.isArray((account as any).adminIds)
-            ? (account as any).adminIds.includes(currentUser.uid)
-            : false;
-          const inModerators = Array.isArray((account as any).moderatorIds)
-            ? (account as any).moderatorIds.includes(currentUser.uid)
-            : false;
-          const isOwner = account.id === currentUser.uid;
-          return isOwner || inAdmins || inModerators;
-        }),
+        map(([currentUser, account]) =>
+          this.access.isGroupAdmin(account as Account, currentUser),
+        ),
       );
 
       // Determine the title based on listType and account.type
@@ -252,21 +245,23 @@ export class ListPage implements OnInit {
       );
 
       this.canManageRoles$ = combineLatest([
-        this.isGroupAdmin$,
-        this.isOwner$,
-      ]).pipe(map(([admin, owner]) => admin || owner));
+        this.currentUser$,
+        this.account$,
+      ]).pipe(
+        map(([user, account]) =>
+          this.access.canManageRoles(account as Account, user),
+        ),
+      );
 
       this.showAccessControls$ = combineLatest([
         this.account$,
         this.currentUser$,
-        this.isGroupAdmin$,
       ]).pipe(
         map(
-          ([account, user, isAdmin]) =>
+          ([account, user]) =>
             !!account &&
             account.type === "group" &&
-            !!user &&
-            (isAdmin || user.uid === account.id),
+            this.access.isGroupAdmin(account as Account, user),
         ),
       );
 
@@ -274,9 +269,7 @@ export class ListPage implements OnInit {
         this.account$,
         this.currentUser$,
       ]).pipe(
-        map(
-          ([account, user]) => !!account && !!user && user.uid === account.id,
-        ),
+        map(([account, user]) => this.access.isOwner(account as Account, user)),
       );
 
       this.customRoles$ = this.store.select(

@@ -17,75 +17,52 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-// src/app/guards/auth.guard.ts
-import {Injectable} from "@angular/core";
-import {ActivatedRouteSnapshot} from "@angular/router";
+// src/app/core/guards/auth.guard.ts (functional)
+import {inject} from "@angular/core";
+import {ActivatedRouteSnapshot, CanActivateFn} from "@angular/router";
 import {firstValueFrom} from "rxjs";
 import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../state/selectors/auth.selectors";
 import * as AuthActions from "../../state/actions/auth.actions";
 import {AuthNavigationService} from "../services/auth-navigation.service";
 
-@Injectable({
-  providedIn: "root",
-})
-export class AuthGuard {
-  constructor(
-    private store: Store,
-    private authNavigationService: AuthNavigationService,
-  ) {}
+export const authGuard: CanActivateFn = async (
+  route?: ActivatedRouteSnapshot,
+) => {
+  const store = inject(Store);
+  const authNavigationService = inject(AuthNavigationService);
 
-  async canActivate(route?: ActivatedRouteSnapshot): Promise<boolean> {
-    const authUser = await firstValueFrom(this.store.select(selectAuthUser));
+  const authUser = await firstValueFrom(store.select(selectAuthUser));
 
-    if (!authUser) {
-      // Defer navigation to centralized service
-      await this.authNavigationService.navigateToLogin();
-      return false;
-    } else if (authUser && !authUser.emailVerified) {
-      // Send verification email if the user is not verified
-      if (authUser.email) {
-        this.store.dispatch(
-          AuthActions.sendVerificationMail({email: authUser.email}),
-        );
-      }
-      // Sign out; navigation handled elsewhere
-      this.store.dispatch(AuthActions.signOut());
-      return false;
+  if (!authUser) {
+    await authNavigationService.navigateToLogin();
+    return false;
+  } else if (!authUser.emailVerified) {
+    if (authUser.email) {
+      store.dispatch(AuthActions.sendVerificationMail({email: authUser.email}));
     }
-
-    // Check registration completion for specific routes
-    if (route && this.requiresCompletedRegistration(route)) {
-      const accountId = route.paramMap.get("accountId");
-      const isOwnProfile = accountId === authUser.uid;
-
-      if (isOwnProfile) {
-        // For own profile routes, only allow access if registration is completed
-        const hasCompleted =
-          this.authNavigationService.hasCompletedRegistration(authUser);
-
-        if (!hasCompleted) {
-          // Don't navigate here - let the auth effects handle navigation
-          // Just block access to the route
-          return false;
-        }
-      }
-    }
-    return true;
+    store.dispatch(AuthActions.signOut());
+    return false;
   }
 
-  private requiresCompletedRegistration(
-    route: ActivatedRouteSnapshot,
-  ): boolean {
-    // Define which routes require completed registration
-    const routesRequiringRegistration = [
-      ":accountId", // Profile details page
-      ":accountId/edit", // Profile edit page
-      "settings", // Settings page
-      // Add other routes that should require completed registration
-    ];
-
-    const currentPath = route.routeConfig?.path || "";
-    return routesRequiringRegistration.includes(currentPath);
+  if (route && requiresCompletedRegistration(route)) {
+    const accountId = route.paramMap.get("accountId");
+    const isOwnProfile = accountId === authUser.uid;
+    if (isOwnProfile) {
+      const hasCompleted =
+        authNavigationService.hasCompletedRegistration(authUser);
+      if (!hasCompleted) return false;
+    }
   }
+  return true;
+};
+
+function requiresCompletedRegistration(route: ActivatedRouteSnapshot): boolean {
+  const routesRequiringRegistration = [
+    ":accountId",
+    ":accountId/edit",
+    "settings",
+  ];
+  const currentPath = route.routeConfig?.path || "";
+  return routesRequiringRegistration.includes(currentPath);
 }

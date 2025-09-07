@@ -18,38 +18,35 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 // src/app/core/guards/time-tracking-access.guard.ts
-import {Injectable} from "@angular/core";
-import {ActivatedRouteSnapshot, Router} from "@angular/router";
-import {firstValueFrom} from "rxjs";
+import {inject} from "@angular/core";
+import {CanActivateFn} from "@angular/router";
+import {combineLatest, of} from "rxjs";
+import {map, take, tap} from "rxjs/operators";
 import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../state/selectors/auth.selectors";
+import {AccessService} from "../services/access.service";
+import {AuthNavigationService} from "../services/auth-navigation.service";
 
-@Injectable({
-  providedIn: "root",
-})
-export class TimeTrackingAccessGuard {
-  constructor(
-    private store: Store,
-    private router: Router,
-  ) {}
-
-  async canActivate(route: ActivatedRouteSnapshot): Promise<boolean> {
-    const authUser = await firstValueFrom(this.store.select(selectAuthUser));
-    const accountId = route.paramMap.get("accountId");
-
-    if (!authUser) {
-      // If no authenticated user, redirect to login
-      this.router.navigate(["/auth/login"]);
-      return false;
-    }
-
-    if (accountId === authUser.uid) {
-      // Prevent owners from accessing their own time-tracking
-      // Redirect to the account details page instead
-      this.router.navigate(["/account", accountId]);
-      return false;
-    }
-
-    return true;
-  }
-}
+export const timeTrackingAccessGuard: CanActivateFn = (route) => {
+  const store = inject(Store);
+  const access = inject(AccessService);
+  const authNav = inject(AuthNavigationService);
+  const accountId = route.params["accountId"];
+  return combineLatest([store.select(selectAuthUser)]).pipe(
+    take(1),
+    map(([authUser]) => ({
+      authUser,
+      allowed: !!authUser && !access.isOwner({id: accountId} as any, authUser),
+    })),
+    tap(({authUser, allowed}) => {
+      if (!authUser) {
+        // Delegate navigation to centralized auth navigation service
+        authNav.navigateToLogin();
+      } else if (!allowed) {
+        // Owners shouldn't access their own time-tracking; go to profile
+        authNav.navigateTo(`/account/${accountId}`, true);
+      }
+    }),
+    map(({allowed}) => allowed),
+  );
+};

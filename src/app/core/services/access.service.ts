@@ -26,6 +26,46 @@ import {StandardRoleCategory} from "../../../../shared/models/standard-role-temp
 
 @Injectable({providedIn: "root"})
 export class AccessService {
+  /** Basic owner check */
+  isOwner(
+    account: Account | undefined,
+    authUser: AuthUser | null | undefined,
+  ): boolean {
+    return !!account && !!authUser && authUser.uid === account.id;
+  }
+
+  /** Admin/moderator check using denormalized fields on the account document (groups) */
+  private isAdminByAccountFields(
+    account: Account | undefined,
+    authUser: AuthUser | null | undefined,
+  ): boolean {
+    if (!account || !authUser || account.type !== "group") return false;
+    const anyAccount: any = account as any;
+    const inAdmins =
+      Array.isArray(anyAccount.adminIds) &&
+      anyAccount.adminIds.includes(authUser.uid);
+    const inModerators =
+      Array.isArray(anyAccount.moderatorIds) &&
+      anyAccount.moderatorIds.includes(authUser.uid);
+    return inAdmins || inModerators;
+  }
+
+  /** True if user is owner or admin/moderator of the group */
+  isGroupAdmin(
+    account: Account | undefined,
+    authUser: AuthUser | null | undefined,
+  ): boolean {
+    if (this.isOwner(account, authUser)) return true;
+    return this.isAdminByAccountFields(account, authUser);
+  }
+
+  /** Alias: can manage roles if owner or admin */
+  canManageRoles(
+    account: Account | undefined,
+    authUser: AuthUser | null | undefined,
+  ): boolean {
+    return this.isGroupAdmin(account, authUser);
+  }
   /**
    * Minimal owner/admin check used for visibility decisions.
    * - Owner: authUser.uid === account.id
@@ -39,17 +79,8 @@ export class AccessService {
     if (!account) return false;
 
     // Owner of either user or group account
-    if (authUser.uid === account.id) return true;
-
-    // Group: check denormalized admin/moderator lists if present
-    const anyAccount: any = account as any;
-    const inAdmins = Array.isArray(anyAccount.adminIds)
-      ? anyAccount.adminIds.includes(authUser.uid)
-      : false;
-    const inModerators = Array.isArray(anyAccount.moderatorIds)
-      ? anyAccount.moderatorIds.includes(authUser.uid)
-      : false;
-    return inAdmins || inModerators;
+    if (this.isOwner(account, authUser)) return true;
+    return this.isAdminByAccountFields(account, authUser);
   }
 
   /**

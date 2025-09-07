@@ -38,6 +38,7 @@ import * as AccountActions from "../../../../state/actions/account.actions";
 import {IonContent, ViewWillEnter, ToastController} from "@ionic/angular";
 import {RelatedListing} from "@shared/models/related-listing.model";
 import {MetaService} from "../../../../core/services/meta.service";
+import {AccessService} from "../../../../core/services/access.service";
 
 @Component({
   selector: "app-details",
@@ -69,6 +70,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
     private location: Location,
     private toastController: ToastController,
     private store: Store,
+    private access: AccessService,
   ) {}
 
   ngOnInit(): void {
@@ -131,12 +133,9 @@ export class DetailsPage implements OnInit, ViewWillEnter {
           this.authUser$,
           this.account$,
         ]).pipe(
-          map(([authUser, account]) => {
-            if (account && authUser) {
-              return account.id === authUser.uid;
-            }
-            return false;
-          }),
+          map(([authUser, account]) =>
+            this.access.isOwner(account as any, authUser),
+          ),
         );
 
         // Determine if current user is group admin/moderator/owner using denormalized fields
@@ -144,18 +143,9 @@ export class DetailsPage implements OnInit, ViewWillEnter {
           this.authUser$,
           this.account$,
         ]).pipe(
-          map(([currentUser, account]) => {
-            if (!currentUser || !account) return false;
-            const isOwner =
-              account.type === "group" && account.createdBy === currentUser.uid;
-            const inAdminIds =
-              Array.isArray((account as any).adminIds) &&
-              (account as any).adminIds.includes(currentUser.uid);
-            const inModeratorIds =
-              Array.isArray((account as any).moderatorIds) &&
-              (account as any).moderatorIds.includes(currentUser.uid);
-            return isOwner || inAdminIds || inModeratorIds;
-          }),
+          map(([currentUser, account]) =>
+            this.access.isGroupAdmin(account as any, currentUser),
+          ),
         );
 
         this.isGroupMember$ = combineLatest([

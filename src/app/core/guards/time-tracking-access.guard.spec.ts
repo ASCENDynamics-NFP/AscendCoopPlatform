@@ -18,74 +18,79 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {TestBed} from "@angular/core/testing";
-import {Router} from "@angular/router";
 import {Store} from "@ngrx/store";
-import {of} from "rxjs";
-import {TimeTrackingAccessGuard} from "./time-tracking-access.guard";
-import {ActivatedRouteSnapshot} from "@angular/router";
+import {of, firstValueFrom} from "rxjs";
+import {timeTrackingAccessGuard} from "./time-tracking-access.guard";
+import {AuthNavigationService} from "../services/auth-navigation.service";
 
 describe("TimeTrackingAccessGuard", () => {
-  let guard: TimeTrackingAccessGuard;
   let mockStore: jasmine.SpyObj<Store>;
-  let mockRouter: jasmine.SpyObj<Router>;
-  let mockRoute: Partial<ActivatedRouteSnapshot>;
+  let mockAuthNav: jasmine.SpyObj<AuthNavigationService>;
+  let route: any;
 
   beforeEach(() => {
     const storeSpy = jasmine.createSpyObj("Store", ["select"]);
-    const routerSpy = jasmine.createSpyObj("Router", ["navigate"]);
+    const authNavSpy = jasmine.createSpyObj("AuthNavigationService", [
+      "navigateToLogin",
+      "navigateTo",
+    ]);
 
     TestBed.configureTestingModule({
       providers: [
-        TimeTrackingAccessGuard,
         {provide: Store, useValue: storeSpy},
-        {provide: Router, useValue: routerSpy},
+        {provide: AuthNavigationService, useValue: authNavSpy},
       ],
     });
-
-    guard = TestBed.inject(TimeTrackingAccessGuard);
     mockStore = TestBed.inject(Store) as jasmine.SpyObj<Store>;
-    mockRouter = TestBed.inject(Router) as jasmine.SpyObj<Router>;
-
-    mockRoute = {
-      paramMap: {
-        get: jasmine.createSpy("get"),
-      } as any,
-    };
+    mockAuthNav = TestBed.inject(
+      AuthNavigationService,
+    ) as jasmine.SpyObj<AuthNavigationService>;
+    route = {params: {accountId: ""}} as any;
   });
 
   it("should be created", () => {
-    expect(guard).toBeTruthy();
+    expect(typeof timeTrackingAccessGuard).toBe("function");
   });
 
   it("should redirect to login if no authenticated user", async () => {
     mockStore.select.and.returnValue(of(null));
-    (mockRoute.paramMap!.get as jasmine.Spy).and.returnValue("account123");
+    route.params.accountId = "account123";
 
-    const result = await guard.canActivate(mockRoute as ActivatedRouteSnapshot);
+    const result = await TestBed.runInInjectionContext(async () =>
+      firstValueFrom(timeTrackingAccessGuard(route as any, {} as any) as any),
+    );
 
     expect(result).toBe(false);
-    expect(mockRouter.navigate).toHaveBeenCalledWith(["/auth/login"]);
+    expect(mockAuthNav.navigateToLogin).toHaveBeenCalled();
   });
 
   it("should redirect to account page if accountId equals user.uid", async () => {
     const mockUser = {uid: "user123", email: "test@example.com"};
     mockStore.select.and.returnValue(of(mockUser));
-    (mockRoute.paramMap!.get as jasmine.Spy).and.returnValue("user123");
+    route.params.accountId = "user123";
 
-    const result = await guard.canActivate(mockRoute as ActivatedRouteSnapshot);
+    const result = await TestBed.runInInjectionContext(async () =>
+      firstValueFrom(timeTrackingAccessGuard(route as any, {} as any) as any),
+    );
 
     expect(result).toBe(false);
-    expect(mockRouter.navigate).toHaveBeenCalledWith(["/account", "user123"]);
+    expect(mockAuthNav.navigateTo).toHaveBeenCalledWith(
+      "/account/user123",
+      true,
+    );
   });
 
   it("should allow access if accountId does not equal user.uid", async () => {
     const mockUser = {uid: "user123", email: "test@example.com"};
     mockStore.select.and.returnValue(of(mockUser));
-    (mockRoute.paramMap!.get as jasmine.Spy).and.returnValue("account456");
+    route.params.accountId = "account456";
 
-    const result = await guard.canActivate(mockRoute as ActivatedRouteSnapshot);
+    const result = await TestBed.runInInjectionContext(async () =>
+      firstValueFrom(timeTrackingAccessGuard(route as any, {} as any) as any),
+    );
 
     expect(result).toBe(true);
-    expect(mockRouter.navigate).not.toHaveBeenCalled();
+    expect(mockAuthNav.navigateToLogin).not.toHaveBeenCalled();
+    expect(mockAuthNav.navigateTo).not.toHaveBeenCalled();
   });
 });

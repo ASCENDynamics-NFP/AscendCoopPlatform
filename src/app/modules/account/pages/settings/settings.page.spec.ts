@@ -52,7 +52,7 @@ describe("SettingsPage", () => {
     id: "12345",
     name: "Test Account",
     type: "user",
-    privacy: "public",
+    privacySettings: {profile: {visibility: "public"}},
     tagline: "",
     description: "",
     iconImage: "",

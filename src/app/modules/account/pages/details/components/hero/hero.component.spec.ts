@@ -53,7 +53,7 @@ describe("HeroComponent", () => {
     id: mockAccountId,
     name: "Test Account",
     type: "user",
-    privacy: "public",
+    privacySettings: {profile: {visibility: "public"}},
     tagline: "",
     description: "",
     iconImage: "",

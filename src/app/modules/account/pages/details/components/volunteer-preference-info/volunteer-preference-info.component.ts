@@ -27,6 +27,7 @@ import {VolunteerPreferences} from "@shared/models/account.model";
 })
 export class VolunteerPreferenceInfoComponent implements OnChanges {
   @Input() volunteerPreferences?: VolunteerPreferences;
+  @Input() isOwnerOrAdmin: boolean = false;
   preferredVolunteerRolesString: string | undefined;
 
   constructor() {}
@@ -39,5 +40,10 @@ export class VolunteerPreferenceInfoComponent implements OnChanges {
         ? this.volunteerPreferences.preferredVolunteerRoles.join(", ")
         : undefined;
     }
+  }
+
+  // Always public indicator for now
+  get privacyData(): {visibility: string; color: string; label: string} {
+    return {visibility: "public", color: "success", label: "Public"};
   }
 }

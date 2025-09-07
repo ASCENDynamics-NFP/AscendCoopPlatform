@@ -19,7 +19,21 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <ion-card class="volunteer-info-card">
   <ion-card-header>
-    <ion-card-title>Volunteer Preferences</ion-card-title>
+    <div class="title-with-privacy">
+      <ion-card-title>Volunteer Preferences</ion-card-title>
+      <ion-chip
+        *ngIf="isOwnerOrAdmin"
+        [color]="privacyData.color"
+        size="small"
+        class="privacy-indicator"
+      >
+        <ion-icon
+          [name]="privacyData.visibility === 'public' ? 'globe' : 'lock-closed'"
+          size="small"
+        ></ion-icon>
+        <ion-label>{{ privacyData.label }}</ion-label>
+      </ion-chip>
+    </div>
   </ion-card-header>
   <ion-card-content>
     <ion-grid>

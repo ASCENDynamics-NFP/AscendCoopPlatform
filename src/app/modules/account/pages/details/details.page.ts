@@ -41,6 +41,7 @@ import {MetaService} from "../../../../core/services/meta.service";
 import {AccessService} from "../../../../core/services/access.service";
 import {AccountSectionsService} from "../../services/account-sections.service";
 import {ProfessionalInformation} from "@shared/models/account.model";
+import {PrivacyService} from "../../../../core/services/privacy.service";
 
 @Component({
   selector: "app-details",
@@ -65,6 +66,11 @@ export class DetailsPage implements OnInit, ViewWillEnter {
   selectedSegment: string = "profile";
   isOwnerOrAdmin$!: Observable<boolean>;
   professionalInfo$!: Observable<ProfessionalInformation | null>;
+  laborRights$!: Observable<any | null>;
+  canViewProfessional$!: Observable<boolean>;
+  canViewLabor$!: Observable<boolean>;
+  canViewConnections$!: Observable<boolean>;
+  canViewOrganizations$!: Observable<boolean>;
 
   constructor(
     private metaService: MetaService,
@@ -75,6 +81,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
     private store: Store,
     private access: AccessService,
     private sections: AccountSectionsService,
+    private privacy: PrivacyService,
   ) {}
 
   ngOnInit(): void {
@@ -107,6 +114,10 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         this.professionalInfo$ = this.sections.professionalInfo$(
           this.accountId,
         );
+        // Read labor rights from gated sections
+        this.laborRights$ = this.sections.laborRights$(this.accountId);
+
+        // Defer computing segment visibility until permissions streams are set
         this.relatedAccounts$ = this.store.select(
           selectRelatedAccountsByAccountId(this.accountId),
         );
@@ -229,6 +240,91 @@ export class DetailsPage implements OnInit, ViewWillEnter {
           this.isProfileOwner$,
           this.isGroupAdmin$,
         ]).pipe(map(([own, admin]) => own || admin));
+
+        // Now compute segment visibility permissions
+        this.canViewProfessional$ = combineLatest([
+          this.account$,
+          this.isOwnerOrAdmin$,
+          this.hasRelationship$,
+          this.authUser$,
+        ]).pipe(
+          map(([acc, ownOrAdmin, related, user]) =>
+            acc
+              ? this.privacy.canViewSection(
+                  acc.privacySettings,
+                  "professionalInformation",
+                  {
+                    isOwnerOrAdmin: ownOrAdmin,
+                    isAuthenticated: !!user?.uid,
+                    isRelated: related,
+                    viewerId: user?.uid ?? null,
+                  },
+                )
+              : false,
+          ),
+        );
+
+        this.canViewLabor$ = combineLatest([
+          this.account$,
+          this.isOwnerOrAdmin$,
+          this.hasRelationship$,
+          this.authUser$,
+        ]).pipe(
+          map(([acc, ownOrAdmin, related, user]) =>
+            acc
+              ? this.privacy.canViewSection(
+                  acc.privacySettings,
+                  "laborRights",
+                  {
+                    isOwnerOrAdmin: ownOrAdmin,
+                    isAuthenticated: !!user?.uid,
+                    isRelated: related,
+                    viewerId: user?.uid ?? null,
+                  },
+                )
+              : false,
+          ),
+        );
+
+        this.canViewConnections$ = combineLatest([
+          this.account$,
+          this.isOwnerOrAdmin$,
+          this.hasRelationship$,
+          this.authUser$,
+        ]).pipe(
+          map(([acc, ownOrAdmin, related, user]) => {
+            if (!acc) return false;
+            const key = acc.type === "user" ? "friendsList" : "membersList";
+            return this.privacy.canViewSection(acc.privacySettings, key, {
+              isOwnerOrAdmin: ownOrAdmin,
+              isAuthenticated: !!user?.uid,
+              isRelated: related,
+              viewerId: user?.uid ?? null,
+            });
+          }),
+        );
+
+        this.canViewOrganizations$ = combineLatest([
+          this.account$,
+          this.isOwnerOrAdmin$,
+          this.hasRelationship$,
+          this.authUser$,
+        ]).pipe(
+          map(([acc, ownOrAdmin, related, user]) =>
+            acc
+              ? this.privacy.canViewSection(
+                  acc.privacySettings,
+                  "partnersList",
+                  {
+                    isOwnerOrAdmin: ownOrAdmin,
+                    isAuthenticated: !!user?.uid,
+                    isRelated: related,
+                    viewerId: user?.uid ?? null,
+                  },
+                )
+              : false,
+          ),
+        );
       }
     });
 

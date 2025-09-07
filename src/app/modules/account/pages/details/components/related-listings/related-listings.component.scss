@@ -27,6 +27,10 @@ ion-card {
   align-items: flex-start;
   gap: 1rem;
 
+  > div:first-child {
+    flex: 1; // allow title row to span available space
+  }
+
   ion-button {
     margin: 0;
     --padding-start: 0.5rem;
@@ -45,6 +49,7 @@ ion-card {
   }
 
   .privacy-indicator {
+    margin-left: auto;
     --background: var(--ion-color-light);
     --color: var(--ion-color-dark);
     font-size: 0.75rem;

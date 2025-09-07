@@ -50,19 +50,30 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         >
       </ion-segment-button>
 
-      <ion-segment-button *ngIf="account.type === 'user'" value="professional">
+      <ion-segment-button
+        *ngIf="account.type === 'user' && (canViewProfessional$ | async)"
+        value="professional"
+      >
         <ion-icon name="briefcase-outline"></ion-icon>
         <ion-label>Professional</ion-label>
       </ion-segment-button>
 
-      <ion-segment-button value="connections">
+      <ion-segment-button
+        *ngIf="account.type === 'user' && (canViewLabor$ | async)"
+        value="labor"
+      >
+        <ion-icon name="hammer-outline"></ion-icon>
+        <ion-label>Labor Rights</ion-label>
+      </ion-segment-button>
+
+      <ion-segment-button *ngIf="canViewConnections$ | async" value="connections">
         <ion-icon name="people-outline"></ion-icon>
         <ion-label
           >{{ account.type === 'user' ? 'Friends' : 'Members' }}</ion-label
         >
       </ion-segment-button>
 
-      <ion-segment-button value="organizations">
+      <ion-segment-button *ngIf="canViewOrganizations$ | async" value="organizations">
         <ion-icon name="business-outline"></ion-icon>
         <ion-label>Organizations</ion-label>
       </ion-segment-button>
@@ -124,6 +135,18 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         ></app-professional-info>
       </div>
 
+      <!-- Labor Rights Section -->
+      <div
+        *ngIf="selectedSegment === 'labor' && account.type === 'user'"
+        class="segment-section"
+      >
+        <app-labor-rights-info
+          [laborRights]="laborRights$ | async"
+          [privacySettings]="account.privacySettings"
+          [isOwnerOrAdmin]="(isOwnerOrAdmin$ | async) || false"
+        ></app-labor-rights-info>
+      </div>
+
       <!-- Connections Section -->
       <div *ngIf="selectedSegment === 'connections'" class="segment-section">
         <app-related-accounts
@@ -159,6 +182,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       >
         <app-volunteer-preference-info
           [volunteerPreferences]="account.volunteerPreferences"
+          [isOwnerOrAdmin]="(isOwnerOrAdmin$ | async) || false"
         ></app-volunteer-preference-info>
       </div>
 

@@ -6,6 +6,7 @@ import {Injectable} from "@angular/core";
 
 export interface SectionVisibilityContext {
   isOwnerOrAdmin: boolean;
+  isAuthenticated?: boolean;
   isRelated: boolean;
   viewerId?: string | null;
 }
@@ -58,12 +59,12 @@ export class PrivacyService {
     if (this.isInAllowlist(privacySettings, key, ctx.viewerId)) return true;
     if (this.isInBlocklist(privacySettings, key, ctx.viewerId)) return false;
 
-    const v = this.getSectionVisibility(privacySettings, key);
+    const v = this.getSectionVisibility(privacySettings, key) as string;
     switch (v) {
       case "public":
         return true;
       case "authenticated":
-        return true; // page requires auth
+        return !!ctx.isAuthenticated; // require signed-in viewer
       case "related":
         return ctx.isRelated;
       case "private":

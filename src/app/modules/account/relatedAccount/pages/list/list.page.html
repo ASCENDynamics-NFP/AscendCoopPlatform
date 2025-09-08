@@ -35,12 +35,15 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     (ionChange)="onViewChange($event)"
   >
     <ion-segment-button value="list">
+      <ion-icon name="list-outline"></ion-icon>
       <ion-label>List</ion-label>
     </ion-segment-button>
     <ion-segment-button value="roles" *ngIf="canManageRoles$ | async">
+      <ion-icon name="ribbon-outline"></ion-icon>
       <ion-label>Roles</ion-label>
     </ion-segment-button>
     <ion-segment-button value="hierarchy">
+      <ion-icon name="git-network-outline"></ion-icon>
       <ion-label>Hierarchy</ion-label>
     </ion-segment-button>
   </ion-segment>

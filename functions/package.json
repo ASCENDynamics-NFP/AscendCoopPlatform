@@ -9,8 +9,7 @@
     "start": "npm run shell",
     "test": "firebase emulators:exec 'TS_NODE_PROJECT=tsconfig.test.json mocha -r ts-node/register test/**/*.spec.ts' --only firestore",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log",
-    "backfill:privacy": "TS_NODE_PROJECT=tsconfig.json ts-node src/scripts/backfillPrivacy.ts"
+    "logs": "firebase functions:log"
   },
   "engines": {
     "node": "20"

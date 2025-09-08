@@ -37,9 +37,8 @@
   "privacy": {
     "private_list_notice": "Cette liste peut être privée ou vous n'y avez pas accès.",
     "override_contact_info": "Autoriser les infos de contact",
-    "override_members_list": "Autoriser la liste des membres",
-    "override_partners_list": "Autoriser la liste des partenaires",
-    "override_friends_list": "Autoriser la liste d'amis"
+    "override_user_list": "Autoriser la liste des utilisateurs",
+    "override_organization_list": "Autoriser la liste des organisations"
   },
   "common": {
     "login": "Connexion",

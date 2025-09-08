@@ -57,9 +57,8 @@ export class SettingsComponent implements OnChanges {
     contactInformationVisibility: FormControl<string>;
     professionalInformationVisibility: FormControl<string>;
     laborRightsVisibility: FormControl<string>;
-    membersListVisibility: FormControl<string>;
-    partnersListVisibility: FormControl<string>;
-    friendsListVisibility: FormControl<string>;
+    userListVisibility: FormControl<string>;
+    organizationListVisibility: FormControl<string>;
     roleHierarchyVisibility: FormControl<string>;
     projectsVisibility: FormControl<string>;
   }>;
@@ -81,20 +80,18 @@ export class SettingsComponent implements OnChanges {
       contactInformationVisibility: ["private"],
       professionalInformationVisibility: ["private"],
       laborRightsVisibility: ["private"],
-      membersListVisibility: ["members"],
-      partnersListVisibility: ["members"],
-      friendsListVisibility: ["friends"],
-      roleHierarchyVisibility: ["members"],
-      projectsVisibility: ["members"],
+      userListVisibility: ["related"],
+      organizationListVisibility: ["related"],
+      roleHierarchyVisibility: ["related"],
+      projectsVisibility: ["related"],
     }) as FormGroup<{
       privacy: FormControl<"public" | "private">;
       language: FormControl<string>;
       contactInformationVisibility: FormControl<string>;
       professionalInformationVisibility: FormControl<string>;
       laborRightsVisibility: FormControl<string>;
-      membersListVisibility: FormControl<string>;
-      partnersListVisibility: FormControl<string>;
-      friendsListVisibility: FormControl<string>;
+      userListVisibility: FormControl<string>;
+      organizationListVisibility: FormControl<string>;
       roleHierarchyVisibility: FormControl<string>;
       projectsVisibility: FormControl<string>;
     }>;
@@ -163,26 +160,22 @@ export class SettingsComponent implements OnChanges {
           allowlist: pickIds("laborRights"),
           blocklist: pickBlock("laborRights"),
         },
-        membersList: {
-          visibility: (formValue.membersListVisibility as any) || "members",
-          allowlist: pickIds("membersList"),
-          blocklist: pickBlock("membersList"),
+        userList: {
+          visibility: (formValue.userListVisibility as any) || "related",
+          allowlist: pickIds("userList"),
+          blocklist: pickBlock("userList"),
         },
-        partnersList: {
-          visibility: (formValue.partnersListVisibility as any) || "members",
-          allowlist: pickIds("partnersList"),
-          blocklist: pickBlock("partnersList"),
-        },
-        friendsList: {
-          visibility: (formValue.friendsListVisibility as any) || "friends",
-          allowlist: pickIds("friendsList"),
-          blocklist: pickBlock("friendsList"),
+        organizationList: {
+          visibility:
+            (formValue.organizationListVisibility as any) || "related",
+          allowlist: pickIds("organizationList"),
+          blocklist: pickBlock("organizationList"),
         },
         roleHierarchy: {
-          visibility: (formValue.roleHierarchyVisibility as any) || "members",
+          visibility: (formValue.roleHierarchyVisibility as any) || "related",
         },
         projects: {
-          visibility: (formValue.projectsVisibility as any) || "members",
+          visibility: (formValue.projectsVisibility as any) || "related",
         },
         messaging: {receiveFrom: "related"},
         discoverability: {searchable: true},
@@ -233,16 +226,18 @@ export class SettingsComponent implements OnChanges {
         this.account.privacySettings?.laborRights?.visibility,
         "private",
       ),
-      membersListVisibility: sanitize(
-        this.account.privacySettings?.membersList?.visibility,
+      userListVisibility: sanitize(
+        (this.account.privacySettings as any)?.userList?.visibility ??
+          (this.account.type === "user"
+            ? (this.account.privacySettings as any)?.friendsList?.visibility
+            : (this.account.privacySettings as any)?.membersList?.visibility),
         "related",
       ),
-      partnersListVisibility: sanitize(
-        this.account.privacySettings?.partnersList?.visibility,
-        "related",
-      ),
-      friendsListVisibility: sanitize(
-        this.account.privacySettings?.friendsList?.visibility,
+      organizationListVisibility: sanitize(
+        (this.account.privacySettings as any)?.organizationList?.visibility ??
+          (this.account.type === "user"
+            ? (this.account.privacySettings as any)?.membersList?.visibility
+            : (this.account.privacySettings as any)?.partnersList?.visibility),
         "related",
       ),
       roleHierarchyVisibility: sanitize(
@@ -268,18 +263,30 @@ export class SettingsComponent implements OnChanges {
       this.account.privacySettings?.laborRights?.allowlist || [];
     this.selectedBlock["laborRights"] =
       this.account.privacySettings?.laborRights?.blocklist || [];
-    this.selectedAllow["membersList"] =
-      this.account.privacySettings?.membersList?.allowlist || [];
-    this.selectedBlock["membersList"] =
-      this.account.privacySettings?.membersList?.blocklist || [];
-    this.selectedAllow["partnersList"] =
-      this.account.privacySettings?.partnersList?.allowlist || [];
-    this.selectedBlock["partnersList"] =
-      this.account.privacySettings?.partnersList?.blocklist || [];
-    this.selectedAllow["friendsList"] =
-      this.account.privacySettings?.friendsList?.allowlist || [];
-    this.selectedBlock["friendsList"] =
-      this.account.privacySettings?.friendsList?.blocklist || [];
+    this.selectedAllow["userList"] =
+      (this.account.privacySettings as any)?.userList?.allowlist ??
+      (this.account.type === "user"
+        ? (this.account.privacySettings as any)?.friendsList?.allowlist
+        : (this.account.privacySettings as any)?.membersList?.allowlist) ??
+      [];
+    this.selectedBlock["userList"] =
+      (this.account.privacySettings as any)?.userList?.blocklist ??
+      (this.account.type === "user"
+        ? (this.account.privacySettings as any)?.friendsList?.blocklist
+        : (this.account.privacySettings as any)?.membersList?.blocklist) ??
+      [];
+    this.selectedAllow["organizationList"] =
+      (this.account.privacySettings as any)?.organizationList?.allowlist ??
+      (this.account.type === "user"
+        ? (this.account.privacySettings as any)?.membersList?.allowlist
+        : (this.account.privacySettings as any)?.partnersList?.allowlist) ??
+      [];
+    this.selectedBlock["organizationList"] =
+      (this.account.privacySettings as any)?.organizationList?.blocklist ??
+      (this.account.type === "user"
+        ? (this.account.privacySettings as any)?.membersList?.blocklist
+        : (this.account.privacySettings as any)?.partnersList?.blocklist) ??
+      [];
   }
 
   toggleDarkTheme(event: CustomEvent) {

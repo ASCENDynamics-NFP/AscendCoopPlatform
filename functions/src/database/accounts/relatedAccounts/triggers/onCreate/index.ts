@@ -94,16 +94,12 @@ export const onCreateRelatedAccount = onDocumentCreated(
       const initiatorData = initiatorDoc.data();
       const targetData = targetDoc.data();
 
-      const relationship = determineRelationshipType(
-        initiatorData?.type,
-        targetData?.type,
-      );
-
+      // Compute default access based on entity types (any group involvement => member)
+      const initiatorType = initiatorData?.type;
+      const targetType = targetData?.type;
+      const groupInvolved = initiatorType === "group" || targetType === "group";
       const access =
-        requestData?.access ??
-        (relationship === "member" || relationship === "partner"
-          ? "member"
-          : undefined);
+        requestData?.access ?? (groupInvolved ? "member" : undefined);
 
       await db
         .collection("accounts")
@@ -118,7 +114,6 @@ export const onCreateRelatedAccount = onDocumentCreated(
           tagline: initiatorData?.tagline,
           type: initiatorData?.type,
           status: "pending",
-          relationship,
           access,
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
           createdBy: accountId,
@@ -143,17 +138,4 @@ export const onCreateRelatedAccount = onDocumentCreated(
   },
 );
 
-/**
- * Determines the relationship type based on the account types of both parties
- * @param {string} initiatorType The account type of the initiator
- * @param {string} targetType The account type of the target
- * @return {string} The determined relationship type: "partner", "member", or "friend"
- */
-function determineRelationshipType(
-  initiatorType?: string,
-  targetType?: string,
-): string {
-  if (initiatorType === "group" && targetType === "group") return "partner";
-  if (initiatorType === "group" || targetType === "group") return "member";
-  return "friend";
-}
+// relationship is no longer persisted; behavior derived from entity types

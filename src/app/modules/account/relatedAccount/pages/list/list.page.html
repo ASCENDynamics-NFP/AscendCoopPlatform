@@ -153,24 +153,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                     </ion-select>
                   </ng-container>
 
-                  <ion-select
-                    disabled="true"
-                    [value]="relatedAccount.relationship"
-                    interface="popover"
-                    placeholder="Relationship"
-                    (click)="$event.stopPropagation()"
-                    (ionChange)="
-                      updateRelationship(relatedAccount, $event.detail.value)
-                    "
-                    style="max-width: 130px"
-                  >
-                    <ion-select-option
-                      *ngFor="let rel of relationshipOptions"
-                      [value]="rel"
-                    >
-                      {{ rel }}
-                    </ion-select-option>
-                  </ion-select>
                   <ion-button
                     slot="end"
                     expand="block"
@@ -269,23 +251,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                       >
                     </ion-select>
                   </ng-container>
-                  <ion-select
-                    disabled="true"
-                    [value]="relatedAccount.relationship"
-                    interface="popover"
-                    placeholder="Relationship"
-                    (click)="$event.stopPropagation()"
-                    (ionChange)="
-                        updateRelationship(relatedAccount, $event.detail.value)
-                      "
-                    style="max-width: 130px"
-                  >
-                    <ion-select-option
-                      *ngFor="let rel of relationshipOptions"
-                      [value]="rel"
-                      >{{ rel }}</ion-select-option
-                    >
-                  </ion-select>
                   <ion-button
                     slot="end"
                     expand="block"
@@ -333,7 +298,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     </ion-row>
   </ion-grid>
   <!-- Roles Management View (embedded, owner/admin only) -->
-  <div *ngIf="(canManageRoles$ | async) && activeView === 'roles'" class="ion-padding">
+  <div
+    *ngIf="(canManageRoles$ | async) && activeView === 'roles'"
+    class="ion-padding"
+  >
     <app-role-management [embedded]="true"></app-role-management>
   </div>
 
@@ -341,5 +309,4 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <div *ngIf="activeView === 'hierarchy'" class="ion-padding">
     <app-role-hierarchy [embedded]="true"></app-role-hierarchy>
   </div>
-
 </ion-content>

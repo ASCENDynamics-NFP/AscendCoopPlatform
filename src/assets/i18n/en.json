@@ -37,9 +37,8 @@
   "privacy": {
     "private_list_notice": "This list may be private or you might not have access.",
     "override_contact_info": "Allow Contact Info",
-    "override_members_list": "Allow Members List",
-    "override_partners_list": "Allow Partners List",
-    "override_friends_list": "Allow Friends List"
+    "override_user_list": "Allow Users List",
+    "override_organization_list": "Allow Organizations List"
   },
   "common": {
     "login": "Login",

@@ -195,24 +195,8 @@ service cloud.firestore {
           );
       }
 
-      // Friends-only access
-      function isAcceptedFriend() {
-        return request.auth != null && 
-          exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
-          get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.type == 'user' &&
-          get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
-      }
-
-      // Groups-only access
-      function isAcceptedGroup() {
-        return request.auth != null && 
-          exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
-          get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.type == 'group' &&
-          get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
-      }
-
       // Allow read if owner/related or account is public (non-'new')
-      allow read: if (isAccountOwner() || isAcceptedFriend() || isAcceptedGroup() || isPublicAccount());
+      allow read: if (isAccountOwner() || isMember(accountId) || isPublicAccount());
 
       // General write rule allows owners or group admins/moderators
       // For account owners, allow all operations (create, update, delete)
@@ -250,10 +234,11 @@ service cloud.firestore {
     // Do not allow blanket listing; rely on per-document read rules below
     match /accounts/{accountId}/relatedAccounts {
       // Allow listing for authenticated users; per-document read rules below
-      // enforce section privacy (membersList/partnersList/friendsList) so only
-      // allowed relationship docs are returned in query results.
+      // App enforces section privacy (userList/organizationList) so only
+      // allowed related accounts are shown in the UI.
       allow list: if request.auth != null;
     }
+    
     match /accounts/{accountId}/relatedAccounts/{relatedAccountId} {
       function isAccountOwner() {
         return request.auth != null && request.auth.uid == accountId;

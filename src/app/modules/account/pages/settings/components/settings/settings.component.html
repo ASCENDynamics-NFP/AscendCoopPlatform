@@ -225,191 +225,119 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           </ion-select>
         </ion-item>
 
-        <ng-container
-          *ngIf="account?.type === 'group' || account?.type === 'user'"
-        >
-          <ion-item lines="full">
-            <ion-label>
-              <strong
-                >Privacy:
-                {{
-                  account?.type === "user" ? "Groups" : "Members List"
-                }}</strong
-              >
-            </ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-label>Visibility</ion-label>
-            <ion-select formControlName="membersListVisibility">
-              <ion-select-option value="public">Public</ion-select-option>
-              <ion-select-option value="authenticated"
-                >Authorized</ion-select-option
-              >
-              <ion-select-option value="related">{{
-                "settings.related" | translate
-              }}</ion-select-option>
-              <ion-select-option value="private">Private</ion-select-option>
-            </ion-select>
-          </ion-item>
-          <ion-item>
-            <ion-label position="stacked">{{
-              "settings.allowlist" | translate
-            }}</ion-label>
-            <ion-select
-              multiple
-              interface="popover"
-              placeholder="{{ 'settings.pick_accounts' | translate }}"
-              [value]="selectedAllow['membersList']"
-              (ionChange)="
-                onAllowlistIdsChange('membersList', $event.detail.value)
-              "
+        <ion-item lines="full">
+          <ion-label><strong>Privacy: Users List</strong></ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>Visibility</ion-label>
+          <ion-select formControlName="userListVisibility">
+            <ion-select-option value="public">Public</ion-select-option>
+            <ion-select-option value="authenticated"
+              >Authorized</ion-select-option
             >
-              <ion-select-option
-                *ngFor="let opt of relatedAccountsOptions$ | async"
-                [value]="opt.id"
-                >{{ opt.name }}</ion-select-option
-              >
-            </ion-select>
-          </ion-item>
-          <ion-item>
-            <ion-label position="stacked">{{
-              "settings.blocklist" | translate
-            }}</ion-label>
-            <ion-select
-              multiple
-              interface="popover"
-              placeholder="{{ 'settings.pick_accounts' | translate }}"
-              [value]="selectedBlock['membersList']"
-              (ionChange)="
-                onBlocklistIdsChange('membersList', $event.detail.value)
-              "
+            <ion-select-option value="related">{{
+              "settings.related" | translate
+            }}</ion-select-option>
+            <ion-select-option value="private">Private</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">{{
+            "settings.allowlist" | translate
+          }}</ion-label>
+          <ion-select
+            multiple
+            interface="popover"
+            placeholder="{{ 'settings.pick_accounts' | translate }}"
+            [value]="selectedAllow['userList']"
+            (ionChange)="
+              onAllowlistIdsChange('userList', $event.detail.value)
+            "
+          >
+            <ion-select-option
+              *ngFor="let opt of relatedAccountsOptions$ | async"
+              [value]="opt.id"
+              >{{ opt.name }}</ion-select-option
             >
-              <ion-select-option
-                *ngFor="let opt of relatedAccountsOptions$ | async"
-                [value]="opt.id"
-                >{{ opt.name }}</ion-select-option
-              >
-            </ion-select>
-          </ion-item>
-        </ng-container>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">{{
+            "settings.blocklist" | translate
+          }}</ion-label>
+          <ion-select
+            multiple
+            interface="popover"
+            placeholder="{{ 'settings.pick_accounts' | translate }}"
+            [value]="selectedBlock['userList']"
+            (ionChange)="
+              onBlocklistIdsChange('userList', $event.detail.value)
+            "
+          >
+            <ion-select-option
+              *ngFor="let opt of relatedAccountsOptions$ | async"
+              [value]="opt.id"
+              >{{ opt.name }}</ion-select-option
+            >
+          </ion-select>
+        </ion-item>
 
-        <ng-container *ngIf="account?.type === 'group'">
-          <ion-item lines="full">
-            <ion-label><strong>Privacy: Partners List</strong></ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-label>Visibility</ion-label>
-            <ion-select formControlName="partnersListVisibility">
-              <ion-select-option value="public">Public</ion-select-option>
-              <ion-select-option value="authenticated"
-                >Authorized</ion-select-option
-              >
-              <ion-select-option value="related">{{
-                "settings.related" | translate
-              }}</ion-select-option>
-              <ion-select-option value="private">Private</ion-select-option>
-            </ion-select>
-          </ion-item>
-          <ion-item>
-            <ion-label position="stacked">{{
-              "settings.allowlist" | translate
-            }}</ion-label>
-            <ion-select
-              multiple
-              interface="popover"
-              placeholder="{{ 'settings.pick_accounts' | translate }}"
-              [value]="selectedAllow['partnersList']"
-              (ionChange)="
-                onAllowlistIdsChange('partnersList', $event.detail.value)
-              "
+        <ion-item lines="full">
+          <ion-label><strong>Privacy: Organizations List</strong></ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>Visibility</ion-label>
+          <ion-select formControlName="organizationListVisibility">
+            <ion-select-option value="public">Public</ion-select-option>
+            <ion-select-option value="authenticated"
+              >Authorized</ion-select-option
             >
-              <ion-select-option
-                *ngFor="let opt of relatedAccountsOptions$ | async"
-                [value]="opt.id"
-                >{{ opt.name }}</ion-select-option
-              >
-            </ion-select>
-          </ion-item>
-          <ion-item>
-            <ion-label position="stacked">{{
-              "settings.blocklist" | translate
-            }}</ion-label>
-            <ion-select
-              multiple
-              interface="popover"
-              placeholder="{{ 'settings.pick_accounts' | translate }}"
-              [value]="selectedBlock['partnersList']"
-              (ionChange)="
-                onBlocklistIdsChange('partnersList', $event.detail.value)
-              "
+            <ion-select-option value="related">{{
+              "settings.related" | translate
+            }}</ion-select-option>
+            <ion-select-option value="private">Private</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">{{
+            "settings.allowlist" | translate
+          }}</ion-label>
+          <ion-select
+            multiple
+            interface="popover"
+            placeholder="{{ 'settings.pick_accounts' | translate }}"
+            [value]="selectedAllow['organizationList']"
+            (ionChange)="
+              onAllowlistIdsChange('organizationList', $event.detail.value)
+            "
+          >
+            <ion-select-option
+              *ngFor="let opt of relatedAccountsOptions$ | async"
+              [value]="opt.id"
+              >{{ opt.name }}</ion-select-option
             >
-              <ion-select-option
-                *ngFor="let opt of relatedAccountsOptions$ | async"
-                [value]="opt.id"
-                >{{ opt.name }}</ion-select-option
-              >
-            </ion-select>
-          </ion-item>
-        </ng-container>
-
-        <ng-container *ngIf="account?.type === 'user'">
-          <ion-item lines="full">
-            <ion-label><strong>Privacy: Friends List</strong></ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-label>Visibility</ion-label>
-            <ion-select formControlName="friendsListVisibility">
-              <ion-select-option value="public">Public</ion-select-option>
-              <ion-select-option value="authenticated"
-                >Authorized</ion-select-option
-              >
-              <ion-select-option value="related">{{
-                "settings.related" | translate
-              }}</ion-select-option>
-              <ion-select-option value="private">Private</ion-select-option>
-            </ion-select>
-          </ion-item>
-          <ion-item>
-            <ion-label position="stacked">{{
-              "settings.allowlist" | translate
-            }}</ion-label>
-            <ion-select
-              multiple
-              interface="popover"
-              placeholder="{{ 'settings.pick_accounts' | translate }}"
-              [value]="selectedAllow['friendsList']"
-              (ionChange)="
-                onAllowlistIdsChange('friendsList', $event.detail.value)
-              "
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">{{
+            "settings.blocklist" | translate
+          }}</ion-label>
+          <ion-select
+            multiple
+            interface="popover"
+            placeholder="{{ 'settings.pick_accounts' | translate }}"
+            [value]="selectedBlock['organizationList']"
+            (ionChange)="
+              onBlocklistIdsChange('organizationList', $event.detail.value)
+            "
+          >
+            <ion-select-option
+              *ngFor="let opt of relatedAccountsOptions$ | async"
+              [value]="opt.id"
+              >{{ opt.name }}</ion-select-option
             >
-              <ion-select-option
-                *ngFor="let opt of relatedAccountsOptions$ | async"
-                [value]="opt.id"
-                >{{ opt.name }}</ion-select-option
-              >
-            </ion-select>
-          </ion-item>
-          <ion-item>
-            <ion-label position="stacked">{{
-              "settings.blocklist" | translate
-            }}</ion-label>
-            <ion-select
-              multiple
-              interface="popover"
-              placeholder="{{ 'settings.pick_accounts' | translate }}"
-              [value]="selectedBlock['friendsList']"
-              (ionChange)="
-                onBlocklistIdsChange('friendsList', $event.detail.value)
-              "
-            >
-              <ion-select-option
-                *ngFor="let opt of relatedAccountsOptions$ | async"
-                [value]="opt.id"
-                >{{ opt.name }}</ion-select-option
-              >
-            </ion-select>
-          </ion-item>
-        </ng-container>
+          </ion-select>
+        </ion-item>
 
         <ion-item lines="full">
           <ion-label><strong>Privacy: Role Hierarchy</strong></ion-label>

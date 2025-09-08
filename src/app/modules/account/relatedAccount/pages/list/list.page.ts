@@ -64,7 +64,6 @@ export class ListPage implements OnInit {
   customRoles$!: Observable<GroupRole[]>;
   filteredUserRoles$!: Observable<GroupRole[]>;
   filteredOrganizationRoles$!: Observable<GroupRole[]>;
-  relationshipOptions = ["friend", "member", "partner", "family"] as const;
   // UI privacy helpers
   listVisibility$: Observable<string> = of("public");
   showPrivateNotice$: Observable<boolean> = of(false);
@@ -153,23 +152,28 @@ export class ListPage implements OnInit {
         }),
       );
 
-      // Determine section visibility configured for this list
+      // Determine section visibility configured for this list (normalized to 4 audiences)
       this.listVisibility$ = this.account$.pipe(
         map((account) => {
-          const vis = account?.privacySettings;
+          const vis = account?.privacySettings as any;
           if (!vis) return "public";
-          const type = account?.type;
-          if (type === "group") {
-            return this.listType === "user"
-              ? (vis.membersList?.visibility as string) || "members"
-              : (vis.partnersList?.visibility as string) || "members";
+          if (this.listType === "user") {
+            return (
+              (vis.userList?.visibility as string) ||
+              (account?.type === "user"
+                ? (vis.friendsList?.visibility as string)
+                : (vis.membersList?.visibility as string)) ||
+              "related"
+            );
+          } else {
+            return (
+              (vis.organizationList?.visibility as string) ||
+              (account?.type === "user"
+                ? (vis.membersList?.visibility as string)
+                : (vis.partnersList?.visibility as string)) ||
+              "related"
+            );
           }
-          if (type === "user") {
-            return this.listType === "user"
-              ? (vis.friendsList?.visibility as string) || "friends"
-              : (vis.membersList?.visibility as string) || "authenticated";
-          }
-          return "public";
         }),
       );
 
@@ -213,7 +217,7 @@ export class ListPage implements OnInit {
         }),
       );
 
-      // Filter related accounts into current and pending lists
+      // Filter related accounts into current and pending lists using related account entity type
       this.currentRelatedAccountsList$ = this.relatedAccounts$.pipe(
         map((relatedAccounts) =>
           relatedAccounts.filter(
@@ -294,43 +298,24 @@ export class ListPage implements OnInit {
       this.store.dispatch(
         AccountActions.loadGroupRoles({groupId: this.accountId}),
       );
-      // Compute current and pending lists (status-based)
-      this.currentRelatedAccountsList$ = combineLatest([
-        this.relatedAccounts$,
-        this.account$,
-        of(this.listType),
-      ]).pipe(
-        map(([list, account, listType]) => {
-          const accType = account?.type || "user";
-          return (list || []).filter((ra) => {
-            if (ra.status !== "accepted") return false;
-            if (accType === "user" && listType === "user") {
-              return ra.relationship === "friend";
-            }
-            if (accType === "user" && listType === "group") {
-              return ra.relationship === "member";
-            }
-            if (accType === "group" && listType === "user") {
-              return ra.relationship === "member";
-            }
-            if (accType === "group" && listType === "group") {
-              return ra.relationship === "partner";
-            }
-            // Fallback to legacy type if present
-            return (ra as any).type === listType;
-          });
-        }),
+      // Ensure current/pending lists reflect entity type without relationship field
+      this.currentRelatedAccountsList$ = this.relatedAccounts$.pipe(
+        map((list) =>
+          (list || []).filter(
+            (ra) => ra.status === "accepted" && ra.type === this.listType,
+          ),
+        ),
       );
       this.pendingRelatedAccountsList$ = this.relatedAccounts$.pipe(
-        map((list) => (list || []).filter((ra) => ra.status === "pending")),
+        map((list) =>
+          (list || []).filter(
+            (ra) => ra.status === "pending" && ra.type === this.listType,
+          ),
+        ),
       );
 
       // Determine section key and label for this list
-      const sectionKey$ = this.account$.pipe(
-        map((acc) =>
-          acc?.type ? this.getSectionKeyForList(acc.type) : "membersList",
-        ),
-      );
+      const sectionKey$ = of(this.getSectionKeyForList("any"));
 
       // Visibility value for the section
       this.listVisibility$ = combineLatest([this.account$, sectionKey$]).pipe(
@@ -426,13 +411,9 @@ export class ListPage implements OnInit {
     }
   }
 
-  private getSectionKeyForList(accountType: string): string {
-    // Map current list type + account type to privacySettings section key
-    if (accountType === "group") {
-      return this.listType === "user" ? "membersList" : "partnersList";
-    }
-    // user account
-    return this.listType === "user" ? "friendsList" : "membersList"; // "Groups"
+  private getSectionKeyForList(_: string): string {
+    // Unified keys mapping by related entity type
+    return this.listType === "user" ? "userList" : "organizationList";
   }
 
   private getSectionLabelForList(accountType: string): string {
@@ -704,24 +685,6 @@ export class ListPage implements OnInit {
         AccountActions.updateRelatedAccount({
           accountId: this.accountId!,
           relatedAccount: updated as RelatedAccount,
-        }),
-      );
-    });
-  }
-
-  updateRelationship(request: Partial<RelatedAccount>, relationship: string) {
-    this.currentUser$.pipe(take(1)).subscribe((authUser) => {
-      if (!authUser?.uid || !request.id || !this.accountId) return;
-      const updated: RelatedAccount = {
-        ...(request as RelatedAccount),
-        accountId: this.accountId,
-        relationship: relationship as any,
-        lastModifiedBy: authUser.uid,
-      };
-      this.store.dispatch(
-        AccountActions.updateRelatedAccount({
-          accountId: this.accountId!,
-          relatedAccount: updated,
         }),
       );
     });

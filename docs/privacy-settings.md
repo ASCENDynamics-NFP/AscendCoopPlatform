@@ -15,9 +15,8 @@ Accounts may include `privacySettings` with per‑section configuration. The sec
 - `contactInformation` (gated subdocument)
 - `professionalInformation` (gated subdocument)
 - `laborRights` (gated subdocument)
-- `membersList` (groups) / “Groups” (users)
-- `partnersList` (groups)
-- `friendsList` (users)
+- `userList` (related accounts where relatedAccount.type === 'user')
+- `organizationList` (related accounts where relatedAccount.type === 'group')
 - `roleHierarchy`
 - `projects`
 - Plus auxiliary controls: `messaging`, `discoverability`
@@ -84,10 +83,10 @@ Audience summary:
 The Settings page exposes per‑section visibility and allow/block lists using the four audiences above.
 
 - All accounts: Public, Authorized, Related, Private
-- “Members List” on groups appears as “Groups” on user profiles (both map to `membersList`).
+- Related accounts lists are simplified to two sections (`userList` and `organizationList`).
 - Contact Info UI reads from `sections/contactInfo`; if access is denied it displays a private/unavailable state.
 - Professional Information and Labor Rights are editable by the owner and mirrored to their gated subdocuments.
-- Allowlist/blocklist pickers let you target specific related accounts for each section (Contact Info, Professional Information, Labor Rights, Members/Partners/Friends).
+- Allowlist/blocklist pickers let you target specific related accounts for each section (Contact Info, Professional Information, Labor Rights, Users/Organizations).
 - Details page hides the Professional, Labor Rights, Connections, and Organizations segments if the viewer lacks access (owners/admins always see them).
 
 ## Defaults
@@ -96,7 +95,7 @@ The Settings page exposes per‑section visibility and allow/block lists using t
   - Contact Information → `related`
   - Professional Information → `private`
   - Labor Rights → `private`
-  - Members/Partners/Friends/Role Hierarchy/Projects → `related`
+- Users/Organizations/Role Hierarchy/Projects → `related`
 - When an account already has base‐level contact information, the UI and effects mirror to `sections/contactInfo` for rules‑based access.
 
 ## File Pointers
@@ -208,16 +207,13 @@ flowchart TD
 flowchart TD
   S[Read accounts/{accountId}/relatedAccounts/{rid}] --> O{Owner/Admin or Subject?}
   O -- Yes --> AL[ALLOW]
-  O -- No --> T{Relationship type}
-  T -->|member| M{canViewSection('membersList')}
-  T -->|partner| P{canViewSection('partnersList')}
-  T -->|friend| F{canViewSection('friendsList')}
-  M -- true --> AL
-  M -- false --> DN[DENY]
-  P -- true --> AL
-  P -- false --> DN
-  F -- true --> AL
-  F -- false --> DN
+  O -- No --> T{Related account entity type}
+  T -->|user| U{canViewSection('userList')}
+  T -->|group| G{canViewSection('organizationList')}
+  U -- true --> AL
+  U -- false --> DN[DENY]
+  G -- true --> AL
+  G -- false --> DN
 ```
 
 ### Details Page: Component Tree (Condensed)
@@ -248,9 +244,8 @@ graph LR
     CI[contactInformation]
     PF[professionalInformation]
     LR[laborRights]
-    ML[membersList / Groups]
-    PL[partnersList]
-    FL[friendsList]
+    UL[userList]
+    OL[organizationList]
     RH[roleHierarchy]
     PR[projects]
   end
@@ -258,9 +253,8 @@ graph LR
   Related --> CI
   Related --> PF
   Related --> LR
-  Related --> ML
-  Related --> PL
-  Related --> FL
+  Related --> UL
+  Related --> OL
   Related --> RH
   Related --> PR
 ```

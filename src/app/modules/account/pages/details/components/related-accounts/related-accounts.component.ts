@@ -51,21 +51,9 @@ export class RelatedAccountsComponent {
   }
 
   private matchesList(ra: RelatedAccount): boolean {
+    // Accept only current relationships and filter purely by related account entity type
     if (ra.status !== "accepted") return false;
-    const accountType = this.account?.type;
-    // Component list 'user' means show people; 'group' means organizations
-    if (this.type === "user") {
-      // On user profile, 'Connections' = friends; on group profile, 'Members' = members
-      if (accountType === "user") return ra.relationship === "friend";
-      if (accountType === "group") return ra.relationship === "member";
-    } else if (this.type === "group") {
-      // On user profile, 'Organizations' = groups where user is member
-      if (accountType === "user") return ra.relationship === "member";
-      // On group profile, 'Organizations' section usually lists partners
-      if (accountType === "group") return ra.relationship === "partner";
-    }
-    // Fallback to legacy type matching if present
-    return (ra as any).type === this.type;
+    return ra.type === this.type;
   }
 
   get filteredRelatedAccounts() {
@@ -83,14 +71,8 @@ export class RelatedAccountsComponent {
   }
 
   private get sectionKey(): string {
-    // Map the displayed list (type) and profile account type to the correct privacy section
-    const accType = this.account?.type || "user";
-    if (accType === "user") {
-      // On a user profile: "Connections" (type=user) => friendsList, "Organizations" (type=group) => membersList
-      return this.type === "user" ? "friendsList" : "membersList";
-    }
-    // On a group profile: "Members" (type=user) => membersList, "Organizations" (type=group) => partnersList
-    return this.type === "user" ? "membersList" : "partnersList";
+    // Unified keys based on related account entity type
+    return this.type === "user" ? "userList" : "organizationList";
   }
 
   private canViewSection(): boolean {

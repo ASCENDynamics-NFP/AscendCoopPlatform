@@ -294,7 +294,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         ]).pipe(
           map(([acc, ownOrAdmin, related, user]) => {
             if (!acc) return false;
-            const key = acc.type === "user" ? "friendsList" : "membersList";
+            const key = "userList";
             return this.privacy.canViewSection(acc.privacySettings, key, {
               isOwnerOrAdmin: ownOrAdmin,
               isAuthenticated: !!user?.uid,
@@ -314,7 +314,7 @@ export class DetailsPage implements OnInit, ViewWillEnter {
             acc
               ? this.privacy.canViewSection(
                   acc.privacySettings,
-                  "partnersList",
+                  "organizationList",
                   {
                     isOwnerOrAdmin: ownOrAdmin,
                     isAuthenticated: !!user?.uid,

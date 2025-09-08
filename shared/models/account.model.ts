@@ -118,9 +118,13 @@ export interface PrivacySettings {
   contactInformation?: SectionPrivacy;
   professionalInformation?: SectionPrivacy;
   laborRights?: SectionPrivacy;
-  membersList?: SectionPrivacy;
-  partnersList?: SectionPrivacy;
-  friendsList?: SectionPrivacy;
+  /**
+   * Unified list visibility controls derived from related account entity type
+   * - userList: visibility for related accounts where relatedAccount.type === 'user'
+   * - organizationList: visibility for related accounts where relatedAccount.type === 'group'
+   */
+  userList?: SectionPrivacy;
+  organizationList?: SectionPrivacy;
   roleHierarchy?: SectionPrivacy;
   projects?: SectionPrivacy;
   messaging?: {receiveFrom: "public" | "related" | "none"};
@@ -304,7 +308,6 @@ export interface RelatedAccount extends BaseDocument {
   tagline?: string; // Tagline or short description
   type?: "user" | "group"; // Type of the related account (new accounts are filtered out)
   status?: "pending" | "accepted" | "rejected" | "blocked"; // Relationship status
-  relationship?: "friend" | "member" | "partner" | "family"; // Details about the relationship (e.g., 'friend', 'member')
   /**
    * Type of relationship request: 'request' (user asking to join), 'invitation' (group/admin inviting user)
    */

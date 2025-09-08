@@ -112,21 +112,6 @@ service cloud.firestore {
       );
     }
 
-    function isPartner(accId) {
-      let r = relationForViewer(accId);
-      return r != null && r.status == 'accepted' && r.relationship == 'partner';
-    }
-
-    function isFriend(accId) {
-      let r = relationForViewer(accId);
-      return r != null && r.status == 'accepted' && r.relationship == 'friend';
-    }
-
-    function isGroupRelation(accId) {
-      let r = relationForViewer(accId);
-      return r != null && r.status == 'accepted' && r.type == 'group';
-    }
-
     function sectionVisibility(accId, section) {
       let acc = get(/databases/$(database)/documents/accounts/$(accId)).data;
       return acc.privacySettings != null && acc.privacySettings[section] != null && acc.privacySettings[section].visibility != null
@@ -138,12 +123,7 @@ service cloud.firestore {
       let v = sectionVisibility(accId, section);
       return (v == 'public') ||
         (v == 'authenticated' && request.auth != null) ||
-        (v == 'related' && isMember(accId)) ||
-        (v == 'groups' && isGroupRelation(accId)) ||
-        (v == 'admins' && isAccountAdmin(accId)) ||
-        (v == 'members' && isMember(accId)) ||
-        (v == 'partners' && isPartner(accId)) ||
-        (v == 'friends' && isFriend(accId));
+        (v == 'related' && isMember(accId));
     }
 
     // Account-level allow/block lists

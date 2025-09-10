@@ -108,3 +108,51 @@ export {
   optimizeIndexes,
   cleanupOldMetrics,
 } from "./monitoring/performance";
+
+// New callable functions API
+export {
+  createAccount,
+  updateAccount,
+  deleteMyAccount,
+  searchAccounts,
+  getAccount,
+} from "./api/accounts";
+
+export {
+  createListing,
+  updateListing,
+  deleteListing,
+  applyToListing,
+  searchListings,
+} from "./api/listings";
+
+export {
+  createRelationship,
+  updateRelationship,
+  deleteRelationship,
+  getRelationships,
+} from "./api/relationships";
+
+export {
+  getUserNotifications,
+  markNotificationAsRead,
+  sendAdminNotification,
+} from "./api/notifications";
+
+export {
+  createTimeEntry,
+  updateTimeEntry,
+  deleteTimeEntry,
+  getAccountTimeEntries,
+  getTimeTrackingStats,
+} from "./api/timeTracking";
+
+export {
+  createProject,
+  updateProject,
+  deleteProject,
+  assignToProject,
+  getAccountProjects,
+  getUserAssignedProjects,
+  searchProjects,
+} from "./api/projects";

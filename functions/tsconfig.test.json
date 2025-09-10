@@ -2,8 +2,15 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "esModuleInterop": true,
-    "types": ["mocha", "node"],
-    "module": "commonjs"
+    "types": ["mocha", "chai", "node"],
+    "module": "commonjs",
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "baseUrl": "./",
+    "paths": {
+      "@shared/*": ["../shared/*"],
+      "firebase/*": ["node_modules/firebase/*"]
+    }
   },
-  "include": ["test/**/*.ts"]
+  "include": ["test/**/*.ts", "src/**/*.ts", "../shared/**/*.ts"]
 }

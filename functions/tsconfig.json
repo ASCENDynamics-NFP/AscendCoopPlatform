@@ -17,5 +17,12 @@
     }
   },
   "compileOnSave": true,
-  "include": ["src", "src/**/**/*", "../shared/**/*.ts"]
+  "include": [
+    "src",
+    "src/**/**/*",
+    "../shared/**/*.ts",
+    "src/services/**/*",
+    "src/api/**/*",
+    "src/utils/**/*"
+  ]
 }

@@ -38,6 +38,7 @@ import {
   DEFAULT_PROJECT_FILTER,
 } from "./interfaces/project-filter.interface";
 import {CategorySuggestion} from "../../../../core/constants/category-keywords.constant";
+import {AccessService} from "../../../../core/services/access.service";
 import {BulkActionEvent} from "./interfaces/bulk-actions.interface";
 import {BulkActionsService} from "./services/bulk-actions.service";
 import {
@@ -127,6 +128,7 @@ export class ProjectsPage implements OnInit {
     private alertController: AlertController,
     private categorySuggestionService: CategorySuggestionService,
     private bulkActionsService: BulkActionsService,
+    private access: AccessService,
   ) {}
 
   ngOnInit() {
@@ -187,21 +189,8 @@ export class ProjectsPage implements OnInit {
 
     // Now compute admin status and load the rest
     this.loadProjects();
-    this.isGroupAdmin$ = combineLatest([
-      currentUser$,
-      relatedAccounts$,
-      this.account$,
-    ]).pipe(
-      map(([currentUser, relatedAccounts, account]) => {
-        if (!currentUser) return false;
-        const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
-        const isAdmin =
-          rel?.status === "accepted" &&
-          (rel.access === "admin" || rel.access === "moderator");
-        const isOwner =
-          account?.type === "group" && account.createdBy === currentUser.uid;
-        return isAdmin || isOwner;
-      }),
+    this.isGroupAdmin$ = combineLatest([currentUser$, this.account$]).pipe(
+      map(([user, account]) => this.access.isGroupAdmin(account as any, user)),
     );
 
     this.metaService.updateMetaTags(

@@ -216,7 +216,7 @@ export class MenuComponent implements OnInit, OnDestroy {
       },
       {
         title: this.translate.instant("menu.settings"),
-        url: "/account/settings",
+        url: `/account/${this.user?.uid}/settings`,
         icon: "settings",
       },
       // {

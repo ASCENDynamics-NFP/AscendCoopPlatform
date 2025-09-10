@@ -88,7 +88,8 @@ describe("ApplicantsPage", () => {
     responsibilities: [],
     benefits: [],
     status: "active",
-    createdBy: "ownerUser",
+    ownerAccountId: "ownerUser",
+    ownerAccountType: "user",
   };
 
   const mockAuthUser: AuthUser = {
@@ -132,7 +133,7 @@ describe("ApplicantsPage", () => {
   } as unknown as ActivatedRoute;
 
   function createState(ownerId = "ownerUser"): AppState {
-    const listing: Listing = {...mockListing, createdBy: ownerId};
+    const listing: Listing = {...mockListing, ownerAccountId: ownerId};
     const listingsState: ListingsState = listingsAdapter.addOne(
       listing,
       listingsAdapter.getInitialState({

@@ -21,11 +21,18 @@ import {Component, EventEmitter, Input, OnChanges, Output} from "@angular/core";
 import {FormBuilder, FormGroup, FormControl, Validators} from "@angular/forms";
 import {TranslateService} from "@ngx-translate/core";
 import {AuthUser} from "@shared/models/auth-user.model";
-import {Account} from "@shared/models/account.model";
+import {
+  Account,
+  PrivacySettings,
+  RelatedAccount,
+} from "@shared/models/account.model";
 import {Store} from "@ngrx/store";
 import {AlertController} from "@ionic/angular";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 import * as AuthActions from "../../../../../../state/actions/auth.actions";
+import {Observable, of} from "rxjs";
+import {map} from "rxjs/operators";
+import {selectRelatedAccountsByAccountId} from "../../../../../../state/selectors/account.selectors";
 
 @Component({
   selector: "app-settings-form",
@@ -35,13 +42,25 @@ import * as AuthActions from "../../../../../../state/actions/auth.actions";
 export class SettingsComponent implements OnChanges {
   @Input() authUser?: AuthUser | null;
   @Input() account?: Account;
+  @Input() privacyOnly: boolean = false;
   @Output() languageChange = new EventEmitter<string>();
 
   isDeleting = false;
+  relatedAccountsOptions$?: Observable<{id: string; name: string}[]>;
+  selectedAllow: {[section: string]: string[]} = {};
+  selectedBlock: {[section: string]: string[]} = {};
 
   settingsForm: FormGroup<{
     privacy: FormControl<"public" | "private">;
     language: FormControl<string>;
+    // flattened privacySettings controls for simplicity
+    contactInformationVisibility: FormControl<string>;
+    professionalInformationVisibility: FormControl<string>;
+    laborRightsVisibility: FormControl<string>;
+    userListVisibility: FormControl<string>;
+    organizationListVisibility: FormControl<string>;
+    roleHierarchyVisibility: FormControl<string>;
+    projectsVisibility: FormControl<string>;
   }>;
 
   languageList = [
@@ -58,14 +77,53 @@ export class SettingsComponent implements OnChanges {
     this.settingsForm = this.fb.group({
       privacy: ["public", Validators.required],
       language: ["en"],
+      contactInformationVisibility: ["private"],
+      professionalInformationVisibility: ["private"],
+      laborRightsVisibility: ["private"],
+      userListVisibility: ["related"],
+      organizationListVisibility: ["related"],
+      roleHierarchyVisibility: ["related"],
+      projectsVisibility: ["related"],
     }) as FormGroup<{
       privacy: FormControl<"public" | "private">;
       language: FormControl<string>;
+      contactInformationVisibility: FormControl<string>;
+      professionalInformationVisibility: FormControl<string>;
+      laborRightsVisibility: FormControl<string>;
+      userListVisibility: FormControl<string>;
+      organizationListVisibility: FormControl<string>;
+      roleHierarchyVisibility: FormControl<string>;
+      projectsVisibility: FormControl<string>;
     }>;
   }
 
   ngOnChanges() {
     this.loadFormData();
+    if (this.account?.id) {
+      this.store.dispatch(
+        AccountActions.loadRelatedAccounts({accountId: this.account.id}),
+      );
+      this.relatedAccountsOptions$ = this.store
+        .select(selectRelatedAccountsByAccountId(this.account.id))
+        .pipe(
+          map((list: Partial<RelatedAccount>[]) =>
+            list.map((ra) => ({
+              id: ra.id as string,
+              name: ra.name || (ra.id as string),
+            })),
+          ),
+        );
+    } else {
+      this.relatedAccountsOptions$ = of([]);
+    }
+  }
+
+  onAllowlistIdsChange(section: string, ids: string[]) {
+    this.selectedAllow[section] = ids || [];
+  }
+
+  onBlocklistIdsChange(section: string, ids: string[]) {
+    this.selectedBlock[section] = ids || [];
   }
 
   onLanguageChange() {
@@ -78,14 +136,59 @@ export class SettingsComponent implements OnChanges {
     if (this.authUser?.uid && this.account) {
       const formValue = this.settingsForm.value;
 
+      const pickIds = (section: string) => this.selectedAllow[section] || [];
+      const pickBlock = (section: string) => this.selectedBlock[section] || [];
+
+      const privacySettings: PrivacySettings = {
+        profile: {
+          visibility: (formValue.privacy as any) || "public",
+        },
+        contactInformation: {
+          visibility:
+            (formValue.contactInformationVisibility as any) || "private",
+          allowlist: pickIds("contactInformation"),
+          blocklist: pickBlock("contactInformation"),
+        },
+        professionalInformation: {
+          visibility:
+            (formValue.professionalInformationVisibility as any) || "private",
+          allowlist: pickIds("professionalInformation"),
+          blocklist: pickBlock("professionalInformation"),
+        },
+        laborRights: {
+          visibility: (formValue.laborRightsVisibility as any) || "private",
+          allowlist: pickIds("laborRights"),
+          blocklist: pickBlock("laborRights"),
+        },
+        userList: {
+          visibility: (formValue.userListVisibility as any) || "related",
+          allowlist: pickIds("userList"),
+          blocklist: pickBlock("userList"),
+        },
+        organizationList: {
+          visibility:
+            (formValue.organizationListVisibility as any) || "related",
+          allowlist: pickIds("organizationList"),
+          blocklist: pickBlock("organizationList"),
+        },
+        roleHierarchy: {
+          visibility: (formValue.roleHierarchyVisibility as any) || "related",
+        },
+        projects: {
+          visibility: (formValue.projectsVisibility as any) || "related",
+        },
+        messaging: {receiveFrom: "related"},
+        discoverability: {searchable: true},
+      };
+
       const updatedAccount: Account = {
         ...this.account,
-        privacy: formValue.privacy || "public",
         accessibility: {preferredLanguage: formValue.language},
         settings: {
           theme: this.account.settings?.theme || "light",
           language: formValue.language || "en",
         },
+        privacySettings,
       };
 
       // Dispatch action to update the account
@@ -97,11 +200,93 @@ export class SettingsComponent implements OnChanges {
 
   loadFormData() {
     if (!this.account) return;
+    const isUser = this.account.type === "user";
+    const isGroup = this.account.type === "group";
+
+    // Unified allowed set for both users and groups.
+    const sanitize = (v: string | undefined, fallback: string) => {
+      const allowed = ["public", "authenticated", "related", "private"];
+      return v && allowed.includes(v) ? v : fallback;
+    };
+
     // Update the form with the account data
     this.settingsForm.patchValue({
-      privacy: this.account.privacy || "public",
+      privacy:
+        (this.account.privacySettings as any)?.profile?.visibility || "public",
       language: this.account.accessibility?.preferredLanguage ?? "en",
+      contactInformationVisibility: sanitize(
+        this.account.privacySettings?.contactInformation?.visibility,
+        "related",
+      ),
+      professionalInformationVisibility: sanitize(
+        this.account.privacySettings?.professionalInformation?.visibility,
+        "private",
+      ),
+      laborRightsVisibility: sanitize(
+        this.account.privacySettings?.laborRights?.visibility,
+        "private",
+      ),
+      userListVisibility: sanitize(
+        (this.account.privacySettings as any)?.userList?.visibility ??
+          (this.account.type === "user"
+            ? (this.account.privacySettings as any)?.friendsList?.visibility
+            : (this.account.privacySettings as any)?.membersList?.visibility),
+        "related",
+      ),
+      organizationListVisibility: sanitize(
+        (this.account.privacySettings as any)?.organizationList?.visibility ??
+          (this.account.type === "user"
+            ? (this.account.privacySettings as any)?.membersList?.visibility
+            : (this.account.privacySettings as any)?.partnersList?.visibility),
+        "related",
+      ),
+      roleHierarchyVisibility: sanitize(
+        this.account.privacySettings?.roleHierarchy?.visibility,
+        "related",
+      ),
+      projectsVisibility: sanitize(
+        this.account.privacySettings?.projects?.visibility,
+        "related",
+      ),
     });
+
+    // Initialize picker selections from existing privacySettings arrays
+    this.selectedAllow["contactInformation"] =
+      this.account.privacySettings?.contactInformation?.allowlist || [];
+    this.selectedBlock["contactInformation"] =
+      this.account.privacySettings?.contactInformation?.blocklist || [];
+    this.selectedAllow["professionalInformation"] =
+      this.account.privacySettings?.professionalInformation?.allowlist || [];
+    this.selectedBlock["professionalInformation"] =
+      this.account.privacySettings?.professionalInformation?.blocklist || [];
+    this.selectedAllow["laborRights"] =
+      this.account.privacySettings?.laborRights?.allowlist || [];
+    this.selectedBlock["laborRights"] =
+      this.account.privacySettings?.laborRights?.blocklist || [];
+    this.selectedAllow["userList"] =
+      (this.account.privacySettings as any)?.userList?.allowlist ??
+      (this.account.type === "user"
+        ? (this.account.privacySettings as any)?.friendsList?.allowlist
+        : (this.account.privacySettings as any)?.membersList?.allowlist) ??
+      [];
+    this.selectedBlock["userList"] =
+      (this.account.privacySettings as any)?.userList?.blocklist ??
+      (this.account.type === "user"
+        ? (this.account.privacySettings as any)?.friendsList?.blocklist
+        : (this.account.privacySettings as any)?.membersList?.blocklist) ??
+      [];
+    this.selectedAllow["organizationList"] =
+      (this.account.privacySettings as any)?.organizationList?.allowlist ??
+      (this.account.type === "user"
+        ? (this.account.privacySettings as any)?.membersList?.allowlist
+        : (this.account.privacySettings as any)?.partnersList?.allowlist) ??
+      [];
+    this.selectedBlock["organizationList"] =
+      (this.account.privacySettings as any)?.organizationList?.blocklist ??
+      (this.account.type === "user"
+        ? (this.account.privacySettings as any)?.membersList?.blocklist
+        : (this.account.privacySettings as any)?.partnersList?.blocklist) ??
+      [];
   }
 
   toggleDarkTheme(event: CustomEvent) {

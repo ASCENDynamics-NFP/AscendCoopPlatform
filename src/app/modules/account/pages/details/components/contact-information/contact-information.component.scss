@@ -26,6 +26,16 @@
   margin-bottom: 16px;
 }
 
+.title-with-privacy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .privacy-indicator {
+    margin-left: auto;
+  }
+}
+
 .contact-info-card .info-block {
   margin-bottom: 16px;
 }

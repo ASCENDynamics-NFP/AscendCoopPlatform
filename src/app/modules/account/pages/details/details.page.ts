@@ -38,6 +38,10 @@ import * as AccountActions from "../../../../state/actions/account.actions";
 import {IonContent, ViewWillEnter, ToastController} from "@ionic/angular";
 import {RelatedListing} from "@shared/models/related-listing.model";
 import {MetaService} from "../../../../core/services/meta.service";
+import {AccessService} from "../../../../core/services/access.service";
+import {AccountSectionsService} from "../../services/account-sections.service";
+import {ProfessionalInformation} from "@shared/models/account.model";
+import {PrivacyService} from "../../../../core/services/privacy.service";
 
 @Component({
   selector: "app-details",
@@ -60,6 +64,13 @@ export class DetailsPage implements OnInit, ViewWillEnter {
   hasRelationship$!: Observable<boolean>;
   error$!: Observable<any>;
   selectedSegment: string = "profile";
+  isOwnerOrAdmin$!: Observable<boolean>;
+  professionalInfo$!: Observable<ProfessionalInformation | null>;
+  laborRights$!: Observable<any | null>;
+  canViewProfessional$!: Observable<boolean>;
+  canViewLabor$!: Observable<boolean>;
+  canViewConnections$!: Observable<boolean>;
+  canViewOrganizations$!: Observable<boolean>;
 
   constructor(
     private metaService: MetaService,
@@ -68,6 +79,9 @@ export class DetailsPage implements OnInit, ViewWillEnter {
     private location: Location,
     private toastController: ToastController,
     private store: Store,
+    private access: AccessService,
+    private sections: AccountSectionsService,
+    private privacy: PrivacyService,
   ) {}
 
   ngOnInit(): void {
@@ -96,6 +110,14 @@ export class DetailsPage implements OnInit, ViewWillEnter {
 
         // Select account and related accounts from the store
         this.account$ = this.store.select(selectAccountById(this.accountId));
+        // Read professional info from gated sections
+        this.professionalInfo$ = this.sections.professionalInfo$(
+          this.accountId,
+        );
+        // Read labor rights from gated sections
+        this.laborRights$ = this.sections.laborRights$(this.accountId);
+
+        // Defer computing segment visibility until permissions streams are set
         this.relatedAccounts$ = this.store.select(
           selectRelatedAccountsByAccountId(this.accountId),
         );
@@ -130,30 +152,19 @@ export class DetailsPage implements OnInit, ViewWillEnter {
           this.authUser$,
           this.account$,
         ]).pipe(
-          map(([authUser, account]) => {
-            if (account && authUser) {
-              return account.id === authUser.uid;
-            }
-            return false;
-          }),
+          map(([authUser, account]) =>
+            this.access.isOwner(account as any, authUser),
+          ),
         );
 
+        // Determine if current user is group admin/moderator/owner using denormalized fields
         this.isGroupAdmin$ = combineLatest([
           this.authUser$,
-          this.relatedAccounts$,
           this.account$,
         ]).pipe(
-          map(([currentUser, relatedAccounts, account]) => {
-            if (!currentUser) return false;
-            const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
-            const isAdmin =
-              rel?.status === "accepted" &&
-              (rel.access === "admin" || rel.access === "moderator");
-            const isOwner =
-              account?.type === "group" &&
-              account.createdBy === currentUser.uid;
-            return isAdmin || isOwner;
-          }),
+          map(([currentUser, account]) =>
+            this.access.isGroupAdmin(account as any, currentUser),
+          ),
         );
 
         this.isGroupMember$ = combineLatest([
@@ -163,14 +174,12 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         ]).pipe(
           map(([currentUser, relatedAccounts, account]) => {
             if (!currentUser) return false;
-            // Check if user is the group owner
-            const isOwner =
-              account?.type === "group" &&
-              account.createdBy === currentUser.uid;
-            // Check if user is an accepted member
-            const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
-            const isMember = rel?.status === "accepted";
-            return isOwner || isMember;
+            const owner = this.access.isOwner(account as any, currentUser);
+            const member = this.access.isAcceptedMember(
+              relatedAccounts,
+              currentUser.uid,
+            );
+            return owner || member;
           }),
         );
 
@@ -225,6 +234,97 @@ export class DetailsPage implements OnInit, ViewWillEnter {
             return filteredListings;
           }),
         );
+
+        // Owner or admin convenience observable
+        this.isOwnerOrAdmin$ = combineLatest([
+          this.isProfileOwner$,
+          this.isGroupAdmin$,
+        ]).pipe(map(([own, admin]) => own || admin));
+
+        // Now compute segment visibility permissions
+        this.canViewProfessional$ = combineLatest([
+          this.account$,
+          this.isOwnerOrAdmin$,
+          this.hasRelationship$,
+          this.authUser$,
+        ]).pipe(
+          map(([acc, ownOrAdmin, related, user]) =>
+            acc
+              ? this.privacy.canViewSection(
+                  acc.privacySettings,
+                  "professionalInformation",
+                  {
+                    isOwnerOrAdmin: ownOrAdmin,
+                    isAuthenticated: !!user?.uid,
+                    isRelated: related,
+                    viewerId: user?.uid ?? null,
+                  },
+                )
+              : false,
+          ),
+        );
+
+        this.canViewLabor$ = combineLatest([
+          this.account$,
+          this.isOwnerOrAdmin$,
+          this.hasRelationship$,
+          this.authUser$,
+        ]).pipe(
+          map(([acc, ownOrAdmin, related, user]) =>
+            acc
+              ? this.privacy.canViewSection(
+                  acc.privacySettings,
+                  "laborRights",
+                  {
+                    isOwnerOrAdmin: ownOrAdmin,
+                    isAuthenticated: !!user?.uid,
+                    isRelated: related,
+                    viewerId: user?.uid ?? null,
+                  },
+                )
+              : false,
+          ),
+        );
+
+        this.canViewConnections$ = combineLatest([
+          this.account$,
+          this.isOwnerOrAdmin$,
+          this.hasRelationship$,
+          this.authUser$,
+        ]).pipe(
+          map(([acc, ownOrAdmin, related, user]) => {
+            if (!acc) return false;
+            const key = "userList";
+            return this.privacy.canViewSection(acc.privacySettings, key, {
+              isOwnerOrAdmin: ownOrAdmin,
+              isAuthenticated: !!user?.uid,
+              isRelated: related,
+              viewerId: user?.uid ?? null,
+            });
+          }),
+        );
+
+        this.canViewOrganizations$ = combineLatest([
+          this.account$,
+          this.isOwnerOrAdmin$,
+          this.hasRelationship$,
+          this.authUser$,
+        ]).pipe(
+          map(([acc, ownOrAdmin, related, user]) =>
+            acc
+              ? this.privacy.canViewSection(
+                  acc.privacySettings,
+                  "organizationList",
+                  {
+                    isOwnerOrAdmin: ownOrAdmin,
+                    isAuthenticated: !!user?.uid,
+                    isRelated: related,
+                    viewerId: user?.uid ?? null,
+                  },
+                )
+              : false,
+          ),
+        );
       }
     });
 
@@ -238,6 +338,15 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         this.setDefaultMeta();
       },
     });
+  }
+
+  // Helper methods for template
+  hasAllowlists(badges: any[]): boolean {
+    return badges?.some((x) => x.allowCount > 0) ?? false;
+  }
+
+  hasBlocklists(badges: any[]): boolean {
+    return badges?.some((x) => x.blockCount > 0) ?? false;
   }
 
   ionViewWillLeave() {
@@ -393,5 +502,21 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         target: "https://ascendynamics.org/profile",
       },
     });
+  }
+
+  // Map visibility to display text and badge color
+  private mapVisibility(v: string): {text: string; color: string} {
+    const map: Record<string, {text: string; color: string}> = {
+      public: {text: "Public", color: "success"},
+      authenticated: {text: "Authenticated", color: "medium"},
+      related: {text: "Related", color: "primary"},
+      groups: {text: "Groups", color: "tertiary"},
+      friends: {text: "Friends", color: "tertiary"},
+      members: {text: "Members", color: "tertiary"},
+      partners: {text: "Partners", color: "tertiary"},
+      admins: {text: "Admins", color: "warning"},
+      custom: {text: "Custom", color: "dark"},
+    };
+    return map[v] || {text: v, color: "medium"};
   }
 }

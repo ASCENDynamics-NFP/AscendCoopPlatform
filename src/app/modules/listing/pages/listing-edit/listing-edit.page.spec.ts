@@ -82,7 +82,8 @@ describe("ListingEditPage", () => {
     responsibilities: ["Responsibility 1"],
     benefits: ["Benefit 1"],
     status: "active",
-    createdBy: "user-123",
+    ownerAccountId: "user-123",
+    ownerAccountType: "user",
   };
 
   const mockAuthUser: AuthUser = {
@@ -200,7 +201,7 @@ describe("ListingEditPage", () => {
   // it("should navigate to /listings if user is not the owner", waitForAsync(() => {
   //   store.overrideSelector(selectListingById("123"), {
   //     ...mockListing,
-  //     createdBy: "other-user",
+  //     ownerAccountId: "other-user",
   //   });
   //   store.overrideSelector(selectAuthUser, {
   //     ...mockAuthUser,

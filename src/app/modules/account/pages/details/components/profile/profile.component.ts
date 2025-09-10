@@ -31,6 +31,7 @@ export class ProfileComponent {
     description: "",
     webLinks: [],
   };
+  @Input() isOwnerOrAdmin: boolean = false;
 
   constructor() {}
 

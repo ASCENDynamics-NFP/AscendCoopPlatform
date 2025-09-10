@@ -17,61 +17,42 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Injectable} from "@angular/core";
-import {Router, ActivatedRouteSnapshot} from "@angular/router";
+import {inject} from "@angular/core";
+import {ActivatedRouteSnapshot, CanActivateFn} from "@angular/router";
 import {firstValueFrom} from "rxjs";
 import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../state/selectors/auth.selectors";
 import {AuthNavigationService} from "../services/auth-navigation.service";
 
-@Injectable({
-  providedIn: "root",
-})
-export class RegistrationAuthGuard {
-  constructor(
-    private store: Store,
-    private router: Router,
-    private authNavigationService: AuthNavigationService,
-  ) {}
+export const registrationAuthGuard: CanActivateFn = async (
+  route?: ActivatedRouteSnapshot,
+) => {
+  const store = inject(Store);
+  const authNav = inject(AuthNavigationService);
+  const authUser = await firstValueFrom(store.select(selectAuthUser));
 
-  async canActivate(route?: ActivatedRouteSnapshot): Promise<boolean> {
-    const authUser = await firstValueFrom(this.store.select(selectAuthUser));
+  if (!authUser) {
+    await authNav.navigateToLogin();
+    return false;
+  }
 
-    if (!authUser) {
-      // Redirect to login if not authenticated
-      this.router.navigate(["/auth/login"]);
+  if (route && isRegistrationRoute(route)) {
+    const accountId = route.paramMap.get("accountId");
+    const isOwnRegistration = accountId === authUser.uid;
+    if (!isOwnRegistration) {
+      await authNav.navigateTo(`/account/${authUser.uid}`, true);
       return false;
     }
-
-    // For registration routes, we allow access even if email is not verified
-    // This is because users need to complete registration before email verification
-
-    if (route && this.isRegistrationRoute(route)) {
-      const accountId = route.paramMap.get("accountId");
-      const isOwnRegistration = accountId === authUser.uid;
-
-      if (!isOwnRegistration) {
-        // Prevent access to other users' registration pages
-        this.router.navigate(["/account", authUser.uid]);
-        return false;
-      }
-
-      // Check if user has completed registration
-      const hasCompletedRegistration = authUser.type && authUser.type !== "new";
-
-      if (hasCompletedRegistration) {
-        // If user has completed registration, they should not access registration page
-        this.router.navigate(["/account", authUser.uid]);
-        return false;
-      }
+    const hasCompletedRegistration = authUser.type && authUser.type !== "new";
+    if (hasCompletedRegistration) {
+      await authNav.navigateTo(`/account/${authUser.uid}`, true);
+      return false;
     }
-
-    return true;
   }
+  return true;
+};
 
-  private isRegistrationRoute(route: ActivatedRouteSnapshot): boolean {
-    // Check if the current route is the registration route
-    const currentPath = route.routeConfig?.path || "";
-    return currentPath === "registration/:accountId";
-  }
+function isRegistrationRoute(route: ActivatedRouteSnapshot): boolean {
+  const currentPath = route.routeConfig?.path || "";
+  return currentPath === "registration/:accountId";
 }

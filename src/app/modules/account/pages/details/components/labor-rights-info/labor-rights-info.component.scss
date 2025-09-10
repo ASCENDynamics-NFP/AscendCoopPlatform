@@ -1,0 +1,48 @@
+/***********************************************************************************************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+***********************************************************************************************/
+.labor-rights-card {
+  border: 1px solid var(--ion-color-primary);
+}
+
+.labor-rights-card ion-card-title {
+  font-size: 1.5em;
+  margin-bottom: 16px;
+}
+
+.title-with-privacy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .privacy-indicator {
+    margin-left: auto;
+  }
+}
+
+.labor-rights-card .info-block {
+  margin-bottom: 16px;
+}
+
+.labor-rights-card h2 {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #000;
+  margin: 0;
+}
+
+.labor-rights-card p {
+  font-size: 1em;
+  margin: 4px 0 0 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .labor-rights-card h2 {
+    color: #fff;
+  }
+
+  .labor-rights-card p {
+    color: #aaa;
+  }
+}

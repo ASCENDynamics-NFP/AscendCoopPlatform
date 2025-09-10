@@ -19,80 +19,70 @@
 ***********************************************************************************************/
 import {NgModule} from "@angular/core";
 import {RouterModule, Routes} from "@angular/router";
-import {AuthGuard} from "../../core/guards/auth.guard";
-import {RegistrationAuthGuard} from "../../core/guards/registration-auth.guard";
-import {AdminGroupOwnerGuard} from "../../core/guards/admin-group-owner.guard";
-import {ProfileOwnerGuard} from "../../core/guards/profile-owner.guard";
+import {authGuard, registrationAuthGuard} from "../../core/guards";
+import {
+  adminGroupOwnerGuard,
+  profileOwnerGuard,
+  ownerOrAdminGuard,
+} from "../../core/guards";
 import {DetailsPage} from "./pages/details/details.page";
 import {EditPage} from "./pages/edit/edit.page";
 import {RegistrationPage} from "./pages/registration/registration.page";
 import {SettingsPage} from "./pages/settings/settings.page";
 import {ListPage} from "./relatedAccount/pages/list/list.page";
 import {ListingsListPage} from "./relatedListings/pages/listings-list/listings-list.page";
-import {RoleManagementPage} from "./pages/role-management/role-management.page";
-import {RoleHierarchyPage} from "./pages/role-hierarchy/role-hierarchy.page";
 import {ProjectsPage} from "./pages/projects/projects.page";
 import {AdminDashboardPage} from "./pages/admin-dashboard/admin-dashboard.page";
 import {DirectoryPage} from "./pages/directory/directory.page";
 
 const routes: Routes = [
-  {
-    path: "settings",
-    component: SettingsPage,
-    canActivate: [AuthGuard],
-  },
   // Legacy routes redirected to unified directory
   {path: "group-list", redirectTo: "directory", pathMatch: "full"},
   {path: "users", redirectTo: "directory", pathMatch: "full"},
   {
     path: "directory",
     component: DirectoryPage,
-    canActivate: [AuthGuard],
+    canActivate: [authGuard],
   },
   {
     path: ":accountId/projects",
     component: ProjectsPage,
-    canActivate: [AuthGuard, AdminGroupOwnerGuard],
+    canActivate: [authGuard, adminGroupOwnerGuard],
+  },
+  {
+    path: ":accountId/settings",
+    component: SettingsPage,
+    canActivate: [authGuard, ownerOrAdminGuard],
   },
   {
     path: ":accountId/admin",
     component: AdminDashboardPage,
-    canActivate: [AuthGuard, AdminGroupOwnerGuard],
+    canActivate: [authGuard, adminGroupOwnerGuard],
   },
   {
     path: "registration/:accountId",
     component: RegistrationPage,
-    canActivate: [RegistrationAuthGuard],
+    canActivate: [registrationAuthGuard],
   },
   {
     path: ":accountId",
     component: DetailsPage,
-    canActivate: [AuthGuard],
+    canActivate: [authGuard],
   },
   {
     path: ":accountId/edit",
     component: EditPage,
-    canActivate: [AuthGuard, ProfileOwnerGuard],
+    canActivate: [authGuard, profileOwnerGuard],
   },
   {
     path: ":accountId/listings",
     component: ListingsListPage,
-    canActivate: [AuthGuard],
+    canActivate: [authGuard],
   },
   {
     path: ":accountId/related/:listType",
     component: ListPage,
-    canActivate: [AuthGuard],
-  },
-  {
-    path: ":accountId/roles",
-    component: RoleManagementPage,
-    canActivate: [AuthGuard],
-  },
-  {
-    path: ":accountId/hierarchy",
-    component: RoleHierarchyPage,
-    canActivate: [AuthGuard],
+    canActivate: [authGuard],
   },
 ];
 

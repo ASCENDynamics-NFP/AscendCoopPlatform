@@ -1,17 +1,21 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, Input} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
 import {Observable, combineLatest} from "rxjs";
-import {map} from "rxjs/operators";
+import {map, filter as rxFilter} from "rxjs/operators";
 import {Dictionary} from "@ngrx/entity";
 import {Account, RelatedAccount} from "@shared/models/account.model";
+import {AuthUser} from "@shared/models/auth-user.model";
 import {GroupRole, RoleType} from "@shared/models/group-role.model";
 import {
   selectGroupRolesByGroupId,
   selectRelatedAccountsByAccountId,
   selectAccountEntities,
+  selectAccountById,
 } from "../../../../state/selectors/account.selectors";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
+import {AccessService} from "../../../../core/services/access.service";
 
 interface DisplayAccount {
   id: string | undefined;
@@ -35,6 +39,7 @@ interface TreeNode {
   styleUrls: ["./role-hierarchy.page.scss"],
 })
 export class RoleHierarchyPage implements OnInit {
+  @Input() embedded: boolean = false;
   groupId!: string;
   tree$!: Observable<TreeNode>;
   filteredTree$!: Observable<TreeNode>;
@@ -42,11 +47,15 @@ export class RoleHierarchyPage implements OnInit {
   searchTerm: string = "";
   private originalTree!: TreeNode;
   private currentTree!: TreeNode;
+  // Expose account and auth user for template conditionals
+  account$!: Observable<Account | undefined>;
+  authUser$!: Observable<AuthUser | null>;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private store: Store,
+    public access: AccessService,
   ) {
     this.groupId = this.route.snapshot.paramMap.get("accountId") || "";
   }
@@ -57,6 +66,8 @@ export class RoleHierarchyPage implements OnInit {
       selectRelatedAccountsByAccountId(this.groupId),
     );
     const accountEntities$ = this.store.select(selectAccountEntities);
+    this.account$ = this.store.select(selectAccountById(this.groupId));
+    this.authUser$ = this.store.select(selectAuthUser);
 
     this.store.dispatch(AccountActions.loadAccounts());
     this.store.dispatch(AccountActions.loadGroupRoles({groupId: this.groupId}));
@@ -68,9 +79,21 @@ export class RoleHierarchyPage implements OnInit {
       roles$,
       relatedAccounts$,
       accountEntities$,
+      this.account$,
+      this.authUser$,
     ]).pipe(
-      map(([roles, related, entities]) => {
-        const tree = this.buildTree(roles, related, entities);
+      // Wait until account is loaded to avoid flashing private categories
+      rxFilter(([_, __, ___, account]) => !!account),
+      map(([roles, related, entities, account, authUser]) => {
+        // Filter roles by category visibility before building the tree
+        const visibleRoles = roles.filter((r) =>
+          this.access.isRoleCategoryVisible(
+            account as Account,
+            authUser,
+            r.standardCategory,
+          ),
+        );
+        const tree = this.buildTree(visibleRoles, related, entities);
         this.originalTree = JSON.parse(JSON.stringify(tree)); // Deep copy
         this.currentTree = tree;
         return tree;
@@ -78,6 +101,20 @@ export class RoleHierarchyPage implements OnInit {
     );
 
     this.filteredTree$ = this.tree$;
+  }
+
+  /**
+   * Resolve category privacy for a given role on an account.
+   * Defaults to 'public' when unset or when category is undefined.
+   */
+  getCategoryPrivacyForRole(
+    account: Account | undefined,
+    role: GroupRole | undefined,
+  ): "public" | "private" {
+    if (!account || !role?.standardCategory) return "public";
+    const val =
+      account.privacySettings?.roleCategories?.[role.standardCategory];
+    return val === "private" ? "private" : "public";
   }
 
   buildTree(

@@ -25,6 +25,7 @@ import {
 import {admin} from "../../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
+import {syncAdminIdsForAccount} from "../adminIds";
 
 // Initialize the Firebase admin SDK
 // Reference to the Firestore database
@@ -52,9 +53,8 @@ export const onUpdateRelatedAccount = onDocumentUpdated(
 
     try {
       if (
-        // If the status or relationship has changed, update the reciprocal related account document (prevents infinite loop on lastModifiedAt update)
+        // If the status or access has changed, update the reciprocal related account document
         before.status !== after.status ||
-        before.relationship !== after.relationship ||
         before.access !== after.access
       ) {
         const reciprocalRelatedAccountRef = db
@@ -69,13 +69,11 @@ export const onUpdateRelatedAccount = onDocumentUpdated(
         if (
           reciprocalData &&
           (reciprocalData.status !== after.status ||
-            reciprocalData.relationship !== after.relationship ||
             reciprocalData.access !== after.access)
         ) {
           await reciprocalRelatedAccountRef.update({
             id: accountId,
             accountId: relatedAccountId,
-            relationship: after.relationship,
             status: after.status,
             access: after.access,
             lastModifiedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -85,6 +83,11 @@ export const onUpdateRelatedAccount = onDocumentUpdated(
           logger.info("Related accounts updated successfully.");
         }
       }
+      // Keep adminIds in sync for both sides
+      await Promise.all([
+        syncAdminIdsForAccount(accountId),
+        syncAdminIdsForAccount(relatedAccountId),
+      ]);
     } catch (error) {
       logger.error("Error updating related accounts: ", error);
     }

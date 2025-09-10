@@ -21,7 +21,16 @@
 
 import {Component, OnInit} from "@angular/core";
 import {Store} from "@ngrx/store";
-import {BehaviorSubject, combineLatest, map, Observable, take} from "rxjs";
+import {
+  BehaviorSubject,
+  combineLatest,
+  map,
+  Observable,
+  take,
+  of,
+  switchMap,
+  catchError,
+} from "rxjs";
 import {ListingRelatedAccount} from "@shared/models/listing-related-account.model";
 import {AppState} from "../../../../../state/app.state";
 import * as ListingsActions from "../../../../../state/actions/listings.actions";
@@ -35,6 +44,8 @@ import {Listing} from "@shared/models/listing.model";
 import {ModalController} from "@ionic/angular";
 import {ApplicantDetailsModalComponent} from "./components/applicant-details-modal/applicant-details-modal.component";
 import {MetaService} from "../../../../../core/services/meta.service";
+import {selectAccountById} from "../../../../../state/selectors/account.selectors";
+import {AccessService} from "../../../../../core/services/access.service";
 import {filter} from "rxjs/operators";
 
 @Component({
@@ -80,6 +91,7 @@ export class ApplicantsPage implements OnInit {
     private route: ActivatedRoute,
     private modalController: ModalController,
     private router: Router,
+    private access: AccessService,
   ) {}
 
   ngOnInit() {}
@@ -109,14 +121,24 @@ export class ApplicantsPage implements OnInit {
         .select(selectListingById(this.listingId))
         .pipe(filter((listing): listing is Listing => listing !== undefined));
 
-      // Determine if current user is the listing creator
+      // Determine if current user is the listing owner or admin of owner account
+      const ownerAccount$ = this.listing$.pipe(
+        map((l) => l?.ownerAccountId),
+        switchMap((ownerId) =>
+          ownerId
+            ? this.store
+                .select(selectAccountById(ownerId))
+                .pipe(catchError(() => of(undefined)))
+            : of(undefined),
+        ),
+      );
       this.isOwner$ = combineLatest([
         this.store.select(selectAuthUser),
         this.listing$,
+        ownerAccount$,
       ]).pipe(
-        map(
-          ([user, listing]) =>
-            !!(user && listing && listing.createdBy === user.uid),
+        map(([user, listing, ownerAccount]) =>
+          this.access.isListingOwner(listing, user, ownerAccount as any),
         ),
       );
     }

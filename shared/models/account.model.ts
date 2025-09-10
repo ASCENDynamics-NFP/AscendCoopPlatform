@@ -20,6 +20,7 @@
 import {BaseDocument} from "./base-document";
 import {GeoPoint, Timestamp} from "firebase/firestore";
 import {GroupRole} from "./group-role.model";
+import {StandardRoleCategory} from "./standard-role-template.model";
 
 // Define a type for optional and nullable fields
 type Nullable<T> = T | null;
@@ -90,11 +91,52 @@ export interface Email {
 }
 
 export interface ContactInformation {
-  privacy?: "public" | "private";
   addresses?: Nullable<Address>[];
   phoneNumbers: PhoneNumber[];
   emails: Email[];
   preferredMethodOfContact: "Email" | "Phone" | "SMS" | "Fax";
+}
+
+// Section-level privacy types
+// Simplified audience set used across all sections
+export type PrivacyAudience =
+  | "public"
+  | "authenticated"
+  | "related"
+  | "private";
+
+export interface SectionPrivacy {
+  visibility: PrivacyAudience;
+  allowedRoleIds?: string[];
+  allowlist?: string[];
+  blocklist?: string[];
+}
+
+export interface PrivacySettings {
+  /** Overall account/profile visibility */
+  profile?: SectionPrivacy;
+  contactInformation?: SectionPrivacy;
+  professionalInformation?: SectionPrivacy;
+  laborRights?: SectionPrivacy;
+  /**
+   * Unified list visibility controls derived from related account entity type
+   * - userList: visibility for related accounts where relatedAccount.type === 'user'
+   * - organizationList: visibility for related accounts where relatedAccount.type === 'group'
+   */
+  userList?: SectionPrivacy;
+  organizationList?: SectionPrivacy;
+  roleHierarchy?: SectionPrivacy;
+  projects?: SectionPrivacy;
+  messaging?: {receiveFrom: "public" | "related" | "none"};
+  discoverability?: {searchable: boolean};
+  /**
+   * Per-category privacy for role hierarchy visibility.
+   * If a category is set to "private", only the profile owner or group admins can view it.
+   * Unset categories are treated as "public" by default.
+   */
+  roleCategories?: {
+    [K in StandardRoleCategory]?: "public" | "private";
+  };
 }
 
 interface Accessibility {
@@ -227,7 +269,6 @@ interface Group {
 }
 
 export interface Account extends BaseDocument, Group, User {
-  privacy: "public" | "private"; // Simplified: Public (anyone can view) or Private (members only)
   type: "user" | "group" | "new"; // Account type: user, group, or new (needs registration)
   status?: "active" | "inactive" | "suspended"; // Account status
   name: string;
@@ -241,10 +282,22 @@ export interface Account extends BaseDocument, Group, User {
   lastLoginAt: Timestamp;
   email: string;
   /**
+   * Denormalized list of admin user IDs for group accounts.
+   * Used to simplify guards and security rules.
+   */
+  adminIds?: string[];
+  /**
+   * Denormalized list of moderator user IDs for group accounts.
+   * Used where moderators should have elevated access.
+   */
+  moderatorIds?: string[];
+  /**
    * Total volunteer hours logged for this account
    */
   totalHours?: number;
   settings?: Settings; // User-specific settings
+  /** Granular section-level privacy on top of global privacy. */
+  privacySettings?: PrivacySettings;
 }
 
 export interface RelatedAccount extends BaseDocument {
@@ -255,7 +308,6 @@ export interface RelatedAccount extends BaseDocument {
   tagline?: string; // Tagline or short description
   type?: "user" | "group"; // Type of the related account (new accounts are filtered out)
   status?: "pending" | "accepted" | "rejected" | "blocked"; // Relationship status
-  relationship?: "friend" | "member" | "partner" | "family"; // Details about the relationship (e.g., 'friend', 'member')
   /**
    * Type of relationship request: 'request' (user asking to join), 'invitation' (group/admin inviting user)
    */
@@ -279,6 +331,10 @@ export interface RelatedAccount extends BaseDocument {
   initiatorId?: string; // ID of the account who initiated the request
   targetId?: string; // ID of the account who received the request
   canAccessContactInfo?: boolean; // Whether the related account can access the contact information
+  // Per-section overrides for this relationship
+  sectionOverrides?: {
+    [sectionKey: string]: {allow: boolean; expiresAt?: Timestamp};
+  };
 }
 
 export interface Settings {

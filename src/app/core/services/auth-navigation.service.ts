@@ -43,6 +43,16 @@ export class AuthNavigationService {
     return validTypes.includes(authUser.type) && authUser.type !== "new";
   }
 
+  /** Generic navigation helper for guards/effects */
+  async navigateTo(url: string, replaceUrl: boolean = true): Promise<void> {
+    await this.router.navigateByUrl(url, {replaceUrl});
+  }
+
+  /** Navigate to login screen */
+  async navigateToLogin(): Promise<void> {
+    await this.navigateTo("/auth/login", true);
+  }
+
   /**
    * Navigate user to appropriate page after authentication
    */

@@ -36,6 +36,7 @@ import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../../state/actions/account.actions";
 import {take} from "rxjs/operators";
 import {MetaService} from "../../../../../core/services/meta.service";
+import {AccessService} from "../../../../../core/services/access.service";
 
 @Component({
   selector: "app-list",
@@ -49,27 +50,46 @@ export class ListPage implements OnInit {
 
   // Observables
   currentUser$!: Observable<AuthUser | null>;
-  account$!: Observable<Partial<Account> | undefined>;
-  relatedAccounts$!: Observable<Partial<RelatedAccount>[]>;
-  currentRelatedAccountsList$!: Observable<Partial<RelatedAccount>[]>;
-  pendingRelatedAccountsList$!: Observable<Partial<RelatedAccount>[]>;
-  isOwner$!: Observable<boolean>;
-  title$!: Observable<string>;
-  isGroupAdmin$!: Observable<boolean>;
-  canManageRoles$!: Observable<boolean>;
-  showAccessControls$!: Observable<boolean>;
-  showRoleControls$!: Observable<boolean>;
+  account$: Observable<Partial<Account> | undefined> = of(undefined);
+  relatedAccounts$: Observable<Partial<RelatedAccount>[]> = of([]);
+  currentRelatedAccountsList$: Observable<Partial<RelatedAccount>[]> = of([]);
+  pendingRelatedAccountsList$: Observable<Partial<RelatedAccount>[]> = of([]);
+  isOwner$: Observable<boolean> = of(false);
+  title$: Observable<string> = of("");
+  isGroupAdmin$: Observable<boolean> = of(false);
+  canManageRoles$: Observable<boolean> = of(false);
+  showAccessControls$: Observable<boolean> = of(false);
+  showRoleControls$: Observable<boolean> = of(false);
   accessOptions = ["admin", "moderator", "member"] as const;
   customRoles$!: Observable<GroupRole[]>;
   filteredUserRoles$!: Observable<GroupRole[]>;
   filteredOrganizationRoles$!: Observable<GroupRole[]>;
-  relationshipOptions = ["friend", "member", "partner", "family"] as const;
+  // UI privacy helpers
+  listVisibility$: Observable<string> = of("public");
+  showPrivateNotice$: Observable<boolean> = of(false);
+  ownerListBadge$: Observable<{
+    sectionLabel: string;
+    text: string;
+    color: string;
+    allowCount: number;
+    blockCount: number;
+  } | null> = of(null);
+  canViewList$: Observable<boolean> = of(true);
+  // Segmented views: list (default), roles, hierarchy
+  activeView: "list" | "roles" | "hierarchy" = "list";
+
+  onViewChange(ev: CustomEvent) {
+    const v = (ev as any)?.detail?.value;
+    this.activeView =
+      v === "roles" || v === "hierarchy" || v === "list" ? v : "list";
+  }
 
   constructor(
     private activatedRoute: ActivatedRoute,
     private router: Router,
     private metaService: MetaService,
     private store: Store,
+    private access: AccessService,
   ) {
     // Extract route parameters
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
@@ -84,6 +104,10 @@ export class ListPage implements OnInit {
       // Dispatch an action to load the account details if not already loaded
       this.store.dispatch(
         AccountActions.loadAccount({accountId: this.accountId}),
+      );
+      // Ensure related accounts are loaded for privacy/access evaluation
+      this.store.dispatch(
+        AccountActions.loadRelatedAccounts({accountId: this.accountId}),
       );
 
       // Select the specific account by ID
@@ -102,6 +126,16 @@ export class ListPage implements OnInit {
         map(([currentUser, accountId]) => currentUser?.uid === accountId),
       );
 
+      // Determine group admin/moderator (denormalized on account)
+      this.isGroupAdmin$ = combineLatest([
+        this.currentUser$,
+        this.account$,
+      ]).pipe(
+        map(([currentUser, account]) =>
+          this.access.isGroupAdmin(account as Account, currentUser),
+        ),
+      );
+
       // Determine the title based on listType and account.type
       this.title$ = this.account$.pipe(
         map((account) => {
@@ -118,7 +152,72 @@ export class ListPage implements OnInit {
         }),
       );
 
-      // Filter related accounts into current and pending lists
+      // Determine section visibility configured for this list (normalized to 4 audiences)
+      this.listVisibility$ = this.account$.pipe(
+        map((account) => {
+          const vis = account?.privacySettings as any;
+          if (!vis) return "public";
+          if (this.listType === "user") {
+            return (
+              (vis.userList?.visibility as string) ||
+              (account?.type === "user"
+                ? (vis.friendsList?.visibility as string)
+                : (vis.membersList?.visibility as string)) ||
+              "related"
+            );
+          } else {
+            return (
+              (vis.organizationList?.visibility as string) ||
+              (account?.type === "user"
+                ? (vis.membersList?.visibility as string)
+                : (vis.partnersList?.visibility as string)) ||
+              "related"
+            );
+          }
+        }),
+      );
+
+      // Show a gentle notice if list is empty and the audience isn't public/authenticated
+      this.showPrivateNotice$ = combineLatest([
+        this.currentRelatedAccountsList$,
+        this.listVisibility$,
+      ]).pipe(
+        map(([items, visibility]) => {
+          const empty = (items?.length || 0) === 0;
+          const isRestricted =
+            visibility !== "public" && visibility !== "authenticated";
+          return empty && isRestricted;
+        }),
+      );
+
+      // Owner badge showing who can see this section (members/partners/friends)
+      this.ownerListBadge$ = combineLatest([
+        this.account$,
+        this.listVisibility$,
+        combineLatest([this.isOwner$, this.isGroupAdmin$]).pipe(
+          map(([own, admin]) => own || admin),
+        ),
+      ]).pipe(
+        map(([account, vis, canSee]) => {
+          if (!account || !canSee) return null;
+          const sectionKey = this.getSectionKeyForList(account.type || "user");
+          const sectionLabel = this.getSectionLabelForList(
+            account.type || "user",
+          );
+          const ps: any = account.privacySettings || {};
+          const section = ps[sectionKey] || {};
+          const allowCount = Array.isArray(section.allowlist)
+            ? section.allowlist.length
+            : 0;
+          const blockCount = Array.isArray(section.blocklist)
+            ? section.blocklist.length
+            : 0;
+          const {text, color} = this.mapVisibility(vis);
+          return {sectionLabel, text, color, allowCount, blockCount};
+        }),
+      );
+
+      // Filter related accounts into current and pending lists using related account entity type
       this.currentRelatedAccountsList$ = this.relatedAccounts$.pipe(
         map((relatedAccounts) =>
           relatedAccounts.filter(
@@ -150,21 +249,23 @@ export class ListPage implements OnInit {
       );
 
       this.canManageRoles$ = combineLatest([
-        this.isGroupAdmin$,
-        this.isOwner$,
-      ]).pipe(map(([admin, owner]) => admin || owner));
+        this.currentUser$,
+        this.account$,
+      ]).pipe(
+        map(([user, account]) =>
+          this.access.canManageRoles(account as Account, user),
+        ),
+      );
 
       this.showAccessControls$ = combineLatest([
         this.account$,
         this.currentUser$,
-        this.isGroupAdmin$,
       ]).pipe(
         map(
-          ([account, user, isAdmin]) =>
+          ([account, user]) =>
             !!account &&
             account.type === "group" &&
-            !!user &&
-            (isAdmin || user.uid === account.id),
+            this.access.isGroupAdmin(account as Account, user),
         ),
       );
 
@@ -172,9 +273,7 @@ export class ListPage implements OnInit {
         this.account$,
         this.currentUser$,
       ]).pipe(
-        map(
-          ([account, user]) => !!account && !!user && user.uid === account.id,
-        ),
+        map(([account, user]) => this.access.isOwner(account as Account, user)),
       );
 
       this.customRoles$ = this.store.select(
@@ -199,7 +298,165 @@ export class ListPage implements OnInit {
       this.store.dispatch(
         AccountActions.loadGroupRoles({groupId: this.accountId}),
       );
+      // Ensure current/pending lists reflect entity type without relationship field
+      this.currentRelatedAccountsList$ = this.relatedAccounts$.pipe(
+        map((list) =>
+          (list || []).filter(
+            (ra) => ra.status === "accepted" && ra.type === this.listType,
+          ),
+        ),
+      );
+      this.pendingRelatedAccountsList$ = this.relatedAccounts$.pipe(
+        map((list) =>
+          (list || []).filter(
+            (ra) => ra.status === "pending" && ra.type === this.listType,
+          ),
+        ),
+      );
+
+      // Determine section key and label for this list
+      const sectionKey$ = of(this.getSectionKeyForList("any"));
+
+      // Visibility value for the section
+      this.listVisibility$ = combineLatest([this.account$, sectionKey$]).pipe(
+        map(([acc, key]) => {
+          const v = (acc as any)?.privacySettings?.[key]?.visibility as
+            | string
+            | undefined;
+          return v || "public";
+        }),
+      );
+
+      // Owner-only badge mirroring details page styling
+      this.ownerListBadge$ = combineLatest([
+        this.account$,
+        sectionKey$,
+        this.listVisibility$,
+      ]).pipe(
+        map(([acc, key, vis]) => {
+          if (!acc) return null;
+          const {text, color} = this.mapVisibility(vis);
+          const section = (acc as any)?.privacySettings?.[key] || {};
+          const allowCount = Array.isArray(section.allowlist)
+            ? section.allowlist.length
+            : 0;
+          const blockCount = Array.isArray(section.blocklist)
+            ? section.blocklist.length
+            : 0;
+          return {
+            sectionLabel: this.getSectionLabelForList(acc.type || "user"),
+            text,
+            color,
+            allowCount,
+            blockCount,
+          };
+        }),
+      );
+
+      // Can current viewer access this section?
+      const canView$ = combineLatest([
+        this.account$,
+        this.currentUser$,
+        this.relatedAccounts$,
+        sectionKey$,
+        this.listVisibility$,
+      ]).pipe(
+        map(([acc, user, rels, key, vis]) => {
+          if (!acc) return false;
+          // Owner always
+          if (user?.uid === acc.id) return true;
+          // Allow/Block lists
+          const section = (acc as any)?.privacySettings?.[key] || {};
+          const allow = Array.isArray(section.allowlist)
+            ? section.allowlist.includes(user?.uid)
+            : false;
+          const block = Array.isArray(section.blocklist)
+            ? section.blocklist.includes(user?.uid)
+            : false;
+          if (allow) return true;
+          if (block) return false;
+          // Audience
+          switch (vis) {
+            case "public":
+              return true;
+            case "authenticated":
+              return !!user;
+            case "related": {
+              const isRelated = (rels || []).some(
+                (r) => r.id === user?.uid && r.status === "accepted",
+              );
+              return isRelated;
+            }
+            case "private":
+            default:
+              return false;
+          }
+        }),
+      );
+
+      // Expose canView$ for template
+      this.canViewList$ = canView$;
+
+      // Show private notice only when viewer lacks access (not owner) and list is empty
+      this.showPrivateNotice$ = combineLatest([
+        this.isOwner$,
+        canView$,
+        this.currentRelatedAccountsList$,
+      ]).pipe(
+        map(
+          ([isOwner, canView, list]) =>
+            !isOwner && !canView && (list || []).length === 0,
+        ),
+      );
     }
+  }
+
+  private getSectionKeyForList(_: string): string {
+    // Unified keys mapping by related entity type
+    return this.listType === "user" ? "userList" : "organizationList";
+  }
+
+  private getSectionLabelForList(accountType: string): string {
+    if (accountType === "group") {
+      return this.listType === "user" ? "Members List" : "Partners List";
+    }
+    return this.listType === "user" ? "Friends List" : "Groups";
+  }
+
+  private mapVisibility(v: string): {text: string; color: string} {
+    const map: Record<string, {text: string; color: string}> = {
+      public: {text: "Public", color: "success"},
+      authenticated: {text: "Authorized", color: "medium"},
+      related: {text: "Related", color: "primary"},
+      private: {text: "Private", color: "danger"},
+    };
+    return map[v] || {text: v, color: "medium"};
+  }
+
+  updateSectionOverride(
+    request: Partial<RelatedAccount>,
+    sectionKey: string,
+    allow: boolean,
+  ) {
+    if (!this.accountId || !request.id) return;
+    const updated: RelatedAccount = {
+      ...(request as RelatedAccount),
+      accountId: this.accountId,
+      sectionOverrides: {
+        ...(request.sectionOverrides || {}),
+        [sectionKey]: {allow},
+      },
+      // keep legacy flag in sync for contact info
+      ...(sectionKey === "contactInformation"
+        ? {canAccessContactInfo: allow}
+        : {}),
+    };
+    this.store.dispatch(
+      AccountActions.updateRelatedAccount({
+        accountId: this.accountId,
+        relatedAccount: updated,
+      }),
+    );
   }
 
   ionViewWillEnter() {
@@ -433,24 +690,6 @@ export class ListPage implements OnInit {
     });
   }
 
-  updateRelationship(request: Partial<RelatedAccount>, relationship: string) {
-    this.currentUser$.pipe(take(1)).subscribe((authUser) => {
-      if (!authUser?.uid || !request.id || !this.accountId) return;
-      const updated: RelatedAccount = {
-        ...(request as RelatedAccount),
-        accountId: this.accountId,
-        relationship: relationship as any,
-        lastModifiedBy: authUser.uid,
-      };
-      this.store.dispatch(
-        AccountActions.updateRelatedAccount({
-          accountId: this.accountId!,
-          relatedAccount: updated,
-        }),
-      );
-    });
-  }
-
   /**
    * Determines whether to show accept/reject buttons for a related account.
    * @param request The related account request.
@@ -532,24 +771,6 @@ export class ListPage implements OnInit {
   goToRelatedAccount(id: string | null | undefined) {
     if (id) {
       this.router.navigate([`/account/${id}`]);
-    }
-  }
-
-  /**
-   * Navigates to the roles management page.
-   */
-  navigateToRoles() {
-    if (this.accountId) {
-      this.router.navigate([`/account/${this.accountId}/roles`]);
-    }
-  }
-
-  /**
-   * Navigates to the hierarchy true page.
-   */
-  navigateToHierarchy() {
-    if (this.accountId) {
-      this.router.navigate([`/account/${this.accountId}/hierarchy`]);
     }
   }
 }

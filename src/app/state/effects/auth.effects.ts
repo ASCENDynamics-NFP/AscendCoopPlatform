@@ -366,6 +366,16 @@ export class AuthEffects {
     {dispatch: false},
   );
 
+  // Prefetch current user's relatedAccounts after sign-in to avoid initial blank states
+  prefetchRelatedOnSignIn$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.signInSuccess),
+      map(({uid}) =>
+        AccountActions.loadRelatedAccounts({accountId: uid, forceReload: true}),
+      ),
+    ),
+  );
+
   // Refresh Token Success Effect: Navigate after registration completion
   refreshTokenSuccess$ = createEffect(
     () =>

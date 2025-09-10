@@ -332,18 +332,7 @@ export class HeroComponent implements OnInit, OnChanges {
         return;
       }
 
-      // Determine relationship type based on account types
-      let relationshipType: "friend" | "member" | "partner" = "friend";
-      if (this.account.type !== this.currentUserType) {
-        relationshipType = "member";
-      } else if (
-        this.account.type === "group" &&
-        this.currentUserType === "group"
-      ) {
-        relationshipType = "partner";
-      }
-
-      // Create the related account request - this represents the current user requesting to connect
+      // Create the related account request - represents current user requesting to connect
       const relatedAccount: Partial<RelatedAccount> = {
         id: this.account.id, // Set the ID to the current user's ID (the one making the request)
         accountId: currentUser.uid, // This should be the current user's ID
@@ -354,15 +343,9 @@ export class HeroComponent implements OnInit, OnChanges {
         tagline: this.account.tagline || "", // We might not have this info for the current user
         type: this.account.type,
         status: "pending",
-        relationship: relationshipType,
         createdBy: currentUser.uid,
         lastModifiedBy: currentUser.uid,
       };
-
-      // Only add access field if it's a member relationship
-      if (relationshipType === "member") {
-        relatedAccount.access = "member";
-      }
 
       // Dispatch the action to create the relationship - send to TARGET account
       this.store.dispatch(

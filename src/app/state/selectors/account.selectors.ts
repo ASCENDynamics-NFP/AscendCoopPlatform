@@ -120,9 +120,9 @@ export const selectFilteredAccounts = (
         if (acc.status === "inactive") {
           return false;
         }
-        // Only show public groups in general search
-        // Private groups require membership and should be filtered at component level
-        if (acc.privacy === "private") {
+        // Only show accounts explicitly marked public via privacySettings.profile.visibility
+        const visibility = (acc.privacySettings as any)?.profile?.visibility;
+        if (visibility !== "public") {
           return false;
         }
         const normalizedAccountName = normalizeString(acc.name);
@@ -162,8 +162,9 @@ export const selectFilteredAccountsWithPrivacy = (
             return false;
           }
 
-          // Privacy filtering logic
-          if (acc.privacy === "private") {
+          // Privacy filtering logic based solely on privacySettings.profile.visibility
+          const visibility = (acc.privacySettings as any)?.profile?.visibility;
+          if (visibility !== "public") {
             // Private groups are only visible to members
             if (!userId) return false;
             const isMember = userRelatedAccounts.some(

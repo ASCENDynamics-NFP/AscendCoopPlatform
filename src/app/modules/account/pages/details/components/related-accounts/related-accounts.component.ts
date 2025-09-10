@@ -19,6 +19,7 @@
 ***********************************************************************************************/
 import {Component, Input} from "@angular/core";
 import {Router} from "@angular/router";
+import {PrivacyService} from "../../../../../../core/services/privacy.service";
 import {Account, RelatedAccount} from "@shared/models/account.model";
 
 @Component({
@@ -30,8 +31,17 @@ export class RelatedAccountsComponent {
   @Input() account: Account = {} as Account;
   @Input() relatedAccounts: RelatedAccount[] = [];
   @Input() type: "user" | "group" = "user";
+  @Input() isProfileOwner: boolean = false;
+  @Input() isGroupAdmin: boolean = false;
+  @Input() privacySettings: any = null;
+  // Viewer context for privacy evaluation
+  @Input() isRelatedViewer: boolean = false;
+  @Input() viewerId: string | null = null;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private privacy: PrivacyService,
+  ) {}
 
   get title() {
     if (this.type === "user") {
@@ -40,17 +50,74 @@ export class RelatedAccountsComponent {
     return "Organizations";
   }
 
+  private matchesList(ra: RelatedAccount): boolean {
+    // Accept only current relationships and filter purely by related account entity type
+    if (ra.status !== "accepted") return false;
+    return ra.type === this.type;
+  }
+
   get filteredRelatedAccounts() {
-    return this.relatedAccounts.filter(
-      (ra) => ra.type === this.type && ra.status === "accepted",
-    );
+    return this.relatedAccounts.filter((ra) => this.matchesList(ra));
   }
 
   goToRelatedAccount(id: string | undefined) {
     if (id) {
-      this.router.navigate([`/account/${id}`]);
-    } else {
-      console.error("Invalid ID provided for navigation.");
+      this.router.navigate(["/account", id]);
+    }
+  }
+
+  get isOwnerOrAdmin(): boolean {
+    return this.isProfileOwner || this.isGroupAdmin;
+  }
+
+  private get sectionKey(): string {
+    // Unified keys based on related account entity type
+    return this.type === "user" ? "userList" : "organizationList";
+  }
+
+  private canViewSection(): boolean {
+    return this.privacy.canViewSection(this.privacySettings, this.sectionKey, {
+      isOwnerOrAdmin: this.isOwnerOrAdmin,
+      isRelated: this.isRelatedViewer,
+      viewerId: this.viewerId,
+    });
+  }
+
+  // Expose visibility to the template without leaking implementation
+  get canView(): boolean {
+    return this.canViewSection();
+  }
+
+  get visibleRelatedAccounts() {
+    return this.canViewSection() ? this.filteredRelatedAccounts : [];
+  }
+
+  get privacyData(): {visibility: string; color: string; label: string} {
+    if (!this.privacySettings) {
+      return {visibility: "public", color: "success", label: "Public"};
+    }
+
+    const visibility = this.privacy.getSectionVisibility(
+      this.privacySettings,
+      this.sectionKey,
+    );
+    const {text, color} = this.mapVisibility(visibility);
+
+    return {visibility, color, label: text};
+  }
+
+  private mapVisibility(v: string): {text: string; color: string} {
+    switch (v) {
+      case "public":
+        return {text: "Public", color: "success"};
+      case "authenticated":
+        return {text: "Authorized", color: "medium"};
+      case "related":
+        return {text: "Related", color: "primary"};
+      case "private":
+        return {text: "Private", color: "danger"};
+      default:
+        return {text: v, color: "medium"};
     }
   }
 

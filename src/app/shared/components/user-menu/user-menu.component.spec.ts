@@ -118,7 +118,9 @@ describe("UserMenuComponent", () => {
   it("should dismiss the popover and navigate to settings on goToSettings", async () => {
     await component.goToSettings();
     expect(mockPopoverCtrl.dismiss).toHaveBeenCalled();
-    expect(mockRouter.navigate).toHaveBeenCalledWith(["/account/settings"]);
+    expect(mockRouter.navigate).toHaveBeenCalledWith([
+      `/account/${mockAuthUser.uid}/settings`,
+    ]);
   });
 
   // it("should log an error if fetching user profile throws an error in goToProfile", async () => {

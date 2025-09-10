@@ -50,11 +50,10 @@ export const notifyAdminsOnMemberRequest = onDocumentCreated(
     const requestData = event.data.data();
     const {accountId, relatedAccountId} = event.params;
 
-    // Only process member join requests that are pending
+    // Only process join requests that are pending and not self-initiated notifications
     if (
-      requestData.relationship !== "member" ||
       requestData.status !== "pending" ||
-      requestData.initiatorId === accountId // Don't notify for self-initiated requests
+      requestData.initiatorId === accountId
     ) {
       return;
     }
@@ -70,6 +69,11 @@ export const notifyAdminsOnMemberRequest = onDocumentCreated(
       const groupData = groupDoc.data();
       if (!groupData) {
         logger.error(`No data found for group ${accountId}`);
+        return;
+      }
+
+      // Notify only for group membership requests (parent is group, related account is a user or group)
+      if (groupData.type !== "group") {
         return;
       }
 

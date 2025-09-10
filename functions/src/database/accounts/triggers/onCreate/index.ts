@@ -85,6 +85,17 @@ async function handleAccountCreate(
         `User account ${accountId} created - no additional initialization needed`,
       );
     }
+
+    // Sync contactInformation into gated subdocument for rules-based access
+    if (account.contactInformation) {
+      await admin
+        .firestore()
+        .doc(`accounts/${accountId}/sections/contactInfo`)
+        .set(account.contactInformation, {merge: true});
+      logger.info(
+        `Initialized sections/contactInfo for account ${accountId} from base document`,
+      );
+    }
   } catch (error) {
     logger.error(`Error initializing account ${accountId}:`, error);
   }

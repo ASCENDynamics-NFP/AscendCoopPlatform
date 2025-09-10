@@ -69,13 +69,12 @@ export class InviteMemberModalComponent implements OnInit, OnDestroy {
       this.store.select(selectRelatedAccountsByAccountId(this.groupId)),
     ]).pipe(
       map(([allAccounts, relatedAccounts]) => {
-        // Get IDs of existing members/partners (both accepted and pending)
+        // Exclude accounts already related to this group with matching type (accepted or pending)
         const existingAccountIds = new Set(
           relatedAccounts
             .filter(
               (rel) =>
-                (rel.relationship === "member" ||
-                  rel.relationship === "partner") &&
+                rel.type === this.searchType &&
                 (rel.status === "accepted" || rel.status === "pending"),
             )
             .map((rel) => rel.id),
@@ -121,13 +120,12 @@ export class InviteMemberModalComponent implements OnInit, OnDestroy {
       this.store.select(selectRelatedAccountsByAccountId(this.groupId)),
     ]).pipe(
       map(([allAccounts, relatedAccounts]) => {
-        // Get IDs of existing members/partners (both accepted and pending)
+        // Exclude accounts already related to this group with matching type (accepted or pending)
         const existingAccountIds = new Set(
           relatedAccounts
             .filter(
               (rel) =>
-                (rel.relationship === "member" ||
-                  rel.relationship === "partner") &&
+                rel.type === this.searchType &&
                 (rel.status === "accepted" || rel.status === "pending"),
             )
             .map((rel) => rel.id),
@@ -237,10 +235,6 @@ export class InviteMemberModalComponent implements OnInit, OnDestroy {
           // Send invitations for each selected account
           for (const selectedAccount of this.selectedAccounts) {
             try {
-              // Determine relationship type based on account type
-              const relationship =
-                selectedAccount.type === "user" ? "member" : "partner";
-
               // Create invitation record - group inviting user/partner
               const invitation: Partial<RelatedAccount> = {
                 id: selectedAccount.id,
@@ -252,7 +246,6 @@ export class InviteMemberModalComponent implements OnInit, OnDestroy {
                     ? "user"
                     : selectedAccount.type,
                 status: "pending",
-                relationship: relationship,
                 requestType: "invitation",
                 name: selectedAccount.name,
                 tagline: selectedAccount.tagline,
@@ -260,6 +253,13 @@ export class InviteMemberModalComponent implements OnInit, OnDestroy {
                 createdBy: currentUser.uid,
                 lastModifiedBy: currentUser.uid,
               };
+
+              // Default access for any relationship involving a group
+              if (invitation.type === "user") {
+                invitation.access = "member";
+              } else if (invitation.type === "group") {
+                invitation.access = invitation.access ?? "member";
+              }
 
               // Dispatch action to create the invitation
               this.store.dispatch(

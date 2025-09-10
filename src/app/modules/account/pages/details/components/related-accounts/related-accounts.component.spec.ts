@@ -115,7 +115,7 @@ describe("RelatedAccountsComponent", () => {
 
   it("should navigate to the correct related account when goToRelatedAccount is called with a valid ID", () => {
     component.goToRelatedAccount("123");
-    expect(mockRouter.navigate).toHaveBeenCalledWith(["/account/123"]);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(["/account", "123"]);
   });
 
   it("should navigate to the related accounts list when viewAll is called", () => {

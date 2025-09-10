@@ -35,6 +35,7 @@ import {ContactInformationComponent} from "./pages/details/components/contact-in
 import {HeroComponent} from "./pages/details/components/hero/hero.component";
 import {MutualAidCommunityInfoComponent} from "./pages/details/components/mutual-aid-community-info/mutual-aid-community-info.component";
 import {ProfessionalInfoComponent} from "./pages/details/components/professional-info/professional-info.component";
+import {LaborRightsInfoComponent} from "./pages/details/components/labor-rights-info/labor-rights-info.component";
 import {ProfileComponent} from "./pages/details/components/profile/profile.component";
 import {RelatedAccountsComponent} from "./pages/details/components/related-accounts/related-accounts.component";
 import {VolunteerPreferenceInfoComponent} from "./pages/details/components/volunteer-preference-info/volunteer-preference-info.component";
@@ -88,6 +89,7 @@ import {TemplatePreviewModalComponent} from "./pages/projects/components/templat
     DetailsPage,
     HeroComponent,
     ProfessionalInfoComponent,
+    LaborRightsInfoComponent,
     RelatedAccountsComponent,
     VolunteerPreferenceInfoComponent,
     ProfileComponent,

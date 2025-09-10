@@ -18,79 +18,26 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 
-import {Injectable} from "@angular/core";
-import {
-  CanActivate,
-  ActivatedRouteSnapshot,
-  RouterStateSnapshot,
-  Router,
-} from "@angular/router";
-import {Store} from "@ngrx/store";
-import {Observable, combineLatest} from "rxjs";
+import {inject} from "@angular/core";
+import {CanActivateFn} from "@angular/router";
+import {combineLatest, of} from "rxjs";
 import {map, take} from "rxjs/operators";
+import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../state/selectors/auth.selectors";
-import {
-  selectAccountById,
-  selectRelatedAccountsByAccountId,
-} from "../../state/selectors/account.selectors";
+import {selectAccountById} from "../../state/selectors/account.selectors";
+import {AccessService} from "../services/access.service";
 
-@Injectable({
-  providedIn: "root",
-})
-export class ProfileOwnerGuard implements CanActivate {
-  constructor(
-    private store: Store,
-    private router: Router,
-  ) {}
+export const profileOwnerGuard: CanActivateFn = (route) => {
+  const store = inject(Store);
+  const access = inject(AccessService);
+  const accountId = route.params["accountId"];
+  if (!accountId) return of(false);
 
-  canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot,
-  ): Observable<boolean> {
-    const accountId = route.params["accountId"];
-
-    return combineLatest([
-      this.store.select(selectAuthUser),
-      this.store.select(selectAccountById(accountId)),
-      this.store.select(selectRelatedAccountsByAccountId(accountId)),
-    ]).pipe(
-      take(1),
-      map(([authUser, account, relatedAccounts]) => {
-        // Check if user is authenticated
-        if (!authUser) {
-          this.router.navigate(["/auth/login"]);
-          return false;
-        }
-
-        // Check if account exists
-        if (!account) {
-          this.router.navigate(["/"]);
-          return false;
-        }
-
-        // Check if user is the direct owner of the profile
-        if (authUser.uid === account.id) {
-          return true;
-        }
-
-        // For group accounts, redirect admins/moderators to admin dashboard
-        if (account.type === "group") {
-          const relation = relatedAccounts.find((ra) => ra.id === authUser.uid);
-          const isAdmin =
-            relation?.status === "accepted" &&
-            (relation.access === "admin" || relation.access === "moderator");
-
-          if (isAdmin) {
-            // Redirect group admins to admin dashboard instead of edit page
-            this.router.navigate(["/account", accountId, "admin"]);
-            return false;
-          }
-        }
-
-        // If none of the conditions are met, redirect to the account profile view
-        this.router.navigate(["/account", accountId]);
-        return false;
-      }),
-    );
-  }
-}
+  return combineLatest([
+    store.select(selectAuthUser),
+    store.select(selectAccountById(accountId)),
+  ]).pipe(
+    take(1),
+    map(([authUser, account]) => access.isOwner(account as any, authUser)),
+  );
+};

@@ -1,9 +1,9 @@
 <!-- role-management.page.html -->
-<ion-header>
+<ion-header *ngIf="!embedded">
   <app-header [title]="'Group Roles'" [defaultHref]="'../'"></app-header>
 </ion-header>
 
-<ion-content>
+<ng-template #rolesBody>
   <ng-container *ngIf="editableRoles$ | async as roles">
     <ion-card>
       <ion-card-header>
@@ -43,13 +43,35 @@
                 ></ion-icon>
                 {{ categoryGroup.category }} ({{ categoryGroup.roles.length }})
               </span>
-              <ion-icon
-                [name]="
-                  isCategoryCollapsed(categoryGroup.category)
-                    ? 'chevron-down'
-                    : 'chevron-up'
-                "
-              ></ion-icon>
+              <span style="display:flex; align-items:center; gap:10px" (click)="$event.stopPropagation()">
+                <!-- Small privacy toggle: public (off) / private (on) -->
+                <ng-container *ngIf="account$ | async as account">
+                  <ion-icon
+                    [name]="getCategoryPrivacy(account, categoryGroup.category) === 'private' ? 'lock-closed' : 'globe-outline'"
+                    [color]="getCategoryPrivacy(account, categoryGroup.category) === 'private' ? 'danger' : 'medium'"
+                    [title]="getCategoryPrivacy(account, categoryGroup.category) === 'private' ? 'Private' : 'Public'"
+                    style="font-size: 18px;"
+                  ></ion-icon>
+                  <ion-toggle
+                    aria-label="Category privacy"
+                    [checked]="getCategoryPrivacy(account, categoryGroup.category) === 'private'"
+                    (ionChange)="setCategoryPrivacy(account, categoryGroup.category, $event.detail.checked ? 'private' : 'public')"
+                    style="
+                      transform: scale(0.85);
+                      --handle-width: 12px;
+                      --handle-height: 12px;
+                      --bar-height: 16px;
+                    "
+                  ></ion-toggle>
+                </ng-container>
+                <ion-icon
+                  [name]="
+                    isCategoryCollapsed(categoryGroup.category)
+                      ? 'chevron-down'
+                      : 'chevron-up'
+                  "
+                ></ion-icon>
+              </span>
             </h3>
           </div>
 
@@ -215,4 +237,12 @@
       </ion-card-content>
     </ion-card>
   </ng-container>
+</ng-template>
+
+<ion-content *ngIf="!embedded">
+  <ng-container *ngTemplateOutlet="rolesBody"></ng-container>
 </ion-content>
+
+<div *ngIf="embedded">
+  <ng-container *ngTemplateOutlet="rolesBody"></ng-container>
+</div>

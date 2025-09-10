@@ -104,8 +104,8 @@ describe("SecureInnerPagesGuard", () => {
     );
   });
 
-  it("should return false and navigate back if there is a previous navigation", async () => {
-    // Set up mock for previous navigation
+  it("should return false and navigate to authenticated destination when there is a previous navigation", async () => {
+    // Even if previous navigation exists, guard delegates routing to AuthNavigationService
     mockRouter.getCurrentNavigation.and.returnValue({
       previousNavigation: {},
     });
@@ -115,6 +115,9 @@ describe("SecureInnerPagesGuard", () => {
 
     const canActivate = await guard.canActivate();
     expect(canActivate).toBeFalse();
-    expect(mockNavController.back).toHaveBeenCalled();
+    expect(mockAuthNavigationService.navigateAfterAuth).toHaveBeenCalledWith(
+      mockAuthUser,
+    );
+    expect(mockNavController.back).not.toHaveBeenCalled();
   });
 });

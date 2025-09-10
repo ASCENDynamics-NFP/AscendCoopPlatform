@@ -19,7 +19,7 @@
  *******************************************************************************/
 // role-management.page.ts
 
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, Input} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {Store} from "@ngrx/store";
 import {Observable} from "rxjs";
@@ -39,6 +39,7 @@ import {
   StandardRoleCategory,
 } from "../../../../../../shared/models/standard-role-template.model";
 import {Account} from "../../../../../../shared/models/account.model";
+import {selectAccountById} from "../../../../state/selectors/account.selectors";
 
 interface CategorizedRoles {
   category: StandardRoleCategory | "Uncategorized";
@@ -53,11 +54,13 @@ interface CategorizedRoles {
   styleUrls: ["./role-management.page.scss"],
 })
 export class RoleManagementPage implements OnInit {
+  @Input() embedded: boolean = false;
   groupId!: string;
   roles$!: Observable<GroupRole[]>;
   editableRoles$!: Observable<GroupRole[]>;
   categorizedRoles$!: Observable<CategorizedRoles[]>;
   loading$!: Observable<boolean>;
+  account$!: Observable<Account | undefined>;
 
   // For account info to pass to standard role selector
   currentAccount?: Account;
@@ -79,6 +82,7 @@ export class RoleManagementPage implements OnInit {
   }
 
   ngOnInit() {
+    this.account$ = this.store.select(selectAccountById(this.groupId));
     this.roles$ = this.store.select(selectGroupRolesByGroupId(this.groupId));
     this.editableRoles$ = this.roles$.pipe(
       map((roles) => roles.map((role) => ({...role}))),
@@ -98,6 +102,43 @@ export class RoleManagementPage implements OnInit {
 
     this.loading$ = this.store.select(selectAccountLoading);
     this.store.dispatch(AccountActions.loadGroupRoles({groupId: this.groupId}));
+  }
+
+  /** Get current privacy value for a role category (defaults to public) */
+  getCategoryPrivacy(
+    account: Account | undefined,
+    category: StandardRoleCategory | "Uncategorized",
+  ): "public" | "private" {
+    if (!account || category === "Uncategorized") return "public";
+    const val =
+      account.privacySettings?.roleCategories?.[
+        category as StandardRoleCategory
+      ];
+    return (val as any) === "private" ? "private" : "public";
+  }
+
+  /** Update privacy for a given category */
+  setCategoryPrivacy(
+    account: Account | undefined,
+    category: StandardRoleCategory | "Uncategorized",
+    value: string | number | undefined,
+  ) {
+    if (!account || category === "Uncategorized") return;
+    const str =
+      value !== undefined && value !== null ? String(value) : undefined;
+    const normalized: "public" | "private" =
+      str === "private" ? "private" : "public";
+    const updated: Account = {
+      ...account,
+      privacySettings: {
+        ...account.privacySettings,
+        roleCategories: {
+          ...(account.privacySettings?.roleCategories || {}),
+          [category as StandardRoleCategory]: normalized,
+        },
+      },
+    } as Account;
+    this.store.dispatch(AccountActions.updateAccount({account: updated}));
   }
 
   updateRole(role: GroupRole) {

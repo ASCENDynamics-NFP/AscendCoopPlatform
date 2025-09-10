@@ -50,19 +50,30 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         >
       </ion-segment-button>
 
-      <ion-segment-button *ngIf="account.type === 'user'" value="professional">
+      <ion-segment-button
+        *ngIf="account.type === 'user' && (canViewProfessional$ | async)"
+        value="professional"
+      >
         <ion-icon name="briefcase-outline"></ion-icon>
         <ion-label>Professional</ion-label>
       </ion-segment-button>
 
-      <ion-segment-button value="connections">
+      <ion-segment-button
+        *ngIf="account.type === 'user' && (canViewLabor$ | async)"
+        value="labor"
+      >
+        <ion-icon name="hammer-outline"></ion-icon>
+        <ion-label>Labor Rights</ion-label>
+      </ion-segment-button>
+
+      <ion-segment-button *ngIf="canViewConnections$ | async" value="connections">
         <ion-icon name="people-outline"></ion-icon>
         <ion-label
           >{{ account.type === 'user' ? 'Friends' : 'Members' }}</ion-label
         >
       </ion-segment-button>
 
-      <ion-segment-button value="organizations">
+      <ion-segment-button *ngIf="canViewOrganizations$ | async" value="organizations">
         <ion-icon name="business-outline"></ion-icon>
         <ion-label>Organizations</ion-label>
       </ion-segment-button>
@@ -95,11 +106,20 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <div class="segment-content">
       <!-- Profile/About Section -->
       <div *ngIf="selectedSegment === 'profile'" class="segment-section">
-        <app-profile [account]="account"></app-profile>
-        <app-contact-information [account]="account"></app-contact-information>
+        <app-profile
+          [account]="account"
+          [isOwnerOrAdmin]="!!((isProfileOwner$ | async) || (isGroupAdmin$ | async))"
+        ></app-profile>
+        <app-contact-information
+          [account]="account"
+          [isProfileOwner]="(isProfileOwner$ | async) ?? false"
+          [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+          [privacySettings]="account.privacySettings"
+        ></app-contact-information>
         <app-group-calendar
           *ngIf="account.type === 'group'"
           [account]="account"
+          [isOwnerOrAdmin]="!!((isProfileOwner$ | async) || (isGroupAdmin$ | async))"
         ></app-group-calendar>
       </div>
 
@@ -109,8 +129,22 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         class="segment-section"
       >
         <app-professional-info
-          [professionalInfo]="account.professionalInformation"
+          [professionalInfo]="professionalInfo$ | async"
+          [privacySettings]="account.privacySettings"
+          [isOwnerOrAdmin]="(isOwnerOrAdmin$ | async) || false"
         ></app-professional-info>
+      </div>
+
+      <!-- Labor Rights Section -->
+      <div
+        *ngIf="selectedSegment === 'labor' && account.type === 'user'"
+        class="segment-section"
+      >
+        <app-labor-rights-info
+          [laborRights]="laborRights$ | async"
+          [privacySettings]="account.privacySettings"
+          [isOwnerOrAdmin]="(isOwnerOrAdmin$ | async) || false"
+        ></app-labor-rights-info>
       </div>
 
       <!-- Connections Section -->
@@ -119,6 +153,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           [account]="account"
           [relatedAccounts]="(relatedAccounts$ | async) ?? []"
           type="user"
+          [isProfileOwner]="(isProfileOwner$ | async) ?? false"
+          [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+          [isRelatedViewer]="(hasRelationship$ | async) ?? false"
+          [viewerId]="(authUser$ | async)?.uid ?? null"
+          [privacySettings]="account.privacySettings"
         ></app-related-accounts>
       </div>
 
@@ -128,6 +167,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           [account]="account"
           [relatedAccounts]="(relatedAccounts$ | async) ?? []"
           type="group"
+          [isProfileOwner]="(isProfileOwner$ | async) ?? false"
+          [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+          [isRelatedViewer]="(hasRelationship$ | async) ?? false"
+          [viewerId]="(authUser$ | async)?.uid ?? null"
+          [privacySettings]="account.privacySettings"
         ></app-related-accounts>
       </div>
 
@@ -138,6 +182,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       >
         <app-volunteer-preference-info
           [volunteerPreferences]="account.volunteerPreferences"
+          [isOwnerOrAdmin]="(isOwnerOrAdmin$ | async) || false"
         ></app-volunteer-preference-info>
       </div>
 

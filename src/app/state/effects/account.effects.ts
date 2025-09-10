@@ -309,10 +309,10 @@ export class AccountEffects {
   loadRelatedAccounts$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.loadRelatedAccounts),
-      mergeMap(({accountId}) =>
+      mergeMap(({accountId, forceReload}) =>
         this.store.select(selectAreRelatedAccountsFresh(accountId)).pipe(
           take(1),
-          filter((areFresh) => !areFresh),
+          filter((areFresh) => !areFresh || !!forceReload),
           switchMap(() =>
             this.accountsService.getRelatedAccounts(accountId).pipe(
               map((relatedAccounts) =>
@@ -606,8 +606,17 @@ export class AccountEffects {
   }
 
   private async createAccountWithResume(account: Account): Promise<Account> {
+    const defaultVisibility =
+      (account as any)?.privacySettings?.profile?.visibility || "public";
     const newAccount: any = {
       ...account,
+      privacySettings: {
+        ...(account as any)?.privacySettings,
+        profile: {
+          ...((account as any)?.privacySettings?.profile || {}),
+          visibility: defaultVisibility,
+        },
+      },
       totalHours: account.totalHours ?? 0,
       createdAt: serverTimestamp(),
       lastModifiedAt: serverTimestamp(),
@@ -674,6 +683,26 @@ export class AccountEffects {
       account.id,
       updatedAccount,
     );
+
+    try {
+      if (updatedAccount.professionalInformation) {
+        await this.firestoreService.setDocument(
+          `accounts/${account.id}/sections/professionalInfo`,
+          updatedAccount.professionalInformation,
+          {merge: true},
+        );
+      }
+      if (updatedAccount.laborRights) {
+        await this.firestoreService.setDocument(
+          `accounts/${account.id}/sections/laborRights`,
+          updatedAccount.laborRights,
+          {merge: true},
+        );
+      }
+    } catch (e) {
+      // non-fatal; section sync best-effort
+      console.warn("Section sync failed", e);
+    }
 
     return updatedAccount as Account;
   }

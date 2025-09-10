@@ -26,7 +26,6 @@ import {
 import {admin} from "../../../../utils/firebase";
 import * as logger from "firebase-functions/logger";
 import {QueryDocumentSnapshot} from "firebase-admin/firestore";
-import {geocodeAddress} from "../../../../utils/geocoding";
 
 /**
  * Cloud Function triggered when a document in the `accounts` collection is updated.
@@ -68,70 +67,30 @@ export const onUpdateAccount = onDocumentUpdated(
         });
       }
 
-      // 2) Check if addresses changed (simplified approach)
-      const addressesBefore = before.contactInformation?.addresses || [];
-      const addressesAfter = after.contactInformation?.addresses || [];
-      let addressesNeedUpdate = false;
+      // Address geocoding moved to sections/contactInfo subdocument trigger
 
-      // If the number of addresses changed, or (optionally) deep-compare each
-      if (addressesBefore.length !== addressesAfter.length) {
-        addressesNeedUpdate = true;
-      } else {
-        // If the number of addresses is the same, deep-compare each
-        addressesNeedUpdate = addressesBefore.some(
-          (
-            addr: {street: any; city: any; state: any; country: any},
-            index: string | number,
-          ) => {
-            const afterAddr = addressesAfter[index];
-            return (
-              addr.street !== afterAddr.street ||
-              addr.city !== afterAddr.city ||
-              addr.state !== afterAddr.state ||
-              addr.country !== afterAddr.country
-            );
-          },
-        );
-      }
+      // 2) Sync contactInformation to gated subdocument when it changes
+      const contactBefore = before.contactInformation || null;
+      const contactAfter = after.contactInformation || null;
+      const changedContact =
+        JSON.stringify(contactBefore) !== JSON.stringify(contactAfter);
 
-      if (addressesNeedUpdate) {
-        logger.info("Addresses changed; attempting geocode updates...");
-
-        // 3) Loop over each address and geocode if needed
-        const newAddresses = await Promise.all(
-          addressesAfter.map(async (addr: any) => {
-            // If there's no actual address data, skip
-            if (!addr.street && !addr.city && !addr.state && !addr.country) {
-              return addr;
-            }
-
-            const parts = [addr.street, addr.city, addr.state, addr.country]
-              .filter(Boolean)
-              .join(", ");
-
-            // Call the geocodeAddress UTIL FUNCTION
-            const geocoded = await geocodeAddress(parts);
-            if (geocoded) {
-              // Attach geocoding results
-              return {
-                ...addr,
-                formatted: geocoded.formatted_address,
-                geopoint: new admin.firestore.GeoPoint(
-                  geocoded.lat,
-                  geocoded.lng,
-                ),
-              };
-            } else {
-              return addr; // fallback to original address if geocoding fails
-            }
-          }),
-        );
-
-        // 4) Update the Firestore doc with new addresses
-        await event.data.after.ref.update({
-          "contactInformation.addresses": newAddresses,
-        });
-        logger.info("Updated addresses with geocoded data");
+      if (changedContact) {
+        const subRef = admin
+          .firestore()
+          .doc(`accounts/${uid}/sections/contactInfo`);
+        if (contactAfter) {
+          await subRef.set(contactAfter, {merge: true});
+          logger.info(
+            `Synchronized sections/contactInfo for account ${uid} after contactInformation update`,
+          );
+        } else {
+          // If removed from base doc, remove subdocument to avoid stale data
+          await subRef.delete();
+          logger.info(
+            `Removed sections/contactInfo for account ${uid} as contactInformation was cleared`,
+          );
+        }
       }
     } catch (error) {
       logger.error("Error in onUpdateAccount function:", error);

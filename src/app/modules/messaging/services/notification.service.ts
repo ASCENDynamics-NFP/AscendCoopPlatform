@@ -675,11 +675,9 @@ export class NotificationService {
     notificationType: string,
   ): Promise<boolean> {
     try {
-      const accountDoc = await this.firestore
-        .collection("accounts")
-        .doc(groupId)
-        .get()
-        .toPromise();
+      const accountDoc = await firstValueFrom(
+        this.firestore.collection("accounts").doc(groupId).get(),
+      );
 
       if (!accountDoc || !accountDoc.exists) {
         return true; // Default to enabled if no settings found

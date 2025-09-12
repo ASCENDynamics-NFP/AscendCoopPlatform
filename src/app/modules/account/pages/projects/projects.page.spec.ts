@@ -25,7 +25,7 @@ describe("ProjectsPage", () => {
   let fixture: ComponentFixture<ProjectsPage>;
   let store: MockStore;
   let errorHandler: {handleFirebaseAuthError: jasmine.Spy};
-  let alertController: jasmine.SpyObj<AlertController> = jasmine.createSpyObj(
+  const alertController: jasmine.SpyObj<AlertController> = jasmine.createSpyObj(
     "AlertController",
     ["create"],
   );

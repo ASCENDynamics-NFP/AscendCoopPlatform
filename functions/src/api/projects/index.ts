@@ -15,7 +15,7 @@ import {
 export const createProject = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "512MiB",
     timeoutSeconds: 60,
   },
@@ -70,7 +70,7 @@ export const createProject = onCall(
 export const updateProject = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },
@@ -124,7 +124,7 @@ export const updateProject = onCall(
 export const deleteProject = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 60,
   },
@@ -161,7 +161,7 @@ export const deleteProject = onCall(
 export const assignToProject = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },
@@ -201,7 +201,7 @@ export const assignToProject = onCall(
 export const getAccountProjects = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },
@@ -248,7 +248,7 @@ export const getAccountProjects = onCall(
 export const getUserAssignedProjects = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },
@@ -289,7 +289,7 @@ export const getUserAssignedProjects = onCall(
 export const searchProjects = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },

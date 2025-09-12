@@ -116,6 +116,7 @@ export {
   deleteMyAccount,
   searchAccounts,
   getAccount,
+  migrateAccountsIsActive,
 } from "./api/accounts";
 
 export {

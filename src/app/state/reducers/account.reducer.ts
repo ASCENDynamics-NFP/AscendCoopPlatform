@@ -72,13 +72,14 @@ export const accountReducer = createReducer(
     loading: true,
     error: null,
   })),
-  on(AccountActions.loadAccountsSuccess, (state, {accounts}) =>
-    accountAdapter.setAll(accounts, {
+  on(AccountActions.loadAccountsSuccess, (state, {accounts}) => {
+    const newState = accountAdapter.setAll(accounts, {
       ...state,
       loading: false,
       accountsLastUpdated: Date.now(),
-    }),
-  ),
+    });
+    return newState;
+  }),
   on(AccountActions.loadAccountsFailure, (state, {error}) => ({
     ...state,
     loading: false,

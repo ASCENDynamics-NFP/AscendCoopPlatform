@@ -19,7 +19,10 @@
 ***********************************************************************************************/
 import {Component, Input, Output, EventEmitter, OnInit} from "@angular/core";
 import {FormBuilder, FormGroup, Validators, FormArray} from "@angular/forms";
-import {Listing, SkillRequirement} from "@shared/models/listing.model";
+import {
+  Listing,
+  SkillRequirement,
+} from "../../../../../../shared/models/listing.model";
 import {Timestamp} from "firebase/firestore";
 import {Store} from "@ngrx/store";
 import {
@@ -31,6 +34,8 @@ import {
   tap,
   map,
   of,
+  catchError,
+  shareReplay,
 } from "rxjs";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
@@ -40,13 +45,14 @@ import {
   Email,
   PhoneNumber,
   Address,
-} from "@shared/models/account.model";
+} from "../../../../../../shared/models/account.model";
 import {AccountSectionsService} from "../../../account/services/account-sections.service";
 import {
   selectAccountById,
   selectAllAccounts,
 } from "../../../../state/selectors/account.selectors";
-import {AuthUser} from "@shared/models/auth-user.model";
+import {AuthUser} from "../../../../../../shared/models/auth-user.model";
+import {AccountsService} from "../../../../core/services/accounts.service";
 
 @Component({
   selector: "app-listing-form",
@@ -73,6 +79,7 @@ export class ListingFormComponent implements OnInit {
     private fb: FormBuilder,
     private store: Store,
     private sections: AccountSectionsService,
+    private accountsService: AccountsService,
   ) {
     this.initForm();
   }
@@ -181,25 +188,54 @@ export class ListingFormComponent implements OnInit {
         });
 
       // Build list of accounts user can post as: self + groups where user is admin/moderator
-      this.ownerAccounts$ = combineLatest([
-        this.store.select(selectAuthUser),
-        this.store.select(selectAllAccounts),
-      ]).pipe(
-        map(([user, accounts]) => {
-          if (!user) return [] as Account[];
-          return (accounts || []).filter((acc) => {
-            if (!acc) return false;
-            if (acc.id === user.uid) return true;
-            const anyAcc: any = acc as any;
-            const inAdmins = Array.isArray(anyAcc.adminIds)
-              ? anyAcc.adminIds.includes(user.uid)
-              : false;
-            const inModerators = Array.isArray(anyAcc.moderatorIds)
-              ? anyAcc.moderatorIds.includes(user.uid)
-              : false;
-            return acc.type === "group" && (inAdmins || inModerators);
-          });
+      // Use callable function to get user's manageable accounts instead of store
+      this.ownerAccounts$ = this.store.select(selectAuthUser).pipe(
+        switchMap((user) => {
+          if (!user) return of([] as Account[]);
+
+          // First get the user's own account
+          const userAccount$ = this.store
+            .select(selectAccountById(user.uid))
+            .pipe(
+              filter((account): account is Account => !!account),
+              take(1),
+            );
+
+          // Then get related accounts where user has admin/moderator access
+          // TODO: We should create a new callable function for this, but for now use existing searchAccounts
+          // and filter client-side until we implement getUserManageableAccounts backend function
+          const searchAccounts$ = this.accountsService
+            .searchAccounts({
+              limit: 50, // Get a reasonable number of accounts to check
+            })
+            .pipe(
+              map((accounts) => {
+                // Filter for accounts where user has admin/moderator access
+                return accounts.filter((acc: any) => {
+                  if (!acc || acc.id === user.uid) return false; // Exclude user's own account (handled separately)
+                  const inAdmins = Array.isArray(acc.adminIds)
+                    ? acc.adminIds.includes(user.uid)
+                    : false;
+                  const inModerators = Array.isArray(acc.moderatorIds)
+                    ? acc.moderatorIds.includes(user.uid)
+                    : false;
+                  return acc.type === "group" && (inAdmins || inModerators);
+                });
+              }),
+              catchError((error) => {
+                console.error("Error fetching manageable accounts:", error);
+                return of([] as Account[]);
+              }),
+            );
+
+          // Combine user account + manageable accounts
+          return combineLatest([userAccount$, searchAccounts$]).pipe(
+            map(([userAccount, manageableAccounts]) => {
+              return [userAccount, ...manageableAccounts].filter(Boolean);
+            }),
+          );
         }),
+        shareReplay(1), // Cache the result
       );
 
       // Keep a live cache for use in event handlers (can't use pipes there)

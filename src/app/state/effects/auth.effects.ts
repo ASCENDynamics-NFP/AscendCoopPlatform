@@ -40,7 +40,6 @@ import {
   User,
 } from "firebase/auth";
 import {GoogleAuth} from "@southdevs/capacitor-google-auth";
-import {Capacitor} from "@capacitor/core";
 import {
   catchError,
   from,
@@ -55,6 +54,7 @@ import {
   take,
   timeout,
   delay,
+  concat,
 } from "rxjs";
 import {ErrorHandlerService} from "../../core/services/error-handler.service";
 import {SuccessHandlerService} from "../../core/services/success-handler.service";
@@ -72,6 +72,7 @@ import {Store} from "@ngrx/store";
 import {AuthState} from "../reducers/auth.reducer";
 import {Settings} from "@shared/models/account.model";
 import {selectAccountById} from "../selectors/account.selectors";
+import {FirebaseFunctionsService} from "../../core/services/firebase-functions.service";
 
 @Injectable()
 export class AuthEffects {
@@ -79,12 +80,20 @@ export class AuthEffects {
   private actionCodeSettings = {
     url: `${window.location.origin}/auth/login`,
     handleCodeInApp: true,
-    android: {
-      packageName: "org.ascendcoopplatform.app",
-      installApp: true,
-      // minimumVersion: "1", // Set your minimum app version if needed
-    },
-  };
+  } as const;
+
+  // Helper that avoids a hard import on '@capacitor/core'
+  // to keep web builds free of native-only dependencies.
+  private isNativePlatform(): boolean {
+    try {
+      const c = (window as any)?.Capacitor;
+      return typeof c?.isNativePlatform === "function"
+        ? c.isNativePlatform()
+        : false;
+    } catch {
+      return false;
+    }
+  }
 
   constructor(
     private actions$: Actions,
@@ -97,6 +106,7 @@ export class AuthEffects {
     private menuCtrl: MenuController,
     private authNavigationService: AuthNavigationService,
     private translate: TranslateService,
+    private firebaseFunctionsService: FirebaseFunctionsService,
   ) {}
 
   // Initialize Auth and Process Sign-In Link
@@ -279,7 +289,7 @@ export class AuthEffects {
     this.actions$.pipe(
       ofType(AuthActions.signInWithGoogle),
       switchMap(() => {
-        if (Capacitor.isNativePlatform()) {
+        if (this.isNativePlatform()) {
           // Use Capacitor Google Auth for native platforms
           return from(
             GoogleAuth.signIn({
@@ -602,6 +612,28 @@ export class AuthEffects {
     ),
   );
 
+  deleteAccount$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.deleteAccount),
+      exhaustMap((action) =>
+        this.firebaseFunctionsService
+          .deleteAccount(action.confirmationText)
+          .pipe(
+            switchMap(() => {
+              // After successful account deletion, sign out the user
+              return concat(
+                of(AuthActions.deleteAccountSuccess()),
+                of(AuthActions.signOut()),
+              );
+            }),
+            catchError((error) =>
+              of(AuthActions.deleteAccountFailure({error: error.message})),
+            ),
+          ),
+      ),
+    ),
+  );
+
   // Helper method to create AuthUser from claims and account data
   private createAuthUserFromClaims(
     user: User,
@@ -625,7 +657,9 @@ export class AuthEffects {
         }
         return of(account);
       }),
-      map((account) => {
+      // Bring in the current AuthUser (if any) to avoid regressing type
+      withLatestFrom(this.store.select(selectAuthUser)),
+      map(([account, existingAuth]) => {
         // Handle case where account couldn't be loaded
         if (!account) {
           // Create minimal AuthUser for new user who hasn't completed registration
@@ -672,7 +706,7 @@ export class AuthEffects {
             if (photoURL.includes("googleusercontent.com")) {
               // Remove size parameters and add high quality ones
               // Also ensure the URL is properly formatted
-              let cleanUrl = photoURL
+              const cleanUrl = photoURL
                 .replace(/=s\d+-c$/, "")
                 .replace(/=s\d+$/, "");
               return `${cleanUrl}=s400-c`;
@@ -696,7 +730,12 @@ export class AuthEffects {
           theme: "system",
         };
 
-        const finalType = (claims["type"] as string) || account?.type || "new";
+        const existingType =
+          existingAuth?.type && existingAuth.type !== "new"
+            ? existingAuth.type
+            : undefined;
+        const finalType =
+          (claims["type"] as string) || account?.type || existingType || "new";
 
         return {
           uid: user.uid,

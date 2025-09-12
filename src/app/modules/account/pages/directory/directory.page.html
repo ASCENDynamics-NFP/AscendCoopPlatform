@@ -1,7 +1,10 @@
 <ion-header>
   <app-header [title]="'Directory'"></app-header>
   <ion-toolbar class="filters-toolbar">
-    <ion-segment [value]="(type$ | async) || 'all'" (ionChange)="setType($any($event.detail.value))">
+    <ion-segment
+      [value]="(type$ | async) || 'all'"
+      (ionChange)="setType($any($event.detail.value))"
+    >
       <ion-segment-button value="all">
         <ion-icon name="albums-outline"></ion-icon>
         <ion-label>All</ion-label>
@@ -16,10 +19,17 @@
       </ion-segment-button>
     </ion-segment>
 
-    <ion-searchbar [debounce]="300" placeholder="Search profiles" (ionInput)="search($event)"></ion-searchbar>
+    <ion-searchbar
+      [debounce]="300"
+      placeholder="Search profiles"
+      (ionInput)="search($event)"
+    ></ion-searchbar>
 
     <div class="toggle-row">
-      <ion-toggle (ionChange)="togglePrivateGroups($event.detail.checked)" [checked]="true">
+      <ion-toggle
+        (ionChange)="togglePrivateGroups($event.detail.checked)"
+        [checked]="true"
+      >
         Include my private groups
       </ion-toggle>
       <ion-toggle (ionChange)="toggleMyGroups($event.detail.checked)">
@@ -31,7 +41,11 @@
 
       <ion-item lines="none" class="sort-item">
         <ion-label>Sort</ion-label>
-        <ion-select [value]="'name-asc'" interface="popover" (ionChange)="setSort($event.detail.value)">
+        <ion-select
+          [value]="'name-asc'"
+          interface="popover"
+          (ionChange)="setSort($event.detail.value)"
+        >
           <ion-select-option value="name-asc">Name A→Z</ion-select-option>
           <ion-select-option value="name-desc">Name Z→A</ion-select-option>
         </ion-select>
@@ -43,30 +57,58 @@
 <ion-content [fullscreen]="true">
   <ion-list class="results-list">
     <ng-container *ngIf="(paginated$ | async)?.length; else noResults">
-      <ion-item *ngFor="let acc of paginated$ | async" (click)="openAccount(acc)" detail="true" button>
+      <ion-item
+        *ngFor="let acc of paginated$ | async"
+        (click)="openAccount(acc)"
+        detail="true"
+        button
+      >
         <ion-avatar slot="start">
           <img *ngIf="acc.iconImage" [src]="acc.iconImage" [alt]="acc.name" />
-          <ion-icon *ngIf="!acc.iconImage" [name]="acc.type === 'group' ? 'people-circle' : 'person-circle'" size="large"></ion-icon>
+          <ion-icon
+            *ngIf="!acc.iconImage"
+            [name]="acc.type === 'group' ? 'people-circle' : 'person-circle'"
+            size="large"
+          ></ion-icon>
         </ion-avatar>
         <ion-label>
           <h3>{{ acc.name }}</h3>
           <p>{{ acc.tagline || acc.description }}</p>
         </ion-label>
         <div slot="end" class="status-icons">
-          <ion-icon *ngIf="getRelStatus(acc.id)==='pending'" name="hourglass" color="warning"></ion-icon>
-          <ion-icon *ngIf="getRelStatus(acc.id)==='accepted'" name="checkmark-circle" color="success"></ion-icon>
-          <ion-badge color="secondary" *ngIf="acc.type === 'group'">Group</ion-badge>
-          <ion-badge color="tertiary" *ngIf="acc.type === 'user'">User</ion-badge>
+          <ion-icon
+            *ngIf="getRelStatus(acc.id)==='pending'"
+            name="hourglass"
+            color="warning"
+          ></ion-icon>
+          <ion-icon
+            *ngIf="getRelStatus(acc.id)==='accepted'"
+            name="checkmark-circle"
+            color="success"
+          ></ion-icon>
+          <ion-badge color="secondary" *ngIf="acc.type === 'group'"
+            >Group</ion-badge
+          >
+          <ion-badge color="tertiary" *ngIf="acc.type === 'user'"
+            >User</ion-badge
+          >
         </div>
       </ion-item>
     </ng-container>
   </ion-list>
 
-  <app-pagination [totalItems]="(totalItems$ | async) || 0" [pageSize]="pageSize" [maxVisiblePages]="5" (pageChange)="goToPage($event)"></app-pagination>
+  <app-pagination
+    [totalItems]="(totalItems$ | async) || 0"
+    [pageSize]="pageSize"
+    [maxVisiblePages]="5"
+    (pageChange)="goToPage($event)"
+  ></app-pagination>
 
   <ng-template #noResults>
     <ion-item lines="none">
-      <ion-label class="ion-text-center">No results. Try a different search.</ion-label>
+      <ion-label class="ion-text-center"
+        >No results. Try a different search.</ion-label
+      >
     </ion-item>
   </ng-template>
 </ion-content>

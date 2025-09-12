@@ -108,7 +108,7 @@ export class TokenRefreshService {
             if (photoURL.includes("googleusercontent.com")) {
               // Remove size parameters and add high quality ones
               // Also ensure the URL is properly formatted
-              let cleanUrl = photoURL
+              const cleanUrl = photoURL
                 .replace(/=s\d+-c$/, "")
                 .replace(/=s\d+$/, "");
               return `${cleanUrl}=s400-c`;

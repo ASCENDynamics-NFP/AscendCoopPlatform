@@ -113,18 +113,32 @@ export const selectFilteredAccounts = (
 
     return accounts
       .filter((acc) => {
-        if (acc.type !== accountType || !acc.name) {
+        // Must have a name
+        if (!acc.name) {
           return false;
         }
-        // Filter out inactive accounts from search results
+
+        // Type filtering - handle 'all' type and null/empty types
+        if (accountType !== "all") {
+          const accType = acc.type || "";
+          if (accType !== accountType) {
+            return false;
+          }
+        }
+
+        // Filter out explicitly inactive accounts (but allow undefined status)
         if (acc.status === "inactive") {
           return false;
         }
-        // Only show accounts explicitly marked public via privacySettings.profile.visibility
+
+        // Privacy filtering - be more lenient with undefined privacy settings
         const visibility = (acc.privacySettings as any)?.profile?.visibility;
-        if (visibility !== "public") {
+        // Only filter out accounts explicitly marked as private
+        if (visibility === "private") {
           return false;
         }
+        // Allow undefined, null, or "public" visibility
+
         const normalizedAccountName = normalizeString(acc.name);
         return normalizedAccountName.includes(normalizedSearchTerm);
       })
@@ -154,17 +168,28 @@ export const selectFilteredAccountsWithPrivacy = (
 
       return accounts
         .filter((acc) => {
-          if (acc.type !== accountType || !acc.name) {
+          // Must have a name
+          if (!acc.name) {
             return false;
           }
-          // Filter out inactive accounts from search results
+
+          // Type filtering - handle 'all' type and null/empty types
+          if (accountType !== "all") {
+            const accType = acc.type || "";
+            if (accType !== accountType) {
+              return false;
+            }
+          }
+
+          // Filter out explicitly inactive accounts (but allow undefined status)
           if (acc.status === "inactive") {
             return false;
           }
 
           // Privacy filtering logic based solely on privacySettings.profile.visibility
           const visibility = (acc.privacySettings as any)?.profile?.visibility;
-          if (visibility !== "public") {
+          // Only filter out accounts explicitly marked as private
+          if (visibility === "private") {
             // Private groups are only visible to members
             if (!userId) return false;
             const isMember = userRelatedAccounts.some(
@@ -172,6 +197,7 @@ export const selectFilteredAccountsWithPrivacy = (
             );
             if (!isMember) return false;
           }
+          // Allow undefined, null, or "public" visibility
 
           const normalizedAccountName = normalizeString(acc.name);
           return normalizedAccountName.includes(normalizedSearchTerm);

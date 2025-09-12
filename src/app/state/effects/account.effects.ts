@@ -69,24 +69,25 @@ export class AccountEffects {
     private toastController: ToastController,
   ) {}
 
-  // Load Accounts only if not fresh
+  // Load Accounts - TEMPORARILY BYPASS FRESHNESS CHECK
   loadAccounts$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.loadAccounts),
-      withLatestFrom(this.store.select(selectAreAccountsFresh)),
-      filter(([_, areFresh]) => !areFresh),
-      switchMap(() =>
-        this.accountsService.getAllAccounts().pipe(
-          map((accounts) => AccountActions.loadAccountsSuccess({accounts})),
-          catchError((error) =>
-            of(
+      // TEMP: Removed freshness check to force reload
+      switchMap(() => {
+        return this.accountsService.getAllAccounts().pipe(
+          map((accounts) => {
+            return AccountActions.loadAccountsSuccess({accounts});
+          }),
+          catchError((error) => {
+            return of(
               AccountActions.loadAccountsFailure({
                 error: error.message || error,
               }),
-            ),
-          ),
-        ),
-      ),
+            );
+          }),
+        );
+      }),
     ),
   );
 
@@ -186,7 +187,7 @@ export class AccountEffects {
     this.actions$.pipe(
       ofType(AccountActions.deleteAccount),
       switchMap(({accountId}) =>
-        from(this.firestoreService.deleteDocument("accounts", accountId)).pipe(
+        this.accountsService.deleteMyAccount().pipe(
           map(() => {
             this.router.navigate(["/"]);
             this.showToast("Account deleted successfully", "success");

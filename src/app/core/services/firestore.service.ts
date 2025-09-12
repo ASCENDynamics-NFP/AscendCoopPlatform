@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 // src/app/core/services/firestore.service.ts
 import {Injectable} from "@angular/core";
-import {Observable, of} from "rxjs";
+import {Observable, of, firstValueFrom} from "rxjs";
 import {map, catchError} from "rxjs/operators";
 import {FirebaseError} from "firebase/app";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
@@ -61,14 +61,14 @@ export class FirestoreService {
       const docRef = this.afs.collection(collectionName).doc(documentId);
 
       // Check document exists first
-      const beforeSnapshot = await docRef.get().toPromise();
+      const beforeSnapshot = await firstValueFrom(docRef.get());
       const beforeData = beforeSnapshot?.data() as any;
 
       // Perform the update
       await docRef.update(updatedData);
 
       // Verify the update
-      const afterSnapshot = await docRef.get().toPromise();
+      const afterSnapshot = await firstValueFrom(docRef.get());
 
       // Check if the update was successful
       const isVerified = Object.keys(updatedData).every((key) => {

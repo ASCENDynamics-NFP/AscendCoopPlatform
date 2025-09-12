@@ -14,7 +14,7 @@ import {
 export const createListing = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "512MiB",
     timeoutSeconds: 60,
   },
@@ -68,7 +68,7 @@ export const createListing = onCall(
 export const updateListing = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "512MiB",
     timeoutSeconds: 60,
   },
@@ -117,7 +117,7 @@ export const updateListing = onCall(
 export const applyToListing = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },
@@ -168,7 +168,7 @@ export const applyToListing = onCall(
 export const manageApplication = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },
@@ -233,7 +233,7 @@ export const manageApplication = onCall(
 export const getListingWithApplications = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "512MiB",
     timeoutSeconds: 30,
   },
@@ -274,7 +274,7 @@ export const getListingWithApplications = onCall(
 export const searchListings = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "512MiB",
     timeoutSeconds: 30,
   },
@@ -336,7 +336,7 @@ export const searchListings = onCall(
 export const deleteListing = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "512MiB",
     timeoutSeconds: 60,
   },

@@ -37,9 +37,9 @@ import {FirestoreService} from "../../core/services/firestore.service";
 import {ListingsService} from "../../core/services/listings.service";
 import {StorageService} from "../../core/services/storage.service";
 import * as ListingsActions from "../actions/listings.actions";
-import {Listing} from "@shared/models/listing.model";
+import {Listing} from "../../../../shared/models/listing.model";
 import {serverTimestamp} from "@angular/fire/firestore";
-import {ListingRelatedAccount} from "@shared/models/listing-related-account.model";
+import {ListingRelatedAccount} from "../../../../shared/models/listing-related-account.model";
 import {Router} from "@angular/router";
 import {ToastController} from "@ionic/angular";
 import {Store} from "@ngrx/store";
@@ -67,19 +67,66 @@ export class ListingsEffects {
     this.actions$.pipe(
       ofType(ListingsActions.createListing),
       mergeMap(({listing}) => {
-        const newListing = {
-          ...listing,
-          createdAt: serverTimestamp(),
-          lastModifiedAt: serverTimestamp(),
+        // Convert listing to CreateListingRequest format
+        const createRequest = {
+          title: listing.title,
+          organization: listing.organization || "",
+          description: listing.description || "",
+          type: listing.type as "volunteer" | "job" | "event" | "project",
+          category: "general", // Default category since Listing model doesn't have category
+          status:
+            (listing.status as "active" | "inactive" | "draft") || "active",
+          remote: listing.remote || false,
+          contactInformation: {
+            emails:
+              listing.contactInformation?.emails?.map((e) => ({
+                email: e.email || "",
+                type: e.name || "contact", // Use name field as type
+              })) || [],
+            phoneNumbers:
+              listing.contactInformation?.phoneNumbers?.map((p) => ({
+                number: p.number || "",
+                type: p.type || "mobile",
+              })) || [],
+            addresses:
+              listing.contactInformation?.addresses?.map((a) =>
+                a
+                  ? {
+                      street: a.street || undefined,
+                      city: a.city || undefined,
+                      state: a.state || undefined,
+                      zipCode: a.zipcode || undefined, // Fix: use zipcode not zipCode
+                      country: a.country || undefined,
+                      remote: a.remote || undefined,
+                    }
+                  : {},
+              ) || [],
+          },
+          requirements: listing.requirements || [],
+          skills: listing.skills?.map((skill) => skill.name) || [], // Extract skill names
+          timeCommitment: listing.timeCommitment
+            ? {
+                hoursPerWeek: listing.timeCommitment.hoursPerWeek,
+                duration: listing.timeCommitment.duration,
+                schedule: listing.timeCommitment.schedule,
+              }
+            : undefined,
+          iconImage: listing.iconImage,
+          heroImage: listing.heroImage,
         };
-        return from(
-          this.firestoreService.addDocument("listings", newListing),
-        ).pipe(
-          map((docId) => {
-            this.router.navigate([`/listings/${docId}`]);
+
+        return this.listingsService.createListing(createRequest).pipe(
+          map((result) => {
+            const newListing = {
+              ...listing,
+              id: result.listing?.id || result.id,
+              createdAt: result.listing?.createdAt || new Date(),
+              lastModifiedAt: result.listing?.lastModifiedAt || new Date(),
+            };
+            this.router.navigate([`/listings/${newListing.id}`]);
             this.showToast("Listing created successfully", "success");
             return ListingsActions.createListingSuccess({
-              listing: {...newListing, id: docId},
+              listing: newListing,
             });
           }),
           catchError((error) => {

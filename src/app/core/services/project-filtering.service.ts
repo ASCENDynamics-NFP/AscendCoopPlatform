@@ -139,7 +139,7 @@ export class ProjectFilteringService {
     return combineLatest([projects$, filter$]).pipe(
       map(([projects, filter]) => {
         // Apply filters
-        let filteredProjects = this.applyFiltersSync(projects, filter);
+        const filteredProjects = this.applyFiltersSync(projects, filter);
 
         // Create grouped version
         const grouped = this.groupProjectsByCategorySync(filteredProjects);

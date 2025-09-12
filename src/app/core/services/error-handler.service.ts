@@ -156,7 +156,7 @@ export class ErrorHandlerService {
 
     let titleKey = "errors.generic_error";
     let messageKey = "";
-    let fallbackMessage = error.message;
+    const fallbackMessage = error.message;
 
     if (errorMapping.hasOwnProperty(error.code)) {
       titleKey = errorMapping[error.code].titleKey;

@@ -22,10 +22,16 @@
 import {Injectable} from "@angular/core";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
 import {combineLatest, Observable, of} from "rxjs";
-import {catchError, map} from "rxjs/operators";
-import {Account, RelatedAccount} from "@shared/models/account.model";
-import {RelatedListing} from "@shared/models/related-listing.model";
+import {catchError, map, tap} from "rxjs/operators";
+import {Account, RelatedAccount} from "../../../../shared/models/account.model";
+import {RelatedListing} from "../../../../shared/models/related-listing.model";
 import {FirestoreService} from "./firestore.service";
+import {
+  FirebaseFunctionsService,
+  CreateAccountRequest,
+  UpdateAccountRequest,
+  SearchAccountsRequest,
+} from "./firebase-functions.service";
 
 @Injectable({
   providedIn: "root",
@@ -34,29 +40,88 @@ export class AccountsService {
   constructor(
     private afs: AngularFirestore,
     private firestore: FirestoreService,
+    private firebaseFunctions: FirebaseFunctionsService,
   ) {}
 
-  searchAccountByName(
-    collectionName: string,
-    searchTerm: string,
-  ): Observable<Account[]> {
-    const collectionRef = this.afs.collection<Account>(collectionName, (ref) =>
-      ref
-        .where("type", "in", ["user", "group"]) // only user/group accounts
-        .where("privacySettings.profile.visibility", "==", "public") // must align with rules
-        .orderBy("name")
-        .startAt(searchTerm)
-        .endAt(searchTerm + "\uf8ff"),
-    );
+  // ===== CALLABLE FUNCTION METHODS =====
 
-    return collectionRef.valueChanges({idField: "id"}).pipe(
+  /**
+   * Create a new account using callable function
+   */
+  createAccount(accountData: CreateAccountRequest): Observable<any> {
+    return this.firebaseFunctions.createAccount(accountData);
+  }
+
+  /**
+   * Update account using callable function
+   */
+  updateAccount(
+    accountId: string,
+    updates: Partial<CreateAccountRequest>,
+  ): Observable<any> {
+    return this.firebaseFunctions.updateAccount({accountId, updates});
+  }
+
+  /**
+   * Delete user's own account using callable function
+   */
+  deleteMyAccount(): Observable<any> {
+    return this.firebaseFunctions.deleteMyAccount();
+  }
+
+  /**
+   * Search accounts using callable function with filtering options
+   */
+  searchAccounts(searchParams: SearchAccountsRequest): Observable<Account[]> {
+    return this.firebaseFunctions.searchAccounts(searchParams).pipe(
+      map((result) => {
+        return result.accounts || [];
+      }),
       catchError((error) => {
-        console.error("Error searching accounts:", error);
         return of([]);
       }),
     );
   }
 
+  /**
+   * Get a specific account by ID using callable function
+   */
+  getAccount(accountId: string): Observable<Account | null> {
+    return this.firebaseFunctions.getAccount(accountId).pipe(
+      map((result) => result.account || null),
+      catchError((error) => {
+        console.error("Error getting account:", error);
+        return of(null);
+      }),
+    );
+  }
+
+  // ===== LEGACY METHODS (keeping for backward compatibility) =====
+
+  /**
+   * @deprecated Use searchAccounts() with SearchAccountsRequest instead
+   */
+  searchAccountByName(
+    collectionName: string,
+    searchTerm: string,
+  ): Observable<Account[]> {
+    // Convert to new search format
+    return this.searchAccounts({
+      // We can't filter by name directly in the new function
+      // This method should be updated to use text search when available
+      limit: 20,
+    }).pipe(
+      map((accounts) =>
+        accounts.filter((account) =>
+          account.name?.toLowerCase().includes(searchTerm.toLowerCase()),
+        ),
+      ),
+    );
+  }
+
+  /**
+   * @deprecated Direct Firestore access - consider using callable functions for relationships
+   */
   getRelatedAccounts(accountId: string): Observable<RelatedAccount[]> {
     const relatedAccountsRef = this.afs.collection<RelatedAccount>(
       `accounts/${accountId}/relatedAccounts`,
@@ -77,37 +142,27 @@ export class AccountsService {
     );
   }
 
+  /**
+   * @deprecated Use searchAccounts() instead with proper filtering
+   */
   getAllAccounts(): Observable<Account[]> {
-    return this.afs
-      .collection<Account>("accounts", (ref) =>
-        ref
-          .where("privacySettings.profile.visibility", "==", "public")
-          .where("type", "in", ["user", "group"]),
-      )
-      .snapshotChanges()
-      .pipe(
-        map((actions) =>
-          actions.map((action) => {
-            const data = action.payload.doc.data() as Account;
-            const id = action.payload.doc.id;
-            return {...data, id};
-          }),
-        ),
-        catchError((error) => {
-          console.error("Error getting accounts:", error);
-          return of([]);
-        }),
-      );
+    return this.searchAccounts({
+      limit: 1000, // Increased limit for directory page
+    });
   }
 
+  /**
+   * Get account with related data - using mixed approach
+   * TODO: Replace with pure callable functions when relationship functions are available
+   */
   getAccountWithRelated(accountId: string): Observable<{
     account: Account | null;
     relatedAccounts: RelatedAccount[];
     relatedListings: RelatedListing[];
   }> {
     return combineLatest([
-      this.firestore.getDocument<Account>("accounts", accountId),
-      this.getRelatedAccounts(accountId),
+      this.getAccount(accountId), // Using callable function
+      this.getRelatedAccounts(accountId), // Legacy Firestore access
       this.afs
         .collection<RelatedListing>(`accounts/${accountId}/relatedListings`)
         .snapshotChanges()

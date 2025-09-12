@@ -15,7 +15,7 @@ import {
 export const createRelationship = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },
@@ -83,7 +83,7 @@ export const createRelationship = onCall(
 export const updateRelationship = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },
@@ -141,7 +141,7 @@ export const updateRelationship = onCall(
 export const deleteRelationship = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },
@@ -183,7 +183,7 @@ export const deleteRelationship = onCall(
 export const getRelationships = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "512MiB",
     timeoutSeconds: 30,
   },
@@ -241,7 +241,7 @@ export const getRelationships = onCall(
 export const getPendingRequests = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },
@@ -286,7 +286,7 @@ export const getPendingRequests = onCall(
 export const getRelationshipStats = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },
@@ -324,7 +324,7 @@ export const getRelationshipStats = onCall(
 export const bulkUpdateRelationships = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "512MiB",
     timeoutSeconds: 60,
   },

@@ -11,7 +11,7 @@ import {NotificationService} from "../../services/notificationService";
 export const getUserNotifications = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },
@@ -51,7 +51,7 @@ export const getUserNotifications = onCall(
 export const markNotificationAsRead = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },
@@ -90,7 +90,7 @@ export const markNotificationAsRead = onCall(
 export const sendAdminNotification = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },

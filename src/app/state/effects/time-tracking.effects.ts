@@ -30,8 +30,7 @@ import {
   takeUntil,
 } from "rxjs/operators";
 import {of, from} from "rxjs";
-import {AngularFirestore} from "@angular/fire/compat/firestore";
-import {TimeEntry} from "@shared/models/time-entry.model";
+import {TimeEntry} from "../../../../shared/models/time-entry.model";
 import {TimeTrackingService} from "../../core/services/time-tracking.service";
 import * as TimeTrackingActions from "../actions/time-tracking.actions";
 import {ErrorHandlerService} from "../../core/services/error-handler.service";
@@ -40,8 +39,7 @@ import {ErrorHandlerService} from "../../core/services/error-handler.service";
 export class TimeTrackingEffects {
   constructor(
     private actions$: Actions,
-    private afs: AngularFirestore,
-    private service: TimeTrackingService,
+    private timeTrackingService: TimeTrackingService,
     private errorHandler: ErrorHandlerService,
   ) {}
 
@@ -49,7 +47,7 @@ export class TimeTrackingEffects {
     this.actions$.pipe(
       ofType(TimeTrackingActions.loadProjects),
       switchMap(({accountId}) =>
-        this.service.getProjects(accountId).pipe(
+        this.timeTrackingService.getProjects(accountId).pipe(
           takeUntil(
             this.actions$.pipe(
               ofType(TimeTrackingActions.clearTimeTrackingSubscriptions),
@@ -71,8 +69,10 @@ export class TimeTrackingEffects {
       ofType(TimeTrackingActions.saveTimeEntry),
       mergeMap(({entry}) => {
         const save$ = entry.id
-          ? from(this.service.updateTimeEntry(entry)).pipe(map(() => entry.id))
-          : from(this.service.addTimeEntry(entry));
+          ? from(this.timeTrackingService.updateTimeEntry_legacy(entry)).pipe(
+              map(() => entry.id),
+            )
+          : from(this.timeTrackingService.addTimeEntry(entry));
         return save$.pipe(
           map((id) =>
             TimeTrackingActions.saveTimeEntrySuccess({entry: {...entry, id}}),
@@ -89,7 +89,7 @@ export class TimeTrackingEffects {
     this.actions$.pipe(
       ofType(TimeTrackingActions.deleteTimeEntry),
       mergeMap(({entry}) =>
-        from(this.service.deleteTimeEntry(entry)).pipe(
+        from(this.timeTrackingService.deleteTimeEntry(entry.id)).pipe(
           map(() =>
             TimeTrackingActions.deleteTimeEntrySuccess({entryId: entry.id}),
           ),
@@ -122,14 +122,12 @@ export class TimeTrackingEffects {
         const start = new Date(weekStart);
         const end = new Date(start);
         end.setDate(start.getDate() + 7);
-        return this.afs
-          .collection<TimeEntry>(`accounts/${accountId}/timeEntries`, (ref) =>
-            ref
-              .where("userId", "==", userId)
-              .where("date", ">=", start)
-              .where("date", "<", end),
-          )
-          .valueChanges({idField: "id"})
+
+        return this.timeTrackingService
+          .getUserTimeEntries(accountId, userId, {
+            startDate: start.toISOString(),
+            endDate: end.toISOString(),
+          })
           .pipe(
             takeUntil(
               this.actions$.pipe(
@@ -164,36 +162,28 @@ export class TimeTrackingEffects {
     this.actions$.pipe(
       ofType(TimeTrackingActions.loadAllTimeEntriesForAccount),
       mergeMap(({accountId}) => {
-        return this.afs
-          .collection<TimeEntry>(`accounts/${accountId}/timeEntries`)
-          .snapshotChanges()
-          .pipe(
-            takeUntil(
-              this.actions$.pipe(
-                ofType(TimeTrackingActions.clearTimeTrackingSubscriptions),
-              ),
+        return this.timeTrackingService.getAccountTimeEntries(accountId).pipe(
+          takeUntil(
+            this.actions$.pipe(
+              ofType(TimeTrackingActions.clearTimeTrackingSubscriptions),
             ),
-            map((actions) => {
-              const entries = actions.map((a) => {
-                const data = a.payload.doc.data() as TimeEntry;
-                const id = a.payload.doc.id;
-                return {...data, id};
-              });
-              return TimeTrackingActions.loadAllTimeEntriesForAccountSuccess({
+          ),
+          map((entries) => {
+            return TimeTrackingActions.loadAllTimeEntriesForAccountSuccess({
+              accountId,
+              entries,
+            });
+          }),
+          catchError((error) => {
+            console.error("Error loading all time entries:", error);
+            return of(
+              TimeTrackingActions.loadAllTimeEntriesForAccountFailure({
                 accountId,
-                entries,
-              });
-            }),
-            catchError((error) => {
-              console.error("Error loading all time entries:", error);
-              return of(
-                TimeTrackingActions.loadAllTimeEntriesForAccountFailure({
-                  accountId,
-                  error,
-                }),
-              );
-            }),
-          );
+                error,
+              }),
+            );
+          }),
+        );
       }),
     ),
   );
@@ -203,7 +193,7 @@ export class TimeTrackingEffects {
     this.actions$.pipe(
       ofType(TimeTrackingActions.updateTimeEntry),
       mergeMap(({entry}) =>
-        from(this.service.updateTimeEntry(entry)).pipe(
+        from(this.timeTrackingService.updateTimeEntry_legacy(entry)).pipe(
           map(() => TimeTrackingActions.updateTimeEntrySuccess({entry})),
           catchError((error) => {
             console.error("Error updating time entry:", error);
@@ -221,7 +211,10 @@ export class TimeTrackingEffects {
       mergeMap(({accountId, userId, weekStart, entries}) => {
         // Update all entries to have pending status
         const updatePromises = entries.map((entry) =>
-          this.service.updateTimeEntry({...entry, status: "pending"}),
+          this.timeTrackingService.updateTimeEntry_legacy({
+            ...entry,
+            status: "pending",
+          }),
         );
 
         return from(Promise.all(updatePromises)).pipe(

@@ -524,7 +524,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
           };
 
           // Handle rejectionReason separately to satisfy TypeScript
-          let updatedEntry: any = baseEntry;
+          const updatedEntry: any = baseEntry;
           if (status === "rejected" && notes) {
             updatedEntry.rejectionReason = notes;
           } else if (status === "approved") {

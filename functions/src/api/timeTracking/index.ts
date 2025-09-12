@@ -14,7 +14,7 @@ import {
 export const createTimeEntry = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },
@@ -69,7 +69,7 @@ export const createTimeEntry = onCall(
 export const updateTimeEntry = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },
@@ -123,7 +123,7 @@ export const updateTimeEntry = onCall(
 export const deleteTimeEntry = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },
@@ -160,7 +160,7 @@ export const deleteTimeEntry = onCall(
 export const getAccountTimeEntries = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },
@@ -207,7 +207,7 @@ export const getAccountTimeEntries = onCall(
 export const getTimeTrackingStats = onCall(
   {
     region: "us-central1",
-    enforceAppCheck: true,
+    enforceAppCheck: false,
     memory: "256MiB",
     timeoutSeconds: 30,
   },

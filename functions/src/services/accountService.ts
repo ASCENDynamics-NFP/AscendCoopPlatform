@@ -200,6 +200,7 @@ export class AccountService {
             version: "1.0.0",
           },
         },
+        isActive: true,
         createdAt: Timestamp.now(),
         createdBy: userId,
         lastLoginAt: Timestamp.now(),
@@ -578,33 +579,39 @@ export class AccountService {
     accountId: string,
   ): Promise<void> {
     try {
-      // Delete all subcollections of the account
-      const subcollections = [
-        "roles",
-        "projects",
-        "relatedAccounts",
-        "relatedListings",
-        "timeEntries",
-        "contactInfo",
-      ];
+      // Delete all subcollections recursively
+      await this.deleteDocumentWithSubcollections(
+        db.collection("accounts").doc(accountId),
+      );
 
-      for (const subcollection of subcollections) {
-        const subColRef = db
-          .collection("accounts")
-          .doc(accountId)
-          .collection(subcollection);
-        const docs = await subColRef.get();
-        docs.forEach((doc) => {
-          batch.delete(doc.ref);
-        });
+      // Delete all listings owned by this account (and their subcollections)
+      const ownedListingsQuery = await db
+        .collection("listings")
+        .where("ownerAccountId", "==", accountId)
+        .get();
+
+      logger.info(
+        `Found ${ownedListingsQuery.size} listings owned by account ${accountId}`,
+      );
+
+      for (const listingDoc of ownedListingsQuery.docs) {
+        logger.info(`Deleting owned listing: ${listingDoc.id}`);
+        // First delete all subcollections of this listing
+        await this.deleteDocumentWithSubcollections(listingDoc.ref);
+        // Then delete the listing document itself
+        batch.delete(listingDoc.ref);
       }
 
+      // Handle cross-collection references using the main batch
       // Remove this account from other accounts' relatedAccounts
       const relatedAccountsQuery = await db
         .collectionGroup("relatedAccounts")
         .where("id", "==", accountId)
         .get();
 
+      logger.info(
+        `Deleting ${relatedAccountsQuery.size} related account references`,
+      );
       relatedAccountsQuery.docs.forEach((doc) => {
         batch.delete(doc.ref);
       });
@@ -615,6 +622,9 @@ export class AccountService {
         .where("accountId", "==", accountId)
         .get();
 
+      logger.info(
+        `Deleting ${listingRelationsQuery.size} listing relation references`,
+      );
       listingRelationsQuery.docs.forEach((doc) => {
         batch.delete(doc.ref);
       });
@@ -625,17 +635,69 @@ export class AccountService {
         .where("accountId", "==", accountId)
         .get();
 
+      logger.info(
+        `Deleting ${relatedListingsQuery.size} related listings references`,
+      );
       relatedListingsQuery.docs.forEach((doc) => {
         batch.delete(doc.ref);
       });
 
       logger.info(
-        `Queued deletion of related documents for account ${accountId}`,
+        `Completed deletion of subcollections and queued cross-collection references for account ${accountId}`,
       );
     } catch (error) {
       logger.error("Error deleting account relations:", error);
       throw new HttpsError("internal", "Failed to delete account relations");
     }
+  }
+
+  /**
+   * Recursively delete a document and all its subcollections
+   */
+  private static async deleteDocumentWithSubcollections(
+    docRef: FirebaseFirestore.DocumentReference,
+  ): Promise<void> {
+    // Get all subcollections of this document
+    const subcollections = await docRef.listCollections();
+
+    logger.info(
+      `Found ${subcollections.length} subcollections for document ${docRef.path}`,
+    );
+
+    // Delete each subcollection recursively
+    for (const subcollection of subcollections) {
+      logger.info(`Processing subcollection: ${subcollection.path}`);
+
+      // Get all documents in this subcollection
+      const docs = await subcollection.get();
+
+      if (docs.size > 0) {
+        logger.info(
+          `Deleting ${docs.size} documents from ${subcollection.path}`,
+        );
+
+        // Process documents in batches
+        const chunks = [];
+        for (let i = 0; i < docs.docs.length; i += 450) {
+          chunks.push(docs.docs.slice(i, i + 450));
+        }
+
+        for (const chunk of chunks) {
+          const subBatch = db.batch();
+
+          for (const doc of chunk) {
+            // Recursively delete this document's subcollections first
+            await this.deleteDocumentWithSubcollections(doc.ref);
+            // Then delete the document itself
+            subBatch.delete(doc.ref);
+          }
+
+          await subBatch.commit();
+        }
+      }
+    }
+
+    logger.info(`Completed deletion of all subcollections for ${docRef.path}`);
   }
 
   /**
@@ -720,10 +782,24 @@ export class AccountService {
       }
 
       const limit = Math.min(options.limit || 20, 50);
+
+      // Query only active accounts
       let query = db
         .collection("accounts")
         .where("isActive", "==", true)
         .limit(limit + 1);
+
+      logger.info("Search accounts - Starting query", {
+        originalOptions: options,
+        limit,
+        filters: {
+          isActive: true,
+          type: options.type,
+          hasLocation: !!options.location,
+          hasSkills: !!options.skills,
+          hasQuery: !!options.query,
+        },
+      });
 
       // Apply type filter
       if (options.type) {
@@ -742,10 +818,22 @@ export class AccountService {
       }
 
       const snapshot = await query.get();
+      logger.info("Search accounts - After Firestore query", {
+        foundDocuments: snapshot.docs.length,
+        isEmpty: snapshot.empty,
+      });
+
       let accounts = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as any[];
+
+      logger.info("Search accounts - Raw accounts", {
+        accountCount: accounts.length,
+        accountIds: accounts.map((acc) => acc.id),
+        accountNames: accounts.map((acc) => acc.name),
+        accountTypes: accounts.map((acc) => acc.type),
+      });
 
       // Apply location filtering (post-query for geographic search)
       if (options.location) {
@@ -813,11 +901,12 @@ export class AccountService {
               country: account.location.country,
             }
           : null,
-        profileImage: account.profileImage,
+        iconImage: account.iconImage, // Keep using iconImage for consistency
         verified: account.verified,
         rating: account.rating,
         projectCount: account.projectCount,
         createdAt: account.createdAt,
+        tagline: account.tagline, // Add tagline to the returned data
       }));
 
       return {
@@ -856,5 +945,64 @@ export class AccountService {
         Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
+  }
+
+  /**
+   * Migration function: Add isActive: true to all existing accounts that don't have it
+   * This should be run once to fix legacy accounts
+   */
+  static async migrateAccountsIsActive(): Promise<{
+    updated: number;
+    alreadyHadField: number;
+    total: number;
+  }> {
+    try {
+      logger.info("Starting accounts isActive migration...");
+
+      const batch = db.batch();
+      let batchCount = 0;
+      let updated = 0;
+      let alreadyHadField = 0;
+      let total = 0;
+
+      // Get all accounts
+      const snapshot = await db.collection("accounts").get();
+      total = snapshot.docs.length;
+
+      logger.info(`Found ${total} accounts to check`);
+
+      for (const doc of snapshot.docs) {
+        const data = doc.data();
+
+        if (data.isActive === undefined) {
+          // Account doesn't have isActive field, add it
+          batch.update(doc.ref, {isActive: true});
+          updated++;
+          batchCount++;
+
+          // Firestore batch limit is 500 operations
+          if (batchCount >= 450) {
+            await batch.commit();
+            logger.info(`Committed batch of ${batchCount} updates`);
+            batchCount = 0;
+          }
+        } else {
+          alreadyHadField++;
+        }
+      }
+
+      // Commit remaining operations
+      if (batchCount > 0) {
+        await batch.commit();
+        logger.info(`Committed final batch of ${batchCount} updates`);
+      }
+
+      const result = {updated, alreadyHadField, total};
+      logger.info("Migration completed:", result);
+      return result;
+    } catch (error) {
+      logger.error("Error in accounts isActive migration:", error);
+      throw new HttpsError("internal", "Migration failed");
+    }
   }
 }

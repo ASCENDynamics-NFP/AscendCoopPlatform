@@ -27,6 +27,7 @@ import {Timestamp} from "firebase/firestore";
 import {TimeEntry} from "../../../../../shared/models/time-entry.model";
 import {selectAuthUser} from "../../../state/selectors/auth.selectors";
 import {filter, take} from "rxjs/operators";
+import {firstValueFrom} from "rxjs";
 
 interface TimesheetNotification {
   id: string;
@@ -204,13 +205,12 @@ export class TimesheetNotificationService {
   }
 
   private async getCurrentUser() {
-    return this.store
-      .select(selectAuthUser)
-      .pipe(
+    return firstValueFrom(
+      this.store.select(selectAuthUser).pipe(
         filter((user) => !!user),
         take(1),
-      )
-      .toPromise();
+      ),
+    );
   }
 
   private async showToast(message: string, color: string = "primary") {

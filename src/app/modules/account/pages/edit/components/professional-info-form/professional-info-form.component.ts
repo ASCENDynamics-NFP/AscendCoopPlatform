@@ -23,6 +23,10 @@ import {Component, Input, OnInit, ElementRef, ViewChild} from "@angular/core";
 import {Account, ProfessionalInformation} from "@shared/models/account.model";
 import {FormGroup, FormBuilder, Validators} from "@angular/forms";
 import {Store} from "@ngrx/store";
+import {FirestoreService} from "../../../../../../core/services/firestore.service";
+import {StorageService} from "../../../../../../core/services/storage.service";
+import {AccountSectionsService} from "../../../../services/account-sections.service";
+import {take} from "rxjs/operators";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 import {skillsOptions} from "../../../../../../core/data/options";
 
@@ -42,6 +46,9 @@ export class ProfessionalInfoFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private store: Store,
+    private firestoreService: FirestoreService,
+    private storageService: StorageService,
+    private sections: AccountSectionsService,
   ) {
     this.professionalInformationForm = this.fb.group({
       occupation: ["", Validators.required],
@@ -56,8 +63,28 @@ export class ProfessionalInfoFormComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (this.account?.professionalInformation) {
-      this.loadFormData();
+    if (this.account?.id) {
+      this.sections
+        .professionalInfo$(this.account.id)
+        .pipe(take(1))
+        .subscribe((pi: any) => {
+          if (pi) {
+            // Patch form with existing professional info
+            this.professionalInformationForm.patchValue({
+              ...pi,
+              resumeUpload: null, // file input stays empty; keep URL separately
+            });
+            // Preserve existing URL for later if no new file is uploaded
+            if (pi.resumeUpload) {
+              this.resumeFileName =
+                typeof pi.resumeUpload === "string"
+                  ? pi.resumeUpload
+                  : this.resumeFileName;
+            }
+          } else if (this.account?.professionalInformation) {
+            this.loadFormData();
+          }
+        });
     }
   }
 
@@ -92,24 +119,32 @@ export class ProfessionalInfoFormComponent implements OnInit {
     }
   }
 
-  onSubmit() {
+  async onSubmit() {
     if (this.professionalInformationForm.valid && this.account) {
       const formValue = this.professionalInformationForm.value;
+      let resumeUrl =
+        this.account.professionalInformation?.resumeUpload || null;
+      if (this.resumeFile instanceof File) {
+        // Upload resume and get URL
+        const extension =
+          this.resumeFile.name.split(".").pop()?.toLowerCase() || "pdf";
+        const filePath = `accounts/${this.account.id}/resume.${extension}`;
+        resumeUrl = await this.storageService.uploadFile(
+          filePath,
+          this.resumeFile,
+        );
+      }
+
       const updatedProfessionalInformation: ProfessionalInformation = {
         ...formValue,
-        resumeUpload:
-          this.resumeFile ||
-          this.account.professionalInformation?.resumeUpload ||
-          null,
-      };
+        resumeUpload: resumeUrl,
+      } as ProfessionalInformation;
 
-      const updatedAccount: Account = {
-        ...this.account,
-        professionalInformation: updatedProfessionalInformation,
-      };
-
-      this.store.dispatch(
-        AccountActions.updateAccount({account: updatedAccount}),
+      // Write to sections/professionalInfo only
+      await this.firestoreService.setDocument(
+        `accounts/${this.account.id}/sections/professionalInfo`,
+        updatedProfessionalInformation as any,
+        {merge: true},
       );
     }
   }

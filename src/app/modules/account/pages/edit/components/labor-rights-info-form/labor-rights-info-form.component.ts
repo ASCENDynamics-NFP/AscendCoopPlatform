@@ -20,6 +20,9 @@
 import {Component, Input, OnInit} from "@angular/core";
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {Store} from "@ngrx/store";
+import {FirestoreService} from "../../../../../../core/services/firestore.service";
+import {AccountSectionsService} from "../../../../services/account-sections.service";
+import {take} from "rxjs/operators";
 import {Account} from "@shared/models/account.model";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 
@@ -48,6 +51,8 @@ export class LaborRightsInfoFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private store: Store,
+    private firestoreService: FirestoreService,
+    private sections: AccountSectionsService,
   ) {
     this.laborRightsInfoForm = this.fb.group({
       unionMembership: [null, Validators.required],
@@ -58,32 +63,38 @@ export class LaborRightsInfoFormComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (this.account.laborRights) {
-      this.loadFormData();
+    if (this.account?.id) {
+      this.sections
+        .laborRights$(this.account.id)
+        .pipe(take(1))
+        .subscribe((lr) => {
+          if (lr) {
+            this.loadFormData(lr);
+          } else if (this.account.laborRights) {
+            this.loadFormData(this.account.laborRights);
+          }
+        });
     }
   }
 
-  loadFormData() {
+  loadFormData(lr: any) {
     this.laborRightsInfoForm.patchValue({
-      unionMembership: this.account.laborRights?.unionMembership || null,
-      workplaceConcerns: this.account.laborRights?.workplaceConcerns || "",
-      preferredAdvocacyAreas:
-        this.account.laborRights?.preferredAdvocacyAreas || [],
+      unionMembership: lr?.unionMembership || null,
+      workplaceConcerns: lr?.workplaceConcerns || "",
+      preferredAdvocacyAreas: lr?.preferredAdvocacyAreas || [],
       experienceWithLaborRightsIssues:
-        this.account.laborRights?.experienceWithLaborRightsIssues || null,
+        lr?.experienceWithLaborRightsIssues || null,
     });
   }
 
-  onSubmit() {
+  async onSubmit() {
     if (this.laborRightsInfoForm.valid) {
       const laborRightsInfo = this.laborRightsInfoForm.value;
-      const updatedAccount: Account = {
-        ...this.account,
-        laborRights: laborRightsInfo,
-      };
-
-      this.store.dispatch(
-        AccountActions.updateAccount({account: updatedAccount}),
+      // Write to sections/laborRights only
+      await this.firestoreService.setDocument(
+        `accounts/${this.account.id}/sections/laborRights`,
+        laborRightsInfo,
+        {merge: true},
       );
     }
   }

@@ -624,12 +624,8 @@ export class AccountEffects {
     };
 
     const file = account.professionalInformation?.resumeUpload;
-    if (file instanceof File) {
-      newAccount.professionalInformation = {
-        ...newAccount.professionalInformation,
-        resumeUpload: null,
-      };
-    }
+    // Do not persist professionalInformation on main doc
+    delete (newAccount as any).professionalInformation;
 
     const accountId = await this.firestoreService.addDocument(
       "accounts",
@@ -641,19 +637,22 @@ export class AccountEffects {
       const extension = file.name.split(".").pop()?.toLowerCase() || "pdf";
       const filePath = `accounts/${accountId}/resume.${extension}`;
       resumeUrl = await this.storageService.uploadFile(filePath, file);
-      await this.firestoreService.updateDocument("accounts", accountId, {
-        professionalInformation: {
-          ...newAccount.professionalInformation,
+      // Save professional info (with resume URL) in sections subdoc only
+      await this.firestoreService.setDocument(
+        `accounts/${accountId}/sections/professionalInfo`,
+        {
+          ...(account.professionalInformation || {}),
           resumeUpload: resumeUrl,
         },
-      });
+        {merge: true},
+      );
     }
 
     return {
       ...newAccount,
       id: accountId,
       professionalInformation: {
-        ...newAccount.professionalInformation,
+        ...(account.professionalInformation || {}),
         resumeUpload: resumeUrl,
       },
     } as Account;
@@ -670,33 +669,42 @@ export class AccountEffects {
       const extension = file.name.split(".").pop()?.toLowerCase() || "pdf";
       const filePath = `accounts/${account.id}/resume.${extension}`;
       const resumeUrl = await this.storageService.uploadFile(filePath, file);
-      updatedAccount = {
-        ...updatedAccount,
-        professionalInformation: {
-          ...account.professionalInformation,
-          resumeUpload: resumeUrl,
-        },
-      };
+      // Save professional info payload for sections
+      const profPayload = {
+        ...(account.professionalInformation || {}),
+        resumeUpload: resumeUrl,
+      } as any;
+      await this.firestoreService.setDocument(
+        `accounts/${account.id}/sections/professionalInfo`,
+        profPayload,
+        {merge: true},
+      );
     }
 
+    // Never store professionalInformation or laborRights on the main account doc
+    const {
+      professionalInformation,
+      laborRights,
+      ...accountUpdateWithoutPrivate
+    } = updatedAccount;
     await this.firestoreService.updateDocument(
       "accounts",
       account.id,
-      updatedAccount,
+      accountUpdateWithoutPrivate,
     );
 
     try {
-      if (updatedAccount.professionalInformation) {
+      if (account.professionalInformation || file instanceof File) {
         await this.firestoreService.setDocument(
           `accounts/${account.id}/sections/professionalInfo`,
-          updatedAccount.professionalInformation,
+          account.professionalInformation || {},
           {merge: true},
         );
       }
-      if (updatedAccount.laborRights) {
+      if ((updatedAccount as any).laborRights || account.laborRights) {
         await this.firestoreService.setDocument(
           `accounts/${account.id}/sections/laborRights`,
-          updatedAccount.laborRights,
+          account.laborRights || (updatedAccount as any).laborRights,
           {merge: true},
         );
       }

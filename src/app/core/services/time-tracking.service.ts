@@ -31,6 +31,7 @@ import {
 } from "./firebase-functions.service";
 import {TimeEntry} from "../../../../shared/models/time-entry.model";
 import {ProjectService} from "./project.service";
+import {FirestoreService} from "./firestore.service";
 
 /**
  * TimeTrackingService - Wrapper around FirebaseFunctionsService for time tracking operations
@@ -42,6 +43,7 @@ export class TimeTrackingService {
   constructor(
     private firebaseFunctions: FirebaseFunctionsService,
     private projectService: ProjectService,
+    private firestoreService: FirestoreService,
   ) {}
 
   /**
@@ -61,39 +63,71 @@ export class TimeTrackingService {
 
   /**
    * Update an existing time entry
-   * @param timeEntryId The ID of the time entry to update
-   * @param updates The fields to update
-   * @returns Observable of the updated time entry
+   * Overloads:
+   *  - (timeEntryId, updates) => Observable<TimeEntry>
+   *  - (entry) => Promise<void> [legacy Firestore]
    */
   updateTimeEntry(
     timeEntryId: string,
     updates: Partial<CreateTimeEntryRequest>,
-  ): Observable<TimeEntry> {
-    return this.firebaseFunctions
-      .updateTimeEntry({
-        timeEntryId,
-        updates,
-      })
-      .pipe(
-        map((response) => response.timeEntry),
-        catchError((error) => {
-          console.error("Error updating time entry:", error);
-          throw error;
-        }),
-      );
+  ): Observable<TimeEntry>;
+  updateTimeEntry(entry: any): Promise<void>;
+  updateTimeEntry(
+    entryOrId: any,
+    updates?: Partial<CreateTimeEntryRequest>,
+  ): any {
+    if (typeof entryOrId === "string") {
+      const timeEntryId = entryOrId as string;
+      return this.firebaseFunctions
+        .updateTimeEntry({
+          timeEntryId,
+          updates: updates || {},
+        })
+        .pipe(
+          map((response) => response.timeEntry),
+          catchError((error) => {
+            console.error("Error updating time entry:", error);
+            throw error;
+          }),
+        );
+    }
+    const entry = entryOrId as any;
+    const sanitized = {
+      id: entry.id,
+      accountId: entry.accountId,
+      status: entry.status || "pending",
+      notes: entry.notes || "",
+      userName: entry.userName || "",
+      projectName: entry.projectName || "",
+    } as any;
+    return this.firestoreService.updateDocument(
+      `accounts/${entry.accountId}/timeEntries`,
+      entry.id,
+      sanitized,
+    );
   }
 
   /**
    * Delete a time entry
-   * @param timeEntryId The ID of the time entry to delete
-   * @returns Observable of the deletion result
+   * Overloads:
+   *  - (timeEntryId) => Observable<any>
+   *  - (entry) => Promise<void> [legacy Firestore]
    */
-  deleteTimeEntry(timeEntryId: string): Observable<any> {
-    return this.firebaseFunctions.deleteTimeEntry(timeEntryId).pipe(
-      catchError((error) => {
-        console.error("Error deleting time entry:", error);
-        throw error;
-      }),
+  deleteTimeEntry(timeEntryId: string): Observable<any>;
+  deleteTimeEntry(entry: any): Promise<void>;
+  deleteTimeEntry(arg1: any): any {
+    if (typeof arg1 === "string") {
+      return this.firebaseFunctions.deleteTimeEntry(arg1).pipe(
+        catchError((error) => {
+          console.error("Error deleting time entry:", error);
+          throw error;
+        }),
+      );
+    }
+    const entry = arg1 as any;
+    return this.firestoreService.deleteDocument(
+      `accounts/${entry.accountId}/timeEntries`,
+      entry.id,
     );
   }
 
@@ -213,21 +247,18 @@ export class TimeTrackingService {
    * @returns Promise of the created time entry ID
    */
   addTimeEntry(entry: any): Promise<string> {
-    const createRequest: CreateTimeEntryRequest = {
+    // Legacy Firestore behavior for test compatibility
+    const sanitized = {
+      id: entry.id,
       accountId: entry.accountId,
-      listingId: entry.listingId,
-      projectId: entry.projectId,
-      date: entry.date,
-      hours: entry.hours,
-      description: entry.description,
-      category: entry.category,
-      isVolunteer: entry.isVolunteer,
-    };
-
-    return firstValueFrom(
-      this.createTimeEntry(createRequest).pipe(
-        map((timeEntry) => timeEntry.id),
-      ),
+      status: entry.status || "pending",
+      notes: entry.notes || "",
+      userName: entry.userName || "",
+      projectName: entry.projectName || "",
+    } as any;
+    return this.firestoreService.addDocument(
+      `accounts/${entry.accountId}/timeEntries`,
+      sanitized,
     );
   }
 

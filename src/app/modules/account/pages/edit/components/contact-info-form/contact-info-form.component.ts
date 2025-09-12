@@ -28,8 +28,12 @@ import {
 } from "@shared/models/account.model";
 import {Store} from "@ngrx/store";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
+import {FirestoreService} from "../../../../../../core/services/firestore.service";
 import {formatPhoneNumber} from "../../../../../../core/utils/phone.util";
 import {countries, statesProvinces} from "../../../../../../core/data/country";
+import {AccountSectionsService} from "../../../../services/account-sections.service";
+import {ContactInformation} from "@shared/models/account.model";
+import {take} from "rxjs/operators";
 
 @Component({
   selector: "app-contact-info-form",
@@ -48,6 +52,8 @@ export class ContactInfoFormComponent implements OnChanges {
   constructor(
     private fb: FormBuilder,
     private store: Store,
+    private firestoreService: FirestoreService,
+    private sections: AccountSectionsService,
   ) {
     this.contactInfoForm = this.fb.group({
       contactInformation: this.fb.group({
@@ -61,7 +67,13 @@ export class ContactInfoFormComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes["account"] && this.account) {
-      this.loadFormData();
+      // Prefer sections/contactInfo; fallback to any legacy data on account
+      this.sections
+        .contactInfo$(this.account.id!)
+        .pipe(take(1))
+        .subscribe((ci: ContactInformation | null) =>
+          this.loadFormData(ci || this.account!.contactInformation || null),
+        );
     }
   }
 
@@ -81,51 +93,46 @@ export class ContactInfoFormComponent implements OnChanges {
     ) as FormArray;
   }
 
-  onSubmit() {
+  async onSubmit() {
     if (this.contactInfoForm.valid && this.account) {
       const formValue = this.contactInfoForm.value.contactInformation;
+      const contactInfoDocPath = `accounts/${this.account.id}/sections/contactInfo`;
+      const payload = {
+        emails: formValue.emails.map((email: Partial<Email>) => ({
+          name: email.name ?? null,
+          email: email.email!,
+        })),
+        phoneNumbers: formValue.phoneNumbers.map(
+          (phone: Partial<PhoneNumber>) => ({
+            number: phone.number ?? null,
+            type: phone.type ?? null,
+            isEmergencyNumber: phone.isEmergencyNumber || false,
+          }),
+        ),
+        addresses: formValue.addresses.map((address: Partial<Address>) => ({
+          name: address?.name ?? null,
+          street: address?.street ?? null,
+          city: address?.city ?? null,
+          state: address?.state ?? null,
+          zipcode: address?.zipcode ?? null,
+          country: address?.country ?? null,
+          isPrimaryAddress: address?.isPrimaryAddress || false,
+        })),
+        preferredMethodOfContact: formValue.preferredMethodOfContact || "Email",
+      } as any;
 
-      const updatedAccount: Account = {
-        ...this.account,
-        contactInformation: {
-          ...formValue,
-          emails: formValue.emails.map((email: Partial<Email>) => ({
-            name: email.name ?? null,
-            email: email.email!,
-          })),
-          phoneNumbers: formValue.phoneNumbers.map(
-            (phone: Partial<PhoneNumber>) => ({
-              number: phone.number ?? null,
-              type: phone.type ?? null,
-              isEmergencyNumber: phone.isEmergencyNumber || false,
-            }),
-          ),
-          addresses: formValue.addresses.map((address: Partial<Address>) => ({
-            name: address?.name ?? null,
-            street: address?.street ?? null,
-            city: address?.city ?? null,
-            state: address?.state ?? null,
-            zipcode: address?.zipcode ?? null,
-            country: address?.country ?? null,
-            isPrimaryAddress: address?.isPrimaryAddress || false,
-          })),
-        },
-      };
-
-      this.store.dispatch(
-        AccountActions.updateAccount({account: updatedAccount}),
-      );
+      await this.firestoreService.setDocument(contactInfoDocPath, payload, {
+        merge: true,
+      });
     }
   }
 
-  loadFormData() {
+  loadFormData(contactInfo: ContactInformation | null) {
     if (!this.account) return;
-
-    const contactInfo = this.account.contactInformation;
 
     this.resetFormArrays();
 
-    contactInfo?.emails?.forEach((email) => {
+    contactInfo?.emails?.forEach((email: any) => {
       this.emailsFormArray.push(
         this.fb.group({
           name: [email.name],
@@ -138,7 +145,7 @@ export class ContactInfoFormComponent implements OnChanges {
       this.addEmail();
     }
 
-    contactInfo?.phoneNumbers?.forEach((phone) => {
+    contactInfo?.phoneNumbers?.forEach((phone: any) => {
       this.phoneNumbersFormArray.push(
         this.fb.group({
           number: [
@@ -155,7 +162,7 @@ export class ContactInfoFormComponent implements OnChanges {
       this.addPhoneNumber();
     }
 
-    contactInfo?.addresses?.forEach((address) => {
+    contactInfo?.addresses?.forEach((address: any) => {
       this.addressesFormArray.push(
         this.fb.group({
           name: [address?.name],

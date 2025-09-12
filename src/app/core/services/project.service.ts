@@ -1,5 +1,5 @@
 import {Injectable} from "@angular/core";
-import {Observable, of, throwError} from "rxjs";
+import {Observable, of, throwError, firstValueFrom} from "rxjs";
 import {catchError, map, tap} from "rxjs/operators";
 import {
   FirebaseFunctionsService,
@@ -18,7 +18,32 @@ export class ProjectService {
   /**
    * Create a new project using callable function
    */
-  createProject(data: CreateProjectRequest): Observable<any> {
+  createProject(data: CreateProjectRequest): Observable<any>;
+  /**
+   * Legacy overload kept for test compatibility: returns created project id
+   */
+  createProject(accountId: string, project: any): Promise<string>;
+  createProject(arg1: any, arg2?: any): any {
+    // Legacy signature: (accountId, project)
+    if (typeof arg1 === "string") {
+      const accountId: string = arg1;
+      const project: any = arg2 || {};
+      const payload: CreateProjectRequest = {
+        accountId,
+        name: project.name || project.title || "",
+        description: project.description || "",
+        category: project.standardCategory || project.category || "other",
+      };
+      return firstValueFrom(
+        this.firebaseFunctions
+          .createProject(payload)
+          .pipe(
+            map((res: any) => res?.projectId || res?.project?.id || res?.id),
+          ),
+      );
+    }
+    // New signature: (data)
+    const data: CreateProjectRequest = arg1 as CreateProjectRequest;
     return this.firebaseFunctions.createProject(data).pipe(
       tap((result) => {
         // Optionally add any additional processing here

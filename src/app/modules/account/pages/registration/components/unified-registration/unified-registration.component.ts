@@ -41,6 +41,7 @@ import {
   UpdateAccountRequest,
 } from "../../../../../../core/services/firebase-functions.service";
 import {firstValueFrom} from "rxjs";
+import {FirestoreService} from "../../../../../../core/services/firestore.service";
 import {ToastController} from "@ionic/angular";
 
 @Component({
@@ -60,6 +61,7 @@ export class UnifiedRegistrationComponent implements OnChanges {
     private router: Router,
     private store: Store,
     private firebaseFunctions: FirebaseFunctionsService,
+    private firestoreService: FirestoreService,
     private toastController: ToastController,
   ) {
     this.initializeForm();
@@ -197,10 +199,6 @@ export class UnifiedRegistrationComponent implements OnChanges {
           type: this.accountType as "user" | "group",
           name: formValue.name!,
           tagline: formValue.tagline || "New and looking to help!",
-          contactInformation: {
-            emails: this.buildEmailsFromFormForAPI(formValue),
-            phoneNumbers: this.buildPhoneNumbersFromFormForAPI(formValue),
-          },
         },
       };
 
@@ -208,6 +206,22 @@ export class UnifiedRegistrationComponent implements OnChanges {
         this.firebaseFunctions.updateAccount(updateRequest),
       );
       const successMessage = "Account updated successfully!";
+
+      // Persist private contact info to subcollection
+      try {
+        const contactInfoDocPath = `accounts/${accountId}/sections/contactInfo`;
+        const contactInfoPayload = {
+          emails: this.buildEmailsFromForm(formValue),
+          phoneNumbers: this.buildPhoneNumbersFromForm(formValue),
+        };
+        await this.firestoreService.setDocument(
+          contactInfoDocPath,
+          contactInfoPayload,
+          {merge: true},
+        );
+      } catch (e) {
+        console.warn("Failed to save contact info subdocument:", e);
+      }
 
       // Show success message
       const toast = await this.toastController.create({

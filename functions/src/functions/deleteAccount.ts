@@ -18,8 +18,9 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {onCall, HttpsError} from "firebase-functions/v2/https";
-import {admin} from "../utils/firebase";
 import {logger} from "firebase-functions/v2";
+import {admin} from "../utils/firebase";
+import {AccountService} from "../services/accountService";
 
 /**
  * Cloud Function to delete a user account and all related data.
@@ -39,14 +40,39 @@ export const deleteAccount = onCall(
     const uid = auth.uid;
 
     try {
-      logger.info(`Initiating account deletion for user: ${uid}`);
+      logger.info(`Initiating full account deletion for user: ${uid}`);
 
-      // Delete user from Firebase Authentication
-      // This will automatically trigger onUserRecordDeletion to clean up Firestore data
-      await admin.auth().deleteUser(uid);
+      // Use centralized service to delete Firestore data (including subcollections)
+      // and the Auth user in a consistent, robust flow.
+      // 1) Purge Firestore account data (sections + root + references)
+      await AccountService.purgeAccountData(uid);
 
-      logger.info(`Successfully deleted Firebase Auth user: ${uid}`);
-      logger.info("onUserRecordDeletion trigger will handle Firestore cleanup");
+      // 2) Delete Auth user
+      try {
+        await admin.auth().deleteUser(uid);
+      } catch (e: any) {
+        if (e?.code !== "auth/user-not-found") throw e;
+      }
+
+      // 3) Fallback verification
+      const db = admin.firestore();
+      const accRef = db.collection("accounts").doc(uid);
+      const accSnap = await accRef.get();
+      if (accSnap.exists) {
+        logger.warn(
+          `Account root doc still exists; deleting explicitly: ${uid}`,
+        );
+        await accRef.delete();
+      }
+      try {
+        await admin.auth().getUser(uid);
+        logger.warn(`Auth user still exists; deleting explicitly: ${uid}`);
+        await admin.auth().deleteUser(uid);
+      } catch (e: any) {
+        if (e?.code !== "auth/user-not-found") throw e;
+      }
+
+      logger.info(`Successfully deleted account and user: ${uid}`);
 
       return {
         success: true,

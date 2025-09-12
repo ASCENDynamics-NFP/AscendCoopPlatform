@@ -32,6 +32,7 @@ import {
 } from "../../../../../../../../shared/models/account.model";
 import {Timestamp} from "firebase/firestore";
 import {Store} from "@ngrx/store";
+import {FirestoreService} from "../../../../../../core/services/firestore.service";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 import {formatPhoneNumber} from "../../../../../../core/utils/phone.util";
 
@@ -51,6 +52,7 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
   constructor(
     private fb: FormBuilder,
     private store: Store,
+    private firestoreService: FirestoreService,
   ) {
     this.profileForm = this.createForm();
   }
@@ -405,12 +407,12 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
     this.webLinksArray.removeAt(index);
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.profileForm.valid && !this.isSubmitting) {
       this.isSubmitting = true;
       const formValue = this.profileForm.value;
 
-      // Convert form data to Account structure
+      // Convert form data to Account structure (exclude private contact info)
       const updatedAccount: Account = {
         ...this.account!,
         name: formValue.name,
@@ -430,8 +432,19 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
             ),
           }),
         },
-        contactInformation: {
-          ...this.account?.contactInformation,
+        webLinks: formValue.webLinks
+          .filter((link: any) => link.url?.trim())
+          .map((link: any) => ({
+            name: link.name || link.category || "Website",
+            url: link.url,
+            category: link.category || "Website",
+          })),
+      };
+
+      // Save private contact info in subcollection
+      try {
+        const contactInfoDocPath = `accounts/${this.account!.id}/sections/contactInfo`;
+        const payload = {
           emails: formValue.contactInformation.emails || [],
           phoneNumbers: formValue.contactInformation.phoneNumbers || [],
           addresses:
@@ -447,15 +460,13 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
                 isPrimaryAddress: addr.isPrimaryAddress || false,
               })) || [],
           preferredMethodOfContact: "Email",
-        },
-        webLinks: formValue.webLinks
-          .filter((link: any) => link.url?.trim())
-          .map((link: any) => ({
-            name: link.name || link.category || "Website",
-            url: link.url,
-            category: link.category || "Website",
-          })),
-      };
+        } as any;
+        await this.firestoreService.setDocument(contactInfoDocPath, payload, {
+          merge: true,
+        });
+      } catch (e) {
+        console.warn("Failed to save contact info subdocument:", e);
+      }
 
       this.store.dispatch(
         AccountActions.updateAccount({

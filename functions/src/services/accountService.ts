@@ -167,6 +167,13 @@ export class AccountService {
         );
       }
 
+      // Prepare contact info for private subdocument only
+      const contactInfoPayload = {
+        emails: data.contactInformation?.emails || [{email: userRecord.email}],
+        phoneNumbers: data.contactInformation?.phoneNumbers || [],
+        addresses: geocodedAddresses,
+      };
+
       const accountData = {
         id: userId,
         name: name,
@@ -176,13 +183,6 @@ export class AccountService {
           data.iconImage ||
           "assets/image/logo/ASCENDynamics NFP-logos_transparent.png",
         heroImage: data.heroImage || "assets/image/userhero.png",
-        contactInformation: {
-          emails: data.contactInformation?.emails || [
-            {email: userRecord.email},
-          ],
-          phoneNumbers: data.contactInformation?.phoneNumbers || [],
-          addresses: geocodedAddresses,
-        },
         email: userRecord.email,
         privacySettings: {
           profile: {visibility: "public"},
@@ -212,10 +212,10 @@ export class AccountService {
       batch.set(accountRef, accountData);
 
       // Set up contact info in gated subdocument
-      if (accountData.contactInformation) {
+      if (contactInfoPayload) {
         batch.set(
           accountRef.collection("sections").doc("contactInfo"),
-          accountData.contactInformation,
+          contactInfoPayload,
           {merge: true},
         );
       }
@@ -260,49 +260,57 @@ export class AccountService {
       }
 
       const currentData = accountDoc.data()!;
+      // Split updates: public account fields vs private contact info
       const updates: any = {
         ...request.updates,
         lastModifiedAt: Timestamp.now(),
         lastModifiedBy: request.userId,
       };
 
-      // Handle address geocoding if addresses changed
-      if (request.updates.contactInformation?.addresses) {
-        const geocodedAddresses = await Promise.all(
-          request.updates.contactInformation.addresses.map(async (addr) => {
-            // Convert address object to string for geocoding
-            const addressString = [
-              addr.street,
-              addr.city,
-              addr.state,
-              addr.zipCode,
-              addr.country,
-            ]
-              .filter(Boolean)
-              .join(", ");
-
-            if (addressString) {
-              const geocoded = await geocodeAddress(addressString);
-              return geocoded ? {...addr, ...geocoded} : addr;
-            }
-            return addr;
-          }),
-        );
-        updates.contactInformation = {
-          ...currentData.contactInformation,
-          ...request.updates.contactInformation,
-          addresses: geocodedAddresses,
+      // Prepare contact info payload separately (do not store on main doc)
+      let contactInfoUpdate: any | null = null;
+      if (request.updates.contactInformation) {
+        const ci = request.updates.contactInformation;
+        // Geocode addresses if provided
+        let processedAddresses = ci.addresses || [];
+        if (processedAddresses.length > 0) {
+          processedAddresses = await Promise.all(
+            processedAddresses.map(async (addr) => {
+              const addressString = [
+                addr.street,
+                addr.city,
+                addr.state,
+                addr.zipCode,
+                addr.country,
+              ]
+                .filter(Boolean)
+                .join(", ");
+              if (addressString) {
+                const geocoded = await geocodeAddress(addressString);
+                return geocoded ? {...addr, ...geocoded} : addr;
+              }
+              return addr;
+            }),
+          );
+        }
+        contactInfoUpdate = {
+          ...ci,
+          ...(processedAddresses.length > 0
+            ? {addresses: processedAddresses}
+            : {}),
         };
+        // Remove from main account updates
+        delete updates.contactInformation;
       }
 
-      // Update main account document
+      // Update main account document (without contactInformation)
       batch.update(accountRef, updates);
 
-      // Update contact info subdocument if changed
-      if (updates.contactInformation) {
+      // Update contact info subdocument if provided
+      if (contactInfoUpdate) {
         batch.set(
           accountRef.collection("sections").doc("contactInfo"),
-          updates.contactInformation,
+          contactInfoUpdate,
           {merge: true},
         );
       }
@@ -358,6 +366,24 @@ export class AccountService {
       logger.error("Error deleting account:", error);
       if (error instanceof HttpsError) throw error;
       throw new HttpsError("internal", "Failed to delete account");
+    }
+  }
+
+  /**
+   * Purge all Firestore data for an account (without deleting Auth user).
+   * Safe to call even if some pieces are already missing.
+   */
+  static async purgeAccountData(accountId: string): Promise<void> {
+    try {
+      const batch = db.batch();
+      await this.deleteAccountRelations(batch, accountId);
+      // Delete main account document
+      batch.delete(db.collection("accounts").doc(accountId));
+      await batch.commit();
+      logger.info(`Purged Firestore data for account: ${accountId}`);
+    } catch (error) {
+      logger.error("Error purging account data:", error);
+      throw new HttpsError("internal", "Failed to purge account data");
     }
   }
 

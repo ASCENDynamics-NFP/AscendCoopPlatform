@@ -42,7 +42,7 @@ export class VolunteerPreferenceInfoFormComponent implements OnInit {
   ) {
     this.volunteerPreferencesForm = this.fb.group({
       areasOfInterest: [[], Validators.required],
-      availability: ["", Validators.required],
+      availability: [[], Validators.required],
       preferredVolunteerRoles: ["", Validators.required],
       previousVolunteerExperience: [""],
       willingnessToTravel: [false],
@@ -58,27 +58,60 @@ export class VolunteerPreferenceInfoFormComponent implements OnInit {
 
   loadFormData() {
     if (this.account?.volunteerPreferences) {
+      const vp = this.account.volunteerPreferences as any;
+      // Normalize roles to a comma-separated string for input
+      const rolesVal = Array.isArray(vp.preferredVolunteerRoles)
+        ? vp.preferredVolunteerRoles
+        : typeof vp.preferredVolunteerRoles === "string"
+          ? (vp.preferredVolunteerRoles as string)
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [];
+      // Normalize availability to array for multi-select
+      const availabilityVal = Array.isArray(vp.availability)
+        ? vp.availability
+        : vp.availability
+          ? [vp.availability]
+          : [];
+      // Normalize areasOfInterest to array
+      const areasVal = Array.isArray(vp.areasOfInterest)
+        ? vp.areasOfInterest
+        : vp.areasOfInterest
+          ? [vp.areasOfInterest]
+          : [];
       this.volunteerPreferencesForm.patchValue({
-        areasOfInterest:
-          this.account.volunteerPreferences.areasOfInterest || [],
-        availability: this.account.volunteerPreferences.availability || "",
-        preferredVolunteerRoles: (
-          this.account.volunteerPreferences.preferredVolunteerRoles || []
-        ).join(", "),
-        previousVolunteerExperience:
-          this.account.volunteerPreferences.previousVolunteerExperience || "",
-        willingnessToTravel:
-          this.account.volunteerPreferences.willingnessToTravel || false,
-        desiredLevelOfCommitment:
-          this.account.volunteerPreferences.desiredLevelOfCommitment || "",
+        areasOfInterest: areasVal,
+        availability: availabilityVal,
+        preferredVolunteerRoles: rolesVal.join(", "),
+        previousVolunteerExperience: vp.previousVolunteerExperience || "",
+        willingnessToTravel: !!vp.willingnessToTravel,
+        desiredLevelOfCommitment: vp.desiredLevelOfCommitment || "",
       });
     }
   }
 
   onSubmit() {
     if (this.volunteerPreferencesForm.valid && this.account) {
-      const updatedVolunteerPreferences: VolunteerPreferences =
-        this.volunteerPreferencesForm.value;
+      const formValue = this.volunteerPreferencesForm.value as any;
+      // Convert comma-separated roles string back to array
+      const rolesArray = (formValue.preferredVolunteerRoles || "")
+        .split(",")
+        .map((s: string) => s.trim())
+        .filter((s: string) => !!s);
+      const updatedVolunteerPreferences: VolunteerPreferences = {
+        areasOfInterest: Array.isArray(formValue.areasOfInterest)
+          ? formValue.areasOfInterest
+          : [],
+        availability: Array.isArray(formValue.availability)
+          ? formValue.availability
+          : [],
+        preferredVolunteerRoles: rolesArray,
+        previousVolunteerExperience:
+          formValue.previousVolunteerExperience || "",
+        willingnessToTravel: !!formValue.willingnessToTravel,
+        desiredLevelOfCommitment: formValue.desiredLevelOfCommitment || "",
+      };
       const updatedAccount: Account = {
         ...this.account,
         volunteerPreferences: updatedVolunteerPreferences,

@@ -34,6 +34,7 @@ import {selectAuthUser} from "../../../../../../state/selectors/auth.selectors";
 import {firstValueFrom, Observable} from "rxjs";
 import {CreateChatRequest} from "../../../../../messaging/models/chat.model";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
+import {RelationshipService} from "../../../../../../core/services/relationship.service";
 import {TimeEntry} from "../../../../../../../../shared/models/time-entry.model";
 import {
   selectAllEntriesForAccount,
@@ -66,6 +67,7 @@ export class HeroComponent implements OnInit, OnChanges {
     private chatService: ChatService,
     private store: Store<{auth: AuthState}>,
     private toastController: ToastController,
+    private relationshipService: RelationshipService,
   ) {
     // Initialize observables - will be properly set when account is available
     this.timeEntries$ = new Observable();
@@ -332,27 +334,9 @@ export class HeroComponent implements OnInit, OnChanges {
         return;
       }
 
-      // Create the related account request - represents current user requesting to connect
-      const relatedAccount: Partial<RelatedAccount> = {
-        id: this.account.id, // Set the ID to the current user's ID (the one making the request)
-        accountId: currentUser.uid, // This should be the current user's ID
-        initiatorId: currentUser.uid, // Current user is initiating the request
-        targetId: this.account.id, // Target account is receiving the request
-        name: this.account.name || currentUser.email || "Unknown User",
-        iconImage: this.account.iconImage || "", // Use iconImage if available
-        tagline: this.account.tagline || "", // We might not have this info for the current user
-        type: this.account.type,
-        status: "pending",
-        createdBy: currentUser.uid,
-        lastModifiedBy: currentUser.uid,
-      };
-
-      // Dispatch the action to create the relationship - send to TARGET account
-      this.store.dispatch(
-        AccountActions.createRelatedAccount({
-          accountId: currentUser.uid, // create record for current user and trigger will create for target
-          relatedAccount: relatedAccount as RelatedAccount,
-        }),
+      // Use callable function to send a friend/connection request (permissions enforced server-side)
+      await firstValueFrom(
+        this.relationshipService.sendFriendRequest(this.account.id),
       );
 
       // Show success message
@@ -360,9 +344,12 @@ export class HeroComponent implements OnInit, OnChanges {
         `Connection request sent to ${this.account.name}`,
         "success",
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error sending connection request:", error);
-      await this.showToast("Failed to send connection request", "danger");
+      const msg = error?.message?.includes("permission")
+        ? "Insufficient permissions to connect"
+        : error?.message || "Failed to send connection request";
+      await this.showToast(msg, "danger");
     }
   }
 

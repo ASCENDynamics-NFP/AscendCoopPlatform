@@ -529,9 +529,12 @@ export class FirebaseFunctionsService {
     );
   }
 
-  deleteRelationship(targetAccountId: string): Observable<any> {
+  deleteRelationship(
+    targetAccountId: string,
+    options?: {accountId?: string},
+  ): Observable<any> {
     const callable = this.fns.httpsCallable("deleteRelationship");
-    return from(callable({targetAccountId})).pipe(
+    return from(callable({targetAccountId, ...(options || {})})).pipe(
       map((result: any) => result),
       catchError(this.handleError("Relationship deletion")),
     );

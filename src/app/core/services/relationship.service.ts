@@ -94,6 +94,28 @@ export class RelationshipService {
       );
   }
 
+  /** Generic relationship update: access/roles/status, optionally on behalf of accountId (e.g., group) */
+  updateRelationship(
+    targetAccountId: string,
+    updates: {
+      status?: "accepted" | "rejected" | "blocked";
+      access?: "admin" | "moderator" | "member";
+      role?: string;
+      roleId?: string;
+      roleIds?: string[];
+      accountId?: string;
+    },
+  ): Observable<any> {
+    return this.firebaseFunctions
+      .updateRelationship(targetAccountId, updates)
+      .pipe(
+        catchError((error) => {
+          console.error("Error updating relationship:", error);
+          throw error;
+        }),
+      );
+  }
+
   /**
    * Decline or reject a relationship request
    * @param targetAccountId The account ID that sent the request
@@ -156,6 +178,21 @@ export class RelationshipService {
         throw error;
       }),
     );
+  }
+
+  /** Remove a relationship on behalf of an account (e.g., group admin removing a member) */
+  removeRelationshipForAccount(
+    accountId: string,
+    targetAccountId: string,
+  ): Observable<any> {
+    return this.firebaseFunctions
+      .deleteRelationship(targetAccountId, {accountId})
+      .pipe(
+        catchError((error) => {
+          console.error("Error removing relationship for account:", error);
+          throw error;
+        }),
+      );
   }
 
   /**
@@ -241,6 +278,39 @@ export class RelationshipService {
    */
   leaveGroup(groupAccountId: string): Observable<any> {
     return this.removeRelationship(groupAccountId);
+  }
+
+  // Convenience helpers for access/role management acting on behalf of a group account
+  setAccess(
+    accountId: string,
+    targetAccountId: string,
+    access: "admin" | "moderator" | "member",
+  ): Observable<any> {
+    return this.updateRelationship(targetAccountId, {accountId, access});
+  }
+
+  setRole(accountId: string, targetAccountId: string, roleId: string) {
+    // Keep backward compatibility: mirror into roleIds[0]
+    return this.updateRelationship(targetAccountId, {
+      accountId,
+      roleId,
+      roleIds: [roleId],
+    });
+  }
+
+  setRoles(accountId: string, targetAccountId: string, roleIds: string[]) {
+    if (!roleIds || roleIds.length === 0) {
+      // Clearing both fields by sending empty array and omitting roleId
+      return this.updateRelationship(targetAccountId, {
+        accountId,
+        roleIds: [],
+      });
+    }
+    return this.updateRelationship(targetAccountId, {
+      accountId,
+      roleIds,
+      roleId: roleIds[0],
+    });
   }
 
   /**

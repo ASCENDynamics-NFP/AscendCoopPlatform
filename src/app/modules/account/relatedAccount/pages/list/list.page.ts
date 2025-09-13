@@ -37,6 +37,7 @@ import * as AccountActions from "../../../../../state/actions/account.actions";
 import {take} from "rxjs/operators";
 import {MetaService} from "../../../../../core/services/meta.service";
 import {AccessService} from "../../../../../core/services/access.service";
+import {RelationshipService} from "../../../../../core/services/relationship.service";
 
 @Component({
   selector: "app-list",
@@ -90,6 +91,7 @@ export class ListPage implements OnInit {
     private metaService: MetaService,
     private store: Store,
     private access: AccessService,
+    private relationshipService: RelationshipService,
   ) {
     // Extract route parameters
     this.accountId = this.activatedRoute.snapshot.paramMap.get("accountId");
@@ -563,30 +565,19 @@ export class ListPage implements OnInit {
    * @param request The related account request to update.
    * @param status The new status to set.
    */
-  updateStatus(request: Partial<RelatedAccount>, status: string) {
-    this.currentUser$.pipe(take(1)).subscribe((authUser) => {
-      if (!authUser?.uid || !request.id) {
-        console.error("User ID or Account ID is missing");
-        return;
-      }
-
-      if (!this.accountId || !request.id) return;
-
-      const updatedRelatedAccount: RelatedAccount = {
-        id: request.id,
-        accountId: request.accountId || this.accountId,
-        status: status as "pending" | "accepted" | "rejected" | "blocked",
-        lastModifiedBy: authUser.uid,
-      };
-
-      // Dispatch an action to update the related account's status
-      this.store.dispatch(
-        AccountActions.updateRelatedAccount({
-          accountId: this.accountId,
-          relatedAccount: updatedRelatedAccount,
-        }),
-      );
-    });
+  updateStatus(
+    request: Partial<RelatedAccount>,
+    status: "accepted" | "rejected" | "blocked",
+  ) {
+    if (!this.accountId || !request.id) return;
+    this.relationshipService
+      .updateRelationship(request.id, {
+        accountId: this.accountId,
+        status,
+      })
+      .subscribe({
+        error: (e) => console.error("Failed to update status", e),
+      });
   }
 
   /**
@@ -611,83 +602,44 @@ export class ListPage implements OnInit {
    */
   removeRequest(request: Partial<RelatedAccount>) {
     if (!this.accountId || !request.id) return;
-
-    // Dispatch an action to delete the related account
-    this.store.dispatch(
-      AccountActions.deleteRelatedAccount({
-        accountId: this.accountId,
-        relatedAccountId: request.id,
-      }),
-    );
+    // Use callable to remove relationship on behalf of the current account (group/user)
+    this.relationshipService
+      .removeRelationshipForAccount(this.accountId, request.id)
+      .subscribe({
+        error: (e) => console.error("Failed to remove relationship", e),
+      });
   }
 
   updateAccess(
     request: Partial<RelatedAccount>,
     access: "admin" | "moderator" | "member",
   ) {
-    this.currentUser$.pipe(take(1)).subscribe((authUser) => {
-      if (!authUser?.uid || !request.id || !this.accountId) return;
-      const updated: RelatedAccount = {
-        ...(request as RelatedAccount),
-        accountId: this.accountId,
-        access: access,
-        lastModifiedBy: authUser.uid,
-      };
-      this.store.dispatch(
-        AccountActions.updateRelatedAccount({
-          accountId: this.accountId!,
-          relatedAccount: updated,
-        }),
-      );
+    this.currentUser$.pipe(take(1)).subscribe(() => {
+      if (!this.accountId || !request.id) return;
+      this.relationshipService
+        .setAccess(this.accountId, request.id, access)
+        .subscribe({
+          error: (e) => console.error("Failed to update access", e),
+        });
     });
   }
 
   updateRole(request: Partial<RelatedAccount>, roleId: string) {
-    this.currentUser$.pipe(take(1)).subscribe((authUser) => {
-      if (!authUser?.uid || !request.id || !this.accountId) return;
-      const updated: RelatedAccount = {
-        ...(request as RelatedAccount),
-        accountId: this.accountId,
-        roleId,
-        lastModifiedBy: authUser.uid,
-      };
-      this.store.dispatch(
-        AccountActions.updateRelatedAccount({
-          accountId: this.accountId!,
-          relatedAccount: updated,
-        }),
-      );
-    });
+    if (!this.accountId || !request.id) return;
+    this.relationshipService
+      .setRole(this.accountId, request.id, roleId)
+      .subscribe({
+        error: (e) => console.error("Failed to update role", e),
+      });
   }
 
   updateRoles(request: Partial<RelatedAccount>, roleIds: string[]) {
-    this.currentUser$.pipe(take(1)).subscribe((authUser) => {
-      if (!authUser?.uid || !request.id || !this.accountId) return;
-
-      const updated: Partial<RelatedAccount> = {
-        ...(request as RelatedAccount),
-        accountId: this.accountId,
-        lastModifiedBy: authUser.uid,
-      };
-
-      // Only set role fields if there are roles selected
-      if (roleIds && roleIds.length > 0) {
-        updated.roleIds = roleIds;
-        updated.roleId = roleIds[0]; // Keep backward compatibility
-      } else {
-        // For Firestore, we need to explicitly remove the fields
-        // by not including them in the update object
-        delete updated.roleIds;
-        delete updated.roleId;
-      }
-
-      this.store.dispatch(
-        AccountActions.updateRelatedAccount({
-          accountId: this.accountId!,
-          relatedAccount: updated as RelatedAccount,
-        }),
-      );
-    });
+    if (!this.accountId || !request.id) return;
+    this.relationshipService
+      .setRoles(this.accountId, request.id, roleIds)
+      .subscribe({
+        error: (e) => console.error("Failed to update roles", e),
+      });
   }
 
   /**

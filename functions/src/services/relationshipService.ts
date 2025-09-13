@@ -11,20 +11,27 @@ const db = getFirestore();
 
 export interface CreateRelationshipRequest {
   targetAccountId: string;
-  // Back-compat input: relationship (listings) — mapped to access for account memberships
-  relationship?: "member" | "admin" | "follower" | "friend";
-  // Preferred input for account memberships
+  // Access role for account memberships (for groups). Optional for plain connections.
   access?: "member" | "admin" | "moderator";
+  // Optional request type flag for clarity
+  requestType?: "request" | "invitation";
+  // Optional role metadata for initial assignment
+  role?: string;
+  roleId?: string;
+  roleIds?: string[];
   idempotencyKey?: string;
-  notes?: string;
-  customMessage?: string;
 }
 
 export interface UpdateRelationshipRequest {
   status: "accepted" | "rejected" | "blocked";
   // For account.relatedAccounts we no longer store relationship; use access roles
   access?: "member" | "admin" | "moderator";
-  notes?: string;
+  // Optional role metadata updates
+  role?: string;
+  roleId?: string;
+  roleIds?: string[];
+  // Optional: act on behalf of this account (e.g., group) if caller is owner/admin
+  accountId?: string;
 }
 
 export class RelationshipService {
@@ -38,11 +45,12 @@ export class RelationshipService {
     try {
       const {
         targetAccountId,
-        relationship,
         access,
         idempotencyKey,
-        notes,
-        customMessage,
+        requestType,
+        role,
+        roleId,
+        roleIds,
       } = request;
 
       // Validate accounts exist
@@ -83,16 +91,16 @@ export class RelationshipService {
       }
 
       // Determine initial status based on relationship type and target account settings
-      const initialStatus = this.getInitialRelationshipStatus(
-        relationship,
-        target,
-      );
+      // Default initial status for connections/memberships
+      const initialStatus: "accepted" | "pending" = "pending";
 
       const now = Timestamp.now();
+      // Determine request type if not supplied
+      const inferredRequestType: "request" | "invitation" =
+        requestType || (initiator.type === "group" ? "invitation" : "request");
 
       // Map requested relationship/access to access for group memberships
-      const requestedAccess =
-        access ?? this.mapRelationshipToAccess(relationship);
+      const requestedAccess = access;
       const initialAccess =
         target.type === "group" ? requestedAccess : undefined;
 
@@ -119,17 +127,20 @@ export class RelationshipService {
 
         const targetRelationship = {
           id: initiatorId,
+          accountId: targetAccountId,
           name: initiator.name,
-          email: initiator.email,
           iconImage: initiator.iconImage || null,
+          tagline: initiator.tagline || null,
+          type: initiator.type || null,
           status: initialStatus,
           ...(initialAccess ? {access: initialAccess} : {}),
+          requestType: inferredRequestType,
+          ...(role ? {role} : {}),
+          ...(roleId ? {roleId} : {}),
+          ...(roleIds && roleIds.length ? {roleIds} : {}),
           initiatorId,
           targetId: targetAccountId,
-          requestDate: now,
           ...(idempotencyKey ? {idempotencyKey} : {}),
-          notes: notes || null,
-          customMessage: customMessage || null,
           createdAt: now,
           createdBy: initiatorId,
           lastModifiedAt: now,
@@ -137,16 +148,20 @@ export class RelationshipService {
         };
         const initiatorRelationship = {
           id: targetAccountId,
+          accountId: initiatorId,
           name: target.name,
-          email: target.email,
           iconImage: target.iconImage || null,
-          status: initialStatus === "accepted" ? "accepted" : "pending",
+          tagline: target.tagline || null,
+          type: target.type || null,
+          status: initialStatus,
           ...(initialAccess ? {access: initialAccess} : {}),
+          requestType: inferredRequestType,
+          ...(role ? {role} : {}),
+          ...(roleId ? {roleId} : {}),
+          ...(roleIds && roleIds.length ? {roleIds} : {}),
           initiatorId,
           targetId: targetAccountId,
-          requestDate: now,
           ...(idempotencyKey ? {idempotencyKey} : {}),
-          notes: notes || null,
           createdAt: now,
           createdBy: initiatorId,
           lastModifiedAt: now,
@@ -163,19 +178,14 @@ export class RelationshipService {
         syncAdminIdsForAccount(targetAccountId),
       ]);
 
-      // Trigger notifications for pending requests
+      // Trigger notification for pending requests
       if (initialStatus === "pending") {
-        await this.sendRelationshipNotification(
-          targetAccountId,
-          initiatorId,
-          relationship,
-        );
+        await this.sendRelationshipNotification(targetAccountId, initiatorId);
       }
 
       logger.info("Relationship created", {
         initiatorId,
         targetAccountId,
-        relationship,
         status: initialStatus,
       });
 
@@ -211,13 +221,27 @@ export class RelationshipService {
     request: UpdateRelationshipRequest,
   ): Promise<void> {
     try {
-      const {status, access, notes} = request;
+      const {status, access, role, roleId, roleIds, accountId} = request;
+
+      // Determine which account's relationship is being updated.
+      // Default to the caller's own account; allow acting on behalf of a group when admin.
+      const sourceAccountId = accountId || userId;
+
+      if (accountId && accountId !== userId) {
+        const authorized = await this.isAccountAdmin(accountId, userId);
+        if (!authorized) {
+          throw new HttpsError(
+            "permission-denied",
+            "Not authorized to manage this account's relationships",
+          );
+        }
+      }
 
       // Get existing relationships
       const [targetRelationship, initiatorRelationship] = await Promise.all([
         db
           .collection("accounts")
-          .doc(userId)
+          .doc(sourceAccountId)
           .collection("relatedAccounts")
           .doc(targetAccountId)
           .get(),
@@ -225,7 +249,7 @@ export class RelationshipService {
           .collection("accounts")
           .doc(targetAccountId)
           .collection("relatedAccounts")
-          .doc(userId)
+          .doc(sourceAccountId)
           .get(),
       ]);
 
@@ -237,14 +261,14 @@ export class RelationshipService {
       await db.runTransaction(async (tx) => {
         const targetRef = db
           .collection("accounts")
-          .doc(userId)
+          .doc(sourceAccountId)
           .collection("relatedAccounts")
           .doc(targetAccountId);
         const initiatorRef = db
           .collection("accounts")
           .doc(targetAccountId)
           .collection("relatedAccounts")
-          .doc(userId);
+          .doc(sourceAccountId);
 
         const [targetSnap, initiatorSnap] = await Promise.all([
           tx.get(targetRef),
@@ -257,7 +281,9 @@ export class RelationshipService {
         const updates: any = {
           status,
           ...(access ? {access} : {}),
-          notes: notes || null,
+          ...(role ? {role} : {}),
+          ...(roleId ? {roleId} : {}),
+          ...(roleIds && roleIds.length ? {roleIds} : {}),
           reviewedAt: now,
           reviewedBy: userId,
           lastModifiedAt: now,
@@ -269,12 +295,13 @@ export class RelationshipService {
 
       // Recompute adminIds/moderatorIds for both sides
       await Promise.all([
-        syncAdminIdsForAccount(userId),
+        syncAdminIdsForAccount(sourceAccountId),
         syncAdminIdsForAccount(targetAccountId),
       ]);
 
       logger.info("Relationship updated", {
         userId,
+        accountId: sourceAccountId,
         targetAccountId,
         status,
         access: access,
@@ -286,36 +313,65 @@ export class RelationshipService {
     }
   }
 
+  /** Check if user is owner/admin/moderator of the given account (group) */
+  private static async isAccountAdmin(
+    accountId: string,
+    userId: string,
+  ): Promise<boolean> {
+    const snap = await db.collection("accounts").doc(accountId).get();
+    if (!snap.exists) return false;
+    const acc = snap.data() as any;
+    if (acc.type !== "group") return false;
+    if (userId === accountId) return true; // group owner short-circuit
+    const inAdmins =
+      Array.isArray(acc.adminIds) && acc.adminIds.includes(userId);
+    const inMods =
+      Array.isArray(acc.moderatorIds) && acc.moderatorIds.includes(userId);
+    return inAdmins || inMods;
+  }
+
   /**
    * Remove/delete a relationship
    */
   static async deleteRelationship(
     userId: string,
     targetAccountId: string,
+    accountId?: string,
   ): Promise<void> {
     try {
+      const sourceAccountId = accountId || userId;
+      if (accountId && accountId !== userId) {
+        const authorized = await this.isAccountAdmin(accountId, userId);
+        if (!authorized) {
+          throw new HttpsError(
+            "permission-denied",
+            "Not authorized to manage this account's relationships",
+          );
+        }
+      }
       await db.runTransaction(async (tx) => {
         const aRef = db
           .collection("accounts")
-          .doc(userId)
+          .doc(sourceAccountId)
           .collection("relatedAccounts")
           .doc(targetAccountId);
         const bRef = db
           .collection("accounts")
           .doc(targetAccountId)
           .collection("relatedAccounts")
-          .doc(userId);
+          .doc(sourceAccountId);
         tx.delete(aRef);
         tx.delete(bRef);
       });
 
       await Promise.all([
-        syncAdminIdsForAccount(userId),
+        syncAdminIdsForAccount(sourceAccountId),
         syncAdminIdsForAccount(targetAccountId),
       ]);
 
       logger.info("Relationship deleted", {
         userId,
+        accountId: sourceAccountId,
         targetAccountId,
       });
     } catch (error) {
@@ -406,57 +462,23 @@ export class RelationshipService {
     }
   }
 
-  // Private helper methods
-  private static getInitialRelationshipStatus(
-    relationship: string | undefined,
-    targetAccount: any,
-  ): "accepted" | "pending" {
-    // Followers can be automatically accepted for public accounts
-    if (
-      relationship === "follower" &&
-      targetAccount.privacySettings?.profile?.visibility === "public"
-    ) {
-      return "accepted";
-    }
-
-    // Group memberships typically require approval
-    if (relationship && ["member", "admin"].includes(relationship)) {
-      return "pending";
-    }
-
-    // Friends require mutual acceptance
-    if (relationship === "friend") {
-      return "pending";
-    }
-
-    return "pending";
-  }
+  // Private helper methods (reserved for future use)
 
   // No reciprocal relationship stored for account.relatedAccounts
 
-  private static mapRelationshipToAccess(
-    relationship?: string,
-  ): "admin" | "moderator" | "member" | undefined {
-    if (!relationship) return undefined;
-    if (relationship === "admin") return "admin";
-    if (relationship === "member") return "member";
-    if (relationship === "moderator") return "moderator";
-    return undefined;
-  }
+  // Relationship-to-access mapping removed
 
   // normalizeAccess removed (not needed currently)
 
   private static async sendRelationshipNotification(
     targetAccountId: string,
     initiatorId: string,
-    relationship?: string,
   ): Promise<void> {
     // Implementation would depend on your notification system
     // This is where you'd trigger push notifications, emails, etc.
     logger.info("Relationship notification sent", {
       targetAccountId,
       initiatorId,
-      relationship,
     });
   }
 

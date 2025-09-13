@@ -5,7 +5,6 @@ import {onCall, HttpsError} from "firebase-functions/v2/https";
 import {logger} from "firebase-functions/v2";
 import {
   RelationshipService,
-  CreateRelationshipRequest,
   UpdateRelationshipRequest,
 } from "../../services/relationshipService";
 
@@ -25,24 +24,17 @@ export const createRelationship = onCall(
     }
 
     const userId = request.auth.uid;
-    const data = request.data as CreateRelationshipRequest & {
+    const data = request.data as {
+      targetAccountId: string;
       access?: "admin" | "moderator" | "member";
       idempotencyKey?: string;
     };
 
-    // Validate required fields: targetAccountId AND at least one of (relationship, access)
-    if (!data.targetAccountId || (!data.relationship && !data.access)) {
-      throw new HttpsError(
-        "invalid-argument",
-        "Target account ID and relationship or access are required",
-      );
+    // Validate required fields
+    if (!data.targetAccountId) {
+      throw new HttpsError("invalid-argument", "Target account ID is required");
     }
-
-    // Validate relationship/access values when present
-    const validRelationships = ["member", "admin", "follower", "friend"];
-    if (data.relationship && !validRelationships.includes(data.relationship)) {
-      throw new HttpsError("invalid-argument", "Invalid relationship type");
-    }
+    // Validate access when provided
     const validAccess = ["admin", "moderator", "member"] as const;
     if (data.access && !validAccess.includes(data.access as any)) {
       throw new HttpsError("invalid-argument", "Invalid access role");
@@ -57,12 +49,11 @@ export const createRelationship = onCall(
     }
 
     try {
-      await RelationshipService.createRelationship(userId, data);
+      await RelationshipService.createRelationship(userId, data as any);
 
       logger.info(`Relationship request created`, {
         initiatorId: userId,
         targetAccountId: data.targetAccountId,
-        relationship: data.relationship,
       });
 
       return {
@@ -93,9 +84,14 @@ export const updateRelationship = onCall(
     }
 
     const userId = request.auth.uid;
-    const {targetAccountId, ...updateData} = request.data as {
-      targetAccountId: string;
-    } & UpdateRelationshipRequest;
+    const raw = request.data as any;
+    const targetAccountId: string | undefined = raw?.targetAccountId;
+    const updateData: UpdateRelationshipRequest & {accountId?: string} =
+      (raw?.updates as any) ||
+      ((): any => {
+        const {targetAccountId: _omit, ...rest} = raw || {};
+        return rest;
+      })();
 
     if (!targetAccountId || !updateData.status) {
       throw new HttpsError(
@@ -111,14 +107,13 @@ export const updateRelationship = onCall(
     }
 
     try {
-      await RelationshipService.updateRelationship(
-        userId,
-        targetAccountId,
-        updateData,
-      );
+      await RelationshipService.updateRelationship(userId, targetAccountId, {
+        ...updateData,
+      });
 
       logger.info(`Relationship updated`, {
         userId,
+        accountId: (updateData as any)?.accountId,
         targetAccountId,
         status: updateData.status,
       });
@@ -151,17 +146,25 @@ export const deleteRelationship = onCall(
     }
 
     const userId = request.auth.uid;
-    const {targetAccountId} = request.data as {targetAccountId: string};
+    const {targetAccountId, accountId} = request.data as {
+      targetAccountId: string;
+      accountId?: string;
+    };
 
     if (!targetAccountId) {
       throw new HttpsError("invalid-argument", "Target account ID is required");
     }
 
     try {
-      await RelationshipService.deleteRelationship(userId, targetAccountId);
+      await RelationshipService.deleteRelationship(
+        userId,
+        targetAccountId,
+        accountId,
+      );
 
       logger.info(`Relationship deleted`, {
         userId,
+        accountId,
         targetAccountId,
       });
 

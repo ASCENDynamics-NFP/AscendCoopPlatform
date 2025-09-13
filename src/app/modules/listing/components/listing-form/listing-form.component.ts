@@ -84,6 +84,10 @@ export class ListingFormComponent implements OnInit {
     this.initForm();
   }
 
+  get isEditMode(): boolean {
+    return !!this.listing?.id;
+  }
+
   private initForm() {
     this.listingForm = this.fb.group({
       title: [
@@ -156,6 +160,8 @@ export class ListingFormComponent implements OnInit {
       };
       this.listingForm.patchValue(formValue);
       this.initializeFormArrays(this.listing);
+      // Prevent changing owner on edit
+      this.listingForm.get("ownerAccountId")?.disable({emitEvent: false});
     } else {
       // New listing - populate from account and owner choices
       this.store

@@ -33,6 +33,7 @@ import {
   selectRelatedListingsByAccountId,
   selectRelatedAccountsByAccountId,
 } from "../../../../../state/selectors/account.selectors";
+import {selectAreRelatedListingsFresh} from "../../../../../state/selectors/account.selectors";
 import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
 import {selectListingById} from "../../../../../state/selectors/listings.selectors";
 import * as AccountActions from "../../../../../state/actions/account.actions";
@@ -251,9 +252,17 @@ export class ListingsListPage implements OnInit {
         }),
       );
 
-      this.store.dispatch(
-        AccountActions.loadRelatedListings({accountId: this.accountId}),
-      );
+      // Load once if stale
+      this.store
+        .select(selectAreRelatedListingsFresh(this.accountId))
+        .pipe(take(1))
+        .subscribe((fresh) => {
+          if (!fresh) {
+            this.store.dispatch(
+              AccountActions.loadRelatedListings({accountId: this.accountId!}),
+            );
+          }
+        });
     }
   }
 
@@ -444,10 +453,8 @@ export class ListingsListPage implements OnInit {
             accountId: currentUser.uid,
           }),
         );
-        // Refresh the listings after saving with a delay
-        of(null)
-          .pipe(delay(1000))
-          .subscribe(() => this.refreshRelatedListings());
+        // Single light refresh after save
+        this.performDelayedRefresh();
       }
     });
   }
@@ -467,10 +474,8 @@ export class ListingsListPage implements OnInit {
             accountId: currentUser.uid,
           }),
         );
-        // Refresh the listings after unsaving with a delay
-        of(null)
-          .pipe(delay(1000))
-          .subscribe(() => this.refreshRelatedListings());
+        // Single light refresh after unsave
+        this.performDelayedRefresh();
       }
     });
   }
@@ -637,45 +642,39 @@ export class ListingsListPage implements OnInit {
    * Performs multiple delayed refreshes to ensure backend changes are captured
    */
   private performDelayedRefresh(): void {
-    // Immediate refresh (in case effect-based refresh works)
-    this.refreshRelatedListings();
-
-    // Short delay refresh (1 second)
+    // Single, modest delay to let backend settle; avoid spamming network
     of(null)
-      .pipe(delay(1000))
-      .subscribe(() => {
-        this.refreshRelatedListings();
-      });
-
-    // Medium delay refresh (3 seconds)
-    of(null)
-      .pipe(delay(3000))
-      .subscribe(() => {
-        this.refreshRelatedListings();
-      });
-
-    // Long delay refresh (5 seconds) - final safety net
-    of(null)
-      .pipe(delay(5000))
-      .subscribe(() => {
-        this.refreshRelatedListings();
-      });
+      .pipe(delay(750))
+      .subscribe(() => this.refreshRelatedListings());
   }
 
   /**
    * Refreshes the related listings data from the backend
    */
-  private refreshRelatedListings(): void {
-    if (this.accountId) {
-      // Dispatch action to reload the related listings with force reload
+  private refreshRelatedListings(forceReload: boolean = false): void {
+    if (!this.accountId) return;
+    if (forceReload) {
       this.store.dispatch(
         AccountActions.loadRelatedListings({
           accountId: this.accountId,
           forceReload: true,
         }),
       );
+      return;
     }
-  } /**
+    // Otherwise only fetch when stale
+    this.store
+      .select(selectAreRelatedListingsFresh(this.accountId))
+      .pipe(take(1))
+      .subscribe((fresh) => {
+        if (!fresh) {
+          this.store.dispatch(
+            AccountActions.loadRelatedListings({accountId: this.accountId!}),
+          );
+        }
+      });
+  }
+  /**
    * Helper method to navigate from popover and close it
    * @param route The route to navigate to
    */

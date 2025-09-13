@@ -146,20 +146,33 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <!-- Post As (Owner Account) -->
           <ion-row>
             <ion-col size="12" size-md="6">
-              <ion-select
-                label="Post As"
-                label-placement="stacked"
-                formControlName="ownerAccountId"
-                fill="outline"
-                (ionChange)="onOwnerAccountChange($event)"
-              >
-                <ion-select-option
-                  *ngFor="let acc of ownerAccounts$ | async"
-                  [value]="acc.id"
+              <ng-container *ngIf="!isEditMode; else staticOwner">
+                <ion-select
+                  label="Post As"
+                  label-placement="stacked"
+                  formControlName="ownerAccountId"
+                  fill="outline"
+                  (ionChange)="onOwnerAccountChange($event)"
                 >
-                  {{ acc.name }} ({{ acc.type | titlecase }})
-                </ion-select-option>
-              </ion-select>
+                  <ion-select-option
+                    *ngFor="let acc of ownerAccounts$ | async"
+                    [value]="acc.id"
+                  >
+                    {{ acc.name }} ({{ acc.type | titlecase }})
+                  </ion-select-option>
+                </ion-select>
+              </ng-container>
+              <ng-template #staticOwner>
+                <ion-item lines="none">
+                  <ion-label>
+                    <strong>Post As</strong>
+                    <p>
+                      {{ listingForm.get('organization')?.value }}
+                      ({{ listingForm.get('ownerAccountType')?.value | titlecase }})
+                    </p>
+                  </ion-label>
+                </ion-item>
+              </ng-template>
             </ion-col>
           </ion-row>
 

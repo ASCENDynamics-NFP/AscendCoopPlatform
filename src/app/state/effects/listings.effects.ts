@@ -44,6 +44,7 @@ import {Router} from "@angular/router";
 import {ToastController} from "@ionic/angular";
 import {Store} from "@ngrx/store";
 import {AppState} from "../app.state";
+import * as AccountActions from "../actions/account.actions";
 import {
   selectListingById,
   selectAreListingsFresh,
@@ -77,6 +78,7 @@ export class ListingsEffects {
           status:
             (listing.status as "active" | "inactive" | "draft") || "active",
           remote: listing.remote || false,
+          ownerAccountId: (listing as any)?.ownerAccountId || undefined,
           contactInformation: {
             emails:
               listing.contactInformation?.emails?.map((e) => ({
@@ -448,9 +450,16 @@ export class ListingsEffects {
       ofType(ListingsActions.saveListing),
       mergeMap(({listingId, accountId}) =>
         this.listingsService.saveListing(listingId).pipe(
-          map(() => {
+          mergeMap(() => {
             this.showToast("Listing saved successfully", "success");
-            return ListingsActions.saveListingSuccess({listingId, accountId});
+            return [
+              ListingsActions.saveListingSuccess({listingId, accountId}),
+              // Force reload related listings so Saved segment updates immediately
+              AccountActions.loadRelatedListings({
+                accountId,
+                forceReload: true as any,
+              }) as any,
+            ];
           }),
           catchError((error) => {
             this.showToast(`Error saving listing: ${error.message}`, "danger");
@@ -469,9 +478,15 @@ export class ListingsEffects {
       ofType(ListingsActions.unsaveListing),
       mergeMap(({listingId, accountId}) =>
         this.listingsService.unsaveListing(listingId).pipe(
-          map(() => {
+          mergeMap(() => {
             this.showToast("Listing removed from saved items", "success");
-            return ListingsActions.unsaveListingSuccess({listingId, accountId});
+            return [
+              ListingsActions.unsaveListingSuccess({listingId, accountId}),
+              AccountActions.loadRelatedListings({
+                accountId,
+                forceReload: true as any,
+              }) as any,
+            ];
           }),
           catchError((error) => {
             this.showToast(

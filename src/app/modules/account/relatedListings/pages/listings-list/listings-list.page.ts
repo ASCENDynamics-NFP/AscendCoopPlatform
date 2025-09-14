@@ -203,9 +203,16 @@ export class ListingsListPage implements OnInit {
 
               // Then filter by relationship if not "all"
               if (relationshipFilter !== "all") {
-                filteredListings = filteredListings.filter(
-                  (listing) => listing.relationship === relationshipFilter,
-                );
+                if (relationshipFilter === "saved") {
+                  // Saved now uses explicit flag
+                  filteredListings = filteredListings.filter(
+                    (listing) => (listing as any).isSaved === true,
+                  );
+                } else {
+                  filteredListings = filteredListings.filter(
+                    (listing) => listing.relationship === relationshipFilter,
+                  );
+                }
               }
 
               // For non-owners viewing profiles, additionally filter to only show owner's listings

@@ -160,8 +160,10 @@ export class ListingFormComponent implements OnInit {
       };
       this.listingForm.patchValue(formValue);
       this.initializeFormArrays(this.listing);
-      // Prevent changing owner on edit
-      this.listingForm.get("ownerAccountId")?.disable({emitEvent: false});
+      // Prevent changing owner only when truly editing an existing listing
+      if (this.isEditMode) {
+        this.listingForm.get("ownerAccountId")?.disable({emitEvent: false});
+      }
     } else {
       // New listing - populate from account and owner choices
       this.store
@@ -289,16 +291,22 @@ export class ListingFormComponent implements OnInit {
     if (checked) {
       // Backup current manual entries
       this.backupContactInfo = this.getContactInfoFromForm();
-      if (!this.authUser?.uid) return;
-      // Re-pull from sections/contactInfo and populate
+      // Determine selected owner account (fallback to auth user)
+      const selectedOwnerId =
+        this.listingForm.get("ownerAccountId")?.value || this.authUser?.uid;
+      if (!selectedOwnerId) return;
+      // Re-pull from sections/contactInfo of selected owner and populate
       this.sections
-        .contactInfo$(this.authUser.uid)
+        .contactInfo$(selectedOwnerId)
         .pipe(take(1))
         .subscribe((ci: ContactInformation | null) => {
           if (ci) {
             this.setContactInfoFromSource(ci);
-          } else if (this.currentAccount?.contactInformation) {
-            // Fallback to base account contact info if subdoc missing
+          } else if (
+            selectedOwnerId === this.currentAccount?.id &&
+            this.currentAccount?.contactInformation
+          ) {
+            // Fallback to base contact info only when selected owner is the current account
             this.setContactInfoFromSource(
               this.currentAccount.contactInformation,
             );

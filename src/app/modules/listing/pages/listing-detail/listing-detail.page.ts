@@ -22,8 +22,20 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {Store} from "@ngrx/store";
-import {Observable, Subscription, combineLatest} from "rxjs";
-import {map} from "rxjs/operators";
+import {
+  Observable,
+  Subscription,
+  combineLatest,
+  of,
+  firstValueFrom,
+} from "rxjs";
+import {
+  map,
+  take,
+  filter as rxFilter,
+  switchMap,
+  catchError,
+} from "rxjs/operators";
 import {Listing} from "@shared/models/listing.model";
 import * as ListingsActions from "../../../../state/actions/listings.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
@@ -33,8 +45,12 @@ import {
   selectLoading,
 } from "../../../../state/selectors/listings.selectors";
 import {MetaService} from "../../../../core/services/meta.service";
-import {selectAccountById} from "../../../../state/selectors/account.selectors";
-import {of, switchMap, catchError} from "rxjs";
+import {
+  selectAccountById,
+  selectRelatedListingsByAccountId,
+} from "../../../../state/selectors/account.selectors";
+import * as AccountActions from "../../../../state/actions/account.actions";
+import {RelatedListing} from "@shared/models/related-listing.model";
 import {AccessService} from "../../../../core/services/access.service";
 
 @Component({
@@ -48,6 +64,7 @@ export class ListingDetailPage implements OnInit {
   isOwner$: Observable<boolean>;
   loading$: Observable<boolean>;
   private listingId: string;
+  isSaved$: Observable<boolean> = of(false);
 
   constructor(
     private metaService: MetaService,
@@ -87,6 +104,38 @@ export class ListingDetailPage implements OnInit {
         ListingsActions.loadListingById({id: this.listingId}),
       );
     }
+
+    // Ensure we have the auth user's related listings loaded to derive saved state
+    this.store
+      .select(selectAuthUser)
+      .pipe(
+        rxFilter((u) => !!u?.uid),
+        take(1),
+      )
+      .subscribe((u) => {
+        this.store.dispatch(
+          AccountActions.loadRelatedListings({accountId: (u as any).uid}),
+        );
+      });
+
+    // Compute isSaved from auth user's relatedListings
+    this.isSaved$ = combineLatest([
+      this.store.select(selectAuthUser),
+      this.listing$,
+    ]).pipe(
+      switchMap(([user, listing]) => {
+        if (!user?.uid || !listing?.id) return of(false);
+        return this.store
+          .select(selectRelatedListingsByAccountId(user.uid))
+          .pipe(
+            map((rels: RelatedListing[]) =>
+              (rels || []).some(
+                (rl) => rl.id === listing.id && (rl as any).isSaved === true,
+              ),
+            ),
+          );
+      }),
+    );
   }
 
   ionViewWillEnter() {
@@ -163,5 +212,21 @@ export class ListingDetailPage implements OnInit {
       this.subscription.unsubscribe();
       this.subscription = null;
     }
+  }
+
+  async saveListing(listingId: string) {
+    const user = await firstValueFrom(this.store.select(selectAuthUser));
+    if (!user?.uid) return;
+    this.store.dispatch(
+      ListingsActions.saveListing({listingId, accountId: user.uid}),
+    );
+  }
+
+  async unsaveListing(listingId: string) {
+    const user = await firstValueFrom(this.store.select(selectAuthUser));
+    if (!user?.uid) return;
+    this.store.dispatch(
+      ListingsActions.unsaveListing({listingId, accountId: user.uid}),
+    );
   }
 }

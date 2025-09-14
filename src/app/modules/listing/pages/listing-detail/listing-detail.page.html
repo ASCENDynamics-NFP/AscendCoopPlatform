@@ -29,7 +29,30 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <app-hero
       [listing]="listing"
       [isOwner]="(isOwner$ | async) ?? false"
-    ></app-hero>
+    >
+      <div listing-secondary-actions *ngIf="!(isOwner$ | async)">
+        <ion-button
+          fill="clear"
+          color="medium"
+          size="small"
+          *ngIf="(isSaved$ | async) === false"
+          (click)="saveListing(listing.id)"
+        >
+          <ion-icon name="bookmark-outline" slot="start"></ion-icon>
+          Save
+        </ion-button>
+        <ion-button
+          fill="clear"
+          color="warning"
+          size="small"
+          *ngIf="(isSaved$ | async) === true"
+          (click)="unsaveListing(listing.id)"
+        >
+          <ion-icon name="bookmark" slot="start"></ion-icon>
+          Saved
+        </ion-button>
+      </div>
+    </app-hero>
 
     <ion-grid>
       <!-- Full-Width Sections -->

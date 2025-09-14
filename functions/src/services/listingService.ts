@@ -17,6 +17,8 @@ export interface CreateListingRequest {
   category: string;
   status: "active" | "inactive" | "draft";
   remote: boolean;
+  /** Optional: Post on behalf of this account (e.g., a group). Defaults to caller (userId). */
+  ownerAccountId?: string;
   contactInformation: {
     emails?: Array<{email: string; type?: string}>;
     phoneNumbers?: Array<{number: string; type?: string}>;
@@ -57,6 +59,129 @@ export interface ApplyToListingRequest {
 
 export class ListingService {
   /**
+   * Recursively remove properties with value undefined from an object or array.
+   * Preserves Firestore Timestamp instances and other non-plain objects.
+   */
+  private static stripUndefined<T>(value: T): T {
+    if (Array.isArray(value)) {
+      // Sanitize each element in the array
+      return value
+        .map((v) => this.stripUndefined(v))
+        .filter((v) => v !== undefined) as unknown as T;
+    }
+
+    if (value && typeof value === "object") {
+      // Preserve special objects like Firestore Timestamp
+      if (
+        (value as any) instanceof Timestamp ||
+        (value as any).toDate?.call // heuristic: objects with toDate() like Timestamp
+      ) {
+        return value;
+      }
+
+      const result: any = Array.isArray(value) ? [] : {};
+      for (const [k, v] of Object.entries(value as any)) {
+        if (v === undefined) continue;
+        const cleaned = this.stripUndefined(v as any);
+        if (cleaned !== undefined) result[k] = cleaned;
+      }
+      return result as T;
+    }
+
+    // Primitives: return as-is (undefined is handled by callers)
+    return value;
+  }
+
+  /** Normalize various timestamp shapes to Admin SDK Timestamp */
+  private static toAdminTimestamp(value: any): any {
+    if (value == null) return value;
+    if (value instanceof Timestamp) return value;
+    try {
+      // Firestore client Timestamp JSON-ish shape
+      if (
+        typeof value === "object" &&
+        typeof (value as any)._seconds === "number"
+      ) {
+        const seconds = (value as any)._seconds as number;
+        const nanos = (value as any)._nanoseconds as number | undefined;
+        const ms = seconds * 1000 + Math.floor((nanos || 0) / 1_000_000);
+        return Timestamp.fromMillis(ms);
+      }
+      // Date instance
+      if (value instanceof Date) {
+        return Timestamp.fromDate(value);
+      }
+      // ISO string
+      if (typeof value === "string") {
+        const ms = Date.parse(value);
+        if (!Number.isNaN(ms)) return Timestamp.fromMillis(ms);
+      }
+      // Objects with toDate() (client Timestamp)
+      if (typeof (value as any)?.toDate === "function") {
+        const d = (value as any).toDate();
+        if (d instanceof Date) return Timestamp.fromDate(d);
+      }
+    } catch (_) {
+      // Fall-through: return original value
+    }
+    return value;
+  }
+
+  /**
+   * Whitelist and sanitize update fields to avoid invalid Firestore writes.
+   */
+  private static sanitizeListingUpdates(updates: any): any {
+    if (!updates || typeof updates !== "object") return {};
+
+    const allowedKeys = new Set([
+      "title",
+      "organization",
+      "description",
+      "type",
+      "category",
+      "status",
+      "remote",
+      "contactInformation",
+      "requirements",
+      "skills",
+      "timeCommitment",
+      "iconImage",
+      "heroImage",
+      // Note: intentionally excluding createdAt/createdBy/ownerAccountId/etc
+    ]);
+
+    const result: any = {};
+    for (const [key, value] of Object.entries(updates)) {
+      if (!allowedKeys.has(key)) continue;
+      if (key === "timeCommitment" && value && typeof value === "object") {
+        const tc: any = {...(value as any)};
+        if ("startDate" in tc)
+          tc.startDate = this.toAdminTimestamp(tc.startDate);
+        if ("endDate" in tc) tc.endDate = this.toAdminTimestamp(tc.endDate);
+        result.timeCommitment = tc;
+        continue;
+      }
+      if (key === "contactInformation" && value && typeof value === "object") {
+        const ci = {...(value as any)};
+        if (Array.isArray(ci.addresses)) {
+          ci.addresses = ci.addresses.map((addr: any) => ({
+            street: addr?.street,
+            city: addr?.city,
+            state: addr?.state,
+            zipCode: addr?.zipCode,
+            country: addr?.country,
+            remote: addr?.remote,
+          }));
+        }
+        result.contactInformation = ci;
+        continue;
+      }
+      result[key] = value;
+    }
+
+    return this.stripUndefined(result);
+  }
+  /**
    * Create a new listing with all related setup
    */
   static async createListing(
@@ -68,8 +193,16 @@ export class ListingService {
       const listingRef = db.collection("listings").doc();
       const listingId = listingRef.id;
 
-      // Validate user has permission to create listings
-      await this.validateListingPermissions(userId, "create");
+      // Determine the owner account (defaults to caller)
+      const ownerAccountId = data.ownerAccountId || userId;
+
+      // Validate user has permission to create listings for the selected owner account
+      await this.validateListingPermissions(
+        userId,
+        "create",
+        undefined,
+        ownerAccountId,
+      );
 
       // Geocode addresses if provided
       const geocodedAddresses = await this.geocodeAddresses(
@@ -94,7 +227,7 @@ export class ListingService {
         timeCommitment: data.timeCommitment || {},
         iconImage: data.iconImage || null,
         heroImage: data.heroImage || null,
-        ownerAccountId: userId,
+        ownerAccountId,
         createdAt: Timestamp.now(),
         createdBy: userId,
         lastModifiedAt: Timestamp.now(),
@@ -108,8 +241,9 @@ export class ListingService {
       await this.createOwnerRelationships(
         batch,
         listingId,
-        userId,
+        ownerAccountId,
         listingData,
+        userId,
       );
 
       await batch.commit();
@@ -140,7 +274,6 @@ export class ListingService {
         request.listingId,
       );
 
-      const batch = db.batch();
       const listingRef = db.collection("listings").doc(request.listingId);
 
       // Get current listing data
@@ -150,8 +283,8 @@ export class ListingService {
       }
 
       const currentData = listingDoc.data()!;
-      const updates: any = {
-        ...request.updates,
+      let updates: any = {
+        ...ListingService.sanitizeListingUpdates(request.updates),
         lastModifiedAt: Timestamp.now(),
         lastModifiedBy: request.userId,
       };
@@ -168,22 +301,33 @@ export class ListingService {
         };
       }
 
-      // Update main listing document
-      batch.update(listingRef, updates);
+      // Remove undefined fields recursively to satisfy Firestore constraints
+      updates = ListingService.stripUndefined(updates);
 
-      // Update all related documents
-      await this.updateRelatedListingDocuments(
-        batch,
+      // Update main listing document (standalone commit)
+      const mainBatch = db.batch();
+      mainBatch.update(listingRef, updates);
+      await mainBatch.commit();
+
+      // Best-effort update of mirrored related listings; do not await
+      // Any errors are handled internally and won't impact the response
+      this.updateRelatedListingDocumentsBestEffort(
         request.listingId,
         updates,
+      ).catch((err) =>
+        logger.warn(
+          "Best-effort relatedListings update rejected (non-fatal):",
+          err,
+        ),
       );
-
-      await batch.commit();
       logger.info(`Listing updated successfully: ${request.listingId}`);
     } catch (error) {
       logger.error("Error updating listing:", error);
       if (error instanceof HttpsError) throw error;
-      throw new HttpsError("internal", "Failed to update listing");
+      throw new HttpsError("internal", "Failed to update listing", {
+        message: (error as any)?.message || String(error),
+        code: (error as any)?.code,
+      });
     }
   }
 
@@ -364,13 +508,22 @@ export class ListingService {
   /** Unsave a listing for a user */
   static async unsaveListing(userId: string, listingId: string): Promise<void> {
     try {
+      // Do not delete the relatedListing record — only clear saved flag to
+      // preserve applicant/owner relationships and history unless explicitly deleted.
       await db
         .collection("accounts")
         .doc(userId)
         .collection("relatedListings")
         .doc(listingId)
-        .delete();
-      logger.info("Listing unsaved", {listingId, userId});
+        .set(
+          {
+            isSaved: false,
+            lastModifiedAt: Timestamp.now(),
+            lastModifiedBy: userId,
+          },
+          {merge: true},
+        );
+      logger.info("Listing unsaved (flag cleared)", {listingId, userId});
     } catch (error) {
       logger.error("Error unsaving listing:", error);
       if (error instanceof HttpsError) throw error;
@@ -463,17 +616,31 @@ export class ListingService {
     userId: string,
     action: "create" | "update" | "manage",
     listingId?: string,
+    ownerAccountId?: string,
   ): Promise<void> {
     if (action === "create") {
-      // Check if user has an active account
-      const userDoc = await db.collection("accounts").doc(userId).get();
-      if (!userDoc.exists) {
-        throw new HttpsError(
-          "permission-denied",
-          "Account required to create listings",
-        );
+      // If creating for a specific owner account (e.g., group), ensure user is owner/admin/mod
+      const targetOwnerId = ownerAccountId || userId;
+      const ownerDoc = await db.collection("accounts").doc(targetOwnerId).get();
+      if (!ownerDoc.exists) {
+        throw new HttpsError("not-found", "Owner account not found");
       }
-      return;
+      const owner = ownerDoc.data() as any;
+      if (targetOwnerId === userId) return; // posting as self
+      // For groups, allow if user is in adminIds/moderatorIds
+      if (owner.type === "group") {
+        const inAdmins = Array.isArray(owner.adminIds)
+          ? owner.adminIds.includes(userId)
+          : false;
+        const inMods = Array.isArray(owner.moderatorIds)
+          ? owner.moderatorIds.includes(userId)
+          : false;
+        if (inAdmins || inMods) return;
+      }
+      throw new HttpsError(
+        "permission-denied",
+        "Insufficient permissions to post for this account",
+      );
     }
 
     if (listingId) {
@@ -483,15 +650,31 @@ export class ListingService {
         throw new HttpsError("not-found", "Listing not found");
       }
 
-      const listing = listingDoc.data()!;
-      if (listing.ownerAccountId === userId || listing.createdBy === userId) {
-        return; // Owner has full access
+      const listing = listingDoc.data() as any;
+      const ownerId = listing.ownerAccountId as string | undefined;
+
+      // If user created the listing, allow
+      if (listing.createdBy === userId) {
+        return;
       }
 
-      // Check if user has admin role in the owner account
+      // If there is no owner account recorded, restrict to creator only
+      if (!ownerId) {
+        throw new HttpsError(
+          "permission-denied",
+          "Insufficient permissions for this listing",
+        );
+      }
+
+      // If user is the owner account id itself, allow
+      if (ownerId === userId) {
+        return;
+      }
+
+      // Check if user has admin/manager role in the owner account
       const relatedAccountDoc = await db
         .collection("accounts")
-        .doc(listing.ownerAccountId)
+        .doc(ownerId)
         .collection("relatedAccounts")
         .doc(userId)
         .get();
@@ -522,18 +705,22 @@ export class ListingService {
   private static async createOwnerRelationships(
     batch: WriteBatch,
     listingId: string,
-    userId: string,
+    ownerAccountId: string,
     listingData: any,
+    createdByUserId?: string,
   ): Promise<void> {
     // Get account data for relationships
-    const accountDoc = await db.collection("accounts").doc(userId).get();
+    const accountDoc = await db
+      .collection("accounts")
+      .doc(ownerAccountId)
+      .get();
     if (!accountDoc.exists) return;
 
     const account = accountDoc.data()!;
 
     // Create relatedAccount document
     const relatedAccount = {
-      id: userId,
+      id: ownerAccountId,
       listingId: listingId,
       name: account.name,
       email: account.email,
@@ -544,15 +731,15 @@ export class ListingService {
       applicationDate: Timestamp.now(),
       notes: null,
       createdAt: Timestamp.now(),
-      createdBy: userId,
+      createdBy: createdByUserId || ownerAccountId,
       lastModifiedAt: Timestamp.now(),
-      lastModifiedBy: userId,
+      lastModifiedBy: createdByUserId || ownerAccountId,
     };
 
     // Create relatedListing document
     const relatedListing = {
       id: listingId,
-      accountId: userId,
+      accountId: ownerAccountId,
       title: listingData.title,
       organization: listingData.organization,
       type: listingData.type,
@@ -563,9 +750,9 @@ export class ListingService {
       applicationDate: Timestamp.now(),
       notes: null,
       createdAt: Timestamp.now(),
-      createdBy: userId,
+      createdBy: createdByUserId || ownerAccountId,
       lastModifiedAt: Timestamp.now(),
-      lastModifiedBy: userId,
+      lastModifiedBy: createdByUserId || ownerAccountId,
     };
 
     batch.set(
@@ -573,52 +760,67 @@ export class ListingService {
         .collection("listings")
         .doc(listingId)
         .collection("relatedAccounts")
-        .doc(userId),
+        .doc(ownerAccountId),
       relatedAccount,
     );
 
     batch.set(
       db
         .collection("accounts")
-        .doc(userId)
+        .doc(ownerAccountId)
         .collection("relatedListings")
         .doc(listingId),
       relatedListing,
     );
   }
 
-  private static async updateRelatedListingDocuments(
-    batch: WriteBatch,
+  private static async updateRelatedListingDocumentsBestEffort(
     listingId: string,
     updates: any,
   ): Promise<void> {
-    // Update all relatedListing documents that reference this listing
-    const relatedListingsQuery = await db
-      .collectionGroup("relatedListings")
-      .where("id", "==", listingId)
-      .get();
+    try {
+      // Query all mirrored relatedListings for this listing id
+      const relatedListingsQuery = await db
+        .collectionGroup("relatedListings")
+        .where("id", "==", listingId)
+        .get();
 
-    const listingUpdates = {
-      title: updates.title,
-      organization: updates.organization,
-      type: updates.type,
-      remote: updates.remote,
-      iconImage: updates.iconImage,
-      status: updates.status,
-      lastModifiedAt: updates.lastModifiedAt,
-      lastModifiedBy: updates.lastModifiedBy,
-    };
+      const listingUpdates = {
+        title: updates.title,
+        organization: updates.organization,
+        type: updates.type,
+        remote: updates.remote,
+        iconImage: updates.iconImage,
+        status: updates.status,
+        lastModifiedAt: updates.lastModifiedAt,
+        lastModifiedBy: updates.lastModifiedBy,
+      } as Record<string, unknown>;
 
-    // Filter out undefined values
-    const filteredUpdates = Object.fromEntries(
-      Object.entries(listingUpdates).filter(
-        ([_, value]) => value !== undefined,
-      ),
-    );
+      // Filter out undefined values
+      const filteredUpdates = Object.fromEntries(
+        Object.entries(listingUpdates).filter(
+          ([, value]) => value !== undefined,
+        ),
+      );
 
-    relatedListingsQuery.docs.forEach((doc) => {
-      batch.update(doc.ref, filteredUpdates);
-    });
+      if (Object.keys(filteredUpdates).length === 0) return;
+
+      // Chunk updates to respect 500 ops per batch
+      const docs = relatedListingsQuery.docs;
+      const chunkSize = 450;
+      for (let i = 0; i < docs.length; i += chunkSize) {
+        const chunk = docs.slice(i, i + chunkSize);
+        const batch = db.batch();
+        chunk.forEach((doc) => batch.update(doc.ref, filteredUpdates as any));
+        await batch.commit();
+      }
+    } catch (err: any) {
+      // Do not fail primary update due to secondary mirror issues (e.g., missing index)
+      logger.warn(
+        "Best-effort update of relatedListings failed (non-fatal):",
+        err,
+      );
+    }
   }
 
   /**

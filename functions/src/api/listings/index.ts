@@ -24,7 +24,9 @@ export const createListing = onCall(
     }
 
     const userId = request.auth.uid;
-    const data = request.data as CreateListingRequest;
+    const data = request.data as CreateListingRequest & {
+      ownerAccountId?: string;
+    };
 
     // Validate required fields
     if (!data.title || !data.organization || !data.type) {
@@ -106,7 +108,13 @@ export const updateListing = onCall(
     } catch (error) {
       logger.error("Listing update failed:", error);
       if (error instanceof HttpsError) throw error;
-      throw new HttpsError("internal", "Listing update failed");
+      const err = error as any;
+      // Surface root cause via details for better client-side toasts
+      throw new HttpsError("internal", "Listing update failed", {
+        message: err?.message || String(err),
+        code: err?.code,
+        stack: err?.stack,
+      });
     }
   },
 );

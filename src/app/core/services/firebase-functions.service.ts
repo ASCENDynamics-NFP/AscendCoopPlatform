@@ -60,6 +60,7 @@ export interface CreateListingRequest {
   category: string;
   status: "active" | "inactive" | "draft";
   remote: boolean;
+  ownerAccountId?: string;
   contactInformation: {
     emails?: Array<{email: string; type?: string}>;
     phoneNumbers?: Array<{number: string; type?: string}>;

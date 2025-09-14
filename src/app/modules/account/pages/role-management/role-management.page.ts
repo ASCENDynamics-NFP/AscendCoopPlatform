@@ -88,7 +88,8 @@ export class RoleManagementPage implements OnInit {
       map((roles) => roles.map((role) => ({...role}))),
     );
 
-    this.categorizedRoles$ = this.roles$.pipe(
+    // Build categorized view from editable (cloned) roles to avoid mutating NgRx-frozen state
+    this.categorizedRoles$ = this.editableRoles$.pipe(
       map((roles) => this.groupRolesByCategory(roles)),
       tap((groups) => {
         groups.forEach((g) => {
@@ -324,6 +325,7 @@ export class RoleManagementPage implements OnInit {
         if (!acc[category]) {
           acc[category] = [];
         }
+        // Use editable role objects (already cloned upstream)
         acc[category].push(role);
         return acc;
       },

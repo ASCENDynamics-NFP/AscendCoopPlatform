@@ -19,12 +19,11 @@
 ***********************************************************************************************/
 import {Component, Input, OnInit} from "@angular/core";
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {Store} from "@ngrx/store";
-import {FirestoreService} from "../../../../../../core/services/firestore.service";
 import {AccountSectionsService} from "../../../../services/account-sections.service";
 import {take} from "rxjs/operators";
 import {Account} from "@shared/models/account.model";
-import * as AccountActions from "../../../../../../state/actions/account.actions";
+import {AccountsService} from "../../../../../../core/services/accounts.service";
+import {firstValueFrom} from "rxjs";
 
 @Component({
   selector: "app-labor-rights-info-form",
@@ -50,9 +49,8 @@ export class LaborRightsInfoFormComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private store: Store,
-    private firestoreService: FirestoreService,
     private sections: AccountSectionsService,
+    private accountsService: AccountsService,
   ) {
     this.laborRightsInfoForm = this.fb.group({
       unionMembership: [null, Validators.required],
@@ -90,11 +88,12 @@ export class LaborRightsInfoFormComponent implements OnInit {
   async onSubmit() {
     if (this.laborRightsInfoForm.valid) {
       const laborRightsInfo = this.laborRightsInfoForm.value;
-      // Write to sections/laborRights only
-      await this.firestoreService.setDocument(
-        `accounts/${this.account.id}/sections/laborRights`,
-        laborRightsInfo,
-        {merge: true},
+      // Write to sections/laborRights via callable
+      await firstValueFrom(
+        this.accountsService.updateAccountSections({
+          accountId: this.account.id,
+          laborRights: laborRightsInfo,
+        }),
       );
     }
   }

@@ -26,14 +26,13 @@ import {
   PhoneNumber,
   Address,
 } from "@shared/models/account.model";
-import {Store} from "@ngrx/store";
-import * as AccountActions from "../../../../../../state/actions/account.actions";
-import {FirestoreService} from "../../../../../../core/services/firestore.service";
 import {formatPhoneNumber} from "../../../../../../core/utils/phone.util";
 import {countries, statesProvinces} from "../../../../../../core/data/country";
 import {AccountSectionsService} from "../../../../services/account-sections.service";
 import {ContactInformation} from "@shared/models/account.model";
 import {take} from "rxjs/operators";
+import {AccountsService} from "../../../../../../core/services/accounts.service";
+import {firstValueFrom} from "rxjs";
 
 @Component({
   selector: "app-contact-info-form",
@@ -51,9 +50,8 @@ export class ContactInfoFormComponent implements OnChanges {
 
   constructor(
     private fb: FormBuilder,
-    private store: Store,
-    private firestoreService: FirestoreService,
     private sections: AccountSectionsService,
+    private accountsService: AccountsService,
   ) {
     this.contactInfoForm = this.fb.group({
       contactInformation: this.fb.group({
@@ -96,7 +94,6 @@ export class ContactInfoFormComponent implements OnChanges {
   async onSubmit() {
     if (this.contactInfoForm.valid && this.account) {
       const formValue = this.contactInfoForm.value.contactInformation;
-      const contactInfoDocPath = `accounts/${this.account.id}/sections/contactInfo`;
       const payload = {
         emails: formValue.emails.map((email: Partial<Email>) => ({
           name: email.name ?? null,
@@ -121,9 +118,11 @@ export class ContactInfoFormComponent implements OnChanges {
         preferredMethodOfContact: formValue.preferredMethodOfContact || "Email",
       } as any;
 
-      await this.firestoreService.setDocument(contactInfoDocPath, payload, {
-        merge: true,
-      });
+      await firstValueFrom(
+        this.accountsService.updateAccount(this.account.id, {
+          contactInformation: payload,
+        } as any),
+      );
     }
   }
 

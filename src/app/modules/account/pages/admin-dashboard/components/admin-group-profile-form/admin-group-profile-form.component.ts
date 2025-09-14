@@ -25,14 +25,13 @@ import {
   SimpleChanges,
 } from "@angular/core";
 import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {
-  Account,
-  WebLink,
-  Address,
-} from "../../../../../../../../shared/models/account.model";
+import {Account} from "../../../../../../../../shared/models/account.model";
 import {Timestamp} from "firebase/firestore";
 import {Store} from "@ngrx/store";
-import {FirestoreService} from "../../../../../../core/services/firestore.service";
+import {AccountSectionsService} from "../../../../services/account-sections.service";
+import {take} from "rxjs/operators";
+import {AccountsService} from "../../../../../../core/services/accounts.service";
+import {firstValueFrom} from "rxjs";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 import {formatPhoneNumber} from "../../../../../../core/utils/phone.util";
 
@@ -52,7 +51,8 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
   constructor(
     private fb: FormBuilder,
     private store: Store,
-    private firestoreService: FirestoreService,
+    private sections: AccountSectionsService,
+    private accountsService: AccountsService,
   ) {
     this.profileForm = this.createForm();
   }
@@ -61,6 +61,19 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
     if (this.account) {
       console.log("ngOnInit - account:", this.account);
       this.populateForm(this.account);
+      // Load gated contact info from sections subdoc when available (owner/admin)
+      if (this.account.id) {
+        this.sections
+          .contactInfo$(this.account.id)
+          .pipe(take(1))
+          .subscribe((ci) => {
+            if (ci) {
+              this.populateEmails(ci.emails || []);
+              this.populatePhoneNumbers(ci.phoneNumbers || []);
+              this.populateAddresses(ci.addresses || []);
+            }
+          });
+      }
     }
   }
 
@@ -68,6 +81,19 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
     if (changes["account"] && changes["account"].currentValue) {
       console.log("ngOnChanges - account:", changes["account"].currentValue);
       this.populateForm(changes["account"].currentValue);
+      const acc = changes["account"].currentValue as Account;
+      if (acc?.id) {
+        this.sections
+          .contactInfo$(acc.id)
+          .pipe(take(1))
+          .subscribe((ci) => {
+            if (ci) {
+              this.populateEmails(ci.emails || []);
+              this.populatePhoneNumbers(ci.phoneNumbers || []);
+              this.populateAddresses(ci.addresses || []);
+            }
+          });
+      }
     }
   }
 
@@ -443,7 +469,6 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
 
       // Save private contact info in subcollection
       try {
-        const contactInfoDocPath = `accounts/${this.account!.id}/sections/contactInfo`;
         const payload = {
           emails: formValue.contactInformation.emails || [],
           phoneNumbers: formValue.contactInformation.phoneNumbers || [],
@@ -461,9 +486,11 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
               })) || [],
           preferredMethodOfContact: "Email",
         } as any;
-        await this.firestoreService.setDocument(contactInfoDocPath, payload, {
-          merge: true,
-        });
+        await firstValueFrom(
+          this.accountsService.updateAccount(this.account!.id, {
+            contactInformation: payload,
+          } as any),
+        );
       } catch (e) {
         console.warn("Failed to save contact info subdocument:", e);
       }

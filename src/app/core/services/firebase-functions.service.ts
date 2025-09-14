@@ -496,9 +496,13 @@ export class FirebaseFunctionsService {
     listingId: string,
     notes?: string,
     customMessage?: string,
+    resumeUrl?: string | null,
+    coverLetterUrl?: string | null,
   ): Observable<any> {
     const callable = this.fns.httpsCallable("applyToListing");
-    return from(callable({listingId, notes, customMessage})).pipe(
+    return from(
+      callable({listingId, notes, customMessage, resumeUrl, coverLetterUrl}),
+    ).pipe(
       map((result: any) => result),
       catchError(this.handleError("Listing application")),
     );
@@ -509,6 +513,35 @@ export class FirebaseFunctionsService {
     return from(callable(data)).pipe(
       map((result: any) => result),
       catchError(this.handleError("Listing search")),
+    );
+  }
+
+  saveListing(listingId: string): Observable<any> {
+    const callable = this.fns.httpsCallable("saveListing");
+    return from(callable({listingId})).pipe(
+      map((result: any) => result),
+      catchError(this.handleError("Save listing")),
+    );
+  }
+
+  unsaveListing(listingId: string): Observable<any> {
+    const callable = this.fns.httpsCallable("unsaveListing");
+    return from(callable({listingId})).pipe(
+      map((result: any) => result),
+      catchError(this.handleError("Unsave listing")),
+    );
+  }
+
+  manageApplication(
+    listingId: string,
+    applicantId: string,
+    status: "accepted" | "declined",
+    notes?: string,
+  ): Observable<any> {
+    const callable = this.fns.httpsCallable("manageApplication");
+    return from(callable({listingId, applicantId, status, notes})).pipe(
+      map((result: any) => result),
+      catchError(this.handleError("Manage application")),
     );
   }
 
@@ -526,6 +559,19 @@ export class FirebaseFunctionsService {
     return from(callable({targetAccountId, updates})).pipe(
       map((result: any) => result),
       catchError(this.handleError("Relationship update")),
+    );
+  }
+
+  // Account Sections (professionalInfo, laborRights)
+  updateAccountSections(data: {
+    accountId: string;
+    professionalInformation?: any;
+    laborRights?: any;
+  }): Observable<any> {
+    const callable = this.fns.httpsCallable("updateAccountSections");
+    return from(callable(data)).pipe(
+      map((result: any) => result),
+      catchError(this.handleError("Update account sections")),
     );
   }
 

@@ -203,27 +203,16 @@ export class ListingsEffects {
     ),
   );
 
-  // Update an existing listing
+  // Update an existing listing (via callable)
   updateListing$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.updateListing),
       debounceTime(300),
-      mergeMap(({listing}) => {
-        const updatedListing = {
-          ...listing,
-          lastModifiedAt: serverTimestamp(),
-        };
-        return from(
-          this.firestoreService.updateDocument(
-            "listings",
-            listing.id,
-            updatedListing,
-          ),
-        ).pipe(
+      mergeMap(({listing}) =>
+        this.listingsService.updateListing(listing.id, listing as any).pipe(
           map(() => {
             // Only navigate if we're not on the account listings page
             const currentUrl = this.router.url;
-            // Don't navigate if we're on the account listings page (pattern: /accounts/:accountId/listings)
             const isAccountListingsPage = currentUrl.match(
               /\/accounts\/[^\/]+\/listings$/,
             );
@@ -232,7 +221,7 @@ export class ListingsEffects {
             }
             this.showToast("Listing updated successfully", "success");
             return ListingsActions.updateListingSuccess({
-              listing: updatedListing,
+              listing,
             });
           }),
           catchError((error) => {
@@ -244,8 +233,8 @@ export class ListingsEffects {
               ListingsActions.updateListingFailure({error: error.message}),
             );
           }),
-        );
-      }),
+        ),
+      ),
     ),
   );
 
@@ -254,7 +243,7 @@ export class ListingsEffects {
     this.actions$.pipe(
       ofType(ListingsActions.deleteListing),
       mergeMap(({id}) =>
-        from(this.firestoreService.deleteDocument("listings", id)).pipe(
+        this.listingsService.deleteListing(id).pipe(
           map(() => {
             this.showToast("Listing deleted successfully", "success");
             return ListingsActions.deleteListingSuccess({id});
@@ -278,7 +267,38 @@ export class ListingsEffects {
     this.actions$.pipe(
       ofType(ListingsActions.submitApplication),
       mergeMap(({relatedAccount}) =>
-        from(this.submitApplicationToFirestore(relatedAccount)).pipe(
+        from(
+          (async () => {
+            // Upload files if present
+            const applicationId = relatedAccount.id;
+            const listingId = relatedAccount.listingId;
+            let resumeUrl: string | null = null;
+            let coverLetterUrl: string | null = null;
+
+            if ((relatedAccount as any).resumeFile) {
+              resumeUrl = await this.storageService.uploadFile(
+                `accounts/${applicationId}/listing/${listingId}/resume.pdf`,
+                (relatedAccount as any).resumeFile,
+              );
+            }
+            if ((relatedAccount as any).coverLetterFile) {
+              coverLetterUrl = await this.storageService.uploadFile(
+                `accounts/${applicationId}/listing/${listingId}/coverLetter.pdf`,
+                (relatedAccount as any).coverLetterFile,
+              );
+            }
+
+            await this.listingsService
+              .applyToListing(
+                relatedAccount.listingId,
+                relatedAccount.notes,
+                undefined,
+                resumeUrl,
+                coverLetterUrl,
+              )
+              .toPromise();
+          })(),
+        ).pipe(
           map(() => {
             this.router.navigate(["/listings", relatedAccount.listingId]);
             this.showToast("Application submitted successfully", "success");
@@ -394,27 +414,30 @@ export class ListingsEffects {
     this.actions$.pipe(
       ofType(ListingsActions.updateRelatedAccount),
       mergeMap(({listingId, relatedAccount}) =>
-        from(
-          this.firestoreService.updateDocument(
-            `listings/${listingId}/relatedAccounts`,
+        this.listingsService
+          .manageApplication(
+            listingId,
             relatedAccount.id,
-            relatedAccount,
-          ),
-        ).pipe(
-          map(() =>
-            ListingsActions.updateRelatedAccountSuccess({
-              listingId,
-              relatedAccount,
-            }),
-          ),
-          catchError((error) =>
-            of(
-              ListingsActions.updateRelatedAccountFailure({
-                error: error.message,
+            (relatedAccount.status as any) === "accepted"
+              ? "accepted"
+              : "declined",
+            (relatedAccount as any).notes,
+          )
+          .pipe(
+            map(() =>
+              ListingsActions.updateRelatedAccountSuccess({
+                listingId,
+                relatedAccount,
               }),
             ),
+            catchError((error) =>
+              of(
+                ListingsActions.updateRelatedAccountFailure({
+                  error: error.message,
+                }),
+              ),
+            ),
           ),
-        ),
       ),
     ),
   );
@@ -424,19 +447,7 @@ export class ListingsEffects {
     this.actions$.pipe(
       ofType(ListingsActions.saveListing),
       mergeMap(({listingId, accountId}) =>
-        from(
-          this.firestoreService.setDocument(
-            `accounts/${accountId}/relatedListings/${listingId}`,
-            {
-              id: listingId,
-              accountId: accountId,
-              relationship: "saved",
-              createdAt: serverTimestamp(),
-              lastModifiedAt: serverTimestamp(),
-            },
-            {merge: true},
-          ),
-        ).pipe(
+        this.listingsService.saveListing(listingId).pipe(
           map(() => {
             this.showToast("Listing saved successfully", "success");
             return ListingsActions.saveListingSuccess({listingId, accountId});
@@ -457,12 +468,7 @@ export class ListingsEffects {
     this.actions$.pipe(
       ofType(ListingsActions.unsaveListing),
       mergeMap(({listingId, accountId}) =>
-        from(
-          this.firestoreService.deleteDocument(
-            `accounts/${accountId}/relatedListings`,
-            listingId,
-          ),
-        ).pipe(
+        this.listingsService.unsaveListing(listingId).pipe(
           map(() => {
             this.showToast("Listing removed from saved items", "success");
             return ListingsActions.unsaveListingSuccess({listingId, accountId});

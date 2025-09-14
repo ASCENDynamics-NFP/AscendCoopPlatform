@@ -51,6 +51,8 @@ export interface ApplyToListingRequest {
   applicantId: string;
   notes?: string;
   customMessage?: string;
+  resumeUrl?: string | null;
+  coverLetterUrl?: string | null;
 }
 
 export class ListingService {
@@ -244,6 +246,8 @@ export class ListingService {
         applicationDate: Timestamp.now(),
         notes: request.notes || null,
         customMessage: request.customMessage || null,
+        resumeUrl: request.resumeUrl || null,
+        coverLetterUrl: request.coverLetterUrl || null,
         createdAt: Timestamp.now(),
         createdBy: request.applicantId,
         lastModifiedAt: Timestamp.now(),
@@ -318,13 +322,69 @@ export class ListingService {
     }
   }
 
+  /** Save a listing for a user */
+  static async saveListing(userId: string, listingId: string): Promise<void> {
+    try {
+      const listingDoc = await db.collection("listings").doc(listingId).get();
+      if (!listingDoc.exists)
+        throw new HttpsError("not-found", "Listing not found");
+      const listing = listingDoc.data()!;
+      await db
+        .collection("accounts")
+        .doc(userId)
+        .collection("relatedListings")
+        .doc(listingId)
+        .set(
+          {
+            id: listingId,
+            accountId: userId,
+            title: listing.title,
+            organization: listing.organization,
+            type: listing.type,
+            remote: listing.remote || false,
+            iconImage: listing.iconImage || null,
+            status: listing.status,
+            isSaved: true,
+            applicationDate: Timestamp.now(),
+            createdAt: Timestamp.now(),
+            createdBy: userId,
+            lastModifiedAt: Timestamp.now(),
+            lastModifiedBy: userId,
+          },
+          {merge: true},
+        );
+      logger.info("Listing saved", {listingId, userId});
+    } catch (error) {
+      logger.error("Error saving listing:", error);
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError("internal", "Failed to save listing");
+    }
+  }
+
+  /** Unsave a listing for a user */
+  static async unsaveListing(userId: string, listingId: string): Promise<void> {
+    try {
+      await db
+        .collection("accounts")
+        .doc(userId)
+        .collection("relatedListings")
+        .doc(listingId)
+        .delete();
+      logger.info("Listing unsaved", {listingId, userId});
+    } catch (error) {
+      logger.error("Error unsaving listing:", error);
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError("internal", "Failed to unsave listing");
+    }
+  }
+
   /**
    * Accept or reject an application
    */
   static async updateApplicationStatus(
     listingId: string,
     applicantId: string,
-    status: "accepted" | "rejected",
+    status: "accepted" | "declined",
     userId: string,
     notes?: string,
   ): Promise<void> {

@@ -232,6 +232,55 @@ export const deleteMyAccount = onCall(
 );
 
 /**
+ * Update gated account sections (professionalInfo, laborRights)
+ */
+export const updateAccountSections = onCall(
+  {
+    region: "us-central1",
+    enforceAppCheck: false,
+    memory: "256MiB",
+    timeoutSeconds: 30,
+  },
+  async (request) => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "User must be authenticated");
+    }
+
+    const userId = request.auth.uid;
+    const {accountId, professionalInformation, laborRights} = request.data as {
+      accountId: string;
+      professionalInformation?: any;
+      laborRights?: any;
+    };
+
+    if (!accountId) {
+      throw new HttpsError("invalid-argument", "Account ID is required");
+    }
+
+    try {
+      await AccountService.updateAccountSections({
+        userId,
+        accountId,
+        professionalInformation,
+        laborRights,
+      });
+
+      logger.info("Account sections updated via API", {
+        userId,
+        accountId,
+        professionalInformation: professionalInformation !== undefined,
+        laborRights: laborRights !== undefined,
+      });
+      return {success: true};
+    } catch (error) {
+      logger.error("Update account sections failed:", error);
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError("internal", "Update account sections failed");
+    }
+  },
+);
+
+/**
  * Migration function: Add isActive: true to all existing accounts
  * Should be run once to fix legacy accounts
  */

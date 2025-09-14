@@ -336,6 +336,74 @@ export class AccountService {
   }
 
   /**
+   * Update gated account sections (professionalInfo, laborRights)
+   * - Only allowed for user accounts (owner only)
+   * - Ignored for group accounts (no-op)
+   */
+  static async updateAccountSections(request: {
+    userId: string;
+    accountId: string;
+    professionalInformation?: any;
+    laborRights?: any;
+  }): Promise<void> {
+    try {
+      const {userId, accountId, professionalInformation, laborRights} = request;
+
+      const accountRef = db.collection("accounts").doc(accountId);
+      const snap = await accountRef.get();
+      if (!snap.exists) {
+        throw new HttpsError("not-found", "Account not found");
+      }
+      const account = snap.data() as any;
+
+      // For user accounts, only the owner can edit these sections
+      if (account.type === "user") {
+        if (userId !== accountId) {
+          throw new HttpsError("permission-denied", "Insufficient permissions");
+        }
+
+        const batch = db.batch();
+        const sectionsRef = accountRef.collection("sections");
+
+        if (professionalInformation !== undefined) {
+          batch.set(
+            sectionsRef.doc("professionalInfo"),
+            professionalInformation,
+            {
+              merge: true,
+            },
+          );
+        }
+        if (laborRights !== undefined) {
+          batch.set(sectionsRef.doc("laborRights"), laborRights, {merge: true});
+        }
+
+        await batch.commit();
+        logger.info("Account sections updated", {
+          accountId,
+          userId,
+          updated: {
+            professionalInformation: professionalInformation !== undefined,
+            laborRights: laborRights !== undefined,
+          },
+        });
+        return;
+      }
+
+      // For groups, ignore these sections (no-op)
+      logger.info("Ignoring sections update for non-user account", {
+        accountId,
+        type: account.type,
+      });
+      return;
+    } catch (error) {
+      logger.error("Error updating account sections:", error);
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError("internal", "Failed to update account sections");
+    }
+  }
+
+  /**
    * Delete account and all related data
    */
   static async deleteAccount(userId: string, accountId: string): Promise<void> {
@@ -505,21 +573,41 @@ export class AccountService {
     userId: string,
     accountId: string,
   ): Promise<boolean> {
-    // Check if user has admin role in the account
-    const relatedAccountDoc = await db
+    // Owner can always update their own account
+    if (userId === accountId) return true;
+
+    // Fetch account to check denormalized admin/moderator arrays (for groups)
+    const accountSnap = await db.collection("accounts").doc(accountId).get();
+    if (!accountSnap.exists) return false;
+    const account = accountSnap.data() as any;
+
+    if (account?.type === "group") {
+      const inAdmins =
+        Array.isArray(account.adminIds) && account.adminIds.includes(userId);
+      const inMods =
+        Array.isArray(account.moderatorIds) &&
+        account.moderatorIds.includes(userId);
+      if (inAdmins || inMods) return true;
+    }
+
+    // Fallback to relatedAccounts membership: accepted + access admin/moderator
+    const relSnap = await db
       .collection("accounts")
       .doc(accountId)
       .collection("relatedAccounts")
       .doc(userId)
       .get();
+    if (relSnap.exists) {
+      const rel = relSnap.data() as any;
+      if (
+        rel?.status === "accepted" &&
+        ["admin", "moderator"].includes(rel?.access)
+      ) {
+        return true;
+      }
+    }
 
-    if (!relatedAccountDoc.exists) return false;
-
-    const relation = relatedAccountDoc.data();
-    return (
-      relation?.status === "active" &&
-      ["admin", "owner"].includes(relation?.relationship)
-    );
+    return false;
   }
 
   private static async updateRelatedDocuments(

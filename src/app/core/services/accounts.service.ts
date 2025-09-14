@@ -96,6 +96,15 @@ export class AccountsService {
     );
   }
 
+  /** Update gated sections via callable (avoids direct Firestore writes) */
+  updateAccountSections(data: {
+    accountId: string;
+    professionalInformation?: any;
+    laborRights?: any;
+  }): Observable<any> {
+    return this.firebaseFunctions.updateAccountSections(data);
+  }
+
   // ===== LEGACY METHODS (keeping for backward compatibility) =====
 
   /**

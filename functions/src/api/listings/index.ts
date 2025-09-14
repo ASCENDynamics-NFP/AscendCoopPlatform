@@ -127,11 +127,14 @@ export const applyToListing = onCall(
     }
 
     const userId = request.auth.uid;
-    const {listingId, notes, customMessage} = request.data as {
-      listingId: string;
-      notes?: string;
-      customMessage?: string;
-    };
+    const {listingId, notes, customMessage, resumeUrl, coverLetterUrl} =
+      request.data as {
+        listingId: string;
+        notes?: string;
+        customMessage?: string;
+        resumeUrl?: string | null;
+        coverLetterUrl?: string | null;
+      };
 
     if (!listingId) {
       throw new HttpsError("invalid-argument", "Listing ID is required");
@@ -143,6 +146,8 @@ export const applyToListing = onCall(
         applicantId: userId,
         notes,
         customMessage,
+        resumeUrl,
+        coverLetterUrl,
       });
 
       logger.info(`Application submitted via API`, {
@@ -158,6 +163,58 @@ export const applyToListing = onCall(
       logger.error("Application submission failed:", error);
       if (error instanceof HttpsError) throw error;
       throw new HttpsError("internal", "Application submission failed");
+    }
+  },
+);
+
+/** Save a listing */
+export const saveListing = onCall(
+  {
+    region: "us-central1",
+    enforceAppCheck: false,
+    memory: "256MiB",
+    timeoutSeconds: 30,
+  },
+  async (request) => {
+    if (!request.auth?.uid)
+      throw new HttpsError("unauthenticated", "User must be authenticated");
+    const userId = request.auth.uid;
+    const {listingId} = request.data as {listingId: string};
+    if (!listingId)
+      throw new HttpsError("invalid-argument", "Listing ID is required");
+    try {
+      await ListingService.saveListing(userId, listingId);
+      return {success: true};
+    } catch (error) {
+      logger.error("Save listing failed:", error);
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError("internal", "Save listing failed");
+    }
+  },
+);
+
+/** Unsave a listing */
+export const unsaveListing = onCall(
+  {
+    region: "us-central1",
+    enforceAppCheck: false,
+    memory: "256MiB",
+    timeoutSeconds: 30,
+  },
+  async (request) => {
+    if (!request.auth?.uid)
+      throw new HttpsError("unauthenticated", "User must be authenticated");
+    const userId = request.auth.uid;
+    const {listingId} = request.data as {listingId: string};
+    if (!listingId)
+      throw new HttpsError("invalid-argument", "Listing ID is required");
+    try {
+      await ListingService.unsaveListing(userId, listingId);
+      return {success: true};
+    } catch (error) {
+      logger.error("Unsave listing failed:", error);
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError("internal", "Unsave listing failed");
     }
   },
 );
@@ -181,7 +238,7 @@ export const manageApplication = onCall(
     const {listingId, applicantId, status, notes} = request.data as {
       listingId: string;
       applicantId: string;
-      status: "accepted" | "rejected";
+      status: "accepted" | "declined";
       notes?: string;
     };
 
@@ -192,10 +249,10 @@ export const manageApplication = onCall(
       );
     }
 
-    if (!["accepted", "rejected"].includes(status)) {
+    if (!["accepted", "declined"].includes(status)) {
       throw new HttpsError(
         "invalid-argument",
-        'Status must be "accepted" or "rejected"',
+        'Status must be "accepted" or "declined"',
       );
     }
 

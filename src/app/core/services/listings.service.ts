@@ -83,11 +83,43 @@ export class ListingsService {
     listingId: string,
     notes?: string,
     customMessage?: string,
+    resumeUrl?: string | null,
+    coverLetterUrl?: string | null,
   ): Observable<any> {
     return this.firebaseFunctions.applyToListing(
       listingId,
       notes,
       customMessage,
+      resumeUrl,
+      coverLetterUrl,
+    );
+  }
+
+  /**
+   * Save a listing for the current user via callable
+   */
+  saveListing(listingId: string): Observable<any> {
+    return this.firebaseFunctions.saveListing(listingId);
+  }
+
+  /**
+   * Unsave a listing for the current user via callable
+   */
+  unsaveListing(listingId: string): Observable<any> {
+    return this.firebaseFunctions.unsaveListing(listingId);
+  }
+
+  manageApplication(
+    listingId: string,
+    applicantId: string,
+    status: "accepted" | "declined",
+    notes?: string,
+  ): Observable<any> {
+    return this.firebaseFunctions.manageApplication(
+      listingId,
+      applicantId,
+      status,
+      notes,
     );
   }
 

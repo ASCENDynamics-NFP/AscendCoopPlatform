@@ -62,7 +62,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         *ngIf="isOwner$ | async"
         slot="end"
         [color]="account.status === 'accepted' ? 'success' :
-        account.status === 'rejected' ? 'danger' : 'primary' "
+        account.status === 'declined' ? 'danger' : 'primary' "
       >
         {{ account.status }}
       </ion-badge>

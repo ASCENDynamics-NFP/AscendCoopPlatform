@@ -93,23 +93,38 @@ export const updateRelationship = onCall(
         return rest;
       })();
 
-    if (!targetAccountId || !updateData.status) {
+    if (!targetAccountId) {
+      throw new HttpsError("invalid-argument", "Target account ID is required");
+    }
+
+    // Require at least one supported field
+    const hasAnyUpdate =
+      !!updateData.status ||
+      !!updateData.access ||
+      !!updateData.role ||
+      !!updateData.roleId ||
+      Object.prototype.hasOwnProperty.call(updateData, "roleIds");
+    if (!hasAnyUpdate) {
       throw new HttpsError(
         "invalid-argument",
-        "Target account ID and status are required",
+        "No valid relationship updates provided",
       );
     }
 
     // Validate status
-    const validStatuses = ["accepted", "rejected", "blocked"];
-    if (!validStatuses.includes(updateData.status)) {
-      throw new HttpsError("invalid-argument", "Invalid status");
+    if (updateData.status) {
+      const validStatuses = ["accepted", "declined", "blocked"];
+      if (!validStatuses.includes(updateData.status)) {
+        throw new HttpsError("invalid-argument", "Invalid status");
+      }
     }
 
     try {
-      await RelationshipService.updateRelationship(userId, targetAccountId, {
-        ...updateData,
-      });
+      await RelationshipService.updateRelationship(
+        userId,
+        targetAccountId,
+        updateData,
+      );
 
       logger.info(`Relationship updated`, {
         userId,

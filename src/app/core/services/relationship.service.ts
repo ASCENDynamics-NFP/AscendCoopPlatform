@@ -98,7 +98,7 @@ export class RelationshipService {
   updateRelationship(
     targetAccountId: string,
     updates: {
-      status?: "accepted" | "rejected" | "blocked";
+      status?: "accepted" | "declined" | "blocked";
       access?: "admin" | "moderator" | "member";
       role?: string;
       roleId?: string;

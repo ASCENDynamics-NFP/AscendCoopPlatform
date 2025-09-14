@@ -22,13 +22,12 @@
 import {Component, Input, OnInit, ElementRef, ViewChild} from "@angular/core";
 import {Account, ProfessionalInformation} from "@shared/models/account.model";
 import {FormGroup, FormBuilder, Validators} from "@angular/forms";
-import {Store} from "@ngrx/store";
-import {FirestoreService} from "../../../../../../core/services/firestore.service";
 import {StorageService} from "../../../../../../core/services/storage.service";
 import {AccountSectionsService} from "../../../../services/account-sections.service";
 import {take} from "rxjs/operators";
-import * as AccountActions from "../../../../../../state/actions/account.actions";
 import {skillsOptions} from "../../../../../../core/data/options";
+import {AccountsService} from "../../../../../../core/services/accounts.service";
+import {firstValueFrom} from "rxjs";
 
 @Component({
   selector: "app-professional-info-form",
@@ -45,10 +44,9 @@ export class ProfessionalInfoFormComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private store: Store,
-    private firestoreService: FirestoreService,
     private storageService: StorageService,
     private sections: AccountSectionsService,
+    private accountsService: AccountsService,
   ) {
     this.professionalInformationForm = this.fb.group({
       occupation: ["", Validators.required],
@@ -140,11 +138,12 @@ export class ProfessionalInfoFormComponent implements OnInit {
         resumeUpload: resumeUrl,
       } as ProfessionalInformation;
 
-      // Write to sections/professionalInfo only
-      await this.firestoreService.setDocument(
-        `accounts/${this.account.id}/sections/professionalInfo`,
-        updatedProfessionalInformation as any,
-        {merge: true},
+      // Write to sections/professionalInfo via callable
+      await firstValueFrom(
+        this.accountsService.updateAccountSections({
+          accountId: this.account.id,
+          professionalInformation: updatedProfessionalInformation,
+        }),
       );
     }
   }

@@ -23,7 +23,7 @@ export interface CreateRelationshipRequest {
 }
 
 export interface UpdateRelationshipRequest {
-  status: "accepted" | "rejected" | "blocked";
+  status?: "accepted" | "declined" | "blocked";
   // For account.relatedAccounts we no longer store relationship; use access roles
   access?: "member" | "admin" | "moderator";
   // Optional role metadata updates
@@ -279,13 +279,12 @@ export class RelationshipService {
         }
 
         const updates: any = {
-          status,
+          ...(status ? {status} : {}),
           ...(access ? {access} : {}),
           ...(role ? {role} : {}),
           ...(roleId ? {roleId} : {}),
-          ...(roleIds && roleIds.length ? {roleIds} : {}),
-          reviewedAt: now,
-          reviewedBy: userId,
+          ...(roleIds !== undefined ? {roleIds} : {}),
+          ...(status ? {reviewedAt: now, reviewedBy: userId} : {}),
           lastModifiedAt: now,
           lastModifiedBy: userId,
         };

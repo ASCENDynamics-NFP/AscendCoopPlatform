@@ -307,7 +307,7 @@ export interface RelatedAccount extends BaseDocument {
   iconImage?: string; // URL or path to the icon image
   tagline?: string; // Tagline or short description
   type?: "user" | "group"; // Type of the related account (new accounts are filtered out)
-  status?: "pending" | "accepted" | "rejected" | "blocked"; // Relationship status
+  status?: "pending" | "accepted" | "declined" | "blocked"; // Relationship status
   /**
    * Type of relationship request: 'request' (user asking to join), 'invitation' (group/admin inviting user)
    */

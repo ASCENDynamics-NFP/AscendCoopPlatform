@@ -36,6 +36,7 @@ import {
 import {FirestoreService} from "../../core/services/firestore.service";
 import {AccountsService} from "../../core/services/accounts.service";
 import {ListingsService} from "../../core/services/listings.service";
+import {RelationshipService} from "../../core/services/relationship.service";
 import {StorageService} from "../../core/services/storage.service";
 import {Account} from "@shared/models/account.model";
 import {GroupRole} from "@shared/models/group-role.model";
@@ -63,6 +64,7 @@ export class AccountEffects {
     private firestoreService: FirestoreService,
     private accountsService: AccountsService,
     private listingsService: ListingsService,
+    private relationshipService: RelationshipService,
     private storageService: StorageService,
     private store: Store<AppState>,
     private router: Router,
@@ -234,41 +236,37 @@ export class AccountEffects {
     ),
   );
 
-  // Create Related Account
+  // Create Related Account via callable
   createRelatedAccount$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AccountActions.createRelatedAccount),
       switchMap(({accountId, relatedAccount}) => {
-        const newRelatedAccount = {
-          ...relatedAccount,
-          createdAt: serverTimestamp(),
-          lastModifiedAt: serverTimestamp(),
-        };
-        return from(
-          this.firestoreService.setDocument(
-            `accounts/${accountId}/relatedAccounts/${relatedAccount.id}`,
-            newRelatedAccount,
-          ),
-        ).pipe(
-          map(() => {
-            this.showToast("Request successful", "success");
-            return AccountActions.createRelatedAccountSuccess({
-              accountId,
-              relatedAccount: newRelatedAccount,
-            });
-          }),
-          catchError((error) => {
-            this.showToast(
-              `Failed to create related account: ${error.message}`,
-              "danger",
-            );
-            return of(
-              AccountActions.createRelatedAccountFailure({
-                error: error.message,
-              }),
-            );
-          }),
-        );
+        return this.relationshipService
+          .createRelationship({
+            targetAccountId: relatedAccount.id,
+            relationship: "member",
+            access: (relatedAccount as any).access,
+          })
+          .pipe(
+            map(() => {
+              this.showToast("Request successful", "success");
+              return AccountActions.createRelatedAccountSuccess({
+                accountId,
+                relatedAccount: relatedAccount as any,
+              });
+            }),
+            catchError((error) => {
+              this.showToast(
+                `Failed to create related account: ${error.message}`,
+                "danger",
+              );
+              return of(
+                AccountActions.createRelatedAccountFailure({
+                  error: error.message,
+                }),
+              );
+            }),
+          );
       }),
     ),
   );
@@ -278,30 +276,28 @@ export class AccountEffects {
     this.actions$.pipe(
       ofType(AccountActions.deleteRelatedAccount),
       mergeMap(({accountId, relatedAccountId}) =>
-        from(
-          this.firestoreService.deleteDocumentAtPath(
-            `accounts/${accountId}/relatedAccounts/${relatedAccountId}`,
+        this.relationshipService
+          .removeRelationshipForAccount(accountId, relatedAccountId)
+          .pipe(
+            map(() => {
+              this.showToast("Removed successfully", "success");
+              return AccountActions.deleteRelatedAccountSuccess({
+                accountId,
+                relatedAccountId,
+              });
+            }),
+            catchError((error) => {
+              this.showToast(
+                `Failed to remove related account: ${error.message}`,
+                "danger",
+              );
+              return of(
+                AccountActions.deleteRelatedAccountFailure({
+                  error: error.message,
+                }),
+              );
+            }),
           ),
-        ).pipe(
-          map(() => {
-            this.showToast("Removed successfully", "success");
-            return AccountActions.deleteRelatedAccountSuccess({
-              accountId,
-              relatedAccountId,
-            });
-          }),
-          catchError((error) => {
-            this.showToast(
-              `Failed to remove related account: ${error.message}`,
-              "danger",
-            );
-            return of(
-              AccountActions.deleteRelatedAccountFailure({
-                error: error.message,
-              }),
-            );
-          }),
-        ),
       ),
     ),
   );
@@ -626,6 +622,10 @@ export class AccountEffects {
     const file = account.professionalInformation?.resumeUpload;
     // Do not persist professionalInformation on main doc
     delete (newAccount as any).professionalInformation;
+    // Volunteer preferences are user-specific; drop for non-user accounts
+    if (newAccount.type !== "user") {
+      delete (newAccount as any).volunteerPreferences;
+    }
 
     const accountId = await this.firestoreService.addDocument(
       "accounts",
@@ -638,14 +638,18 @@ export class AccountEffects {
       const filePath = `accounts/${accountId}/resume.${extension}`;
       resumeUrl = await this.storageService.uploadFile(filePath, file);
       // Save professional info (with resume URL) in sections subdoc only
-      await this.firestoreService.setDocument(
-        `accounts/${accountId}/sections/professionalInfo`,
-        {
-          ...(account.professionalInformation || {}),
-          resumeUpload: resumeUrl,
-        },
-        {merge: true},
-      );
+      // Only persist professional info section for user accounts (via callable)
+      if (account.type === "user") {
+        await firstValueFrom(
+          this.accountsService.updateAccountSections({
+            accountId,
+            professionalInformation: {
+              ...(account.professionalInformation || {}),
+              resumeUpload: resumeUrl,
+            },
+          }),
+        );
+      }
     }
 
     return {
@@ -664,21 +668,13 @@ export class AccountEffects {
       lastModifiedAt: serverTimestamp(),
     };
 
+    // Track resume URL if a new file is uploaded; include it in the single sections update below
     const file = account.professionalInformation?.resumeUpload;
+    let uploadedResumeUrl: string | null = null;
     if (file instanceof File) {
       const extension = file.name.split(".").pop()?.toLowerCase() || "pdf";
       const filePath = `accounts/${account.id}/resume.${extension}`;
-      const resumeUrl = await this.storageService.uploadFile(filePath, file);
-      // Save professional info payload for sections
-      const profPayload = {
-        ...(account.professionalInformation || {}),
-        resumeUpload: resumeUrl,
-      } as any;
-      await this.firestoreService.setDocument(
-        `accounts/${account.id}/sections/professionalInfo`,
-        profPayload,
-        {merge: true},
-      );
+      uploadedResumeUrl = await this.storageService.uploadFile(filePath, file);
     }
 
     // Never store professionalInformation or laborRights on the main account doc
@@ -687,26 +683,41 @@ export class AccountEffects {
       laborRights,
       ...accountUpdateWithoutPrivate
     } = updatedAccount;
-    await this.firestoreService.updateDocument(
-      "accounts",
-      account.id,
-      accountUpdateWithoutPrivate,
+    // Volunteer preferences are user-specific; do not persist for non-user accounts
+    if (account.type !== "user") {
+      delete (accountUpdateWithoutPrivate as any).volunteerPreferences;
+    }
+    // Use callable to update main account doc (avoids direct client writes and centralizes logic)
+    await firstValueFrom(
+      this.accountsService.updateAccount(
+        account.id,
+        accountUpdateWithoutPrivate as any,
+      ),
     );
 
     try {
-      if (account.professionalInformation || file instanceof File) {
-        await this.firestoreService.setDocument(
-          `accounts/${account.id}/sections/professionalInfo`,
-          account.professionalInformation || {},
-          {merge: true},
-        );
-      }
-      if ((updatedAccount as any).laborRights || account.laborRights) {
-        await this.firestoreService.setDocument(
-          `accounts/${account.id}/sections/laborRights`,
-          account.laborRights || (updatedAccount as any).laborRights,
-          {merge: true},
-        );
+      // Persist gated sections (user accounts only) via a single callable
+      if (account.type === "user") {
+        const sectionsPayload: any = {accountId: account.id};
+        if (account.professionalInformation || file instanceof File) {
+          sectionsPayload.professionalInformation = {
+            ...(account.professionalInformation || {}),
+            ...(uploadedResumeUrl ? {resumeUpload: uploadedResumeUrl} : {}),
+          };
+        }
+        const labor =
+          account.laborRights || (updatedAccount as any).laborRights;
+        if (labor) {
+          sectionsPayload.laborRights = labor;
+        }
+        if (
+          sectionsPayload.professionalInformation !== undefined ||
+          sectionsPayload.laborRights !== undefined
+        ) {
+          await firstValueFrom(
+            this.accountsService.updateAccountSections(sectionsPayload),
+          );
+        }
       }
     } catch (e) {
       // non-fatal; section sync best-effort

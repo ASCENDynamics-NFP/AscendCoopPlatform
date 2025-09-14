@@ -422,7 +422,7 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
           (ra) => ra.id === relatedAccountId,
         );
         if (relatedAccount) {
-          const updatedAccount = {...relatedAccount, status: "rejected" as any};
+          const updatedAccount = {...relatedAccount, status: "declined" as any};
           this.store.dispatch(
             AccountActions.updateRelatedAccount({
               accountId: this.accountId,
@@ -432,7 +432,7 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
 
           // Show feedback
           const toast = await this.toastController.create({
-            message: `Request from ${relatedAccount.name} has been rejected`,
+            message: `Request from ${relatedAccount.name} has been declined`,
             duration: 2000,
             color: "warning",
             position: "bottom",

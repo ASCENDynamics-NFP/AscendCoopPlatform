@@ -567,7 +567,7 @@ export class ListPage implements OnInit {
    */
   updateStatus(
     request: Partial<RelatedAccount>,
-    status: "accepted" | "rejected" | "blocked",
+    status: "accepted" | "declined" | "blocked",
   ) {
     if (!this.accountId || !request.id) return;
     this.relationshipService
@@ -589,11 +589,11 @@ export class ListPage implements OnInit {
   }
 
   /**
-   * Rejects a related account request.
-   * @param request The related account request to reject.
+   * Declines a related account request.
+   * @param request The related account request to decline.
    */
   rejectRequest(request: Partial<RelatedAccount>) {
-    this.updateStatus(request, "rejected");
+    this.updateStatus(request, "declined");
   }
 
   /**

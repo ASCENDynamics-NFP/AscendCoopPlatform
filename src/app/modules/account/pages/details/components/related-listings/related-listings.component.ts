@@ -59,8 +59,11 @@ export class RelatedListingsComponent {
   }
 
   get filteredRelatedListings() {
-    // Since data is already filtered at the source level in details.page.ts,
-    // we just need to filter by relationship here
+    // Filter by relationship for all lists except 'saved',
+    // which now uses explicit isSaved flag
+    if (this.relationship === "saved") {
+      return this.relatedListings.filter((rl) => rl.isSaved === true);
+    }
     return this.relatedListings.filter(
       (rl) => rl.relationship === this.relationship,
     );

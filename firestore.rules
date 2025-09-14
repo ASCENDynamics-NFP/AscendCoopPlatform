@@ -221,15 +221,15 @@ service cloud.firestore {
     // Professional info section (read gated by privacySettings.professionalInformation)
     match /accounts/{accountId}/sections/professionalInfo {
       allow read: if canViewSection(accountId, 'professionalInformation');
-      // Only the owner can write
-      allow create, update, delete: if isAccountOwner(accountId);
+      // Allow owner or group admins to write (admins only meaningful for group accounts)
+      allow create, update, delete: if isAccountOwner(accountId) || isAccountAdmin(accountId);
     }
 
     // Labor rights section (read gated by privacySettings.laborRights)
     match /accounts/{accountId}/sections/laborRights {
       allow read: if canViewSection(accountId, 'laborRights');
-      // Only the owner can write
-      allow create, update, delete: if isAccountOwner(accountId);
+      // Allow owner or group admins to write (admins only meaningful for group accounts)
+      allow create, update, delete: if isAccountOwner(accountId) || isAccountAdmin(accountId);
     }
 
     // Rules for relatedAccount

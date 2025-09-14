@@ -1040,6 +1040,48 @@ export class AccountService {
   }
 
   /**
+   * Get groups where the user is an admin or moderator (owner implicit via adminIds short-circuit)
+   */
+  static async getUserManageableAccounts(
+    userId: string,
+    limit: number = 50,
+  ): Promise<any[]> {
+    try {
+      const groupsAdmin = await db
+        .collection("accounts")
+        .where("type", "==", "group")
+        .where("adminIds", "array-contains", userId)
+        .limit(limit)
+        .get();
+      const groupsModerator = await db
+        .collection("accounts")
+        .where("type", "==", "group")
+        .where("moderatorIds", "array-contains", userId)
+        .limit(limit)
+        .get();
+
+      const map: Record<string, any> = {};
+      groupsAdmin.docs.forEach(
+        (doc) => (map[doc.id] = {id: doc.id, ...doc.data()}),
+      );
+      groupsModerator.docs.forEach(
+        (doc) => (map[doc.id] = {id: doc.id, ...doc.data()}),
+      );
+
+      // Return minimal fields needed for selection
+      return Object.values(map).map((acc: any) => ({
+        id: acc.id,
+        name: acc.name,
+        type: acc.type,
+        iconImage: acc.iconImage,
+      }));
+    } catch (error) {
+      logger.error("Error getting manageable accounts:", error);
+      throw new HttpsError("internal", "Failed to get manageable accounts");
+    }
+  }
+
+  /**
    * Calculate distance between two coordinates using Haversine formula
    */
   private static calculateDistance(

@@ -198,6 +198,31 @@ export const searchAccounts = onCall(
 );
 
 /**
+ * Get groups where the current user is admin/moderator
+ */
+export const getUserManageableAccounts = onCall(
+  {
+    region: "us-central1",
+    enforceAppCheck: false,
+    memory: "256MiB",
+    timeoutSeconds: 30,
+  },
+  async (request) => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "User must be authenticated");
+    }
+    const userId = request.auth.uid;
+    try {
+      const accounts = await AccountService.getUserManageableAccounts(userId);
+      return {success: true, accounts};
+    } catch (error) {
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError("internal", "Failed to get manageable accounts");
+    }
+  },
+);
+
+/**
  * Delete account (self-service)
  */
 export const deleteMyAccount = onCall(

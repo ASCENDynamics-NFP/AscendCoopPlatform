@@ -575,6 +575,15 @@ export class FirebaseFunctionsService {
     );
   }
 
+  // Accounts: get groups where the user is admin/moderator
+  getUserManageableAccounts(): Observable<{accounts: any[]}> {
+    const callable = this.fns.httpsCallable("getUserManageableAccounts");
+    return from(callable({})).pipe(
+      map((result: any) => result),
+      catchError(this.handleError("Get manageable accounts")),
+    );
+  }
+
   deleteRelationship(
     targetAccountId: string,
     options?: {accountId?: string},

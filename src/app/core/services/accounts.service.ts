@@ -96,6 +96,17 @@ export class AccountsService {
     );
   }
 
+  /** Get groups where current user is admin/moderator */
+  getUserManageableAccounts(): Observable<Account[]> {
+    return this.firebaseFunctions.getUserManageableAccounts().pipe(
+      map((res) => (res.accounts || []) as Account[]),
+      catchError((error) => {
+        console.error("Error getting manageable accounts:", error);
+        return of([]);
+      }),
+    );
+  }
+
   /** Update gated sections via callable (avoids direct Firestore writes) */
   updateAccountSections(data: {
     accountId: string;

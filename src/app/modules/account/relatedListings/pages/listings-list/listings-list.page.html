@@ -130,9 +130,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <div class="listing-actions" slot="end">
         <!-- Primary action buttons (always visible) -->
         <div class="primary-actions">
-          <!-- Save/Unsave button for non-owner listings -->
+          <!-- Save button (also available for owner listings) -->
           <ion-button
-            *ngIf="listing.relationship !== 'owner' && !listing.isSaved"
+            *ngIf="!listing.isSaved"
             fill="clear"
             size="small"
             color="medium"
@@ -141,7 +141,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             <ion-icon name="bookmark-outline" slot="icon-only"></ion-icon>
           </ion-button>
 
-          <!-- Unsave button for saved listings -->
+          <!-- Unsave button for saved listings (any relationship) -->
           <ion-button
             *ngIf="listing.isSaved"
             fill="clear"
@@ -225,6 +225,16 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 >
                   <ion-icon name="refresh-outline" slot="start"></ion-icon>
                   <ion-label>Reactivate</ion-label>
+                </ion-item>
+
+                <!-- Expire listing (explicitly set status to expired) -->
+                <ion-item
+                  *ngIf="listing.relationship === 'owner' && listing.status === 'active'"
+                  button
+                  (click)="expireListing(listing); closePopover('trigger-' + listing.id)"
+                >
+                  <ion-icon name="time-outline" slot="start"></ion-icon>
+                  <ion-label>Expire</ion-label>
                 </ion-item>
 
                 <!-- Mark as Filled -->

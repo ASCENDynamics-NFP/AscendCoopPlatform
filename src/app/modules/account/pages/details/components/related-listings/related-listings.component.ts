@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, Input} from "@angular/core";
+import {Component, Input, ChangeDetectionStrategy} from "@angular/core";
 import {Router} from "@angular/router";
 import {RelatedListing} from "../../../../../../../../shared/models/related-listing.model";
 import {Account} from "../../../../../../../../shared/models/account.model";
@@ -32,6 +32,7 @@ interface ListingGroup {
   selector: "app-related-listings",
   templateUrl: "./related-listings.component.html",
   styleUrls: ["./related-listings.component.scss"],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RelatedListingsComponent {
   @Input() account: Account = {} as Account;
@@ -42,6 +43,15 @@ export class RelatedListingsComponent {
   @Input() isGroupAdmin: boolean = false;
 
   constructor(private router: Router) {}
+
+  // TrackBy helpers to prevent DOM churn (reduce flicker)
+  trackByListingId(index: number, item: RelatedListing): string | undefined {
+    return item?.id;
+  }
+
+  trackByGroupType(index: number, group: ListingGroup): string {
+    return group.type;
+  }
 
   get title() {
     switch (this.relationship) {

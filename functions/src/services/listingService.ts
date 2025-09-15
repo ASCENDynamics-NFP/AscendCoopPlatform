@@ -309,6 +309,37 @@ export class ListingService {
       mainBatch.update(listingRef, updates);
       await mainBatch.commit();
 
+      // Also immediately update the owner's mirrored relatedListing document so
+      // profile pages reflect new status/title without waiting on collection group sync
+      try {
+        const ownerId = currentData.ownerAccountId;
+        if (ownerId) {
+          const ownerRelatedRef = db
+            .collection("accounts")
+            .doc(ownerId)
+            .collection("relatedListings")
+            .doc(request.listingId);
+          const mirrorUpdates: any = ListingService.stripUndefined({
+            title: updates.title,
+            organization: updates.organization,
+            type: updates.type,
+            remote: updates.remote,
+            iconImage: updates.iconImage,
+            status: updates.status,
+            lastModifiedAt: updates.lastModifiedAt,
+            lastModifiedBy: updates.lastModifiedBy,
+          });
+          if (Object.keys(mirrorUpdates).length > 0) {
+            await ownerRelatedRef.set(mirrorUpdates, {merge: true});
+          }
+        }
+      } catch (mirrorErr) {
+        logger.warn(
+          "Owner relatedListing mirror update failed (non-fatal):",
+          mirrorErr,
+        );
+      }
+
       // Best-effort update of mirrored related listings; do not await
       // Any errors are handled internally and won't impact the response
       this.updateRelatedListingDocumentsBestEffort(
@@ -683,7 +714,7 @@ export class ListingService {
         const relation = relatedAccountDoc.data();
         if (
           relation?.status === "active" &&
-          ["admin", "manager"].includes(relation?.relationship)
+          ["admin", "moderator"].includes(relation?.relationship)
         ) {
           return;
         }
@@ -1081,44 +1112,125 @@ export class ListingService {
       // Validate user has permission to delete this listing
       await this.validateListingPermissions(userId, "manage", listingId);
 
-      const batch = db.batch();
+      const listingRef = db.collection("listings").doc(listingId);
 
-      // Delete main listing document
-      batch.delete(db.collection("listings").doc(listingId));
+      // 1) Identify accounts from listing's relatedAccounts to remove their relatedListings docs
+      const relatedAccountsSnap = await listingRef
+        .collection("relatedAccounts")
+        .get();
+      const relatedAccountIds = relatedAccountsSnap.docs.map((d) => d.id);
 
-      // Delete all related documents
-      const subcollections = ["relatedAccounts", "timeEntries"];
+      // 2) Remove accounts/*/relatedListings/{listingId} for all related accounts (owner, applicants, participants)
+      await this.deleteInChunks(
+        relatedAccountIds.map((accountId) =>
+          db
+            .collection("accounts")
+            .doc(accountId)
+            .collection("relatedListings")
+            .doc(listingId),
+        ),
+      );
 
-      for (const subcollection of subcollections) {
-        const subColRef = db
-          .collection("listings")
-          .doc(listingId)
-          .collection(subcollection);
-        const docs = await subColRef.get();
-        docs.forEach((doc) => {
-          batch.delete(doc.ref);
-        });
+      // 3) Disassociate any time entries that referenced this listing
+      await this.disassociateTimeEntriesFromListing(listingId, userId);
+
+      // 4) Delete listing subcollections: relatedAccounts and listing-level timeEntries copies only
+      const subcols = ["relatedAccounts", "timeEntries"];
+      for (const sub of subcols) {
+        const subSnap = await listingRef.collection(sub).get();
+        await this.deleteInChunks(subSnap.docs.map((d) => d.ref));
       }
 
-      // Remove this listing from accounts' relatedListings
-      const relatedListingsQuery = await db
-        .collectionGroup("relatedListings")
-        .where("id", "==", listingId)
-        .get();
+      // 5) Delete the main listing document
+      await listingRef.delete();
 
-      relatedListingsQuery.docs.forEach((doc) => {
-        batch.delete(doc.ref);
-      });
-
-      await batch.commit();
-
-      logger.info(
-        `Listing and related documents deleted successfully: ${listingId}`,
+      // 6) Best-effort: in case there are any stray relatedListings elsewhere (e.g., legacy), try CG cleanup without failing
+      this.cleanupRelatedListingsBestEffort(listingId).catch((err) =>
+        logger.warn("Best-effort CG cleanup failed (non-fatal):", err),
       );
+
+      logger.info(`Listing deleted with all relations: ${listingId}`);
     } catch (error) {
       logger.error("Error deleting listing:", error);
       if (error instanceof HttpsError) throw error;
-      throw new HttpsError("internal", "Failed to delete listing");
+      throw new HttpsError("internal", "Failed to delete listing", {
+        message: (error as any)?.message || String(error),
+        code: (error as any)?.code,
+      });
+    }
+  }
+
+  /**
+   * Find all time entries that reference this listing and remove the association.
+   * Updates both the main timeEntries doc and the account's timeEntries mirror.
+   */
+  private static async disassociateTimeEntriesFromListing(
+    listingId: string,
+    userId: string,
+  ): Promise<void> {
+    const now = Timestamp.now();
+    const snap = await db
+      .collection("timeEntries")
+      .where("listingId", "==", listingId)
+      .get();
+
+    if (snap.empty) return;
+
+    // Each entry requires up to 2 updates (main + account mirror)
+    const chunkSize = 200; // keep well below 500 writes per batch
+    for (let i = 0; i < snap.docs.length; i += chunkSize) {
+      const chunk = snap.docs.slice(i, i + chunkSize);
+      const batch = db.batch();
+      chunk.forEach((doc) => {
+        const data = doc.data() as any;
+        batch.update(doc.ref, {
+          listingId: null,
+          lastModifiedAt: now,
+          lastModifiedBy: userId,
+        });
+        if (data.accountId) {
+          const accountMirrorRef = db
+            .collection("accounts")
+            .doc(data.accountId)
+            .collection("timeEntries")
+            .doc(doc.id);
+          batch.update(accountMirrorRef, {
+            listingId: null,
+            lastModifiedAt: now,
+            lastModifiedBy: userId,
+          });
+        }
+      });
+      await batch.commit();
+    }
+  }
+
+  /** Delete a list of DocumentReferences in batch chunks */
+  private static async deleteInChunks(
+    refs: FirebaseFirestore.DocumentReference[],
+    chunkSize: number = 450,
+  ): Promise<void> {
+    for (let i = 0; i < refs.length; i += chunkSize) {
+      const chunk = refs.slice(i, i + chunkSize);
+      const batch = db.batch();
+      chunk.forEach((ref) => batch.delete(ref));
+      await batch.commit();
+    }
+  }
+
+  /** Best-effort cleanup via collection group query (non-fatal) */
+  private static async cleanupRelatedListingsBestEffort(
+    listingId: string,
+  ): Promise<void> {
+    try {
+      const cg = await db
+        .collectionGroup("relatedListings")
+        .where("id", "==", listingId)
+        .get();
+      await this.deleteInChunks(cg.docs.map((d) => d.ref));
+    } catch (e) {
+      // Non-fatal
+      logger.warn("CG cleanup warning:", e);
     }
   }
 }

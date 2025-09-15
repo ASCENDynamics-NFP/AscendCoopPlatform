@@ -81,7 +81,11 @@ export const updateTimeEntry = onCall(
     const userId = request.auth.uid;
     const {timeEntryId, updates} = request.data as {
       timeEntryId: string;
-      updates: Partial<CreateTimeEntryRequest>;
+      updates: Partial<
+        CreateTimeEntryRequest & {
+          status: "draft" | "pending" | "approved" | "rejected";
+        }
+      >;
     };
 
     if (!timeEntryId) {

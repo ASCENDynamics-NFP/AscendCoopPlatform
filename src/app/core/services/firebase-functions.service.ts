@@ -169,6 +169,7 @@ export interface UpdateTimeEntryRequest {
     description: string;
     category: string;
     isVolunteer: boolean;
+    status: "draft" | "pending" | "approved" | "rejected";
   }>;
 }
 

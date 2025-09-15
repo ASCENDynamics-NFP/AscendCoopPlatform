@@ -652,7 +652,9 @@ export class ProjectsPage implements OnInit {
   }
 
   private sortProjects(projects: Project[]): Project[] {
-    return projects.sort((a, b) => {
+    // Always sort a copy to avoid mutating NgRx-derived arrays
+    const arr = [...projects];
+    return arr.sort((a, b) => {
       let comparison = 0;
 
       switch (this.selectedSortBy) {

@@ -13,16 +13,27 @@ export interface CreateProjectRequest {
   name: string;
   description?: string;
   category?: string;
-  status?: "active" | "completed" | "paused" | "archived";
+  // Align with frontend model
+  status?: "Planning" | "Active" | "On Hold" | "Completed" | "Cancelled";
   startDate?: string;
   endDate?: string;
   budget?: number;
-  priority?: "low" | "medium" | "high" | "urgent";
+  priority?: "Low" | "Medium" | "High" | "Critical";
   tags?: string[];
   goals?: string[];
   requiredSkills?: string[];
   teamSize?: number;
   isPublic?: boolean;
+  // Additional optional fields present in shared Project model
+  color?: string;
+  icon?: string;
+  clientId?: string;
+  archived?: boolean;
+  standardProjectTemplateId?: string;
+  standardCategory?: string;
+  isStandardProject?: boolean;
+  complexity?: string;
+  timeframe?: string;
 }
 
 export interface UpdateProjectRequest {
@@ -40,6 +51,33 @@ export interface AssignToProjectRequest {
 }
 
 export class ProjectService {
+  // Normalize incoming status to frontend-supported values
+  private static normalizeStatus(
+    status?: string,
+  ): "Planning" | "Active" | "On Hold" | "Completed" | "Cancelled" {
+    if (!status) return "Active";
+    const s = String(status).toLowerCase();
+    if (s === "planning") return "Planning";
+    if (s === "active") return "Active";
+    if (s === "on hold" || s === "on_hold" || s === "paused") return "On Hold";
+    if (s === "completed" || s === "complete") return "Completed";
+    if (s === "cancelled" || s === "canceled" || s === "archived")
+      return "Cancelled";
+    return "Active";
+  }
+
+  // Normalize incoming priority to frontend-supported values
+  private static normalizePriority(
+    priority?: string,
+  ): "Low" | "Medium" | "High" | "Critical" {
+    if (!priority) return "Medium";
+    const p = String(priority).toLowerCase();
+    if (p === "low") return "Low";
+    if (p === "medium") return "Medium";
+    if (p === "high") return "High";
+    if (p === "critical" || p === "urgent") return "Critical";
+    return "Medium";
+  }
   /**
    * Create a new project
    */
@@ -69,16 +107,26 @@ export class ProjectService {
         name: request.name,
         description: request.description || "",
         category: request.category || "general",
-        status: request.status || "active",
+        status: ProjectService.normalizeStatus(request.status),
         startDate: request.startDate || null,
         endDate: request.endDate || null,
-        budget: request.budget || null,
-        priority: request.priority || "medium",
+        budget: request.budget ?? null,
+        priority: ProjectService.normalizePriority(request.priority),
         tags: request.tags || [],
         goals: request.goals || [],
         requiredSkills: request.requiredSkills || [],
-        teamSize: request.teamSize || 1,
-        isPublic: request.isPublic || false,
+        teamSize: request.teamSize ?? 1,
+        isPublic: request.isPublic ?? false,
+        // Extra fields mirrored to match frontend model
+        color: request.color || null,
+        icon: request.icon || null,
+        clientId: request.clientId || null,
+        archived: request.archived ?? false,
+        standardProjectTemplateId: request.standardProjectTemplateId || null,
+        standardCategory: request.standardCategory || null,
+        isStandardProject: request.isStandardProject ?? false,
+        complexity: request.complexity || null,
+        timeframe: request.timeframe || null,
         progress: 0,
         tasksCompleted: 0,
         totalTasks: 0,
@@ -158,8 +206,18 @@ export class ProjectService {
       const batch = db.batch();
       const now = Timestamp.now();
 
-      const updates = {
+      const updatesRaw = {
         ...request.updates,
+      } as any;
+      // Normalize known enums if present
+      if (updatesRaw.status)
+        updatesRaw.status = ProjectService.normalizeStatus(updatesRaw.status);
+      if (updatesRaw.priority)
+        updatesRaw.priority = ProjectService.normalizePriority(
+          updatesRaw.priority,
+        );
+      const updates = {
+        ...updatesRaw,
         lastModifiedAt: now,
         lastModifiedBy: request.userId,
       };
@@ -517,7 +575,29 @@ export class ProjectService {
     action: "create" | "read" | "update" | "delete" | "manage",
     projectId?: string,
   ): Promise<void> {
-    // Check if user is a member of the account
+    // Load account for owner/admin checks and user self-ownership
+    const accountSnap = await db.collection("accounts").doc(accountId).get();
+    if (!accountSnap.exists) {
+      throw new HttpsError("not-found", "Account not found");
+    }
+    const account = accountSnap.data() as any;
+
+    // Allow if acting on own user account
+    if (userId === accountId) return;
+
+    // For groups: allow if user is creator/owner or in admin/moderator denormalized arrays
+    if (account?.type === "group") {
+      const isCreator = account?.createdBy === userId;
+      const inAdmins = Array.isArray(account?.adminIds)
+        ? account.adminIds.includes(userId)
+        : false;
+      const inMods = Array.isArray(account?.moderatorIds)
+        ? account.moderatorIds.includes(userId)
+        : false;
+      if (isCreator || inAdmins || inMods) return;
+    }
+
+    // Fallback to relatedAccounts membership
     const relatedAccountDoc = await db
       .collection("accounts")
       .doc(accountId)
@@ -529,55 +609,54 @@ export class ProjectService {
       throw new HttpsError("permission-denied", "No access to this account");
     }
 
-    const relation = relatedAccountDoc.data()!;
-    if (relation.status !== "accepted") {
+    const relation = relatedAccountDoc.data() as any;
+    const isApproved = ["accepted", "active"].includes(relation?.status);
+    if (!isApproved) {
       throw new HttpsError("permission-denied", "Account access not approved");
     }
 
-    // For create, update, delete, manage actions, check for admin/moderator access
+    // For create, update, delete, manage actions, require admin/moderator access or assignment-level permission
     if (["create", "update", "delete", "manage"].includes(action)) {
-      if (!["admin", "moderator"].includes(relation.access)) {
-        // Check if user has specific project permissions
-        if (projectId) {
-          const assignmentDoc = await db
-            .collection("projects")
-            .doc(projectId)
-            .collection("assignments")
-            .doc(userId)
-            .get();
+      if (["admin", "moderator"].includes(relation?.access)) return;
 
-          if (assignmentDoc.exists) {
-            const assignment = assignmentDoc.data()!;
-            const requiredPermissions: {[key: string]: string[]} = {
-              create: ["write"],
-              update: ["write"],
-              delete: ["delete"],
-              manage: ["manage"],
-            };
+      // Otherwise require project assignment permission (when projectId is given)
+      if (projectId) {
+        const assignmentDoc = await db
+          .collection("projects")
+          .doc(projectId)
+          .collection("assignments")
+          .doc(userId)
+          .get();
 
-            if (
-              !assignment.permissions?.some((perm: string) =>
-                requiredPermissions[action]?.includes(perm),
-              )
-            ) {
-              throw new HttpsError(
-                "permission-denied",
-                `Insufficient permissions for ${action}`,
-              );
-            }
-          } else {
-            throw new HttpsError(
-              "permission-denied",
-              `Insufficient permissions for ${action}`,
-            );
+        if (assignmentDoc.exists) {
+          const assignment = assignmentDoc.data()!;
+          const requiredPermissions: {[key: string]: string[]} = {
+            create: ["write"],
+            update: ["write"],
+            delete: ["delete"],
+            manage: ["manage"],
+          };
+
+          if (
+            assignment.permissions?.some((perm: string) =>
+              requiredPermissions[action]?.includes(perm),
+            )
+          ) {
+            return;
           }
-        } else {
-          throw new HttpsError(
-            "permission-denied",
-            `Insufficient permissions for ${action}`,
-          );
         }
+
+        throw new HttpsError(
+          "permission-denied",
+          `Insufficient permissions for ${action}`,
+        );
       }
+
+      // If no projectId and not admin/mod, creating/updating is denied
+      throw new HttpsError(
+        "permission-denied",
+        `Insufficient permissions for ${action}`,
+      );
     }
   }
 }

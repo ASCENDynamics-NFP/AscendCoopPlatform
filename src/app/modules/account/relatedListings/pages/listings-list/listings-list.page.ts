@@ -176,7 +176,21 @@ export class ListingsListPage implements OnInit {
               return [];
             }
 
-            // Filter by relationship
+            // Special case: Saved listings should show regardless of status
+            if (relationshipFilter === "saved") {
+              filteredListings = listings.filter(
+                (listing) => (listing as any).isSaved === true,
+              );
+              // Apply type filter if set
+              if (typeFilter !== "all") {
+                filteredListings = filteredListings.filter(
+                  (listing) => listing.type === (typeFilter as any),
+                );
+              }
+              return filteredListings;
+            }
+
+            // Filter by relationship (non-saved)
             if (relationshipFilter === "archived") {
               // Show expired and filled listings only (authorized users only)
               filteredListings = hasPermission
@@ -203,16 +217,9 @@ export class ListingsListPage implements OnInit {
 
               // Then filter by relationship if not "all"
               if (relationshipFilter !== "all") {
-                if (relationshipFilter === "saved") {
-                  // Saved now uses explicit flag
-                  filteredListings = filteredListings.filter(
-                    (listing) => (listing as any).isSaved === true,
-                  );
-                } else {
-                  filteredListings = filteredListings.filter(
-                    (listing) => listing.relationship === relationshipFilter,
-                  );
-                }
+                filteredListings = filteredListings.filter(
+                  (listing) => listing.relationship === relationshipFilter,
+                );
               }
 
               // For non-owners viewing profiles, additionally filter to only show owner's listings
@@ -354,6 +361,8 @@ export class ListingsListPage implements OnInit {
               this.store.dispatch(
                 ListingsActions.deleteListing({id: listing.id}),
               );
+              // Trigger a modest delayed refresh so the list reflects deletion
+              this.performDelayedRefresh();
             }
           },
         },
@@ -571,6 +580,33 @@ export class ListingsListPage implements OnInit {
   }
 
   /**
+   * Expires a listing (use when a posting should close without being filled).
+   * @param listing The listing to expire.
+   */
+  async expireListing(listing: RelatedListing) {
+    if (!listing.id) return;
+
+    const alert = await this.alertController.create({
+      header: "Expire Listing",
+      message: "Expire this listing? It will be closed and hidden from search.",
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "Expire",
+          handler: () => {
+            this.updateListingStatus(listing, "expired");
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  /**
    * Duplicates a listing for reuse.
    * @param listing The listing to duplicate.
    */
@@ -652,7 +688,7 @@ export class ListingsListPage implements OnInit {
     // Single, modest delay to let backend settle; avoid spamming network
     of(null)
       .pipe(delay(750))
-      .subscribe(() => this.refreshRelatedListings());
+      .subscribe(() => this.refreshRelatedListings(true));
   }
 
   /**

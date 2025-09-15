@@ -69,12 +69,20 @@ export class TimeTrackingService {
    */
   updateTimeEntry(
     timeEntryId: string,
-    updates: Partial<CreateTimeEntryRequest>,
+    updates: Partial<
+      CreateTimeEntryRequest & {
+        status: "draft" | "pending" | "approved" | "rejected";
+      }
+    >,
   ): Observable<TimeEntry>;
   updateTimeEntry(entry: any): Promise<void>;
   updateTimeEntry(
     entryOrId: any,
-    updates?: Partial<CreateTimeEntryRequest>,
+    updates?: Partial<
+      CreateTimeEntryRequest & {
+        status: "draft" | "pending" | "approved" | "rejected";
+      }
+    >,
   ): any {
     if (typeof entryOrId === "string") {
       const timeEntryId = entryOrId as string;
@@ -268,12 +276,18 @@ export class TimeTrackingService {
    * @returns Promise of void
    */
   updateTimeEntry_legacy(entry: any): Promise<void> {
-    const updates = {
+    const updates: Partial<
+      CreateTimeEntryRequest & {
+        status: "draft" | "pending" | "approved" | "rejected";
+      }
+    > = {
       date: entry.date,
       hours: entry.hours,
       description: entry.description,
       category: entry.category,
       isVolunteer: entry.isVolunteer,
+      // Include status if provided (e.g., set to 'pending' on submit)
+      status: entry.status,
     };
 
     return firstValueFrom(

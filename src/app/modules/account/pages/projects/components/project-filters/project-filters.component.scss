@@ -17,11 +17,18 @@
   // Dark mode searchbar fix - more global approach
   @media (prefers-color-scheme: dark) {
     ion-searchbar {
-      --color: var(--ion-color-light) !important;
+      --color: #fff !important;
+      --background: transparent !important;
+      --placeholder-color: var(--ion-color-medium-shade) !important;
+      --icon-color: var(--ion-color-light) !important;
     }
 
-    ion-searchbar input {
+    ion-searchbar input,
+    ion-searchbar .searchbar-input,
+    ion-searchbar .searchbar-input.sc-ion-searchbar-md,
+    ion-searchbar .searchbar-input.sc-ion-searchbar-ios {
       color: var(--ion-color-light) !important;
+      background: transparent !important;
     }
   }
 

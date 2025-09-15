@@ -342,33 +342,49 @@ export class AccountEffects {
       ofType(AccountActions.updateRelatedAccount),
       debounceTime(300),
       switchMap(({accountId, relatedAccount}) => {
-        const updatedRelatedAccount = {
-          ...relatedAccount,
-          lastModifiedAt: serverTimestamp(),
+        // Use callable to update relationship to comply with security rules
+        const updates: any = {
+          accountId, // act on behalf of this account (group)
+          ...((relatedAccount as any).status
+            ? {status: (relatedAccount as any).status}
+            : {}),
+          ...((relatedAccount as any).access
+            ? {access: (relatedAccount as any).access}
+            : {}),
         };
-        return from(
-          this.firestoreService.updateDocument(
-            `accounts/${accountId}/relatedAccounts`,
-            relatedAccount.id,
-            updatedRelatedAccount,
-          ),
-        ).pipe(
-          map(() => {
-            this.showToast("Updated successfully", "success");
-            return AccountActions.updateRelatedAccountSuccess({
-              accountId,
-              relatedAccount: updatedRelatedAccount,
-            });
-          }),
-          catchError((error) => {
-            this.showToast(`Update failed: ${error.message}`, "danger");
-            return of(
-              AccountActions.updateRelatedAccountFailure({
-                error: error.message,
+
+        return this.relationshipService
+          .updateRelationship(relatedAccount.id, updates)
+          .pipe(
+            map(() =>
+              AccountActions.updateRelatedAccountSuccess({
+                accountId,
+                relatedAccount: {
+                  ...relatedAccount,
+                  lastModifiedAt: serverTimestamp(),
+                } as any,
               }),
-            );
-          }),
-        );
+            ),
+            // After success, force reload the related accounts to reflect server changes
+            mergeMap((successAction) => {
+              this.showToast("Updated successfully", "success");
+              return [
+                successAction,
+                AccountActions.loadRelatedAccounts({
+                  accountId,
+                  forceReload: true,
+                }),
+              ];
+            }),
+            catchError((error) => {
+              this.showToast(`Update failed: ${error.message}`, "danger");
+              return of(
+                AccountActions.updateRelatedAccountFailure({
+                  error: error.message,
+                }),
+              );
+            }),
+          );
       }),
     ),
   );

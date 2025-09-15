@@ -20,7 +20,11 @@ export interface CreateTimeEntryRequest {
 
 export interface UpdateTimeEntryRequest {
   timeEntryId: string;
-  updates: Partial<CreateTimeEntryRequest>;
+  updates: Partial<
+    CreateTimeEntryRequest & {
+      status: "draft" | "pending" | "approved" | "rejected";
+    }
+  >;
   userId: string;
 }
 
@@ -50,7 +54,7 @@ export class TimeTrackingService {
         description: request.description || "",
         category: request.category || "general",
         isVolunteer: request.isVolunteer || false,
-        status: "approved", // Auto-approve for now
+        status: "draft", // New entries start as draft
         createdAt: now,
         createdBy: userId,
         lastModifiedAt: now,

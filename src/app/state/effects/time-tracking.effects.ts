@@ -68,14 +68,57 @@ export class TimeTrackingEffects {
     this.actions$.pipe(
       ofType(TimeTrackingActions.saveTimeEntry),
       mergeMap(({entry}) => {
-        const save$ = entry.id
-          ? from(this.timeTrackingService.updateTimeEntry_legacy(entry)).pipe(
-              map(() => entry.id),
-            )
-          : from(this.timeTrackingService.addTimeEntry(entry));
-        return save$.pipe(
-          map((id) =>
-            TimeTrackingActions.saveTimeEntrySuccess({entry: {...entry, id}}),
+        const toIso = (d: any): string => {
+          try {
+            if (!d) return new Date().toISOString();
+            if (typeof d === "string") return new Date(d).toISOString();
+            if (d.toDate && typeof d.toDate === "function")
+              return d.toDate().toISOString();
+            if (d instanceof Date) return d.toISOString();
+            return new Date(d).toISOString();
+          } catch (_) {
+            return new Date().toISOString();
+          }
+        };
+
+        if (entry.id) {
+          // Use callable update
+          const updates: any = {
+            date: toIso(entry.date),
+            hours: entry.hours,
+            // Map notes -> description to match backend
+            description: (entry as any).notes || "",
+            // category omitted; not present on TimeEntry model
+            // isVolunteer optional; default false when undefined
+            isVolunteer: (entry as any).isVolunteer ?? false,
+            projectId: entry.projectId,
+          };
+          return this.timeTrackingService
+            .updateTimeEntry(entry.id, updates)
+            .pipe(
+              map(() => TimeTrackingActions.saveTimeEntrySuccess({entry})),
+              catchError((error) =>
+                of(TimeTrackingActions.saveTimeEntryFailure({error})),
+              ),
+            );
+        }
+
+        // Use callable create
+        const payload: any = {
+          accountId: entry.accountId,
+          projectId: entry.projectId,
+          date: toIso(entry.date),
+          hours: entry.hours,
+          // Map notes -> description
+          description: (entry as any).notes || "",
+          // category omitted
+          isVolunteer: (entry as any).isVolunteer ?? false,
+        };
+        return this.timeTrackingService.createTimeEntry(payload).pipe(
+          map((created: any) =>
+            TimeTrackingActions.saveTimeEntrySuccess({
+              entry: created as TimeEntry,
+            }),
           ),
           catchError((error) =>
             of(TimeTrackingActions.saveTimeEntryFailure({error})),

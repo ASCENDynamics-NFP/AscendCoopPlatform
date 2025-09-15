@@ -30,7 +30,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       [listing]="listing"
       [isOwner]="(isOwner$ | async) ?? false"
     >
-      <div listing-secondary-actions *ngIf="!(isOwner$ | async)">
+      <div listing-secondary-actions>
         <ion-button
           fill="clear"
           color="medium"

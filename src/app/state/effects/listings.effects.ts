@@ -214,17 +214,35 @@ export class ListingsEffects {
         this.listingsService.updateListing(listing.id, listing as any).pipe(
           map(() => {
             // Only navigate if we're not on the account listings page
+            // and not already on this listing's detail page
             const currentUrl = this.router.url;
-            const isAccountListingsPage = currentUrl.match(
-              /\/accounts\/[^\/]+\/listings$/,
+            const isAccountListingsPage = /\/account\/[^\/]+\/listings$/.test(
+              currentUrl,
             );
-            if (!isAccountListingsPage) {
+            const isSameListingDetail = new RegExp(
+              `^/listings/${listing.id}(?:$|/)`,
+            ).test(currentUrl);
+            if (!isAccountListingsPage && !isSameListingDetail) {
               this.router.navigate([`/listings/${listing.id}`]);
             }
             this.showToast("Listing updated successfully", "success");
             return ListingsActions.updateListingSuccess({
               listing,
             });
+          }),
+          // After success, force-refresh owner related listings so profile segments update
+          // Note: ownerAccountId may be the user's own uid or a group id
+          mergeMap((action) => {
+            const ownerId = (listing as any).ownerAccountId;
+            return ownerId
+              ? [
+                  action,
+                  AccountActions.loadRelatedListings({
+                    accountId: ownerId,
+                    forceReload: true as any,
+                  }) as any,
+                ]
+              : [action];
           }),
           catchError((error) => {
             this.showToast(

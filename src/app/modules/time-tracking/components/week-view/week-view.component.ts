@@ -139,11 +139,31 @@ export class WeekViewComponent implements OnInit, OnChanges {
   }
 
   getEntry(projectId: string, day: Date): TimeEntry | undefined {
+    const toJsDate = (val: any): Date | null => {
+      try {
+        if (!val) return null;
+        if (typeof val.toDate === "function") return val.toDate();
+        if (val instanceof Date) return val as Date;
+        if (typeof val === "string") return new Date(val);
+        // Fallback attempt (e.g., {seconds, nanoseconds})
+        if (
+          typeof val === "object" &&
+          "seconds" in val &&
+          "nanoseconds" in val
+        ) {
+          const ms = val.seconds * 1000 + Math.floor(val.nanoseconds / 1e6);
+          return new Date(ms);
+        }
+        return new Date(val);
+      } catch {
+        return null;
+      }
+    };
+
     return this.entries.find((e) => {
-      return (
-        e.projectId === projectId &&
-        e.date.toDate().toDateString() === day.toDateString()
-      );
+      if (e.projectId !== projectId) return false;
+      const d = toJsDate(e.date);
+      return d ? d.toDateString() === day.toDateString() : false;
     });
   }
 

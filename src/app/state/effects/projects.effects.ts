@@ -59,11 +59,17 @@ export class ProjectsEffects {
             category: project.standardCategory || "other",
           })
           .pipe(
-            map((createdProject) =>
+            // Backend returns { success, projectId, project }
+            map((res) =>
               ProjectsActions.createProjectSuccess({
-                project: createdProject,
+                project: res.project as Project,
               }),
             ),
+            // After success, force reload to ensure list reflects server state
+            switchMap((success) => [
+              success,
+              ProjectsActions.loadProjects({accountId}),
+            ]),
             catchError((error) =>
               of(ProjectsActions.createProjectFailure({error})),
             ),
@@ -83,11 +89,8 @@ export class ProjectsEffects {
             updates: changes,
           })
           .pipe(
-            map((updatedProject) =>
-              ProjectsActions.updateProjectSuccess({
-                project: updatedProject,
-              }),
-            ),
+            // Backend returns only success; reload the list to reflect changes
+            map(() => ProjectsActions.loadProjects({accountId})),
             catchError((error) =>
               of(ProjectsActions.updateProjectFailure({error})),
             ),

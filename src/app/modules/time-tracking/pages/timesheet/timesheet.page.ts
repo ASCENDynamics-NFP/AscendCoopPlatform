@@ -59,6 +59,7 @@ export class TimesheetPage implements OnInit, OnDestroy {
   private entriesSub?: Subscription;
   accountId: string = "";
   userId: string = "";
+  currentUserName: string = "";
   isSubmitting: boolean = false;
   currentWeekStart: Date = (() => {
     const d = new Date();
@@ -120,6 +121,8 @@ export class TimesheetPage implements OnInit, OnDestroy {
       .pipe(first())
       .subscribe((user) => {
         this.userId = user?.uid ?? "";
+        this.currentUserName =
+          user?.displayName || user?.name || user?.email || "Unknown User";
         if (this.userId) {
           this.updateEntriesObservable();
           this.loadEntries();

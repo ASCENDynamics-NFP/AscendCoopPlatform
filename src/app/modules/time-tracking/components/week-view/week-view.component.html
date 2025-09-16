@@ -181,21 +181,19 @@
                   size="small"
                   (click)="openNotesModal(row.projectId!, day)"
                   class="notes-button"
-                  [color]="hasNotes(row.projectId!, day) ? 'primary' : 'medium'"
+                  [color]="
+                    hasNotes(row.projectId!, day) ? 'primary' : undefined
+                  "
                 >
                   <ion-icon
-                    name="document-text-outline"
+                    [name]="
+                      hasNotes(row.projectId!, day)
+                        ? 'document-text'
+                        : 'document-text-outline'
+                    "
                     slot="icon-only"
                   ></ion-icon>
                 </ion-button>
-                <!-- Show notes indicator if entry has notes -->
-                <div
-                  *ngIf="hasNotes(row.projectId!, day)"
-                  class="notes-indicator"
-                  [title]="getEntry(row.projectId!, day)?.notes"
-                >
-                  <ion-icon name="document-text" color="primary"></ion-icon>
-                </div>
               </div>
             </td>
             <td class="total-cell">{{ rowTotals[i] || 0 }}</td>
@@ -331,6 +329,9 @@
                     size="small"
                     class="notes-button"
                     [disabled]="readonly"
+                    [color]="
+                      hasNotes(row.projectId, day) ? 'primary' : undefined
+                    "
                   >
                     <ion-icon
                       [name]="
@@ -338,7 +339,6 @@
                           ? 'document-text'
                           : 'document-text-outline'
                       "
-                      [class.has-notes]="hasNotes(row.projectId, day)"
                     ></ion-icon>
                   </ion-button>
                 </div>

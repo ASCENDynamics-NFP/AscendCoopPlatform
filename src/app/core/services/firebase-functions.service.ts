@@ -159,6 +159,10 @@ export interface CreateTimeEntryRequest {
   description?: string;
   category?: string;
   isVolunteer?: boolean;
+  notes?: string;
+  noteHistory?: any[];
+  userName?: string;
+  projectName?: string;
 }
 
 export interface UpdateTimeEntryRequest {
@@ -170,6 +174,12 @@ export interface UpdateTimeEntryRequest {
     category: string;
     isVolunteer: boolean;
     status: "draft" | "pending" | "approved" | "rejected";
+    projectId: string;
+    listingId: string;
+    notes: string;
+    noteHistory: any[];
+    userName: string;
+    projectName: string;
   }>;
 }
 

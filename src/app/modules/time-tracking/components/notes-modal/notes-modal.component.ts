@@ -85,10 +85,17 @@ export class NotesModalComponent implements OnInit {
       return;
     }
 
-    // Sort notes by creation date (oldest first)
-    this.noteHistory = [...this.entry.noteHistory].sort(
-      (a, b) => a.createdAt.seconds - b.createdAt.seconds,
-    );
+    this.noteHistory = [...this.entry.noteHistory]
+      .map((note) => ({
+        ...note,
+        createdAt: this.toTimestamp(note.createdAt),
+        editedAt: note.editedAt ? this.toTimestamp(note.editedAt) : undefined,
+      }))
+      .sort((a, b) => {
+        const aDate = this.toDate(a.createdAt)?.getTime() ?? 0;
+        const bDate = this.toDate(b.createdAt)?.getTime() ?? 0;
+        return aDate - bDate;
+      });
   }
 
   async addNote() {
@@ -118,10 +125,11 @@ export class NotesModalComponent implements OnInit {
       noteHistory: this.noteHistory,
       // Also update the legacy notes field for backward compatibility
       notes: this.noteHistory
-        .map(
-          (note) =>
-            `[${note.createdAt.toDate().toLocaleDateString()}] ${note.createdByName}: ${note.content}`,
-        )
+        .map((note) => {
+          const created = this.toDate(note.createdAt);
+          const createdLabel = created ? created.toLocaleDateString() : "";
+          return `[${createdLabel}] ${note.createdByName}: ${note.content}`;
+        })
         .join("\n\n"),
     };
 
@@ -146,8 +154,11 @@ export class NotesModalComponent implements OnInit {
     await this.showToast("Note added successfully", "success");
   }
 
-  formatTimestamp(timestamp: Timestamp): string {
-    const date = timestamp.toDate();
+  formatTimestamp(timestamp: Timestamp | any): string {
+    const date = this.toDate(timestamp);
+    if (!date) {
+      return "";
+    }
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -201,6 +212,26 @@ export class NotesModalComponent implements OnInit {
       position: "top",
     });
     await toast.present();
+  }
+
+  private toDate(value: any): Date | null {
+    if (!value) return null;
+    if (value instanceof Timestamp) return value.toDate();
+    if (value && typeof value.toDate === "function") return value.toDate();
+    if (value && typeof value.seconds === "number") {
+      return new Date(value.seconds * 1000 + (value.nanoseconds ?? 0) / 1e6);
+    }
+    if (value && typeof value._seconds === "number") {
+      return new Date(value._seconds * 1000 + (value._nanoseconds ?? 0) / 1e6);
+    }
+    const date = value instanceof Date ? value : new Date(value);
+    return isNaN(date.getTime()) ? null : date;
+  }
+
+  private toTimestamp(value: any): Timestamp {
+    if (value instanceof Timestamp) return value;
+    const asDate = this.toDate(value) ?? new Date();
+    return Timestamp.fromDate(asDate);
   }
 
   trackByNoteId(index: number, note: NoteItem): string {

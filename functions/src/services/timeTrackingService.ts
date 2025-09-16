@@ -1,7 +1,7 @@
 /**
  * Time Tracking Service - Centralized time entry operations
  */
-import {getFirestore, Timestamp} from "firebase-admin/firestore";
+import {getFirestore, Timestamp, Query} from "firebase-admin/firestore";
 import {logger} from "firebase-functions/v2";
 import {HttpsError} from "firebase-functions/v2/https";
 
@@ -16,6 +16,10 @@ export interface CreateTimeEntryRequest {
   description?: string;
   category?: string;
   isVolunteer?: boolean;
+  notes?: string;
+  noteHistory?: any[];
+  userName?: string;
+  projectName?: string;
 }
 
 export interface UpdateTimeEntryRequest {
@@ -54,6 +58,10 @@ export class TimeTrackingService {
         description: request.description || "",
         category: request.category || "general",
         isVolunteer: request.isVolunteer || false,
+        notes: request.notes ?? request.description ?? "",
+        noteHistory: request.noteHistory ?? [],
+        userName: request.userName || "",
+        projectName: request.projectName || "",
         status: "draft", // New entries start as draft
         createdAt: now,
         createdBy: userId,
@@ -114,7 +122,9 @@ export class TimeTrackingService {
   /**
    * Update an existing time entry
    */
-  static async updateTimeEntry(request: UpdateTimeEntryRequest): Promise<void> {
+  static async updateTimeEntry(
+    request: UpdateTimeEntryRequest,
+  ): Promise<{timeEntryId: string; timeEntry: any}> {
     try {
       const timeEntryDoc = await db
         .collection("timeEntries")
@@ -127,21 +137,43 @@ export class TimeTrackingService {
 
       const timeEntry = timeEntryDoc.data()!;
 
-      // Check permissions
+      const requestedStatus = request.updates?.status;
       if (
-        timeEntry.userId !== request.userId &&
-        timeEntry.createdBy !== request.userId
+        requestedStatus &&
+        ["approved", "rejected"].includes(requestedStatus) &&
+        timeEntry.userId === request.userId
       ) {
         throw new HttpsError(
           "permission-denied",
-          "Cannot update this time entry",
+          "Cannot approve or reject your own time entry",
         );
+      }
+
+      const hasDirectAccess =
+        timeEntry.userId === request.userId ||
+        timeEntry.createdBy === request.userId;
+
+      if (!hasDirectAccess) {
+        try {
+          await this.validateTimeEntryPermissions(
+            request.userId,
+            timeEntry.accountId,
+            {
+              requireAdmin: true,
+            },
+          );
+        } catch (permissionError) {
+          throw new HttpsError(
+            "permission-denied",
+            "Cannot update this time entry",
+          );
+        }
       }
 
       const batch = db.batch();
       const now = Timestamp.now();
 
-      const updates = {
+      const updates: any = {
         ...request.updates,
         lastModifiedAt: now,
         lastModifiedBy: request.userId,
@@ -174,7 +206,21 @@ export class TimeTrackingService {
 
       await batch.commit();
 
+      const updatedTimeEntry = {
+        ...timeEntry,
+        ...updates,
+        notes: updates.notes ?? timeEntry.notes ?? "",
+        noteHistory: updates.noteHistory ?? timeEntry.noteHistory ?? [],
+        userName: updates.userName ?? timeEntry.userName ?? "",
+        projectName: updates.projectName ?? timeEntry.projectName ?? "",
+      };
+
       logger.info(`Time entry updated: ${request.timeEntryId}`);
+
+      return {
+        timeEntryId: request.timeEntryId,
+        timeEntry: updatedTimeEntry,
+      };
     } catch (error) {
       logger.error("Error updating time entry:", error);
       if (error instanceof HttpsError) throw error;
@@ -257,36 +303,65 @@ export class TimeTrackingService {
       endDate?: string;
       limit?: number;
       offset?: number;
+      userId?: string;
+      projectId?: string;
     } = {},
   ): Promise<any[]> {
     try {
-      // Check permissions
-      await this.validateTimeEntryPermissions(userId, accountId);
+      const filterUserId = options.userId;
+      const requireAdmin = !filterUserId || filterUserId !== userId;
 
-      let query = db
+      // Check permissions
+      await this.validateTimeEntryPermissions(userId, accountId, {
+        requireAdmin,
+      });
+
+      let query: Query = db
         .collection("accounts")
         .doc(accountId)
-        .collection("timeEntries")
-        .orderBy("date", "desc");
+        .collection("timeEntries");
 
-      if (options.startDate) {
-        query = query.where("date", ">=", options.startDate);
+      if (filterUserId) {
+        query = query.where("userId", "==", filterUserId);
       }
 
-      if (options.endDate) {
-        query = query.where("date", "<=", options.endDate);
-      }
-
-      if (options.limit) {
-        query = query.limit(options.limit);
-      }
-
-      if (options.offset) {
-        query = query.offset(options.offset);
+      if (options.projectId) {
+        query = query.where("projectId", "==", options.projectId);
       }
 
       const snapshot = await query.get();
-      return snapshot.docs.map((doc) => ({id: doc.id, ...doc.data()}));
+      let entries = snapshot.docs.map((doc) => ({id: doc.id, ...doc.data()}));
+
+      if (options.startDate || options.endDate) {
+        const startDate = options.startDate
+          ? this.toDate(options.startDate)
+          : null;
+        const endDate = options.endDate ? this.toDate(options.endDate) : null;
+
+        entries = entries.filter((entry) => {
+          const entryDate = this.toDate((entry as any).date);
+          if (!entryDate) return false;
+          if (startDate && entryDate < startDate) return false;
+          if (endDate && entryDate > endDate) return false;
+          return true;
+        });
+      }
+
+      entries.sort((a, b) => {
+        const dateA = this.toDate((a as any).date) || new Date(0);
+        const dateB = this.toDate((b as any).date) || new Date(0);
+        return dateB.getTime() - dateA.getTime();
+      });
+
+      if (options.offset) {
+        entries = entries.slice(options.offset);
+      }
+
+      if (options.limit) {
+        entries = entries.slice(0, options.limit);
+      }
+
+      return entries;
     } catch (error) {
       logger.error("Error getting account time entries:", error);
       if (error instanceof HttpsError) throw error;
@@ -304,7 +379,9 @@ export class TimeTrackingService {
   ): Promise<any> {
     try {
       // Check permissions
-      await this.validateTimeEntryPermissions(userId, accountId);
+      await this.validateTimeEntryPermissions(userId, accountId, {
+        requireAdmin: true,
+      });
 
       const now = new Date();
       let startDate: Date;
@@ -327,7 +404,6 @@ export class TimeTrackingService {
         .collection("accounts")
         .doc(accountId)
         .collection("timeEntries")
-        .where("date", ">=", startDate.toISOString().split("T")[0])
         .get();
 
       let totalHours = 0;
@@ -337,6 +413,11 @@ export class TimeTrackingService {
 
       query.docs.forEach((doc) => {
         const data = doc.data();
+        const entryDate = this.toDate(data.date);
+        if (!entryDate || entryDate < startDate) {
+          return;
+        }
+
         const hours = data.hours || 0;
 
         totalHours += hours;
@@ -372,22 +453,103 @@ export class TimeTrackingService {
   private static async validateTimeEntryPermissions(
     userId: string,
     accountId: string,
+    options: {requireAdmin?: boolean} = {},
   ): Promise<void> {
-    // Basic permission check - user should be a member of the account
-    const relatedAccountDoc = await db
+    const requireAdmin = options.requireAdmin ?? false;
+
+    const accountSnap = await db.collection("accounts").doc(accountId).get();
+    if (!accountSnap.exists) {
+      throw new HttpsError("not-found", "Account not found");
+    }
+
+    const account = accountSnap.data() as any;
+
+    // Allow access when acting on one's own account document
+    if (userId === accountId) {
+      return;
+    }
+
+    const adminIds = Array.isArray(account?.adminIds) ? account.adminIds : [];
+    const moderatorIds = Array.isArray(account?.moderatorIds)
+      ? account.moderatorIds
+      : [];
+    const isCreator = account?.createdBy === userId;
+    const hasElevatedAccess =
+      adminIds.includes(userId) || moderatorIds.includes(userId);
+
+    if (isCreator || hasElevatedAccess) {
+      return;
+    }
+
+    const relatedAccountsRef = db
       .collection("accounts")
       .doc(accountId)
-      .collection("relatedAccounts")
-      .doc(userId)
-      .get();
+      .collection("relatedAccounts");
 
-    if (!relatedAccountDoc.exists) {
+    let relationDoc = await relatedAccountsRef.doc(userId).get();
+
+    if (!relationDoc.exists) {
+      const relationQuery = await relatedAccountsRef
+        .where("targetId", "==", userId)
+        .limit(1)
+        .get();
+
+      if (!relationQuery.empty) {
+        relationDoc = relationQuery.docs[0];
+      }
+    }
+
+    if (!relationDoc.exists) {
+      const altRelationQuery = await relatedAccountsRef
+        .where("relatedAccountId", "==", userId)
+        .limit(1)
+        .get();
+
+      if (!altRelationQuery.empty) {
+        relationDoc = altRelationQuery.docs[0];
+      }
+    }
+
+    if (!relationDoc.exists) {
       throw new HttpsError("permission-denied", "No access to this account");
     }
 
-    const relation = relatedAccountDoc.data()!;
-    if (relation.status !== "accepted") {
+    const relation = relationDoc.data() as any;
+    const approvedStatuses = ["accepted", "active", "member"];
+    if (!approvedStatuses.includes(relation?.status)) {
       throw new HttpsError("permission-denied", "Account access not approved");
     }
+
+    if (requireAdmin) {
+      const accessLevel = relation?.access || relation?.role;
+      const hasAdminPrivileges = ["admin", "moderator"].includes(accessLevel);
+      if (!hasAdminPrivileges) {
+        throw new HttpsError(
+          "permission-denied",
+          "Admin access required for this action",
+        );
+      }
+    }
+  }
+
+  private static toDate(value: any): Date | null {
+    if (!value) {
+      return null;
+    }
+
+    if (value && typeof value.seconds === "number") {
+      return new Date(value.seconds * 1000 + (value.nanoseconds ?? 0) / 1e6);
+    }
+
+    if (value && typeof value._seconds === "number") {
+      return new Date(value._seconds * 1000 + (value._nanoseconds ?? 0) / 1e6);
+    }
+
+    const date = value instanceof Date ? value : new Date(value);
+    if (isNaN(date.getTime())) {
+      return null;
+    }
+
+    return date;
   }
 }

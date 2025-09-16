@@ -273,15 +273,28 @@ export class TimeTrackingService {
   /**
    * Legacy method for backward compatibility
    * @param entry Time entry data with updates
-   * @returns Promise of void
+   * @returns Promise resolving with the updated time entry
    */
-  updateTimeEntry_legacy(entry: any): Promise<void> {
+  updateTimeEntry_legacy(entry: any): Promise<TimeEntry> {
+    const toIso = (d: any): string => {
+      try {
+        if (!d) return new Date().toISOString();
+        if (typeof d === "string") return new Date(d).toISOString();
+        if (d.toDate && typeof d.toDate === "function")
+          return d.toDate().toISOString();
+        if (d instanceof Date) return d.toISOString();
+        return new Date(d).toISOString();
+      } catch (_) {
+        return new Date().toISOString();
+      }
+    };
+
     const updates: Partial<
       CreateTimeEntryRequest & {
         status: "draft" | "pending" | "approved" | "rejected";
       }
     > = {
-      date: entry.date,
+      date: toIso(entry.date),
       hours: entry.hours,
       description: entry.description,
       category: entry.category,
@@ -290,8 +303,14 @@ export class TimeTrackingService {
       status: entry.status,
     };
 
-    return firstValueFrom(
-      this.updateTimeEntry(entry.id, updates).pipe(map(() => void 0)),
-    );
+    if (entry.notes !== undefined) {
+      (updates as any).notes = entry.notes;
+    }
+
+    if (entry.noteHistory !== undefined) {
+      (updates as any).noteHistory = entry.noteHistory;
+    }
+
+    return firstValueFrom(this.updateTimeEntry(entry.id, updates));
   }
 }

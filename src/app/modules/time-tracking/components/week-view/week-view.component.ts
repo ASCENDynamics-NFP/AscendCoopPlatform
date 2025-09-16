@@ -55,6 +55,7 @@ export class WeekViewComponent implements OnInit, OnChanges {
   @Input() entries: TimeEntry[] = [];
   @Input() accountId: string = "";
   @Input() userId: string = "";
+  @Input() currentUserName: string = "";
   @Input() initialRows: {projectId: string | null}[] = [];
   @Input() readonly: boolean = false;
   @Input() status: "draft" | "pending" | "approved" | "rejected" | "mixed" =
@@ -227,6 +228,9 @@ export class WeekViewComponent implements OnInit, OnChanges {
       status:
         existing?.status === "rejected" ? "draft" : existing?.status || "draft", // Convert rejected back to draft when edited
       notes: existing?.notes || "",
+      projectName:
+        existing?.projectName || this.getProjectDetails(projectId)?.name || "",
+      userName: existing?.userName || this.currentUserName,
     };
 
     // Always dispatch the save action and let the store handle the state
@@ -418,6 +422,9 @@ export class WeekViewComponent implements OnInit, OnChanges {
       hours: existing?.hours || 0,
       status: existing?.status || "draft",
       notes: notes.trim(),
+      projectName:
+        existing?.projectName || this.getProjectDetails(projectId)?.name || "",
+      userName: existing?.userName || this.currentUserName,
     };
 
     this.store.dispatch(TimeTrackingActions.saveTimeEntry({entry}));

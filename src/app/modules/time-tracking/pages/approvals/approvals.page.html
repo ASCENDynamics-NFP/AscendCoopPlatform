@@ -121,17 +121,6 @@
             </ion-select>
           </ion-item>
 
-          <!-- Pending Only Toggle -->
-          <ion-item lines="none" class="filter-item">
-            <ion-label
-              >{{ 'time_tracking.pending_only' | translate }}</ion-label
-            >
-            <ion-toggle
-              [checked]="showPendingOnly"
-              (ionChange)="togglePendingOnly($event)"
-              slot="end"
-            ></ion-toggle>
-          </ion-item>
         </div>
 
         <div class="filter-row">
@@ -213,26 +202,26 @@
 
     <!-- Approvals List -->
     <div class="approvals-section">
-      <!-- By User View -->
-      <ng-container
-        *ngIf="viewMode === 'by-user' && (groupedEntries$ | async) as groupedEntries"
-      >
+      <ng-container *ngIf="displayEntries$ | async as displayEntries">
         <div class="section-header">
           <h2>
-            <ion-icon name="person-outline"></ion-icon>
-            {{ 'time_tracking.timesheets_by_user' | translate }}
+            <ion-icon [name]="getViewIcon()"></ion-icon>
+            {{ getViewTitleKey() | translate }}
           </h2>
-          <p *ngIf="groupedEntries.length === 0" class="no-entries">
-            {{ 'time_tracking.no_timesheets_period' | translate }}
+          <p *ngIf="displayEntries.length === 0" class="no-entries">
+            {{ getEmptyMessageKey() | translate }}
           </p>
         </div>
 
-        <ion-list *ngIf="groupedEntries.length > 0">
-          <ion-item-group *ngFor="let group of groupedEntries">
+        <ion-list *ngIf="displayEntries.length > 0">
+          <ion-item-group *ngFor="let group of displayEntries">
             <ion-item-divider>
               <ion-label>
                 <h3>{{ group.userName }}</h3>
-                <p>{{ group.userEmail }}</p>
+                <p *ngIf="group.userEmail">{{ group.userEmail }}</p>
+                <p *ngIf="group.projectName" class="project-label">
+                  {{ group.projectName }}
+                </p>
               </ion-label>
             </ion-item-divider>
 
@@ -271,7 +260,6 @@
                 </div>
               </ion-label>
 
-              <!-- Action Buttons for Pending Items -->
               <div
                 class="action-buttons"
                 slot="end"
@@ -297,7 +285,6 @@
                 </ion-button>
               </div>
 
-              <!-- Status for Non-Pending Items -->
               <div
                 class="status-info"
                 slot="end"
@@ -310,7 +297,6 @@
               </div>
             </ion-item>
 
-            <!-- Expandable Details -->
             <ion-item class="details-item">
               <ion-label>
                 <div class="time-entries-details">
@@ -318,16 +304,28 @@
                   <div class="entries-grid">
                     <div *ngFor="let entry of group.entries" class="entry-row">
                       <span class="date"
-                        >{{ entry.date.toDate() | date:'EEE, MMM d' }}</span
+                        >{{ toDate(entry.date) | date:'EEE, MMM d' }}</span
                       >
                       <span class="project"
                         >{{ entry.projectName || ('time_tracking.no_project' |
                         translate) }}</span
                       >
                       <span class="hours">{{ entry.hours }}h</span>
-                      <span class="notes" *ngIf="entry.notes"
-                        >{{ entry.notes }}</span
+                      <ion-button
+                        fill="clear"
+                        size="small"
+                        class="notes-button"
+                        (click)="openNotesModal(entry)"
+                        [color]="hasEntryNotes(entry) ? 'primary' : undefined"
                       >
+                        <ion-icon
+                          [name]="
+                            hasEntryNotes(entry)
+                              ? 'document-text'
+                              : 'document-text-outline'
+                          "
+                        ></ion-icon>
+                      </ion-button>
                     </div>
                   </div>
                 </div>
@@ -336,191 +334,12 @@
           </ion-item-group>
         </ion-list>
       </ng-container>
+    </div>
 
-      <!-- By Project View -->
-      <ng-container
-        *ngIf="viewMode === 'by-project' && (projectGroupedEntries$ | async) as projectGroups"
-      >
-        <div class="section-header">
-          <h2>
-            <ion-icon name="folder-outline"></ion-icon>
-            {{ 'time_tracking.timesheets_by_project' | translate }}
-          </h2>
-          <p *ngIf="projectGroups.length === 0" class="no-entries">
-            {{ 'time_tracking.no_project_timesheets_period' | translate }}
-          </p>
-        </div>
-
-        <ion-list *ngIf="projectGroups.length > 0">
-          <ion-item-group *ngFor="let project of projectGroups">
-            <ion-item-divider>
-              <ion-label>
-                <h3>{{ project.projectName }}</h3>
-                <p>Total: {{ project.totalHours }}h</p>
-              </ion-label>
-            </ion-item-divider>
-
-            <div *ngFor="let user of project.users">
-              <ion-item class="timesheet-item">
-                <ion-icon
-                  [name]="getStatusIcon(user.status)"
-                  [color]="getStatusColor(user.status)"
-                  slot="start"
-                >
-                </ion-icon>
-
-                <ion-label>
-                  <h2>{{ user.userName }}</h2>
-                  <h3>
-                    {{ 'time_tracking.hours' | translate }}: {{ user.totalHours
-                    }}
-                  </h3>
-                  <p>
-                    {{ user.entries.length }} {{ 'time_tracking.time_entries' |
-                    translate }}
-                  </p>
-                  <div class="status-badge">
-                    <ion-badge [color]="getStatusColor(user.status)">
-                      {{ user.status | titlecase }}
-                    </ion-badge>
-                  </div>
-                </ion-label>
-
-                <!-- Project-specific user actions would go here -->
-              </ion-item>
-            </div>
-          </ion-item-group>
-        </ion-list>
-      </ng-container>
-
-      <!-- All View (Combined) -->
-      <ng-container *ngIf="viewMode === 'all'">
-        <!-- User View -->
-        <ng-container *ngIf="(groupedEntries$ | async) as groupedEntries">
-          <div class="section-header">
-            <h2>
-              <ion-icon name="list-outline"></ion-icon>
-              {{ 'time_tracking.all_timesheets' | translate }}
-            </h2>
-            <p *ngIf="groupedEntries.length === 0" class="no-entries">
-              {{ 'time_tracking.no_timesheets_period' | translate }}
-            </p>
-          </div>
-
-          <ion-list *ngIf="groupedEntries.length > 0">
-            <ion-item-group *ngFor="let group of groupedEntries">
-              <ion-item-divider>
-                <ion-label>
-                  <h3>{{ group.userName }}</h3>
-                  <p>{{ group.userEmail }}</p>
-                </ion-label>
-              </ion-item-divider>
-
-              <ion-item class="timesheet-item">
-                <ion-icon
-                  [name]="getStatusIcon(group.status)"
-                  [color]="getStatusColor(group.status)"
-                  slot="start"
-                >
-                </ion-icon>
-
-                <ion-label>
-                  <h2>
-                    {{ 'time_tracking.week' | translate }}: {{
-                    getWeekRange(group.weekStart) }}
-                  </h2>
-                  <h3>
-                    {{ 'time_tracking.total_hours' | translate }}: {{
-                    group.totalHours }}
-                  </h3>
-                  <p>
-                    {{ group.entries.length }} {{ 'time_tracking.time_entries' |
-                    translate }}
-                  </p>
-                  <div class="status-badge">
-                    <ion-badge [color]="getStatusColor(group.status)">
-                      {{ group.status | titlecase }}
-                    </ion-badge>
-                  </div>
-                </ion-label>
-
-                <!-- Action Buttons for Pending Items -->
-                <div
-                  class="action-buttons"
-                  slot="end"
-                  *ngIf="group.status === 'pending'"
-                >
-                  <ion-button
-                    fill="outline"
-                    color="success"
-                    size="small"
-                    (click)="approveTimesheet(group)"
-                  >
-                    <ion-icon name="checkmark" slot="start"></ion-icon>
-                    {{ 'time_tracking.approve' | translate }}
-                  </ion-button>
-                  <ion-button
-                    fill="outline"
-                    color="danger"
-                    size="small"
-                    (click)="rejectTimesheet(group)"
-                  >
-                    <ion-icon name="close" slot="start"></ion-icon>
-                    {{ 'time_tracking.reject' | translate }}
-                  </ion-button>
-                </div>
-
-                <!-- Status for Non-Pending Items -->
-                <div
-                  class="status-info"
-                  slot="end"
-                  *ngIf="group.status !== 'pending'"
-                >
-                  <ion-chip [color]="getStatusColor(group.status)">
-                    <ion-icon [name]="getStatusIcon(group.status)"></ion-icon>
-                    <ion-label>{{ group.status | titlecase }}</ion-label>
-                  </ion-chip>
-                </div>
-              </ion-item>
-
-              <!-- Expandable Details -->
-              <ion-item class="details-item">
-                <ion-label>
-                  <div class="time-entries-details">
-                    <h4>
-                      {{ 'time_tracking.time_entry_details' | translate }}
-                    </h4>
-                    <div class="entries-grid">
-                      <div
-                        *ngFor="let entry of group.entries"
-                        class="entry-row"
-                      >
-                        <span class="date"
-                          >{{ entry.date.toDate() | date:'EEE, MMM d' }}</span
-                        >
-                        <span class="project"
-                          >{{ entry.projectName || ('time_tracking.no_project' |
-                          translate) }}</span
-                        >
-                        <span class="hours">{{ entry.hours }}h</span>
-                        <span class="notes" *ngIf="entry.notes"
-                          >{{ entry.notes }}</span
-                        >
-                      </div>
-                    </div>
-                  </div>
-                </ion-label>
-              </ion-item>
-            </ion-item-group>
-          </ion-list>
-        </ng-container>
-      </ng-container>
-
-      <!-- Loading State -->
-      <div class="loading-container" *ngIf="!(groupedEntries$ | async)">
-        <ion-spinner></ion-spinner>
-        <p>{{ 'time_tracking.loading_timesheet_data' | translate }}</p>
-      </div>
+    <!-- Loading State -->
+    <div class="loading-container" *ngIf="!(displayEntries$ | async)">
+      <ion-spinner></ion-spinner>
+      <p>{{ 'time_tracking.loading_timesheet_data' | translate }}</p>
     </div>
   </div>
 </ion-content>

@@ -102,15 +102,20 @@ export class TimesheetNotificationService {
     weekStart: Date,
     totalHours: number,
     approverName: string,
+    approverId: string,
     accountId: string,
   ) {
+    if (!userId || userId === approverId) {
+      return;
+    }
+
     const message = `Your timesheet for ${totalHours} hours has been approved by ${approverName}`;
 
     const notification: TimesheetNotification = {
       id: `approval_${Date.now()}_${userId}`,
       type: "approval",
       userId,
-      fromUserId: "system",
+      fromUserId: approverId,
       fromUserName: approverName,
       weekStart,
       message,
@@ -133,8 +138,13 @@ export class TimesheetNotificationService {
     totalHours: number,
     reason: string,
     rejectorName: string,
+    rejectorId: string,
     accountId: string,
   ) {
+    if (!userId || userId === rejectorId) {
+      return;
+    }
+
     const message = reason
       ? `Your timesheet has been rejected: ${reason}`
       : `Your timesheet for ${totalHours} hours has been rejected by ${rejectorName}`;
@@ -143,7 +153,7 @@ export class TimesheetNotificationService {
       id: `rejection_${Date.now()}_${userId}`,
       type: "rejection",
       userId,
-      fromUserId: "system",
+      fromUserId: rejectorId,
       fromUserName: rejectorName,
       weekStart,
       message,
@@ -175,14 +185,17 @@ export class TimesheetNotificationService {
 
     const message = `New note added to your timesheet: "${noteContent.substring(0, 50)}${noteContent.length > 50 ? "..." : ""}"`;
 
+    const entryDate = this.toDate(entry.date) || new Date();
+    const projectName = entry.projectName || "";
+
     const notification: TimesheetNotification = {
       id: `note_${Date.now()}_${recipientId}`,
       type: "note_added",
       userId: recipientId,
       fromUserId: currentUser.uid,
       fromUserName: currentUser.displayName || currentUser.email || "Unknown",
-      weekStart: entry.date.toDate(),
-      projectName: entry.projectName,
+      weekStart: entryDate,
+      projectName,
       message,
       data: {noteContent, entryId: entry.id},
       createdAt: Timestamp.now(),
@@ -227,6 +240,20 @@ export class TimesheetNotificationService {
       ],
     });
     await toast.present();
+  }
+
+  private toDate(value: any): Date | null {
+    if (!value) return null;
+    if (value instanceof Timestamp) return value.toDate();
+    if (value && typeof value.toDate === "function") return value.toDate();
+    if (value && typeof value.seconds === "number") {
+      return new Date(value.seconds * 1000 + (value.nanoseconds ?? 0) / 1e6);
+    }
+    if (value && typeof value._seconds === "number") {
+      return new Date(value._seconds * 1000 + (value._nanoseconds ?? 0) / 1e6);
+    }
+    const date = value instanceof Date ? value : new Date(value);
+    return isNaN(date.getTime()) ? null : date;
   }
 
   /**

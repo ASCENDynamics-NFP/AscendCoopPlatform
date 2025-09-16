@@ -103,7 +103,7 @@ export const updateTimeEntry = onCall(
     }
 
     try {
-      await TimeTrackingService.updateTimeEntry({
+      const {timeEntry} = await TimeTrackingService.updateTimeEntry({
         timeEntryId,
         updates,
         userId,
@@ -112,6 +112,7 @@ export const updateTimeEntry = onCall(
       return {
         success: true,
         message: "Time entry updated successfully",
+        timeEntry,
       };
     } catch (error) {
       logger.error("Time entry update failed:", error);
@@ -174,12 +175,22 @@ export const getAccountTimeEntries = onCall(
     }
 
     const userId = request.auth.uid;
-    const {accountId, startDate, endDate, limit, offset} = request.data as {
+    const {
+      accountId,
+      startDate,
+      endDate,
+      limit,
+      offset,
+      userId: filterUserId,
+      projectId,
+    } = request.data as {
       accountId: string;
       startDate?: string;
       endDate?: string;
       limit?: number;
       offset?: number;
+      userId?: string;
+      projectId?: string;
     };
 
     if (!accountId) {
@@ -190,7 +201,7 @@ export const getAccountTimeEntries = onCall(
       const timeEntries = await TimeTrackingService.getAccountTimeEntries(
         accountId,
         userId,
-        {startDate, endDate, limit, offset},
+        {startDate, endDate, limit, offset, userId: filterUserId, projectId},
       );
 
       return {

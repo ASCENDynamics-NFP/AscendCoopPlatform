@@ -21,6 +21,7 @@
 
 import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
+import {Action} from "@ngrx/store";
 import {
   mergeMap,
   map,
@@ -29,7 +30,7 @@ import {
   switchMap,
   takeUntil,
 } from "rxjs/operators";
-import {of, from} from "rxjs";
+import {of, from, forkJoin} from "rxjs";
 import {TimeEntry} from "../../../../shared/models/time-entry.model";
 import {TimeTrackingService} from "../../core/services/time-tracking.service";
 import * as TimeTrackingActions from "../actions/time-tracking.actions";
@@ -86,17 +87,46 @@ export class TimeTrackingEffects {
           const updates: any = {
             date: toIso(entry.date),
             hours: entry.hours,
-            // Map notes -> description to match backend
-            description: (entry as any).notes || "",
+            // Prefer explicit description, fall back to notes
+            description:
+              (entry as any).description ?? (entry as any).notes ?? "",
             // category omitted; not present on TimeEntry model
             // isVolunteer optional; default false when undefined
             isVolunteer: (entry as any).isVolunteer ?? false,
             projectId: entry.projectId,
+            userName: (entry as any).userName,
+            projectName: (entry as any).projectName,
           };
+
+          if ((entry as any).category !== undefined) {
+            updates.category = (entry as any).category;
+          }
+
+          if ("status" in entry && entry.status !== undefined) {
+            updates.status = entry.status;
+          }
+
+          if ((entry as any).notes !== undefined) {
+            updates.notes = (entry as any).notes;
+          }
+
+          if ((entry as any).noteHistory !== undefined) {
+            updates.noteHistory = (entry as any).noteHistory;
+          }
+
           return this.timeTrackingService
             .updateTimeEntry(entry.id, updates)
             .pipe(
-              map(() => TimeTrackingActions.saveTimeEntrySuccess({entry})),
+              map((updatedEntry) =>
+                TimeTrackingActions.saveTimeEntrySuccess({
+                  entry: {
+                    ...entry,
+                    ...updatedEntry,
+                    accountId: entry.accountId,
+                    userId: entry.userId,
+                  } as TimeEntry,
+                }),
+              ),
               catchError((error) =>
                 of(TimeTrackingActions.saveTimeEntryFailure({error})),
               ),
@@ -113,11 +143,19 @@ export class TimeTrackingEffects {
           description: (entry as any).notes || "",
           // category omitted
           isVolunteer: (entry as any).isVolunteer ?? false,
+          notes: (entry as any).notes || "",
+          noteHistory: (entry as any).noteHistory || [],
+          userName: (entry as any).userName,
+          projectName: (entry as any).projectName,
         };
         return this.timeTrackingService.createTimeEntry(payload).pipe(
           map((created: any) =>
             TimeTrackingActions.saveTimeEntrySuccess({
-              entry: created as TimeEntry,
+              entry: {
+                ...(created as TimeEntry),
+                accountId: entry.accountId,
+                userId: entry.userId,
+              },
             }),
           ),
           catchError((error) =>
@@ -237,7 +275,9 @@ export class TimeTrackingEffects {
       ofType(TimeTrackingActions.updateTimeEntry),
       mergeMap(({entry}) =>
         from(this.timeTrackingService.updateTimeEntry_legacy(entry)).pipe(
-          map(() => TimeTrackingActions.updateTimeEntrySuccess({entry})),
+          map((updatedEntry) =>
+            TimeTrackingActions.updateTimeEntrySuccess({entry: updatedEntry}),
+          ),
           catchError((error) => {
             console.error("Error updating time entry:", error);
             return of(TimeTrackingActions.updateTimeEntryFailure({error}));
@@ -252,22 +292,71 @@ export class TimeTrackingEffects {
     this.actions$.pipe(
       ofType(TimeTrackingActions.submitTimesheetForApproval),
       mergeMap(({accountId, userId, weekStart, entries}) => {
-        // Update all entries to have pending status
-        const updatePromises = entries.map((entry) =>
-          this.timeTrackingService.updateTimeEntry_legacy({
-            ...entry,
-            status: "pending",
-          }),
-        );
+        const updateRequests = entries.map((entry) => {
+          const toIso = (d: any): string => {
+            try {
+              if (!d) return new Date().toISOString();
+              if (typeof d === "string") return new Date(d).toISOString();
+              if (d.toDate && typeof d.toDate === "function")
+                return d.toDate().toISOString();
+              if (d instanceof Date) return d.toISOString();
+              return new Date(d).toISOString();
+            } catch (_) {
+              return new Date().toISOString();
+            }
+          };
 
-        return from(Promise.all(updatePromises)).pipe(
-          map(() =>
-            TimeTrackingActions.submitTimesheetForApprovalSuccess({
-              accountId,
-              userId,
-              weekStart,
-            }),
-          ),
+          const updates: any = {
+            date: toIso(entry.date),
+            hours: entry.hours,
+            description:
+              (entry as any).description ?? (entry as any).notes ?? "",
+            category: (entry as any).category,
+            isVolunteer: (entry as any).isVolunteer ?? false,
+            status: entry.status,
+            projectId: entry.projectId,
+            listingId: (entry as any).listingId,
+            userName: entry.userName,
+            projectName: entry.projectName,
+          };
+
+          Object.keys(updates).forEach((key) => {
+            if (updates[key] === undefined) {
+              delete updates[key];
+            }
+          });
+
+          if ((entry as any).notes !== undefined) {
+            updates.notes = (entry as any).notes;
+          }
+
+          if ((entry as any).noteHistory !== undefined) {
+            updates.noteHistory = (entry as any).noteHistory;
+          }
+
+          return this.timeTrackingService.updateTimeEntry(entry.id, updates);
+        });
+
+        return forkJoin(updateRequests).pipe(
+          mergeMap((updatedEntries) => {
+            const actionsToDispatch: Action[] = updatedEntries.map(
+              (updated, index) =>
+                TimeTrackingActions.saveTimeEntrySuccess({
+                  entry: {
+                    ...entries[index],
+                    ...updated,
+                  } as TimeEntry,
+                }),
+            );
+            actionsToDispatch.push(
+              TimeTrackingActions.submitTimesheetForApprovalSuccess({
+                accountId,
+                userId,
+                weekStart,
+              }),
+            );
+            return from(actionsToDispatch);
+          }),
           catchError((error) => {
             console.error("Error submitting timesheet for approval:", error);
             return of(

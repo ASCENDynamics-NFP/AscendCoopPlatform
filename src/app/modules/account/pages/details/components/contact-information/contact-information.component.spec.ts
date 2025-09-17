@@ -21,6 +21,7 @@ import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
 
 import {ContactInformationComponent} from "./contact-information.component";
+import {getFirebaseTestProviders} from "../../../../../../testing/test-utilities";
 
 describe("ContactInformationComponent", () => {
   let component: ContactInformationComponent;
@@ -30,6 +31,7 @@ describe("ContactInformationComponent", () => {
     TestBed.configureTestingModule({
       declarations: [ContactInformationComponent],
       imports: [IonicModule.forRoot()],
+      providers: [...getFirebaseTestProviders()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ContactInformationComponent);

@@ -105,7 +105,7 @@ describe("RelatedAccountsComponent", () => {
       {
         id: "2",
         type: "user",
-        status: "rejected",
+        status: "declined",
         accountId: "",
       },
     ];

@@ -24,6 +24,7 @@ import {ContactInfoFormComponent} from "./contact-info-form.component";
 import {provideMockStore} from "@ngrx/store/testing";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
 import {TranslateTestingModule} from "../../../../../../shared/testing/translate-testing.module";
+import {getFirebaseTestProviders} from "../../../../../../testing/test-utilities";
 
 describe("ContactInfoComponent", () => {
   let component: ContactInfoFormComponent;
@@ -33,7 +34,7 @@ describe("ContactInfoComponent", () => {
     TestBed.configureTestingModule({
       declarations: [ContactInfoFormComponent],
       imports: [IonicModule.forRoot(), CommonModule, TranslateTestingModule],
-      providers: [provideMockStore({})],
+      providers: [provideMockStore({}), ...getFirebaseTestProviders()],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 

@@ -33,6 +33,7 @@ import {NetworkConnectionService} from "../../../../../../core/services/network-
 import {OfflineSyncService} from "../../../../../../core/services/offline-sync.service";
 import {FirestoreOfflineService} from "../../../../../../core/services/firestore-offline.service";
 import {of} from "rxjs";
+import {getFirebaseTestProviders} from "../../../../../../testing/test-utilities";
 
 describe("HeroComponent", () => {
   let component: HeroComponent;
@@ -134,6 +135,7 @@ describe("HeroComponent", () => {
         {provide: NetworkConnectionService, useValue: mockNetworkService},
         {provide: OfflineSyncService, useValue: mockOfflineSync},
         {provide: FirestoreOfflineService, useValue: mockFirestoreOffline},
+        ...getFirebaseTestProviders(),
         provideMockStore(),
       ],
       schemas: [NO_ERRORS_SCHEMA],

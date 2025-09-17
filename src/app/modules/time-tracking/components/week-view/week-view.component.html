@@ -27,15 +27,34 @@
   <div *ngIf="availableProjects.length > 0">
     <div class="week-header">
       <h2>Week of {{ weekStart | date: "MMM d" }}</h2>
-      <ion-button
-        *ngIf="!readonly"
-        (click)="addRow()"
-        fill="outline"
-        size="small"
-      >
-        <ion-icon name="add" slot="start"></ion-icon>
-        {{ "common.add_row" | translate }}
-      </ion-button>
+      <div class="header-actions">
+        <ion-button
+          *ngIf="!readonly"
+          (click)="addRow()"
+          fill="outline"
+          size="small"
+        >
+          <ion-icon name="add" slot="start"></ion-icon>
+          {{ "common.add_row" | translate }}
+        </ion-button>
+
+        <!-- Save Button -->
+        <ion-button
+          *ngIf="!readonly && hasUnsavedChanges"
+          (click)="saveChanges()"
+          color="primary"
+          size="small"
+          [disabled]="isLoading"
+        >
+          <ion-spinner
+            *ngIf="isLoading"
+            name="crescent"
+            slot="start"
+          ></ion-spinner>
+          <ion-icon *ngIf="!isLoading" name="save" slot="start"></ion-icon>
+          {{ isLoading ? "Saving..." : "Save Changes" }}
+        </ion-button>
+      </div>
 
       <!-- Status badges based on actual status -->
       <ion-badge
@@ -153,17 +172,27 @@
               </ion-button>
             </td>
             <td *ngFor="let day of days" class="hours-cell">
-              <div class="hours-input-container">
+              <div
+                class="hours-input-container"
+                [class.has-pending-changes]="
+                  row.projectId && hasPendingChange(row.projectId, day)
+                "
+              >
                 <ion-input
                   type="number"
                   [value]="
-                    row.projectId ? getEntry(row.projectId, day)?.hours : ''
+                    row.projectId
+                      ? hasPendingChange(row.projectId, day)
+                        ? getPendingValue(row.projectId, day)
+                        : getEntry(row.projectId, day)?.hours
+                      : ''
                   "
                   (ionChange)="onHoursChange(i, day, $event)"
                   [disabled]="
                     !row.projectId ||
                     readonly ||
-                    (row.projectId && isProjectArchived(row.projectId))
+                    (row.projectId && isProjectArchived(row.projectId)) ||
+                    isLoading
                   "
                   [readonly]="
                     readonly ||

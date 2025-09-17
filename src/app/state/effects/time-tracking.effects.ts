@@ -133,7 +133,7 @@ export class TimeTrackingEffects {
             );
         }
 
-        // Use callable create
+        // Use new createOrUpdate method to prevent duplicates
         const payload: any = {
           accountId: entry.accountId,
           projectId: entry.projectId,
@@ -148,20 +148,22 @@ export class TimeTrackingEffects {
           userName: (entry as any).userName,
           projectName: (entry as any).projectName,
         };
-        return this.timeTrackingService.createTimeEntry(payload).pipe(
-          map((created: any) =>
-            TimeTrackingActions.saveTimeEntrySuccess({
-              entry: {
-                ...(created as TimeEntry),
-                accountId: entry.accountId,
-                userId: entry.userId,
-              },
-            }),
-          ),
-          catchError((error) =>
-            of(TimeTrackingActions.saveTimeEntryFailure({error})),
-          ),
-        );
+        return this.timeTrackingService
+          .createOrUpdateTimeEntry(payload, entry.userId)
+          .pipe(
+            map((created: any) =>
+              TimeTrackingActions.saveTimeEntrySuccess({
+                entry: {
+                  ...(created as TimeEntry),
+                  accountId: entry.accountId,
+                  userId: entry.userId,
+                },
+              }),
+            ),
+            catchError((error) =>
+              of(TimeTrackingActions.saveTimeEntryFailure({error})),
+            ),
+          );
       }),
     ),
   );
@@ -273,17 +275,21 @@ export class TimeTrackingEffects {
   updateTimeEntry$ = createEffect(() =>
     this.actions$.pipe(
       ofType(TimeTrackingActions.updateTimeEntry),
-      mergeMap(({entry}) =>
-        from(this.timeTrackingService.updateTimeEntry_legacy(entry)).pipe(
-          map((updatedEntry) =>
-            TimeTrackingActions.updateTimeEntrySuccess({entry: updatedEntry}),
-          ),
+      mergeMap(({entry}) => {
+        return from(
+          this.timeTrackingService.updateTimeEntry_legacy(entry),
+        ).pipe(
+          map((updatedEntry) => {
+            return TimeTrackingActions.updateTimeEntrySuccess({
+              entry: updatedEntry,
+            });
+          }),
           catchError((error) => {
             console.error("Error updating time entry:", error);
             return of(TimeTrackingActions.updateTimeEntryFailure({error}));
           }),
-        ),
-      ),
+        );
+      }),
     ),
   );
 

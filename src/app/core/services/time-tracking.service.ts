@@ -21,7 +21,7 @@
 
 import {Injectable} from "@angular/core";
 import {Observable, of, firstValueFrom} from "rxjs";
-import {map, catchError} from "rxjs/operators";
+import {map, catchError, switchMap} from "rxjs/operators";
 import {
   FirebaseFunctionsService,
   CreateTimeEntryRequest,
@@ -45,6 +45,64 @@ export class TimeTrackingService {
     private projectService: ProjectService,
     private firestoreService: FirestoreService,
   ) {}
+
+  /**
+   * Create a new time entry or update existing one for the same day/project
+   * This method prevents duplicate entries by checking for existing entries first
+   * @param data The time entry data to create or update
+   * @param userId The user ID (since it's not in CreateTimeEntryRequest)
+   * @returns Observable of the created/updated time entry
+   */
+  createOrUpdateTimeEntry(
+    data: CreateTimeEntryRequest,
+    userId: string,
+  ): Observable<TimeEntry> {
+    // First, try to find an existing entry for the same user, project, and date
+    const dateStr = new Date(data.date).toDateString();
+
+    return this.getAccountTimeEntries(data.accountId, {
+      projectId: data.projectId,
+    }).pipe(
+      switchMap((existingEntries: TimeEntry[]) => {
+        // Look for an entry on the same date
+        const existingEntry = existingEntries.find((entry: any) => {
+          const entryDate = entry.date?.toDate
+            ? entry.date.toDate()
+            : new Date(entry.date);
+          return (
+            entryDate.toDateString() === dateStr && entry.userId === userId
+          );
+        });
+
+        if (existingEntry) {
+          // Update existing entry
+          console.log(
+            "[TimeTrackingService] Found existing entry, updating:",
+            existingEntry.id,
+          );
+          const updates = {
+            hours: data.hours,
+            description: data.description || "",
+            notes: data.notes || data.description || "",
+            isVolunteer: data.isVolunteer || false,
+            status: "draft" as const,
+          };
+
+          return this.updateTimeEntry(existingEntry.id, updates);
+        } else {
+          // Create new entry
+          console.log(
+            "[TimeTrackingService] No existing entry found, creating new one",
+          );
+          return this.createTimeEntry(data);
+        }
+      }),
+      catchError((error) => {
+        console.error("Error in createOrUpdateTimeEntry:", error);
+        throw error;
+      }),
+    );
+  }
 
   /**
    * Create a new time entry
@@ -292,6 +350,13 @@ export class TimeTrackingService {
     const updates: Partial<
       CreateTimeEntryRequest & {
         status: "draft" | "pending" | "approved" | "rejected";
+        approvedBy?: string;
+        approvedByName?: string;
+        approvedAt?: any;
+        statusHistory?: any[];
+        noteHistory?: any[];
+        originalHours?: number;
+        rejectionReason?: string;
       }
     > = {
       date: toIso(entry.date),
@@ -310,6 +375,36 @@ export class TimeTrackingService {
     if (entry.noteHistory !== undefined) {
       (updates as any).noteHistory = entry.noteHistory;
     }
+
+    // Include approval workflow fields
+    if (entry.approvedBy !== undefined) {
+      (updates as any).approvedBy = entry.approvedBy;
+    }
+
+    if (entry.approvedByName !== undefined) {
+      (updates as any).approvedByName = entry.approvedByName;
+    }
+
+    if (entry.approvedAt !== undefined) {
+      (updates as any).approvedAt = entry.approvedAt;
+    }
+
+    if (entry.statusHistory !== undefined) {
+      (updates as any).statusHistory = entry.statusHistory;
+    }
+
+    if (entry.originalHours !== undefined) {
+      (updates as any).originalHours = entry.originalHours;
+    }
+
+    if (entry.rejectionReason !== undefined) {
+      (updates as any).rejectionReason = entry.rejectionReason;
+    }
+
+    console.log(
+      "[TimeTrackingService] updateTimeEntry_legacy updates:",
+      updates,
+    );
 
     return firstValueFrom(this.updateTimeEntry(entry.id, updates));
   }

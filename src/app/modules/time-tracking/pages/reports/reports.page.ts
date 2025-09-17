@@ -33,6 +33,7 @@ import {
   AnalyticsService,
   TimeTrackingAnalytics,
   TimeTrackingReportFilters,
+  CSVExportOptions,
 } from "../../../../core/services/analytics.service";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {AuthUser} from "../../../../../../shared/models/auth-user.model";
@@ -275,6 +276,8 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
   analytics$: Observable<TimeTrackingAnalytics | null> = new Observable();
   currentAnalytics: TimeTrackingAnalytics | null = null;
   isLoading = false;
+  isExporting = false;
+  exportProgress = 0;
   error: string | null = null;
 
   // Report configuration
@@ -357,6 +360,40 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
     labels: [],
     datasets: [],
   };
+
+  // CSV Export configuration
+  showExportModal = false;
+  exportConfig = {
+    format: "detailed" as "detailed" | "summary" | "analytics",
+    dateFormat: "ISO" as "ISO" | "US" | "EU",
+    includeCalculatedFields: true,
+    includeHeaders: true,
+    selectedColumns: [] as string[],
+  };
+
+  availableColumns = [
+    {key: "entryId", label: "Entry ID", category: "Basic"},
+    {key: "accountId", label: "Account ID", category: "Basic"},
+    {key: "projectId", label: "Project ID", category: "Basic"},
+    {key: "projectName", label: "Project Name", category: "Basic"},
+    {key: "projectCategory", label: "Project Category", category: "Basic"},
+    {key: "userId", label: "User ID", category: "Basic"},
+    {key: "userName", label: "User Name", category: "Basic"},
+    {key: "date", label: "Date", category: "Basic"},
+    {key: "hours", label: "Hours", category: "Basic"},
+    {key: "status", label: "Status", category: "Basic"},
+    {key: "notes", label: "Notes", category: "Basic"},
+    {key: "approvedBy", label: "Approved By", category: "Approval"},
+    {key: "approvedAt", label: "Approved At", category: "Approval"},
+    {key: "createdAt", label: "Created At", category: "Timestamps"},
+    {key: "lastModified", label: "Last Modified", category: "Timestamps"},
+    {key: "dayOfWeek", label: "Day of Week", category: "Calculated"},
+    {key: "weekNumber", label: "Week Number", category: "Calculated"},
+    {key: "monthYear", label: "Month Year", category: "Calculated"},
+    {key: "daysToApproval", label: "Days to Approval", category: "Calculated"},
+    {key: "isApproved", label: "Is Approved", category: "Calculated"},
+    {key: "isWeekend", label: "Is Weekend", category: "Calculated"},
+  ];
   categoryChartOptions: ChartOptions<"doughnut"> = {
     responsive: true,
     maintainAspectRatio: false,
@@ -453,7 +490,21 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
    * Generate report based on current settings
    */
   generateReport() {
-    if (!this.currentAccountId) return;
+    if (!this.currentAccountId) {
+      this.error = "Account ID is required to generate reports.";
+      return;
+    }
+
+    // Validate date range if custom dates are provided
+    if (this.customStartDate && this.customEndDate) {
+      const startDate = new Date(this.customStartDate);
+      const endDate = new Date(this.customEndDate);
+
+      if (startDate > endDate) {
+        this.error = "Start date cannot be later than end date.";
+        return;
+      }
+    }
 
     // Unsubscribe from any existing analytics subscription
     if (this.analyticsSubscription) {
@@ -474,6 +525,9 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
     if (this.selectedProjectId && this.selectedReportType !== "project") {
       filters.projectId = this.selectedProjectId;
     }
+    if (this.selectedCategoryId) {
+      filters.category = this.selectedCategoryId;
+    }
     if (this.customStartDate) {
       filters.startDate = new Date(this.customStartDate);
     }
@@ -484,19 +538,40 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
     // Add filters based on report type
     switch (this.selectedReportType) {
       case "monthly":
+        // Pass additional filters to monthly report
+        const monthlyAdditionalFilters: Partial<TimeTrackingReportFilters> = {};
+        if (this.selectedUserId)
+          monthlyAdditionalFilters.userId = this.selectedUserId;
+        if (this.selectedProjectId)
+          monthlyAdditionalFilters.projectId = this.selectedProjectId;
+        if (this.selectedCategoryId)
+          monthlyAdditionalFilters.category = this.selectedCategoryId;
+
         this.analytics$ = this.analyticsService.getMonthlyTimeTrackingReport(
           new Date().getFullYear(),
           new Date().getMonth() + 1,
           this.currentAccountId,
+          monthlyAdditionalFilters,
         );
         break;
 
       case "quarterly":
+        // Pass additional filters to quarterly report
+        const quarterlyAdditionalFilters: Partial<TimeTrackingReportFilters> =
+          {};
+        if (this.selectedUserId)
+          quarterlyAdditionalFilters.userId = this.selectedUserId;
+        if (this.selectedProjectId)
+          quarterlyAdditionalFilters.projectId = this.selectedProjectId;
+        if (this.selectedCategoryId)
+          quarterlyAdditionalFilters.category = this.selectedCategoryId;
+
         const currentQuarter = Math.floor(new Date().getMonth() / 3) + 1;
         this.analytics$ = this.analyticsService.getQuarterlyTimeTrackingReport(
           new Date().getFullYear(),
           currentQuarter,
           this.currentAccountId,
+          quarterlyAdditionalFilters,
         );
         break;
 
@@ -560,8 +635,19 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
         },
         error: (error) => {
           this.isLoading = false;
-          this.error = "Failed to load report data. Please try again.";
           this.currentAnalytics = null;
+
+          // Handle specific validation errors
+          if (error.message.includes("accountId is required")) {
+            this.error = "Account ID is required to generate reports.";
+          } else if (error.message.includes("Start date cannot be later")) {
+            this.error = "Start date cannot be later than end date.";
+          } else if (error.message.includes("Invalid")) {
+            this.error = `Validation error: ${error.message}`;
+          } else {
+            this.error = "Failed to load report data. Please try again.";
+          }
+
           console.error("Analytics error:", error);
         },
       });
@@ -781,10 +867,18 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * Export current report data as CSV
+   * Export current report data as CSV with enhanced options
    */
-  async exportToCSV() {
-    if (!this.currentAccountId) return;
+  async exportToCSV(format: "detailed" | "summary" | "analytics" = "detailed") {
+    if (!this.currentAccountId) {
+      this.error = "Account ID is required to export data.";
+      return;
+    }
+
+    // Reset any previous errors
+    this.error = null;
+    this.isExporting = true;
+    this.exportProgress = 0;
 
     try {
       const filters: TimeTrackingReportFilters = {
@@ -794,66 +888,215 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
       // Apply current report filters
       if (this.selectedUserId) filters.userId = this.selectedUserId;
       if (this.selectedProjectId) filters.projectId = this.selectedProjectId;
-      if (this.selectedCategoryId) {
-        // Note: Category filtering may need to be handled client-side
-        // depending on analytics service capabilities
-      }
+      if (this.selectedCategoryId) filters.category = this.selectedCategoryId;
       if (this.customStartDate)
         filters.startDate = new Date(this.customStartDate);
       if (this.customEndDate) filters.endDate = new Date(this.customEndDate);
 
+      const exportOptions: CSVExportOptions = {
+        format,
+        includeHeaders: true,
+        dateFormat: "ISO",
+        includeCalculatedFields: format === "detailed",
+      };
+
+      // Simulate progress for better UX
+      this.exportProgress = 25;
+
       this.analyticsService
-        .exportTimeTrackingData(filters)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe((data) => {
-          this.downloadCSV(data);
+        .exportTimeTrackingData(filters, exportOptions)
+        .pipe(
+          takeUntil(this.destroy$),
+          // Add a delay to show progress for small datasets
+          map((data) => {
+            this.exportProgress = 75;
+            return data;
+          }),
+        )
+        .subscribe({
+          next: (data) => {
+            this.exportProgress = 100;
+            this.downloadCSV(data, format, filters);
+            this.isExporting = false;
+            this.exportProgress = 0;
+          },
+          error: (error) => {
+            this.isExporting = false;
+            this.exportProgress = 0;
+            console.error("Export error:", error);
+
+            // Handle specific error types
+            if (error.message?.includes("accountId is required")) {
+              this.error = "Account ID is required to export data.";
+            } else if (error.message?.includes("No data found")) {
+              this.error = "No data available for the selected filters.";
+            } else if (error.message?.includes("network")) {
+              this.error =
+                "Network error occurred during export. Please check your connection.";
+            } else {
+              this.error = "Failed to export data. Please try again.";
+            }
+          },
         });
     } catch (error) {
-      console.error("Export error:", error);
-      this.error = "Failed to export data. Please try again.";
+      this.isExporting = false;
+      this.exportProgress = 0;
+      console.error("Export setup error:", error);
+      this.error = "Failed to initialize export. Please try again.";
     }
   }
 
   /**
-   * Download data as CSV file
+   * Download data as CSV file with enhanced error handling
    */
-  private downloadCSV(data: any[]) {
-    if (data.length === 0) {
-      this.error = "No data available for export.";
+  private downloadCSV(
+    data: any[],
+    format: string,
+    filters: TimeTrackingReportFilters,
+  ) {
+    if (!data || data.length === 0) {
+      this.error = "No data available for export with the current filters.";
+      this.isExporting = false;
+      this.exportProgress = 0;
       return;
     }
 
-    const headers = Object.keys(data[0]);
-    const csvContent = [
-      headers.join(","),
-      ...data.map((row) =>
-        headers
-          .map((header) => {
-            const value = row[header];
-            // Escape quotes and wrap in quotes if necessary
-            return typeof value === "string" && value.includes(",")
-              ? `"${value.replace(/"/g, '""')}"`
-              : value;
-          })
-          .join(","),
-      ),
-    ].join("\n");
+    try {
+      const headers = Object.keys(data[0]);
 
-    const blob = new Blob([csvContent], {type: "text/csv;charset=utf-8;"});
-    const link = document.createElement("a");
+      // Validate that we have valid data structure
+      if (!headers || headers.length === 0) {
+        throw new Error("Invalid data structure for CSV export");
+      }
 
-    if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute(
-        "download",
-        `time-tracking-report-${new Date().toISOString().split("T")[0]}.csv`,
-      );
-      link.style.visibility = "hidden";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const csvContent = [
+        headers.join(","),
+        ...data.map((row) =>
+          headers
+            .map((header) => {
+              const value = row[header];
+              // Enhanced CSV escaping
+              if (value === null || value === undefined) {
+                return "";
+              }
+              const stringValue = String(value);
+              // Escape quotes and wrap in quotes if necessary
+              return stringValue.includes(",") ||
+                stringValue.includes('"') ||
+                stringValue.includes("\n") ||
+                stringValue.includes("\r")
+                ? `"${stringValue.replace(/"/g, '""')}"`
+                : stringValue;
+            })
+            .join(","),
+        ),
+      ].join("\n");
+
+      // Add BOM for UTF-8 encoding to ensure special characters display correctly
+      const BOM = "\uFEFF";
+      const blob = new Blob([BOM + csvContent], {
+        type: "text/csv;charset=utf-8;",
+      });
+
+      // Check if blob was created successfully
+      if (!blob || blob.size === 0) {
+        throw new Error("Failed to create CSV file");
+      }
+
+      const link = document.createElement("a");
+
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute(
+          "download",
+          this.generateCSVFilename(format, filters),
+        );
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Clean up the object URL
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+
+        // Show success message
+        console.log(
+          `Successfully exported ${data.length} records as ${format} CSV`,
+        );
+      } else {
+        throw new Error("CSV download is not supported in this browser");
+      }
+    } catch (error) {
+      console.error("CSV download error:", error);
+      this.error = "Failed to download CSV file. Please try again.";
+      this.isExporting = false;
+      this.exportProgress = 0;
     }
+  }
+
+  /**
+   * Generate descriptive filename for CSV export
+   */
+  private generateCSVFilename(
+    format: string,
+    filters: TimeTrackingReportFilters,
+  ): string {
+    const datePart = new Date().toISOString().split("T")[0];
+    const reportType = this.selectedReportType || "custom";
+
+    let filename = `time-tracking-${format}-${reportType}-${datePart}`;
+
+    // Add filter details to filename
+    const filterParts: string[] = [];
+
+    if (filters.userId && this.selectedReportType !== "user") {
+      // Try to find user name from available users
+      this.availableUsers$.pipe(takeUntil(this.destroy$)).subscribe((users) => {
+        const user = users.find((u) => u.id === filters.userId);
+        if (user) {
+          filterParts.push(`user-${user.name?.replace(/[^a-zA-Z0-9]/g, "")}`);
+        }
+      });
+    }
+
+    if (filters.projectId && this.selectedReportType !== "project") {
+      // Try to find project name from available projects
+      this.availableProjects$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((projects) => {
+          const project = projects.find((p) => p.id === filters.projectId);
+          if (project) {
+            filterParts.push(
+              `project-${project.name?.replace(/[^a-zA-Z0-9]/g, "")}`,
+            );
+          }
+        });
+    }
+
+    if (filters.category) {
+      filterParts.push(`category-${filters.category}`);
+    }
+
+    if (filters.status) {
+      filterParts.push(`status-${filters.status}`);
+    }
+
+    if (filters.startDate || filters.endDate) {
+      const startStr = filters.startDate
+        ? filters.startDate.toISOString().split("T")[0]
+        : "start";
+      const endStr = filters.endDate
+        ? filters.endDate.toISOString().split("T")[0]
+        : "end";
+      filterParts.push(`${startStr}-to-${endStr}`);
+    }
+
+    if (filterParts.length > 0) {
+      filename += `-${filterParts.join("-")}`;
+    }
+
+    return `${filename}.csv`;
   }
 
   /**
@@ -919,5 +1162,149 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
    */
   refreshReport() {
     this.generateReport();
+  }
+
+  /**
+   * Show export configuration modal
+   */
+  showExportConfiguration() {
+    this.showExportModal = true;
+
+    // Initialize selected columns based on format
+    if (this.exportConfig.selectedColumns.length === 0) {
+      this.resetColumnSelection();
+    }
+  }
+
+  /**
+   * Hide export configuration modal
+   */
+  hideExportConfiguration() {
+    this.showExportModal = false;
+  }
+
+  /**
+   * Reset column selection based on format
+   */
+  resetColumnSelection() {
+    const basicColumns = this.availableColumns
+      .filter((col) => col.category === "Basic")
+      .map((col) => col.key);
+
+    switch (this.exportConfig.format) {
+      case "detailed":
+        this.exportConfig.selectedColumns = this.availableColumns.map(
+          (col) => col.key,
+        );
+        break;
+      case "summary":
+        this.exportConfig.selectedColumns = [
+          "userId",
+          "userName",
+          "projectId",
+          "projectName",
+          "projectCategory",
+        ];
+        break;
+      case "analytics":
+        this.exportConfig.selectedColumns = ["metric", "value", "category"];
+        break;
+      default:
+        this.exportConfig.selectedColumns = basicColumns;
+    }
+  }
+
+  /**
+   * Toggle column selection
+   */
+  toggleColumn(columnKey: string) {
+    const index = this.exportConfig.selectedColumns.indexOf(columnKey);
+    if (index > -1) {
+      this.exportConfig.selectedColumns.splice(index, 1);
+    } else {
+      this.exportConfig.selectedColumns.push(columnKey);
+    }
+  }
+
+  /**
+   * Check if column is selected
+   */
+  isColumnSelected(columnKey: string): boolean {
+    return this.exportConfig.selectedColumns.includes(columnKey);
+  }
+
+  /**
+   * Export with current configuration
+   */
+  exportWithConfig() {
+    const options: CSVExportOptions = {
+      format: this.exportConfig.format,
+      dateFormat: this.exportConfig.dateFormat,
+      includeCalculatedFields: this.exportConfig.includeCalculatedFields,
+      includeHeaders: this.exportConfig.includeHeaders,
+      customColumns: this.exportConfig.selectedColumns,
+    };
+
+    this.hideExportConfiguration();
+    this.exportToCSVWithOptions(options);
+  }
+
+  /**
+   * Export to CSV with custom options
+   */
+  private exportToCSVWithOptions(options: CSVExportOptions) {
+    if (!this.currentAccountId) {
+      this.error = "Account ID is required to export data.";
+      return;
+    }
+
+    this.error = null;
+    this.isExporting = true;
+    this.exportProgress = 0;
+
+    try {
+      const filters: TimeTrackingReportFilters = {
+        accountId: this.currentAccountId,
+      };
+
+      // Apply current report filters
+      if (this.selectedUserId) filters.userId = this.selectedUserId;
+      if (this.selectedProjectId) filters.projectId = this.selectedProjectId;
+      if (this.selectedCategoryId) filters.category = this.selectedCategoryId;
+      if (this.customStartDate)
+        filters.startDate = new Date(this.customStartDate);
+      if (this.customEndDate) filters.endDate = new Date(this.customEndDate);
+
+      this.exportProgress = 25;
+
+      this.analyticsService
+        .exportTimeTrackingData(filters, options)
+        .pipe(
+          takeUntil(this.destroy$),
+          map((data) => {
+            this.exportProgress = 75;
+            return data;
+          }),
+        )
+        .subscribe({
+          next: (data) => {
+            this.exportProgress = 100;
+            this.downloadCSV(data, options.format, filters);
+            this.isExporting = false;
+            this.exportProgress = 0;
+          },
+          error: (error) => {
+            this.isExporting = false;
+            this.exportProgress = 0;
+            console.error("Export error:", error);
+            this.error = "Failed to export data. Please try again.";
+          },
+        });
+    } catch (error) {
+      this.isExporting = false;
+      this.exportProgress = 0;
+      console.error("Export setup error:", error);
+      this.error = "Failed to initialize export. Please try again.";
+    }
   }
 }

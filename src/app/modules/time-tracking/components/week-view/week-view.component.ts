@@ -70,6 +70,20 @@ export class WeekViewComponent implements OnInit, OnChanges {
   columnTotals: number[] = [];
   totalHours = 0;
 
+  // Track pending changes for manual save
+  pendingChanges: Map<
+    string,
+    {
+      projectId: string;
+      day: Date;
+      hours: number;
+      notes?: string;
+      noteHistory?: any[];
+    }
+  > = new Map();
+  isLoading = false;
+  hasUnsavedChanges = false;
+
   constructor(
     private store: Store,
     private successHandler: SuccessHandlerService,
@@ -205,39 +219,24 @@ export class WeekViewComponent implements OnInit, OnChanges {
       return;
     }
 
-    const existing = this.getEntry(projectId, day);
-    if (!existing && (!target.value || hours === 0)) {
-      return;
-    }
-    if (existing && hours === 0) {
-      // Delete the entry
-      this.store.dispatch(
-        TimeTrackingActions.deleteTimeEntry({entry: existing}),
-      );
-      this.successHandler.handleSuccess("Time entry deleted!");
-      return;
-    }
+    // Track the change locally instead of immediately saving
+    const changeKey = `${projectId}-${day.toDateString()}`;
 
-    const entry: TimeEntry = {
-      id: existing ? existing.id : "",
-      accountId: this.accountId,
-      projectId,
-      userId: existing ? existing.userId : this.userId,
-      date: existing ? existing.date : Timestamp.fromDate(day),
-      hours,
-      status:
-        existing?.status === "rejected" ? "draft" : existing?.status || "draft", // Convert rejected back to draft when edited
-      notes: existing?.notes || "",
-      projectName:
-        existing?.projectName || this.getProjectDetails(projectId)?.name || "",
-      userName: existing?.userName || this.currentUserName,
-    };
-
-    // Always dispatch the save action and let the store handle the state
-    this.store.dispatch(TimeTrackingActions.saveTimeEntry({entry}));
-    this.successHandler.handleSuccess(
-      existing ? "Time entry updated!" : "Time entry saved!",
-    );
+    if (inputValue === "" || hours === 0) {
+      // Mark for deletion or remove pending change
+      const existing = this.getEntry(projectId, day);
+      if (existing) {
+        this.pendingChanges.set(changeKey, {projectId, day, hours: 0});
+        this.hasUnsavedChanges = true;
+      } else {
+        this.pendingChanges.delete(changeKey);
+        this.hasUnsavedChanges = this.pendingChanges.size > 0;
+      }
+    } else {
+      // Track the new hours value
+      this.pendingChanges.set(changeKey, {projectId, day, hours});
+      this.hasUnsavedChanges = true;
+    }
   }
 
   isSelected(id: string, excludeIndex?: number): boolean {
@@ -403,36 +402,24 @@ export class WeekViewComponent implements OnInit, OnChanges {
     });
 
     await modal.present();
-  }
 
-  private saveNotes(projectId: string, day: Date, notes: string) {
-    const existing = this.getEntry(projectId, day);
+    // Handle the result when modal is dismissed
+    const result = await modal.onDidDismiss();
+    if (result.data && (result.data.notes || result.data.noteHistory)) {
+      // Track the note changes as pending
+      const changeKey = `${projectId}-${day.toDateString()}`;
+      const existingChange = this.pendingChanges.get(changeKey);
+      const currentHours = existingChange?.hours ?? entry?.hours ?? 0;
 
-    if (!existing && (!notes || notes.trim().length === 0)) {
-      // No entry exists and no notes to save
-      return;
-    }
+      this.pendingChanges.set(changeKey, {
+        projectId,
+        day,
+        hours: currentHours,
+        notes: result.data.notes,
+        noteHistory: result.data.noteHistory,
+      });
 
-    const entry: TimeEntry = {
-      id: existing ? existing.id : "",
-      accountId: this.accountId,
-      projectId,
-      userId: existing ? existing.userId : this.userId,
-      date: existing ? existing.date : Timestamp.fromDate(day),
-      hours: existing?.hours || 0,
-      status: existing?.status || "draft",
-      notes: notes.trim(),
-      projectName:
-        existing?.projectName || this.getProjectDetails(projectId)?.name || "",
-      userName: existing?.userName || this.currentUserName,
-    };
-
-    this.store.dispatch(TimeTrackingActions.saveTimeEntry({entry}));
-
-    if (notes.trim()) {
-      this.successHandler.handleSuccess("Notes saved!");
-    } else {
-      this.successHandler.handleSuccess("Notes cleared!");
+      this.hasUnsavedChanges = true;
     }
   }
 
@@ -535,5 +522,103 @@ export class WeekViewComponent implements OnInit, OnChanges {
       return `${project.name} (${project.standardCategory})`;
     }
     return project.name;
+  }
+
+  /**
+   * Save all pending changes to the store
+   */
+  async saveChanges() {
+    if (!this.hasUnsavedChanges || this.isLoading) {
+      return;
+    }
+
+    this.isLoading = true;
+    let savedCount = 0;
+    let deletedCount = 0;
+
+    try {
+      // Process all pending changes
+      for (const [changeKey, change] of this.pendingChanges) {
+        const {projectId, day, hours, notes, noteHistory} = change;
+        const existing = this.getEntry(projectId, day);
+
+        if (hours === 0 && existing && !notes && !noteHistory) {
+          // Delete the entry only if no notes
+          this.store.dispatch(
+            TimeTrackingActions.deleteTimeEntry({entry: existing}),
+          );
+          deletedCount++;
+        } else if (hours > 0 || notes || noteHistory) {
+          // Create or update entry
+          const entry: TimeEntry = {
+            id: existing ? existing.id : "",
+            accountId: this.accountId,
+            projectId,
+            userId: existing ? existing.userId : this.userId,
+            date: existing ? existing.date : Timestamp.fromDate(day),
+            hours: hours > 0 ? hours : existing?.hours || 0,
+            status:
+              existing?.status === "rejected"
+                ? "draft"
+                : existing?.status || "draft",
+            notes: notes || existing?.notes || "",
+            projectName:
+              existing?.projectName ||
+              this.getProjectDetails(projectId)?.name ||
+              "",
+            userName: existing?.userName || this.currentUserName,
+          };
+
+          // Add noteHistory if present
+          if (noteHistory) {
+            (entry as any).noteHistory = noteHistory;
+          }
+
+          this.store.dispatch(TimeTrackingActions.saveTimeEntry({entry}));
+          savedCount++;
+        }
+      }
+
+      // Clear pending changes
+      this.pendingChanges.clear();
+      this.hasUnsavedChanges = false;
+
+      // Show success message
+      let message = "";
+      if (savedCount > 0 && deletedCount > 0) {
+        message = `${savedCount} entries saved, ${deletedCount} entries deleted!`;
+      } else if (savedCount > 0) {
+        message = `${savedCount} ${savedCount === 1 ? "entry" : "entries"} saved!`;
+      } else if (deletedCount > 0) {
+        message = `${deletedCount} ${deletedCount === 1 ? "entry" : "entries"} deleted!`;
+      }
+
+      if (message) {
+        this.successHandler.handleSuccess(message);
+      }
+    } catch (error) {
+      console.error("Error saving changes:", error);
+      this.successHandler.handleSuccess(
+        "Error saving changes. Please try again.",
+      );
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  /**
+   * Check if a specific cell has pending changes
+   */
+  hasPendingChange(projectId: string, day: Date): boolean {
+    const changeKey = `${projectId}-${day.toDateString()}`;
+    return this.pendingChanges.has(changeKey);
+  }
+
+  /**
+   * Get the pending value for a cell (for display purposes)
+   */
+  getPendingValue(projectId: string, day: Date): number | undefined {
+    const changeKey = `${projectId}-${day.toDateString()}`;
+    return this.pendingChanges.get(changeKey)?.hours;
   }
 }

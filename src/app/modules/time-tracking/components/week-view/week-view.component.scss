@@ -650,3 +650,57 @@ ion-input[type="number"] {
     flex-shrink: 0;
   }
 }
+
+// Styles for manual save functionality
+.week-header {
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+      width: 100%;
+      justify-content: center;
+      margin-top: 8px;
+    }
+  }
+}
+
+// Visual feedback for cells with pending changes
+.hours-input-container {
+  &.has-pending-changes {
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      bottom: -2px;
+      left: -2px;
+      background: var(--ion-color-warning);
+      border-radius: 4px;
+      z-index: -1;
+      opacity: 0.3;
+      animation: pulse 2s infinite;
+    }
+
+    .hours-input {
+      --background: var(--ion-color-warning-tint);
+      --color: var(--ion-color-warning-contrast);
+    }
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}

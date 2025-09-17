@@ -210,11 +210,20 @@ export class WeekViewComponent implements OnInit, OnChanges {
     const inputValue = target.value;
     const hours = Number(inputValue);
 
+    // Check if the existing entry is approved
+    const existing = this.getEntry(projectId, day);
+    if (existing && existing.status === "approved") {
+      this.showValidationError(
+        "Cannot modify approved time entries. Please contact an administrator if changes are needed.",
+      );
+      target.value = existing.hours.toString();
+      return;
+    }
+
     // Validate input
     if (inputValue !== "" && (isNaN(hours) || hours < 0 || hours > 24)) {
       // Show validation error and reset input
       this.showValidationError("Hours must be between 0 and 24");
-      const existing = this.getEntry(projectId, day);
       target.value = existing ? existing.hours.toString() : "";
       return;
     }
@@ -387,6 +396,15 @@ export class WeekViewComponent implements OnInit, OnChanges {
 
   async openNotesModal(projectId: string, day: Date) {
     const entry = this.getEntry(projectId, day);
+
+    // Check if the entry is approved
+    if (entry && entry.status === "approved") {
+      this.showValidationError(
+        "Cannot modify notes for approved time entries. Please contact an administrator if changes are needed.",
+      );
+      return;
+    }
+
     const project = this.availableProjects.find((p) => p.id === projectId);
 
     const modal = await this.modalController.create({
@@ -429,6 +447,14 @@ export class WeekViewComponent implements OnInit, OnChanges {
   isProjectArchived(projectId: string): boolean {
     const activeProjectIds = this.availableProjects.map((p) => p.id);
     return !activeProjectIds.includes(projectId);
+  }
+
+  /**
+   * Check if a time entry is approved
+   */
+  isEntryApproved(projectId: string, day: Date): boolean {
+    const entry = this.getEntry(projectId, day);
+    return entry?.status === "approved";
   }
 
   /**

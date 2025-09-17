@@ -192,11 +192,13 @@
                     !row.projectId ||
                     readonly ||
                     (row.projectId && isProjectArchived(row.projectId)) ||
-                    isLoading
+                    isLoading ||
+                    (row.projectId && isEntryApproved(row.projectId, day))
                   "
                   [readonly]="
                     readonly ||
-                    (row.projectId && isProjectArchived(row.projectId))
+                    (row.projectId && isProjectArchived(row.projectId)) ||
+                    (row.projectId && isEntryApproved(row.projectId, day))
                   "
                   placeholder="0"
                   min="0"
@@ -205,7 +207,11 @@
                   class="hours-input no-spinners"
                 ></ion-input>
                 <ion-button
-                  *ngIf="row.projectId && !readonly"
+                  *ngIf="
+                    row.projectId &&
+                    !readonly &&
+                    !isEntryApproved(row.projectId!, day)
+                  "
                   fill="clear"
                   size="small"
                   (click)="openNotesModal(row.projectId!, day)"
@@ -338,11 +344,13 @@
                     [disabled]="
                       !row.projectId ||
                       readonly ||
-                      (row.projectId && isProjectArchived(row.projectId))
+                      (row.projectId && isProjectArchived(row.projectId)) ||
+                      (row.projectId && isEntryApproved(row.projectId, day))
                     "
                     [readonly]="
                       readonly ||
-                      (row.projectId && isProjectArchived(row.projectId))
+                      (row.projectId && isProjectArchived(row.projectId)) ||
+                      (row.projectId && isEntryApproved(row.projectId, day))
                     "
                     placeholder="0"
                     min="0"
@@ -357,7 +365,10 @@
                     fill="clear"
                     size="small"
                     class="notes-button"
-                    [disabled]="readonly"
+                    [disabled]="
+                      readonly ||
+                      (row.projectId && isEntryApproved(row.projectId, day))
+                    "
                     [color]="
                       hasNotes(row.projectId, day) ? 'primary' : undefined
                     "

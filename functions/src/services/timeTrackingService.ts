@@ -137,6 +137,19 @@ export class TimeTrackingService {
 
       const timeEntry = timeEntryDoc.data()!;
 
+      // Prevent updates to approved time entries unless it's a status change by an admin
+      if (timeEntry.status === "approved") {
+        const isStatusChangeByAdmin =
+          request.updates?.status && timeEntry.userId !== request.userId;
+
+        if (!isStatusChangeByAdmin) {
+          throw new HttpsError(
+            "permission-denied",
+            "Cannot modify approved time entries. Please contact an administrator if changes are needed.",
+          );
+        }
+      }
+
       const requestedStatus = request.updates?.status;
       if (
         requestedStatus &&
@@ -246,6 +259,14 @@ export class TimeTrackingService {
       }
 
       const timeEntry = timeEntryDoc.data()!;
+
+      // Prevent deletion of approved time entries
+      if (timeEntry.status === "approved") {
+        throw new HttpsError(
+          "permission-denied",
+          "Cannot delete approved time entries. Please contact an administrator if changes are needed.",
+        );
+      }
 
       // Check permissions
       if (timeEntry.userId !== userId && timeEntry.createdBy !== userId) {

@@ -214,11 +214,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         url: "/account/directory",
         icon: "search",
       },
-      {
-        title: this.translate.instant("menu.settings"),
-        url: `/account/${this.user?.uid}/settings`,
-        icon: "settings",
-      },
+      // Settings moved under Edit/Admin dashboards, remove from main menu
       // {
       //   title: this.translate.instant("menu.dashboard"),
       //   url: `user-dashboard/${this.user?.uid}`,

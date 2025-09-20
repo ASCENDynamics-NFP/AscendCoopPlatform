@@ -89,5 +89,15 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-icon slot="start" name="hand-left-outline"></ion-icon>
       <ion-label>Labor Rights</ion-label>
     </ion-item>
+
+    <!-- Settings section within Edit -->
+    <ion-item
+      *ngIf="account?.type === 'user'"
+      (click)="selectItem('settings')"
+      [class.selected]="selectedItem === 'settings'"
+    >
+      <ion-icon slot="start" name="settings-outline"></ion-icon>
+      <ion-label>Settings</ion-label>
+    </ion-item>
   </ion-list>
 </div>

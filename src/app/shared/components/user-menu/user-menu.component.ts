@@ -22,6 +22,8 @@ import {Router} from "@angular/router";
 import {PopoverController} from "@ionic/angular";
 import {Store} from "@ngrx/store";
 import * as AuthActions from "../../../state/actions/auth.actions";
+import * as AccountActions from "../../../state/actions/account.actions";
+import {selectAccountById} from "../../../state/selectors/account.selectors";
 import {firstValueFrom, Observable} from "rxjs";
 import {AuthUser} from "@shared/models/auth-user.model";
 
@@ -62,7 +64,20 @@ export class UserMenuComponent {
     try {
       const user = await firstValueFrom(this.authUser$);
       if (user?.uid) {
-        this.router.navigate([`/account/${user.uid}/settings`]);
+        // Load account to determine type
+        this.store.dispatch(AccountActions.loadAccount({accountId: user.uid}));
+        const account: any = await firstValueFrom(
+          this.store.select(selectAccountById(user.uid)),
+        );
+        if (account?.type === "group") {
+          this.router.navigate(["/account", user.uid, "admin"], {
+            queryParams: {tab: "settings"},
+          });
+        } else {
+          this.router.navigate([`/account/${user.uid}/edit`], {
+            queryParams: {section: "settings"},
+          });
+        }
       }
     } catch (error) {
       console.error("Error navigating to settings:", error);

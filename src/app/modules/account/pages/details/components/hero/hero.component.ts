@@ -101,7 +101,7 @@ export class HeroComponent implements OnInit, OnChanges, OnDestroy {
     this.contactInfoSub?.unsubscribe();
     this.contactInfoSub = this.sections
       .contactInfo$(this.account.id)
-      .subscribe((ci) => (this.contactInfo = ci));
+      .subscribe((ci: ContactInformation | null) => (this.contactInfo = ci));
   }
 
   ngOnDestroy(): void {

@@ -33,6 +33,7 @@ import {NetworkConnectionService} from "../../../../../../core/services/network-
 import {OfflineSyncService} from "../../../../../../core/services/offline-sync.service";
 import {FirestoreOfflineService} from "../../../../../../core/services/firestore-offline.service";
 import {of} from "rxjs";
+import {AccountSectionsService} from "../../../../services/account-sections.service";
 import {getFirebaseTestProviders} from "../../../../../../testing/test-utilities";
 
 describe("HeroComponent", () => {
@@ -47,6 +48,7 @@ describe("HeroComponent", () => {
   let mockNetworkService: jasmine.SpyObj<NetworkConnectionService>;
   let mockOfflineSync: jasmine.SpyObj<OfflineSyncService>;
   let mockFirestoreOffline: jasmine.SpyObj<FirestoreOfflineService>;
+  let mockSections: jasmine.SpyObj<AccountSectionsService>;
 
   // Mock Data
   const mockAccountId = "12345";
@@ -123,6 +125,12 @@ describe("HeroComponent", () => {
       } as any),
     );
 
+    mockSections = jasmine.createSpyObj("AccountSectionsService", [
+      "contactInfo$",
+    ]);
+    // Default: no contact info available
+    mockSections.contactInfo$.and.returnValue(of(null as any));
+
     await TestBed.configureTestingModule({
       declarations: [HeroComponent],
       providers: [
@@ -135,6 +143,7 @@ describe("HeroComponent", () => {
         {provide: NetworkConnectionService, useValue: mockNetworkService},
         {provide: OfflineSyncService, useValue: mockOfflineSync},
         {provide: FirestoreOfflineService, useValue: mockFirestoreOffline},
+        {provide: AccountSectionsService, useValue: mockSections},
         ...getFirebaseTestProviders(),
         provideMockStore(),
       ],
@@ -165,22 +174,28 @@ describe("HeroComponent", () => {
   });
 
   it("should return formatted location if address is present", () => {
-    component.account.contactInformation = {
-      phoneNumbers: [],
-      emails: [],
-      preferredMethodOfContact: "Email",
-      addresses: [{city: "CityName", country: "CountryName"}],
-    };
+    mockSections.contactInfo$.and.returnValue(
+      of({
+        emails: [],
+        phoneNumbers: [],
+        preferredMethodOfContact: "Email",
+        addresses: [{city: "CityName", country: "CountryName"}],
+      } as any),
+    );
+    component.ngOnInit();
     expect(component.getLocation).toBe("CityName, CountryName");
   });
 
   it("should return an empty string if no address is present", () => {
-    component.account.contactInformation = {
-      phoneNumbers: [],
-      emails: [],
-      preferredMethodOfContact: "Email",
-      addresses: [],
-    };
+    mockSections.contactInfo$.and.returnValue(
+      of({
+        emails: [],
+        phoneNumbers: [],
+        preferredMethodOfContact: "Email",
+        addresses: [],
+      } as any),
+    );
+    component.ngOnInit();
     expect(component.getLocation).toBe("");
   });
 

@@ -54,47 +54,48 @@ export const selectAllAccounts = createSelector(
   selectAllAccountsArray,
 );
 
-export const selectAccountById = (accountId: string) =>
-  createSelector(
-    selectAccountEntities,
-    (entities): Account | undefined => entities[accountId],
-  );
+export const selectAccountById = (accountId?: string | null) =>
+  createSelector(selectAccountEntities, (entities): Account | undefined => {
+    if (!accountId) return undefined;
+    const map = (entities || {}) as Record<string, Account | undefined>;
+    return map[accountId];
+  });
 
 // Selected Account Selectors
 export const selectSelectedAccountId = createSelector(
   selectAccountState,
-  (state) => state.selectedAccountId,
+  (state) => state?.selectedAccountId ?? null,
 );
 
 export const selectSelectedAccount = createSelector(
   selectAccountEntities,
   selectSelectedAccountId,
   (entities, selectedAccountId) =>
-    selectedAccountId ? entities[selectedAccountId] : null,
+    selectedAccountId ? (entities || ({} as any))[selectedAccountId] : null,
 );
 
 // Related Data Selectors
 export const selectRelatedAccountsByAccountId = (accountId: string) =>
   createSelector(
     selectAccountState,
-    (state) => state.relatedAccounts[accountId] || [],
+    (state) => state?.relatedAccounts?.[accountId] || [],
   );
 
 export const selectRelatedListingsByAccountId = (accountId: string) =>
   createSelector(
     selectAccountState,
-    (state) => state.relatedListings[accountId] || [],
+    (state) => state?.relatedListings?.[accountId] || [],
   );
 
 // Loading and Error Selectors
 export const selectAccountLoading = createSelector(
   selectAccountState,
-  (state) => state.loading,
+  (state) => !!state?.loading,
 );
 
 export const selectAccountError = createSelector(
   selectAccountState,
-  (state) => state.error,
+  (state) => state?.error ?? null,
 );
 
 // Filtered Accounts Selector with Privacy Support
@@ -163,7 +164,7 @@ export const selectFilteredAccountsWithPrivacy = (
 
       const normalizedSearchTerm = normalizeString(searchTerm);
       const userRelatedAccounts = userId
-        ? state.relatedAccounts[userId] || []
+        ? state?.relatedAccounts?.[userId] || []
         : [];
 
       return accounts
@@ -209,31 +210,31 @@ export const selectFilteredAccountsWithPrivacy = (
 // Cache and Freshness Selectors
 export const selectAccountsLastUpdated = createSelector(
   selectAccountState,
-  (state) => state.accountsLastUpdated,
+  (state) => state?.accountsLastUpdated ?? null,
 );
 
 export const selectRelatedAccountsLastUpdated = (accountId: string) =>
   createSelector(
     selectAccountState,
-    (state) => state.relatedAccountsLastUpdated[accountId] || null,
+    (state) => state?.relatedAccountsLastUpdated?.[accountId] || null,
   );
 
 export const selectRelatedListingsLastUpdated = (accountId: string) =>
   createSelector(
     selectAccountState,
-    (state) => state.relatedListingsLastUpdated[accountId] || null,
+    (state) => state?.relatedListingsLastUpdated?.[accountId] || null,
   );
 
 export const selectGroupRolesByGroupId = (groupId: string) =>
   createSelector(
     selectAccountState,
-    (state) => state.groupRoles[groupId] || [],
+    (state) => state?.groupRoles?.[groupId] || [],
   );
 
 export const selectGroupRolesLastUpdated = (groupId: string) =>
   createSelector(
     selectAccountState,
-    (state) => state.groupRolesLastUpdated[groupId] || null,
+    (state) => state?.groupRolesLastUpdated?.[groupId] || null,
   );
 
 export const selectAreAccountsFresh = createSelector(

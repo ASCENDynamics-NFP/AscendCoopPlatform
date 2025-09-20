@@ -147,6 +147,20 @@ export class ListingFormComponent implements OnInit {
   }
 
   ngOnInit() {
+    // Always ensure auth user and accounts are loaded for owner selection
+    this.store
+      .select(selectAuthUser)
+      .pipe(first())
+      .subscribe((user) => {
+        if (user?.uid) {
+          this.store.dispatch(
+            AccountActions.loadAccount({accountId: user.uid}),
+          );
+          this.store.dispatch(AccountActions.loadAccounts());
+          this.authUser = user;
+        }
+      });
+
     if (this.listing) {
       const formValue = {
         ...this.listing,
@@ -170,16 +184,7 @@ export class ListingFormComponent implements OnInit {
         .select(selectAuthUser)
         .pipe(
           first(),
-          tap((user) => {
-            if (user?.uid) {
-              this.store.dispatch(
-                AccountActions.loadAccount({accountId: user.uid}),
-              );
-              // Fetch accounts to populate owner selection
-              this.store.dispatch(AccountActions.loadAccounts());
-              this.authUser = user;
-            }
-          }),
+          tap(() => {}),
           switchMap((user) => this.store.select(selectAccountById(user!.uid))),
           filter((account): account is Account => account !== null),
           take(1),
@@ -194,31 +199,31 @@ export class ListingFormComponent implements OnInit {
             ownerAccountType: account.type,
           });
         });
-
-      // Build list of accounts user can post as: self + groups where user is admin/moderator via callable
-      this.ownerAccounts$ = this.store.select(selectAuthUser).pipe(
-        switchMap((user) => {
-          if (!user) return of([] as Account[]);
-
-          const userAccount$ = this.store
-            .select(selectAccountById(user.uid))
-            .pipe(
-              filter((account): account is Account => !!account),
-              take(1),
-            );
-
-          const manageable$ = this.accountsService.getUserManageableAccounts();
-
-          return combineLatest([userAccount$, manageable$]).pipe(
-            map(([userAccount, manageable]) => [userAccount, ...manageable]),
-          );
-        }),
-        shareReplay(1),
-      );
-
-      // Keep a live cache for use in event handlers (can't use pipes there)
-      this.ownerAccounts$.subscribe((accs) => (this.ownerAccountsCache = accs));
     }
+
+    // Build list of accounts user can post as in all modes (new or duplicate)
+    this.ownerAccounts$ = this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user) return of([] as Account[]);
+
+        const userAccount$ = this.store
+          .select(selectAccountById(user.uid))
+          .pipe(
+            filter((account): account is Account => !!account),
+            take(1),
+          );
+
+        const manageable$ = this.accountsService.getUserManageableAccounts();
+
+        return combineLatest([userAccount$, manageable$]).pipe(
+          map(([userAccount, manageable]) => [userAccount, ...manageable]),
+        );
+      }),
+      shareReplay(1),
+    );
+
+    // Keep a live cache for use in event handlers (can't use pipes there)
+    this.ownerAccounts$.subscribe((accs) => (this.ownerAccountsCache = accs));
   }
 
   onOwnerAccountChange(event: CustomEvent) {

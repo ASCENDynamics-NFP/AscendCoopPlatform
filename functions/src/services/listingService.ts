@@ -834,16 +834,37 @@ export class ListingService {
         ),
       );
 
-      if (Object.keys(filteredUpdates).length === 0) return;
-
-      // Chunk updates to respect 500 ops per batch
+      // Even if no field updates, we may still want to clean up stray docs
       const docs = relatedListingsQuery.docs;
-      const chunkSize = 450;
-      for (let i = 0; i < docs.length; i += chunkSize) {
-        const chunk = docs.slice(i, i + chunkSize);
-        const batch = db.batch();
-        chunk.forEach((doc) => batch.update(doc.ref, filteredUpdates as any));
-        await batch.commit();
+
+      // First, apply field updates where applicable
+      if (Object.keys(filteredUpdates).length > 0 && docs.length > 0) {
+        const updateChunkSize = 450;
+        for (let i = 0; i < docs.length; i += updateChunkSize) {
+          const chunk = docs.slice(i, i + updateChunkSize);
+          const batch = db.batch();
+          chunk.forEach((doc) => batch.update(doc.ref, filteredUpdates as any));
+          await batch.commit();
+        }
+      }
+
+      // Cleanup: remove relatedListings that are neither owner/applicant/participant nor saved
+      if (docs.length > 0) {
+        const deleteChunkSize = 450;
+        const toDelete = docs.filter((d) => {
+          const data = d.data() as any;
+          const rel = data?.relationship;
+          const isSaved = data?.isSaved === true;
+          const allowed =
+            rel === "owner" || rel === "applicant" || rel === "participant";
+          return !allowed && !isSaved; // remove unsaved docs without a valid relationship
+        });
+        for (let i = 0; i < toDelete.length; i += deleteChunkSize) {
+          const chunk = toDelete.slice(i, i + deleteChunkSize);
+          const batch = db.batch();
+          chunk.forEach((doc) => batch.delete(doc.ref));
+          if (chunk.length > 0) await batch.commit();
+        }
       }
     } catch (err: any) {
       // Do not fail primary update due to secondary mirror issues (e.g., missing index)

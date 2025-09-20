@@ -210,7 +210,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
                 <!-- Archive/Unarchive button for owner listings -->
                 <ion-item
-                  *ngIf="listing.relationship === 'owner' && listing.status === 'active'"
+                  *ngIf="listing.relationship === 'owner' && (listing.status === 'active' || listing.status === 'draft')"
                   button
                   (click)="archiveListing(listing); closePopover('trigger-' + listing.id)"
                 >
@@ -229,7 +229,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
                 <!-- Expire listing (explicitly set status to expired) -->
                 <ion-item
-                  *ngIf="listing.relationship === 'owner' && listing.status === 'active'"
+                  *ngIf="listing.relationship === 'owner' && (listing.status === 'active' || listing.status === 'draft')"
                   button
                   (click)="expireListing(listing); closePopover('trigger-' + listing.id)"
                 >
@@ -239,7 +239,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
                 <!-- Mark as Filled -->
                 <ion-item
-                  *ngIf="listing.relationship === 'owner' && listing.status === 'active'"
+                  *ngIf="listing.relationship === 'owner' && (listing.status === 'active' || listing.status === 'draft')"
                   button
                   (click)="markAsFilled(listing); closePopover('trigger-' + listing.id)"
                 >
@@ -250,9 +250,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   <ion-label>Mark as Filled</ion-label>
                 </ion-item>
 
-                <!-- Duplicate listing -->
+                <!-- Duplicate listing (available for all related listings) -->
                 <ion-item
-                  *ngIf="listing.relationship === 'owner'"
                   button
                   (click)="duplicateListing(listing); closePopover('trigger-' + listing.id)"
                 >

@@ -21,7 +21,7 @@
 
 import {expect} from "chai";
 import * as sinon from "sinon";
-const proxyquire = require("proxyquire");
+import proxyquire from "proxyquire";
 const adminStub = {
   firestore: sinon.stub(),
   apps: [],
@@ -31,7 +31,7 @@ const {getHomepageListings} = proxyquire("../src/functions/listings/homepage", {
   "../../utils/firebase": {admin: adminStub},
   cors: () => (req: any, res: any, cb: any) => cb(),
 });
-import {Request, Response} from "express";
+import type {Request, Response} from "express";
 
 describe("getHomepageListings", () => {
   function createRes(): Response {

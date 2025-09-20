@@ -8,6 +8,23 @@ import {setDoc, doc, getDoc, deleteDoc} from "firebase/firestore";
 import * as fs from "fs";
 import * as path from "path";
 
+function resolveRulesPath(): string {
+  const candidates = [
+    // When running from compiled output: lib/functions/test -> repo root
+    path.resolve(__dirname, "..", "..", "..", "..", "firestore.rules"),
+    // When running from TS directly: functions/test -> repo root
+    path.resolve(__dirname, "..", "..", "..", "firestore.rules"),
+    // Fallbacks
+    path.resolve(__dirname, "..", "..", "firestore.rules"),
+    path.resolve(process.cwd(), "firestore.rules"),
+  ];
+  for (const p of candidates) {
+    if (fs.existsSync(p)) return p;
+  }
+  // Fallback to original relative path (will throw and show path)
+  return path.resolve(__dirname, "..", "..", "firestore.rules");
+}
+
 describe("timeEntries create rules", () => {
   let testEnv: RulesTestEnvironment;
 
@@ -17,10 +34,7 @@ describe("timeEntries create rules", () => {
       firestore: {
         host: "127.0.0.1",
         port: 8080,
-        rules: fs.readFileSync(
-          path.join(__dirname, "..", "..", "firestore.rules"),
-          "utf8",
-        ),
+        rules: fs.readFileSync(resolveRulesPath(), "utf8"),
       },
     });
   });
@@ -111,10 +125,7 @@ describe("timeEntries update rules", () => {
       firestore: {
         host: "127.0.0.1",
         port: 8080,
-        rules: fs.readFileSync(
-          path.join(__dirname, "..", "..", "firestore.rules"),
-          "utf8",
-        ),
+        rules: fs.readFileSync(resolveRulesPath(), "utf8"),
       },
     });
   });
@@ -249,10 +260,7 @@ describe("timeEntries delete rules", () => {
       firestore: {
         host: "127.0.0.1",
         port: 8080,
-        rules: fs.readFileSync(
-          path.join(__dirname, "..", "..", "firestore.rules"),
-          "utf8",
-        ),
+        rules: fs.readFileSync(resolveRulesPath(), "utf8"),
       },
     });
   });
@@ -336,10 +344,7 @@ describe("timeEntries read rules", () => {
       firestore: {
         host: "127.0.0.1",
         port: 8080,
-        rules: fs.readFileSync(
-          path.join(__dirname, "..", "..", "firestore.rules"),
-          "utf8",
-        ),
+        rules: fs.readFileSync(resolveRulesPath(), "utf8"),
       },
     });
   });
@@ -390,10 +395,7 @@ describe("project read rules", () => {
       firestore: {
         host: "127.0.0.1",
         port: 8080,
-        rules: fs.readFileSync(
-          path.join(__dirname, "..", "..", "firestore.rules"),
-          "utf8",
-        ),
+        rules: fs.readFileSync(resolveRulesPath(), "utf8"),
       },
     });
   });

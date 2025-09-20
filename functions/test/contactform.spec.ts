@@ -21,7 +21,7 @@
 
 import {expect} from "chai";
 import * as sinon from "sinon";
-const proxyquire = require("proxyquire");
+import proxyquire from "proxyquire";
 
 const mockDefineString = sinon.stub().returns({
   value: () => "test@example.com",
@@ -54,7 +54,7 @@ const {submitLead} = proxyquire("../src/functions/contactform", {
   },
 });
 
-import {Request, Response} from "express";
+import type {Request, Response} from "express";
 
 describe("submitLead", () => {
   function createRes() {

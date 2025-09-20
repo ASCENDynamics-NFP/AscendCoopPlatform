@@ -21,7 +21,7 @@
 
 import {expect} from "chai";
 import * as sinon from "sinon";
-const proxyquire = require("proxyquire");
+import proxyquire from "proxyquire";
 
 describe("onCreateAccount", () => {
   function setup() {

@@ -610,7 +610,7 @@ export class ProjectService {
     }
 
     const relation = relatedAccountDoc.data() as any;
-    const isApproved = ["accepted", "active"].includes(relation?.status);
+    const isApproved = relation?.status === "accepted";
     if (!isApproved) {
       throw new HttpsError("permission-denied", "Account access not approved");
     }

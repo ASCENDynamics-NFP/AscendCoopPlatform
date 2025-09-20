@@ -20,7 +20,7 @@ const db = getFirestore();
 const auth = getAuth();
 
 export interface CreateAccountRequest {
-  type: "user" | "nonprofit" | "business" | "community";
+  type: "user" | "group" | "new";
   name: string;
   tagline?: string;
   contactInformation?: {
@@ -75,7 +75,7 @@ export class AccountService {
         : "New and looking to help!";
 
       // Validate account type
-      const allowedTypes = ["individual", "organization", "nonprofit"];
+      const allowedTypes = ["user", "group", "new"];
       ValidationUtils.validateEnum(data.type, allowedTypes, "account type");
 
       // Validate contact information if provided
@@ -211,11 +211,23 @@ export class AccountService {
       // Set account document
       batch.set(accountRef, accountData);
 
-      // Set up contact info in gated subdocument
+      // Set up contact info in sections/contactInfo/contactInfos subcollection (not on main account)
       if (contactInfoPayload) {
+        const contactInfoDocRef = accountRef
+          .collection("sections")
+          .doc("contactInfo")
+          .collection("contactInfos")
+          .doc("primary");
         batch.set(
-          accountRef.collection("sections").doc("contactInfo"),
-          contactInfoPayload,
+          contactInfoDocRef,
+          {
+            id: "primary",
+            ...contactInfoPayload,
+            createdAt: Timestamp.now(),
+            createdBy: userId,
+            lastModifiedAt: Timestamp.now(),
+            lastModifiedBy: userId,
+          },
           {merge: true},
         );
       }
@@ -306,11 +318,21 @@ export class AccountService {
       // Update main account document (without contactInformation)
       batch.update(accountRef, updates);
 
-      // Update contact info subdocument if provided
+      // Update contact info in sections/contactInfo/contactInfos subcollection if provided
       if (contactInfoUpdate) {
+        const contactInfoDocRef = accountRef
+          .collection("sections")
+          .doc("contactInfo")
+          .collection("contactInfos")
+          .doc("primary");
         batch.set(
-          accountRef.collection("sections").doc("contactInfo"),
-          contactInfoUpdate,
+          contactInfoDocRef,
+          {
+            id: "primary",
+            ...contactInfoUpdate,
+            lastModifiedAt: Timestamp.now(),
+            lastModifiedBy: request.userId,
+          },
           {merge: true},
         );
       }

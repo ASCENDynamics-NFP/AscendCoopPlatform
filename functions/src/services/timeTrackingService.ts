@@ -536,7 +536,7 @@ export class TimeTrackingService {
     }
 
     const relation = relationDoc.data() as any;
-    const approvedStatuses = ["accepted", "active", "member"];
+    const approvedStatuses = ["accepted"];
     if (!approvedStatuses.includes(relation?.status)) {
       throw new HttpsError("permission-denied", "Account access not approved");
     }

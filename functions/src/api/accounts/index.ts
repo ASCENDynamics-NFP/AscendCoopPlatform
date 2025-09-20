@@ -32,8 +32,8 @@ export const createAccount = onCall(
     }
 
     // Validate account type
-    const validTypes = ["user", "nonprofit", "business", "community"];
-    if (!validTypes.includes(data.type)) {
+    const validTypes = ["user", "group", "new"] as const;
+    if (!validTypes.includes(data.type as any)) {
       throw new HttpsError("invalid-argument", "Invalid account type");
     }
 

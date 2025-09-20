@@ -711,11 +711,11 @@ export class ListingService {
         .get();
 
       if (relatedAccountDoc.exists) {
-        const relation = relatedAccountDoc.data();
-        if (
-          relation?.status === "active" &&
-          ["admin", "moderator"].includes(relation?.relationship)
-        ) {
+        const relation = relatedAccountDoc.data() as any;
+        const statusOk = relation?.status === "accepted";
+        const access = relation?.access;
+        const accessOk = ["admin", "moderator"].includes(access);
+        if (statusOk && accessOk) {
           return;
         }
       }

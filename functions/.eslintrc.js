@@ -11,6 +11,8 @@ module.exports = {
     "plugin:import/typescript",
     "google",
     "plugin:@typescript-eslint/recommended",
+    // Keep Prettier last so it can disable formatting-related rules from the above configs
+    "plugin:prettier/recommended",
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -36,13 +38,22 @@ module.exports = {
       },
     },
   ],
-  plugins: ["@typescript-eslint", "import"],
+  plugins: ["@typescript-eslint", "import", "prettier"],
   rules: {
-    "quotes": ["error", "double"],
+    // Delegate formatting to Prettier (avoid conflicts with ESLint)
+    "prettier/prettier": ["warn"],
+    // Disable/avoid format-related rules that Prettier handles
+    "quotes": "off",
+    "indent": "off",
+    "max-len": "off",
     "import/no-unresolved": 0,
-    "indent": ["warn", 2],
-    "max-len": ["warn", { "code": 150 }],
     "operator-linebreak": "off",
+    // Reduce friction from stylistic rules not covered by Prettier
+    "curly": "off",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-inferrable-types": "off",
+    "require-jsdoc": "off",
+    "valid-jsdoc": "off",
     "space-before-function-paren": "off", // Disable to avoid conflicts with Prettier
   },
 };

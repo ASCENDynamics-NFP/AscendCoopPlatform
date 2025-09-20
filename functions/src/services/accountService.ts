@@ -211,17 +211,14 @@ export class AccountService {
       // Set account document
       batch.set(accountRef, accountData);
 
-      // Set up contact info in sections/contactInfo/contactInfos subcollection (not on main account)
+      // Set up contact info in sections/contactInfo document (not on main account)
       if (contactInfoPayload) {
         const contactInfoDocRef = accountRef
           .collection("sections")
-          .doc("contactInfo")
-          .collection("contactInfos")
-          .doc("primary");
+          .doc("contactInfo");
         batch.set(
           contactInfoDocRef,
           {
-            id: "primary",
             ...contactInfoPayload,
             createdAt: Timestamp.now(),
             createdBy: userId,
@@ -318,17 +315,14 @@ export class AccountService {
       // Update main account document (without contactInformation)
       batch.update(accountRef, updates);
 
-      // Update contact info in sections/contactInfo/contactInfos subcollection if provided
+      // Update contact info in sections/contactInfo document if provided
       if (contactInfoUpdate) {
         const contactInfoDocRef = accountRef
           .collection("sections")
-          .doc("contactInfo")
-          .collection("contactInfos")
-          .doc("primary");
+          .doc("contactInfo");
         batch.set(
           contactInfoDocRef,
           {
-            id: "primary",
             ...contactInfoUpdate,
             lastModifiedAt: Timestamp.now(),
             lastModifiedBy: request.userId,

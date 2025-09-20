@@ -158,10 +158,7 @@ export class TokenRefreshService {
             ? new Date(user.metadata.lastSignInTime)
             : new Date(),
           phoneNumber:
-            user.phoneNumber ||
-            contactInfo?.phoneNumbers?.[0]?.number ||
-            account?.contactInformation?.phoneNumbers?.[0]?.number ||
-            null,
+            user.phoneNumber || contactInfo?.phoneNumbers?.[0]?.number || null,
           providerData: user.providerData,
           settings:
             (claims["settings"] as Settings) ||

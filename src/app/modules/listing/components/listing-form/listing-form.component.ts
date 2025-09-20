@@ -236,7 +236,7 @@ export class ListingFormComponent implements OnInit {
   ) {
     this.listingForm.patchValue({organization: account.name});
     if (this.useAccountContactInfo) {
-      this.setContactInfoFromSource(contactInfo ?? account.contactInformation);
+      this.setContactInfoFromSource(contactInfo || null);
     }
   }
 
@@ -302,14 +302,6 @@ export class ListingFormComponent implements OnInit {
         .subscribe((ci: ContactInformation | null) => {
           if (ci) {
             this.setContactInfoFromSource(ci);
-          } else if (
-            selectedOwnerId === this.currentAccount?.id &&
-            this.currentAccount?.contactInformation
-          ) {
-            // Fallback to base contact info only when selected owner is the current account
-            this.setContactInfoFromSource(
-              this.currentAccount.contactInformation,
-            );
           } else {
             // Nothing to load; keep backup intact so user can toggle off
           }

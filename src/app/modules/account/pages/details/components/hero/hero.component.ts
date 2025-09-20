@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 // src/app/modules/account/pages/details/components/hero/hero.component.ts
 
-import {Component, Input, OnInit, OnChanges} from "@angular/core";
+import {Component, Input, OnInit, OnChanges, OnDestroy} from "@angular/core";
 import {ModalController, ToastController} from "@ionic/angular";
 import {Router} from "@angular/router";
 import {
@@ -41,13 +41,16 @@ import {
   selectAllEntriesForUser,
 } from "../../../../../../state/selectors/time-tracking.selectors";
 import {map} from "rxjs/operators";
+import {AccountSectionsService} from "../../../../services/account-sections.service";
+import {Subscription} from "rxjs";
+import {ContactInformation} from "@shared/models/account.model";
 
 @Component({
   selector: "app-hero",
   templateUrl: "./hero.component.html",
   styleUrls: ["./hero.component.scss"],
 })
-export class HeroComponent implements OnInit, OnChanges {
+export class HeroComponent implements OnInit, OnChanges, OnDestroy {
   @Input() account!: Account; // Changed from Partial<Account> to Account to ensure properties are defined
   @Input() isProfileOwner: boolean = false;
   @Input() isGroupAdmin = false;
@@ -68,6 +71,7 @@ export class HeroComponent implements OnInit, OnChanges {
     private store: Store<{auth: AuthState}>,
     private toastController: ToastController,
     private relationshipService: RelationshipService,
+    private sections: AccountSectionsService,
   ) {
     // Initialize observables - will be properly set when account is available
     this.timeEntries$ = new Observable();
@@ -78,13 +82,30 @@ export class HeroComponent implements OnInit, OnChanges {
   ngOnInit() {
     if (this.account?.id) {
       this.initializeTimeTracking();
+      this.subscribeContactInfo();
     }
   }
 
   ngOnChanges() {
     if (this.account?.id) {
       this.initializeTimeTracking();
+      this.subscribeContactInfo();
     }
+  }
+
+  private contactInfoSub?: Subscription;
+  private contactInfo: ContactInformation | null = null;
+
+  private subscribeContactInfo() {
+    if (!this.account?.id) return;
+    this.contactInfoSub?.unsubscribe();
+    this.contactInfoSub = this.sections
+      .contactInfo$(this.account.id)
+      .subscribe((ci) => (this.contactInfo = ci));
+  }
+
+  ngOnDestroy(): void {
+    this.contactInfoSub?.unsubscribe();
   }
 
   private initializeTimeTracking() {
@@ -144,15 +165,13 @@ export class HeroComponent implements OnInit, OnChanges {
   }
 
   get getLocation(): string {
-    if (this.account?.contactInformation?.addresses?.length) {
-      const address = this.account.contactInformation.addresses[0];
-      const parts: string[] = [];
-      if (address?.city) parts.push(address.city);
-      if (address?.state) parts.push(address.state);
-      if (address?.country) parts.push(address.country);
-      return parts.join(", ") || "";
-    }
-    return "";
+    const addr = this.contactInfo?.addresses?.[0];
+    if (!addr) return "";
+    const parts: string[] = [];
+    if (addr.city) parts.push(addr.city);
+    if (addr.state) parts.push(addr.state);
+    if (addr.country) parts.push(addr.country);
+    return parts.join(", ");
   }
 
   get getFoundedDate(): string {

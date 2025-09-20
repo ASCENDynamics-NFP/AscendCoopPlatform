@@ -247,14 +247,8 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
       }
     }, 100);
 
-    // Populate email arrays
-    this.populateEmails(account.contactInformation?.emails || []);
-
-    // Populate phone arrays
-    this.populatePhoneNumbers(account.contactInformation?.phoneNumbers || []);
-
-    // Populate addresses arrays
-    this.populateAddresses(account.contactInformation?.addresses || []);
+    // Do not populate contact info from base account document.
+    // Contact info is loaded from sections/contactInfo via AccountSectionsService.
 
     // Populate web links
     this.populateWebLinks(account.webLinks || []);

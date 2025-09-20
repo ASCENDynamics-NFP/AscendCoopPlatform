@@ -762,10 +762,7 @@ export class AuthEffects {
           lastLoginAt: user.metadata.lastSignInTime
             ? new Date(user.metadata.lastSignInTime)
             : new Date(),
-          phoneNumber:
-            user.phoneNumber ||
-            account?.contactInformation?.phoneNumbers?.[0]?.number ||
-            null,
+          phoneNumber: user.phoneNumber || null,
           providerData: user.providerData,
           settings:
             (claims["settings"] as Settings) ||

@@ -41,6 +41,8 @@ import {
   UpdateAccountRequest,
 } from "../../../../../../core/services/firebase-functions.service";
 import {firstValueFrom} from "rxjs";
+import {AccountSectionsService} from "../../../../services/account-sections.service";
+import {take} from "rxjs/operators";
 import {ToastController} from "@ionic/angular";
 
 @Component({
@@ -61,6 +63,7 @@ export class UnifiedRegistrationComponent implements OnChanges {
     private store: Store,
     private firebaseFunctions: FirebaseFunctionsService,
     private toastController: ToastController,
+    private sections: AccountSectionsService,
   ) {
     this.initializeForm();
   }
@@ -383,10 +386,9 @@ export class UnifiedRegistrationComponent implements OnChanges {
     const socialMedia =
       this.account.webLinks?.find((link) => link.category === "Social Media")
         ?.url || "";
-    const primaryEmail =
-      this.account.contactInformation?.emails?.[0]?.email || "";
-    const primaryPhone =
-      this.account.contactInformation?.phoneNumbers?.[0]?.number || "";
+    // Pull primary email/phone from gated sections/contactInfo (no base account fallback)
+    let primaryEmail = "";
+    let primaryPhone = "";
 
     // Patch the form with existing data
     this.registrationForm.patchValue({
@@ -400,6 +402,23 @@ export class UnifiedRegistrationComponent implements OnChanges {
         primaryPhone: primaryPhone,
       },
     });
+
+    // Update primary email/phone asynchronously from sections/contactInfo when available
+    if (this.account.id) {
+      this.sections
+        .contactInfo$(this.account.id)
+        .pipe(take(1))
+        .subscribe((ci) => {
+          const email = ci?.emails?.[0]?.email || "";
+          const phone = ci?.phoneNumbers?.[0]?.number || "";
+          this.registrationForm.patchValue({
+            contactInformation: {
+              primaryEmail: email,
+              primaryPhone: phone,
+            },
+          });
+        });
+    }
 
     // Handle group-specific data
     if (this.isGroupRegistration && this.account.groupDetails) {

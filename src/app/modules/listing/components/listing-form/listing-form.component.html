@@ -167,8 +167,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   <ion-label>
                     <strong>Post As</strong>
                     <p>
-                      {{ listingForm.get('organization')?.value }}
-                      ({{ listingForm.get('ownerAccountType')?.value | titlecase }})
+                      {{ listingForm.get("organization")?.value }}
+                      ({{
+                        listingForm.get("ownerAccountType")?.value | titlecase
+                      }})
                     </p>
                   </ion-label>
                 </ion-item>

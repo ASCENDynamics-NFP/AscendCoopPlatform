@@ -13,7 +13,7 @@ export interface CreateListingRequest {
   title: string;
   organization: string;
   description: string;
-  type: "volunteer" | "job" | "event" | "project";
+  type: "volunteer" | "job" | "internship" | "gig";
   category: string;
   status: "active" | "inactive" | "draft";
   remote: boolean;
@@ -55,6 +55,10 @@ export interface ApplyToListingRequest {
   customMessage?: string;
   resumeUrl?: string | null;
   coverLetterUrl?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+  phone?: string | null;
 }
 
 export class ListingService {
@@ -413,8 +417,10 @@ export class ListingService {
         id: request.applicantId,
         listingId: request.listingId,
         name: applicant.name,
-        email: applicant.email,
-        phone: applicant.phone || null,
+        firstName: request.firstName ?? null,
+        lastName: request.lastName ?? null,
+        email: request.email ?? applicant.email,
+        phone: request.phone ?? applicant.phone ?? null,
         iconImage: applicant.iconImage || null,
         status: "pending",
         relationship: "applicant",
@@ -442,6 +448,10 @@ export class ListingService {
         relationship: "applicant",
         applicationDate: Timestamp.now(),
         notes: request.notes || null,
+        firstName: request.firstName ?? null,
+        lastName: request.lastName ?? null,
+        email: request.email ?? applicant.email,
+        phone: request.phone ?? applicant.phone ?? null,
         createdAt: Timestamp.now(),
         createdBy: request.applicantId,
         lastModifiedAt: Timestamp.now(),
@@ -539,14 +549,30 @@ export class ListingService {
   /** Unsave a listing for a user */
   static async unsaveListing(userId: string, listingId: string): Promise<void> {
     try {
-      // Do not delete the relatedListing record — only clear saved flag to
-      // preserve applicant/owner relationships and history unless explicitly deleted.
-      await db
+      const ref = db
         .collection("accounts")
         .doc(userId)
         .collection("relatedListings")
-        .doc(listingId)
-        .set(
+        .doc(listingId);
+
+      const snap = await ref.get();
+      if (!snap.exists) {
+        // Nothing to do
+        logger.info("Unsave skipped; no relatedListing doc", {
+          listingId,
+          userId,
+        });
+        return;
+      }
+
+      const data = (snap.data() || {}) as any;
+      const rel = data?.relationship;
+      const hasRelationship =
+        rel === "owner" || rel === "applicant" || rel === "participant";
+
+      if (hasRelationship) {
+        // Preserve the doc for relationship history; clear saved flag
+        await ref.set(
           {
             isSaved: false,
             lastModifiedAt: Timestamp.now(),
@@ -554,7 +580,18 @@ export class ListingService {
           },
           {merge: true},
         );
-      logger.info("Listing unsaved (flag cleared)", {listingId, userId});
+        logger.info("Listing unsaved (relationship preserved)", {
+          listingId,
+          userId,
+        });
+      } else {
+        // No relationship and not saved => remove stray record
+        await ref.delete();
+        logger.info("Removed unrelated unsaved relatedListing", {
+          listingId,
+          userId,
+        });
+      }
     } catch (error) {
       logger.error("Error unsaving listing:", error);
       if (error instanceof HttpsError) throw error;
@@ -639,6 +676,165 @@ export class ListingService {
       logger.error("Error updating application status:", error);
       if (error instanceof HttpsError) throw error;
       throw new HttpsError("internal", "Failed to update application status");
+    }
+  }
+
+  /**
+   * Applicant updates their own application (notes/files)
+   */
+  static async updateApplicantApplication(
+    listingId: string,
+    applicantId: string,
+    updates: {
+      notes?: string | null;
+      resumeUrl?: string | null;
+      coverLetterUrl?: string | null;
+      firstName?: string | null;
+      lastName?: string | null;
+      email?: string | null;
+      phone?: string | null;
+    },
+  ): Promise<void> {
+    try {
+      // Load listing and applicant account
+      const [listingSnap, accountSnap] = await Promise.all([
+        db.collection("listings").doc(listingId).get(),
+        db.collection("accounts").doc(applicantId).get(),
+      ]);
+      if (!listingSnap.exists)
+        throw new HttpsError("not-found", "Listing not found");
+      if (!accountSnap.exists)
+        throw new HttpsError("not-found", "Applicant account not found");
+
+      const listing = listingSnap.data() as any;
+      const account = accountSnap.data() as any;
+      const now = Timestamp.now();
+
+      const relatedAccountRef = db
+        .collection("listings")
+        .doc(listingId)
+        .collection("relatedAccounts")
+        .doc(applicantId);
+      const relatedListingRef = db
+        .collection("accounts")
+        .doc(applicantId)
+        .collection("relatedListings")
+        .doc(listingId);
+
+      const [raSnap, rlSnap] = await Promise.all([
+        relatedAccountRef.get(),
+        relatedListingRef.get(),
+      ]);
+
+      const raBase: any = {
+        id: applicantId,
+        listingId,
+        name: account?.name || null,
+        email: account?.email || null,
+        phone: account?.phone || null,
+        iconImage: account?.iconImage || null,
+        relationship: "applicant",
+        status: (raSnap.data() as any)?.status || "pending",
+        applicationDate:
+          (raSnap.data() as any)?.applicationDate || Timestamp.now(),
+        createdAt: (raSnap.data() as any)?.createdAt || now,
+        createdBy: (raSnap.data() as any)?.createdBy || applicantId,
+      };
+      const rlBase: any = {
+        id: listingId,
+        accountId: applicantId,
+        title: listing?.title || null,
+        organization: listing?.organization || null,
+        type: listing?.type || null,
+        remote: !!listing?.remote,
+        iconImage: listing?.iconImage || null,
+        status: listing?.status || "active",
+        relationship: "applicant",
+        applicationDate:
+          (rlSnap.data() as any)?.applicationDate || Timestamp.now(),
+        createdAt: (rlSnap.data() as any)?.createdAt || now,
+        createdBy: (rlSnap.data() as any)?.createdBy || applicantId,
+      };
+
+      const commonUpdates: any = {
+        lastModifiedAt: now,
+        lastModifiedBy: applicantId,
+      };
+      if (updates.notes !== undefined) commonUpdates.notes = updates.notes;
+      if (updates.resumeUrl !== undefined)
+        commonUpdates.resumeUrl = updates.resumeUrl;
+      if (updates.coverLetterUrl !== undefined)
+        commonUpdates.coverLetterUrl = updates.coverLetterUrl;
+      if (updates.firstName !== undefined)
+        commonUpdates.firstName = updates.firstName;
+      if (updates.lastName !== undefined)
+        commonUpdates.lastName = updates.lastName;
+      if (updates.email !== undefined) commonUpdates.email = updates.email;
+      if (updates.phone !== undefined) commonUpdates.phone = updates.phone;
+
+      const batch = db.batch();
+      // Ensure presence of base fields; merge prevents erasing existing data
+      batch.set(
+        relatedAccountRef,
+        {...raBase, ...commonUpdates},
+        {merge: true},
+      );
+      batch.set(
+        relatedListingRef,
+        {...rlBase, ...commonUpdates},
+        {merge: true},
+      );
+      await batch.commit();
+    } catch (error) {
+      logger.error("Error updating applicant application:", error);
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError("internal", "Failed to update application");
+    }
+  }
+
+  /**
+   * Remove an application by the applicant (deletes both mirrors)
+   */
+  static async removeApplication(
+    listingId: string,
+    applicantId: string,
+    requestedByUserId: string,
+  ): Promise<void> {
+    try {
+      // Only the applicant themselves can remove via this path
+      if (applicantId !== requestedByUserId) {
+        throw new HttpsError(
+          "permission-denied",
+          "Only the applicant can remove their application",
+        );
+      }
+
+      // Ensure listing exists
+      const listingDoc = await db.collection("listings").doc(listingId).get();
+      if (!listingDoc.exists)
+        throw new HttpsError("not-found", "Listing not found");
+
+      const batch = db.batch();
+      const relatedAccountRef = db
+        .collection("listings")
+        .doc(listingId)
+        .collection("relatedAccounts")
+        .doc(applicantId);
+      const relatedListingRef = db
+        .collection("accounts")
+        .doc(applicantId)
+        .collection("relatedListings")
+        .doc(listingId);
+
+      batch.delete(relatedAccountRef);
+      batch.delete(relatedListingRef);
+      await batch.commit();
+
+      logger.info("Application removed", {listingId, applicantId});
+    } catch (error) {
+      logger.error("Error removing application:", error);
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError("internal", "Failed to remove application");
     }
   }
 
@@ -845,25 +1041,6 @@ export class ListingService {
           const batch = db.batch();
           chunk.forEach((doc) => batch.update(doc.ref, filteredUpdates as any));
           await batch.commit();
-        }
-      }
-
-      // Cleanup: remove relatedListings that are neither owner/applicant/participant nor saved
-      if (docs.length > 0) {
-        const deleteChunkSize = 450;
-        const toDelete = docs.filter((d) => {
-          const data = d.data() as any;
-          const rel = data?.relationship;
-          const isSaved = data?.isSaved === true;
-          const allowed =
-            rel === "owner" || rel === "applicant" || rel === "participant";
-          return !allowed && !isSaved; // remove unsaved docs without a valid relationship
-        });
-        for (let i = 0; i < toDelete.length; i += deleteChunkSize) {
-          const chunk = toDelete.slice(i, i + deleteChunkSize);
-          const batch = db.batch();
-          chunk.forEach((doc) => batch.delete(doc.ref));
-          if (chunk.length > 0) await batch.commit();
         }
       }
     } catch (err: any) {
@@ -1152,11 +1329,8 @@ export class ListingService {
         ),
       );
 
-      // 3) Disassociate any time entries that referenced this listing
-      await this.disassociateTimeEntriesFromListing(listingId, userId);
-
-      // 4) Delete listing subcollections: relatedAccounts and listing-level timeEntries copies only
-      const subcols = ["relatedAccounts", "timeEntries"];
+      // 3) Delete listing subcollections: remove relatedAccounts only
+      const subcols = ["relatedAccounts"];
       for (const sub of subcols) {
         const subSnap = await listingRef.collection(sub).get();
         await this.deleteInChunks(subSnap.docs.map((d) => d.ref));
@@ -1181,50 +1355,7 @@ export class ListingService {
     }
   }
 
-  /**
-   * Find all time entries that reference this listing and remove the association.
-   * Updates both the main timeEntries doc and the account's timeEntries mirror.
-   */
-  private static async disassociateTimeEntriesFromListing(
-    listingId: string,
-    userId: string,
-  ): Promise<void> {
-    const now = Timestamp.now();
-    const snap = await db
-      .collection("timeEntries")
-      .where("listingId", "==", listingId)
-      .get();
-
-    if (snap.empty) return;
-
-    // Each entry requires up to 2 updates (main + account mirror)
-    const chunkSize = 200; // keep well below 500 writes per batch
-    for (let i = 0; i < snap.docs.length; i += chunkSize) {
-      const chunk = snap.docs.slice(i, i + chunkSize);
-      const batch = db.batch();
-      chunk.forEach((doc) => {
-        const data = doc.data() as any;
-        batch.update(doc.ref, {
-          listingId: null,
-          lastModifiedAt: now,
-          lastModifiedBy: userId,
-        });
-        if (data.accountId) {
-          const accountMirrorRef = db
-            .collection("accounts")
-            .doc(data.accountId)
-            .collection("timeEntries")
-            .doc(doc.id);
-          batch.update(accountMirrorRef, {
-            listingId: null,
-            lastModifiedAt: now,
-            lastModifiedBy: userId,
-          });
-        }
-      });
-      await batch.commit();
-    }
-  }
+  // Note: no time entry disassociation is required; time entries do not reference listings.
 
   /** Delete a list of DocumentReferences in batch chunks */
   private static async deleteInChunks(

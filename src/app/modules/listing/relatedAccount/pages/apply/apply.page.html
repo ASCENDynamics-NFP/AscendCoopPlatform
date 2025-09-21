@@ -239,7 +239,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-row>
         <ion-col>
           <ion-button expand="block" color="primary" type="submit">
-            {{ 'forms.submit' | translate }}
+            {{ isEditingApplication ? 'Update Application' : ('forms.submit' | translate) }}
           </ion-button>
         </ion-col>
       </ion-row>

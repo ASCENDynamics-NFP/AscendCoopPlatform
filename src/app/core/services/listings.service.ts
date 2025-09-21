@@ -85,6 +85,10 @@ export class ListingsService {
     customMessage?: string,
     resumeUrl?: string | null,
     coverLetterUrl?: string | null,
+    firstName?: string | null,
+    lastName?: string | null,
+    email?: string | null,
+    phone?: string | null,
   ): Observable<any> {
     return this.firebaseFunctions.applyToListing(
       listingId,
@@ -92,6 +96,10 @@ export class ListingsService {
       customMessage,
       resumeUrl,
       coverLetterUrl,
+      firstName,
+      lastName,
+      email,
+      phone,
     );
   }
 
@@ -107,6 +115,10 @@ export class ListingsService {
    */
   unsaveListing(listingId: string): Observable<any> {
     return this.firebaseFunctions.unsaveListing(listingId);
+  }
+
+  removeApplication(listingId: string): Observable<any> {
+    return this.firebaseFunctions.removeMyApplication(listingId);
   }
 
   manageApplication(

@@ -41,10 +41,9 @@
 export {createUserProfile} from "./auth/user/triggers/onCreate";
 export {onUserRecordDeletion} from "./auth/user/triggers/onDelete";
 
-// Account triggers (disabled - migrated to callables)
-// export {onCreateAccount} from "./database/accounts/triggers/onCreate";
-// export {onUpdateAccount} from "./database/accounts/triggers/onUpdate";
-// export {onWriteContactInfo} from "./database/accounts/sections/contactInfo/onWrite";
+// Account triggers
+// Keep only the gated contact info geocoding automation enabled
+export {onWriteContactInfo} from "./database/accounts/sections/contactInfo/onWrite";
 
 // Project triggers
 // export {onCreateProject} from "./database/accounts/projects/triggers/onCreate";
@@ -126,8 +125,12 @@ export {
   updateListing,
   deleteListing,
   applyToListing,
+  updateMyApplication,
+  manageApplication,
+  getListingWithApplications,
   saveListing,
   unsaveListing,
+  removeMyApplication,
   searchListings,
 } from "./api/listings";
 

@@ -35,6 +35,7 @@ import {
 } from "rxjs";
 import {FirestoreService} from "../../core/services/firestore.service";
 import {ListingsService} from "../../core/services/listings.service";
+import {FirebaseFunctionsService} from "../../core/services/firebase-functions.service";
 import {StorageService} from "../../core/services/storage.service";
 import * as ListingsActions from "../actions/listings.actions";
 import {Listing} from "../../../../shared/models/listing.model";
@@ -61,6 +62,7 @@ export class ListingsEffects {
     private router: Router,
     private toastController: ToastController,
     private store: Store<AppState>,
+    private firebaseFunctions: FirebaseFunctionsService,
   ) {}
 
   // Create a new listing
@@ -286,15 +288,14 @@ export class ListingsEffects {
   submitApplication$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.submitApplication),
-      mergeMap(({relatedAccount}) =>
-        from(
-          (async () => {
-            // Upload files if present
-            const applicationId = relatedAccount.id;
-            const listingId = relatedAccount.listingId;
-            let resumeUrl: string | null = null;
-            let coverLetterUrl: string | null = null;
+      mergeMap(({relatedAccount}) => {
+        const applicationId = relatedAccount.id;
+        const listingId = relatedAccount.listingId;
+        let resumeUrl: string | null = null;
+        let coverLetterUrl: string | null = null;
 
+        return from(
+          (async () => {
             if ((relatedAccount as any).resumeFile) {
               resumeUrl = await this.storageService.uploadFile(
                 `accounts/${applicationId}/listing/${listingId}/resume.pdf`,
@@ -307,34 +308,82 @@ export class ListingsEffects {
                 (relatedAccount as any).coverLetterFile,
               );
             }
-
-            await this.listingsService
+          })(),
+        ).pipe(
+          // attempt to apply
+          switchMap(() =>
+            this.listingsService
               .applyToListing(
-                relatedAccount.listingId,
-                relatedAccount.notes,
+                listingId,
+                (relatedAccount as any).notes,
                 undefined,
                 resumeUrl,
                 coverLetterUrl,
+                (relatedAccount as any).firstName,
+                (relatedAccount as any).lastName,
+                (relatedAccount as any).email,
+                (relatedAccount as any).phone,
               )
-              .toPromise();
-          })(),
-        ).pipe(
-          map(() => {
-            this.router.navigate(["/listings", relatedAccount.listingId]);
-            this.showToast("Application submitted successfully", "success");
-            return ListingsActions.submitApplicationSuccess();
-          }),
-          catchError((error) => {
-            this.showToast(
-              `Error submitting application: ${error.message}`,
-              "danger",
-            );
-            return of(
-              ListingsActions.submitApplicationFailure({error: error.message}),
-            );
-          }),
-        ),
-      ),
+              .pipe(
+                map(() => {
+                  this.router.navigate(["/listings", listingId]);
+                  this.showToast(
+                    "Application submitted successfully",
+                    "success",
+                  );
+                  return ListingsActions.submitApplicationSuccess();
+                }),
+                catchError((error) => {
+                  const msg = String(error?.message || error).toLowerCase();
+                  if (msg.includes("already applied")) {
+                    // Fallback: update existing application (notes/files)
+                    return this.firebaseFunctions
+                      .updateMyApplication(
+                        listingId,
+                        (relatedAccount as any).notes,
+                        resumeUrl,
+                        coverLetterUrl,
+                        (relatedAccount as any).firstName,
+                        (relatedAccount as any).lastName,
+                        (relatedAccount as any).email,
+                        (relatedAccount as any).phone,
+                      )
+                      .pipe(
+                        map(() => {
+                          this.router.navigate(["/listings", listingId]);
+                          this.showToast(
+                            "Application updated successfully",
+                            "success",
+                          );
+                          return ListingsActions.submitApplicationSuccess();
+                        }),
+                        catchError((err2) => {
+                          this.showToast(
+                            `Error updating application: ${err2.message}`,
+                            "danger",
+                          );
+                          return of(
+                            ListingsActions.submitApplicationFailure({
+                              error: err2.message,
+                            }),
+                          );
+                        }),
+                      );
+                  }
+                  this.showToast(
+                    `Error submitting application: ${error.message}`,
+                    "danger",
+                  );
+                  return of(
+                    ListingsActions.submitApplicationFailure({
+                      error: error.message,
+                    }),
+                  );
+                }),
+              ),
+          ),
+        );
+      }),
     ),
   );
 

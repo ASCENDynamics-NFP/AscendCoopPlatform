@@ -493,11 +493,8 @@ export class AccountEffects {
     this.actions$.pipe(
       ofType(AccountActions.deleteRelatedListing),
       mergeMap(({accountId, relatedListingId}) =>
-        from(
-          this.firestoreService.deleteDocumentAtPath(
-            `accounts/${accountId}/relatedListings/${relatedListingId}`,
-          ),
-        ).pipe(
+        // Use callable to remove application (deletes both mirrors) with proper auth
+        this.listingsService.removeApplication(relatedListingId).pipe(
           map(() => {
             this.showToast("Removed successfully", "success");
             return AccountActions.deleteRelatedListingSuccess({

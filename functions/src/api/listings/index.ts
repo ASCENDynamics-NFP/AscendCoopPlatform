@@ -36,8 +36,8 @@ export const createListing = onCall(
       );
     }
 
-    // Validate listing type
-    const validTypes = ["volunteer", "job", "event", "project"];
+    // Validate listing type (aligned with shared ListingType)
+    const validTypes = ["volunteer", "job", "internship", "gig"];
     if (!validTypes.includes(data.type)) {
       throw new HttpsError("invalid-argument", "Invalid listing type");
     }
@@ -135,14 +135,27 @@ export const applyToListing = onCall(
     }
 
     const userId = request.auth.uid;
-    const {listingId, notes, customMessage, resumeUrl, coverLetterUrl} =
-      request.data as {
-        listingId: string;
-        notes?: string;
-        customMessage?: string;
-        resumeUrl?: string | null;
-        coverLetterUrl?: string | null;
-      };
+    const {
+      listingId,
+      notes,
+      customMessage,
+      resumeUrl,
+      coverLetterUrl,
+      firstName,
+      lastName,
+      email,
+      phone,
+    } = request.data as {
+      listingId: string;
+      notes?: string;
+      customMessage?: string;
+      resumeUrl?: string | null;
+      coverLetterUrl?: string | null;
+      firstName?: string | null;
+      lastName?: string | null;
+      email?: string | null;
+      phone?: string | null;
+    };
 
     if (!listingId) {
       throw new HttpsError("invalid-argument", "Listing ID is required");
@@ -156,6 +169,10 @@ export const applyToListing = onCall(
         customMessage,
         resumeUrl,
         coverLetterUrl,
+        firstName: firstName ?? null,
+        lastName: lastName ?? null,
+        email: email ?? null,
+        phone: phone ?? null,
       });
 
       logger.info(`Application submitted via API`, {
@@ -223,6 +240,34 @@ export const unsaveListing = onCall(
       logger.error("Unsave listing failed:", error);
       if (error instanceof HttpsError) throw error;
       throw new HttpsError("internal", "Unsave listing failed");
+    }
+  },
+);
+
+/** Remove my application (applicant self-removal) */
+export const removeMyApplication = onCall(
+  {
+    region: "us-central1",
+    enforceAppCheck: false,
+    memory: "256MiB",
+    timeoutSeconds: 30,
+  },
+  async (request) => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "User must be authenticated");
+    }
+    const userId = request.auth.uid;
+    const {listingId} = request.data as {listingId: string};
+    if (!listingId) {
+      throw new HttpsError("invalid-argument", "Listing ID is required");
+    }
+    try {
+      await ListingService.removeApplication(listingId, userId, userId);
+      return {success: true};
+    } catch (error) {
+      logger.error("Remove application failed:", error);
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError("internal", "Remove application failed");
     }
   },
 );
@@ -329,6 +374,65 @@ export const getListingWithApplications = onCall(
       logger.error("Get listing with applications failed:", error);
       if (error instanceof HttpsError) throw error;
       throw new HttpsError("internal", "Failed to retrieve listing details");
+    }
+  },
+);
+
+/**
+ * Applicant updates their own application (notes/files)
+ */
+export const updateMyApplication = onCall(
+  {
+    region: "us-central1",
+    enforceAppCheck: false,
+    memory: "256MiB",
+    timeoutSeconds: 30,
+  },
+  async (request) => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "User must be authenticated");
+    }
+
+    const userId = request.auth.uid;
+    const {
+      listingId,
+      notes,
+      resumeUrl,
+      coverLetterUrl,
+      firstName,
+      lastName,
+      email,
+      phone,
+    } = request.data as {
+      listingId: string;
+      notes?: string | null;
+      resumeUrl?: string | null;
+      coverLetterUrl?: string | null;
+      firstName?: string | null;
+      lastName?: string | null;
+      email?: string | null;
+      phone?: string | null;
+    };
+
+    if (!listingId) {
+      throw new HttpsError("invalid-argument", "Listing ID is required");
+    }
+
+    try {
+      await ListingService.updateApplicantApplication(listingId, userId, {
+        notes: notes ?? null,
+        resumeUrl: resumeUrl ?? null,
+        coverLetterUrl: coverLetterUrl ?? null,
+        firstName: firstName ?? null,
+        lastName: lastName ?? null,
+        email: email ?? null,
+        phone: phone ?? null,
+      });
+      return {success: true};
+    } catch (error) {
+      logger.error("Update my application failed:", error);
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError("internal", "Failed to update application");
     }
   },
 );

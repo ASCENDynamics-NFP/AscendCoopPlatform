@@ -510,13 +510,55 @@ export class FirebaseFunctionsService {
     customMessage?: string,
     resumeUrl?: string | null,
     coverLetterUrl?: string | null,
+    firstName?: string | null,
+    lastName?: string | null,
+    email?: string | null,
+    phone?: string | null,
   ): Observable<any> {
     const callable = this.fns.httpsCallable("applyToListing");
     return from(
-      callable({listingId, notes, customMessage, resumeUrl, coverLetterUrl}),
+      callable({
+        listingId,
+        notes,
+        customMessage,
+        resumeUrl,
+        coverLetterUrl,
+        firstName,
+        lastName,
+        email,
+        phone,
+      }),
     ).pipe(
       map((result: any) => result),
       catchError(this.handleError("Listing application")),
+    );
+  }
+
+  updateMyApplication(
+    listingId: string,
+    notes?: string,
+    resumeUrl?: string | null,
+    coverLetterUrl?: string | null,
+    firstName?: string | null,
+    lastName?: string | null,
+    email?: string | null,
+    phone?: string | null,
+  ): Observable<any> {
+    const callable = this.fns.httpsCallable("updateMyApplication");
+    return from(
+      callable({
+        listingId,
+        notes,
+        resumeUrl,
+        coverLetterUrl,
+        firstName,
+        lastName,
+        email,
+        phone,
+      }),
+    ).pipe(
+      map((result: any) => result),
+      catchError(this.handleError("Update application")),
     );
   }
 
@@ -541,6 +583,14 @@ export class FirebaseFunctionsService {
     return from(callable({listingId})).pipe(
       map((result: any) => result),
       catchError(this.handleError("Unsave listing")),
+    );
+  }
+
+  removeMyApplication(listingId: string): Observable<any> {
+    const callable = this.fns.httpsCallable("removeMyApplication");
+    return from(callable({listingId})).pipe(
+      map((result: any) => result),
+      catchError(this.handleError("Remove application")),
     );
   }
 

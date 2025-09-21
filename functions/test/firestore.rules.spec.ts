@@ -28,7 +28,8 @@ function resolveRulesPath(): string {
 describe("timeEntries create rules", () => {
   let testEnv: RulesTestEnvironment;
 
-  before(async () => {
+  before(async function () {
+    this.timeout(10000);
     testEnv = await initializeTestEnvironment({
       projectId: "rules-test",
       firestore: {
@@ -119,7 +120,8 @@ describe("timeEntries create rules", () => {
 describe("timeEntries update rules", () => {
   let testEnv: RulesTestEnvironment;
 
-  before(async () => {
+  before(async function () {
+    this.timeout(10000);
     testEnv = await initializeTestEnvironment({
       projectId: "rules-test",
       firestore: {
@@ -254,7 +256,8 @@ describe("timeEntries update rules", () => {
 describe("timeEntries delete rules", () => {
   let testEnv: RulesTestEnvironment;
 
-  before(async () => {
+  before(async function () {
+    this.timeout(10000);
     testEnv = await initializeTestEnvironment({
       projectId: "rules-test",
       firestore: {
@@ -338,7 +341,8 @@ describe("timeEntries delete rules", () => {
 describe("timeEntries read rules", () => {
   let testEnv: RulesTestEnvironment;
 
-  before(async () => {
+  before(async function () {
+    this.timeout(10000);
     testEnv = await initializeTestEnvironment({
       projectId: "rules-test",
       firestore: {

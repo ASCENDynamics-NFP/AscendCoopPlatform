@@ -76,6 +76,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     >
       {{ "listings.apply_now" | translate }}
     </ion-button>
+    <!-- Save/Unsave buttons are provided by parent page to know auth user's saved state -->
+    <ng-content select="[listing-secondary-actions]"></ng-content>
     <ion-button
       *ngIf="isOwner"
       fill="outline"

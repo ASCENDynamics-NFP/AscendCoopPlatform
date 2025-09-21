@@ -31,7 +31,7 @@ export interface ListingRelatedAccount extends BaseDocument {
   email: string;
   phone?: string;
   listingId: string; // ID of the listing
-  status: "applied" | "accepted" | "rejected" | "withdrawn";
+  status: "applied" | "accepted" | "declined" | "withdrawn";
   applicationDate: Timestamp | FieldValue;
   notes?: string;
   resumeFile?: File | null;

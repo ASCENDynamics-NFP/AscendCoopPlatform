@@ -20,8 +20,19 @@ export const selectEntries = (
     const start = new Date(weekStart);
     const end = new Date(start);
     end.setDate(start.getDate() + 7);
-    return entries.filter((e) => {
-      const d = e.date.toDate();
+    return entries.filter((e: any) => {
+      const val = e?.date;
+      let d: Date;
+      if (val && typeof val.toDate === "function") {
+        d = val.toDate();
+      } else if (val instanceof Date) {
+        d = val as Date;
+      } else if (typeof val === "string") {
+        d = new Date(val);
+      } else {
+        // Fallback: cannot parse date, exclude
+        return false;
+      }
       return d >= start && d < end;
     });
   });

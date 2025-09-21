@@ -62,7 +62,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <!-- Show grouped by type only for active listings -->
     <div *ngIf="activeListingsCount > 0">
       <div
-        *ngFor="let group of groupedActiveListings"
+        *ngFor="let group of groupedActiveListings; trackBy: trackByGroupType"
         class="listing-type-group"
       >
         <h3 class="type-header">
@@ -71,7 +71,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         </h3>
         <ion-list>
           <ion-item
-            *ngFor="let listing of group.listings | slice: 0 : 3"
+            *ngFor="let listing of group.listings | slice: 0 : 3; trackBy: trackByListingId"
             button
             (click)="goToRelatedListing(listing.id)"
           >

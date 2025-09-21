@@ -35,15 +35,17 @@ import {
 } from "rxjs";
 import {FirestoreService} from "../../core/services/firestore.service";
 import {ListingsService} from "../../core/services/listings.service";
+import {FirebaseFunctionsService} from "../../core/services/firebase-functions.service";
 import {StorageService} from "../../core/services/storage.service";
 import * as ListingsActions from "../actions/listings.actions";
-import {Listing} from "@shared/models/listing.model";
+import {Listing} from "../../../../shared/models/listing.model";
 import {serverTimestamp} from "@angular/fire/firestore";
-import {ListingRelatedAccount} from "@shared/models/listing-related-account.model";
+import {ListingRelatedAccount} from "../../../../shared/models/listing-related-account.model";
 import {Router} from "@angular/router";
 import {ToastController} from "@ionic/angular";
 import {Store} from "@ngrx/store";
 import {AppState} from "../app.state";
+import * as AccountActions from "../actions/account.actions";
 import {
   selectListingById,
   selectAreListingsFresh,
@@ -60,6 +62,7 @@ export class ListingsEffects {
     private router: Router,
     private toastController: ToastController,
     private store: Store<AppState>,
+    private firebaseFunctions: FirebaseFunctionsService,
   ) {}
 
   // Create a new listing
@@ -67,19 +70,67 @@ export class ListingsEffects {
     this.actions$.pipe(
       ofType(ListingsActions.createListing),
       mergeMap(({listing}) => {
-        const newListing = {
-          ...listing,
-          createdAt: serverTimestamp(),
-          lastModifiedAt: serverTimestamp(),
+        // Convert listing to CreateListingRequest format
+        const createRequest = {
+          title: listing.title,
+          organization: listing.organization || "",
+          description: listing.description || "",
+          type: listing.type as "volunteer" | "job" | "event" | "project",
+          category: "general", // Default category since Listing model doesn't have category
+          status:
+            (listing.status as "active" | "inactive" | "draft") || "active",
+          remote: listing.remote || false,
+          ownerAccountId: (listing as any)?.ownerAccountId || undefined,
+          contactInformation: {
+            emails:
+              listing.contactInformation?.emails?.map((e) => ({
+                email: e.email || "",
+                type: e.name || "contact", // Use name field as type
+              })) || [],
+            phoneNumbers:
+              listing.contactInformation?.phoneNumbers?.map((p) => ({
+                number: p.number || "",
+                type: p.type || "mobile",
+              })) || [],
+            addresses:
+              listing.contactInformation?.addresses?.map((a) =>
+                a
+                  ? {
+                      street: a.street || undefined,
+                      city: a.city || undefined,
+                      state: a.state || undefined,
+                      zipCode: a.zipcode || undefined, // Fix: use zipcode not zipCode
+                      country: a.country || undefined,
+                      remote: a.remote || undefined,
+                    }
+                  : {},
+              ) || [],
+          },
+          requirements: listing.requirements || [],
+          skills: listing.skills?.map((skill) => skill.name) || [], // Extract skill names
+          timeCommitment: listing.timeCommitment
+            ? {
+                hoursPerWeek: listing.timeCommitment.hoursPerWeek,
+                duration: listing.timeCommitment.duration,
+                schedule: listing.timeCommitment.schedule,
+              }
+            : undefined,
+          iconImage: listing.iconImage,
+          heroImage: listing.heroImage,
         };
-        return from(
-          this.firestoreService.addDocument("listings", newListing),
-        ).pipe(
-          map((docId) => {
-            this.router.navigate([`/listings/${docId}`]);
+
+        return this.listingsService.createListing(createRequest).pipe(
+          map((result) => {
+            const newListing = {
+              ...listing,
+              id: result.listing?.id || result.id,
+              createdAt: result.listing?.createdAt || new Date(),
+              lastModifiedAt: result.listing?.lastModifiedAt || new Date(),
+            };
+            this.router.navigate([`/listings/${newListing.id}`]);
             this.showToast("Listing created successfully", "success");
             return ListingsActions.createListingSuccess({
-              listing: {...newListing, id: docId},
+              listing: newListing,
             });
           }),
           catchError((error) => {
@@ -156,37 +207,44 @@ export class ListingsEffects {
     ),
   );
 
-  // Update an existing listing
+  // Update an existing listing (via callable)
   updateListing$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.updateListing),
       debounceTime(300),
-      mergeMap(({listing}) => {
-        const updatedListing = {
-          ...listing,
-          lastModifiedAt: serverTimestamp(),
-        };
-        return from(
-          this.firestoreService.updateDocument(
-            "listings",
-            listing.id,
-            updatedListing,
-          ),
-        ).pipe(
+      mergeMap(({listing}) =>
+        this.listingsService.updateListing(listing.id, listing as any).pipe(
           map(() => {
             // Only navigate if we're not on the account listings page
+            // and not already on this listing's detail page
             const currentUrl = this.router.url;
-            // Don't navigate if we're on the account listings page (pattern: /accounts/:accountId/listings)
-            const isAccountListingsPage = currentUrl.match(
-              /\/accounts\/[^\/]+\/listings$/,
+            const isAccountListingsPage = /\/account\/[^\/]+\/listings$/.test(
+              currentUrl,
             );
-            if (!isAccountListingsPage) {
+            const isSameListingDetail = new RegExp(
+              `^/listings/${listing.id}(?:$|/)`,
+            ).test(currentUrl);
+            if (!isAccountListingsPage && !isSameListingDetail) {
               this.router.navigate([`/listings/${listing.id}`]);
             }
             this.showToast("Listing updated successfully", "success");
             return ListingsActions.updateListingSuccess({
-              listing: updatedListing,
+              listing,
             });
+          }),
+          // After success, force-refresh owner related listings so profile segments update
+          // Note: ownerAccountId may be the user's own uid or a group id
+          mergeMap((action) => {
+            const ownerId = (listing as any).ownerAccountId;
+            return ownerId
+              ? [
+                  action,
+                  AccountActions.loadRelatedListings({
+                    accountId: ownerId,
+                    forceReload: true as any,
+                  }) as any,
+                ]
+              : [action];
           }),
           catchError((error) => {
             this.showToast(
@@ -197,8 +255,8 @@ export class ListingsEffects {
               ListingsActions.updateListingFailure({error: error.message}),
             );
           }),
-        );
-      }),
+        ),
+      ),
     ),
   );
 
@@ -207,7 +265,7 @@ export class ListingsEffects {
     this.actions$.pipe(
       ofType(ListingsActions.deleteListing),
       mergeMap(({id}) =>
-        from(this.firestoreService.deleteDocument("listings", id)).pipe(
+        this.listingsService.deleteListing(id).pipe(
           map(() => {
             this.showToast("Listing deleted successfully", "success");
             return ListingsActions.deleteListingSuccess({id});
@@ -230,24 +288,102 @@ export class ListingsEffects {
   submitApplication$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.submitApplication),
-      mergeMap(({relatedAccount}) =>
-        from(this.submitApplicationToFirestore(relatedAccount)).pipe(
-          map(() => {
-            this.router.navigate(["/listings", relatedAccount.listingId]);
-            this.showToast("Application submitted successfully", "success");
-            return ListingsActions.submitApplicationSuccess();
-          }),
-          catchError((error) => {
-            this.showToast(
-              `Error submitting application: ${error.message}`,
-              "danger",
-            );
-            return of(
-              ListingsActions.submitApplicationFailure({error: error.message}),
-            );
-          }),
-        ),
-      ),
+      mergeMap(({relatedAccount}) => {
+        const applicationId = relatedAccount.id;
+        const listingId = relatedAccount.listingId;
+        let resumeUrl: string | null = null;
+        let coverLetterUrl: string | null = null;
+
+        return from(
+          (async () => {
+            if ((relatedAccount as any).resumeFile) {
+              resumeUrl = await this.storageService.uploadFile(
+                `accounts/${applicationId}/listing/${listingId}/resume.pdf`,
+                (relatedAccount as any).resumeFile,
+              );
+            }
+            if ((relatedAccount as any).coverLetterFile) {
+              coverLetterUrl = await this.storageService.uploadFile(
+                `accounts/${applicationId}/listing/${listingId}/coverLetter.pdf`,
+                (relatedAccount as any).coverLetterFile,
+              );
+            }
+          })(),
+        ).pipe(
+          // attempt to apply
+          switchMap(() =>
+            this.listingsService
+              .applyToListing(
+                listingId,
+                (relatedAccount as any).notes,
+                undefined,
+                resumeUrl,
+                coverLetterUrl,
+                (relatedAccount as any).firstName,
+                (relatedAccount as any).lastName,
+                (relatedAccount as any).email,
+                (relatedAccount as any).phone,
+              )
+              .pipe(
+                map(() => {
+                  this.router.navigate(["/listings", listingId]);
+                  this.showToast(
+                    "Application submitted successfully",
+                    "success",
+                  );
+                  return ListingsActions.submitApplicationSuccess();
+                }),
+                catchError((error) => {
+                  const msg = String(error?.message || error).toLowerCase();
+                  if (msg.includes("already applied")) {
+                    // Fallback: update existing application (notes/files)
+                    return this.firebaseFunctions
+                      .updateMyApplication(
+                        listingId,
+                        (relatedAccount as any).notes,
+                        resumeUrl,
+                        coverLetterUrl,
+                        (relatedAccount as any).firstName,
+                        (relatedAccount as any).lastName,
+                        (relatedAccount as any).email,
+                        (relatedAccount as any).phone,
+                      )
+                      .pipe(
+                        map(() => {
+                          this.router.navigate(["/listings", listingId]);
+                          this.showToast(
+                            "Application updated successfully",
+                            "success",
+                          );
+                          return ListingsActions.submitApplicationSuccess();
+                        }),
+                        catchError((err2) => {
+                          this.showToast(
+                            `Error updating application: ${err2.message}`,
+                            "danger",
+                          );
+                          return of(
+                            ListingsActions.submitApplicationFailure({
+                              error: err2.message,
+                            }),
+                          );
+                        }),
+                      );
+                  }
+                  this.showToast(
+                    `Error submitting application: ${error.message}`,
+                    "danger",
+                  );
+                  return of(
+                    ListingsActions.submitApplicationFailure({
+                      error: error.message,
+                    }),
+                  );
+                }),
+              ),
+          ),
+        );
+      }),
     ),
   );
 
@@ -347,27 +483,30 @@ export class ListingsEffects {
     this.actions$.pipe(
       ofType(ListingsActions.updateRelatedAccount),
       mergeMap(({listingId, relatedAccount}) =>
-        from(
-          this.firestoreService.updateDocument(
-            `listings/${listingId}/relatedAccounts`,
+        this.listingsService
+          .manageApplication(
+            listingId,
             relatedAccount.id,
-            relatedAccount,
-          ),
-        ).pipe(
-          map(() =>
-            ListingsActions.updateRelatedAccountSuccess({
-              listingId,
-              relatedAccount,
-            }),
-          ),
-          catchError((error) =>
-            of(
-              ListingsActions.updateRelatedAccountFailure({
-                error: error.message,
+            (relatedAccount.status as any) === "accepted"
+              ? "accepted"
+              : "declined",
+            (relatedAccount as any).notes,
+          )
+          .pipe(
+            map(() =>
+              ListingsActions.updateRelatedAccountSuccess({
+                listingId,
+                relatedAccount,
               }),
             ),
+            catchError((error) =>
+              of(
+                ListingsActions.updateRelatedAccountFailure({
+                  error: error.message,
+                }),
+              ),
+            ),
           ),
-        ),
       ),
     ),
   );
@@ -377,22 +516,17 @@ export class ListingsEffects {
     this.actions$.pipe(
       ofType(ListingsActions.saveListing),
       mergeMap(({listingId, accountId}) =>
-        from(
-          this.firestoreService.setDocument(
-            `accounts/${accountId}/relatedListings/${listingId}`,
-            {
-              id: listingId,
-              accountId: accountId,
-              relationship: "saved",
-              createdAt: serverTimestamp(),
-              lastModifiedAt: serverTimestamp(),
-            },
-            {merge: true},
-          ),
-        ).pipe(
-          map(() => {
+        this.listingsService.saveListing(listingId).pipe(
+          mergeMap(() => {
             this.showToast("Listing saved successfully", "success");
-            return ListingsActions.saveListingSuccess({listingId, accountId});
+            return [
+              ListingsActions.saveListingSuccess({listingId, accountId}),
+              // Force reload related listings so Saved segment updates immediately
+              AccountActions.loadRelatedListings({
+                accountId,
+                forceReload: true as any,
+              }) as any,
+            ];
           }),
           catchError((error) => {
             this.showToast(`Error saving listing: ${error.message}`, "danger");
@@ -410,15 +544,16 @@ export class ListingsEffects {
     this.actions$.pipe(
       ofType(ListingsActions.unsaveListing),
       mergeMap(({listingId, accountId}) =>
-        from(
-          this.firestoreService.deleteDocument(
-            `accounts/${accountId}/relatedListings`,
-            listingId,
-          ),
-        ).pipe(
-          map(() => {
+        this.listingsService.unsaveListing(listingId).pipe(
+          mergeMap(() => {
             this.showToast("Listing removed from saved items", "success");
-            return ListingsActions.unsaveListingSuccess({listingId, accountId});
+            return [
+              ListingsActions.unsaveListingSuccess({listingId, accountId}),
+              AccountActions.loadRelatedListings({
+                accountId,
+                forceReload: true as any,
+              }) as any,
+            ];
           }),
           catchError((error) => {
             this.showToast(

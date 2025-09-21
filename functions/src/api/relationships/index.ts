@@ -1,0 +1,399 @@
+/**
+ * Relationship Management API - Callable functions for account relationships
+ */
+import {onCall, HttpsError} from "firebase-functions/v2/https";
+import {logger} from "firebase-functions/v2";
+import {
+  RelationshipService,
+  UpdateRelationshipRequest,
+} from "../../services/relationshipService";
+
+/**
+ * Send a relationship request (follow, join group, etc.)
+ */
+export const createRelationship = onCall(
+  {
+    region: "us-central1",
+    enforceAppCheck: false,
+    memory: "256MiB",
+    timeoutSeconds: 30,
+  },
+  async (request) => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "User must be authenticated");
+    }
+
+    const userId = request.auth.uid;
+    const data = request.data as {
+      targetAccountId: string;
+      access?: "admin" | "moderator" | "member";
+      idempotencyKey?: string;
+    };
+
+    // Validate required fields
+    if (!data.targetAccountId) {
+      throw new HttpsError("invalid-argument", "Target account ID is required");
+    }
+    // Validate access when provided
+    const validAccess = ["admin", "moderator", "member"] as const;
+    if (data.access && !validAccess.includes(data.access as any)) {
+      throw new HttpsError("invalid-argument", "Invalid access role");
+    }
+
+    // Prevent self-relationships
+    if (userId === data.targetAccountId) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Cannot create relationship with yourself",
+      );
+    }
+
+    try {
+      await RelationshipService.createRelationship(userId, data as any);
+
+      logger.info(`Relationship request created`, {
+        initiatorId: userId,
+        targetAccountId: data.targetAccountId,
+      });
+
+      return {
+        success: true,
+        message: "Relationship request sent successfully",
+      };
+    } catch (error) {
+      logger.error("Relationship creation failed:", error);
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError("internal", "Relationship request failed");
+    }
+  },
+);
+
+/**
+ * Update relationship status (accept, reject, block)
+ */
+export const updateRelationship = onCall(
+  {
+    region: "us-central1",
+    enforceAppCheck: false,
+    memory: "256MiB",
+    timeoutSeconds: 30,
+  },
+  async (request) => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "User must be authenticated");
+    }
+
+    const userId = request.auth.uid;
+    const raw = request.data as any;
+    const targetAccountId: string | undefined = raw?.targetAccountId;
+    const updateData: UpdateRelationshipRequest & {accountId?: string} =
+      (raw?.updates as any) ||
+      ((): any => {
+        const {targetAccountId: _omit, ...rest} = raw || {};
+        return rest;
+      })();
+
+    if (!targetAccountId) {
+      throw new HttpsError("invalid-argument", "Target account ID is required");
+    }
+
+    // Require at least one supported field
+    const hasAnyUpdate =
+      !!updateData.status ||
+      !!updateData.access ||
+      !!updateData.role ||
+      !!updateData.roleId ||
+      Object.prototype.hasOwnProperty.call(updateData, "roleIds");
+    if (!hasAnyUpdate) {
+      throw new HttpsError(
+        "invalid-argument",
+        "No valid relationship updates provided",
+      );
+    }
+
+    // Validate status
+    if (updateData.status) {
+      const validStatuses = ["accepted", "declined", "blocked"];
+      if (!validStatuses.includes(updateData.status)) {
+        throw new HttpsError("invalid-argument", "Invalid status");
+      }
+    }
+
+    try {
+      await RelationshipService.updateRelationship(
+        userId,
+        targetAccountId,
+        updateData,
+      );
+
+      logger.info(`Relationship updated`, {
+        userId,
+        accountId: (updateData as any)?.accountId,
+        targetAccountId,
+        status: updateData.status,
+      });
+
+      return {
+        success: true,
+        message: `Relationship ${updateData.status} successfully`,
+      };
+    } catch (error) {
+      logger.error("Relationship update failed:", error);
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError("internal", "Relationship update failed");
+    }
+  },
+);
+
+/**
+ * Remove/delete a relationship
+ */
+export const deleteRelationship = onCall(
+  {
+    region: "us-central1",
+    enforceAppCheck: false,
+    memory: "256MiB",
+    timeoutSeconds: 30,
+  },
+  async (request) => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "User must be authenticated");
+    }
+
+    const userId = request.auth.uid;
+    const {targetAccountId, accountId} = request.data as {
+      targetAccountId: string;
+      accountId?: string;
+    };
+
+    if (!targetAccountId) {
+      throw new HttpsError("invalid-argument", "Target account ID is required");
+    }
+
+    try {
+      await RelationshipService.deleteRelationship(
+        userId,
+        targetAccountId,
+        accountId,
+      );
+
+      logger.info(`Relationship deleted`, {
+        userId,
+        accountId,
+        targetAccountId,
+      });
+
+      return {
+        success: true,
+        message: "Relationship removed successfully",
+      };
+    } catch (error) {
+      logger.error("Relationship deletion failed:", error);
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError("internal", "Relationship deletion failed");
+    }
+  },
+);
+
+/**
+ * Get relationships for an account
+ */
+export const getRelationships = onCall(
+  {
+    region: "us-central1",
+    enforceAppCheck: false,
+    memory: "512MiB",
+    timeoutSeconds: 30,
+  },
+  async (request) => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "User must be authenticated");
+    }
+
+    const userId = request.auth.uid;
+    const {
+      accountId,
+      status,
+      access,
+      limit = 20,
+      startAfter,
+    } = request.data as {
+      accountId?: string;
+      status?: string;
+      access?: "admin" | "moderator" | "member";
+      limit?: number;
+      startAfter?: string;
+    };
+
+    const targetAccountId = accountId || userId; // Default to own account
+
+    try {
+      const results = await RelationshipService.getRelationships(
+        targetAccountId,
+        userId,
+        {
+          status,
+          access,
+          limit: Math.min(limit, 50),
+          startAfter,
+        },
+      );
+
+      return {
+        success: true,
+        relationships: results.relationships,
+        hasMore: results.hasMore,
+        nextCursor: results.nextCursor,
+      };
+    } catch (error) {
+      logger.error("Get relationships failed:", error);
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError("internal", "Failed to get relationships");
+    }
+  },
+);
+
+/**
+ * Get pending relationship requests for the current user
+ */
+export const getPendingRequests = onCall(
+  {
+    region: "us-central1",
+    enforceAppCheck: false,
+    memory: "256MiB",
+    timeoutSeconds: 30,
+  },
+  async (request) => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "User must be authenticated");
+    }
+
+    const userId = request.auth.uid;
+    const {limit = 20, access} = request.data as {
+      limit?: number;
+      access?: "admin" | "moderator" | "member";
+    };
+
+    try {
+      const results = await RelationshipService.getRelationships(
+        userId,
+        userId,
+        {
+          status: "pending",
+          access,
+          limit: Math.min(limit, 50),
+        },
+      );
+
+      return {
+        success: true,
+        pendingRequests: results.relationships,
+        hasMore: results.hasMore,
+        nextCursor: results.nextCursor,
+      };
+    } catch (error) {
+      logger.error("Get pending requests failed:", error);
+      throw new HttpsError("internal", "Failed to get pending requests");
+    }
+  },
+);
+
+/**
+ * Get relationship stats for an account
+ */
+export const getRelationshipStats = onCall(
+  {
+    region: "us-central1",
+    enforceAppCheck: false,
+    memory: "256MiB",
+    timeoutSeconds: 30,
+  },
+  async (request) => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "User must be authenticated");
+    }
+
+    const userId = request.auth.uid;
+    const {accountId} = request.data as {accountId?: string};
+
+    const targetAccountId = accountId || userId;
+
+    try {
+      const stats = await RelationshipService.getRelationshipStats(
+        targetAccountId,
+        userId,
+      );
+
+      return {
+        success: true,
+        stats,
+      };
+    } catch (error) {
+      logger.error("Get relationship stats failed:", error);
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError("internal", "Failed to get relationship stats");
+    }
+  },
+);
+
+/**
+ * Bulk manage relationships (for admin operations)
+ */
+export const bulkUpdateRelationships = onCall(
+  {
+    region: "us-central1",
+    enforceAppCheck: false,
+    memory: "512MiB",
+    timeoutSeconds: 60,
+  },
+  async (request) => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "User must be authenticated");
+    }
+
+    const userId = request.auth.uid;
+    const {targetAccountIds, status, access} = request.data as {
+      targetAccountIds: string[];
+      status: "accepted" | "rejected" | "blocked";
+      access?: "admin" | "moderator" | "member";
+    };
+
+    if (!targetAccountIds || !Array.isArray(targetAccountIds) || !status) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Target account IDs and status are required",
+      );
+    }
+
+    if (targetAccountIds.length > 50) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Cannot update more than 50 relationships at once",
+      );
+    }
+
+    try {
+      const results = await RelationshipService.bulkUpdateRelationships(
+        userId,
+        targetAccountIds,
+        {status, access},
+      );
+
+      logger.info(`Bulk relationship update completed`, {
+        userId,
+        count: targetAccountIds.length,
+        status,
+      });
+
+      return {
+        success: true,
+        updated: results.updated,
+        failed: results.failed,
+      };
+    } catch (error) {
+      logger.error("Bulk relationship update failed:", error);
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError("internal", "Bulk relationship update failed");
+    }
+  },
+);

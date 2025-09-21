@@ -25,8 +25,8 @@ import {
   AlertController,
   ModalController,
 } from "@ionic/angular";
-import {Observable, Subscription, combineLatest} from "rxjs";
-import {map, take} from "rxjs/operators";
+import {Observable, Subscription, combineLatest, of} from "rxjs";
+import {map, take, switchMap} from "rxjs/operators";
 import {
   Account,
   RelatedAccount,
@@ -41,6 +41,7 @@ import * as AccountActions from "../../../../state/actions/account.actions";
 import {NotificationService} from "../../../messaging/services/notification.service";
 import {AccessService} from "../../../../core/services/access.service";
 import {ImageUploadModalComponent} from "../../../../shared/components/image-upload-modal/image-upload-modal.component";
+import {TranslateService} from "@ngx-translate/core";
 
 @Component({
   selector: "app-admin-dashboard",
@@ -49,6 +50,7 @@ import {ImageUploadModalComponent} from "../../../../shared/components/image-upl
 })
 export class AdminDashboardPage implements OnInit, OnDestroy {
   account$: Observable<Account | undefined>;
+  ownerAccount$: Observable<Account | undefined>;
   relatedAccounts$: Observable<RelatedAccount[]>;
   currentUser$: Observable<any>;
   accountId: string;
@@ -81,6 +83,12 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
     {value: "member", label: "Member"},
   ];
 
+  // Localization options
+  languageList = [
+    {code: "en", text: "English"},
+    {code: "fr", text: "Français"},
+  ];
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -90,6 +98,7 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
     private modalController: ModalController,
     private notificationService: NotificationService,
     private access: AccessService,
+    private translateService: TranslateService,
   ) {
     this.accountId = this.route.snapshot.paramMap.get("accountId") || "";
 
@@ -99,6 +108,19 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
       selectRelatedAccountsByAccountId(this.accountId),
     );
     this.currentUser$ = this.store.select(selectAuthUser);
+
+    // Owner account (createdBy) details
+    this.ownerAccount$ = this.account$.pipe(
+      switchMap((account) => {
+        const ownerId = account?.createdBy;
+        if (ownerId) {
+          // Ensure owner account is loaded
+          this.store.dispatch(AccountActions.loadAccount({accountId: ownerId}));
+          return this.store.select(selectAccountById(ownerId));
+        }
+        return of(undefined);
+      }),
+    );
 
     // Calculate statistics
     this.memberCount$ = this.relatedAccounts$.pipe(
@@ -422,7 +444,7 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
           (ra) => ra.id === relatedAccountId,
         );
         if (relatedAccount) {
-          const updatedAccount = {...relatedAccount, status: "rejected" as any};
+          const updatedAccount = {...relatedAccount, status: "declined" as any};
           this.store.dispatch(
             AccountActions.updateRelatedAccount({
               accountId: this.accountId,
@@ -432,7 +454,7 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
 
           // Show feedback
           const toast = await this.toastController.create({
-            message: `Request from ${relatedAccount.name} has been rejected`,
+            message: `Request from ${relatedAccount.name} has been declined`,
             duration: 2000,
             color: "warning",
             position: "bottom",
@@ -507,6 +529,28 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
     const policy =
       account.administrativeSettings?.membershipPolicy || "approval";
     return policy; // Return the raw value for the select element
+  }
+
+  // Localization: update preferred language and persist
+  updateLanguage(lang: string) {
+    this.translateService.use(lang);
+    this.account$.pipe(take(1)).subscribe((account) => {
+      if (!account) return;
+      const updatedAccount: Account = {
+        ...account,
+        accessibility: {
+          ...(account.accessibility || {}),
+          preferredLanguage: lang,
+        },
+        settings: {
+          ...(account.settings || {}),
+          language: lang,
+        },
+      } as Account;
+      this.store.dispatch(
+        AccountActions.updateAccount({account: updatedAccount}),
+      );
+    });
   }
 
   // Helper method to capitalize first letter

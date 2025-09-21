@@ -24,7 +24,7 @@ import {Store} from "@ngrx/store";
 import {ActivatedRoute} from "@angular/router";
 import {Observable, Subscription, combineLatest, BehaviorSubject} from "rxjs";
 import {map, filter, take} from "rxjs/operators";
-import {Timestamp, deleteField} from "firebase/firestore";
+import {Timestamp} from "firebase/firestore";
 import {TimeEntry} from "@shared/models/time-entry.model";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {Account} from "@shared/models/account.model";
@@ -34,8 +34,13 @@ import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import {selectAllEntriesForAccount} from "../../../../state/selectors/time-tracking.selectors";
 import {AppState} from "../../../../state/app.state";
-import {AlertController, ToastController} from "@ionic/angular";
+import {
+  AlertController,
+  ToastController,
+  ModalController,
+} from "@ionic/angular";
 import {TimesheetNotificationService} from "../../services/timesheet-notification.service";
+import {NotesModalComponent} from "../../components/notes-modal/notes-modal.component";
 
 interface GroupedEntries {
   userId: string;
@@ -45,6 +50,7 @@ interface GroupedEntries {
   entries: TimeEntry[];
   totalHours: number;
   status: "draft" | "pending" | "approved" | "rejected";
+  projectName?: string;
 }
 
 interface ProjectGroupedEntries {
@@ -73,6 +79,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
   currentUser$!: Observable<AuthUser | null>;
   groupedEntries$!: Observable<GroupedEntries[]>;
   projectGroupedEntries$!: Observable<ProjectGroupedEntries[]>;
+  displayEntries$!: Observable<GroupedEntries[]>;
 
   // Navigation and filtering properties
   currentWeekStart: Date = (() => {
@@ -87,7 +94,6 @@ export class ApprovalsPage implements OnInit, OnDestroy {
 
   // Filter properties
   statusFilter: "all" | "pending" | "approved" | "rejected" = "all";
-  showPendingOnly = false;
   sortBy: "date" | "user" | "hours" | "status" = "date";
   sortDirection: "asc" | "desc" = "desc";
   isProcessing = false;
@@ -105,11 +111,11 @@ export class ApprovalsPage implements OnInit, OnDestroy {
   private statusFilter$ = new BehaviorSubject<
     "all" | "pending" | "approved" | "rejected"
   >("all");
-  private showPendingOnly$ = new BehaviorSubject<boolean>(false);
   private sortBy$ = new BehaviorSubject<"date" | "user" | "hours" | "status">(
     "date",
   );
   private sortDirection$ = new BehaviorSubject<"asc" | "desc">("desc");
+  private viewMode$ = new BehaviorSubject<ViewMode>("by-user");
 
   private subscriptions = new Subscription();
 
@@ -118,6 +124,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private alertController: AlertController,
     private toastController: ToastController,
+    private modalController: ModalController,
     private notificationService: TimesheetNotificationService,
   ) {}
 
@@ -132,7 +139,6 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     this.showAllWeeks$.next(this.showAllWeeks);
     this.currentWeekStart$.next(this.currentWeekStart);
     this.statusFilter$.next(this.statusFilter);
-    this.showPendingOnly$.next(this.showPendingOnly);
     this.sortBy$.next(this.sortBy);
     this.sortDirection$.next(this.sortDirection);
 
@@ -149,43 +155,31 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     // Create grouped entries observables
     this.groupedEntries$ = combineLatest([
       this.store.select(selectAllEntriesForAccount(this.accountId)),
-      this.account$,
       this.showAllWeeks$,
       this.currentWeekStart$,
       this.statusFilter$,
-      this.showPendingOnly$,
       this.sortBy$,
       this.sortDirection$,
     ]).pipe(
-      filter(([entries, account]) => !!entries && !!account),
+      filter(([entries]) => !!entries),
       map(
         ([
           entries,
-          account,
           showAllWeeks,
           currentWeekStart,
           statusFilter,
-          showPendingOnly,
           sortBy,
           sortDirection,
         ]) => {
           const filteredEntries = showAllWeeks
             ? entries
             : this.filterEntriesByWeek(entries, currentWeekStart);
-          let groupedEntries = this.groupEntriesByUserAndWeek(
-            filteredEntries,
-            account!,
-          );
+          let groupedEntries = this.groupEntriesByUserAndWeek(filteredEntries);
 
           // Apply status filtering
           if (statusFilter !== "all") {
             groupedEntries = groupedEntries.filter(
               (group) => group.status === statusFilter,
-            );
-          }
-          if (showPendingOnly) {
-            groupedEntries = groupedEntries.filter(
-              (group) => group.status === "pending",
             );
           }
 
@@ -197,45 +191,35 @@ export class ApprovalsPage implements OnInit, OnDestroy {
 
     this.projectGroupedEntries$ = combineLatest([
       this.store.select(selectAllEntriesForAccount(this.accountId)),
-      this.account$,
       this.showAllWeeks$,
       this.currentWeekStart$,
       this.statusFilter$,
-      this.showPendingOnly$,
       this.sortBy$,
       this.sortDirection$,
     ]).pipe(
-      filter(([entries, account]) => !!entries && !!account),
+      filter(([entries]) => !!entries),
       map(
         ([
           entries,
-          account,
           showAllWeeks,
           currentWeekStart,
           statusFilter,
-          showPendingOnly,
           sortBy,
           sortDirection,
         ]) => {
           const filteredEntries = showAllWeeks
             ? entries
             : this.filterEntriesByWeek(entries, currentWeekStart);
-          let projectGroupedEntries = this.groupEntriesByProject(
-            filteredEntries,
-            account!,
-          );
+          let projectGroupedEntries =
+            this.groupEntriesByProject(filteredEntries);
 
           // Apply status filtering at the user level within projects
-          if (statusFilter !== "all" || showPendingOnly) {
+          if (statusFilter !== "all") {
             projectGroupedEntries = projectGroupedEntries
               .map((project) => ({
                 ...project,
                 users: project.users.filter((user) => {
-                  if (statusFilter !== "all" && user.status !== statusFilter)
-                    return false;
-                  if (showPendingOnly && user.status !== "pending")
-                    return false;
-                  return true;
+                  return user.status === statusFilter;
                 }),
               }))
               .filter((project) => project.users.length > 0);
@@ -249,6 +233,34 @@ export class ApprovalsPage implements OnInit, OnDestroy {
         },
       ),
     );
+
+    this.displayEntries$ = combineLatest([
+      this.groupedEntries$,
+      this.projectGroupedEntries$,
+      this.viewMode$,
+    ]).pipe(
+      map(([groupedEntries, projectGroups, viewMode]) => {
+        let groups = groupedEntries;
+
+        if (viewMode === "by-project") {
+          const projectEntries: GroupedEntries[] = [];
+          projectGroups.forEach((project) => {
+            project.users.forEach((user) => {
+              const userGroups = this.groupEntriesByUserAndWeek(
+                user.entries,
+              ).map((group) => ({
+                ...group,
+                projectName: project.projectName,
+              }));
+              projectEntries.push(...userGroups);
+            });
+          });
+          groups = projectEntries;
+        }
+
+        return this.sortGroupedEntries(groups, this.sortBy, this.sortDirection);
+      }),
+    );
   }
 
   ngOnDestroy() {
@@ -257,10 +269,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     this.currentWeekStart$.complete();
   }
 
-  private groupEntriesByUserAndWeek(
-    entries: TimeEntry[],
-    account: Account,
-  ): GroupedEntries[] {
+  private groupEntriesByUserAndWeek(entries: TimeEntry[]): GroupedEntries[] {
     const grouped = new Map<string, GroupedEntries>();
 
     // Filter out draft entries as they shouldn't appear in approvals
@@ -270,7 +279,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
 
     submittedEntries.forEach((entry) => {
       // Get the start of the week for this entry
-      const entryDate = entry.date.toDate();
+      const entryDate = this.toDate(entry.date);
       const weekStart = this.getWeekStart(entryDate);
       const key = `${entry.userId}_${weekStart.getTime()}`;
 
@@ -330,15 +339,12 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     weekEnd.setDate(weekStart.getDate() + 7);
 
     return entries.filter((entry) => {
-      const entryDate = entry.date.toDate();
+      const entryDate = this.toDate(entry.date);
       return entryDate >= weekStart && entryDate < weekEnd;
     });
   }
 
-  private groupEntriesByProject(
-    entries: TimeEntry[],
-    account: Account,
-  ): ProjectGroupedEntries[] {
+  private groupEntriesByProject(entries: TimeEntry[]): ProjectGroupedEntries[] {
     const grouped = new Map<string, ProjectGroupedEntries>();
 
     // Filter out draft entries as they shouldn't appear in approvals
@@ -443,13 +449,6 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     const alert = await this.alertController.create({
       header: "Reject Timesheet",
       message: `Reject ${group.totalHours} hours for ${group.userName} for week ${this.getWeekRange(group.weekStart)}?`,
-      inputs: [
-        {
-          name: "reason",
-          type: "textarea",
-          placeholder: "Reason for rejection (optional)",
-        },
-      ],
       buttons: [
         {
           text: "Cancel",
@@ -457,8 +456,8 @@ export class ApprovalsPage implements OnInit, OnDestroy {
         },
         {
           text: "Reject",
-          handler: (data) => {
-            this.updateTimesheetStatus(group, "rejected", data.reason);
+          handler: () => {
+            this.updateTimesheetStatus(group, "rejected");
           },
         },
       ],
@@ -470,7 +469,6 @@ export class ApprovalsPage implements OnInit, OnDestroy {
   private updateTimesheetStatus(
     group: GroupedEntries,
     status: "approved" | "rejected",
-    notes?: string,
   ) {
     // Get current user for audit trail
     this.currentUser$
@@ -485,7 +483,6 @@ export class ApprovalsPage implements OnInit, OnDestroy {
             changedByName:
               currentUser!.displayName || currentUser!.email || "Unknown",
             changedAt: approvalTimestamp,
-            ...(notes && {reason: notes}), // Only include reason if notes is provided
           };
 
           // Add to note history for admin actions
@@ -494,9 +491,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
             content:
               status === "approved"
                 ? "Timesheet approved"
-                : notes
-                  ? `Timesheet rejected: ${notes}`
-                  : "Timesheet rejected",
+                : "Timesheet rejected",
             createdBy: currentUser!.uid,
             createdByName:
               currentUser!.displayName || currentUser!.email || "Unknown",
@@ -504,7 +499,6 @@ export class ApprovalsPage implements OnInit, OnDestroy {
             type: "admin" as const,
           };
 
-          // Base entry without rejectionReason
           const baseEntry: TimeEntry = {
             ...entry,
             status,
@@ -516,23 +510,10 @@ export class ApprovalsPage implements OnInit, OnDestroy {
             originalHours: entry.originalHours || entry.hours, // Preserve original if not already set
             statusHistory: [...(entry.statusHistory || []), statusChange],
             noteHistory: [...(entry.noteHistory || []), noteHistoryEntry],
-            // Update notes with rejection reason if applicable
-            notes:
-              notes && status === "rejected"
-                ? `${entry.notes || ""}\n\nRejection reason: ${notes}`.trim()
-                : entry.notes,
           };
 
-          // Handle rejectionReason separately to satisfy TypeScript
-          let updatedEntry: any = baseEntry;
-          if (status === "rejected" && notes) {
-            updatedEntry.rejectionReason = notes;
-          } else if (status === "approved") {
-            updatedEntry.rejectionReason = deleteField();
-          }
-
           this.store.dispatch(
-            TimeTrackingActions.updateTimeEntry({entry: updatedEntry}),
+            TimeTrackingActions.updateTimeEntry({entry: baseEntry}),
           );
         });
 
@@ -543,6 +524,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
             group.weekStart,
             group.totalHours,
             currentUser!.displayName || currentUser!.email || "Unknown",
+            currentUser!.uid,
             group.entries[0].accountId,
           );
         } else if (status === "rejected") {
@@ -550,8 +532,9 @@ export class ApprovalsPage implements OnInit, OnDestroy {
             group.userId,
             group.weekStart,
             group.totalHours,
-            notes || "",
+            "",
             currentUser!.displayName || currentUser!.email || "Unknown",
+            currentUser!.uid,
             group.entries[0].accountId,
           );
         }
@@ -627,6 +610,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
       (mode === "all" || mode === "by-user" || mode === "by-project")
     ) {
       this.viewMode = mode as ViewMode;
+      this.viewMode$.next(this.viewMode);
     }
   }
 
@@ -654,11 +638,6 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     this.statusFilter$.next(status);
   }
 
-  togglePendingOnly(event: any) {
-    this.showPendingOnly = event.detail.checked;
-    this.showPendingOnly$.next(this.showPendingOnly);
-  }
-
   setSortBy(sortBy: "date" | "user" | "hours" | "status") {
     this.sortBy = sortBy;
     this.sortBy$.next(sortBy);
@@ -667,6 +646,37 @@ export class ApprovalsPage implements OnInit, OnDestroy {
   toggleSortDirection() {
     this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc";
     this.sortDirection$.next(this.sortDirection);
+  }
+
+  getViewTitleKey(): string {
+    switch (this.viewMode) {
+      case "by-project":
+        return "time_tracking.timesheets_by_project";
+      case "all":
+        return "time_tracking.all_timesheets";
+      case "by-user":
+      default:
+        return "time_tracking.timesheets_by_user";
+    }
+  }
+
+  getEmptyMessageKey(): string {
+    if (this.viewMode === "by-project") {
+      return "time_tracking.no_project_timesheets_period";
+    }
+    return "time_tracking.no_timesheets_period";
+  }
+
+  getViewIcon(): string {
+    switch (this.viewMode) {
+      case "by-project":
+        return "folder-outline";
+      case "all":
+        return "list-outline";
+      case "by-user":
+      default:
+        return "person-outline";
+    }
   }
 
   // Sorting methods
@@ -729,8 +739,8 @@ export class ApprovalsPage implements OnInit, OnDestroy {
             break;
           case "date":
             // For projects, sort by first entry date
-            const aFirstDate = a.entries[0]?.date.toDate() || new Date(0);
-            const bFirstDate = b.entries[0]?.date.toDate() || new Date(0);
+            const aFirstDate = this.toDate(a.entries[0]?.date);
+            const bFirstDate = this.toDate(b.entries[0]?.date);
             comparison = aFirstDate.getTime() - bFirstDate.getTime();
             break;
         }
@@ -787,6 +797,34 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
+  toDate(value: any): Date {
+    if (!value) {
+      return new Date(0);
+    }
+    if (value instanceof Date) {
+      return value;
+    }
+    if (typeof value.toDate === "function") {
+      return value.toDate();
+    }
+    if (typeof value === "string") {
+      return new Date(value);
+    }
+    if (typeof value === "number") {
+      return new Date(value);
+    }
+    if (typeof value.seconds === "number") {
+      const millis = value.seconds * 1000 + (value.nanoseconds ?? 0) / 1e6;
+      return new Date(millis);
+    }
+    if (typeof value._seconds === "number") {
+      const millis = value._seconds * 1000 + (value._nanoseconds ?? 0) / 1e6;
+      return new Date(millis);
+    }
+    const coerced = new Date(value);
+    return isNaN(coerced.getTime()) ? new Date(0) : coerced;
+  }
+
   private performBulkAction(status: "approved" | "rejected") {
     // Prevent multiple clicks
     if (this.isProcessing) {
@@ -823,5 +861,28 @@ export class ApprovalsPage implements OnInit, OnDestroy {
           this.isProcessing = false;
         }, 100); // Small delay to ensure all dispatches are processed
       });
+  }
+
+  hasEntryNotes(entry: TimeEntry): boolean {
+    return !!(
+      (entry.notes && entry.notes.trim().length > 0) ||
+      (entry.noteHistory && entry.noteHistory.length > 0)
+    );
+  }
+
+  async openNotesModal(entry: TimeEntry) {
+    const modal = await this.modalController.create({
+      component: NotesModalComponent,
+      componentProps: {
+        entry,
+        date: this.toDate(entry.date),
+        projectName: entry.projectName || "Unknown Project",
+        isAdmin: true,
+      },
+      cssClass: "notes-modal",
+      backdropDismiss: true,
+    });
+
+    await modal.present();
   }
 }

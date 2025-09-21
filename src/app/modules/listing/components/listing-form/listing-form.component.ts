@@ -19,7 +19,10 @@
 ***********************************************************************************************/
 import {Component, Input, Output, EventEmitter, OnInit} from "@angular/core";
 import {FormBuilder, FormGroup, Validators, FormArray} from "@angular/forms";
-import {Listing, SkillRequirement} from "@shared/models/listing.model";
+import {
+  Listing,
+  SkillRequirement,
+} from "../../../../../../shared/models/listing.model";
 import {Timestamp} from "firebase/firestore";
 import {Store} from "@ngrx/store";
 import {
@@ -31,6 +34,8 @@ import {
   tap,
   map,
   of,
+  catchError,
+  shareReplay,
 } from "rxjs";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
@@ -40,13 +45,14 @@ import {
   Email,
   PhoneNumber,
   Address,
-} from "@shared/models/account.model";
+} from "../../../../../../shared/models/account.model";
 import {AccountSectionsService} from "../../../account/services/account-sections.service";
 import {
   selectAccountById,
   selectAllAccounts,
 } from "../../../../state/selectors/account.selectors";
-import {AuthUser} from "@shared/models/auth-user.model";
+import {AuthUser} from "../../../../../../shared/models/auth-user.model";
+import {AccountsService} from "../../../../core/services/accounts.service";
 
 @Component({
   selector: "app-listing-form",
@@ -73,8 +79,13 @@ export class ListingFormComponent implements OnInit {
     private fb: FormBuilder,
     private store: Store,
     private sections: AccountSectionsService,
+    private accountsService: AccountsService,
   ) {
     this.initForm();
+  }
+
+  get isEditMode(): boolean {
+    return !!this.listing?.id;
   }
 
   private initForm() {
@@ -136,6 +147,20 @@ export class ListingFormComponent implements OnInit {
   }
 
   ngOnInit() {
+    // Always ensure auth user and accounts are loaded for owner selection
+    this.store
+      .select(selectAuthUser)
+      .pipe(first())
+      .subscribe((user) => {
+        if (user?.uid) {
+          this.store.dispatch(
+            AccountActions.loadAccount({accountId: user.uid}),
+          );
+          this.store.dispatch(AccountActions.loadAccounts());
+          this.authUser = user;
+        }
+      });
+
     if (this.listing) {
       const formValue = {
         ...this.listing,
@@ -149,22 +174,17 @@ export class ListingFormComponent implements OnInit {
       };
       this.listingForm.patchValue(formValue);
       this.initializeFormArrays(this.listing);
+      // Prevent changing owner only when truly editing an existing listing
+      if (this.isEditMode) {
+        this.listingForm.get("ownerAccountId")?.disable({emitEvent: false});
+      }
     } else {
       // New listing - populate from account and owner choices
       this.store
         .select(selectAuthUser)
         .pipe(
           first(),
-          tap((user) => {
-            if (user?.uid) {
-              this.store.dispatch(
-                AccountActions.loadAccount({accountId: user.uid}),
-              );
-              // Fetch accounts to populate owner selection
-              this.store.dispatch(AccountActions.loadAccounts());
-              this.authUser = user;
-            }
-          }),
+          tap(() => {}),
           switchMap((user) => this.store.select(selectAccountById(user!.uid))),
           filter((account): account is Account => account !== null),
           take(1),
@@ -179,32 +199,31 @@ export class ListingFormComponent implements OnInit {
             ownerAccountType: account.type,
           });
         });
-
-      // Build list of accounts user can post as: self + groups where user is admin/moderator
-      this.ownerAccounts$ = combineLatest([
-        this.store.select(selectAuthUser),
-        this.store.select(selectAllAccounts),
-      ]).pipe(
-        map(([user, accounts]) => {
-          if (!user) return [] as Account[];
-          return (accounts || []).filter((acc) => {
-            if (!acc) return false;
-            if (acc.id === user.uid) return true;
-            const anyAcc: any = acc as any;
-            const inAdmins = Array.isArray(anyAcc.adminIds)
-              ? anyAcc.adminIds.includes(user.uid)
-              : false;
-            const inModerators = Array.isArray(anyAcc.moderatorIds)
-              ? anyAcc.moderatorIds.includes(user.uid)
-              : false;
-            return acc.type === "group" && (inAdmins || inModerators);
-          });
-        }),
-      );
-
-      // Keep a live cache for use in event handlers (can't use pipes there)
-      this.ownerAccounts$.subscribe((accs) => (this.ownerAccountsCache = accs));
     }
+
+    // Build list of accounts user can post as in all modes (new or duplicate)
+    this.ownerAccounts$ = this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user) return of([] as Account[]);
+
+        const userAccount$ = this.store
+          .select(selectAccountById(user.uid))
+          .pipe(
+            filter((account): account is Account => !!account),
+            take(1),
+          );
+
+        const manageable$ = this.accountsService.getUserManageableAccounts();
+
+        return combineLatest([userAccount$, manageable$]).pipe(
+          map(([userAccount, manageable]) => [userAccount, ...manageable]),
+        );
+      }),
+      shareReplay(1),
+    );
+
+    // Keep a live cache for use in event handlers (can't use pipes there)
+    this.ownerAccounts$.subscribe((accs) => (this.ownerAccountsCache = accs));
   }
 
   onOwnerAccountChange(event: CustomEvent) {
@@ -222,7 +241,7 @@ export class ListingFormComponent implements OnInit {
   ) {
     this.listingForm.patchValue({organization: account.name});
     if (this.useAccountContactInfo) {
-      this.setContactInfoFromSource(contactInfo ?? account.contactInformation);
+      this.setContactInfoFromSource(contactInfo || null);
     }
   }
 
@@ -277,19 +296,17 @@ export class ListingFormComponent implements OnInit {
     if (checked) {
       // Backup current manual entries
       this.backupContactInfo = this.getContactInfoFromForm();
-      if (!this.authUser?.uid) return;
-      // Re-pull from sections/contactInfo and populate
+      // Determine selected owner account (fallback to auth user)
+      const selectedOwnerId =
+        this.listingForm.get("ownerAccountId")?.value || this.authUser?.uid;
+      if (!selectedOwnerId) return;
+      // Re-pull from sections/contactInfo of selected owner and populate
       this.sections
-        .contactInfo$(this.authUser.uid)
+        .contactInfo$(selectedOwnerId)
         .pipe(take(1))
         .subscribe((ci: ContactInformation | null) => {
           if (ci) {
             this.setContactInfoFromSource(ci);
-          } else if (this.currentAccount?.contactInformation) {
-            // Fallback to base account contact info if subdoc missing
-            this.setContactInfoFromSource(
-              this.currentAccount.contactInformation,
-            );
           } else {
             // Nothing to load; keep backup intact so user can toggle off
           }

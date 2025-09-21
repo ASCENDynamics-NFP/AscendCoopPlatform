@@ -25,8 +25,13 @@ import {Observable, of} from "rxjs";
 import {catchError, map} from "rxjs/operators";
 import {AngularFirestore, Query} from "@angular/fire/compat/firestore";
 import {DocumentData, WhereFilterOp} from "firebase/firestore";
-import {Listing} from "@shared/models/listing.model";
+import {Listing} from "../../../../shared/models/listing.model";
 import {environment} from "../../../environments/environment";
+import {
+  FirebaseFunctionsService,
+  CreateListingRequest,
+  SearchListingsRequest,
+} from "./firebase-functions.service";
 
 /** Listings Service */
 @Injectable({
@@ -42,10 +47,112 @@ export class ListingsService {
   constructor(
     private http: HttpClient,
     private afs: AngularFirestore,
+    private firebaseFunctions: FirebaseFunctionsService,
   ) {}
 
+  // ===== CALLABLE FUNCTION METHODS =====
+
   /**
-   * Fetch homepage listings with user's location
+   * Create a new listing using callable function
+   */
+  createListing(listingData: CreateListingRequest): Observable<any> {
+    return this.firebaseFunctions.createListing(listingData);
+  }
+
+  /**
+   * Update listing using callable function
+   */
+  updateListing(
+    listingId: string,
+    updates: Partial<CreateListingRequest>,
+  ): Observable<any> {
+    return this.firebaseFunctions.updateListing(listingId, updates);
+  }
+
+  /**
+   * Delete listing using callable function
+   */
+  deleteListing(listingId: string): Observable<any> {
+    return this.firebaseFunctions.deleteListing(listingId);
+  }
+
+  /**
+   * Apply to listing using callable function
+   */
+  applyToListing(
+    listingId: string,
+    notes?: string,
+    customMessage?: string,
+    resumeUrl?: string | null,
+    coverLetterUrl?: string | null,
+    firstName?: string | null,
+    lastName?: string | null,
+    email?: string | null,
+    phone?: string | null,
+  ): Observable<any> {
+    return this.firebaseFunctions.applyToListing(
+      listingId,
+      notes,
+      customMessage,
+      resumeUrl,
+      coverLetterUrl,
+      firstName,
+      lastName,
+      email,
+      phone,
+    );
+  }
+
+  /**
+   * Save a listing for the current user via callable
+   */
+  saveListing(listingId: string): Observable<any> {
+    return this.firebaseFunctions.saveListing(listingId);
+  }
+
+  /**
+   * Unsave a listing for the current user via callable
+   */
+  unsaveListing(listingId: string): Observable<any> {
+    return this.firebaseFunctions.unsaveListing(listingId);
+  }
+
+  removeApplication(listingId: string): Observable<any> {
+    return this.firebaseFunctions.removeMyApplication(listingId);
+  }
+
+  manageApplication(
+    listingId: string,
+    applicantId: string,
+    status: "accepted" | "declined",
+    notes?: string,
+  ): Observable<any> {
+    return this.firebaseFunctions.manageApplication(
+      listingId,
+      applicantId,
+      status,
+      notes,
+    );
+  }
+
+  /**
+   * Search listings using callable function with filtering options
+   */
+  searchListings(searchParams: SearchListingsRequest): Observable<Listing[]> {
+    return this.firebaseFunctions.searchListings(searchParams).pipe(
+      map((result) => result.listings || []),
+      catchError((error) => {
+        console.error("Error searching listings:", error);
+        return of([]);
+      }),
+    );
+  }
+
+  // ===== ENHANCED HOMEPAGE LISTINGS =====
+
+  /**
+   * Fetch homepage listings with user's location using callable functions when available
+   * Falls back to legacy HTTP endpoint for backward compatibility
    * @param location User's browser location (latitude, longitude)
    * @param limit Number of listings to fetch (default: 10)
    * @param status Listing status filter (default: active)
@@ -57,19 +164,43 @@ export class ListingsService {
     status: string = "active",
     category?: string,
   ): Observable<Listing[]> {
-    let params = new HttpParams()
-      .set("limit", limit)
-      .set("status", status)
-      .set("latitude", location.latitude)
-      .set("longitude", location.longitude);
+    // Use searchListings callable function for enhanced functionality
+    const searchParams: SearchListingsRequest = {
+      location: {
+        latitude: location.latitude,
+        longitude: location.longitude,
+      },
+      radiusKm: 50, // Default 50km radius for homepage
+      limit,
+      ...(category && {category}),
+    };
 
-    if (category) {
-      params = params.set("category", category);
-    }
+    return this.searchListings(searchParams).pipe(
+      catchError(() => {
+        // Fallback to legacy HTTP endpoint if callable function fails
+        console.warn(
+          "Callable function failed, falling back to legacy endpoint",
+        );
+        let params = new HttpParams()
+          .set("limit", limit)
+          .set("status", status)
+          .set("latitude", location.latitude)
+          .set("longitude", location.longitude);
 
-    return this.http.get<Listing[]>(this.endpoint, {params});
+        if (category) {
+          params = params.set("category", category);
+        }
+
+        return this.http.get<Listing[]>(this.endpoint, {params});
+      }),
+    );
   }
 
+  // ===== LEGACY METHODS (keeping for backward compatibility) =====
+
+  /**
+   * @deprecated Use searchListings() with SearchListingsRequest instead
+   */
   getCollectionWithCondition<T>(
     collectionName: string,
     field: string,
@@ -94,6 +225,9 @@ export class ListingsService {
     );
   }
 
+  /**
+   * @deprecated Use searchListings() with SearchListingsRequest instead
+   */
   getDocuments<T>(
     fullPath: string,
     conditions?: {field: string; operator: WhereFilterOp; value: any}[],

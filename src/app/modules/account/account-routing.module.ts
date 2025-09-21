@@ -28,7 +28,6 @@ import {
 import {DetailsPage} from "./pages/details/details.page";
 import {EditPage} from "./pages/edit/edit.page";
 import {RegistrationPage} from "./pages/registration/registration.page";
-import {SettingsPage} from "./pages/settings/settings.page";
 import {ListPage} from "./relatedAccount/pages/list/list.page";
 import {ListingsListPage} from "./relatedListings/pages/listings-list/listings-list.page";
 import {ProjectsPage} from "./pages/projects/projects.page";
@@ -48,11 +47,6 @@ const routes: Routes = [
     path: ":accountId/projects",
     component: ProjectsPage,
     canActivate: [authGuard, adminGroupOwnerGuard],
-  },
-  {
-    path: ":accountId/settings",
-    component: SettingsPage,
-    canActivate: [authGuard, ownerOrAdminGuard],
   },
   {
     path: ":accountId/admin",

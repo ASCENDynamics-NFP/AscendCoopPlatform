@@ -55,6 +55,7 @@ export class WeekViewComponent implements OnInit, OnChanges {
   @Input() entries: TimeEntry[] = [];
   @Input() accountId: string = "";
   @Input() userId: string = "";
+  @Input() currentUserName: string = "";
   @Input() initialRows: {projectId: string | null}[] = [];
   @Input() readonly: boolean = false;
   @Input() status: "draft" | "pending" | "approved" | "rejected" | "mixed" =
@@ -68,6 +69,20 @@ export class WeekViewComponent implements OnInit, OnChanges {
   rowTotals: number[] = [];
   columnTotals: number[] = [];
   totalHours = 0;
+
+  // Track pending changes for manual save
+  pendingChanges: Map<
+    string,
+    {
+      projectId: string;
+      day: Date;
+      hours: number;
+      notes?: string;
+      noteHistory?: any[];
+    }
+  > = new Map();
+  isLoading = false;
+  hasUnsavedChanges = false;
 
   constructor(
     private store: Store,
@@ -139,11 +154,31 @@ export class WeekViewComponent implements OnInit, OnChanges {
   }
 
   getEntry(projectId: string, day: Date): TimeEntry | undefined {
+    const toJsDate = (val: any): Date | null => {
+      try {
+        if (!val) return null;
+        if (typeof val.toDate === "function") return val.toDate();
+        if (val instanceof Date) return val as Date;
+        if (typeof val === "string") return new Date(val);
+        // Fallback attempt (e.g., {seconds, nanoseconds})
+        if (
+          typeof val === "object" &&
+          "seconds" in val &&
+          "nanoseconds" in val
+        ) {
+          const ms = val.seconds * 1000 + Math.floor(val.nanoseconds / 1e6);
+          return new Date(ms);
+        }
+        return new Date(val);
+      } catch {
+        return null;
+      }
+    };
+
     return this.entries.find((e) => {
-      return (
-        e.projectId === projectId &&
-        e.date.toDate().toDateString() === day.toDateString()
-      );
+      if (e.projectId !== projectId) return false;
+      const d = toJsDate(e.date);
+      return d ? d.toDateString() === day.toDateString() : false;
     });
   }
 
@@ -175,45 +210,42 @@ export class WeekViewComponent implements OnInit, OnChanges {
     const inputValue = target.value;
     const hours = Number(inputValue);
 
+    // Check if the existing entry is approved
+    const existing = this.getEntry(projectId, day);
+    if (existing && existing.status === "approved") {
+      this.showValidationError(
+        "Cannot modify approved time entries. Please contact an administrator if changes are needed.",
+      );
+      target.value = existing.hours.toString();
+      return;
+    }
+
     // Validate input
     if (inputValue !== "" && (isNaN(hours) || hours < 0 || hours > 24)) {
       // Show validation error and reset input
       this.showValidationError("Hours must be between 0 and 24");
-      const existing = this.getEntry(projectId, day);
       target.value = existing ? existing.hours.toString() : "";
       return;
     }
 
-    const existing = this.getEntry(projectId, day);
-    if (!existing && (!target.value || hours === 0)) {
-      return;
-    }
-    if (existing && hours === 0) {
-      // Delete the entry
-      this.store.dispatch(
-        TimeTrackingActions.deleteTimeEntry({entry: existing}),
-      );
-      this.successHandler.handleSuccess("Time entry deleted!");
-      return;
-    }
+    // Track the change locally instead of immediately saving
+    const changeKey = `${projectId}-${day.toDateString()}`;
 
-    const entry: TimeEntry = {
-      id: existing ? existing.id : "",
-      accountId: this.accountId,
-      projectId,
-      userId: existing ? existing.userId : this.userId,
-      date: existing ? existing.date : Timestamp.fromDate(day),
-      hours,
-      status:
-        existing?.status === "rejected" ? "draft" : existing?.status || "draft", // Convert rejected back to draft when edited
-      notes: existing?.notes || "",
-    };
-
-    // Always dispatch the save action and let the store handle the state
-    this.store.dispatch(TimeTrackingActions.saveTimeEntry({entry}));
-    this.successHandler.handleSuccess(
-      existing ? "Time entry updated!" : "Time entry saved!",
-    );
+    if (inputValue === "" || hours === 0) {
+      // Mark for deletion or remove pending change
+      const existing = this.getEntry(projectId, day);
+      if (existing) {
+        this.pendingChanges.set(changeKey, {projectId, day, hours: 0});
+        this.hasUnsavedChanges = true;
+      } else {
+        this.pendingChanges.delete(changeKey);
+        this.hasUnsavedChanges = this.pendingChanges.size > 0;
+      }
+    } else {
+      // Track the new hours value
+      this.pendingChanges.set(changeKey, {projectId, day, hours});
+      this.hasUnsavedChanges = true;
+    }
   }
 
   isSelected(id: string, excludeIndex?: number): boolean {
@@ -364,6 +396,15 @@ export class WeekViewComponent implements OnInit, OnChanges {
 
   async openNotesModal(projectId: string, day: Date) {
     const entry = this.getEntry(projectId, day);
+
+    // Check if the entry is approved
+    if (entry && entry.status === "approved") {
+      this.showValidationError(
+        "Cannot modify notes for approved time entries. Please contact an administrator if changes are needed.",
+      );
+      return;
+    }
+
     const project = this.availableProjects.find((p) => p.id === projectId);
 
     const modal = await this.modalController.create({
@@ -379,33 +420,24 @@ export class WeekViewComponent implements OnInit, OnChanges {
     });
 
     await modal.present();
-  }
 
-  private saveNotes(projectId: string, day: Date, notes: string) {
-    const existing = this.getEntry(projectId, day);
+    // Handle the result when modal is dismissed
+    const result = await modal.onDidDismiss();
+    if (result.data && (result.data.notes || result.data.noteHistory)) {
+      // Track the note changes as pending
+      const changeKey = `${projectId}-${day.toDateString()}`;
+      const existingChange = this.pendingChanges.get(changeKey);
+      const currentHours = existingChange?.hours ?? entry?.hours ?? 0;
 
-    if (!existing && (!notes || notes.trim().length === 0)) {
-      // No entry exists and no notes to save
-      return;
-    }
+      this.pendingChanges.set(changeKey, {
+        projectId,
+        day,
+        hours: currentHours,
+        notes: result.data.notes,
+        noteHistory: result.data.noteHistory,
+      });
 
-    const entry: TimeEntry = {
-      id: existing ? existing.id : "",
-      accountId: this.accountId,
-      projectId,
-      userId: existing ? existing.userId : this.userId,
-      date: existing ? existing.date : Timestamp.fromDate(day),
-      hours: existing?.hours || 0,
-      status: existing?.status || "draft",
-      notes: notes.trim(),
-    };
-
-    this.store.dispatch(TimeTrackingActions.saveTimeEntry({entry}));
-
-    if (notes.trim()) {
-      this.successHandler.handleSuccess("Notes saved!");
-    } else {
-      this.successHandler.handleSuccess("Notes cleared!");
+      this.hasUnsavedChanges = true;
     }
   }
 
@@ -415,6 +447,14 @@ export class WeekViewComponent implements OnInit, OnChanges {
   isProjectArchived(projectId: string): boolean {
     const activeProjectIds = this.availableProjects.map((p) => p.id);
     return !activeProjectIds.includes(projectId);
+  }
+
+  /**
+   * Check if a time entry is approved
+   */
+  isEntryApproved(projectId: string, day: Date): boolean {
+    const entry = this.getEntry(projectId, day);
+    return entry?.status === "approved";
   }
 
   /**
@@ -508,5 +548,103 @@ export class WeekViewComponent implements OnInit, OnChanges {
       return `${project.name} (${project.standardCategory})`;
     }
     return project.name;
+  }
+
+  /**
+   * Save all pending changes to the store
+   */
+  async saveChanges() {
+    if (!this.hasUnsavedChanges || this.isLoading) {
+      return;
+    }
+
+    this.isLoading = true;
+    let savedCount = 0;
+    let deletedCount = 0;
+
+    try {
+      // Process all pending changes
+      for (const [changeKey, change] of this.pendingChanges) {
+        const {projectId, day, hours, notes, noteHistory} = change;
+        const existing = this.getEntry(projectId, day);
+
+        if (hours === 0 && existing && !notes && !noteHistory) {
+          // Delete the entry only if no notes
+          this.store.dispatch(
+            TimeTrackingActions.deleteTimeEntry({entry: existing}),
+          );
+          deletedCount++;
+        } else if (hours > 0 || notes || noteHistory) {
+          // Create or update entry
+          const entry: TimeEntry = {
+            id: existing ? existing.id : "",
+            accountId: this.accountId,
+            projectId,
+            userId: existing ? existing.userId : this.userId,
+            date: existing ? existing.date : Timestamp.fromDate(day),
+            hours: hours > 0 ? hours : existing?.hours || 0,
+            status:
+              existing?.status === "rejected"
+                ? "draft"
+                : existing?.status || "draft",
+            notes: notes || existing?.notes || "",
+            projectName:
+              existing?.projectName ||
+              this.getProjectDetails(projectId)?.name ||
+              "",
+            userName: existing?.userName || this.currentUserName,
+          };
+
+          // Add noteHistory if present
+          if (noteHistory) {
+            (entry as any).noteHistory = noteHistory;
+          }
+
+          this.store.dispatch(TimeTrackingActions.saveTimeEntry({entry}));
+          savedCount++;
+        }
+      }
+
+      // Clear pending changes
+      this.pendingChanges.clear();
+      this.hasUnsavedChanges = false;
+
+      // Show success message
+      let message = "";
+      if (savedCount > 0 && deletedCount > 0) {
+        message = `${savedCount} entries saved, ${deletedCount} entries deleted!`;
+      } else if (savedCount > 0) {
+        message = `${savedCount} ${savedCount === 1 ? "entry" : "entries"} saved!`;
+      } else if (deletedCount > 0) {
+        message = `${deletedCount} ${deletedCount === 1 ? "entry" : "entries"} deleted!`;
+      }
+
+      if (message) {
+        this.successHandler.handleSuccess(message);
+      }
+    } catch (error) {
+      console.error("Error saving changes:", error);
+      this.successHandler.handleSuccess(
+        "Error saving changes. Please try again.",
+      );
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  /**
+   * Check if a specific cell has pending changes
+   */
+  hasPendingChange(projectId: string, day: Date): boolean {
+    const changeKey = `${projectId}-${day.toDateString()}`;
+    return this.pendingChanges.has(changeKey);
+  }
+
+  /**
+   * Get the pending value for a cell (for display purposes)
+   */
+  getPendingValue(projectId: string, day: Date): number | undefined {
+    const changeKey = `${projectId}-${day.toDateString()}`;
+    return this.pendingChanges.get(changeKey)?.hours;
   }
 }

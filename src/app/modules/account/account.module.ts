@@ -21,7 +21,6 @@ import {CUSTOM_ELEMENTS_SCHEMA, NgModule} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
-import {SettingsPage} from "./pages/settings/settings.page";
 import {SettingsComponent} from "./pages/settings/components/settings/settings.component";
 import {SharedModule} from "../../shared/shared.module";
 import {TranslateModule} from "@ngx-translate/core";
@@ -75,7 +74,6 @@ import {TemplatePreviewModalComponent} from "./pages/projects/components/templat
 
 @NgModule({
   declarations: [
-    SettingsPage,
     SettingsComponent,
     EditPage,
     EditMenuComponent,

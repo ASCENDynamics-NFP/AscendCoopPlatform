@@ -72,13 +72,14 @@ export const accountReducer = createReducer(
     loading: true,
     error: null,
   })),
-  on(AccountActions.loadAccountsSuccess, (state, {accounts}) =>
-    accountAdapter.setAll(accounts, {
+  on(AccountActions.loadAccountsSuccess, (state, {accounts}) => {
+    // Append or update incoming accounts without clearing existing ones
+    return accountAdapter.upsertMany(accounts, {
       ...state,
       loading: false,
       accountsLastUpdated: Date.now(),
-    }),
-  ),
+    });
+  }),
   on(AccountActions.loadAccountsFailure, (state, {error}) => ({
     ...state,
     loading: false,

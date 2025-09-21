@@ -1,0 +1,210 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===== Helper Functions =====
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if user is the owner of the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Check if user is admin (implement your admin check logic)
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/accounts/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.type == 'admin';
+    }
+
+    // Check account visibility
+    function accountVisibility(acc) {
+      return acc.privacySettings != null &&
+             acc.privacySettings.profile != null &&
+             acc.privacySettings.profile.visibility != null
+             ? acc.privacySettings.profile.visibility
+             : 'public';
+    }
+
+    function isPublicAccount() {
+      let acc = resource.data;
+      return accountVisibility(acc) == 'public' && acc.type != null && acc.type != 'new';
+    }
+
+    // ===== Account Rules =====
+    match /accounts/{userId} {
+      // Read: Public accounts or own account
+      allow read: if isPublicAccount() || isOwner(userId) || isAdmin();
+      
+      // Write: Only through callable functions (no direct client writes)
+      allow create, update, delete: if false;
+
+      // Account subcollections
+      match /sections/{sectionId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if false; // Only through callable functions
+      }
+
+      match /relatedAccounts/{relationshipId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if false; // Only through callable functions
+      }
+
+      match /timeEntries/{entryId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if false; // Only through callable functions
+      }
+
+      match /notifications/{notificationId} {
+        allow read: if isOwner(userId);
+        allow write: if false; // Only through callable functions
+      }
+    }
+
+    // ===== Listing Rules =====
+    match /listings/{listingId} {
+      // Read: All authenticated users can read active listings
+      allow read: if isAuthenticated() && resource.data.status == 'active';
+      
+      // Write: Only through callable functions
+      allow create, update, delete: if false;
+
+      // Listing subcollections
+      match /applications/{applicationId} {
+        allow read: if isAuthenticated() && 
+                    (isOwner(resource.data.applicantId) || 
+                     isOwner(get(/databases/$(database)/documents/listings/$(listingId)).data.createdBy) ||
+                     isAdmin());
+        allow write: if false; // Only through callable functions
+      }
+
+      match /relatedAccounts/{relationshipId} {
+        allow read: if isAuthenticated();
+        allow write: if false; // Only through callable functions
+      }
+
+      match /timeEntries/{entryId} {
+        allow read: if isAuthenticated() && 
+                    (isOwner(resource.data.accountId) || 
+                     isOwner(get(/databases/$(database)/documents/listings/$(listingId)).data.createdBy) ||
+                     isAdmin());
+        allow write: if false; // Only through callable functions
+      }
+    }
+
+    // ===== Project Rules =====
+    match /projects/{projectId} {
+      // Read: Project members and admins
+      allow read: if isAuthenticated() && 
+                  (resource.data.createdBy == request.auth.uid ||
+                   request.auth.uid in resource.data.memberIds ||
+                   isAdmin());
+      
+      // Write: Only through callable functions
+      allow create, update, delete: if false;
+
+      // Project subcollections
+      match /assignments/{assignmentId} {
+        allow read: if isAuthenticated() && 
+                    (isOwner(resource.data.accountId) || 
+                     isOwner(get(/databases/$(database)/documents/projects/$(projectId)).data.createdBy) ||
+                     isAdmin());
+        allow write: if false; // Only through callable functions
+      }
+
+      match /timeEntries/{entryId} {
+        allow read: if isAuthenticated() && 
+                    (isOwner(resource.data.accountId) || 
+                     isOwner(get(/databases/$(database)/documents/projects/$(projectId)).data.createdBy) ||
+                     isAdmin());
+        allow write: if false; // Only through callable functions
+      }
+
+      match /relatedAccounts/{relationshipId} {
+        allow read: if isAuthenticated();
+        allow write: if false; // Only through callable functions
+      }
+    }
+
+    // ===== Relationship Rules =====
+    match /relationships/{relationshipId} {
+      // Read: Participants in the relationship and admins
+      allow read: if isAuthenticated() && 
+                  (resource.data.fromAccountId == request.auth.uid ||
+                   resource.data.toAccountId == request.auth.uid ||
+                   isAdmin());
+      
+      // Write: Only through callable functions
+      allow create, update, delete: if false;
+    }
+
+    // ===== Notification Rules =====
+    match /notifications/{notificationId} {
+      // Read: Only the recipient
+      allow read: if isAuthenticated() && resource.data.recipientId == request.auth.uid;
+      
+      // Write: Only through callable functions (except marking as read)
+      allow create, delete: if false;
+      allow update: if isAuthenticated() && 
+                    resource.data.recipientId == request.auth.uid &&
+                    request.resource.data.diff(resource.data).affectedKeys()
+                      .hasOnly(['isRead', 'readAt']);
+    }
+
+    // ===== Time Entry Rules =====
+    match /timeEntries/{entryId} {
+      // Read: Entry owner and related project/listing owners and admins
+      allow read: if isAuthenticated() && 
+                  (resource.data.accountId == request.auth.uid ||
+                   isAdmin());
+      
+      // Write: Only through callable functions
+      allow create, update, delete: if false;
+    }
+
+    // ===== Derived Collections (READ-ONLY) =====
+    // These are maintained by server-side functions and should never be written directly
+
+    match /{path=**}/relatedAccounts/{relationshipId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Strictly no direct writes - maintained by functions
+    }
+
+    match /{path=**}/timeEntries/{entryId} {
+      allow read: if isAuthenticated() && 
+                  (resource.data.accountId == request.auth.uid || isAdmin());
+      allow write: if false; // Strictly no direct writes - maintained by functions
+    }
+
+    match /{path=**}/notifications/{notificationId} {
+      allow read: if isAuthenticated() && resource.data.recipientId == request.auth.uid;
+      allow write: if false; // Strictly no direct writes - maintained by functions
+    }
+
+    // ===== Search Indexes (READ-ONLY) =====
+    match /searchIndexes/{indexId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Maintained by functions only
+    }
+
+    // ===== System Collections =====
+    match /systemConfig/{configId} {
+      allow read: if isAdmin();
+      allow write: if false; // System configuration is deployment-managed
+    }
+
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false; // Audit logs are system-generated only
+    }
+
+    // ===== Default Deny =====
+    // Deny all other operations not explicitly allowed
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

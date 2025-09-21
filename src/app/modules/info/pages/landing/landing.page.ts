@@ -19,7 +19,7 @@
  ***********************************************************************************************/
 // src/app/modules/info/pages/landing/landing.page.ts
 
-import {Component, ElementRef, ViewChild} from "@angular/core";
+import {Component, ElementRef, ViewChild, AfterViewInit} from "@angular/core";
 import {SwiperOptions} from "swiper/types";
 import {MetaService} from "../../../../core/services/meta.service";
 
@@ -28,7 +28,7 @@ import {MetaService} from "../../../../core/services/meta.service";
   templateUrl: "./landing.page.html",
   styleUrls: ["./landing.page.scss"],
 })
-export class LandingPage {
+export class LandingPage implements AfterViewInit {
   @ViewChild("swiperElement") swiperElement: ElementRef | undefined;
 
   swiperConfig: SwiperOptions = {

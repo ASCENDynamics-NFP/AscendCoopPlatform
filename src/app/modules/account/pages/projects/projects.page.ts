@@ -1,6 +1,6 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
-import {Observable, combineLatest} from "rxjs";
+import {Observable, combineLatest, firstValueFrom} from "rxjs";
 import {map, first, filter, take} from "rxjs/operators";
 import {Store} from "@ngrx/store";
 import {AlertController} from "@ionic/angular";
@@ -559,9 +559,9 @@ export class ProjectsPage implements OnInit {
     if (!project.id) return;
     // Defensive: prevent deletion if project has any time entries
     try {
-      const counts = await this.entriesByProjectCount$
-        .pipe(take(1))
-        .toPromise();
+      const counts = await firstValueFrom(
+        this.entriesByProjectCount$.pipe(take(1)),
+      );
       const hasEntries = !!counts && counts[project.id] > 0;
       if (hasEntries || !this.entriesAccessAllowed) {
         this.errorHandler.handleFirebaseAuthError({
@@ -652,7 +652,9 @@ export class ProjectsPage implements OnInit {
   }
 
   private sortProjects(projects: Project[]): Project[] {
-    return projects.sort((a, b) => {
+    // Always sort a copy to avoid mutating NgRx-derived arrays
+    const arr = [...projects];
+    return arr.sort((a, b) => {
       let comparison = 0;
 
       switch (this.selectedSortBy) {

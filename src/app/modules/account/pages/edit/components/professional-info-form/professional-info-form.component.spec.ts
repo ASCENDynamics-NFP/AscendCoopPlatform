@@ -23,8 +23,9 @@ import {CommonModule} from "@angular/common";
 import {ProfessionalInfoFormComponent} from "./professional-info-form.component";
 import {provideMockStore} from "@ngrx/store/testing";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
+import {getFirebaseTestProviders} from "../../../../../../testing/test-utilities";
 
-describe("ProfessionalInfoComponent", () => {
+describe("ProfessionalInfoFormComponent", () => {
   let component: ProfessionalInfoFormComponent;
   let fixture: ComponentFixture<ProfessionalInfoFormComponent>;
 
@@ -32,7 +33,7 @@ describe("ProfessionalInfoComponent", () => {
     TestBed.configureTestingModule({
       declarations: [ProfessionalInfoFormComponent],
       imports: [IonicModule.forRoot(), CommonModule],
-      providers: [provideMockStore({})],
+      providers: [provideMockStore({}), ...getFirebaseTestProviders()],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 

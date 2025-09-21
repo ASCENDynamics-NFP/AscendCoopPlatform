@@ -25,13 +25,13 @@ import {
   SimpleChanges,
 } from "@angular/core";
 import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {
-  Account,
-  WebLink,
-  Address,
-} from "../../../../../../../../shared/models/account.model";
+import {Account} from "../../../../../../../../shared/models/account.model";
 import {Timestamp} from "firebase/firestore";
 import {Store} from "@ngrx/store";
+import {AccountSectionsService} from "../../../../services/account-sections.service";
+import {take} from "rxjs/operators";
+import {AccountsService} from "../../../../../../core/services/accounts.service";
+import {firstValueFrom} from "rxjs";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 import {formatPhoneNumber} from "../../../../../../core/utils/phone.util";
 
@@ -51,6 +51,8 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
   constructor(
     private fb: FormBuilder,
     private store: Store,
+    private sections: AccountSectionsService,
+    private accountsService: AccountsService,
   ) {
     this.profileForm = this.createForm();
   }
@@ -59,6 +61,19 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
     if (this.account) {
       console.log("ngOnInit - account:", this.account);
       this.populateForm(this.account);
+      // Load gated contact info from sections subdoc when available (owner/admin)
+      if (this.account.id) {
+        this.sections
+          .contactInfo$(this.account.id)
+          .pipe(take(1))
+          .subscribe((ci) => {
+            if (ci) {
+              this.populateEmails(ci.emails || []);
+              this.populatePhoneNumbers(ci.phoneNumbers || []);
+              this.populateAddresses(ci.addresses || []);
+            }
+          });
+      }
     }
   }
 
@@ -66,6 +81,19 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
     if (changes["account"] && changes["account"].currentValue) {
       console.log("ngOnChanges - account:", changes["account"].currentValue);
       this.populateForm(changes["account"].currentValue);
+      const acc = changes["account"].currentValue as Account;
+      if (acc?.id) {
+        this.sections
+          .contactInfo$(acc.id)
+          .pipe(take(1))
+          .subscribe((ci) => {
+            if (ci) {
+              this.populateEmails(ci.emails || []);
+              this.populatePhoneNumbers(ci.phoneNumbers || []);
+              this.populateAddresses(ci.addresses || []);
+            }
+          });
+      }
     }
   }
 
@@ -219,14 +247,8 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
       }
     }, 100);
 
-    // Populate email arrays
-    this.populateEmails(account.contactInformation?.emails || []);
-
-    // Populate phone arrays
-    this.populatePhoneNumbers(account.contactInformation?.phoneNumbers || []);
-
-    // Populate addresses arrays
-    this.populateAddresses(account.contactInformation?.addresses || []);
+    // Do not populate contact info from base account document.
+    // Contact info is loaded from sections/contactInfo via AccountSectionsService.
 
     // Populate web links
     this.populateWebLinks(account.webLinks || []);
@@ -405,12 +427,12 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
     this.webLinksArray.removeAt(index);
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.profileForm.valid && !this.isSubmitting) {
       this.isSubmitting = true;
       const formValue = this.profileForm.value;
 
-      // Convert form data to Account structure
+      // Convert form data to Account structure (exclude private contact info)
       const updatedAccount: Account = {
         ...this.account!,
         name: formValue.name,
@@ -430,8 +452,18 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
             ),
           }),
         },
-        contactInformation: {
-          ...this.account?.contactInformation,
+        webLinks: formValue.webLinks
+          .filter((link: any) => link.url?.trim())
+          .map((link: any) => ({
+            name: link.name || link.category || "Website",
+            url: link.url,
+            category: link.category || "Website",
+          })),
+      };
+
+      // Save private contact info in subcollection
+      try {
+        const payload = {
           emails: formValue.contactInformation.emails || [],
           phoneNumbers: formValue.contactInformation.phoneNumbers || [],
           addresses:
@@ -447,15 +479,15 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
                 isPrimaryAddress: addr.isPrimaryAddress || false,
               })) || [],
           preferredMethodOfContact: "Email",
-        },
-        webLinks: formValue.webLinks
-          .filter((link: any) => link.url?.trim())
-          .map((link: any) => ({
-            name: link.name || link.category || "Website",
-            url: link.url,
-            category: link.category || "Website",
-          })),
-      };
+        } as any;
+        await firstValueFrom(
+          this.accountsService.updateAccount(this.account!.id, {
+            contactInformation: payload,
+          } as any),
+        );
+      } catch (e) {
+        console.warn("Failed to save contact info subdocument:", e);
+      }
 
       this.store.dispatch(
         AccountActions.updateAccount({

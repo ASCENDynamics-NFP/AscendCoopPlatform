@@ -19,6 +19,7 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
+import {CommonModule} from "@angular/common";
 
 import {VolunteerPreferenceInfoComponent} from "./volunteer-preference-info.component";
 
@@ -28,8 +29,8 @@ describe("VolunteerPreferenceInfoComponent", () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [],
-      imports: [IonicModule.forRoot()],
+      declarations: [VolunteerPreferenceInfoComponent],
+      imports: [IonicModule.forRoot(), CommonModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(VolunteerPreferenceInfoComponent);

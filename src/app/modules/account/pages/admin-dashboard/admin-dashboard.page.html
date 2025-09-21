@@ -101,10 +101,6 @@
           <ion-label>{{ "admin.settings" | translate }}</ion-label>
           <ion-icon name="settings-outline"></ion-icon>
         </ion-segment-button>
-        <ion-segment-button value="privacy">
-          <ion-label>Privacy</ion-label>
-          <ion-icon name="lock-closed-outline"></ion-icon>
-        </ion-segment-button>
       </ion-segment>
     </div>
 
@@ -235,11 +231,8 @@
                 [class.public]="account.privacySettings?.profile?.visibility === 'public'"
                 [class.private]="account.privacySettings?.profile?.visibility === 'private'"
               >
-                {{
-                  account.privacySettings?.profile?.visibility === 'public'
-                    ? 'Public'
-                    : 'Private'
-                }}
+                {{ account.privacySettings?.profile?.visibility === 'public' ?
+                'Public' : 'Private' }}
               </div>
               <div class="stat-label">Privacy</div>
               <ion-icon
@@ -1400,61 +1393,97 @@
       <div *ngIf="selectedSegment === 'settings'" class="settings-section">
         <h3>Group Settings</h3>
 
-        <!-- Privacy Controls -->
+        <!-- Admin Management -->
         <ion-card>
           <ion-card-header>
-            <ion-card-title>Privacy Settings</ion-card-title>
+            <ion-card-title>Admin Management</ion-card-title>
             <ion-card-subtitle
-              >Control who can see and join your group</ion-card-subtitle
+              >Manage group administrators and permissions</ion-card-subtitle
             >
           </ion-card-header>
           <ion-card-content>
-            <ion-list>
-              <ion-item>
-                <ion-label>
-                  <h3>Group Visibility</h3>
-                  <p>Who can view your group's profile and information</p>
-                </ion-label>
-                <ion-select
-                  *ngIf="account$ | async as account"
-                  [value]="account.privacySettings?.profile?.visibility || 'public'"
-                  (ionChange)="updatePrivacy($event.detail.value)"
-                  interface="popover"
+            <div *ngIf="account$ | async as account" class="admin-info">
+              <div *ngIf="currentUser$ | async as currentUser">
+                <!-- Only show owner info if current user is NOT the owner -->
+                <ng-container
+                  *ngIf="account.createdBy && account.createdBy !== currentUser.uid"
                 >
-                  <ion-select-option value="public"
-                    >Public - Anyone can view and find your
-                    group</ion-select-option
-                  >
-                  <ion-select-option value="private"
-                    >Private - Only members can view group
-                    details</ion-select-option
-                  >
-                </ion-select>
-              </ion-item>
+                  <ng-container *ngIf="ownerAccount$ | async as owner">
+                    <p>
+                      <strong>Group Owner:</strong>
+                      {{ owner?.name || account.createdBy }}
+                      <ng-container *ngIf="owner?.email">
+                        ({{ owner.email }})
+                      </ng-container>
+                    </p>
+                  </ng-container>
+                </ng-container>
+                <!-- Show friendly message if current user IS the owner -->
+                <p
+                  *ngIf="account.createdBy === currentUser.uid"
+                  class="owner-badge"
+                >
+                  <ion-icon name="shield-checkmark" color="primary"></ion-icon>
+                  <strong>You are the group owner</strong>
+                </p>
+              </div>
+              <p>
+                <strong>Total Administrators:</strong>
+                <ng-container *ngIf="(adminCount$ | async) === 1">
+                  1 (you)
+                </ng-container>
+                <ng-container
+                  *ngIf="(adminCount$ | async) && (adminCount$ | async)! > 1"
+                >
+                  {{ adminCount$ | async }} (including you)
+                </ng-container>
+              </p>
+            </div>
 
-              <ion-item>
-                <ion-label>
-                  <h3>Membership Policy</h3>
-                  <p>How new members can join your group</p>
-                </ion-label>
-                <ion-select
-                  *ngIf="account$ | async as account"
-                  [value]="getMembershipPolicy(account)"
-                  (ionChange)="updateMembershipPolicy($event.detail.value)"
-                  interface="popover"
+            <ion-button
+              expand="block"
+              fill="outline"
+              (click)="selectedSegment = 'members'"
+            >
+              <ion-icon name="people-outline" slot="start"></ion-icon>
+              Manage Admin Roles
+            </ion-button>
+
+            <ion-text color="medium">
+              <p>
+                <small
+                  >Use the Members section to promote members to admin status or
+                  modify admin permissions.</small
                 >
-                  <ion-select-option value="open"
-                    >Open - Anyone can join</ion-select-option
-                  >
-                  <ion-select-option value="approval"
-                    >Approval Required</ion-select-option
-                  >
-                  <ion-select-option value="invitation"
-                    >Invitation Only</ion-select-option
-                  >
-                </ion-select>
-              </ion-item>
-            </ion-list>
+              </p>
+            </ion-text>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Localization -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Localization</ion-card-title>
+            <ion-card-subtitle
+              >Choose your preferred language</ion-card-subtitle
+            >
+          </ion-card-header>
+          <ion-card-content>
+            <ion-item *ngIf="account$ | async as account">
+              <ion-label>Language</ion-label>
+              <ion-select
+                [value]="account.accessibility?.preferredLanguage || account.settings?.language || 'en'"
+                (ionChange)="updateLanguage($event.detail.value)"
+                interface="popover"
+              >
+                <ion-select-option
+                  *ngFor="let lang of languageList"
+                  [value]="lang.code"
+                >
+                  {{ lang.text }}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
           </ion-card-content>
         </ion-card>
 
@@ -1550,170 +1579,32 @@
           </ion-card-content>
         </ion-card>
 
-        <!-- Admin Management -->
+        <!-- Privacy Controls -->
         <ion-card>
           <ion-card-header>
-            <ion-card-title>Admin Management</ion-card-title>
+            <ion-card-title>Privacy</ion-card-title>
             <ion-card-subtitle
-              >Manage group administrators and permissions</ion-card-subtitle
+              >Control who can see and join your group</ion-card-subtitle
             >
           </ion-card-header>
           <ion-card-content>
-            <div *ngIf="account$ | async as account" class="admin-info">
-              <div *ngIf="currentUser$ | async as currentUser">
-                <!-- Only show owner info if current user is NOT the owner -->
-                <p
-                  *ngIf="account.createdBy && account.createdBy !== currentUser.uid"
-                >
-                  <strong>Group Owner:</strong> {{ account.createdBy }}
-                </p>
-                <!-- Show friendly message if current user IS the owner -->
-                <p
-                  *ngIf="account.createdBy === currentUser.uid"
-                  class="owner-badge"
-                >
-                  <ion-icon name="shield-checkmark" color="primary"></ion-icon>
-                  <strong>You are the group owner</strong>
-                </p>
+            <ion-list>
+              <!-- Embedded privacy settings (dedupes Group Visibility) -->
+              <div style="margin-bottom: 12px">
+                <app-settings-form
+                  *ngIf="account$ | async as account"
+                  [authUser]="(currentUser$ | async) || null"
+                  [account]="account"
+                  [privacyOnly]="true"
+                ></app-settings-form>
               </div>
-              <p>
-                <strong>Total Administrators:</strong>
-                <ng-container *ngIf="(adminCount$ | async) === 1">
-                  1 (you)
-                </ng-container>
-                <ng-container
-                  *ngIf="(adminCount$ | async) && (adminCount$ | async)! > 1"
-                >
-                  {{ adminCount$ | async }} (including you)
-                </ng-container>
-              </p>
-            </div>
 
-            <ion-button
-              expand="block"
-              fill="outline"
-              (click)="selectedSegment = 'members'"
-            >
-              <ion-icon name="people-outline" slot="start"></ion-icon>
-              Manage Admin Roles
-            </ion-button>
-
-            <ion-text color="medium">
-              <p>
-                <small
-                  >Use the Members section to promote members to admin status or
-                  modify admin permissions.</small
-                >
-              </p>
-            </ion-text>
+              <!-- Membership Policy moved into settings component -->
+            </ion-list>
           </ion-card-content>
         </ion-card>
 
-        <!-- Group Status Management -->
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>Group Status</ion-card-title>
-            <ion-card-subtitle>
-              Manage your group's visibility and status
-            </ion-card-subtitle>
-          </ion-card-header>
-          <ion-card-content>
-            <!-- Active Group Status -->
-            <div *ngIf="!(isGroupInactive() | async)" class="status-section">
-              <div class="status-indicator active">
-                <ion-icon name="checkmark-circle" color="success"></ion-icon>
-                <div class="status-info">
-                  <h3>Group is Active</h3>
-                  <p>
-                    Your group is visible in search results and accepting new
-                    members
-                  </p>
-                </div>
-              </div>
-
-              <div class="status-actions">
-                <ion-button
-                  fill="outline"
-                  color="warning"
-                  (click)="showDeactivateGroupConfirmation()"
-                >
-                  <ion-icon name="pause-outline" slot="start"></ion-icon>
-                  Temporarily Deactivate
-                </ion-button>
-              </div>
-
-              <div class="status-details">
-                <ion-text color="medium">
-                  <p>
-                    <strong>Deactivating your group will:</strong>
-                  </p>
-                  <ul>
-                    <li>Hide your group from search results</li>
-                    <li>Prevent new member requests</li>
-                    <li>Set all listings to inactive</li>
-                    <li>Notify existing members</li>
-                  </ul>
-                  <p>
-                    <small
-                      >You can reactivate your group at any time by logging
-                      in.</small
-                    >
-                  </p>
-                </ion-text>
-              </div>
-            </div>
-
-            <!-- Inactive Group Status -->
-            <div *ngIf="isGroupInactive() | async" class="status-section">
-              <div class="status-indicator inactive">
-                <ion-icon name="pause-circle" color="warning"></ion-icon>
-                <div class="status-info">
-                  <h3>Group is Inactive</h3>
-                  <p>
-                    Your group is hidden from search results and not accepting
-                    new members
-                  </p>
-                </div>
-              </div>
-
-              <div class="status-actions">
-                <ion-button
-                  fill="solid"
-                  color="success"
-                  (click)="reactivateGroup()"
-                >
-                  <ion-icon name="play-outline" slot="start"></ion-icon>
-                  Reactivate Group
-                </ion-button>
-              </div>
-
-              <div class="status-details">
-                <ion-text color="medium">
-                  <p>
-                    <strong>While inactive:</strong>
-                  </p>
-                  <ul>
-                    <li>Group is hidden from public search</li>
-                    <li>New member requests are disabled</li>
-                    <li>Existing members can still access group content</li>
-                    <li>All listings are set to inactive</li>
-                  </ul>
-                </ion-text>
-              </div>
-            </div>
-          </ion-card-content>
-        </ion-card>
-      </div>
-
-      <!-- Privacy Section -->
-      <div *ngIf="selectedSegment === 'privacy'" class="settings-section">
-        <h3>Privacy</h3>
-        <app-settings-form
-          *ngIf="account$ | async as account"
-          [authUser]="(currentUser$ | async) || null"
-          [account]="account"
-          [privacyOnly]="true"
-        ></app-settings-form>
+        <!-- Group Status moved into settings component -->
       </div>
     </div>
   </div>

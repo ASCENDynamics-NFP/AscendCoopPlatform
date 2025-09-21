@@ -63,6 +63,13 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           *ngIf="selectedForm === 'labor'"
           [account]="account"
         ></app-labor-rights-info-form>
+
+        <!-- Settings embedded within Edit page -->
+        <ng-container *ngIf="selectedForm === 'settings'">
+          <ng-container *ngIf="(authUser$ | async) as authUser">
+            <app-settings-form [authUser]="authUser" [account]="account"></app-settings-form>
+          </ng-container>
+        </ng-container>
       </ion-col>
     </ion-row>
   </ion-grid>

@@ -120,9 +120,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           >
             {{ listing.status | titlecase }}
           </ion-badge>
-          <ion-badge color="tertiary"
-            >{{ listing.relationship | titlecase }}</ion-badge
-          >
+          <ion-badge color="tertiary">
+            {{ listing.isSaved ? 'Saved' : (listing.relationship | titlecase) }}
+          </ion-badge>
         </div>
       </ion-label>
 
@@ -130,9 +130,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <div class="listing-actions" slot="end">
         <!-- Primary action buttons (always visible) -->
         <div class="primary-actions">
-          <!-- Save/Unsave button for non-owner listings -->
+          <!-- Save button (also available for owner listings) -->
           <ion-button
-            *ngIf="listing.relationship !== 'owner' && listing.relationship !== 'saved'"
+            *ngIf="!listing.isSaved"
             fill="clear"
             size="small"
             color="medium"
@@ -141,9 +141,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             <ion-icon name="bookmark-outline" slot="icon-only"></ion-icon>
           </ion-button>
 
-          <!-- Unsave button for saved listings -->
+          <!-- Unsave button for saved listings (any relationship) -->
           <ion-button
-            *ngIf="listing.relationship === 'saved'"
+            *ngIf="listing.isSaved"
             fill="clear"
             size="small"
             color="warning"
@@ -210,7 +210,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
                 <!-- Archive/Unarchive button for owner listings -->
                 <ion-item
-                  *ngIf="listing.relationship === 'owner' && listing.status === 'active'"
+                  *ngIf="listing.relationship === 'owner' && (listing.status === 'active' || listing.status === 'draft')"
                   button
                   (click)="archiveListing(listing); closePopover('trigger-' + listing.id)"
                 >
@@ -227,9 +227,19 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   <ion-label>Reactivate</ion-label>
                 </ion-item>
 
+                <!-- Expire listing (explicitly set status to expired) -->
+                <ion-item
+                  *ngIf="listing.relationship === 'owner' && (listing.status === 'active' || listing.status === 'draft')"
+                  button
+                  (click)="expireListing(listing); closePopover('trigger-' + listing.id)"
+                >
+                  <ion-icon name="time-outline" slot="start"></ion-icon>
+                  <ion-label>Expire</ion-label>
+                </ion-item>
+
                 <!-- Mark as Filled -->
                 <ion-item
-                  *ngIf="listing.relationship === 'owner' && listing.status === 'active'"
+                  *ngIf="listing.relationship === 'owner' && (listing.status === 'active' || listing.status === 'draft')"
                   button
                   (click)="markAsFilled(listing); closePopover('trigger-' + listing.id)"
                 >
@@ -240,9 +250,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   <ion-label>Mark as Filled</ion-label>
                 </ion-item>
 
-                <!-- Duplicate listing -->
+                <!-- Duplicate listing (available for all related listings) -->
                 <ion-item
-                  *ngIf="listing.relationship === 'owner'"
                   button
                   (click)="duplicateListing(listing); closePopover('trigger-' + listing.id)"
                 >

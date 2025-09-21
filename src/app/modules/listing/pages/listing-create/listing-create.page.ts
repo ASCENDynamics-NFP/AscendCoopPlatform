@@ -60,7 +60,7 @@ export class ListingCreatePage implements OnInit {
           this.templateListing = {
             ...listing,
             id: "", // Reset ID for new listing
-            title: `Copy of ${listing.title}`, // Make it clear this is a copy
+            title: listing.title,
             createdAt: undefined as any,
             lastModifiedAt: undefined as any,
             createdBy: "",

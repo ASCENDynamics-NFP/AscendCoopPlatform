@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 // src/app/modules/account/pages/details/components/hero/hero.component.ts
 
-import {Component, Input, OnInit, OnChanges} from "@angular/core";
+import {Component, Input, OnInit, OnChanges, OnDestroy} from "@angular/core";
 import {ModalController, ToastController} from "@ionic/angular";
 import {Router} from "@angular/router";
 import {
@@ -34,19 +34,23 @@ import {selectAuthUser} from "../../../../../../state/selectors/auth.selectors";
 import {firstValueFrom, Observable} from "rxjs";
 import {CreateChatRequest} from "../../../../../messaging/models/chat.model";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
+import {RelationshipService} from "../../../../../../core/services/relationship.service";
 import {TimeEntry} from "../../../../../../../../shared/models/time-entry.model";
 import {
   selectAllEntriesForAccount,
   selectAllEntriesForUser,
 } from "../../../../../../state/selectors/time-tracking.selectors";
 import {map} from "rxjs/operators";
+import {AccountSectionsService} from "../../../../services/account-sections.service";
+import {Subscription} from "rxjs";
+import {ContactInformation} from "@shared/models/account.model";
 
 @Component({
   selector: "app-hero",
   templateUrl: "./hero.component.html",
   styleUrls: ["./hero.component.scss"],
 })
-export class HeroComponent implements OnInit, OnChanges {
+export class HeroComponent implements OnInit, OnChanges, OnDestroy {
   @Input() account!: Account; // Changed from Partial<Account> to Account to ensure properties are defined
   @Input() isProfileOwner: boolean = false;
   @Input() isGroupAdmin = false;
@@ -66,6 +70,8 @@ export class HeroComponent implements OnInit, OnChanges {
     private chatService: ChatService,
     private store: Store<{auth: AuthState}>,
     private toastController: ToastController,
+    private relationshipService: RelationshipService,
+    private sections: AccountSectionsService,
   ) {
     // Initialize observables - will be properly set when account is available
     this.timeEntries$ = new Observable();
@@ -76,13 +82,30 @@ export class HeroComponent implements OnInit, OnChanges {
   ngOnInit() {
     if (this.account?.id) {
       this.initializeTimeTracking();
+      this.subscribeContactInfo();
     }
   }
 
   ngOnChanges() {
     if (this.account?.id) {
       this.initializeTimeTracking();
+      this.subscribeContactInfo();
     }
+  }
+
+  private contactInfoSub?: Subscription;
+  private contactInfo: ContactInformation | null = null;
+
+  private subscribeContactInfo() {
+    if (!this.account?.id) return;
+    this.contactInfoSub?.unsubscribe();
+    this.contactInfoSub = this.sections
+      .contactInfo$(this.account.id)
+      .subscribe((ci: ContactInformation | null) => (this.contactInfo = ci));
+  }
+
+  ngOnDestroy(): void {
+    this.contactInfoSub?.unsubscribe();
   }
 
   private initializeTimeTracking() {
@@ -142,15 +165,13 @@ export class HeroComponent implements OnInit, OnChanges {
   }
 
   get getLocation(): string {
-    if (this.account?.contactInformation?.addresses?.length) {
-      const address = this.account.contactInformation.addresses[0];
-      const parts: string[] = [];
-      if (address?.city) parts.push(address.city);
-      if (address?.state) parts.push(address.state);
-      if (address?.country) parts.push(address.country);
-      return parts.join(", ") || "";
-    }
-    return "";
+    const addr = this.contactInfo?.addresses?.[0];
+    if (!addr) return "";
+    const parts: string[] = [];
+    if (addr.city) parts.push(addr.city);
+    if (addr.state) parts.push(addr.state);
+    if (addr.country) parts.push(addr.country);
+    return parts.join(", ");
   }
 
   get getFoundedDate(): string {
@@ -332,27 +353,9 @@ export class HeroComponent implements OnInit, OnChanges {
         return;
       }
 
-      // Create the related account request - represents current user requesting to connect
-      const relatedAccount: Partial<RelatedAccount> = {
-        id: this.account.id, // Set the ID to the current user's ID (the one making the request)
-        accountId: currentUser.uid, // This should be the current user's ID
-        initiatorId: currentUser.uid, // Current user is initiating the request
-        targetId: this.account.id, // Target account is receiving the request
-        name: this.account.name || currentUser.email || "Unknown User",
-        iconImage: this.account.iconImage || "", // Use iconImage if available
-        tagline: this.account.tagline || "", // We might not have this info for the current user
-        type: this.account.type,
-        status: "pending",
-        createdBy: currentUser.uid,
-        lastModifiedBy: currentUser.uid,
-      };
-
-      // Dispatch the action to create the relationship - send to TARGET account
-      this.store.dispatch(
-        AccountActions.createRelatedAccount({
-          accountId: currentUser.uid, // create record for current user and trigger will create for target
-          relatedAccount: relatedAccount as RelatedAccount,
-        }),
+      // Use callable function to send a friend/connection request (permissions enforced server-side)
+      await firstValueFrom(
+        this.relationshipService.sendFriendRequest(this.account.id),
       );
 
       // Show success message
@@ -360,9 +363,12 @@ export class HeroComponent implements OnInit, OnChanges {
         `Connection request sent to ${this.account.name}`,
         "success",
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error sending connection request:", error);
-      await this.showToast("Failed to send connection request", "danger");
+      const msg = error?.message?.includes("permission")
+        ? "Insufficient permissions to connect"
+        : error?.message || "Failed to send connection request";
+      await this.showToast(msg, "danger");
     }
   }
 

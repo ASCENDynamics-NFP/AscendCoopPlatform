@@ -21,7 +21,7 @@
 
 import {expect} from "chai";
 import * as sinon from "sinon";
-const proxyquire = require("proxyquire");
+import proxyquire from "proxyquire";
 
 describe("onUpdateTimeEntry", () => {
   function setup() {
@@ -53,7 +53,10 @@ describe("onUpdateTimeEntry", () => {
     const {handler, updateStub, incrementStub, docStub} = setup();
     const before = {data: () => ({status: "pending", userId: "u", hours: 2})};
     const after = {data: () => ({status: "approved", userId: "u", hours: 2})};
-    await handler({data: {before, after}, params: {accountId: "a", entryId: "e"}});
+    await handler({
+      data: {before, after},
+      params: {accountId: "a", entryId: "e"},
+    });
     expect(docStub.calledWith("accounts/u")).to.be.true;
     expect(incrementStub.calledWith(2)).to.be.true;
     expect(updateStub.calledOnce).to.be.true;
@@ -63,7 +66,10 @@ describe("onUpdateTimeEntry", () => {
     const {handler, updateStub, incrementStub, docStub} = setup();
     const before = {data: () => ({status: "approved", userId: "u", hours: 3})};
     const after = {data: () => ({status: "pending", userId: "u", hours: 3})};
-    await handler({data: {before, after}, params: {accountId: "a", entryId: "e"}});
+    await handler({
+      data: {before, after},
+      params: {accountId: "a", entryId: "e"},
+    });
     expect(docStub.calledWith("accounts/u")).to.be.true;
     expect(incrementStub.calledWith(-3)).to.be.true;
     expect(updateStub.calledOnce).to.be.true;
@@ -98,7 +104,9 @@ describe("onCreateTimeEntry", () => {
 
   it("increments hours when approved on create", async () => {
     const {handler, updateStub, incrementStub, docStub} = setupCreate();
-    const snapshot = {data: () => ({status: "approved", userId: "u", hours: 4})};
+    const snapshot = {
+      data: () => ({status: "approved", userId: "u", hours: 4}),
+    };
     await handler({data: snapshot, params: {accountId: "a", entryId: "e"}});
     expect(docStub.calledWith("accounts/u")).to.be.true;
     expect(incrementStub.calledWith(4)).to.be.true;
@@ -134,11 +142,12 @@ describe("onDeleteTimeEntry", () => {
 
   it("decrements hours when approved entry deleted", async () => {
     const {handler, updateStub, incrementStub, docStub} = setupDelete();
-    const snapshot = {data: () => ({status: "approved", userId: "u", hours: 2})};
+    const snapshot = {
+      data: () => ({status: "approved", userId: "u", hours: 2}),
+    };
     await handler({data: snapshot, params: {accountId: "a", entryId: "e"}});
     expect(docStub.calledWith("accounts/u")).to.be.true;
     expect(incrementStub.calledWith(-2)).to.be.true;
     expect(updateStub.calledOnce).to.be.true;
   });
 });
-

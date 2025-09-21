@@ -32,6 +32,7 @@ import {
   map,
   distinctUntilChanged,
   shareReplay,
+  take,
 } from "rxjs/operators";
 import {Store} from "@ngrx/store";
 import {ChatService} from "../../services/chat.service";
@@ -204,7 +205,22 @@ export class MessagingPage implements OnInit, OnDestroy {
           handler: () => {
             const uid = this.getCurrentUserId();
             if (uid) {
-              this.router.navigate([`/account/${uid}/settings`]);
+              // Load current user's account and route based on type
+              this.store.dispatch(AccountActions.loadAccount({accountId: uid}));
+              this.store
+                .select(selectAccountById(uid))
+                .pipe(take(1))
+                .subscribe((account) => {
+                  if (account?.type === "group") {
+                    this.router.navigate(["/account", uid, "admin"], {
+                      queryParams: {tab: "settings"},
+                    });
+                  } else {
+                    this.router.navigate([`/account/${uid}/edit`], {
+                      queryParams: {section: "settings"},
+                    });
+                  }
+                });
             }
           },
         },

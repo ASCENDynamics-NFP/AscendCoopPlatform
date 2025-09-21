@@ -25,11 +25,14 @@ import {Store} from "@ngrx/store";
 import {AppState} from "../../../../../state/app.state";
 import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
 import {AuthUser} from "@shared/models/auth-user.model";
-import {Observable} from "rxjs";
-import {take} from "rxjs/operators";
+import {Observable, combineLatest} from "rxjs";
+import {map, take} from "rxjs/operators";
 import * as ListingsActions from "../../../../../state/actions/listings.actions";
 import {ActivatedRoute} from "@angular/router";
-import {selectListingById} from "../../../../../state/selectors/listings.selectors";
+import {
+  selectListingById,
+  selectRelatedAccountsByListingId,
+} from "../../../../../state/selectors/listings.selectors";
 import {Listing} from "@shared/models/listing.model";
 import {AlertController} from "@ionic/angular";
 import {MetaService} from "../../../../../core/services/meta.service";
@@ -52,6 +55,7 @@ export class ApplyPage implements OnInit {
   coverLetterInput!: ElementRef<HTMLInputElement>;
   resumeFileName: string = "";
   coverLetterFileName: string = "";
+  isEditingApplication = false;
 
   constructor(
     private metaService: MetaService,
@@ -92,6 +96,43 @@ export class ApplyPage implements OnInit {
   ionViewWillEnter(): void {
     this.listingId = this.route.snapshot.paramMap.get("id") || "";
     this.store.dispatch(ListingsActions.loadListingById({id: this.listingId}));
+    // Load existing related accounts to check if user already applied
+    this.store.dispatch(
+      ListingsActions.loadListingRelatedAccounts({listingId: this.listingId}),
+    );
+    // If the current user already applied, prefill notes and switch to update label
+    combineLatest([
+      this.authUser$,
+      this.store.select(selectRelatedAccountsByListingId(this.listingId)),
+    ])
+      .pipe(take(1))
+      .subscribe(([authUser, relatedAccounts]) => {
+        const existing = relatedAccounts?.find(
+          (ra: any) => ra.id === authUser?.uid,
+        );
+        if (existing) {
+          this.isEditingApplication = true;
+          // Prefill all editable fields from existing application; fallback to auth user
+          const firstName =
+            (existing as any).firstName ||
+            (authUser?.name || "").split(" ")[0] ||
+            "";
+          const lastName =
+            (existing as any).lastName ||
+            (authUser?.name || "").split(" ").slice(1).join(" ") ||
+            "";
+          const email = (existing as any).email || authUser?.email || "";
+          const phone = (existing as any).phone || authUser?.phoneNumber || "";
+          const notes = (existing as any).notes || "";
+          this.applyForm.patchValue({
+            firstName,
+            lastName,
+            email,
+            phone,
+            notes,
+          });
+        }
+      });
     // Default Meta Tags
     this.metaService.updateMetaTags(
       "Apply to Listing | ASCENDynamics NFP",

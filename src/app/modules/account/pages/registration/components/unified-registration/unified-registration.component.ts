@@ -36,6 +36,14 @@ import {Store} from "@ngrx/store";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 import * as AuthActions from "../../../../../../state/actions/auth.actions";
 import {formatPhoneNumber} from "../../../../../../core/utils/phone.util";
+import {
+  FirebaseFunctionsService,
+  UpdateAccountRequest,
+} from "../../../../../../core/services/firebase-functions.service";
+import {firstValueFrom} from "rxjs";
+import {AccountSectionsService} from "../../../../services/account-sections.service";
+import {take} from "rxjs/operators";
+import {ToastController} from "@ionic/angular";
 
 @Component({
   selector: "app-unified-registration",
@@ -53,6 +61,9 @@ export class UnifiedRegistrationComponent implements OnChanges {
     private fb: FormBuilder,
     private router: Router,
     private store: Store,
+    private firebaseFunctions: FirebaseFunctionsService,
+    private toastController: ToastController,
+    private sections: AccountSectionsService,
   ) {
     this.initializeForm();
   }
@@ -149,44 +160,171 @@ export class UnifiedRegistrationComponent implements OnChanges {
     return this.isGroupRegistration ? "Group Name" : "Name";
   }
 
-  onSubmit() {
-    if (this.account) {
-      const formValue = this.registrationForm.value;
+  async onSubmit() {
+    // Check if user is authenticated
+    const user = await import("firebase/auth").then(
+      ({getAuth}) => getAuth().currentUser,
+    );
+    if (!user) {
+      const toast = await this.toastController.create({
+        message: "Please sign in to update your account",
+        duration: 3000,
+        color: "warning",
+      });
+      await toast.present();
+      return;
+    }
 
-      const baseAccount: Account = {
-        ...this.account,
-        type: this.accountType,
-        name: formValue.name!,
-        tagline: formValue.tagline!,
-        description: formValue.description || "",
-        webLinks: this.buildWebLinksFromForm(formValue),
-        contactInformation: {
-          ...this.account.contactInformation,
-          emails: this.buildEmailsFromForm(formValue),
-          phoneNumbers: this.buildPhoneNumbersFromForm(formValue),
-          addresses: [], // Keep existing addresses
-          preferredMethodOfContact: "Email",
+    // Test authentication before proceeding
+    try {
+      await firstValueFrom(this.firebaseFunctions.testAuthentication());
+    } catch (authError) {
+      const toast = await this.toastController.create({
+        message:
+          "Authentication issue detected. Please sign out and sign in again.",
+        duration: 4000,
+        color: "warning",
+      });
+      await toast.present();
+      return;
+    }
+
+    const formValue = this.registrationForm.value;
+
+    try {
+      const accountId = this.account?.id || user.uid;
+
+      const updateRequest: UpdateAccountRequest = {
+        accountId,
+        updates: {
+          type: this.accountType as "user" | "group",
+          name: formValue.name!,
+          tagline: formValue.tagline || "New and looking to help!",
         },
       };
 
-      // Add group-specific details if it's a group
-      if (this.isGroupRegistration && formValue.groupType) {
-        baseAccount.groupDetails = {
-          ...this.account.groupDetails,
-          groupType: formValue.groupType,
-        };
+      const result = await firstValueFrom(
+        this.firebaseFunctions.updateAccount(updateRequest),
+      );
+      const successMessage = "Account updated successfully!";
+
+      // Persist private contact info via callable (AccountService handles subdoc write)
+      try {
+        const contactInfoPayload = {
+          emails: this.buildEmailsFromForm(formValue),
+          phoneNumbers: this.buildPhoneNumbersFromForm(formValue),
+        } as any;
+        await firstValueFrom(
+          this.firebaseFunctions.updateAccount({
+            accountId,
+            updates: {contactInformation: contactInfoPayload},
+          }),
+        );
+      } catch (e) {
+        console.warn("Failed to save contact info:", e);
       }
 
-      this.store.dispatch(AccountActions.updateAccount({account: baseAccount}));
+      // Show success message
+      const toast = await this.toastController.create({
+        message: successMessage,
+        duration: 2000,
+        color: "success",
+      });
+      await toast.present();
 
-      if (this.redirectSubmit && this.account?.id) {
-        // Force token refresh after account update to get updated custom claims
-        // The auth effects will handle navigation after the token is refreshed
+      if (this.redirectSubmit) {
+        // Proactively update auth user type to reflect completed registration.
+        // This avoids relying on deprecated claim updates and enables navigation.
+        this.store.dispatch(
+          AuthActions.updateAuthUser({
+            user: {type: this.accountType as any} as any,
+          }),
+        );
+
+        // Ensure the latest account document is in the store before any
+        // refresh-based auth user reconstruction runs.
+        try {
+          const auth = await import("firebase/auth").then((m) => m.getAuth());
+          const currentUser = auth.currentUser;
+          if (currentUser?.uid) {
+            this.store.dispatch(
+              AccountActions.loadAccount({accountId: currentUser.uid}),
+            );
+          }
+        } catch {}
+
+        // Also attempt a token refresh to sync any server-side changes.
         setTimeout(() => {
           this.store.dispatch(AuthActions.refreshToken({forceRefresh: true}));
-        }, 1000); // Small delay to allow server-side function to complete
+        }, 500);
       }
+    } catch (error: any) {
+      // Handle specific authentication errors
+      let errorMessage = this.account?.id
+        ? "Account update failed"
+        : "Account creation failed";
+      if (
+        error.message?.includes("Unauthenticated") ||
+        error.message?.includes("Authentication failed")
+      ) {
+        errorMessage =
+          "Authentication expired. Please sign out and sign in again.";
+
+        // Optional: Automatically redirect to login
+        setTimeout(() => {
+          this.router.navigate(["/auth/login"]);
+        }, 2000);
+      } else if (error.message?.includes("User not authenticated")) {
+        errorMessage = "Please sign in to continue";
+        setTimeout(() => {
+          this.router.navigate(["/auth/login"]);
+        }, 2000);
+      } else if (error.message?.includes("already exists")) {
+        errorMessage =
+          "An account already exists for this user. Try updating your profile instead.";
+      } else if (error.message?.includes("not found")) {
+        errorMessage = "Account not found. Please try creating a new account.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      const toast = await this.toastController.create({
+        message: errorMessage,
+        duration: 5000,
+        color: "danger",
+      });
+      await toast.present();
     }
+  }
+
+  private buildEmailsFromFormForAPI(
+    formValue: any,
+  ): Array<{email: string; type?: string}> {
+    const emails: Array<{email: string; type?: string}> = [];
+
+    if (formValue.contactInformation?.primaryEmail) {
+      emails.push({
+        email: formValue.contactInformation.primaryEmail,
+        type: "contact",
+      });
+    }
+
+    return emails;
+  }
+
+  private buildPhoneNumbersFromFormForAPI(
+    formValue: any,
+  ): Array<{number: string; type?: string}> {
+    const phones: Array<{number: string; type?: string}> = [];
+
+    if (formValue.contactInformation?.primaryPhone) {
+      phones.push({
+        number: formValue.contactInformation.primaryPhone,
+        type: "mobile",
+      });
+    }
+
+    return phones;
   }
 
   private buildWebLinksFromForm(formValue: any): WebLink[] {
@@ -248,10 +386,9 @@ export class UnifiedRegistrationComponent implements OnChanges {
     const socialMedia =
       this.account.webLinks?.find((link) => link.category === "Social Media")
         ?.url || "";
-    const primaryEmail =
-      this.account.contactInformation?.emails?.[0]?.email || "";
-    const primaryPhone =
-      this.account.contactInformation?.phoneNumbers?.[0]?.number || "";
+    // Pull primary email/phone from gated sections/contactInfo (no base account fallback)
+    let primaryEmail = "";
+    let primaryPhone = "";
 
     // Patch the form with existing data
     this.registrationForm.patchValue({
@@ -265,6 +402,23 @@ export class UnifiedRegistrationComponent implements OnChanges {
         primaryPhone: primaryPhone,
       },
     });
+
+    // Update primary email/phone asynchronously from sections/contactInfo when available
+    if (this.account.id) {
+      this.sections
+        .contactInfo$(this.account.id)
+        .pipe(take(1))
+        .subscribe((ci) => {
+          const email = ci?.emails?.[0]?.email || "";
+          const phone = ci?.phoneNumbers?.[0]?.number || "";
+          this.registrationForm.patchValue({
+            contactInformation: {
+              primaryEmail: email,
+              primaryPhone: phone,
+            },
+          });
+        });
+    }
 
     // Handle group-specific data
     if (this.isGroupRegistration && this.account.groupDetails) {

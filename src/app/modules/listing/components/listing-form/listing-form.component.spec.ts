@@ -26,6 +26,7 @@ import {Store} from "@ngrx/store";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {Timestamp} from "firebase/firestore";
 import {TranslateTestingModule} from "../../../../shared/testing/translate-testing.module";
+import {getFirebaseTestProviders} from "../../../../testing/test-utilities";
 
 describe("ListingFormComponent", () => {
   let component: ListingFormComponent;
@@ -48,6 +49,7 @@ describe("ListingFormComponent", () => {
             accounts: {selectedAccount: null},
           },
         }),
+        ...getFirebaseTestProviders(),
       ],
     }).compileComponents();
 

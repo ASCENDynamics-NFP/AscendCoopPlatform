@@ -17,7 +17,15 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, EventEmitter, Input, OnChanges, Output} from "@angular/core";
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  OnDestroy,
+  Output,
+} from "@angular/core";
 import {FormBuilder, FormGroup, FormControl, Validators} from "@angular/forms";
 import {TranslateService} from "@ngx-translate/core";
 import {AuthUser} from "@shared/models/auth-user.model";
@@ -30,8 +38,8 @@ import {Store} from "@ngrx/store";
 import {AlertController} from "@ionic/angular";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 import * as AuthActions from "../../../../../../state/actions/auth.actions";
-import {Observable, of} from "rxjs";
-import {map} from "rxjs/operators";
+import {Observable, of, Subscription} from "rxjs";
+import {debounceTime, map} from "rxjs/operators";
 import {selectRelatedAccountsByAccountId} from "../../../../../../state/selectors/account.selectors";
 
 @Component({
@@ -39,13 +47,14 @@ import {selectRelatedAccountsByAccountId} from "../../../../../../state/selector
   templateUrl: "./settings.component.html",
   styleUrls: ["./settings.component.scss"],
 })
-export class SettingsComponent implements OnChanges {
+export class SettingsComponent implements OnChanges, OnInit, OnDestroy {
   @Input() authUser?: AuthUser | null;
   @Input() account?: Account;
   @Input() privacyOnly: boolean = false;
   @Output() languageChange = new EventEmitter<string>();
 
   isDeleting = false;
+  showDeleteExpanded = false;
   relatedAccountsOptions$?: Observable<{id: string; name: string}[]>;
   selectedAllow: {[section: string]: string[]} = {};
   selectedBlock: {[section: string]: string[]} = {};
@@ -97,6 +106,19 @@ export class SettingsComponent implements OnChanges {
     }>;
   }
 
+  private autoSaveSub?: Subscription;
+
+  ngOnInit() {
+    // Auto-save on form value changes with a small debounce
+    this.autoSaveSub = this.settingsForm.valueChanges
+      .pipe(debounceTime(400))
+      .subscribe(() => this.updateSetting());
+  }
+
+  ngOnDestroy() {
+    this.autoSaveSub?.unsubscribe();
+  }
+
   ngOnChanges() {
     this.loadFormData();
     if (this.account?.id) {
@@ -120,10 +142,14 @@ export class SettingsComponent implements OnChanges {
 
   onAllowlistIdsChange(section: string, ids: string[]) {
     this.selectedAllow[section] = ids || [];
+    // Auto-save when allowlist changes
+    this.updateSetting();
   }
 
   onBlocklistIdsChange(section: string, ids: string[]) {
     this.selectedBlock[section] = ids || [];
+    // Auto-save when blocklist changes
+    this.updateSetting();
   }
 
   onLanguageChange() {
@@ -198,6 +224,43 @@ export class SettingsComponent implements OnChanges {
     }
   }
 
+  // --- Group-only administrative controls ---
+  get membershipPolicy(): "open" | "approval" | "invitation" {
+    return (
+      (this.account?.administrativeSettings as any)?.membershipPolicy ||
+      "approval"
+    );
+  }
+
+  updateMembershipPolicy(value: "open" | "approval" | "invitation") {
+    if (!this.account) return;
+    const updatedAccount: Account = {
+      ...this.account,
+      administrativeSettings: {
+        ...(this.account.administrativeSettings || {}),
+        membershipPolicy: value,
+      },
+    } as Account;
+    this.store.dispatch(
+      AccountActions.updateAccount({account: updatedAccount}),
+    );
+  }
+
+  get accountStatus(): "active" | "inactive" | "suspended" {
+    return (this.account?.status as any) || "active";
+  }
+
+  setAccountStatus(status: "active" | "inactive") {
+    if (!this.account) return;
+    const updatedAccount: Account = {
+      ...this.account,
+      status,
+    } as Account;
+    this.store.dispatch(
+      AccountActions.updateAccount({account: updatedAccount}),
+    );
+  }
+
   loadFormData() {
     if (!this.account) return;
     const isUser = this.account.type === "user";
@@ -210,45 +273,50 @@ export class SettingsComponent implements OnChanges {
     };
 
     // Update the form with the account data
-    this.settingsForm.patchValue({
-      privacy:
-        (this.account.privacySettings as any)?.profile?.visibility || "public",
-      language: this.account.accessibility?.preferredLanguage ?? "en",
-      contactInformationVisibility: sanitize(
-        this.account.privacySettings?.contactInformation?.visibility,
-        "related",
-      ),
-      professionalInformationVisibility: sanitize(
-        this.account.privacySettings?.professionalInformation?.visibility,
-        "private",
-      ),
-      laborRightsVisibility: sanitize(
-        this.account.privacySettings?.laborRights?.visibility,
-        "private",
-      ),
-      userListVisibility: sanitize(
-        (this.account.privacySettings as any)?.userList?.visibility ??
-          (this.account.type === "user"
-            ? (this.account.privacySettings as any)?.friendsList?.visibility
-            : (this.account.privacySettings as any)?.membersList?.visibility),
-        "related",
-      ),
-      organizationListVisibility: sanitize(
-        (this.account.privacySettings as any)?.organizationList?.visibility ??
-          (this.account.type === "user"
-            ? (this.account.privacySettings as any)?.membersList?.visibility
-            : (this.account.privacySettings as any)?.partnersList?.visibility),
-        "related",
-      ),
-      roleHierarchyVisibility: sanitize(
-        this.account.privacySettings?.roleHierarchy?.visibility,
-        "related",
-      ),
-      projectsVisibility: sanitize(
-        this.account.privacySettings?.projects?.visibility,
-        "related",
-      ),
-    });
+    this.settingsForm.patchValue(
+      {
+        privacy:
+          (this.account.privacySettings as any)?.profile?.visibility ||
+          "public",
+        language: this.account.accessibility?.preferredLanguage ?? "en",
+        contactInformationVisibility: sanitize(
+          this.account.privacySettings?.contactInformation?.visibility,
+          "related",
+        ),
+        professionalInformationVisibility: sanitize(
+          this.account.privacySettings?.professionalInformation?.visibility,
+          "private",
+        ),
+        laborRightsVisibility: sanitize(
+          this.account.privacySettings?.laborRights?.visibility,
+          "private",
+        ),
+        userListVisibility: sanitize(
+          (this.account.privacySettings as any)?.userList?.visibility ??
+            (this.account.type === "user"
+              ? (this.account.privacySettings as any)?.friendsList?.visibility
+              : (this.account.privacySettings as any)?.membersList?.visibility),
+          "related",
+        ),
+        organizationListVisibility: sanitize(
+          (this.account.privacySettings as any)?.organizationList?.visibility ??
+            (this.account.type === "user"
+              ? (this.account.privacySettings as any)?.membersList?.visibility
+              : (this.account.privacySettings as any)?.partnersList
+                  ?.visibility),
+          "related",
+        ),
+        roleHierarchyVisibility: sanitize(
+          this.account.privacySettings?.roleHierarchy?.visibility,
+          "related",
+        ),
+        projectsVisibility: sanitize(
+          this.account.privacySettings?.projects?.visibility,
+          "related",
+        ),
+      },
+      {emitEvent: false},
+    );
 
     // Initialize picker selections from existing privacySettings arrays
     this.selectedAllow["contactInformation"] =
@@ -387,5 +455,9 @@ export class SettingsComponent implements OnChanges {
       buttons: ["OK"],
     });
     await alert.present();
+  }
+
+  toggleDeleteExpanded() {
+    this.showDeleteExpanded = !this.showDeleteExpanded;
   }
 }

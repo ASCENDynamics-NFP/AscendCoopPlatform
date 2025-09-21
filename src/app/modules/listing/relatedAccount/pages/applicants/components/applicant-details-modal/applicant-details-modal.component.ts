@@ -52,7 +52,7 @@ export class ApplicantDetailsModalComponent {
   }
 
   rejectApplication() {
-    this.updateApplicationStatus("rejected", "Application rejected!");
+    this.updateApplicationStatus("declined", "Application declined!");
   }
 
   acceptApplication() {
@@ -65,7 +65,7 @@ export class ApplicantDetailsModalComponent {
   }
 
   private updateApplicationStatus(
-    status: "applied" | "accepted" | "rejected" | "withdrawn",
+    status: "applied" | "accepted" | "declined" | "withdrawn",
     successMessage: string,
   ) {
     const updatedAccount = {

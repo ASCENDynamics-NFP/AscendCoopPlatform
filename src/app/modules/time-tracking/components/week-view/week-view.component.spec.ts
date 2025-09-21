@@ -75,7 +75,7 @@ describe("WeekViewComponent", () => {
     expect(rows.length).toBe(2);
   });
 
-  it("should dispatch save action on hours change", fakeAsync(() => {
+  it("should track pending changes on hours change but not dispatch immediately", fakeAsync(() => {
     // First set up a project for row 0
     const mockEvent = {detail: {value: "p1"}} as any;
     component.addProjectById(0, mockEvent);
@@ -93,6 +93,16 @@ describe("WeekViewComponent", () => {
     component.onHoursChange(0, day, mockInputEvent);
     tick();
 
+    // Should not dispatch immediately (manual save behavior)
+    expect(store.dispatch).not.toHaveBeenCalled();
+
+    // Should track the change as pending
+    expect(component.hasUnsavedChanges).toBe(true);
+
+    // Should dispatch when saveChanges is called
+    component.saveChanges();
+    tick();
+
     expect(store.dispatch).toHaveBeenCalledWith(
       jasmine.objectContaining({
         type: TimeTrackingActions.saveTimeEntry.type,
@@ -100,7 +110,7 @@ describe("WeekViewComponent", () => {
     );
   }));
 
-  it("should dispatch delete action when hours set to 0", fakeAsync(() => {
+  it("should track pending deletion when hours set to 0 but not dispatch immediately", fakeAsync(() => {
     // First set up a project for row 0 with existing entry
     const mockEvent = {detail: {value: "p1"}} as any;
     component.addProjectById(0, mockEvent);
@@ -118,6 +128,16 @@ describe("WeekViewComponent", () => {
     component.onHoursChange(0, day, mockInputEvent);
     tick();
 
+    // Should not dispatch immediately (manual save behavior)
+    expect(store.dispatch).not.toHaveBeenCalled();
+
+    // Should track the change as pending
+    expect(component.hasUnsavedChanges).toBe(true);
+
+    // Should dispatch delete action when saveChanges is called
+    component.saveChanges();
+    tick();
+
     expect(store.dispatch).toHaveBeenCalledWith(
       jasmine.objectContaining({
         type: TimeTrackingActions.deleteTimeEntry.type,
@@ -125,12 +145,22 @@ describe("WeekViewComponent", () => {
     );
   }));
 
-  it("should include userId when creating new entry", () => {
+  it("should include userId when creating new entry via saveChanges", () => {
+    // First set up a project for row 0
+    const mockEvent = {detail: {value: "p1"}} as any;
+    component.addProjectById(0, mockEvent);
+
     const nextDay = new Date(component.weekStart);
     nextDay.setDate(nextDay.getDate() + 1);
     component.onHoursChange(0, nextDay, {
       target: {value: "3"},
     } as any);
+
+    // Should not dispatch immediately
+    expect(store.dispatch).not.toHaveBeenCalled();
+
+    // Should dispatch with userId when saveChanges is called
+    component.saveChanges();
 
     expect(store.dispatch).toHaveBeenCalledWith(
       jasmine.objectContaining({

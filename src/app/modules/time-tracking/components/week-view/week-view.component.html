@@ -27,15 +27,34 @@
   <div *ngIf="availableProjects.length > 0">
     <div class="week-header">
       <h2>Week of {{ weekStart | date: "MMM d" }}</h2>
-      <ion-button
-        *ngIf="!readonly"
-        (click)="addRow()"
-        fill="outline"
-        size="small"
-      >
-        <ion-icon name="add" slot="start"></ion-icon>
-        {{ "common.add_row" | translate }}
-      </ion-button>
+      <div class="header-actions">
+        <ion-button
+          *ngIf="!readonly"
+          (click)="addRow()"
+          fill="outline"
+          size="small"
+        >
+          <ion-icon name="add" slot="start"></ion-icon>
+          {{ "common.add_row" | translate }}
+        </ion-button>
+
+        <!-- Save Button -->
+        <ion-button
+          *ngIf="!readonly && hasUnsavedChanges"
+          (click)="saveChanges()"
+          color="primary"
+          size="small"
+          [disabled]="isLoading"
+        >
+          <ion-spinner
+            *ngIf="isLoading"
+            name="crescent"
+            slot="start"
+          ></ion-spinner>
+          <ion-icon *ngIf="!isLoading" name="save" slot="start"></ion-icon>
+          {{ isLoading ? "Saving..." : "Save Changes" }}
+        </ion-button>
+      </div>
 
       <!-- Status badges based on actual status -->
       <ion-badge
@@ -153,21 +172,33 @@
               </ion-button>
             </td>
             <td *ngFor="let day of days" class="hours-cell">
-              <div class="hours-input-container">
+              <div
+                class="hours-input-container"
+                [class.has-pending-changes]="
+                  row.projectId && hasPendingChange(row.projectId, day)
+                "
+              >
                 <ion-input
                   type="number"
                   [value]="
-                    row.projectId ? getEntry(row.projectId, day)?.hours : ''
+                    row.projectId
+                      ? hasPendingChange(row.projectId, day)
+                        ? getPendingValue(row.projectId, day)
+                        : getEntry(row.projectId, day)?.hours
+                      : ''
                   "
                   (ionChange)="onHoursChange(i, day, $event)"
                   [disabled]="
                     !row.projectId ||
                     readonly ||
-                    (row.projectId && isProjectArchived(row.projectId))
+                    (row.projectId && isProjectArchived(row.projectId)) ||
+                    isLoading ||
+                    (row.projectId && isEntryApproved(row.projectId, day))
                   "
                   [readonly]="
                     readonly ||
-                    (row.projectId && isProjectArchived(row.projectId))
+                    (row.projectId && isProjectArchived(row.projectId)) ||
+                    (row.projectId && isEntryApproved(row.projectId, day))
                   "
                   placeholder="0"
                   min="0"
@@ -176,26 +207,28 @@
                   class="hours-input no-spinners"
                 ></ion-input>
                 <ion-button
-                  *ngIf="row.projectId && !readonly"
+                  *ngIf="
+                    row.projectId &&
+                    !readonly &&
+                    !isEntryApproved(row.projectId!, day)
+                  "
                   fill="clear"
                   size="small"
                   (click)="openNotesModal(row.projectId!, day)"
                   class="notes-button"
-                  [color]="hasNotes(row.projectId!, day) ? 'primary' : 'medium'"
+                  [color]="
+                    hasNotes(row.projectId!, day) ? 'primary' : undefined
+                  "
                 >
                   <ion-icon
-                    name="document-text-outline"
+                    [name]="
+                      hasNotes(row.projectId!, day)
+                        ? 'document-text'
+                        : 'document-text-outline'
+                    "
                     slot="icon-only"
                   ></ion-icon>
                 </ion-button>
-                <!-- Show notes indicator if entry has notes -->
-                <div
-                  *ngIf="hasNotes(row.projectId!, day)"
-                  class="notes-indicator"
-                  [title]="getEntry(row.projectId!, day)?.notes"
-                >
-                  <ion-icon name="document-text" color="primary"></ion-icon>
-                </div>
               </div>
             </td>
             <td class="total-cell">{{ rowTotals[i] || 0 }}</td>
@@ -311,11 +344,13 @@
                     [disabled]="
                       !row.projectId ||
                       readonly ||
-                      (row.projectId && isProjectArchived(row.projectId))
+                      (row.projectId && isProjectArchived(row.projectId)) ||
+                      (row.projectId && isEntryApproved(row.projectId, day))
                     "
                     [readonly]="
                       readonly ||
-                      (row.projectId && isProjectArchived(row.projectId))
+                      (row.projectId && isProjectArchived(row.projectId)) ||
+                      (row.projectId && isEntryApproved(row.projectId, day))
                     "
                     placeholder="0"
                     min="0"
@@ -330,7 +365,13 @@
                     fill="clear"
                     size="small"
                     class="notes-button"
-                    [disabled]="readonly"
+                    [disabled]="
+                      readonly ||
+                      (row.projectId && isEntryApproved(row.projectId, day))
+                    "
+                    [color]="
+                      hasNotes(row.projectId, day) ? 'primary' : undefined
+                    "
                   >
                     <ion-icon
                       [name]="
@@ -338,7 +379,6 @@
                           ? 'document-text'
                           : 'document-text-outline'
                       "
-                      [class.has-notes]="hasNotes(row.projectId, day)"
                     ></ion-icon>
                   </ion-button>
                 </div>

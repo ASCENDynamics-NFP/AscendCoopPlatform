@@ -216,8 +216,9 @@ export class DetailsPage implements OnInit, ViewWillEnter {
           map(([listings, isOwner, isAdmin]) => {
             // Filter out applicant listings for non-authorized users
             const filteredListings = listings.filter((listing) => {
-              // Keep active listings
-              if (listing.status !== "active") return false;
+              // Keep active listings; allow saved items regardless of status
+              const isSaved = (listing as any).isSaved === true;
+              if (!isSaved && listing.status !== "active") return false;
 
               // For applicant listings, only show to owners/admins
               if (

@@ -26,11 +26,16 @@ import {TimeTrackingService} from "./time-tracking.service";
 import {FirestoreService} from "./firestore.service";
 import {Project} from "@shared/models/project.model";
 import {TimeEntry} from "@shared/models/time-entry.model";
+import {getFirebaseTestProviders} from "../../testing/test-utilities";
+import {FirebaseFunctionsService} from "./firebase-functions.service";
+import {ProjectService} from "./project.service";
 
 describe("TimeTrackingService", () => {
   let service: TimeTrackingService;
   let afsSpy: jasmine.SpyObj<AngularFirestore>;
   let firestoreSpy: jasmine.SpyObj<FirestoreService>;
+  let firebaseFunctionsSpy: jasmine.SpyObj<FirebaseFunctionsService>;
+  let projectServiceSpy: jasmine.SpyObj<ProjectService>;
 
   beforeEach(() => {
     afsSpy = jasmine.createSpyObj("AngularFirestore", ["collection"]);
@@ -39,12 +44,37 @@ describe("TimeTrackingService", () => {
       "updateDocument",
       "deleteDocument",
     ]);
+    firebaseFunctionsSpy = jasmine.createSpyObj("FirebaseFunctionsService", [
+      "createTimeEntry",
+      "updateTimeEntry",
+      "getAccountTimeEntries",
+      "getTimeTrackingStats",
+      "deleteTimeEntry",
+    ]);
+    projectServiceSpy = jasmine.createSpyObj("ProjectService", [
+      "getProjects",
+      "getAccountProjects",
+    ]);
+    // Setup return values for spies
+    firebaseFunctionsSpy.getAccountTimeEntries.and.returnValue(
+      of({
+        timeEntries: [
+          {id: "e1", projectId: "p1", userId: "user123", date: "d", hours: 1},
+        ],
+      }),
+    );
+    projectServiceSpy.getAccountProjects.and.returnValue(
+      of([{id: "1", name: "Proj", accountId: "account1", archived: false}]),
+    );
 
     TestBed.configureTestingModule({
       providers: [
         TimeTrackingService,
         {provide: AngularFirestore, useValue: afsSpy},
         {provide: FirestoreService, useValue: firestoreSpy},
+        {provide: FirebaseFunctionsService, useValue: firebaseFunctionsSpy},
+        {provide: ProjectService, useValue: projectServiceSpy},
+        ...getFirebaseTestProviders(),
       ],
     });
 
@@ -53,38 +83,14 @@ describe("TimeTrackingService", () => {
 
   it("should retrieve projects from Firestore", (done) => {
     const accountId = "account1";
-    const mockProjects: Project[] = [
-      {id: "1", name: "Proj", accountId, archived: false} as Project,
+    const mockProjects: any[] = [
+      {id: "1", name: "Proj", accountId, archived: false},
     ];
-    const snapshotActions = [
-      {
-        payload: {
-          doc: {
-            data: () => ({name: "Proj", accountId, archived: false}),
-            id: "1",
-          },
-        },
-      },
-    ];
-    const whereSpy = jasmine.createSpy("where").and.returnValue({} as any);
-    (afsSpy.collection as any).and.callFake((name: string, fn?: any) => {
-      if (fn) {
-        fn({where: whereSpy});
-      }
-      return {
-        snapshotChanges: () => of(snapshotActions as any),
-      } as any;
-    });
 
     service.getProjects(accountId).subscribe((projects) => {
       expect(projects).toEqual(mockProjects);
       done();
     });
-    expect(afsSpy.collection).toHaveBeenCalledWith(
-      `accounts/${accountId}/projects` as any,
-      jasmine.any(Function),
-    );
-    expect(whereSpy).toHaveBeenCalledWith("archived", "==", false);
   });
 
   it("should retrieve user time entries", (done) => {
@@ -99,27 +105,11 @@ describe("TimeTrackingService", () => {
         hours: 1,
       } as TimeEntry,
     ];
-    const whereSpy = jasmine.createSpy("where").and.returnValue({} as any);
-    (afsSpy.collection as any).and.callFake((name: string, fn?: any) => {
-      if (fn) {
-        fn({where: whereSpy});
-      }
-      return {
-        snapshotChanges: () =>
-          of([{payload: {doc: {data: () => mockEntries[0], id: "e1"}}}] as any),
-      } as any;
-    });
 
     service.getUserEntries(accountId, userId).subscribe((entries) => {
       expect(entries).toEqual(mockEntries);
       done();
     });
-
-    expect(afsSpy.collection).toHaveBeenCalledWith(
-      `accounts/${accountId}/timeEntries` as any,
-      jasmine.any(Function),
-    );
-    expect(whereSpy).toHaveBeenCalledWith("userId", "==", userId);
   });
 
   it("should add a time entry using FirestoreService", async () => {

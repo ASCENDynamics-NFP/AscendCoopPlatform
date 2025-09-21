@@ -45,9 +45,11 @@ service cloud.firestore {
         );
     }
 
-    // Allow authenticated users to apply for listings
+    // Related accounts under listings (applications, owner links)
+    // Lock client writes; writes must go through Cloud Functions (Admin SDK bypasses rules)
     match /listings/{listingId}/relatedAccounts/{relatedAccountId} {
-      allow create, read, write, delete: if request.auth.uid != null; // Only authenticated users
+      allow read: if request.auth != null;
+      allow create, update, delete: if false;
     }
 
     // Helper to check if user is the owner of the given account
@@ -219,15 +221,15 @@ service cloud.firestore {
     // Professional info section (read gated by privacySettings.professionalInformation)
     match /accounts/{accountId}/sections/professionalInfo {
       allow read: if canViewSection(accountId, 'professionalInformation');
-      // Only the owner can write
-      allow create, update, delete: if isAccountOwner(accountId);
+      // Allow owner or group admins to write (admins only meaningful for group accounts)
+      allow create, update, delete: if isAccountOwner(accountId) || isAccountAdmin(accountId);
     }
 
     // Labor rights section (read gated by privacySettings.laborRights)
     match /accounts/{accountId}/sections/laborRights {
       allow read: if canViewSection(accountId, 'laborRights');
-      // Only the owner can write
-      allow create, update, delete: if isAccountOwner(accountId);
+      // Allow owner or group admins to write (admins only meaningful for group accounts)
+      allow create, update, delete: if isAccountOwner(accountId) || isAccountAdmin(accountId);
     }
 
     // Rules for relatedAccount
@@ -259,11 +261,10 @@ service cloud.firestore {
           (request.auth.uid == accountId || request.auth.uid == relatedAccountId);
       }
 
-      // Loosened: allow any authenticated user to read relatedAccounts docs.
-      // App layer is responsible for filtering visibility per privacy settings.
+      // Allow any authenticated user to read; app enforces privacy filtering.
       allow read: if request.auth != null;
-
-      allow create, write, delete: if isAccountOwner() || isGroupAdmin() || isRelatedToAccount();
+      // Prevent direct client writes. All writes go through callable functions.
+      allow create, update, delete: if false;
     }
 
     // Allow listing the relatedListings subcollection for authenticated users
@@ -271,7 +272,8 @@ service cloud.firestore {
       allow list: if request.auth.uid != null;
     }
     match /accounts/{accountId}/relatedListings/{listingId} {
-      allow create, read, write, delete: if request.auth.uid != null;  // Only authenticated users
+      allow read: if request.auth != null;
+      allow create, update, delete: if false;
     }
 
     // Time entries within group accounts

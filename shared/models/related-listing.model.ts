@@ -29,7 +29,12 @@ export interface RelatedListing extends BaseDocument {
   heroImage?: string;
   iconImage?: string;
   status: "draft" | "active" | "filled" | "expired";
-  relationship: "owner" | "applicant" | "participant" | "saved";
+  relationship: "owner" | "applicant" | "participant";
+  /**
+   * Optional explicit flag indicating this listing is saved/favorited by the user.
+   * Kept alongside legacy relationship === 'saved' for backward compatibility.
+   */
+  isSaved?: boolean;
   applicationDate?: Timestamp | FieldValue;
   notes?: string;
   accountId: string; // Reference to the parent account

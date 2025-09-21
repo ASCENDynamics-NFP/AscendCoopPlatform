@@ -19,6 +19,7 @@
 ***********************************************************************************************/
 import {Injectable} from "@angular/core";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
+import {firstValueFrom} from "rxjs";
 import firebase from "firebase/compat/app";
 
 export interface OfflineSettings {
@@ -296,7 +297,7 @@ export class FirestoreOfflineService {
           .limit(20),
       );
 
-      await chatsQuery.get().toPromise();
+      await firstValueFrom(chatsQuery.get());
 
       // Pre-cache recent messages for each chat
       // Note: This would require additional logic to get chat IDs first

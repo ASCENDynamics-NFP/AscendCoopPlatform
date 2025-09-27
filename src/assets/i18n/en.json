@@ -423,8 +423,8 @@
     "delete_item_2": "All your listings and postings",
     "delete_item_3": "Your connections and relationships",
     "delete_item_4": "Your chat messages and conversations",
-    "anonymized_note": "Your volunteer time entries will be preserved for organizational records but anonymized",
-    "anonymized_detail": "(your name will be replaced with \"Deleted User\").",
+    "anonymized_note": "Your volunteer time entries will be preserved for organizational records.",
+    "anonymized_detail": "",
     "cannot_be_undone": "This action cannot be undone.",
     "delete_my_account": "Delete My Account",
     "deleting_account": "Deleting Account..."

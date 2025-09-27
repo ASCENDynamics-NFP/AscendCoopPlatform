@@ -374,7 +374,7 @@ export class SettingsComponent implements OnChanges, OnInit, OnDestroy {
           <li>Your connections and relationships</li>
           <li>Your chat messages and conversations</li>
         </ul>
-        <p><strong>Note:</strong> Your volunteer time entries will be preserved for organizational records but anonymized.</p>
+        <p><strong>Note:</strong> Your volunteer time entries will be preserved for organizational records.</p>
         <p>Are you absolutely sure you want to delete your account?</p>
       `,
       buttons: [

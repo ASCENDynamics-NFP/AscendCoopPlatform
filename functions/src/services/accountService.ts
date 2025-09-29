@@ -748,6 +748,7 @@ export class AccountService {
         `Found ${ownedListingsQuery.size} listings owned by account ${accountId}`,
       );
 
+      const ownedListingRefs: FirebaseFirestore.DocumentReference[] = [];
       for (const listingDoc of ownedListingsQuery.docs) {
         logger.info(`Deleting owned listing: ${listingDoc.id}`);
 
@@ -794,36 +795,58 @@ export class AccountService {
 
         // First delete all subcollections of this listing
         await this.deleteDocumentWithSubcollections(listingDoc.ref);
-        // Then delete the listing document itself
-        batch.delete(listingDoc.ref);
+        // Then queue the listing document itself for chunked deletion
+        ownedListingRefs.push(listingDoc.ref);
       }
 
-      // Handle cross-collection references using the main batch
-      // Remove this account from any relatedAccounts (across accounts and listings)
-      const relatedAccountsQuery = await db
-        .collectionGroup("relatedAccounts")
-        .where("id", "==", accountId)
-        .get();
+      if (ownedListingRefs.length > 0) {
+        await this.deleteInChunks(ownedListingRefs);
+      }
 
-      logger.info(
-        `Deleting ${relatedAccountsQuery.size} relatedAccounts references for account ${accountId}`,
-      );
-      relatedAccountsQuery.docs.forEach((doc) => {
-        batch.delete(doc.ref);
-      });
+      // Handle cross-collection references using best-effort cleanups
+      // Remove this account from any relatedAccounts (across accounts and listings)
+      try {
+        const relatedAccountsQuery = await db
+          .collectionGroup("relatedAccounts")
+          .where("id", "==", accountId)
+          .get();
+
+        logger.info(
+          `Deleting ${relatedAccountsQuery.size} relatedAccounts references for account ${accountId}`,
+        );
+        if (!relatedAccountsQuery.empty) {
+          await this.deleteInChunks(
+            relatedAccountsQuery.docs.map((d) => d.ref),
+          );
+        }
+      } catch (e) {
+        logger.warn(
+          "Best-effort CG cleanup for relatedAccounts failed (non-fatal)",
+          e,
+        );
+      }
 
       // Remove any remaining relatedListings documents that belong to this account
       // Note: direct subcollection under this account was already deleted recursively above
       // This collection group query is a safety net for legacy or stray docs
-      const strayRelatedListings = await db
-        .collectionGroup("relatedListings")
-        .where("accountId", "==", accountId)
-        .get();
-      if (!strayRelatedListings.empty) {
-        logger.info(
-          `Deleting ${strayRelatedListings.size} stray relatedListings for account ${accountId}`,
+      try {
+        const strayRelatedListings = await db
+          .collectionGroup("relatedListings")
+          .where("accountId", "==", accountId)
+          .get();
+        if (!strayRelatedListings.empty) {
+          logger.info(
+            `Deleting ${strayRelatedListings.size} stray relatedListings for account ${accountId}`,
+          );
+          await this.deleteInChunks(
+            strayRelatedListings.docs.map((d) => d.ref),
+          );
+        }
+      } catch (e) {
+        logger.warn(
+          "Best-effort CG cleanup for relatedListings (by accountId) failed (non-fatal)",
+          e,
         );
-        strayRelatedListings.docs.forEach((doc) => batch.delete(doc.ref));
       }
 
       // Messaging cleanup: remove user's messages, detach from chats, and delete any attached files

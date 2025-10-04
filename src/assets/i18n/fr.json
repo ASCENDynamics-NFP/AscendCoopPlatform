@@ -375,8 +375,8 @@
     "delete_item_2": "Toutes vos annonces et publications",
     "delete_item_3": "Vos connexions et relations",
     "delete_item_4": "Vos messages de chat et conversations",
-    "anonymized_note": "Vos entrées de temps de bénévolat seront conservées pour les dossiers organisationnels mais anonymisées",
-    "anonymized_detail": "(votre nom sera remplacé par \"Utilisateur supprimé\").",
+    "anonymized_note": "Vos entrées de temps de bénévolat seront conservées pour les dossiers organisationnels.",
+    "anonymized_detail": "",
     "cannot_be_undone": "Cette action ne peut pas être annulée.",
     "delete_my_account": "Supprimer mon compte",
     "deleting_account": "Suppression du compte..."

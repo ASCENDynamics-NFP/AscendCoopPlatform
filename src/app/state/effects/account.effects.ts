@@ -616,10 +616,13 @@ export class AccountEffects {
   }
 
   private async createAccountWithResume(account: Account): Promise<Account> {
+    const accountType: "user" | "group" =
+      account?.type === "group" ? "group" : "user";
     const defaultVisibility =
       (account as any)?.privacySettings?.profile?.visibility || "public";
     const newAccount: any = {
       ...account,
+      type: accountType,
       privacySettings: {
         ...(account as any)?.privacySettings,
         profile: {
@@ -636,7 +639,7 @@ export class AccountEffects {
     // Do not persist professionalInformation on main doc
     delete (newAccount as any).professionalInformation;
     // Volunteer preferences are user-specific; drop for non-user accounts
-    if (newAccount.type !== "user") {
+    if (accountType !== "user") {
       delete (newAccount as any).volunteerPreferences;
     }
 
@@ -652,7 +655,7 @@ export class AccountEffects {
       resumeUrl = await this.storageService.uploadFile(filePath, file);
       // Save professional info (with resume URL) in sections subdoc only
       // Only persist professional info section for user accounts (via callable)
-      if (account.type === "user") {
+      if (accountType === "user") {
         await firstValueFrom(
           this.accountsService.updateAccountSections({
             accountId,

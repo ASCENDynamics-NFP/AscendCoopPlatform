@@ -17,8 +17,25 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+
+ion-header,
+ion-toolbar,
+ion-title,
+ion-header app-header {
+  position: relative;
+  z-index: 10;
+}
+
+// Base styles
 a {
   cursor: pointer;
+  color: var(--ion-color-primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--ion-color-primary-shade);
+  }
 }
 
 .logo {
@@ -26,9 +43,15 @@ a {
   max-width: 100%;
 }
 
-h2 {
+h1,
+h2,
+h3 {
+  color: var(--ion-text-color);
   margin-top: 10px;
   margin-bottom: 10px;
+}
+
+h2 {
   font-size: 24px;
   font-weight: bold;
   text-align: center;
@@ -39,21 +62,29 @@ h2 {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100%; /* This ensures that the ion-card-content takes full available height */
+  min-height: calc(
+    100vh - var(--login-header-height) - var(--login-footer-space)
+  );
+  padding: 24px 16px;
 }
 
 ion-card {
-  height: 100%; /* Make the ion-card take full available height of ion-content */
+  height: 100%;
+  background: var(--ion-card-background, var(--ion-background-color));
+  color: var(--ion-text-color);
 }
 
 ion-content {
   --padding-start: 0;
   --padding-end: 0;
-  --padding-top: 0;
-  --padding-bottom: 0;
+  --padding-top: var(--login-header-height);
+  --padding-bottom: var(--login-footer-space);
+  --background: var(--ion-background-color);
+  --color: var(--ion-text-color);
 
   ion-text {
     font-size: small;
+    color: var(--ion-text-color);
   }
 }
 
@@ -61,15 +92,57 @@ ion-content {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%; /* Ensure the container takes full height to center its content */
+  width: 100%;
+  padding: 24px 0;
 }
 
 ion-item {
-  background: #000;
+  --background: var(--ion-item-background, var(--ion-background-color));
+  --color: var(--ion-text-color);
+  --border-color: var(--ion-border-color, var(--ion-color-step-150));
+}
+
+// Form styling
+ion-input {
+  --color: var(--ion-text-color);
+  --background: var(--ion-item-background, var(--ion-background-color));
+  --border-color: var(--ion-border-color, var(--ion-color-step-150));
+}
+
+ion-button {
+  --color: var(--ion-color-primary-contrast);
+  --background: var(--ion-color-primary);
+
+  &[disabled] {
+    opacity: 0.5;
+  }
+}
+
+ion-note {
+  color: var(--ion-color-danger);
+}
+
+app-info-footer {
+  display: block;
+  padding: 16px 12px;
 }
 
 @media (max-width: 767px) {
-  ion-card-content {
-    margin-top: 60px;
+  :host {
+    --login-header-height: 0px;
+  }
+
+  .content-center {
+    justify-content: flex-start;
+    min-height: auto;
+    padding: 12px 12px 24px;
+  }
+
+  .col-container {
+    padding: 8px 0 16px;
+  }
+
+  .logo {
+    max-width: 280px;
   }
 }

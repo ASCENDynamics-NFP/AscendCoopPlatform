@@ -79,6 +79,47 @@ h4,
 h5,
 h6 {
   font-family: "Montserrat", sans-serif;
+  color: var(--ion-text-color);
+}
+
+// Ensure consistent theming for common elements
+ion-content {
+  --background: var(--ion-background-color);
+  --color: var(--ion-text-color);
+}
+
+ion-card {
+  --background: var(--ion-card-background, var(--ion-background-color));
+  --color: var(--ion-text-color);
+}
+
+ion-item {
+  --background: var(--ion-item-background, transparent);
+  --color: var(--ion-text-color);
+}
+
+ion-input {
+  --color: var(--ion-text-color);
+}
+
+ion-textarea {
+  --color: var(--ion-text-color);
+}
+
+ion-select {
+  --color: var(--ion-text-color);
+}
+
+// Dark mode specific improvements
+.dark {
+  ion-card {
+    --background: var(--ion-color-step-100);
+  }
+
+  ion-item {
+    --background: transparent;
+    --border-color: var(--ion-color-step-150);
+  }
 }
 
 // Notes Modal Styling

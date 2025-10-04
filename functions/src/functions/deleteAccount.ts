@@ -19,7 +19,6 @@
 ***********************************************************************************************/
 import {onCall, HttpsError} from "firebase-functions/v2/https";
 import {logger} from "firebase-functions/v2";
-import {admin} from "../utils/firebase";
 import {AccountService} from "../services/accountService";
 
 /**
@@ -28,7 +27,12 @@ import {AccountService} from "../services/accountService";
  * triggers the onUserRecordDeletion function to clean up Firestore data.
  */
 export const deleteAccount = onCall(
-  {region: "us-central1"},
+  {
+    region: "us-central1",
+    enforceAppCheck: false,
+    memory: "1GiB",
+    timeoutSeconds: 300,
+  },
   async (request) => {
     const {auth} = request;
 
@@ -42,35 +46,8 @@ export const deleteAccount = onCall(
     try {
       logger.info(`Initiating full account deletion for user: ${uid}`);
 
-      // Use centralized service to delete Firestore data (including subcollections)
-      // and the Auth user in a consistent, robust flow.
-      // 1) Purge Firestore account data (sections + root + references)
-      await AccountService.purgeAccountData(uid);
-
-      // 2) Delete Auth user
-      try {
-        await admin.auth().deleteUser(uid);
-      } catch (e: any) {
-        if (e?.code !== "auth/user-not-found") throw e;
-      }
-
-      // 3) Fallback verification
-      const db = admin.firestore();
-      const accRef = db.collection("accounts").doc(uid);
-      const accSnap = await accRef.get();
-      if (accSnap.exists) {
-        logger.warn(
-          `Account root doc still exists; deleting explicitly: ${uid}`,
-        );
-        await accRef.delete();
-      }
-      try {
-        await admin.auth().getUser(uid);
-        logger.warn(`Auth user still exists; deleting explicitly: ${uid}`);
-        await admin.auth().deleteUser(uid);
-      } catch (e: any) {
-        if (e?.code !== "auth/user-not-found") throw e;
-      }
+      // Use centralized service to delete Firestore data and the Auth user
+      await AccountService.deleteAccount(uid, uid);
 
       logger.info(`Successfully deleted account and user: ${uid}`);
 

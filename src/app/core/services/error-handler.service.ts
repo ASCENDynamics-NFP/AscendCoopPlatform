@@ -60,6 +60,10 @@ export class ErrorHandlerService {
         messageKey:
           "errors.auth_account_exists_with_different_credential_message",
       },
+      "auth/email-not-verified": {
+        titleKey: "errors.auth_email_not_verified_title",
+        messageKey: "errors.auth_email_not_verified_message",
+      },
       "auth/requires-recent-login": {
         titleKey: "errors.auth_requires_recent_login_title",
         messageKey: "errors.auth_requires_recent_login_message",

@@ -35,8 +35,11 @@ import {
   signInWithCredential,
   signOut,
   sendPasswordResetEmail,
+  sendEmailVerification,
   sendSignInLinkToEmail,
   isSignInWithEmailLink,
+  applyActionCode,
+  reload,
   User,
 } from "firebase/auth";
 import {GoogleAuth} from "@southdevs/capacitor-google-auth";
@@ -115,6 +118,48 @@ export class AuthEffects {
       ofType(AuthActions.initializeAuth),
       switchMap(() => {
         const url = window.location.href;
+        const parsedUrl = new URL(url);
+        const mode = parsedUrl.searchParams.get("mode");
+        const oobCode = parsedUrl.searchParams.get("oobCode");
+
+        if (mode === "verifyEmail" && oobCode) {
+          return from(applyActionCode(this.auth, oobCode)).pipe(
+            tap(() => {
+              const cleanedUrl = `${parsedUrl.origin}${parsedUrl.pathname}${parsedUrl.hash}`;
+              window.history.replaceState({}, document.title, cleanedUrl);
+            }),
+            switchMap(() => {
+              const currentUser = this.auth.currentUser;
+
+              this.successHandler.handleSuccess(
+                "Email verified successfully!",
+                6000,
+              );
+
+              if (currentUser) {
+                return from(reload(currentUser)).pipe(
+                  switchMap(() =>
+                    of(AuthActions.refreshToken({forceRefresh: true})),
+                  ),
+                  catchError((error) => {
+                    console.error(
+                      "Error reloading user after verification:",
+                      error,
+                    );
+                    return of(AuthActions.refreshToken({forceRefresh: true}));
+                  }),
+                );
+              }
+
+              return of({type: "NO_ACTION"});
+            }),
+            catchError((error) => {
+              this.errorHandler.handleFirebaseAuthError(error);
+              return of({type: "NO_ACTION"});
+            }),
+          );
+        }
+
         if (isSignInWithEmailLink(this.auth, url)) {
           const email = window.localStorage.getItem("emailForSignIn");
           if (email) {
@@ -225,24 +270,72 @@ export class AuthEffects {
   signUp$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.signUp),
-      switchMap(({email, password}) =>
-        from(createUserWithEmailAndPassword(this.auth, email, password)).pipe(
+      switchMap(({name, email, password, accountType}) => {
+        const trimmedName = (name || "").trim();
+        const finalAccountType = accountType || "user";
+
+        return from(
+          createUserWithEmailAndPassword(this.auth, email, password),
+        ).pipe(
           switchMap(async (result) => {
             const idTokenResult = await result.user.getIdTokenResult();
             return {user: result.user, claims: idTokenResult.claims};
           }),
           switchMap(({user, claims}) =>
             this.createAuthUserFromClaims(user, claims).pipe(
-              map((authUser) => {
+              switchMap((authUser) => {
+                // Optimistically reflect selected type in client state
                 this.store.dispatch(
-                  AuthActions.updateAuthUser({user: authUser}),
+                  AuthActions.updateAuthUser({
+                    user: {
+                      type: finalAccountType,
+                      name: trimmedName || authUser?.name || null,
+                    } as any,
+                  }),
                 );
-                // Navigate to registration after auth state is updated
-                this.router.navigateByUrl(
-                  `/account/registration/${authUser.uid}`,
-                  {replaceUrl: true},
+
+                // Attempt to set account type immediately after account creation
+                // (account doc is created by auth trigger with type "new")
+                if (authUser?.uid) {
+                  const updates: Record<string, unknown> = {
+                    type: finalAccountType,
+                  };
+                  if (trimmedName) {
+                    updates["name"] = trimmedName;
+                  }
+                  return this.firebaseFunctionsService
+                    .updateAccount({
+                      accountId: authUser.uid,
+                      updates: updates,
+                    })
+                    .pipe(
+                      // Ignore failures; user can still set type on the registration page
+                      catchError(() => of(null)),
+                      map(() => authUser),
+                    );
+                }
+
+                return of(authUser);
+              }),
+              map((authUser) => {
+                const updatedAuthUser = {
+                  ...authUser,
+                  type: finalAccountType,
+                  name: trimmedName || authUser?.name || null,
+                  displayName:
+                    trimmedName ||
+                    authUser?.displayName ||
+                    authUser?.name ||
+                    null,
+                } as AuthUser;
+                this.store.dispatch(
+                  AuthActions.updateAuthUser({user: updatedAuthUser}),
                 );
-                return AuthActions.signUpSuccess({user: authUser});
+                // Navigate to profile after auth state is updated
+                this.router.navigateByUrl(`/account/${updatedAuthUser.uid}`, {
+                  replaceUrl: true,
+                });
+                return AuthActions.signUpSuccess({user: updatedAuthUser});
               }),
             ),
           ),
@@ -250,8 +343,8 @@ export class AuthEffects {
             this.errorHandler.handleFirebaseAuthError(error);
             return of(AuthActions.signUpFailure({error}));
           }),
-        ),
-      ),
+        );
+      }),
     ),
   );
 
@@ -262,6 +355,41 @@ export class AuthEffects {
       switchMap(({email, password}) =>
         from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
           switchMap(async (result) => {
+            if (!result.user.emailVerified) {
+              try {
+                await sendEmailVerification(
+                  result.user,
+                  this.actionCodeSettings,
+                );
+                if (result.user.email) {
+                  this.successHandler.handleSuccess(
+                    `Verification email sent to ${result.user.email}. Please verify and sign in again.`,
+                    30000,
+                  );
+                }
+              } catch (verificationError) {
+                console.error(
+                  "Failed to send verification email:",
+                  verificationError,
+                );
+              }
+
+              try {
+                await signOut(this.auth);
+              } catch (signOutError) {
+                console.error(
+                  "Failed to sign out after unverified login:",
+                  signOutError,
+                );
+              }
+
+              throw {
+                code: "auth/email-not-verified",
+                message:
+                  "Email not verified. Verification email resent. Please verify before signing in.",
+              };
+            }
+
             const idTokenResult = await result.user.getIdTokenResult();
             return {user: result.user, claims: idTokenResult.claims};
           }),
@@ -316,6 +444,22 @@ export class AuthEffects {
             }),
             switchMap(({user, claims}) =>
               this.createAuthUserFromClaims(user, claims).pipe(
+                switchMap((authUser) => {
+                  // For new Google sign-in users, ensure they have "user" type set in database
+                  if (authUser?.type === "user" && authUser?.uid) {
+                    return this.firebaseFunctionsService
+                      .updateAccount({
+                        accountId: authUser.uid,
+                        updates: {type: "user"},
+                      })
+                      .pipe(
+                        // Ignore failures; the user already has the correct type in memory
+                        catchError(() => of(null)),
+                        map(() => authUser),
+                      );
+                  }
+                  return of(authUser);
+                }),
                 map((authUser) => {
                   this.store.dispatch(
                     AuthActions.updateAuthUser({user: authUser}),
@@ -341,6 +485,22 @@ export class AuthEffects {
             }),
             switchMap(({user, claims}) =>
               this.createAuthUserFromClaims(user, claims).pipe(
+                switchMap((authUser) => {
+                  // For new Google sign-in users, ensure they have "user" type set in database
+                  if (authUser?.type === "user" && authUser?.uid) {
+                    return this.firebaseFunctionsService
+                      .updateAccount({
+                        accountId: authUser.uid,
+                        updates: {type: "user"},
+                      })
+                      .pipe(
+                        // Ignore failures; the user already has the correct type in memory
+                        catchError(() => of(null)),
+                        map(() => authUser),
+                      );
+                  }
+                  return of(authUser);
+                }),
                 map((authUser) => {
                   this.store.dispatch(
                     AuthActions.updateAuthUser({user: authUser}),
@@ -480,9 +640,16 @@ export class AuthEffects {
   sendVerificationMail$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.sendVerificationMail),
-      switchMap(({email}) =>
-        from(
-          sendSignInLinkToEmail(this.auth, email, this.actionCodeSettings),
+      switchMap(({email}) => {
+        const currentUser = this.auth.currentUser;
+
+        if (!currentUser) {
+          const error = new Error("No authenticated user found");
+          return of(AuthActions.sendVerificationMailFailure({error}));
+        }
+
+        return from(
+          sendEmailVerification(currentUser, this.actionCodeSettings),
         ).pipe(
           tap(() => {
             this.successHandler.handleSuccess(
@@ -495,8 +662,8 @@ export class AuthEffects {
             this.errorHandler.handleFirebaseAuthError(error);
             return of(AuthActions.sendVerificationMailFailure({error}));
           }),
-        ),
-      ),
+        );
+      }),
     ),
   );
 
@@ -673,7 +840,7 @@ export class AuthEffects {
               "assets/image/logo/ASCENDynamics NFP-logos_transparent.png",
             heroImage: "src/assets/image/orghero.png",
             tagline: "New and looking to help!",
-            type: "new", // This will ensure they go to registration
+            type: "user", // Default to user type for new accounts
             createdAt: user.metadata.creationTime
               ? new Date(user.metadata.creationTime)
               : new Date(),
@@ -735,7 +902,7 @@ export class AuthEffects {
             ? existingAuth.type
             : undefined;
         const finalType =
-          (claims["type"] as string) || account?.type || existingType || "new";
+          (claims["type"] as string) || account?.type || existingType || "user";
 
         return {
           uid: user.uid,

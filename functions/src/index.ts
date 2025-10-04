@@ -50,16 +50,16 @@ export {onWriteContactInfo} from "./database/accounts/sections/contactInfo/onWri
 
 // Related accounts triggers (keep admin notifications for now)
 // export {onCreateRelatedAccount} from "./database/accounts/relatedAccounts/triggers/onCreate";
-// export {onDeleteRelatedAccount} from "./database/accounts/relatedAccounts/triggers/onDelete";
+export {onDeleteRelatedAccount} from "./database/accounts/relatedAccounts/triggers/onDelete";
 // export {onUpdateRelatedAccount} from "./database/accounts/relatedAccounts/triggers/onUpdate";
 // export {notifyAdminsOnMemberRequest} from "./database/accounts/relatedAccounts/triggers/adminNotifications";
 
 // Related listings triggers (disabled - handled in callables/services)
-// export {onDeleteAccountsRelatedListing} from "./database/accounts/relatedListings/triggers/onDelete";
+export {onDeleteAccountsRelatedListing} from "./database/accounts/relatedListings/triggers/onDelete";
 
 // Listing triggers (disabled - migrated to callables)
 // export {onCreateListing} from "./database/listings/triggers/onCreate";
-// export {onDeleteListing} from "./database/listings/triggers/onDelete";
+export {onDeleteListing} from "./database/listings/triggers/onDelete";
 // export {onUpdateListing} from "./database/listings/triggers/onUpdate";
 // Time entry triggers
 // export {onCreateTimeEntry} from "./database/timeEntries/triggers/onCreate";

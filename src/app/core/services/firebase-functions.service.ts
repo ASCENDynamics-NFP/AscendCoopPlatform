@@ -29,7 +29,7 @@ import {selectAuthUser} from "../../state/selectors/auth.selectors";
 
 // Types for callable functions
 export interface CreateAccountRequest {
-  type: "user" | "group";
+  type?: "user" | "group";
   name: string;
   tagline?: string;
   contactInformation?: {
@@ -342,10 +342,15 @@ export class FirebaseFunctionsService {
 
   // Account Management Functions
   createAccount(data: CreateAccountRequest): Observable<any> {
+    const payload: CreateAccountRequest = {
+      ...data,
+      type: data?.type === "group" ? "group" : "user",
+    };
+
     return this.ensureAuthenticated().pipe(
       switchMap(() => {
         const callable = this.fns.httpsCallable("createAccount");
-        return from(callable(data));
+        return from(callable(payload));
       }),
       map((result: any) => {
         return result;

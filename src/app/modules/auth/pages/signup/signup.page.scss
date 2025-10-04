@@ -237,6 +237,10 @@ ion-button {
 
 // Mobile responsive styles
 @media (max-width: 767px) {
+  :host {
+    --signup-header-height: 0px;
+  }
+
   .content-center {
     justify-content: flex-start;
     min-height: auto;

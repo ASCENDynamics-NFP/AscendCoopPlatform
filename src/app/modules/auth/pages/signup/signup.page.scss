@@ -17,8 +17,17 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+
+// Base styles
 a {
   cursor: pointer;
+  color: var(--ion-color-primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--ion-color-primary-shade);
+  }
 }
 
 .logo {
@@ -26,12 +35,31 @@ a {
   max-width: 100%;
 }
 
-h2 {
+h1,
+h2,
+h3 {
+  color: var(--ion-text-color);
   margin-top: 10px;
   margin-bottom: 10px;
+}
+
+h1 {
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+}
+
+h2 {
   font-size: 24px;
   font-weight: bold;
   text-align: center;
+}
+
+h3 {
+  font-size: 18px;
+  font-weight: 500;
+  text-align: center;
+  color: var(--ion-color-medium);
 }
 
 .content-center {
@@ -39,11 +67,13 @@ h2 {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100%; /* This ensures that the ion-card-content takes full available height */
+  height: 100%;
 }
 
 ion-card {
-  height: 100%; /* Make the ion-card take full available height of ion-content */
+  height: 100%;
+  background: var(--ion-card-background, var(--ion-background-color));
+  color: var(--ion-text-color);
 }
 
 ion-content {
@@ -51,9 +81,12 @@ ion-content {
   --padding-end: 0;
   --padding-top: 0;
   --padding-bottom: 0;
+  --background: var(--ion-background-color);
+  --color: var(--ion-text-color);
 
   ion-text {
     font-size: small;
+    color: var(--ion-text-color);
   }
 }
 
@@ -61,15 +94,162 @@ ion-content {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%; /* Ensure the container takes full height to center its content */
+  height: 100%;
 }
 
 ion-note {
   display: block;
+  color: var(--ion-color-danger);
 }
 
+// Form styling
+ion-input {
+  --color: var(--ion-text-color);
+  --background: var(--ion-item-background, var(--ion-background-color));
+  --border-color: var(--ion-border-color, var(--ion-color-step-150));
+}
+
+ion-checkbox {
+  --background-checked: var(--ion-color-primary);
+  --border-color-checked: var(--ion-color-primary);
+}
+
+ion-button {
+  --color: var(--ion-color-primary-contrast);
+  --background: var(--ion-color-primary);
+
+  &[disabled] {
+    opacity: 0.5;
+  }
+}
+
+.profile-type-row {
+  margin-top: 12px;
+}
+
+.profile-type-card {
+  border-radius: 16px;
+  padding: 18px 20px 16px;
+  background: var(--ion-card-background, var(--ion-background-color));
+  border: 1px solid var(--ion-border-color, var(--ion-color-step-150));
+  box-shadow: var(--ion-card-box-shadow, 0 2px 8px rgba(0, 0, 0, 0.1));
+  transition: all 200ms ease;
+  color: var(--ion-text-color);
+}
+
+.profile-type-card:hover {
+  box-shadow: var(--ion-card-box-shadow-hover, 0 4px 16px rgba(0, 0, 0, 0.15));
+  transform: translateY(-1px);
+}
+
+.profile-type-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.profile-type-icon {
+  font-size: 32px;
+  color: var(--ion-color-primary);
+}
+
+.profile-type-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: left;
+  color: var(--ion-text-color);
+}
+
+.profile-type-description {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--ion-color-medium);
+  line-height: 1.5;
+}
+
+.profile-type-segment {
+  margin-top: 12px;
+  border-radius: 12px;
+  --indicator-box-shadow: none;
+  --background: var(--ion-color-step-50, rgba(0, 0, 0, 0.05));
+  overflow: hidden;
+}
+
+.profile-type-segment ion-segment-button {
+  --border-radius: 12px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --color: var(--ion-text-color);
+  --color-checked: var(--ion-color-primary-contrast);
+  --background-checked: var(--ion-color-primary);
+  min-height: 54px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-type-segment ion-icon {
+  font-size: 20px;
+}
+
+.profile-type-helper {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--ion-color-medium);
+  line-height: 1.4;
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .profile-type-card {
+    --ion-card-box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    --ion-card-box-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+}
+
+// Dark class support (when manually toggled)
+.dark {
+  .profile-type-card {
+    --ion-card-box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    --ion-card-box-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+}
+
+// Mobile responsive styles
 @media (max-width: 767px) {
   ion-card-content {
     margin-top: 60px;
+  }
+
+  .profile-type-card {
+    padding: 16px;
+  }
+
+  .profile-type-icon {
+    font-size: 28px;
+  }
+
+  .profile-type-title {
+    font-size: 18px;
+  }
+
+  .profile-type-description {
+    font-size: 13px;
+  }
+
+  .profile-type-segment ion-segment-button {
+    min-height: 48px;
+    --padding-start: 12px;
+    --padding-end: 12px;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  h3 {
+    font-size: 16px;
   }
 }

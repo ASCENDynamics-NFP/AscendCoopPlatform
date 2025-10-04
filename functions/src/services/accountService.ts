@@ -35,7 +35,7 @@ function getAdminStorage(): AdminStorage {
 }
 
 export interface CreateAccountRequest {
-  type: "user" | "group" | "new";
+  type?: "user" | "group" | "new";
   name: string;
   tagline?: string;
   contactInformation?: {
@@ -68,16 +68,22 @@ export class AccountService {
     data: CreateAccountRequest,
   ): Promise<{accountId: string; account: any}> {
     try {
+      const normalizedType: "user" | "group" =
+        data?.type === "group" ? "group" : "user";
+      const payload: CreateAccountRequest = {
+        ...data,
+        type: normalizedType,
+      };
       // Input validation
       ValidationUtils.validateUserId(userId);
       ValidationUtils.validateRequiredFields(
-        data,
+        payload,
         ["name", "type"],
         "account data",
       );
 
       // Validate account fields
-      const name = ValidationUtils.sanitizeString(data.name, 100);
+      const name = ValidationUtils.sanitizeString(payload.name, 100);
       if (!name) {
         throw new HttpsError(
           "invalid-argument",
@@ -85,18 +91,22 @@ export class AccountService {
         );
       }
 
-      const tagline = data.tagline
-        ? ValidationUtils.sanitizeString(data.tagline, 200)
+      const tagline = payload.tagline
+        ? ValidationUtils.sanitizeString(payload.tagline, 200)
         : "New and looking to help!";
 
       // Validate account type
       const allowedTypes = ["user", "group", "new"];
-      ValidationUtils.validateEnum(data.type, allowedTypes, "account type");
+      ValidationUtils.validateEnum(
+        normalizedType,
+        allowedTypes,
+        "account type",
+      );
 
       // Validate contact information if provided
-      if (data.contactInformation) {
-        if (data.contactInformation.emails) {
-          data.contactInformation.emails.forEach((emailObj, index) => {
+      if (payload.contactInformation) {
+        if (payload.contactInformation.emails) {
+          payload.contactInformation.emails.forEach((emailObj, index) => {
             if (!ValidationUtils.validateEmail(emailObj.email)) {
               throw new HttpsError(
                 "invalid-argument",
@@ -106,8 +116,8 @@ export class AccountService {
           });
         }
 
-        if (data.contactInformation.phoneNumbers) {
-          data.contactInformation.phoneNumbers.forEach((phoneObj, index) => {
+        if (payload.contactInformation.phoneNumbers) {
+          payload.contactInformation.phoneNumbers.forEach((phoneObj, index) => {
             if (!ValidationUtils.validatePhoneNumber(phoneObj.number)) {
               throw new HttpsError(
                 "invalid-argument",
@@ -117,8 +127,8 @@ export class AccountService {
           });
         }
 
-        if (data.contactInformation.addresses) {
-          data.contactInformation.addresses.forEach((addr, index) => {
+        if (payload.contactInformation.addresses) {
+          payload.contactInformation.addresses.forEach((addr, index) => {
             try {
               ValidationUtils.validateLocation(addr);
             } catch (error: any) {
@@ -132,10 +142,16 @@ export class AccountService {
       }
 
       // Validate URLs if provided
-      if (data.iconImage && !ValidationUtils.validateUrl(data.iconImage)) {
+      if (
+        payload.iconImage &&
+        !ValidationUtils.validateUrl(payload.iconImage)
+      ) {
         throw new HttpsError("invalid-argument", "Invalid icon image URL");
       }
-      if (data.heroImage && !ValidationUtils.validateUrl(data.heroImage)) {
+      if (
+        payload.heroImage &&
+        !ValidationUtils.validateUrl(payload.heroImage)
+      ) {
         throw new HttpsError("invalid-argument", "Invalid hero image URL");
       }
 
@@ -158,7 +174,7 @@ export class AccountService {
       const accountRef = db.collection("accounts").doc(userId);
 
       // Geocode addresses if provided
-      let geocodedAddresses = data.contactInformation?.addresses || [];
+      let geocodedAddresses = payload.contactInformation?.addresses || [];
       if (geocodedAddresses.length > 0) {
         geocodedAddresses = await Promise.all(
           geocodedAddresses.map(async (addr) => {
@@ -184,8 +200,10 @@ export class AccountService {
 
       // Prepare contact info for private subdocument only
       const contactInfoPayload = {
-        emails: data.contactInformation?.emails || [{email: userRecord.email}],
-        phoneNumbers: data.contactInformation?.phoneNumbers || [],
+        emails: payload.contactInformation?.emails || [
+          {email: userRecord.email},
+        ],
+        phoneNumbers: payload.contactInformation?.phoneNumbers || [],
         addresses: geocodedAddresses,
       };
 
@@ -193,11 +211,11 @@ export class AccountService {
         id: userId,
         name: name,
         tagline: tagline,
-        type: data.type,
+        type: normalizedType,
         iconImage:
-          data.iconImage ||
+          payload.iconImage ||
           "assets/image/logo/ASCENDynamics NFP-logos_transparent.png",
-        heroImage: data.heroImage || "assets/image/userhero.png",
+        heroImage: payload.heroImage || "assets/image/userhero.png",
         email: userRecord.email,
         privacySettings: {
           profile: {visibility: "public"},
@@ -245,7 +263,7 @@ export class AccountService {
       }
 
       // Initialize standard roles and projects based on account type
-      await this.initializeAccountDefaults(batch, userId, data.type);
+      await this.initializeAccountDefaults(batch, userId, normalizedType);
 
       await batch.commit();
 

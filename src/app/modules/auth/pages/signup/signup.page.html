@@ -54,6 +54,74 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               </ion-col>
             </ion-row>
 
+            <!-- Profile Type Selection -->
+            <ion-row class="profile-type-row">
+              <ion-col>
+                <div class="profile-type-card">
+                  <div class="profile-type-header">
+                    <ion-icon name="color-wand" class="profile-type-icon"></ion-icon>
+                    <div>
+                      <h2 class="profile-type-title">Choose Your Profile Type</h2>
+                      <p class="profile-type-description">
+                        Individuals can create listings, message others, submit time entries, manage relationships, and participate in organizations. Organizations can do all of the above and also manage team time entries.
+                      </p>
+                    </div>
+                  </div>
+                  <ion-segment
+                    formControlName="accountType"
+                    mode="md"
+                    class="profile-type-segment"
+                  >
+                    <ion-segment-button value="user">
+                      <ion-icon name="person-circle"></ion-icon>
+                      <ion-label>Individual</ion-label>
+                    </ion-segment-button>
+                    <ion-segment-button value="group">
+                      <ion-icon name="business"></ion-icon>
+                      <ion-label>Organization</ion-label>
+                    </ion-segment-button>
+                  </ion-segment>
+                  <p class="profile-type-helper" *ngIf="signupForm.get('accountType')?.value === 'user'">
+                    Create listings, message others, submit time entries, manage relationships, and participate in organizations.
+                  </p>
+                  <p class="profile-type-helper" *ngIf="signupForm.get('accountType')?.value === 'group'">
+                    Everything an individual can do, plus manage and review time entries for your organization.
+                  </p>
+                </div>
+              </ion-col>
+            </ion-row>
+
+            <!-- Name Field -->
+            <ion-row>
+              <ion-col>
+                <ion-input
+                  label="Full Name"
+                  label-placement="floating"
+                  fill="outline"
+                  formControlName="name"
+                  type="text"
+                  placeholder="Full Name"
+                  maxlength="100"
+                  autocomplete="name"
+                ></ion-input>
+                <ion-note
+                  color="danger"
+                  *ngIf="
+                    (signupForm.get('name')?.dirty ||
+                      signupForm.get('name')?.touched) &&
+                    signupForm.get('name')?.errors
+                  "
+                >
+                  <span *ngIf="signupForm.get('name')?.errors?.['required']">
+                    Name is required.
+                  </span>
+                  <span *ngIf="signupForm.get('name')?.errors?.['maxlength']">
+                    Name must be 100 characters or fewer.
+                  </span>
+                </ion-note>
+              </ion-col>
+            </ion-row>
+
             <!-- Email Field -->
             <ion-row>
               <ion-col>

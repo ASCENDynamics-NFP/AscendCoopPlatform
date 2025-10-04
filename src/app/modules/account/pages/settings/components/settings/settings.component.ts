@@ -357,11 +357,6 @@ export class SettingsComponent implements OnChanges, OnInit, OnDestroy {
       [];
   }
 
-  toggleDarkTheme(event: CustomEvent) {
-    const isDarkModeEnabled = event.detail.checked;
-    document.body.classList.toggle("dark", isDarkModeEnabled);
-  }
-
   async onDeleteAccount() {
     const alert = await this.alertController.create({
       header: "Delete Account",

@@ -82,13 +82,6 @@ h6 {
   color: var(--ion-text-color);
 }
 
-// Global theme improvements
-body {
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
-}
-
 // Ensure consistent theming for common elements
 ion-content {
   --background: var(--ion-background-color);

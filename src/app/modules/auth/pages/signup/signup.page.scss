@@ -19,10 +19,6 @@
 ***********************************************************************************************/
 
 // Layout variables
-:host {
-  --signup-header-height: calc(var(--ion-safe-area-top, 0px) + 56px);
-}
-
 ion-header,
 ion-toolbar,
 ion-title,
@@ -241,16 +237,14 @@ ion-button {
 
 // Mobile responsive styles
 @media (max-width: 767px) {
-  :host {
-    --signup-header-height: calc(var(--ion-safe-area-top, 0px) + 64px);
-  }
-
   .content-center {
-    padding: 16px 12px;
+    justify-content: flex-start;
+    min-height: auto;
+    padding: 12px 12px 24px;
   }
 
   .col-container {
-    padding: 12px 0;
+    padding: 8px 0 16px;
   }
 
   .logo {

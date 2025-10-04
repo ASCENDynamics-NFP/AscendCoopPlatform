@@ -18,6 +18,19 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 
+// Layout variables
+:host {
+  --signup-header-height: calc(var(--ion-safe-area-top, 0px) + 56px);
+}
+
+ion-header,
+ion-toolbar,
+ion-title,
+ion-header app-header {
+  position: relative;
+  z-index: 10;
+}
+
 // Base styles
 a {
   cursor: pointer;
@@ -28,11 +41,6 @@ a {
   &:hover {
     color: var(--ion-color-primary-shade);
   }
-}
-
-.logo {
-  width: 500px;
-  max-width: 100%;
 }
 
 h1,
@@ -67,7 +75,10 @@ h3 {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  min-height: calc(
+    100vh - var(--signup-header-height) - var(--signup-footer-space)
+  );
+  padding: 24px 16px;
 }
 
 ion-card {
@@ -79,8 +90,8 @@ ion-card {
 ion-content {
   --padding-start: 0;
   --padding-end: 0;
-  --padding-top: 0;
-  --padding-bottom: 0;
+  --padding-top: var(--signup-header-height);
+  --padding-bottom: var(--signup-footer-space);
   --background: var(--ion-background-color);
   --color: var(--ion-text-color);
 
@@ -94,12 +105,23 @@ ion-content {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  width: 100%;
+  padding: 24px 0;
 }
 
 ion-note {
   display: block;
   color: var(--ion-color-danger);
+}
+
+.logo {
+  width: 500px;
+  max-width: 100%;
+}
+
+app-info-footer {
+  display: block;
+  padding: 16px 12px;
 }
 
 // Form styling
@@ -219,8 +241,20 @@ ion-button {
 
 // Mobile responsive styles
 @media (max-width: 767px) {
-  ion-card-content {
-    margin-top: 60px;
+  :host {
+    --signup-header-height: calc(var(--ion-safe-area-top, 0px) + 64px);
+  }
+
+  .content-center {
+    padding: 16px 12px;
+  }
+
+  .col-container {
+    padding: 12px 0;
+  }
+
+  .logo {
+    max-width: 280px;
   }
 
   .profile-type-card {

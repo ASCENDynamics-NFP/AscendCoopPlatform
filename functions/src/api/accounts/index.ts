@@ -24,25 +24,26 @@ export const createAccount = onCall(
     }
 
     const userId = request.auth.uid;
-    const data = request.data as CreateAccountRequest;
+    const data = request.data as Partial<CreateAccountRequest>;
+    const normalizedType: "user" | "group" =
+      data?.type === "group" ? "group" : "user";
 
-    // Validate required fields
-    if (!data.name || !data.type) {
-      throw new HttpsError("invalid-argument", "Name and type are required");
+    if (!data?.name) {
+      throw new HttpsError("invalid-argument", "Name is required");
     }
 
-    // Validate account type
-    const validTypes = ["user", "group", "new"] as const;
-    if (!validTypes.includes(data.type as any)) {
-      throw new HttpsError("invalid-argument", "Invalid account type");
-    }
+    const payload: CreateAccountRequest = {
+      ...data,
+      name: data.name,
+      type: normalizedType,
+    };
 
     try {
-      const result = await AccountService.createAccount(userId, data);
+      const result = await AccountService.createAccount(userId, payload);
 
       logger.info(`Account created via API: ${result.accountId}`, {
         userId,
-        accountType: data.type,
+        accountType: payload.type,
       });
 
       return {

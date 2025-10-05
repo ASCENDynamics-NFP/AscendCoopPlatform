@@ -1,7 +1,13 @@
 /**
  * Account Service - Centralized business logic for account operations
  */
-import {getFirestore, Timestamp, WriteBatch} from "firebase-admin/firestore";
+import {
+  getFirestore,
+  Timestamp,
+  WriteBatch,
+  FieldValue,
+} from "firebase-admin/firestore";
+import {getStorage} from "firebase-admin/storage";
 import {getAuth} from "firebase-admin/auth";
 import {logger} from "firebase-functions/v2";
 import {HttpsError} from "firebase-functions/v2/https";
@@ -18,9 +24,18 @@ import {
 
 const db = getFirestore();
 const auth = getAuth();
+// Lazy access to Storage (without require)
+type AdminStorage = ReturnType<typeof getStorage>;
+let storageSingleton: AdminStorage | undefined;
+function getAdminStorage(): AdminStorage {
+  if (!storageSingleton) {
+    storageSingleton = getStorage();
+  }
+  return storageSingleton as AdminStorage;
+}
 
 export interface CreateAccountRequest {
-  type: "user" | "group" | "new";
+  type?: "user" | "group" | "new";
   name: string;
   tagline?: string;
   contactInformation?: {
@@ -53,16 +68,22 @@ export class AccountService {
     data: CreateAccountRequest,
   ): Promise<{accountId: string; account: any}> {
     try {
+      const normalizedType: "user" | "group" =
+        data?.type === "group" ? "group" : "user";
+      const payload: CreateAccountRequest = {
+        ...data,
+        type: normalizedType,
+      };
       // Input validation
       ValidationUtils.validateUserId(userId);
       ValidationUtils.validateRequiredFields(
-        data,
+        payload,
         ["name", "type"],
         "account data",
       );
 
       // Validate account fields
-      const name = ValidationUtils.sanitizeString(data.name, 100);
+      const name = ValidationUtils.sanitizeString(payload.name, 100);
       if (!name) {
         throw new HttpsError(
           "invalid-argument",
@@ -70,18 +91,22 @@ export class AccountService {
         );
       }
 
-      const tagline = data.tagline
-        ? ValidationUtils.sanitizeString(data.tagline, 200)
+      const tagline = payload.tagline
+        ? ValidationUtils.sanitizeString(payload.tagline, 200)
         : "New and looking to help!";
 
       // Validate account type
       const allowedTypes = ["user", "group", "new"];
-      ValidationUtils.validateEnum(data.type, allowedTypes, "account type");
+      ValidationUtils.validateEnum(
+        normalizedType,
+        allowedTypes,
+        "account type",
+      );
 
       // Validate contact information if provided
-      if (data.contactInformation) {
-        if (data.contactInformation.emails) {
-          data.contactInformation.emails.forEach((emailObj, index) => {
+      if (payload.contactInformation) {
+        if (payload.contactInformation.emails) {
+          payload.contactInformation.emails.forEach((emailObj, index) => {
             if (!ValidationUtils.validateEmail(emailObj.email)) {
               throw new HttpsError(
                 "invalid-argument",
@@ -91,8 +116,8 @@ export class AccountService {
           });
         }
 
-        if (data.contactInformation.phoneNumbers) {
-          data.contactInformation.phoneNumbers.forEach((phoneObj, index) => {
+        if (payload.contactInformation.phoneNumbers) {
+          payload.contactInformation.phoneNumbers.forEach((phoneObj, index) => {
             if (!ValidationUtils.validatePhoneNumber(phoneObj.number)) {
               throw new HttpsError(
                 "invalid-argument",
@@ -102,8 +127,8 @@ export class AccountService {
           });
         }
 
-        if (data.contactInformation.addresses) {
-          data.contactInformation.addresses.forEach((addr, index) => {
+        if (payload.contactInformation.addresses) {
+          payload.contactInformation.addresses.forEach((addr, index) => {
             try {
               ValidationUtils.validateLocation(addr);
             } catch (error: any) {
@@ -117,10 +142,16 @@ export class AccountService {
       }
 
       // Validate URLs if provided
-      if (data.iconImage && !ValidationUtils.validateUrl(data.iconImage)) {
+      if (
+        payload.iconImage &&
+        !ValidationUtils.validateUrl(payload.iconImage)
+      ) {
         throw new HttpsError("invalid-argument", "Invalid icon image URL");
       }
-      if (data.heroImage && !ValidationUtils.validateUrl(data.heroImage)) {
+      if (
+        payload.heroImage &&
+        !ValidationUtils.validateUrl(payload.heroImage)
+      ) {
         throw new HttpsError("invalid-argument", "Invalid hero image URL");
       }
 
@@ -143,7 +174,7 @@ export class AccountService {
       const accountRef = db.collection("accounts").doc(userId);
 
       // Geocode addresses if provided
-      let geocodedAddresses = data.contactInformation?.addresses || [];
+      let geocodedAddresses = payload.contactInformation?.addresses || [];
       if (geocodedAddresses.length > 0) {
         geocodedAddresses = await Promise.all(
           geocodedAddresses.map(async (addr) => {
@@ -169,8 +200,10 @@ export class AccountService {
 
       // Prepare contact info for private subdocument only
       const contactInfoPayload = {
-        emails: data.contactInformation?.emails || [{email: userRecord.email}],
-        phoneNumbers: data.contactInformation?.phoneNumbers || [],
+        emails: payload.contactInformation?.emails || [
+          {email: userRecord.email},
+        ],
+        phoneNumbers: payload.contactInformation?.phoneNumbers || [],
         addresses: geocodedAddresses,
       };
 
@@ -178,11 +211,11 @@ export class AccountService {
         id: userId,
         name: name,
         tagline: tagline,
-        type: data.type,
+        type: normalizedType,
         iconImage:
-          data.iconImage ||
+          payload.iconImage ||
           "assets/image/logo/ASCENDynamics NFP-logos_transparent.png",
-        heroImage: data.heroImage || "assets/image/userhero.png",
+        heroImage: payload.heroImage || "assets/image/userhero.png",
         email: userRecord.email,
         privacySettings: {
           profile: {visibility: "public"},
@@ -230,7 +263,7 @@ export class AccountService {
       }
 
       // Initialize standard roles and projects based on account type
-      await this.initializeAccountDefaults(batch, userId, data.type);
+      await this.initializeAccountDefaults(batch, userId, normalizedType);
 
       await batch.commit();
 
@@ -442,8 +475,17 @@ export class AccountService {
 
       await batch.commit();
 
-      // Delete from Firebase Auth (this will trigger cleanup triggers)
-      await auth.deleteUser(accountId);
+      // Delete from Firebase Auth (best-effort; ignore if already gone)
+      try {
+        await auth.deleteUser(accountId);
+      } catch (e: any) {
+        if (e?.code !== "auth/user-not-found") {
+          throw e;
+        }
+        logger.warn("Auth user already absent during deleteAccount", {
+          accountId,
+        });
+      }
 
       logger.info(`Account deleted successfully: ${accountId}`);
     } catch (error) {
@@ -724,53 +766,147 @@ export class AccountService {
         `Found ${ownedListingsQuery.size} listings owned by account ${accountId}`,
       );
 
+      const ownedListingRefs: FirebaseFirestore.DocumentReference[] = [];
       for (const listingDoc of ownedListingsQuery.docs) {
         logger.info(`Deleting owned listing: ${listingDoc.id}`);
+
+        // Before deleting the listing, remove mirrored relatedListings from all accounts
+        try {
+          const relatedAccountsSnap = await listingDoc.ref
+            .collection("relatedAccounts")
+            .get();
+          const relatedAccountIds = relatedAccountsSnap.docs.map((d) => d.id);
+
+          if (relatedAccountIds.length > 0) {
+            await this.deleteInChunks(
+              relatedAccountIds.map((relatedId) =>
+                db
+                  .collection("accounts")
+                  .doc(relatedId)
+                  .collection("relatedListings")
+                  .doc(listingDoc.id),
+              ),
+            );
+          }
+
+          // Best-effort cleanup: remove any stray mirrors via collection group
+          try {
+            const cg = await db
+              .collectionGroup("relatedListings")
+              .where("id", "==", listingDoc.id)
+              .get();
+            if (!cg.empty) {
+              await this.deleteInChunks(cg.docs.map((d) => d.ref));
+            }
+          } catch (cgErr) {
+            logger.warn(
+              "Best-effort CG cleanup for relatedListings failed (non-fatal):",
+              cgErr,
+            );
+          }
+        } catch (mirrorErr) {
+          logger.warn(
+            "Failed to remove mirrored relatedListings prior to listing delete (non-fatal):",
+            mirrorErr,
+          );
+        }
+
         // First delete all subcollections of this listing
         await this.deleteDocumentWithSubcollections(listingDoc.ref);
-        // Then delete the listing document itself
-        batch.delete(listingDoc.ref);
+        // Then queue the listing document itself for chunked deletion
+        ownedListingRefs.push(listingDoc.ref);
       }
 
-      // Handle cross-collection references using the main batch
-      // Remove this account from other accounts' relatedAccounts
-      const relatedAccountsQuery = await db
-        .collectionGroup("relatedAccounts")
-        .where("id", "==", accountId)
-        .get();
+      if (ownedListingRefs.length > 0) {
+        await this.deleteInChunks(ownedListingRefs);
+      }
 
-      logger.info(
-        `Deleting ${relatedAccountsQuery.size} related account references`,
-      );
-      relatedAccountsQuery.docs.forEach((doc) => {
-        batch.delete(doc.ref);
-      });
+      // Handle cross-collection references using best-effort cleanups
+      // Remove this account from any relatedAccounts (across accounts and listings)
+      try {
+        const relatedAccountsQuery = await db
+          .collectionGroup("relatedAccounts")
+          .where("id", "==", accountId)
+          .get();
 
-      // Remove this account from listings' relatedAccounts
-      const listingRelationsQuery = await db
-        .collectionGroup("relatedAccounts")
-        .where("accountId", "==", accountId)
-        .get();
+        logger.info(
+          `Deleting ${relatedAccountsQuery.size} relatedAccounts references for account ${accountId}`,
+        );
+        if (!relatedAccountsQuery.empty) {
+          await this.deleteInChunks(
+            relatedAccountsQuery.docs.map((d) => d.ref),
+          );
+        }
+      } catch (e) {
+        logger.warn(
+          "Best-effort CG cleanup for relatedAccounts failed (non-fatal)",
+          e,
+        );
+      }
 
-      logger.info(
-        `Deleting ${listingRelationsQuery.size} listing relation references`,
-      );
-      listingRelationsQuery.docs.forEach((doc) => {
-        batch.delete(doc.ref);
-      });
+      // Remove any remaining relatedListings documents that belong to this account
+      // Note: direct subcollection under this account was already deleted recursively above
+      // This collection group query is a safety net for legacy or stray docs
+      try {
+        const strayRelatedListings = await db
+          .collectionGroup("relatedListings")
+          .where("accountId", "==", accountId)
+          .get();
+        if (!strayRelatedListings.empty) {
+          logger.info(
+            `Deleting ${strayRelatedListings.size} stray relatedListings for account ${accountId}`,
+          );
+          await this.deleteInChunks(
+            strayRelatedListings.docs.map((d) => d.ref),
+          );
+        }
+      } catch (e) {
+        logger.warn(
+          "Best-effort CG cleanup for relatedListings (by accountId) failed (non-fatal)",
+          e,
+        );
+      }
 
-      // Remove account references from relatedListings collections
-      const relatedListingsQuery = await db
-        .collectionGroup("relatedListings")
-        .where("accountId", "==", accountId)
-        .get();
+      // Messaging cleanup: remove user's messages, detach from chats, and delete any attached files
+      await this.cleanupMessagingForAccount(accountId);
 
-      logger.info(
-        `Deleting ${relatedListingsQuery.size} related listings references`,
-      );
-      relatedListingsQuery.docs.forEach((doc) => {
-        batch.delete(doc.ref);
-      });
+      // Delete any user encryption/public key documents (if present)
+      try {
+        await db.collection("userKeys").doc(accountId).delete();
+      } catch (e) {
+        logger.warn("userKeys doc deletion non-fatal", {accountId, e});
+      }
+
+      // Remove user-owned files under accounts/{accountId}/ in Storage (resume, applications, etc.)
+      try {
+        const bucket = getAdminStorage().bucket();
+        const prefix = `accounts/${accountId}/`;
+        const [files] = await bucket.getFiles({prefix});
+        if (files.length > 0) {
+          // Delete in manageable chunks
+          for (let i = 0; i < files.length; i += 400) {
+            const chunk = files.slice(i, i + 400);
+            await Promise.all(
+              chunk.map((f) =>
+                f.delete().catch((err: any) =>
+                  logger.warn("Storage delete (accounts/*) non-fatal", {
+                    path: f.name,
+                    err,
+                  }),
+                ),
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        logger.warn(
+          "Failed to cleanup Storage under accounts/{accountId} (non-fatal)",
+          {
+            accountId,
+            e,
+          },
+        );
+      }
 
       logger.info(
         `Completed deletion of subcollections and queued cross-collection references for account ${accountId}`,
@@ -779,6 +915,218 @@ export class AccountService {
       logger.error("Error deleting account relations:", error);
       throw new HttpsError("internal", "Failed to delete account relations");
     }
+  }
+
+  /** Delete a list of DocumentReferences in batch chunks */
+  private static async deleteInChunks(
+    refs: FirebaseFirestore.DocumentReference[],
+    chunkSize: number = 450,
+  ): Promise<void> {
+    for (let i = 0; i < refs.length; i += chunkSize) {
+      const chunk = refs.slice(i, i + chunkSize);
+      const batch = db.batch();
+      chunk.forEach((ref) => batch.delete(ref));
+      await batch.commit();
+    }
+  }
+
+  /**
+   * Remove a user's messages and detach them from chats; delete any files they attached.
+   */
+  private static async cleanupMessagingForAccount(
+    accountId: string,
+  ): Promise<void> {
+    try {
+      // Find chats where the user participates
+      const chatsSnap = await db
+        .collection("chats")
+        .where("participants", "array-contains", accountId)
+        .get();
+
+      if (chatsSnap.empty) {
+        logger.info("No chats found for account; messaging cleanup skipped", {
+          accountId,
+        });
+        return;
+      }
+
+      const bucket = getAdminStorage().bucket();
+
+      for (const chatDoc of chatsSnap.docs) {
+        const chatRef = chatDoc.ref;
+        const chatId = chatDoc.id;
+
+        // 1) Delete this user's messages in the chat (and any attached files)
+        const userMessagesSnap = await chatRef
+          .collection("messages")
+          .where("senderId", "==", accountId)
+          .get();
+
+        if (!userMessagesSnap.empty) {
+          // Collect storage files to delete
+          const storagePathsToDelete: string[] = [];
+
+          userMessagesSnap.docs.forEach((msg) => {
+            const data: any = msg.data() || {};
+            // Direct fileUrl (legacy)
+            if (data.fileUrl) {
+              const p = this.tryParseStoragePath(data.fileUrl, bucket.name);
+              if (p) storagePathsToDelete.push(p);
+            }
+            // Attachments array (newer)
+            const attachments = Array.isArray(data.attachments)
+              ? data.attachments
+              : [];
+            attachments.forEach((att: any) => {
+              if (att?.fileUrl) {
+                const p = this.tryParseStoragePath(att.fileUrl, bucket.name);
+                if (p) storagePathsToDelete.push(p);
+              }
+              if (att?.thumbnailUrl) {
+                const p = this.tryParseStoragePath(
+                  att.thumbnailUrl,
+                  bucket.name,
+                );
+                if (p) storagePathsToDelete.push(p);
+              }
+            });
+          });
+
+          // Delete message documents in chunks
+          await this.deleteInChunks(userMessagesSnap.docs.map((d) => d.ref));
+
+          // Delete associated storage files (best-effort)
+          for (let i = 0; i < storagePathsToDelete.length; i += 400) {
+            const chunk = storagePathsToDelete.slice(i, i + 400);
+            await Promise.all(
+              chunk.map((path) =>
+                bucket
+                  .file(path)
+                  .delete()
+                  .catch((err: any) =>
+                    logger.warn("Storage delete (chat files) non-fatal", {
+                      path,
+                      err,
+                    }),
+                  ),
+              ),
+            );
+          }
+        }
+
+        // 2) Detach user from chat participants
+        try {
+          await chatRef.update({
+            participants: FieldValue.arrayRemove(accountId),
+            admins: FieldValue.arrayRemove(accountId),
+            lastModifiedAt: Timestamp.now(),
+            lastModifiedBy: accountId,
+          });
+        } catch (e) {
+          logger.warn("Chat update (participants remove) non-fatal", {
+            chatId,
+            accountId,
+            e,
+          });
+        }
+
+        // 3) If the chat now has no participants, delete it entirely (and its subcollections)
+        try {
+          const refreshed = await chatRef.get();
+          const participants = (refreshed.data() || {}).participants || [];
+          if (!Array.isArray(participants) || participants.length === 0) {
+            await this.deleteDocumentWithSubcollections(chatRef);
+            await chatRef.delete();
+
+            // Best-effort: remove any remaining chat storage directory (supports both chatMedia/ and chats/ schemes)
+            const prefixes = [`chatMedia/${chatId}/`, `chats/${chatId}/`];
+            for (const prefix of prefixes) {
+              try {
+                const [files] = await bucket.getFiles({prefix});
+                if (files && files.length > 0) {
+                  for (let i = 0; i < files.length; i += 400) {
+                    const chunk = files.slice(i, i + 400);
+                    await Promise.all(
+                      chunk.map((f) =>
+                        f.delete().catch((err: any) =>
+                          logger.warn("Storage delete (chat dir) non-fatal", {
+                            path: f.name,
+                            err,
+                          }),
+                        ),
+                      ),
+                    );
+                  }
+                }
+              } catch (e) {
+                logger.warn(
+                  "Failed to cleanup chat storage prefix (non-fatal)",
+                  {
+                    chatId,
+                    prefix,
+                    e,
+                  },
+                );
+              }
+            }
+          }
+        } catch (e) {
+          logger.warn("Chat empty-check/cleanup non-fatal", {chatId, e});
+        }
+      }
+    } catch (err) {
+      logger.warn("Messaging cleanup finished with warnings", {accountId, err});
+    }
+  }
+
+  /**
+   * Attempt to turn a Firebase Storage URL into an object path within the bucket.
+   * Supports gs://, firebasestorage.googleapis.com, and storage.googleapis.com.
+   */
+  private static tryParseStoragePath(
+    url: string,
+    bucketName: string,
+  ): string | null {
+    try {
+      if (!url || typeof url !== "string") return null;
+      if (url.startsWith("gs://")) {
+        const rest = url.replace(/^gs:\/\//, "");
+        const idx = rest.indexOf("/");
+        if (idx === -1) return null;
+        const b = rest.substring(0, idx);
+        const path = rest.substring(idx + 1);
+        return b === bucketName ? path : null;
+      }
+      if (url.includes("firebasestorage.googleapis.com")) {
+        // Format: https://firebasestorage.googleapis.com/v0/b/<bucket>/o/<encodedPath>?alt=media
+        const m = url.match(/\/o\/([^?]+)/);
+        if (!m) return null;
+        const encoded = m[1];
+        const path = decodeURIComponent(encoded);
+        return path.startsWith(bucketName + "/")
+          ? path.substring(bucketName.length + 1)
+          : path; // sometimes path is already without bucket prefix
+      }
+      if (url.includes("storage.googleapis.com")) {
+        // Format: https://storage.googleapis.com/<bucket>/<path>
+        const m = url.match(/storage\.googleapis\.com\/([^/]+)\/(.+)$/);
+        if (!m) return null;
+        const b = m[1];
+        const path = m[2];
+        return b === bucketName ? path : null;
+      }
+      // Might already be a path-like string
+      if (
+        url.startsWith("chatMedia/") ||
+        url.startsWith("chats/") ||
+        url.startsWith("accounts/")
+      ) {
+        return url;
+      }
+    } catch (e) {
+      // ignore
+    }
+    return null;
   }
 
   /**

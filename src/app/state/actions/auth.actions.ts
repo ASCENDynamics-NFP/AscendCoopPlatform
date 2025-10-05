@@ -40,7 +40,12 @@ export const sendVerificationMailFailure = createAction(
 
 export const signUp = createAction(
   "[Auth] Sign Up",
-  props<{email: string; password: string}>(),
+  props<{
+    name: string;
+    email: string;
+    password: string;
+    accountType?: "user" | "group";
+  }>(),
 );
 
 export const signUpSuccess = createAction(

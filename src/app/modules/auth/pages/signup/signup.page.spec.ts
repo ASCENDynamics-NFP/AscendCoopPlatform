@@ -231,6 +231,7 @@ describe("SignupPage", () => {
     spyOn(store, "dispatch");
 
     const form = component.signupForm;
+    form.get("name")?.setValue("Test User");
     form.get("email")?.setValue("test@example.com");
     form.get("password")?.setValue("StrongPass1!");
     form.get("confirmPassword")?.setValue("StrongPass1!");
@@ -242,8 +243,10 @@ describe("SignupPage", () => {
 
     expect(store.dispatch).toHaveBeenCalledWith(
       AuthActions.signUp({
+        name: "Test User",
         email: "test@example.com",
         password: "StrongPass1!",
+        accountType: "user",
       }),
     );
   });

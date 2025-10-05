@@ -107,6 +107,7 @@ export class SignupPage implements OnInit {
   ngOnInit() {
     this.signupForm = this.fb.nonNullable.group(
       {
+        name: ["", [Validators.required, Validators.maxLength(100)]],
         email: ["", [Validators.required, Validators.email]],
         password: [
           "",
@@ -117,6 +118,7 @@ export class SignupPage implements OnInit {
           ],
         ],
         confirmPassword: ["", [Validators.required, Validators.minLength(8)]],
+        accountType: ["user", Validators.required],
         agreedToTerms: [false, Validators.requiredTrue],
       },
       {validators: this.matchingPasswordsValidator},
@@ -124,10 +126,18 @@ export class SignupPage implements OnInit {
   }
 
   signup() {
-    const {email, password} = this.signupForm.value;
+    const {name, email, password, accountType} = this.signupForm.value;
+    const trimmedName = (name || "").trim();
 
-    if (email && password) {
-      this.store.dispatch(AuthActions.signUp({email, password}));
+    if (trimmedName && email && password) {
+      this.store.dispatch(
+        AuthActions.signUp({
+          name: trimmedName,
+          email,
+          password,
+          accountType,
+        }),
+      );
     }
   }
 

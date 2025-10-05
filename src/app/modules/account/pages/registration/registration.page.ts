@@ -83,6 +83,18 @@ export class RegistrationPage implements OnInit, OnDestroy {
       switchMap((accountId) => this.store.select(selectAccountById(accountId))),
     );
 
+    // Auto-select type if it has been set earlier (e.g., during signup)
+    this.account$
+      .pipe(filter((a): a is Account => !!a))
+      .subscribe((account) => {
+        if (
+          this.selectedType === "" &&
+          (account.type === "user" || account.type === "group")
+        ) {
+          this.selectedType = account.type;
+        }
+      });
+
     // Check if user has completed registration and redirect if needed
     this.checkRegistrationStatus();
   }
@@ -94,8 +106,16 @@ export class RegistrationPage implements OnInit, OnDestroy {
         take(1),
       )
       .subscribe((account) => {
-        if (account && account.type && account.type !== "new") {
-          // Registration already completed, redirect to profile immediately
+        // Only auto-redirect when it's reasonably clear that the user
+        // completed registration (not just picked a type).
+        const hasNonDefaultTagline =
+          !!account?.tagline && account.tagline !== "New and looking to help!";
+        if (
+          account &&
+          account.type &&
+          account.type !== "new" &&
+          hasNonDefaultTagline
+        ) {
           this.router.navigate(["/account", account.id], {replaceUrl: true});
         }
       });

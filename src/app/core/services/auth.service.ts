@@ -50,8 +50,15 @@ export class AuthService {
   }
 
   // Sign-Up
-  signUp(email: string, password: string): void {
-    this.store.dispatch(AuthActions.signUp({email, password}));
+  signUp(
+    name: string,
+    email: string,
+    password: string,
+    accountType?: "user" | "group",
+  ): void {
+    this.store.dispatch(
+      AuthActions.signUp({name, email, password, accountType}),
+    );
   }
 
   // Sign-In

@@ -35,12 +35,9 @@ export class AuthNavigationService {
    * Check if user has completed registration
    */
   hasCompletedRegistration(authUser: AuthUser | null): boolean {
-    if (!authUser?.type) {
-      return false;
-    }
-    // User has completed registration if they have a valid type that's not "new"
+    if (!authUser?.type) return false;
     const validTypes = ["user", "group"];
-    return validTypes.includes(authUser.type) && authUser.type !== "new";
+    return validTypes.includes(authUser.type);
   }
 
   /** Generic navigation helper for guards/effects */

@@ -45,6 +45,7 @@
 .profile-avatar {
   width: 100px;
   height: 100px;
+  flex: 0 0 100px;
   border-radius: 50%;
   margin-right: 16px;
   background-color: var(--ion-color-light, #f4f5f8);

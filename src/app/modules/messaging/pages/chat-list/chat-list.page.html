@@ -30,13 +30,19 @@
       detail="false"
     >
       <!-- Profile Picture -->
-      <ion-avatar slot="start">
-        <img
-          *ngIf="getChatAvatar(chat); else defaultAvatar"
-          [src]="getChatAvatar(chat)"
-        />
-        <ng-template #defaultAvatar>
-          <ion-icon name="person-circle" size="large"></ion-icon>
+      <ion-avatar slot="start" class="chat-avatar">
+        <ng-container *ngIf="getChatAvatar(chat) as avatar; else chatFallback">
+          <img
+            [src]="avatar"
+            (error)="onAvatarError(chat.id)"
+            loading="lazy"
+          />
+        </ng-container>
+        <ng-template #chatFallback>
+          <ion-icon
+            [name]="getChatAvatarIcon(chat)"
+            class="chat-avatar-icon"
+          ></ion-icon>
         </ng-template>
       </ion-avatar>
 

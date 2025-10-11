@@ -100,10 +100,19 @@ ion-item {
     width: 54px;
     height: 54px;
     margin-right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--chat-list-border-light);
 
     img {
       border-radius: 50%;
       border: 2px solid var(--chat-list-border-light);
+    }
+
+    .chat-avatar-icon {
+      font-size: 2.4rem;
+      color: var(--ion-color-primary);
     }
   }
 
@@ -138,6 +147,10 @@ ion-item {
 
     ion-avatar img {
       border-color: var(--chat-list-border-dark);
+    }
+
+    ion-avatar {
+      background: var(--chat-list-border-dark);
     }
 
     &.has-unread {

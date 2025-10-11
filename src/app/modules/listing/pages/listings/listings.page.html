@@ -73,10 +73,20 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         *ngFor="let listing of paginatedListings$ | async"
         [routerLink]="['/listings', listing.id]"
       >
-        <ion-thumbnail slot="start">
-          <ion-img
-            [src]="listing.iconImage || 'assets/image/logo/ASCENDynamics NFP-logos_transparent.png'"
-          ></ion-img>
+        <ion-thumbnail slot="start" class="listing-thumbnail">
+          <ng-container *ngIf="hasListingIcon(listing); else listingIconFallback">
+            <img
+              [src]="listing.iconImage"
+              [alt]="listing.title + ' logo'"
+              (error)="onListingIconError(listing.id)"
+            />
+          </ng-container>
+          <ng-template #listingIconFallback>
+            <ion-icon
+              [name]="getListingFallbackIcon(listing)"
+              class="listing-thumbnail-icon"
+            ></ion-icon>
+          </ng-template>
         </ion-thumbnail>
         <ion-label>
           <h2>{{ listing.title }}</h2>

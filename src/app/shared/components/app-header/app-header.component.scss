@@ -58,11 +58,39 @@ ion-toolbar {
   gap: 8px;
 }
 
-.padded-avatar {
-  max-height: 40px;
-  max-width: 40px;
+.avatar-trigger {
+  border: none;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.padded-avatar,
+.avatar-fallback {
+  width: 40px;
+  height: 40px;
   margin: 3px 15px 3px 3px;
   border: 2px solid #e87121;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-trigger:focus-visible {
+  outline: 2px solid var(--ion-color-primary);
+}
+
+.avatar-fallback {
+  background: var(--ion-color-light, #f4f5f8);
+
+  ion-icon {
+    font-size: 1.8rem;
+    color: var(--ion-color-primary);
+  }
 }
 
 ion-title {

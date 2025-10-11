@@ -215,8 +215,6 @@ export class ChatWindowPage implements OnInit, OnDestroy {
    * Pre-load sender accounts for avatar display
    */
   private preloadSenderAccounts(messages: Message[]) {
-    const defaultImage =
-      "assets/image/logo/ASCENDynamics NFP-logos_transparent.png";
     const senderIds = new Set<string>();
 
     messages.forEach((message) => {
@@ -240,8 +238,10 @@ export class ChatWindowPage implements OnInit, OnDestroy {
           next: (account: any) => {
             // Run cache updates outside Angular's zone to avoid signal conflicts
             this.ngZone.runOutsideAngular(() => {
-              const avatarUrl = account?.iconImage || defaultImage;
+              const avatarUrl = account?.iconImage || account?.photoURL || null;
               this.senderAvatarCache.set(senderId, avatarUrl);
+              this.senderAvatarLoadState.set(senderId, !!avatarUrl);
+              this.senderTypeCache.set(senderId, account?.type || null);
 
               // Cache sender name as well - only if we have account data
               if (account) {
@@ -264,7 +264,9 @@ export class ChatWindowPage implements OnInit, OnDestroy {
             console.warn(`Error loading account ${senderId}:`, error);
             // Run cache updates outside Angular's zone to avoid signal conflicts
             this.ngZone.runOutsideAngular(() => {
-              this.senderAvatarCache.set(senderId, defaultImage);
+              this.senderAvatarCache.set(senderId, null);
+              this.senderAvatarLoadState.set(senderId, false);
+              this.senderTypeCache.set(senderId, null);
               this.senderNameCache.set(senderId, "Unknown User");
             });
           },
@@ -1042,59 +1044,59 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   /**
    * Get sender avatar image
    */
-  getSenderAvatar(message: Message): string {
+  getSenderAvatar(message: Message): string | null {
     if (!message.senderId || this.isOwnMessage(message)) {
-      return "assets/image/logo/ASCENDynamics NFP-logos_transparent.png";
+      return null;
     }
 
-    // Load account if not already loaded
     this.store.dispatch(
       AccountActions.loadAccount({accountId: message.senderId}),
     );
 
-    // Return default for now, the template will get updated via the selector
-    return "assets/image/logo/ASCENDynamics NFP-logos_transparent.png";
+    return this.getSenderAvatarUrl(message);
   }
 
   // Cache for sender avatars to prevent infinite observable chains
-  private senderAvatarCache = new Map<string, string>();
+  private senderAvatarCache = new Map<string, string | null>();
+  private senderAvatarLoadState = new Map<string, boolean>();
   // Cache for sender names to improve performance
   private senderNameCache = new Map<string, string>();
+  private senderTypeCache = new Map<string, string | null>();
 
   /**
    * Get sender avatar URL synchronously for template use
    */
-  getSenderAvatarUrl(message: Message): string {
-    // Default fallback image
-    const defaultImage =
-      "assets/image/logo/ASCENDynamics NFP-logos_transparent.png";
-
+  getSenderAvatarUrl(message: Message): string | null {
     if (!message || !message.senderId || this.isOwnMessage(message)) {
-      return defaultImage;
+      return null;
     }
 
     // Check cache first
     if (this.senderAvatarCache.has(message.senderId)) {
-      return this.senderAvatarCache.get(message.senderId)!;
+      const cached = this.senderAvatarCache.get(message.senderId);
+      const isLoaded = this.senderAvatarLoadState.get(message.senderId);
+      if (!cached || isLoaded === false) {
+        return null;
+      }
+      return cached;
     }
 
-    // If not in cache, dispatch load action and return default
-    // The preloadSenderAccounts method will populate the cache
+    // If not in cache, dispatch load action and rely on fallback icon until loaded
     this.store.dispatch(
       AccountActions.loadAccount({accountId: message.senderId}),
     );
-
-    // Return default for now, cache will be updated by preloadSenderAccounts
     this.ngZone.runOutsideAngular(() => {
-      this.senderAvatarCache.set(message.senderId!, defaultImage);
+      this.senderAvatarCache.set(message.senderId!, null);
+      this.senderAvatarLoadState.set(message.senderId!, false);
+      this.senderTypeCache.set(message.senderId!, null);
     });
-    return defaultImage;
+    return null;
   }
 
   /**
    * Get sender avatar as Observable for template use (keeping for backward compatibility)
    */
-  getSenderAvatarObservable(message: Message): Observable<string> {
+  getSenderAvatarObservable(message: Message): Observable<string | null> {
     return of(this.getSenderAvatarUrl(message));
   }
 
@@ -1579,12 +1581,19 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Set default avatar when image fails to load
+   * Set icon fallback when avatar image fails to load
    */
-  setDefaultAvatar(event: Event) {
-    const target = event.target as HTMLImageElement;
-    if (target) {
-      target.src = "assets/image/logo/ASCENDynamics NFP-logos_transparent.png";
+  setDefaultAvatar(message: Message) {
+    if (message?.senderId) {
+      this.senderAvatarLoadState.set(message.senderId, false);
     }
+  }
+
+  getSenderFallbackIcon(message: Message): string {
+    if (!message?.senderId) {
+      return "person-circle";
+    }
+    const senderType = this.senderTypeCache.get(message.senderId);
+    return senderType === "group" ? "business-outline" : "person-circle";
   }
 }

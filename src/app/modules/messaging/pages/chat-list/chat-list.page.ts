@@ -42,7 +42,8 @@ export class ChatListPage implements OnInit, OnDestroy {
   totalUnreadCount$: Observable<number>;
   private destroy$ = new Subject<void>();
   private chatDisplayNameCache = new Map<string, string>();
-  private chatAvatarCache = new Map<string, string>();
+  private chatAvatarCache = new Map<string, string | null>();
+  private chatAvatarLoadState = new Map<string, boolean>();
   private chatLastMessageCache = new Map<string, string>();
   private currentUserId: string | null = null;
 
@@ -124,8 +125,9 @@ export class ChatListPage implements OnInit, OnDestroy {
       if (chat.isGroup) {
         const displayName = chat.name || chat.groupName || "Group Chat";
         this.chatDisplayNameCache.set(chat.id, displayName);
-        const groupIcon = (chat as any)?.iconImage || "assets/avatar/male1.png";
+        const groupIcon = (chat as any)?.iconImage || null;
         this.chatAvatarCache.set(chat.id, groupIcon);
+        this.chatAvatarLoadState.set(chat.id, !!groupIcon);
       } else {
         const otherParticipants = chat.participants.filter(
           (id) => id !== currentUserId,
@@ -153,24 +155,24 @@ export class ChatListPage implements OnInit, OnDestroy {
                 }
                 this.chatDisplayNameCache.set(chat.id, displayName);
 
-                let avatar =
-                  account?.iconImage ||
-                  account?.photoURL ||
-                  "assets/avatar/male1.png";
+                let avatar = account?.iconImage || account?.photoURL || null;
                 if (avatar?.startsWith("src/")) {
                   avatar = avatar.replace(/^src\//, "");
                 }
                 this.chatAvatarCache.set(chat.id, avatar);
+                this.chatAvatarLoadState.set(chat.id, !!avatar);
               },
               error: (error) => {
                 console.warn(`Error loading account ${otherUserId}:`, error);
                 this.chatDisplayNameCache.set(chat.id, "Unknown User");
-                this.chatAvatarCache.set(chat.id, "assets/avatar/male1.png");
+                this.chatAvatarCache.set(chat.id, null);
+                this.chatAvatarLoadState.set(chat.id, false);
               },
             });
         } else {
           this.chatDisplayNameCache.set(chat.id, "Unknown User");
-          this.chatAvatarCache.set(chat.id, "assets/avatar/male1.png");
+          this.chatAvatarCache.set(chat.id, null);
+          this.chatAvatarLoadState.set(chat.id, false);
         }
       }
 
@@ -288,7 +290,24 @@ export class ChatListPage implements OnInit, OnDestroy {
    */
   getChatAvatar(chat: Chat | null): string | null {
     if (!chat) return null;
-    return this.chatAvatarCache.get(chat.id) || null;
+    const cached = this.chatAvatarCache.get(chat.id);
+    const isLoaded = this.chatAvatarLoadState.get(chat.id);
+    if (!cached || isLoaded === false) {
+      return null;
+    }
+    return cached;
+  }
+
+  /**
+   * Handle avatar load errors to use icon fallback
+   */
+  onAvatarError(chatId: string) {
+    this.chatAvatarLoadState.set(chatId, false);
+  }
+
+  getChatAvatarIcon(chat: Chat | null): string {
+    if (!chat) return "person-circle";
+    return chat.isGroup ? "people-circle-outline" : "person-circle";
   }
 
   /**

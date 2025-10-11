@@ -66,11 +66,26 @@
   gap: 0.625rem;
 }
 
-.listing-icon {
+.listing-icon-wrapper {
   width: 3rem;
   height: 3rem;
   border-radius: 50%;
-  object-fit: cover;
+  background: var(--ion-color-light, #f4f5f8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .listing-icon-fallback {
+    font-size: 1.8rem;
+    color: var(--ion-color-primary);
+  }
 }
 
 .listing-info {
@@ -167,5 +182,15 @@
 @media (max-width: 740px) {
   .listing-details ion-chip:last-child {
     display: none;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .listing-icon-wrapper {
+    background: rgba(255, 255, 255, 0.05);
+
+    .listing-icon-fallback {
+      color: var(--ion-color-primary);
+    }
   }
 }

@@ -30,6 +30,7 @@ import {Listing} from "../../../../../../shared/models/listing.model";
 })
 export class HomepageListingsComponent implements OnInit {
   listings: Listing[] = [];
+  private listingIconState: Record<string, boolean> = {};
 
   constructor(private listingsService: ListingsService) {}
 
@@ -50,6 +51,10 @@ export class HomepageListingsComponent implements OnInit {
         this.listingsService.getHomepageListings(location).subscribe(
           (listings: Listing[]) => {
             this.listings = listings;
+            this.listingIconState = {};
+            listings.forEach((listing) => {
+              this.listingIconState[listing.id] = !!listing.iconImage;
+            });
           },
           (error: any) => {
             console.error("Error fetching homepage listings:", error);
@@ -60,5 +65,29 @@ export class HomepageListingsComponent implements OnInit {
         console.error("Error getting location:", error);
       },
     );
+  }
+
+  hasListingIcon(listing: Listing): boolean {
+    if (!listing.iconImage) return false;
+    const state = this.listingIconState[listing.id];
+    return state !== false;
+  }
+
+  onListingIconError(listingId: string) {
+    this.listingIconState[listingId] = false;
+  }
+
+  getListingFallbackIcon(listing: Listing): string {
+    const iconMap: Record<string, string> = {
+      volunteer: "people-outline",
+      job: "briefcase-outline",
+      // event: "calendar-outline",
+      // project: "construct-outline",
+      // resource: "library-outline",
+      // service: "hand-right-outline",
+      internship: "school-outline",
+      gig: "flash-outline",
+    };
+    return iconMap[listing.type?.toLowerCase?.() || ""] || "briefcase-outline";
   }
 }

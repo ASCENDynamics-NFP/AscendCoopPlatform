@@ -58,6 +58,7 @@ export class ListingsPage implements OnInit, OnDestroy {
 
   private searchSubject = new Subject<string>();
   private searchSub?: Subscription;
+  private listingIconLoadState = new Map<string, boolean>();
 
   // Pagination State
   pageSize = 10;
@@ -191,16 +192,30 @@ export class ListingsPage implements OnInit, OnDestroy {
     const iconMap: Record<string, string> = {
       volunteer: "people-outline",
       job: "briefcase-outline",
-      event: "calendar-outline",
-      project: "construct-outline",
-      resource: "library-outline",
-      service: "hand-right-outline",
-      all: "apps-outline",
+      // event: "calendar-outline",
+      // project: "construct-outline",
+      // resource: "library-outline",
+      // service: "hand-right-outline",
+      // all: "apps-outline",
       internship: "school-outline",
       gig: "flash-outline",
     };
 
-    return iconMap[type.toLowerCase()] || "help-outline";
+    return iconMap[type?.toLowerCase?.() || ""] || "briefcase-outline";
+  }
+
+  hasListingIcon(listing: Listing): boolean {
+    if (!listing.iconImage) return false;
+    const state = this.listingIconLoadState.get(listing.id);
+    return state !== false;
+  }
+
+  onListingIconError(listingId: string) {
+    this.listingIconLoadState.set(listingId, false);
+  }
+
+  getListingFallbackIcon(listing: Listing): string {
+    return this.getIconForType(listing.type || "job");
   }
 
   goToPage(pageNumber: number) {

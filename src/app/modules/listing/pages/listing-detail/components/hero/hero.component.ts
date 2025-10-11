@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, Input} from "@angular/core";
+import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
 import {Listing} from "@shared/models/listing.model";
 import {serverTimestamp} from "firebase/firestore";
 import * as ListingsActions from "../../../../../../state/actions/listings.actions";
@@ -29,12 +29,20 @@ import {Store} from "@ngrx/store";
   templateUrl: "./hero.component.html",
   styleUrls: ["./hero.component.scss"],
 })
-export class HeroComponent {
+export class HeroComponent implements OnChanges {
   @Input() listing!: Listing;
   @Input() isOwner: boolean = false;
   @Input() showButtons: boolean = true;
+  readonly defaultHeroImage = "assets/image/orghero.png";
+  iconImageLoaded = true;
 
   constructor(private store: Store<AppState>) {}
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes["listing"]) {
+      this.iconImageLoaded = true;
+    }
+  }
 
   getCities(): string {
     if (this.listing.remote) {
@@ -65,29 +73,11 @@ export class HeroComponent {
     }
   }
 
-  // async deleteListing() {
-  //   const alert = await this.alertController.create({
-  //     header: "Confirm Deletion",
-  //     message: "Are you sure you want to delete this listing?",
-  //     buttons: [
-  //       {
-  //         text: "Cancel",
-  //         role: "cancel",
-  //       },
-  //       {
-  //         text: "Delete",
-  //         role: "destructive",
-  //         handler: () => {
-  //           if (this.listingId) {
-  //             this.store.dispatch(
-  //               ListingsActions.deleteListing({id: this.listingId}),
-  //             );
-  //           }
-  //         },
-  //       },
-  //     ],
-  //   });
+  onHeroImageError(event: Event) {
+    (event.target as HTMLImageElement).src = this.defaultHeroImage;
+  }
 
-  //   await alert.present();
-  // }
+  onIconImageError() {
+    this.iconImageLoaded = false;
+  }
 }

@@ -22,7 +22,7 @@ import {PopoverController} from "@ionic/angular";
 import {UserMenuComponent} from "../user-menu/user-menu.component";
 import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../../state/selectors/auth.selectors";
-import {map, Observable} from "rxjs";
+import {map, Observable, tap} from "rxjs";
 import {AuthUser} from "@shared/models/auth-user.model";
 
 @Component({
@@ -46,13 +46,18 @@ export class AppHeaderComponent {
 
   authUser$: Observable<AuthUser | null>; // Declare type for clarity
   public popoverEvent: any;
+  userIconLoaded = true;
 
   constructor(
     private popoverController: PopoverController,
     private store: Store,
   ) {
     // Initialize authUser$ after store is available
-    this.authUser$ = this.store.select(selectAuthUser);
+    this.authUser$ = this.store.select(selectAuthUser).pipe(
+      tap(() => {
+        this.userIconLoaded = true;
+      }),
+    );
   }
 
   get image() {
@@ -74,5 +79,16 @@ export class AppHeaderComponent {
 
   onPopoverDismiss(_event: any) {
     // Handle popover dismiss if needed
+  }
+
+  onAvatarError() {
+    this.userIconLoaded = false;
+  }
+
+  getFallbackIcon(user: AuthUser | null): string {
+    if (!user) {
+      return "person-circle";
+    }
+    return user.type === "group" ? "business-outline" : "person-circle";
   }
 }

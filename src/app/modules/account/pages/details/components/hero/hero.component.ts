@@ -58,6 +58,8 @@ export class HeroComponent implements OnInit, OnChanges, OnDestroy {
   @Input() currentUserType: string | null = null;
   @Input() relationshipStatus: string | null = null; // 'pending', 'accepted', 'rejected', 'blocked', null
   @Input() hasRelationship: boolean = false; // Whether any relationship exists
+  readonly defaultHeroImage = "assets/image/userhero.png";
+  accountIconLoaded = true;
 
   // Observable for time entries
   timeEntries$: Observable<TimeEntry[]>;
@@ -91,17 +93,25 @@ export class HeroComponent implements OnInit, OnChanges, OnDestroy {
       this.initializeTimeTracking();
       this.subscribeContactInfo();
     }
+    this.accountIconLoaded = true;
   }
 
   private contactInfoSub?: Subscription;
   private contactInfo: ContactInformation | null = null;
-
   private subscribeContactInfo() {
     if (!this.account?.id) return;
     this.contactInfoSub?.unsubscribe();
     this.contactInfoSub = this.sections
       .contactInfo$(this.account.id)
       .subscribe((ci: ContactInformation | null) => (this.contactInfo = ci));
+  }
+
+  onHeroImageError(event: Event) {
+    (event.target as HTMLImageElement).src = this.defaultHeroImage;
+  }
+
+  onIconImageError() {
+    this.accountIconLoaded = false;
   }
 
   ngOnDestroy(): void {
@@ -154,6 +164,12 @@ export class HeroComponent implements OnInit, OnChanges, OnDestroy {
         return projectTotals;
       }),
     );
+  }
+
+  get fallbackAccountIcon(): string {
+    return this.account?.type === "group"
+      ? "business-outline"
+      : "person-circle";
   }
 
   get hasDonationURL(): boolean {

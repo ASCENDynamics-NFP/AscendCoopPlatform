@@ -26,16 +26,21 @@
         *ngIf="!isOwnMessage(message) && message?.senderId"
         class="message-avatar"
       >
-        <ion-avatar
-          (click)="showMessageOptions(message)"
-          class="clickable-avatar"
-        >
-          <img
-            [src]="getSenderAvatarUrl(message)"
-            [alt]="(getSenderName(message) || 'User') + ' avatar'"
-            (error)="setDefaultAvatar($event)"
-            loading="lazy"
-          />
+        <ion-avatar class="clickable-avatar" (click)="showMessageOptions(message)">
+          <ng-container *ngIf="getSenderAvatarUrl(message) as avatarUrl; else senderFallback">
+            <img
+              [src]="avatarUrl"
+              [alt]="(getSenderName(message) || 'User') + ' avatar'"
+              (error)="setDefaultAvatar(message)"
+              loading="lazy"
+            />
+          </ng-container>
+          <ng-template #senderFallback>
+            <ion-icon
+              [name]="getSenderFallbackIcon(message)"
+              class="message-avatar-icon"
+            ></ion-icon>
+          </ng-template>
         </ion-avatar>
       </div>
 

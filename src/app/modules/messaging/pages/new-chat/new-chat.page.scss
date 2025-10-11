@@ -130,6 +130,23 @@ ion-list {
 
     ion-avatar {
       margin-right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--ion-color-light, #f4f5f8);
+      border-radius: 50%;
+
+      img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .contact-avatar-icon {
+        font-size: 2.2rem;
+        color: var(--ion-color-primary);
+      }
     }
 
     ion-label {
@@ -138,6 +155,12 @@ ion-list {
       }
     }
   }
+}
+
+.contact-chip-icon {
+  font-size: 1.8rem;
+  color: var(--ion-color-primary);
+  margin: 0;
 }
 
 // Empty state

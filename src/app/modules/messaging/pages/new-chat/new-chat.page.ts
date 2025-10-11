@@ -67,6 +67,7 @@ export class NewChatPage implements OnInit, OnDestroy {
   isLoading = false;
   currentUserId: string | null = null;
   private destroy$ = new Subject<void>();
+  private avatarLoadState: Record<string, boolean> = {};
 
   constructor(
     private router: Router,
@@ -114,6 +115,7 @@ export class NewChatPage implements OnInit, OnDestroy {
           // If no relationships, set empty contacts
           if (contactIds.length === 0) {
             this.contacts = [];
+            this.avatarLoadState = {};
             this.cdr.detectChanges();
             return;
           }
@@ -159,6 +161,11 @@ export class NewChatPage implements OnInit, OnDestroy {
           forkJoin(accountObservables).subscribe({
             next: (contacts) => {
               this.contacts = contacts;
+              this.avatarLoadState = {};
+              contacts.forEach(
+                (contact) =>
+                  (this.avatarLoadState[contact.id] = !!contact.iconImage),
+              );
               // Manually trigger change detection to ensure UI updates
               this.cdr.detectChanges();
             },
@@ -170,6 +177,10 @@ export class NewChatPage implements OnInit, OnDestroy {
                 name: `User ${contactId.substring(0, 8)}`,
                 selected: false,
               }));
+              this.avatarLoadState = {};
+              contactIds.forEach(
+                (contactId) => (this.avatarLoadState[contactId] = false),
+              );
               this.cdr.detectChanges();
             },
           });
@@ -179,6 +190,7 @@ export class NewChatPage implements OnInit, OnDestroy {
           this.showErrorToast("Failed to load contacts");
           // Fallback to dummy data for development
           this.contacts = [];
+          this.avatarLoadState = {};
         },
       });
   }
@@ -198,6 +210,25 @@ export class NewChatPage implements OnInit, OnDestroy {
   private updateSelectedContacts() {
     this.selectedContacts = this.contacts.filter((c) => c.selected);
     this.isGroupChat = this.selectedContacts.length > 1;
+  }
+
+  getContactAvatar(contact: Contact): string | null {
+    if (!contact.iconImage) {
+      return null;
+    }
+    const loaded = this.avatarLoadState[contact.id];
+    return loaded === false ? null : contact.iconImage;
+  }
+
+  onContactAvatarError(contactId: string) {
+    this.avatarLoadState[contactId] = false;
+  }
+
+  getContactFallbackIcon(contact: Contact | undefined): string {
+    if (!contact) {
+      return "person-circle";
+    }
+    return contact.type === "group" ? "business-outline" : "person-circle";
   }
 
   /**

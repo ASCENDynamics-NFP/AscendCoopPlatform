@@ -19,16 +19,27 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <div class="header-image">
   <img
-    [src]="listing.heroImage || 'assets/image/orghero.png'"
+    [src]="listing.heroImage || defaultHeroImage"
     alt="Header Background"
+    (error)="onHeroImageError($event)"
   />
 </div>
 
 <div class="listing-header">
   <div class="listing-info">
     <div class="title-section">
-      <div class="hero-image-small" *ngIf="listing.iconImage">
-        <img [src]="listing.iconImage" alt="Listing Hero" />
+      <div class="hero-image-small">
+        <img
+          *ngIf="listing.iconImage && iconImageLoaded"
+          [src]="listing.iconImage"
+          alt="Listing Hero"
+          (error)="onIconImageError()"
+        />
+        <ion-icon
+          *ngIf="!listing.iconImage || !iconImageLoaded"
+          name="briefcase-outline"
+          class="hero-icon-fallback"
+        ></ion-icon>
       </div>
       <div class="title-content">
         <h2>{{ listing.title }}</h2>

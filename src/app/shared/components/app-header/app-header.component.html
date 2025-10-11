@@ -49,13 +49,30 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ng-content select="[header-end]"></ng-content>
 
     <div class="auth-area">
-      <ion-avatar
-        *ngIf="image && authUser$ | async as authUser; else notLoggedIn"
-        class="padded-avatar"
-        (click)="presentPopover($event)"
-      >
-        <img [src]="image | async" alt="User Avatar" />
-      </ion-avatar>
+      <ng-container *ngIf="authUser$ | async as authUser; else notLoggedIn">
+        <button
+          type="button"
+          class="avatar-trigger"
+          (click)="presentPopover($event)"
+        >
+          <ion-avatar
+            *ngIf="authUser.iconImage && userIconLoaded"
+            class="padded-avatar"
+          >
+            <img
+              [src]="authUser.iconImage"
+              alt="User Avatar"
+              (error)="onAvatarError()"
+            />
+          </ion-avatar>
+          <div
+            *ngIf="!authUser.iconImage || !userIconLoaded"
+            class="avatar-fallback"
+          >
+            <ion-icon [name]="getFallbackIcon(authUser)"></ion-icon>
+          </div>
+        </button>
+      </ng-container>
       <ng-template #notLoggedIn>
         <ion-button
           routerLink="/auth/login"

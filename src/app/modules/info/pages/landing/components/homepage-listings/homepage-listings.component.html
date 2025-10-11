@@ -24,11 +24,21 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-card-header>
         <div class="listing-header">
           <div class="listing-main">
-            <img
-              [src]="listing.iconImage || 'assets/icon/logo.png'"
-              alt="Organization Icon"
-              class="listing-icon"
-            />
+            <div class="listing-icon-wrapper">
+              <ng-container *ngIf="hasListingIcon(listing); else landingListingIconFallback">
+                <img
+                  [src]="listing.iconImage"
+                  [alt]="listing.title + ' logo'"
+                  (error)="onListingIconError(listing.id)"
+                />
+              </ng-container>
+              <ng-template #landingListingIconFallback>
+                <ion-icon
+                  [name]="getListingFallbackIcon(listing)"
+                  class="listing-icon-fallback"
+                ></ion-icon>
+              </ng-template>
+            </div>
             <div class="listing-info">
               <ion-card-title>{{ listing.title }}</ion-card-title>
               <ion-card-subtitle>{{ listing.organization }}</ion-card-subtitle>

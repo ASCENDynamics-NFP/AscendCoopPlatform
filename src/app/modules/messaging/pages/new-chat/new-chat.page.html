@@ -43,10 +43,23 @@
       *ngFor="let contact of selectedContacts"
       (click)="toggleContact(contact)"
     >
-      <ion-avatar *ngIf="contact.iconImage">
-        <img [src]="contact.iconImage" [alt]="contact.name" />
-      </ion-avatar>
-      <ion-icon *ngIf="!contact.iconImage" name="person-circle"></ion-icon>
+      <ng-container *ngIf="getContactAvatar(contact) as avatar; else chipFallback">
+        <ion-avatar>
+          <img
+            [src]="avatar"
+            [alt]="contact.name"
+            (error)="onContactAvatarError(contact.id)"
+          />
+        </ion-avatar>
+      </ng-container>
+      <ng-template #chipFallback>
+        <ion-avatar>
+          <ion-icon
+            [name]="getContactFallbackIcon(contact)"
+            class="contact-chip-icon"
+          ></ion-icon>
+        </ion-avatar>
+      </ng-template>
       <ion-label>{{ contact.name }}</ion-label>
       <ion-icon name="close-circle"></ion-icon>
     </ion-chip>
@@ -71,17 +84,19 @@
       </ion-checkbox>
 
       <ion-avatar slot="start">
-        <img
-          *ngIf="contact.iconImage"
-          [src]="contact.iconImage"
-          [alt]="contact.name"
-          onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
-        />
-        <ion-icon
-          name="person-circle"
-          size="large"
-          [style.display]="contact.iconImage ? 'none' : 'block'"
-        ></ion-icon>
+        <ng-container *ngIf="getContactAvatar(contact) as avatar; else contactFallback">
+          <img
+            [src]="avatar"
+            [alt]="contact.name"
+            (error)="onContactAvatarError(contact.id)"
+          />
+        </ng-container>
+        <ng-template #contactFallback>
+          <ion-icon
+            [name]="getContactFallbackIcon(contact)"
+            class="contact-avatar-icon"
+          ></ion-icon>
+        </ng-template>
       </ion-avatar>
 
       <ion-label>

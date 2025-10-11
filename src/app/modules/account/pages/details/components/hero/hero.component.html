@@ -21,8 +21,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
 <div class="header-image">
   <img
-    [src]="account.heroImage || 'assets/image/userhero.png'"
+    [src]="account.heroImage || defaultHeroImage"
     alt="Header Background"
+    (error)="onHeroImageError($event)"
   />
   <ion-button
     *ngIf="shouldShowEditButton"
@@ -37,11 +38,19 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
 <div class="profile-header">
   <div class="profile-info">
-    <img
-      [src]="account.iconImage || 'assets/default-profile.png'"
-      class="profile-img"
-      alt="Profile Photo"
-    />
+    <div class="profile-avatar">
+      <img
+        *ngIf="account.iconImage && accountIconLoaded"
+        [src]="account.iconImage"
+        alt="Profile Photo"
+        (error)="onIconImageError()"
+      />
+      <ion-icon
+        *ngIf="!account.iconImage || !accountIconLoaded"
+        [name]="fallbackAccountIcon"
+        class="profile-icon"
+      ></ion-icon>
+    </div>
     <div class="profile-details">
       <h2>{{ account.name }}</h2>
 

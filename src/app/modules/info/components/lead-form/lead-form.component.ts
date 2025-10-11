@@ -51,9 +51,7 @@ export class LeadFormComponent implements OnInit {
       email: ["", [Validators.required, Validators.email]],
       phone: [
         "",
-        Validators.pattern(
-          /^(\(\d{3}\)\s\d{3}-\d{4}|\+\d{1,4}\s\(\d{3}\)\s\d{3}-\d{4})$/,
-        ),
+        Validators.pattern("^(?=(?:\\D*\\d){10,15}$)[+]?[0-9()\\s-]+$"),
       ],
       inquiry: ["", Validators.required],
       message: ["", [Validators.required, Validators.minLength(10)]],
@@ -81,8 +79,8 @@ export class LeadFormComponent implements OnInit {
     // Don't format if empty
     if (!digits) return "";
 
-    // Limit to 16 digits
-    const limitedDigits = digits.slice(0, 16);
+    // Limit to 15 digits
+    const limitedDigits = digits.slice(0, 15);
 
     // Determine if it's an international number (starts with country code other than 1)
     const isInternational =

@@ -140,7 +140,10 @@ export class UnifiedRegistrationComponent implements OnChanges {
       socialMedia: ["", this.urlValidator.bind(this)],
       contactInformation: this.fb.group({
         primaryEmail: ["", [Validators.email]],
-        primaryPhone: [""],
+        primaryPhone: [
+          "",
+          Validators.pattern("^(?=(?:\\D*\\d){10,15}$)[+]?[0-9()\\s-]+$"),
+        ],
       }),
     };
 

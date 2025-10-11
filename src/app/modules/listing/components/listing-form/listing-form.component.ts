@@ -434,7 +434,10 @@ export class ListingFormComponent implements OnInit {
         type: [phone.type],
         number: [
           phone.number,
-          [Validators.required, Validators.pattern("^[+]?[0-9()\\s-]{10,25}$")],
+          [
+            Validators.required,
+            Validators.pattern("^(?=(?:\\D*\\d){10,15}$)[+]?[0-9()\\s-]+$"),
+          ],
         ],
         isEmergencyNumber: [phone.isEmergencyNumber],
       });

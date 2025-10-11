@@ -346,7 +346,10 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
   createPhoneGroup(): FormGroup {
     return this.fb.group({
       type: ["Mobile"],
-      number: ["", [Validators.pattern("^[+]?[0-9()\\s-]{10,25}$")]],
+      number: [
+        "",
+        [Validators.pattern("^(?=(?:\\D*\\d){10,15}$)[+]?[0-9()\\s-]+$")],
+      ],
     });
   }
 

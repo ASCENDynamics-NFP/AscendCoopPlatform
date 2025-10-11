@@ -47,10 +47,10 @@ describe("Phone Utilities", () => {
       expect(formatPhoneNumber("123.456.7890")).toBe("(123) 456-7890");
     });
 
-    it("should limit to 16 digits", () => {
+    it("should limit to 15 digits", () => {
       const longNumber = "12345678901234567890";
       const result = formatPhoneNumber(longNumber);
-      expect(result.replace(/\D/g, "").length).toBe(16);
+      expect(result.replace(/\D/g, "").length).toBe(15);
     });
   });
 
@@ -68,7 +68,7 @@ describe("Phone Utilities", () => {
     it("should reject invalid numbers", () => {
       expect(isValidPhoneNumber("")).toBe(false);
       expect(isValidPhoneNumber("123456789")).toBe(false); // Too short
-      expect(isValidPhoneNumber("12345678901234567")).toBe(false); // Too long
+      expect(isValidPhoneNumber("1234567890123456")).toBe(false); // Too long
       expect(isValidPhoneNumber("abc")).toBe(false);
     });
   });

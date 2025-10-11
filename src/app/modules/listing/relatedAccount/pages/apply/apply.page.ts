@@ -68,7 +68,13 @@ export class ApplyPage implements OnInit {
       firstName: ["", [Validators.required, Validators.minLength(2)]],
       lastName: ["", [Validators.required, Validators.minLength(2)]],
       email: ["", [Validators.required, Validators.email]],
-      phone: ["", [Validators.required, Validators.minLength(7)]],
+      phone: [
+        "",
+        [
+          Validators.required,
+          Validators.pattern("^(?=(?:\\D*\\d){10,15}$)[+]?[0-9()\\s-]+$"),
+        ],
+      ],
       notes: [""],
     });
 

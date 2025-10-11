@@ -149,7 +149,7 @@ export class ContactInfoFormComponent implements OnChanges {
         this.fb.group({
           number: [
             phone.number,
-            [Validators.pattern("^[+]?[0-9()\\s-]{10,25}$")],
+            [Validators.pattern("^(?=(?:\\D*\\d){10,15}$)[+]?[0-9()\\s-]+$")],
           ],
           type: [phone.type],
           isEmergencyNumber: [phone.isEmergencyNumber],
@@ -218,7 +218,10 @@ export class ContactInfoFormComponent implements OnChanges {
 
   createPhoneNumberFormGroup(): FormGroup {
     return this.fb.group({
-      number: ["", [Validators.pattern("^[+]?[0-9()\\s-]{10,25}$")]],
+      number: [
+        "",
+        [Validators.pattern("^(?=(?:\\D*\\d){10,15}$)[+]?[0-9()\\s-]+$")],
+      ],
       type: [""],
       isEmergencyNumber: [false],
     });

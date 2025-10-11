@@ -30,8 +30,8 @@ export function formatPhoneNumber(value: string): string {
   // Don't format if empty
   if (!digits) return "";
 
-  // Limit to 16 digits
-  const limitedDigits = digits.slice(0, 16);
+  // Limit to 15 digits
+  const limitedDigits = digits.slice(0, 15);
 
   // Determine if it's an international number (starts with country code other than 1)
   const isInternational =
@@ -82,6 +82,6 @@ export function isValidPhoneNumber(value: string): boolean {
   if (!value) return false;
 
   const digits = value.replace(/\D/g, "");
-  // Allow 10-16 digits (US domestic to international)
-  return digits.length >= 10 && digits.length <= 16;
+  // Allow 10-15 digits (US domestic to international)
+  return digits.length >= 10 && digits.length <= 15;
 }

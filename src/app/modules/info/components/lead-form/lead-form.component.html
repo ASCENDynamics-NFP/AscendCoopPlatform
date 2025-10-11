@@ -47,7 +47,16 @@
       rows="6"
     ></ion-textarea>
   </ion-item>
-  <ion-button type="submit" expand="block" [disabled]="form.invalid"
-    >Submit</ion-button
+  <ion-button
+    type="submit"
+    expand="block"
+    [disabled]="form.invalid || isSubmitting"
   >
+    <ion-spinner
+      slot="start"
+      name="crescent"
+      *ngIf="isSubmitting"
+    ></ion-spinner>
+    {{ isSubmitting ? "Sending..." : "Submit" }}
+  </ion-button>
 </form>

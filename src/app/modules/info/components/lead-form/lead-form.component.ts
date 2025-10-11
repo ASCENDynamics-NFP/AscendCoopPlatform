@@ -32,6 +32,7 @@ import {LeadService} from "../../../../core/services/lead.service";
 })
 export class LeadFormComponent implements OnInit {
   form: FormGroup;
+  isSubmitting = false;
   inquiries = [
     {value: "general", label: "General inquiry"},
     {value: "volunteer", label: "Volunteer opportunities"},
@@ -165,31 +166,38 @@ export class LeadFormComponent implements OnInit {
   }
 
   async submit() {
-    if (this.form.valid) {
-      try {
-        const leadData = {
-          ...this.form.value,
-          from: "landing-page",
-        };
+    if (this.form.invalid || this.isSubmitting) {
+      this.form.markAllAsTouched();
+      return;
+    }
 
-        const response = await firstValueFrom(
-          this.leadService.submitLead(leadData),
-        );
+    this.isSubmitting = true;
+    this.form.disable({emitEvent: false});
 
+    try {
+      const leadData = {
+        ...this.form.value,
+        from: "landing-page",
+      };
+
+      await firstValueFrom(this.leadService.submitLead(leadData));
+
+      this.form.reset();
+      await this.showSuccessToast();
+    } catch (error: any) {
+      console.error("Error submitting lead form:", error);
+
+      // Check if it's a network error but the data might have been saved
+      if (error?.status === 0 || error?.status === 200) {
+        // Network error or successful response that wasn't parsed correctly
         this.form.reset();
         await this.showSuccessToast();
-      } catch (error: any) {
-        console.error("Error submitting lead form:", error);
-
-        // Check if it's a network error but the data might have been saved
-        if (error?.status === 0 || error?.status === 200) {
-          // Network error or successful response that wasn't parsed correctly
-          this.form.reset();
-          await this.showSuccessToast();
-        } else {
-          await this.showErrorToast();
-        }
+      } else {
+        await this.showErrorToast();
       }
+    } finally {
+      this.form.enable({emitEvent: false});
+      this.isSubmitting = false;
     }
   }
 }

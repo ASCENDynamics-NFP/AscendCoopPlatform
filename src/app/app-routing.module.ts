@@ -62,6 +62,13 @@ export const routes: Routes = [
         (m) => m.TimeTrackingModule,
       ),
   },
+  {
+    path: "time-entry",
+    loadChildren: () =>
+      import("./modules/time-tracking/time-tracking.module").then(
+        (m) => m.TimeTrackingModule,
+      ),
+  },
 ];
 
 // Router options

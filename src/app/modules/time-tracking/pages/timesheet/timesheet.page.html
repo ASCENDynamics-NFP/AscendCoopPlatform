@@ -81,6 +81,8 @@
         [initialRows]="initialRows"
         [readonly]="!canEditCurrentWeek()"
         [status]="getCurrentWeekStatus()"
+        [relatedAccounts]="relatedAccounts"
+        (addProjectClicked)="openAddProjectModal()"
       >
       </app-week-view>
 

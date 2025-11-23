@@ -22,6 +22,8 @@
 import {
   Component,
   Input,
+  Output,
+  EventEmitter,
   OnChanges,
   OnInit,
   SimpleChanges,
@@ -58,8 +60,10 @@ export class WeekViewComponent implements OnInit, OnChanges {
   @Input() currentUserName: string = "";
   @Input() initialRows: {projectId: string | null}[] = [];
   @Input() readonly: boolean = false;
+  @Input() relatedAccounts: any[] = [];
   @Input() status: "draft" | "pending" | "approved" | "rejected" | "mixed" =
     "draft";
+  @Output() addProjectClicked = new EventEmitter<void>();
 
   /** Selected rows referencing project ids */
   rows: {projectId: string | null}[] = [];
@@ -70,19 +74,7 @@ export class WeekViewComponent implements OnInit, OnChanges {
   columnTotals: number[] = [];
   totalHours = 0;
 
-  // Track pending changes for manual save
-  pendingChanges: Map<
-    string,
-    {
-      projectId: string;
-      day: Date;
-      hours: number;
-      notes?: string;
-      noteHistory?: any[];
-    }
-  > = new Map();
   isLoading = false;
-  hasUnsavedChanges = false;
 
   constructor(
     private store: Store,
@@ -94,12 +86,12 @@ export class WeekViewComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.calculateDays();
-    if (this.rows.length === 0) {
-      if (this.initialRows && this.initialRows.length > 0) {
-        this.rows = [...this.initialRows];
-      } else {
-        this.initializeEmptyRows();
-      }
+    if (
+      this.rows.length === 0 &&
+      this.initialRows &&
+      this.initialRows.length > 0
+    ) {
+      this.rows = [...this.initialRows];
     }
   }
 
@@ -118,27 +110,11 @@ export class WeekViewComponent implements OnInit, OnChanges {
         // Always update rows when initialRows changes, regardless of current row state
         this.rows = [...rows];
         this.updateTotals();
-      } else if (this.rows.length === 0) {
-        // Only add empty row if we don't have any rows and no initialRows
-        this.initializeEmptyRows();
       }
     } else if (changes["availableProjects"]) {
       // Handle project changes (including archived projects being filtered out)
       this.handleProjectChanges();
-      if (this.rows.length === 0) {
-        this.initializeEmptyRows();
-      }
     }
-
-    // Ensure there's always at least one row for user input
-    if (this.rows.length === 0) {
-      this.initializeEmptyRows();
-    }
-  }
-
-  private initializeEmptyRows() {
-    // Always start with no project selected - user must explicitly choose
-    this.rows.push({projectId: null});
   }
 
   private calculateDays() {
@@ -228,24 +204,8 @@ export class WeekViewComponent implements OnInit, OnChanges {
       return;
     }
 
-    // Track the change locally instead of immediately saving
-    const changeKey = `${projectId}-${day.toDateString()}`;
-
-    if (inputValue === "" || hours === 0) {
-      // Mark for deletion or remove pending change
-      const existing = this.getEntry(projectId, day);
-      if (existing) {
-        this.pendingChanges.set(changeKey, {projectId, day, hours: 0});
-        this.hasUnsavedChanges = true;
-      } else {
-        this.pendingChanges.delete(changeKey);
-        this.hasUnsavedChanges = this.pendingChanges.size > 0;
-      }
-    } else {
-      // Track the new hours value
-      this.pendingChanges.set(changeKey, {projectId, day, hours});
-      this.hasUnsavedChanges = true;
-    }
+    // Auto-save immediately
+    this.saveEntry(projectId, day, inputValue === "" ? 0 : hours);
   }
 
   isSelected(id: string, excludeIndex?: number): boolean {
@@ -355,7 +315,7 @@ export class WeekViewComponent implements OnInit, OnChanges {
     this.updateTotals();
   }
 
-  private updateTotals() {
+  updateTotals() {
     this.rowTotals = [];
     this.columnTotals = new Array(this.days.length).fill(0);
     this.totalHours = 0;
@@ -424,20 +384,15 @@ export class WeekViewComponent implements OnInit, OnChanges {
     // Handle the result when modal is dismissed
     const result = await modal.onDidDismiss();
     if (result.data && (result.data.notes || result.data.noteHistory)) {
-      // Track the note changes as pending
-      const changeKey = `${projectId}-${day.toDateString()}`;
-      const existingChange = this.pendingChanges.get(changeKey);
-      const currentHours = existingChange?.hours ?? entry?.hours ?? 0;
-
-      this.pendingChanges.set(changeKey, {
+      // Auto-save notes immediately
+      const currentHours = entry?.hours ?? 0;
+      this.saveEntry(
         projectId,
         day,
-        hours: currentHours,
-        notes: result.data.notes,
-        noteHistory: result.data.noteHistory,
-      });
-
-      this.hasUnsavedChanges = true;
+        currentHours,
+        result.data.notes,
+        result.data.noteHistory,
+      );
     }
   }
 
@@ -550,101 +505,81 @@ export class WeekViewComponent implements OnInit, OnChanges {
     return project.name;
   }
 
-  /**
-   * Save all pending changes to the store
-   */
-  async saveChanges() {
-    if (!this.hasUnsavedChanges || this.isLoading) {
-      return;
-    }
+  getClientName(projectId: string): string {
+    const project = this.getProjectDetails(projectId);
+    if (!project) return "";
 
-    this.isLoading = true;
-    let savedCount = 0;
-    let deletedCount = 0;
-
-    try {
-      // Process all pending changes
-      for (const [changeKey, change] of this.pendingChanges) {
-        const {projectId, day, hours, notes, noteHistory} = change;
-        const existing = this.getEntry(projectId, day);
-
-        if (hours === 0 && existing && !notes && !noteHistory) {
-          // Delete the entry only if no notes
-          this.store.dispatch(
-            TimeTrackingActions.deleteTimeEntry({entry: existing}),
-          );
-          deletedCount++;
-        } else if (hours > 0 || notes || noteHistory) {
-          // Create or update entry
-          const entry: TimeEntry = {
-            id: existing ? existing.id : "",
-            accountId: this.accountId,
-            projectId,
-            userId: existing ? existing.userId : this.userId,
-            date: existing ? existing.date : Timestamp.fromDate(day),
-            hours: hours > 0 ? hours : existing?.hours || 0,
-            status:
-              existing?.status === "rejected"
-                ? "draft"
-                : existing?.status || "draft",
-            notes: notes || existing?.notes || "",
-            projectName:
-              existing?.projectName ||
-              this.getProjectDetails(projectId)?.name ||
-              "",
-            userName: existing?.userName || this.currentUserName,
-          };
-
-          // Add noteHistory if present
-          if (noteHistory) {
-            (entry as any).noteHistory = noteHistory;
-          }
-
-          this.store.dispatch(TimeTrackingActions.saveTimeEntry({entry}));
-          savedCount++;
-        }
-      }
-
-      // Clear pending changes
-      this.pendingChanges.clear();
-      this.hasUnsavedChanges = false;
-
-      // Show success message
-      let message = "";
-      if (savedCount > 0 && deletedCount > 0) {
-        message = `${savedCount} entries saved, ${deletedCount} entries deleted!`;
-      } else if (savedCount > 0) {
-        message = `${savedCount} ${savedCount === 1 ? "entry" : "entries"} saved!`;
-      } else if (deletedCount > 0) {
-        message = `${deletedCount} ${deletedCount === 1 ? "entry" : "entries"} deleted!`;
-      }
-
-      if (message) {
-        this.successHandler.handleSuccess(message);
-      }
-    } catch (error) {
-      console.error("Error saving changes:", error);
-      this.successHandler.handleSuccess(
-        "Error saving changes. Please try again.",
+    // If we have related accounts passed in (Global Mode), try to find the group name
+    if (this.relatedAccounts && this.relatedAccounts.length > 0) {
+      const account = this.relatedAccounts.find(
+        (a) => a.id === project.accountId,
       );
-    } finally {
-      this.isLoading = false;
+      if (account) {
+        return account.name;
+      }
     }
+
+    // Fallback or if in single account mode (we might want to pass the current account name too)
+    return "";
   }
 
   /**
-   * Check if a specific cell has pending changes
+   * Save a single time entry immediately
    */
-  hasPendingChange(projectId: string, day: Date): boolean {
-    const changeKey = `${projectId}-${day.toDateString()}`;
-    return this.pendingChanges.has(changeKey);
-  }
+  private saveEntry(
+    projectId: string,
+    day: Date,
+    hours: number,
+    notes?: string,
+    noteHistory?: any[],
+  ) {
+    const existing = this.getEntry(projectId, day);
 
-  /**
-   * Get the pending value for a cell (for display purposes)
-   */
-  getPendingValue(projectId: string, day: Date): number | undefined {
-    const changeKey = `${projectId}-${day.toDateString()}`;
-    return this.pendingChanges.get(changeKey)?.hours;
+    if (
+      hours === 0 &&
+      existing &&
+      !notes &&
+      !noteHistory &&
+      (!existing.notes || existing.notes.trim() === "")
+    ) {
+      // Delete the entry only if no notes
+      this.store.dispatch(
+        TimeTrackingActions.deleteTimeEntry({entry: existing}),
+      );
+    } else if (
+      hours > 0 ||
+      notes ||
+      noteHistory ||
+      (existing && existing.notes)
+    ) {
+      // Get project to find the correct accountId
+      const project = this.getProjectDetails(projectId);
+      const entryAccountId = project?.accountId || this.accountId;
+
+      // Create or update entry
+      const entry: TimeEntry = {
+        id: existing ? existing.id : "",
+        accountId: entryAccountId,
+        projectId,
+        userId: existing ? existing.userId : this.userId,
+        date: existing ? existing.date : Timestamp.fromDate(day),
+        hours: hours > 0 ? hours : existing?.hours || 0,
+        status:
+          existing?.status === "rejected"
+            ? "draft"
+            : existing?.status || "draft",
+        notes: notes !== undefined ? notes : existing?.notes || "",
+        projectName: existing?.projectName || project?.name || "",
+        userName: existing?.userName || this.currentUserName,
+      };
+
+      if (noteHistory) {
+        entry.noteHistory = noteHistory;
+      } else if (existing?.noteHistory) {
+        entry.noteHistory = existing.noteHistory;
+      }
+
+      this.store.dispatch(TimeTrackingActions.saveTimeEntry({entry}));
+    }
   }
 }

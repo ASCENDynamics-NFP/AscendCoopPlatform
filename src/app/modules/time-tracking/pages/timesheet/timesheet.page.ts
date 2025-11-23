@@ -19,18 +19,29 @@
  ********************************************************************************/
 // src/app/modules/time-tracking/pages/timesheet/timesheet.page.ts
 
-import {Component, OnInit, OnDestroy} from "@angular/core";
+import {Component, OnInit, OnDestroy, ViewChild} from "@angular/core";
 import {Store} from "@ngrx/store";
 import {ActivatedRoute} from "@angular/router";
-import {Observable, Subscription} from "rxjs";
-import {first} from "rxjs/operators";
+import {
+  Observable,
+  Subscription,
+  combineLatest,
+  of,
+  firstValueFrom,
+} from "rxjs";
+import {first, map, switchMap} from "rxjs/operators";
 import {Project} from "../../../../../../shared/models/project.model";
 import {Account} from "../../../../../../shared/models/account.model";
+import {ModalController} from "@ionic/angular";
+import {WeekViewComponent} from "../../components/week-view/week-view.component";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
 import * as ProjectsActions from "../../../../state/actions/projects.actions";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
-import {selectEntries} from "../../../../state/selectors/time-tracking.selectors";
+import {
+  selectEntries,
+  selectAllEntriesForUser,
+} from "../../../../state/selectors/time-tracking.selectors";
 import {
   selectActiveProjectsByAccount,
   selectAllProjectsByAccount,
@@ -47,6 +58,7 @@ import {TimesheetNotificationService} from "../../services/timesheet-notificatio
   styleUrls: ["./timesheet.page.scss"],
 })
 export class TimesheetPage implements OnInit, OnDestroy {
+  @ViewChild(WeekViewComponent) weekView!: WeekViewComponent;
   projects$!: Observable<Project[]>;
   entries$!: Observable<TimeEntry[]>;
   account$!: Observable<Account | undefined>;
@@ -76,15 +88,44 @@ export class TimesheetPage implements OnInit, OnDestroy {
     return d;
   })();
 
+  // Global mode properties
+  isGlobalMode: boolean = false;
+  relatedAccounts: any[] = []; // Store related accounts for global mode
+
   constructor(
     private store: Store<AppState>,
     private route: ActivatedRoute,
     private notificationService: TimesheetNotificationService,
+    private modalController: ModalController,
   ) {}
 
   ngOnInit() {
     this.accountId = this.route.snapshot.paramMap.get("accountId") ?? "";
+    this.isGlobalMode = !this.accountId;
 
+    const authSub = this.store
+      .select(selectAuthUser)
+      .pipe(first())
+      .subscribe((user) => {
+        this.userId = user?.uid ?? "";
+        this.currentUserName =
+          user?.displayName || user?.name || user?.email || "Unknown User";
+
+        if (this.userId) {
+          if (this.isGlobalMode) {
+            this.initializeGlobalMode();
+          } else {
+            this.initializeAccountMode();
+          }
+
+          this.updateEntriesObservable();
+          this.loadEntries();
+        }
+      });
+    this.subscriptions.add(authSub);
+  }
+
+  private initializeAccountMode() {
     // Load account information
     this.store.dispatch(
       AccountActions.loadAccount({accountId: this.accountId}),
@@ -96,6 +137,15 @@ export class TimesheetPage implements OnInit, OnDestroy {
     );
 
     this.account$ = this.store.select(selectAccountById(this.accountId));
+
+    // Subscribe to account to populate relatedAccounts for WeekView display
+    this.subscriptions.add(
+      this.account$.subscribe((account) => {
+        if (account) {
+          this.relatedAccounts = [account];
+        }
+      }),
+    );
 
     this.projects$ = this.store.select(
       selectActiveProjectsByAccount(this.accountId),
@@ -116,33 +166,130 @@ export class TimesheetPage implements OnInit, OnDestroy {
       });
     this.subscriptions.add(allProjectsSub);
 
-    const authSub = this.store
-      .select(selectAuthUser)
-      .pipe(first())
-      .subscribe((user) => {
-        this.userId = user?.uid ?? "";
-        this.currentUserName =
-          user?.displayName || user?.name || user?.email || "Unknown User";
-        if (this.userId) {
-          this.updateEntriesObservable();
-          this.loadEntries();
-        }
-      });
-    this.subscriptions.add(authSub);
-
     this.store.dispatch(
       ProjectsActions.loadProjects({accountId: this.accountId}),
     );
   }
 
-  private loadEntries() {
+  private initializeGlobalMode() {
+    // Load related accounts for the user (to find groups they belong to)
     this.store.dispatch(
-      TimeTrackingActions.loadTimeEntries({
-        accountId: this.accountId,
-        userId: this.userId,
-        weekStart: this.currentWeekStart,
-      }),
+      AccountActions.loadRelatedAccounts({accountId: this.userId}),
     );
+
+    // Subscribe to related accounts
+    const relatedAccountsSub = this.store
+      .select(selectRelatedAccountsByAccountId(this.userId))
+      .subscribe((related) => {
+        // Filter for groups where status is accepted
+        this.relatedAccounts = related.filter(
+          (r) => r.type === "group" && r.status === "accepted",
+        );
+
+        // Load projects for each related group
+        this.relatedAccounts.forEach((account) => {
+          this.store.dispatch(
+            ProjectsActions.loadProjects({accountId: account.id}),
+          );
+        });
+      });
+    this.subscriptions.add(relatedAccountsSub);
+
+    // Combine projects from all related accounts
+    // We need a way to select projects from multiple accounts
+    // For now, let's subscribe to changes and manually aggregate
+    // Or better, rely on the fact that we load them into the store
+    // and we can select them if we know the IDs.
+
+    // Actually, for the WeekView, we need `availableProjects`.
+    // In global mode, this should be ALL active projects from ALL related groups.
+    // This is a bit complex to select reactively without a specific selector.
+    // Let's try to build a combined observable or just update it when related accounts change.
+
+    // Simplified approach: When related accounts change, subscribe to each account's projects
+    // This might create many subscriptions.
+    // Alternative: Create a selector that takes a list of account IDs.
+
+    // For MVP of global mode, let's just use the modal to add projects.
+    // The `availableProjects` list in WeekView is used for:
+    // 1. Validating project existence
+    // 2. Displaying project names
+    // 3. Grouping by category
+
+    // So we DO need to populate `availableProjects` with everything.
+
+    // Let's use a timer or debounce to aggregate projects after loading related accounts
+    // Or just select all projects from the store and filter by relatedAccountIds?
+    // `selectAllProjects` selector doesn't exist, only `selectAllProjectsByAccount`.
+
+    // Let's iterate and subscribe.
+    // Note: This is not ideal for performance with many groups but fine for now.
+    const projectsSub = this.store
+      .select(selectRelatedAccountsByAccountId(this.userId))
+      .pipe(
+        switchMap((related) => {
+          const groupIds = related
+            .filter((r) => r.type === "group" && r.status === "accepted")
+            .map((r) => r.id);
+
+          if (groupIds.length === 0) return of([]);
+
+          const projectObservables = groupIds.map((id) =>
+            this.store.select(selectActiveProjectsByAccount(id)),
+          );
+
+          return combineLatest(projectObservables);
+        }),
+      )
+      .subscribe((projectsArrays) => {
+        // Flatten the array of arrays
+        if (Array.isArray(projectsArrays)) {
+          this.availableProjects = projectsArrays.flat();
+          this.allProjects = this.availableProjects; // For now assume all loaded are active+archived if selector returns so
+          this.allProjectsForValidation = this.availableProjects;
+        } else {
+          this.availableProjects = [];
+        }
+      });
+
+    this.subscriptions.add(projectsSub);
+  }
+
+  private loadEntries() {
+    if (this.isGlobalMode) {
+      // For global mode, we need to load entries for all related groups
+      // We can iterate over related accounts and dispatch loadTimeEntries for each
+      // But we need relatedAccounts to be loaded first.
+      // The subscription in initializeGlobalMode handles loading projects.
+      // We should also dispatch loadTimeEntries there?
+      // Or just wait for relatedAccounts to be populated.
+
+      this.store
+        .select(selectRelatedAccountsByAccountId(this.userId))
+        .pipe(first())
+        .subscribe((related) => {
+          const groups = related.filter(
+            (r) => r.type === "group" && r.status === "accepted",
+          );
+          groups.forEach((group) => {
+            this.store.dispatch(
+              TimeTrackingActions.loadTimeEntries({
+                accountId: group.id,
+                userId: this.userId,
+                weekStart: this.currentWeekStart,
+              }),
+            );
+          });
+        });
+    } else {
+      this.store.dispatch(
+        TimeTrackingActions.loadTimeEntries({
+          accountId: this.accountId,
+          userId: this.userId,
+          weekStart: this.currentWeekStart,
+        }),
+      );
+    }
   }
 
   private updateEntriesObservable() {
@@ -150,15 +297,102 @@ export class TimesheetPage implements OnInit, OnDestroy {
       this.subscriptions.remove(this.entriesSub);
       this.entriesSub.unsubscribe();
     }
-    this.entries$ = this.store.select(
-      selectEntries(this.accountId, this.userId, this.currentWeekStart),
-    );
+
+    if (this.isGlobalMode) {
+      this.entries$ = this.store
+        .select(selectAllEntriesForUser(this.userId))
+        .pipe(
+          map((entries) => {
+            // Filter by week
+            const start = new Date(this.currentWeekStart);
+            const end = new Date(start);
+            end.setDate(start.getDate() + 7);
+
+            return entries.filter((e: any) => {
+              const val = e?.date;
+              let d: Date;
+              if (val && typeof val.toDate === "function") {
+                d = val.toDate();
+              } else if (val instanceof Date) {
+                d = val as Date;
+              } else if (typeof val === "string") {
+                d = new Date(val);
+              } else {
+                return false;
+              }
+              return d >= start && d < end;
+            });
+          }),
+        );
+    } else {
+      this.entries$ = this.store.select(
+        selectEntries(this.accountId, this.userId, this.currentWeekStart),
+      );
+    }
+
     this.entriesSub = this.entries$.subscribe((entries) => {
       this.entries = entries;
       const ids = new Set(entries.map((e) => e.projectId));
       this.initialRows = Array.from(ids).map((id) => ({projectId: id}));
     });
     this.subscriptions.add(this.entriesSub);
+  }
+
+  async openAddProjectModal() {
+    const {AddProjectModalComponent} = await import(
+      "../../components/add-project-modal/add-project-modal.component"
+    );
+
+    // If in account mode, we only have one account
+    // If in global mode, we have multiple
+    let accountsToShow = [];
+    if (this.isGlobalMode) {
+      accountsToShow = this.relatedAccounts;
+    } else {
+      // In account mode, we might want to allow adding projects from this account only?
+      // Or maybe we don't need the modal in account mode if the dropdown works?
+      // The requirement was "When I add a project a model appears...".
+      // Let's use the modal for both modes for consistency, but pre-select or limit to current account in account mode.
+      const account = await firstValueFrom(this.account$);
+      if (account) {
+        accountsToShow = [{id: account.id, name: account.name}];
+      }
+    }
+
+    const modal = await this.modalController.create({
+      component: AddProjectModalComponent,
+      componentProps: {
+        relatedAccounts: accountsToShow,
+      },
+    });
+
+    await modal.present();
+
+    const {data} = await modal.onDidDismiss();
+    if (data && data.project) {
+      const projectId = data.project.id;
+
+      // Add the project to available projects if not already there (it should be)
+      if (!this.availableProjects.find((p) => p.id === projectId)) {
+        this.availableProjects.push(data.project);
+        this.allProjects.push(data.project);
+      }
+
+      // Add a row for this project
+      // We can modify initialRows and force update, or better, call a method on WeekView
+      if (this.weekView) {
+        // Check if row exists
+        const exists = this.weekView.rows.some(
+          (r) => r.projectId === projectId,
+        );
+        if (!exists) {
+          this.weekView.rows.push({projectId});
+          this.weekView.updateTotals(); // Need to make updateTotals public or trigger change
+        } else {
+          this.showToast("Project already added to timesheet", "warning");
+        }
+      }
+    }
   }
 
   nextWeek() {
@@ -611,26 +845,8 @@ export class TimesheetPage implements OnInit, OnDestroy {
       duration: 3000,
       color,
       position: "top",
+      // position: "bottom", // Changed to bottom for better visibility on mobile
     });
     await toast.present();
   }
-  //   startOfWeek(date: Date): Date {
-  //     const d = new Date(date);
-  //     d.setHours(0, 0, 0, 0);
-  //     const day = d.getDay();
-  //     d.setDate(d.getDate() - day);
-  //     return d;
-  //   }
-
-  //   previousWeek() {
-  //     const prev = new Date(this.currentWeekStart);
-  //     prev.setDate(prev.getDate() - 7);
-  //     this.currentWeekStart = prev;
-  //   }
-
-  //   nextWeek() {
-  //     const next = new Date(this.currentWeekStart);
-  //     next.setDate(next.getDate() + 7);
-  //     this.currentWeekStart = next;
-  //   }
 }

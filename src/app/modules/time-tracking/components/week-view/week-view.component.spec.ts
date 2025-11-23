@@ -75,7 +75,7 @@ describe("WeekViewComponent", () => {
     expect(rows.length).toBe(2);
   });
 
-  it("should track pending changes on hours change but not dispatch immediately", fakeAsync(() => {
+  it("should auto-save immediately on hours change", fakeAsync(() => {
     // First set up a project for row 0
     const mockEvent = {detail: {value: "p1"}} as any;
     component.addProjectById(0, mockEvent);
@@ -93,16 +93,7 @@ describe("WeekViewComponent", () => {
     component.onHoursChange(0, day, mockInputEvent);
     tick();
 
-    // Should not dispatch immediately (manual save behavior)
-    expect(store.dispatch).not.toHaveBeenCalled();
-
-    // Should track the change as pending
-    expect(component.hasUnsavedChanges).toBe(true);
-
-    // Should dispatch when saveChanges is called
-    component.saveChanges();
-    tick();
-
+    // Should dispatch immediately (auto-save behavior)
     expect(store.dispatch).toHaveBeenCalledWith(
       jasmine.objectContaining({
         type: TimeTrackingActions.saveTimeEntry.type,
@@ -110,7 +101,7 @@ describe("WeekViewComponent", () => {
     );
   }));
 
-  it("should track pending deletion when hours set to 0 but not dispatch immediately", fakeAsync(() => {
+  it("should auto-delete immediately when hours set to 0 for existing entry without notes", fakeAsync(() => {
     // First set up a project for row 0 with existing entry
     const mockEvent = {detail: {value: "p1"}} as any;
     component.addProjectById(0, mockEvent);
@@ -128,16 +119,7 @@ describe("WeekViewComponent", () => {
     component.onHoursChange(0, day, mockInputEvent);
     tick();
 
-    // Should not dispatch immediately (manual save behavior)
-    expect(store.dispatch).not.toHaveBeenCalled();
-
-    // Should track the change as pending
-    expect(component.hasUnsavedChanges).toBe(true);
-
-    // Should dispatch delete action when saveChanges is called
-    component.saveChanges();
-    tick();
-
+    // Should dispatch delete action immediately (auto-save behavior)
     expect(store.dispatch).toHaveBeenCalledWith(
       jasmine.objectContaining({
         type: TimeTrackingActions.deleteTimeEntry.type,
@@ -145,7 +127,7 @@ describe("WeekViewComponent", () => {
     );
   }));
 
-  it("should include userId when creating new entry via saveChanges", () => {
+  it("should include userId when creating new entry via auto-save", () => {
     // First set up a project for row 0
     const mockEvent = {detail: {value: "p1"}} as any;
     component.addProjectById(0, mockEvent);
@@ -156,12 +138,7 @@ describe("WeekViewComponent", () => {
       target: {value: "3"},
     } as any);
 
-    // Should not dispatch immediately
-    expect(store.dispatch).not.toHaveBeenCalled();
-
-    // Should dispatch with userId when saveChanges is called
-    component.saveChanges();
-
+    // Should dispatch immediately with userId (auto-save behavior)
     expect(store.dispatch).toHaveBeenCalledWith(
       jasmine.objectContaining({
         type: TimeTrackingActions.saveTimeEntry.type,

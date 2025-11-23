@@ -84,6 +84,7 @@
     "remove": "Remove",
     "confirm": "Confirm",
     "add_row": "Add Row",
+    "add_project": "Add Project",
     "approved_week": "Approved Week",
     "pending_week": "Pending Approval",
     "rejected_week": "Rejected - Can Edit",

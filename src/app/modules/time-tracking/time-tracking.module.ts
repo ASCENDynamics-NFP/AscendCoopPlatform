@@ -33,8 +33,10 @@ import {ApprovalsPage} from "./pages/approvals/approvals.page";
 import {ReportsPage} from "./pages/reports/reports.page";
 import {WeekViewComponent} from "./components/week-view/week-view.component";
 import {NotesModalComponent} from "./components/notes-modal/notes-modal.component";
+import {AddProjectModalComponent} from "./components/add-project-modal/add-project-modal.component";
 import {timeTrackingReducer} from "../../state/reducers/time-tracking.reducer";
 import {TimeTrackingEffects} from "../../state/effects/time-tracking.effects";
+import {ProjectsEffects} from "../../state/effects/projects.effects";
 import {SharedModule} from "../../shared/shared.module";
 import {TimesheetNotificationService} from "./services/timesheet-notification.service";
 
@@ -45,6 +47,7 @@ import {TimesheetNotificationService} from "./services/timesheet-notification.se
     ReportsPage,
     WeekViewComponent,
     NotesModalComponent,
+    AddProjectModalComponent,
   ],
   imports: [
     CommonModule,
@@ -55,7 +58,7 @@ import {TimesheetNotificationService} from "./services/timesheet-notification.se
     TimeTrackingRoutingModule,
     BaseChartDirective,
     StoreModule.forFeature("timeTracking", timeTrackingReducer),
-    EffectsModule.forFeature([TimeTrackingEffects]),
+    EffectsModule.forFeature([TimeTrackingEffects, ProjectsEffects]),
   ],
   providers: [TimesheetNotificationService],
 })

@@ -34,7 +34,7 @@ const routes: Routes = [
   {
     path: "",
     component: TimesheetPage,
-    canActivate: [authGuard, timeTrackingAccessGuard],
+    canActivate: [authGuard],
   },
   {
     path: "approvals",

@@ -1,94 +1,75 @@
 <div class="week-view-container">
   <!-- No Projects Available Message -->
-  <div *ngIf="availableProjects.length === 0" class="no-projects-message">
-    <ion-card color="warning">
+  <div class="week-header">
+    <h2>Week of {{ weekStart | date: "MMM d" }}</h2>
+    <div class="header-actions">
+      <ion-button
+        *ngIf="!readonly"
+        (click)="addProjectClicked.emit()"
+        fill="outline"
+        size="small"
+      >
+        <ion-icon name="add" slot="start"></ion-icon>
+        {{ "common.add_project" | translate }}
+      </ion-button>
+    </div>
+
+    <!-- Status badges based on actual status -->
+    <ion-badge
+      *ngIf="status === 'approved'"
+      color="success"
+      class="status-badge"
+    >
+      <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+      {{ "common.approved_week" | translate }}
+    </ion-badge>
+
+    <ion-badge
+      *ngIf="status === 'pending'"
+      color="warning"
+      class="status-badge"
+    >
+      <ion-icon name="time" slot="start"></ion-icon>
+      {{ "common.pending_week" | translate }}
+    </ion-badge>
+
+    <ion-badge
+      *ngIf="status === 'rejected'"
+      color="danger"
+      class="status-badge"
+    >
+      <ion-icon name="close-circle" slot="start"></ion-icon>
+      {{ "common.rejected_week" | translate }}
+    </ion-badge>
+
+    <ion-badge *ngIf="status === 'mixed'" color="medium" class="status-badge">
+      <ion-icon name="ellipsis-horizontal" slot="start"></ion-icon>
+      {{ "common.mixed_status" | translate }}
+    </ion-badge>
+  </div>
+
+  <!-- No Projects Available Message (Only if no projects AND no rows) -->
+  <div *ngIf="availableProjects.length === 0 && rows.length === 0" class="no-projects-message">
+    <ion-card color="light">
       <ion-card-header>
         <ion-card-title>
-          <ion-icon name="alert-circle" slot="start"></ion-icon>
-          No Projects Available
+          <ion-icon name="information-circle" slot="start"></ion-icon>
+          No Projects Added
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <p>
-          There are no active projects available for time tracking in this
-          organization.
+          You haven't added any projects to your timesheet for this week yet.
         </p>
-        <p><strong>Next steps:</strong></p>
-        <ul>
-          <li>Contact an administrator to create projects</li>
-          <li>Check if you have the correct permissions</li>
-          <li>Verify the organization has active projects</li>
-        </ul>
+        <p>
+          Click <strong>Add Project</strong> to select a project and start tracking time.
+        </p>
       </ion-card-content>
     </ion-card>
   </div>
 
-  <!-- Regular Week View (only show if projects exist) -->
-  <div *ngIf="availableProjects.length > 0">
-    <div class="week-header">
-      <h2>Week of {{ weekStart | date: "MMM d" }}</h2>
-      <div class="header-actions">
-        <ion-button
-          *ngIf="!readonly"
-          (click)="addRow()"
-          fill="outline"
-          size="small"
-        >
-          <ion-icon name="add" slot="start"></ion-icon>
-          {{ "common.add_row" | translate }}
-        </ion-button>
-
-        <!-- Save Button -->
-        <ion-button
-          *ngIf="!readonly && hasUnsavedChanges"
-          (click)="saveChanges()"
-          color="primary"
-          size="small"
-          [disabled]="isLoading"
-        >
-          <ion-spinner
-            *ngIf="isLoading"
-            name="crescent"
-            slot="start"
-          ></ion-spinner>
-          <ion-icon *ngIf="!isLoading" name="save" slot="start"></ion-icon>
-          {{ isLoading ? "Saving..." : "Save Changes" }}
-        </ion-button>
-      </div>
-
-      <!-- Status badges based on actual status -->
-      <ion-badge
-        *ngIf="status === 'approved'"
-        color="success"
-        class="status-badge"
-      >
-        <ion-icon name="checkmark-circle" slot="start"></ion-icon>
-        {{ "common.approved_week" | translate }}
-      </ion-badge>
-
-      <ion-badge
-        *ngIf="status === 'pending'"
-        color="warning"
-        class="status-badge"
-      >
-        <ion-icon name="time" slot="start"></ion-icon>
-        {{ "common.pending_week" | translate }}
-      </ion-badge>
-
-      <ion-badge
-        *ngIf="status === 'rejected'"
-        color="danger"
-        class="status-badge"
-      >
-        <ion-icon name="close-circle" slot="start"></ion-icon>
-        {{ "common.rejected_week" | translate }}
-      </ion-badge>
-
-      <ion-badge *ngIf="status === 'mixed'" color="medium" class="status-badge">
-        <ion-icon name="ellipsis-horizontal" slot="start"></ion-icon>
-        {{ "common.mixed_status" | translate }}
-      </ion-badge>
-    </div>
+  <!-- Regular Week View (show if projects exist OR rows exist) -->
+  <div *ngIf="availableProjects.length > 0 || rows.length > 0">
 
     <!-- Desktop/Tablet View -->
     <div class="desktop-view">
@@ -128,37 +109,10 @@
               <ng-container
                 *ngIf="!row.projectId || !isProjectArchived(row.projectId)"
               >
-                <ion-select
-                  [value]="row.projectId"
-                  (ionChange)="addProjectById(i, $event)"
-                  [disabled]="readonly"
-                  [placeholder]="'common.select_project' | translate"
-                  interface="popover"
-                >
-                  <ion-select-option value="" translate
-                    >common.select</ion-select-option
-                  >
-                  <!-- Group projects by category -->
-                  <ng-container *ngFor="let categoryKey of getCategoryKeys()">
-                    <ion-select-option disabled class="category-header">
-                      <div class="category-header-content">
-                        <ion-icon
-                          [name]="getCategoryInfo(categoryKey).icon"
-                          [style.color]="getCategoryInfo(categoryKey).color"
-                        ></ion-icon>
-                        {{ getCategoryInfo(categoryKey).name }}
-                      </div>
-                    </ion-select-option>
-                    <ion-select-option
-                      *ngFor="let proj of groupedProjects[categoryKey]"
-                      [value]="proj.id"
-                      [disabled]="isSelected(proj.id, i)"
-                      class="project-option"
-                    >
-                      {{ proj.name }}
-                    </ion-select-option>
-                  </ng-container>
-                </ion-select>
+                <div class="project-name-display">
+                  <div class="project-text">{{ row.projectId ? getProjectDisplayName(getProjectDetails(row.projectId)!) : 'Unknown Project' }}</div>
+                  <div class="client-text" *ngIf="row.projectId && getClientName(row.projectId)">{{ getClientName(row.projectId) }}</div>
+                </div>
               </ng-container>
               <ion-button
                 *ngIf="!readonly"
@@ -172,19 +126,12 @@
               </ion-button>
             </td>
             <td *ngFor="let day of days" class="hours-cell">
-              <div
-                class="hours-input-container"
-                [class.has-pending-changes]="
-                  row.projectId && hasPendingChange(row.projectId, day)
-                "
-              >
+              <div class="hours-input-container">
                 <ion-input
                   type="number"
                   [value]="
                     row.projectId
-                      ? hasPendingChange(row.projectId, day)
-                        ? getPendingValue(row.projectId, day)
-                        : getEntry(row.projectId, day)?.hours
+                      ? getEntry(row.projectId, day)?.hours
                       : ''
                   "
                   (ionChange)="onHoursChange(i, day, $event)"
@@ -275,38 +222,10 @@
               <ng-container
                 *ngIf="!row.projectId || !isProjectArchived(row.projectId)"
               >
-                <ion-select
-                  [value]="row.projectId"
-                  (ionChange)="addProjectById(i, $event)"
-                  [disabled]="readonly"
-                  [placeholder]="'common.select_project' | translate"
-                  interface="popover"
-                  fill="outline"
-                >
-                  <ion-select-option value="" translate
-                    >common.select</ion-select-option
-                  >
-                  <!-- Group projects by category -->
-                  <ng-container *ngFor="let categoryKey of getCategoryKeys()">
-                    <ion-select-option disabled class="category-header">
-                      <div class="category-header-content">
-                        <ion-icon
-                          [name]="getCategoryInfo(categoryKey).icon"
-                          [style.color]="getCategoryInfo(categoryKey).color"
-                        ></ion-icon>
-                        {{ getCategoryInfo(categoryKey).name }}
-                      </div>
-                    </ion-select-option>
-                    <ion-select-option
-                      *ngFor="let proj of groupedProjects[categoryKey]"
-                      [value]="proj.id"
-                      [disabled]="isSelected(proj.id, i)"
-                      class="project-option"
-                    >
-                      {{ proj.name }}
-                    </ion-select-option>
-                  </ng-container>
-                </ion-select>
+                <div class="project-name-display mobile">
+                  <div class="project-text">{{ row.projectId ? getProjectDisplayName(getProjectDetails(row.projectId)!) : 'Unknown Project' }}</div>
+                  <div class="client-text" *ngIf="row.projectId && getClientName(row.projectId)">{{ getClientName(row.projectId) }}</div>
+                </div>
               </ng-container>
             </div>
             <ion-button

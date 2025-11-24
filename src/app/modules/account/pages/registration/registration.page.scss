@@ -153,7 +153,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     font-size: 16px;
     transition: var(--registration-transition);
     border: 2px solid var(--registration-border);
@@ -163,7 +163,7 @@
   .step-label {
     margin-top: $spacing-sm;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: $font-weight-medium;
     color: var(--registration-text-light);
     text-align: center;
     transition: var(--registration-transition);
@@ -179,7 +179,7 @@
 
     .step-label {
       color: var(--ion-color-primary);
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
     }
   }
 

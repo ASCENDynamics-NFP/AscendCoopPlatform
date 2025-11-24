@@ -583,7 +583,7 @@ ion-header {
 
       .stat-number {
         font-size: 1.8rem;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         color: var(--ion-color-primary);
         margin-bottom: 4px;
       }
@@ -677,7 +677,7 @@ ion-header {
 
       .stat-number {
         font-size: 1.8rem;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         color: var(--ion-color-primary);
         margin-bottom: 4px;
       }
@@ -871,7 +871,7 @@ ion-header {
       h3 {
         margin: 0 0 4px 0;
         font-size: 1.2rem;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         color: var(--ion-text-color, #000);
       }
 
@@ -890,7 +890,7 @@ ion-header {
     ion-button {
       min-width: 200px;
       height: 44px;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
     }
   }
 
@@ -982,7 +982,7 @@ ion-header {
 
     .alert-button-confirm {
       color: var(--ion-color-danger) !important;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
     }
   }
 }
@@ -1094,7 +1094,7 @@ ion-header {
       h4 {
         margin: 0 0 8px 0;
         font-size: 1.1rem;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         color: var(--ion-color-dark);
       }
 

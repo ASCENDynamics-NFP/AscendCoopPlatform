@@ -453,7 +453,7 @@
           background: var(--projects-card-bg);
           border: 2px solid var(--projects-border);
           border-radius: 10px;
-          padding: 12px 16px;
+          padding: $spacing-sm $spacing-md;
           transition: var(--projects-transition);
           position: relative;
           overflow: hidden;
@@ -636,7 +636,7 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 8px;
-      padding: 10px 12px;
+      padding: 10px $spacing-sm;
       background: var(--projects-card-bg);
       border: 2px solid var(--projects-border);
       border-radius: 8px;
@@ -692,7 +692,7 @@
         .category-filter,
         .sort-controls {
           .filter-card {
-            padding: 12px 16px;
+            padding: $spacing-sm $spacing-md;
 
             .filter-header {
               .filter-icon {

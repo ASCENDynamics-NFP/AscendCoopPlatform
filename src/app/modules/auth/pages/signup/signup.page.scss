@@ -114,7 +114,7 @@ ion-note {
 
 app-info-footer {
   display: block;
-  padding: 16px 12px;
+  padding: $spacing-md $spacing-sm;
 }
 
 // Form styling
@@ -217,8 +217,8 @@ ion-button {
   line-height: 1.4;
 }
 
-// Dark mode support
-@media (prefers-color-scheme: dark) {
+// Dark mode adjustments
+@include dark-mode {
   .profile-type-card {
     --ion-card-box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
     --ion-card-box-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.4);

@@ -121,7 +121,7 @@ ion-note {
 
 app-info-footer {
   display: block;
-  padding: 16px 12px;
+  padding: $spacing-md $spacing-sm;
 }
 
 @include mobile {

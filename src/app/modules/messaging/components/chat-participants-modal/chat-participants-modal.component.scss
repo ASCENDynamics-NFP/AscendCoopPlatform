@@ -25,7 +25,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
+    padding: $spacing-sm $spacing-md;
     background: var(--step-color);
     border-radius: $border-radius-lg;
 
@@ -66,7 +66,7 @@
   .participant-item {
     display: flex;
     align-items: center;
-    padding: 12px 16px;
+    padding: $spacing-sm $spacing-md;
     margin-bottom: 8px;
     background: var(--step-color);
     border-radius: $border-radius-lg;
@@ -139,7 +139,7 @@
 .available-users-list {
   .no-users-message {
     text-align: center;
-    padding: 32px 16px;
+    padding: $spacing-xl $spacing-md;
     color: var(--ion-color-medium);
 
     .no-users-icon {
@@ -163,7 +163,7 @@
   .user-item {
     display: flex;
     align-items: center;
-    padding: 12px 16px;
+    padding: $spacing-sm $spacing-md;
     margin-bottom: 8px;
     background: var(--step-color);
     border-radius: $border-radius-lg;
@@ -251,7 +251,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 32px 16px;
+  padding: $spacing-xl $spacing-md;
   position: fixed;
   top: 0;
   left: 0;
@@ -313,7 +313,7 @@
 
   .participants-list .participant-item,
   .available-users-list .user-item {
-    padding: 10px 12px;
+    padding: 10px $spacing-sm;
 
     .participant-avatar,
     .user-avatar {

@@ -77,14 +77,33 @@ ion-content {
   --padding-start: 0;
   --padding-end: 0;
   --padding-top: var(--login-header-height);
-  --padding-bottom: var(--login-footer-space);
+  --padding-bottom: 0;
   --background: var(--ion-background-color);
   --color: var(--ion-text-color);
+  height: 100%;
+
+  &::part(scroll) {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
 
   ion-text {
     font-size: small;
     color: var(--ion-text-color);
   }
+}
+
+ion-card-content.content-center {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+app-info-footer {
+  margin-bottom: 0;
+  flex-shrink: 0;
 }
 
 .col-container {

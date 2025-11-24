@@ -41,6 +41,11 @@ a {
   }
 }
 
+.logo {
+  width: 500px;
+  max-width: 100%;
+}
+
 h1,
 h2,
 h3 {
@@ -49,23 +54,10 @@ h3 {
   margin-bottom: 10px;
 }
 
-h1 {
-  font-size: 28px;
-  font-weight: $font-weight-bold;
-  text-align: center;
-}
-
 h2 {
   font-size: 24px;
   font-weight: $font-weight-bold;
   text-align: center;
-}
-
-h3 {
-  font-size: 18px;
-  font-weight: $font-weight-medium;
-  text-align: center;
-  color: var(--ion-color-medium);
 }
 
 .content-center {
@@ -86,9 +78,16 @@ ion-content {
   --padding-start: 0;
   --padding-end: 0;
   --padding-top: var(--signup-header-height);
-  --padding-bottom: var(--signup-footer-space);
+  --padding-bottom: 0;
   --background: var(--ion-background-color);
   --color: var(--ion-text-color);
+  height: 100%;
+
+  &::part(scroll) {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
 
   ion-text {
     font-size: small;
@@ -96,25 +95,31 @@ ion-content {
   }
 }
 
+ion-card-content.content-center {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+app-info-footer {
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
 .col-container {
   @include flex-center;
   width: 100%;
   padding: $spacing-lg 0;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-ion-note {
-  display: block;
-  color: var(--ion-color-danger);
-}
-
-.logo {
-  width: 500px;
-  max-width: 100%;
-}
-
-app-info-footer {
-  display: block;
-  padding: $spacing-md $spacing-sm;
+ion-item {
+  --background: var(--ion-item-background, var(--ion-background-color));
+  --color: var(--ion-text-color);
+  --border-color: var(--ion-border-color, var(--ion-color-step-150));
 }
 
 // Form styling
@@ -138,19 +143,35 @@ ion-button {
   }
 }
 
+ion-note {
+  color: var(--ion-color-danger);
+}
+
+app-info-footer {
+  display: block;
+  padding: $spacing-md $spacing-sm;
+}
+
+// Profile type section (specific to signup)
 .profile-type-row {
   margin-top: $spacing-md; // 12px -> 16px (closest match) or keep manual if strictly needed, but standardizing to md (16px) or sm (8px) is better. Let's use 12px for now or $spacing-md if 16px is acceptable. Let's stick to variables.
+
+  ion-col {
+    max-width: 100%;
+  }
 }
 
 .profile-type-card {
   border-radius: 16px;
-  padding: 18px 20px $spacing-md;
+  padding: $spacing-md $spacing-md;
   background: var(--ion-card-background, var(--ion-background-color));
   border: $border-width-thin solid
     var(--ion-border-color, var(--ion-color-step-150));
   box-shadow: var(--ion-card-box-shadow, $box-shadow-md);
   transition: all 200ms ease;
   color: var(--ion-text-color);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .profile-type-card:hover {
@@ -183,6 +204,9 @@ ion-button {
   font-size: 14px;
   color: var(--ion-color-medium);
   line-height: 1.5;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
 }
 
 .profile-type-segment {
@@ -254,7 +278,10 @@ ion-button {
   }
 
   .profile-type-card {
-    padding: $spacing-md;
+    padding: $spacing-md 0;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
   }
 
   .profile-type-icon {

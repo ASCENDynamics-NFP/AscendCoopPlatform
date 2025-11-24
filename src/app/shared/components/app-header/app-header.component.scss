@@ -72,10 +72,16 @@ ion-title {
   margin: 0; /* Reset any default margins */
 }
 
-ion-buttons ion-button {
-  --padding-start: $spacing-sm;
-  --padding-end: $spacing-sm;
+// Login/Signup buttons styling
+.auth-area ion-button {
+  --padding-start: $spacing-md !important;
+  --padding-end: $spacing-md !important;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
   --border-radius: 20px;
+  font-size: 0.875rem;
+  text-transform: none;
+  min-width: 80px;
 }
 
 @include mobile {

@@ -1,10 +1,11 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 .week-view-container {
-  padding: 16px;
+  padding: $spacing-md;
 
   .week-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    @include flex-between;
     margin-bottom: 20px;
     flex-wrap: wrap;
 
@@ -17,9 +18,9 @@
     ion-button {
       margin-left: 16px;
 
-      @media (max-width: 768px) {
+      @include mobile {
         margin-left: 0;
-        margin-top: 8px;
+        margin-top: $spacing-sm;
         width: 100%;
       }
     }
@@ -36,7 +37,7 @@
       ion-card-title {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: $spacing-sm;
         font-size: 18px;
         color: var(--ion-color-warning-shade);
 
@@ -78,7 +79,7 @@
   display: block;
   overflow-x: auto;
 
-  @media (max-width: 768px) {
+  @include mobile {
     display: none;
   }
 }
@@ -88,9 +89,9 @@
   border-collapse: collapse;
   margin-bottom: 20px;
   background: var(--ion-background-color, #ffffff);
-  border-radius: 8px;
+  border-radius: $border-radius-md;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: $box-shadow-md;
 
   th {
     background-color: var(--ion-color-primary, #3880ff);
@@ -122,7 +123,7 @@
     &.project-cell {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: $spacing-sm;
       min-width: 200px;
 
       .project-name-display {
@@ -208,21 +209,19 @@
 .mobile-view {
   display: none;
 
-  @media (max-width: 768px) {
+  @include mobile {
     display: block;
   }
 }
 
 .project-card {
-  margin-bottom: 16px;
-  border-radius: 12px;
+  margin-bottom: $spacing-md;
+  border-radius: $border-radius-lg;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 
   .project-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
+    @include flex-between;
+    margin-bottom: $spacing-sm;
 
     .project-selector {
       flex: 1;
@@ -376,7 +375,7 @@
 }
 
 // Responsive adjustments
-@media (max-width: 480px) {
+@include mobile {
   .week-view-container {
     padding: 12px;
   }

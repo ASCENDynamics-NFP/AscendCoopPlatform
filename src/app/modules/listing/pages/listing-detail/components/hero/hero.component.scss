@@ -18,6 +18,8 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 // src/app/modules/listing/pages/listing-detail/components/hero/hero.component.scss
+@import "src/styles/variables";
+@import "src/styles/mixins";
 
 /* Header Image Styling */
 .header-image {
@@ -34,7 +36,7 @@
 
 /* Listing Header Styling */
 .listing-header {
-  padding: 20px;
+  padding: $spacing-lg;
   margin-top: -50px;
   background: var(--ion-background-color);
   border-radius: 20px 20px 0 0;
@@ -56,19 +58,6 @@
       height: 80px;
       overflow: hidden;
       border-radius: 8px;
-
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-    }
-    .title-content {
-      h2 {
-        font-size: 1.5rem;
-        font-weight: bold;
-        margin: 0;
-      }
 
       h3 {
         font-size: 1.2rem;

@@ -17,11 +17,14 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 /* Homepage Listings Component Styles - Supports Light and Dark Modes */
 /* General Styling */
 .homepage-listings {
   font-family: "Roboto", sans-serif;
-  padding: 0 1.25rem;
+  padding: 0 $spacing-lg; // 1.25rem = 20px. Using lg (24px).
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
@@ -30,7 +33,7 @@
 /* Heading */
 .homepage-listings h1 {
   font-size: 2rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: $spacing-lg;
   text-align: center;
   color: var(--ion-text-color);
 }
@@ -43,10 +46,10 @@
 
 /* Individual Card */
 .listing-card {
-  border-radius: 0.5rem;
+  border-radius: $border-radius-md; // 0.5rem = 8px
   box-shadow: 0 0.25rem 0.5rem var(--ion-color-primary);
   background-color: var(--ion-item-background);
-  padding: 0.9375rem;
+  padding: $spacing-md; // 0.9375rem = 15px. Using md (16px).
   transition:
     box-shadow 0.3s ease,
     background-color 0.3s ease;
@@ -57,13 +60,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.625rem;
+  margin-bottom: $spacing-sm; // 0.625rem = 10px. Using sm (8px).
 }
 
 .listing-main {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
+  gap: $spacing-sm; // 0.625rem = 10px. Using sm (8px).
 }
 
 .listing-icon {
@@ -81,7 +84,7 @@
 
 .listing-info ion-card-title {
   font-size: 1.2rem;
-  font-weight: bold;
+  font-weight: $font-weight-bold;
   color: var(--ion-color-primary);
 }
 
@@ -96,7 +99,7 @@
   border-radius: 0.75rem;
   padding: 0.25rem 0.5rem;
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
 }
 
 /* Description */
@@ -133,7 +136,7 @@
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
   transition: transform 0.2s ease;
-  font-weight: 500;
+  font-weight: $font-weight-medium;
 }
 
 .save-btn:hover,
@@ -150,7 +153,7 @@
 .more-link {
   text-decoration: none;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: $font-weight-medium;
 }
 
 .more-link:hover {
@@ -158,7 +161,7 @@
 }
 
 /* Hide ion-chips on small screens */
-@media (max-width: 576px) {
+@include mobile {
   .listing-details ion-chip {
     display: none;
   }

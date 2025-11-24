@@ -17,6 +17,9 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 ion-card {
   margin-bottom: 16px;
 }
@@ -24,5 +27,5 @@ ion-card {
 ion-footer {
   display: flex;
   justify-content: space-between;
-  padding: 16px;
+  padding: $spacing-md;
 }

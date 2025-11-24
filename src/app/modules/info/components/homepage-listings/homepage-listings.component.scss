@@ -18,6 +18,9 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 /* Homepage Listings Component Styles - Supports Light and Dark Modes */
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 /* General Styling */
 .homepage-listings {
   font-family: "Roboto", sans-serif;
@@ -81,7 +84,7 @@
 
 .listing-info ion-card-title {
   font-size: 1.2rem;
-  font-weight: bold;
+  font-weight: $font-weight-bold;
   color: var(--ion-color-primary);
 }
 
@@ -96,7 +99,7 @@
   border-radius: 0.75rem;
   padding: 0.25rem 0.5rem;
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
 }
 
 /* Description */
@@ -133,7 +136,7 @@
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
   transition: transform 0.2s ease;
-  font-weight: 500;
+  font-weight: $font-weight-medium;
 }
 
 .save-btn:hover,
@@ -150,7 +153,7 @@
 .more-link {
   text-decoration: none;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: $font-weight-medium;
 }
 
 .more-link:hover {

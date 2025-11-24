@@ -1,53 +1,25 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 // ================================
-// COMPONENT VARIABLES - CONSISTENT WITH REGISTRATION
-// ================================
-:root {
-  --projects-primary: #e87121;
-  --projects-primary-light: #f39c4c;
-  --projects-success: #2dd36f;
-  --projects-radius: 12px;
+// Component specific variables using global values
+:host {
+  --projects-radius: #{$border-radius-lg};
   --projects-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-// Light mode colors
-:root {
-  --projects-border: #e1e5e9;
-  --projects-text: #3c4043;
-  --projects-text-light: #5f6368;
-  --projects-bg: #f8f9fa;
-  --projects-card-bg: #ffffff;
-  --projects-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  --projects-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-// Dark mode colors
-@media (prefers-color-scheme: dark) {
-  :root {
-    --projects-border: #3c4043;
-    --projects-text: #e8eaed;
-    --projects-text-light: #9aa0a6;
-    --projects-bg: #202124;
-    --projects-card-bg: #303134;
-    --projects-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --projects-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.4);
-  }
-}
-
-.dark {
-  --projects-border: #3c4043;
-  --projects-text: #e8eaed;
-  --projects-text-light: #9aa0a6;
-  --projects-bg: #202124;
-  --projects-card-bg: #303134;
-  --projects-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --projects-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --projects-border: var(--ion-color-light-shade);
+  --projects-text: var(--ion-color-dark);
+  --projects-text-light: var(--ion-color-medium);
+  --projects-bg: var(--ion-background-color);
+  --projects-card-bg: var(--ion-card-background);
+  --projects-shadow: #{$box-shadow-sm};
+  --projects-shadow-hover: #{$box-shadow-md};
 }
 
 .category-suggestions {
   background: var(--projects-card-bg);
   border: 2px solid var(--projects-border);
   border-radius: var(--projects-radius);
-  margin: 20px 0;
+  margin: $spacing-lg 0;
   overflow: hidden;
   position: relative;
   backdrop-filter: blur(10px);
@@ -76,7 +48,7 @@
 
   &:hover {
     box-shadow: var(--projects-shadow-hover);
-    border-color: var(--projects-primary-light);
+    border-color: var(--ion-color-primary-tint);
 
     &::before {
       opacity: 1;
@@ -86,11 +58,11 @@
   .suggestions-header {
     display: flex;
     align-items: center;
-    padding: 20px 24px;
+    padding: $spacing-lg $spacing-xl;
     background: linear-gradient(
       135deg,
-      var(--projects-primary),
-      var(--projects-primary-light)
+      var(--ion-color-primary),
+      var(--ion-color-primary-tint)
     );
     font-weight: 600;
     color: white;
@@ -98,7 +70,7 @@
     z-index: 1;
 
     ion-icon {
-      margin-right: 12px;
+      margin-right: $spacing-sm;
       font-size: 1.2rem;
       filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
     }
@@ -111,7 +83,7 @@
     ion-button {
       --color: white;
       --background: rgba(255, 255, 255, 0.1);
-      --border-radius: 8px;
+      --border-radius: $border-radius-md;
       margin: 0;
       backdrop-filter: blur(10px);
 
@@ -122,15 +94,15 @@
   }
 
   .suggestions-list {
-    padding: 16px;
+    padding: $spacing-md;
     position: relative;
     z-index: 1;
 
     .suggestion-item {
-      padding: 20px;
-      margin: 12px 0;
+      padding: $spacing-lg;
+      margin: $spacing-sm 0;
       background: var(--projects-card-bg);
-      border: 1px solid var(--projects-border);
+      border: $border-width-thin solid var(--projects-border);
       border-radius: 10px;
       cursor: pointer;
       transition: var(--projects-transition);
@@ -157,7 +129,7 @@
       &:hover {
         transform: translateY(-2px);
         box-shadow: var(--projects-shadow-hover);
-        border-color: var(--projects-primary-light);
+        border-color: var(--ion-color-primary-tint);
 
         &::before {
           opacity: 1;
@@ -171,7 +143,7 @@
         .suggestion-category {
           display: flex;
           align-items: center;
-          margin-bottom: 12px;
+          margin-bottom: $spacing-sm;
 
           .category-icon {
             width: 40px;
@@ -179,14 +151,14 @@
             border-radius: 50%;
             background: linear-gradient(
               135deg,
-              var(--projects-primary),
-              var(--projects-primary-light)
+              var(--ion-color-primary),
+              var(--ion-color-primary-tint)
             );
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 16px;
-            box-shadow: 0 4px 12px rgba(232, 113, 33, 0.2);
+            margin-right: $spacing-md;
+            box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.2);
             transition: var(--projects-transition);
 
             ion-icon {
@@ -205,16 +177,16 @@
 
           .confidence-badge {
             font-size: 0.8rem;
-            --padding-start: 8px;
-            --padding-end: 8px;
-            --background: var(--projects-success);
+            --padding-start: $spacing-sm;
+            --padding-end: $spacing-sm;
+            --background: var(--ion-color-success);
             --color: white;
-            --border-radius: 12px;
+            --border-radius: $border-radius-lg;
           }
         }
 
         .suggestion-reason {
-          margin: 0 0 16px 0;
+          margin: 0 0 $spacing-md 0;
           font-size: 0.95rem;
           color: var(--projects-text-light);
           line-height: 1.5;
@@ -222,18 +194,18 @@
 
         .suggestion-actions {
           display: flex;
-          gap: 12px;
+          gap: $spacing-sm;
           justify-content: flex-end;
 
           ion-button {
-            --border-radius: 8px;
+            --border-radius: $border-radius-md;
 
             &.use-suggestion {
-              --background: var(--projects-primary);
+              --background: var(--ion-color-primary);
               --color: white;
 
               &:hover {
-                --background: var(--projects-primary-light);
+                --background: var(--ion-color-primary-tint);
               }
             }
 
@@ -271,12 +243,12 @@
 // ================================
 // RESPONSIVE DESIGN
 // ================================
-@media (max-width: 768px) {
+@include mobile {
   .category-suggestions {
-    margin: 16px 0;
+    margin: $spacing-md 0;
 
     .suggestions-header {
-      padding: 16px 20px;
+      padding: $spacing-md $spacing-lg;
 
       span {
         font-size: 1rem;
@@ -284,17 +256,17 @@
     }
 
     .suggestions-list {
-      padding: 12px;
+      padding: $spacing-sm;
 
       .suggestion-item {
-        padding: 16px;
+        padding: $spacing-md;
 
         .suggestion-content {
           .suggestion-category {
             .category-icon {
               width: 36px;
               height: 36px;
-              margin-right: 12px;
+              margin-right: $spacing-sm;
 
               ion-icon {
                 font-size: 1.1rem;
@@ -312,7 +284,7 @@
 
           .suggestion-actions {
             flex-direction: column;
-            gap: 8px;
+            gap: $spacing-sm;
 
             ion-button {
               margin: 0;

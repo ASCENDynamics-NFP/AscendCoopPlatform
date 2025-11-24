@@ -1,5 +1,8 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 .search-type-toggle {
-  margin-bottom: 1rem;
+  margin-bottom: $spacing-md;
 
   ion-segment {
     --background: var(--ion-color-light);
@@ -7,7 +10,7 @@
 
   ion-segment-button {
     ion-label {
-      font-weight: 500;
+      font-weight: $font-weight-medium;
     }
 
     ion-icon {
@@ -17,25 +20,25 @@
 }
 
 .search-section {
-  margin-bottom: 1rem;
+  margin-bottom: $spacing-md;
 
   .selection-counter {
-    padding: 0.5rem 1rem 0;
+    padding: $spacing-xs $spacing-md 0;
     text-align: right;
   }
 }
 
 .validation-messages {
-  padding: 0.5rem 1rem;
+  padding: $spacing-xs $spacing-md;
 }
 
 .selected-account {
-  margin: 1rem 0;
+  margin: $spacing-md 0;
 
   .account-info {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: $spacing-md;
 
     ion-avatar {
       width: 48px;
@@ -47,7 +50,7 @@
 
       h3 {
         margin: 0 0 0.25rem 0;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
       }
 
       p {
@@ -60,19 +63,19 @@
 }
 
 .selected-accounts {
-  margin: 1rem 0;
+  margin: $spacing-md 0;
 
   .section-label {
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     color: var(--ion-color-primary);
-    margin-bottom: 0.5rem;
+    margin-bottom: $spacing-xs;
     display: block;
   }
 
   .selected-accounts-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: $spacing-xs;
 
     ion-chip {
       ion-avatar {
@@ -123,20 +126,20 @@
   margin-top: 1.5rem;
 
   .character-count {
-    padding: 0.25rem 1rem;
+    padding: $spacing-xs $spacing-md;
     text-align: right;
   }
 }
 
 .footer-buttons {
-  padding: 1rem;
+  padding: $spacing-md;
 
   ion-button {
     height: 48px;
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
 
     ion-spinner {
-      margin-left: 0.5rem;
+      margin-left: $spacing-xs;
     }
   }
 }
@@ -148,7 +151,7 @@
 }
 
 // Responsive design
-@media (max-width: 768px) {
+@include mobile {
   .selected-account .account-info {
     .account-details h3 {
       font-size: 1.1rem;

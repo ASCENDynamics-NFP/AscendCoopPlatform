@@ -18,9 +18,12 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 // Information Card for Group Admin Guidance
 .admin-info-card {
-  margin-bottom: 1rem;
+  margin-bottom: $spacing-md;
   border-left: 4px solid var(--ion-color-primary);
   background: linear-gradient(
     135deg,
@@ -32,7 +35,7 @@
 .info-content {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: $spacing-md;
 }
 
 .info-icon {
@@ -47,7 +50,7 @@
   h4 {
     margin: 0 0 0.5rem 0;
     color: var(--ion-color-primary);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     font-size: 1.1rem;
   }
 
@@ -66,20 +69,20 @@
 }
 
 .faq-card {
-  border: 1px solid var(--ion-color-primary);
-  margin-bottom: 1rem;
+  border: $border-width-thin solid var(--ion-color-primary);
+  margin-bottom: $spacing-md;
 }
 
 .faq-card ion-card-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   color: var(--ion-color-primary);
 }
 
 .title-icon {
-  margin-right: 8px;
+  margin-right: $spacing-sm;
   font-size: 1.2rem;
 }
 
@@ -90,23 +93,23 @@
 
 .no-faqs {
   text-align: center;
-  padding: 2rem 1rem;
+  padding: 2rem $spacing-md;
   color: var(--ion-color-medium);
 }
 
 .no-faqs-icon {
   font-size: 3rem;
-  margin-bottom: 1rem;
+  margin-bottom: $spacing-md;
   opacity: 0.5;
 }
 
 .no-faqs p {
   font-size: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: $spacing-md;
 }
 
 .faq-accordion {
-  border-radius: 8px;
+  border-radius: $border-radius-md;
   overflow: hidden;
 }
 
@@ -119,13 +122,13 @@
 }
 
 .faq-header {
-  --padding-start: 16px;
-  --padding-end: 8px;
+  --padding-start: $spacing-md;
+  --padding-end: $spacing-sm;
   --min-height: 60px;
 }
 
 .faq-question {
-  font-weight: 500;
+  font-weight: $font-weight-medium;
   font-size: 1rem;
   color: var(--ion-color-dark);
 }
@@ -140,18 +143,18 @@
 }
 
 .faq-content {
-  padding: 16px;
+  padding: $spacing-md;
   background: var(--ion-color-light);
 }
 
 .faq-answer {
   color: var(--ion-color-dark);
   line-height: 1.6;
-  margin-bottom: 8px;
+  margin-bottom: $spacing-sm;
 }
 
 .faq-answer ::ng-deep p {
-  margin-bottom: 8px;
+  margin-bottom: $spacing-sm;
 }
 
 .faq-answer ::ng-deep p:last-child {
@@ -168,7 +171,7 @@
 }
 
 /* Mobile responsiveness */
-@media (max-width: 768px) {
+@include mobile {
   .info-content {
     flex-direction: column;
     align-items: stretch;
@@ -190,7 +193,7 @@
   .faq-card ion-card-title {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: $spacing-sm;
   }
 
   .add-faq-btn {

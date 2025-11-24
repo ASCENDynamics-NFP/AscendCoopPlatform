@@ -17,19 +17,22 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 .profile-info-card {
-  border: 1px solid var(--ion-color-primary);
+  border: $border-width-thin solid var(--ion-color-primary);
 }
 
 .profile-info-card ion-card-title {
   font-size: 1.5em;
-  margin-bottom: 16px;
+  margin-bottom: $spacing-md;
 }
 
 .title-with-privacy {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 
   .privacy-indicator {
     margin-left: auto;
@@ -37,13 +40,13 @@
 }
 
 .profile-info-card .info-block {
-  margin-bottom: 16px;
+  margin-bottom: $spacing-md;
 }
 
 .profile-info-card h2 {
   font-size: 1.2em;
-  font-weight: bold;
-  color: #000;
+  font-weight: $font-weight-bold;
+  color: var(--ion-color-dark);
   margin: 0;
 }
 
@@ -56,15 +59,15 @@
 .history-background {
   white-space: pre-wrap;
   line-height: 1.5;
-  margin-top: 8px;
+  margin-top: $spacing-sm;
 }
 
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .profile-info-card h2 {
     color: #fff;
   }
 
   .profile-info-card p {
-    color: #aaa;
+    color: var(--ion-color-medium);
   }
 }

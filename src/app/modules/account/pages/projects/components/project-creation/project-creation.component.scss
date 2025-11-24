@@ -1,3 +1,6 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 .project-creation {
   padding: 0;
   margin: 0;
@@ -7,10 +10,10 @@
     margin-bottom: 24px;
 
     ion-input {
-      --border-radius: 8px;
-      --padding-start: 16px;
-      --padding-end: 16px;
-      margin-bottom: 8px;
+      --border-radius: $border-radius-md;
+      --padding-start: $spacing-md;
+      --padding-end: $spacing-md;
+      margin-bottom: $spacing-sm;
 
       ion-note {
         font-size: 0.8rem;
@@ -19,7 +22,7 @@
     }
 
     .category-selector-container {
-      margin-bottom: 8px;
+      margin-bottom: $spacing-sm;
 
       app-category-selector {
         display: block;
@@ -40,10 +43,10 @@
 
     .template-selection-card {
       margin: 0;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: $box-shadow-sm;
 
       ion-card-header {
-        padding-bottom: 8px;
+        padding-bottom: $spacing-sm;
 
         ion-card-title {
           display: flex;
@@ -52,7 +55,7 @@
           font-weight: 600;
 
           .section-icon {
-            margin-right: 8px;
+            margin-right: $spacing-sm;
             color: var(--ion-color-primary);
           }
         }
@@ -66,9 +69,9 @@
 
       .template-option {
         border: 2px solid var(--ion-color-light-tint);
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 12px;
+        border-radius: $border-radius-lg;
+        padding: $spacing-md;
+        margin-bottom: $spacing-md;
         cursor: pointer;
         transition: all 0.2s ease;
         background: var(--ion-color-light-shade);
@@ -89,12 +92,12 @@
         .template-header {
           display: flex;
           align-items: flex-start;
-          gap: 12px;
+          gap: $spacing-md;
 
           .template-icon {
             width: 40px;
             height: 40px;
-            border-radius: 8px;
+            border-radius: $border-radius-md;
             background: var(--ion-color-primary);
             display: flex;
             align-items: center;
@@ -128,8 +131,8 @@
 
         .template-selection-indicator {
           position: absolute;
-          top: 12px;
-          right: 12px;
+          top: $spacing-md;
+          right: $spacing-md;
 
           ion-icon {
             font-size: 1.5rem;
@@ -148,8 +151,8 @@
   // Action buttons styling
   .action-buttons {
     margin-top: 24px;
-    padding-top: 16px;
-    border-top: 1px solid var(--ion-color-light-tint);
+    padding-top: $spacing-md;
+    border-top: $border-width-thin solid var(--ion-color-light-tint);
 
     ion-button {
       height: 44px;
@@ -170,9 +173,9 @@
     }
 
     // Mobile responsive
-    @media (max-width: 767px) {
+    @include mobile {
       ion-col {
-        margin-bottom: 8px;
+        margin-bottom: $spacing-sm;
       }
     }
   }

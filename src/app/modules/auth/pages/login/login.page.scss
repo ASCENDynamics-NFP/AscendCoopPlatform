@@ -17,6 +17,8 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+@import "src/styles/variables";
+@import "src/styles/mixins";
 
 ion-header,
 ion-toolbar,
@@ -53,19 +55,16 @@ h3 {
 
 h2 {
   font-size: 24px;
-  font-weight: bold;
+  font-weight: $font-weight-bold;
   text-align: center;
 }
 
 .content-center {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  @include flex-center-column;
   min-height: calc(
     100vh - var(--login-header-height) - var(--login-footer-space)
   );
-  padding: 24px 16px;
+  padding: $spacing-lg $spacing-md;
 }
 
 ion-card {
@@ -89,11 +88,9 @@ ion-content {
 }
 
 .col-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  @include flex-center;
   width: 100%;
-  padding: 24px 0;
+  padding: $spacing-lg 0;
 }
 
 ion-item {
@@ -127,7 +124,7 @@ app-info-footer {
   padding: 16px 12px;
 }
 
-@media (max-width: 767px) {
+@include mobile {
   :host {
     --login-header-height: 0px;
   }
@@ -135,11 +132,11 @@ app-info-footer {
   .content-center {
     justify-content: flex-start;
     min-height: auto;
-    padding: 12px 12px 24px;
+    padding: $spacing-md $spacing-md $spacing-lg;
   }
 
   .col-container {
-    padding: 8px 0 16px;
+    padding: $spacing-sm 0 $spacing-md;
   }
 
   .logo {

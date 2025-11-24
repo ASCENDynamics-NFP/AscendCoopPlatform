@@ -1,22 +1,24 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 // ================================
 // COMPACT BULK ACTIONS DESIGN
 // ================================
 
 .bulk-actions-card {
-  margin: 8px 0;
-  border-radius: 8px;
+  margin: $spacing-sm 0;
+  border-radius: $border-radius-md;
   background: var(--ion-color-light);
-  border: 1px solid var(--ion-color-medium-tint);
+  border: $border-width-thin solid var(--ion-color-medium-tint);
   animation: slideInRight 0.3s ease-out;
 
-  @media (prefers-color-scheme: dark) {
-    // background: var(--ion-color-dark);
+  @include dark-mode {
     border-color: var(--ion-color-medium-shade);
     color: white;
   }
 
   ion-card-content {
-    padding: 8px 12px;
+    padding: $spacing-sm $spacing-md;
   }
 }
 
@@ -24,7 +26,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 
   .selection-info {
     display: flex;
@@ -41,7 +43,7 @@
     .selection-text {
       color: var(--ion-color-dark);
 
-      @media (prefers-color-scheme: dark) {
+      @include dark-mode {
         color: var(--ion-color-dark);
       }
     }
@@ -89,9 +91,9 @@
     }
   }
 
-  @media (max-width: 480px) {
+  @include mobile {
     flex-direction: column;
-    gap: 8px;
+    gap: $spacing-sm;
 
     .toolbar-actions {
       width: 100%;
@@ -103,12 +105,12 @@
 .category-selector {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--ion-color-medium-tint);
+  gap: $spacing-sm;
+  margin-top: $spacing-sm;
+  padding-top: $spacing-sm;
+  border-top: $border-width-thin solid var(--ion-color-medium-tint);
 
-  @media (prefers-color-scheme: dark) {
+  @include dark-mode {
     border-color: var(--ion-color-medium-shade);
   }
 
@@ -116,13 +118,13 @@
     flex: 1;
     --placeholder-color: var(--ion-color-medium);
     --color: var(--ion-color-dark);
-    border: 1px solid var(--ion-color-medium-tint);
+    border: $border-width-thin solid var(--ion-color-medium-tint);
     border-radius: 6px;
-    padding: 0 8px;
+    padding: 0 $spacing-sm;
     height: 32px;
     font-size: 0.8rem;
 
-    @media (prefers-color-scheme: dark) {
+    @include dark-mode {
       --color: var(--ion-color-light);
       border-color: var(--ion-color-medium-shade);
     }
@@ -141,7 +143,7 @@
     }
   }
 
-  @media (max-width: 480px) {
+  @include mobile {
     flex-direction: column;
     align-items: stretch;
 

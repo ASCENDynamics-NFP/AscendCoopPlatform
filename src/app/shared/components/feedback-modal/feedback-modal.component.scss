@@ -17,6 +17,9 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 // Header styling similar to other modals
 ion-header {
   ion-toolbar {
@@ -26,8 +29,8 @@ ion-header {
     ion-title {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-weight: 600;
+      gap: $spacing-sm;
+      font-weight: $font-weight-semibold;
 
       .title-icon {
         font-size: 1.2rem;
@@ -41,7 +44,7 @@ ion-header {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-md;
 }
 
 .intro-card {
@@ -50,8 +53,8 @@ ion-header {
   gap: 12px;
   background: var(--ion-card-background, var(--ion-color-light));
   border: 1px solid var(--ion-border-color, var(--ion-color-light-shade));
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: $border-radius-lg;
+  padding: $spacing-md;
 
   ion-icon {
     font-size: 1.6rem;
@@ -61,7 +64,7 @@ ion-header {
     h3 {
       margin: 0 0 4px 0;
       font-size: 1.05rem;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       color: var(--ion-color-dark);
     }
     p {
@@ -73,19 +76,19 @@ ion-header {
 
 ion-item {
   --background: transparent;
-  border-radius: 8px;
+  border-radius: $border-radius-md;
 }
 
 .attachment-card {
   background: var(--ion-card-background, var(--ion-color-light));
   border: 1px solid var(--ion-border-color, var(--ion-color-light-shade));
-  border-radius: 12px;
+  border-radius: $border-radius-lg;
   padding: 12px;
 
   .attachment-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     color: var(--ion-color-medium);
     margin-bottom: 8px;
     font-size: 0.95rem;
@@ -117,7 +120,7 @@ ion-item {
   margin-top: 8px;
 }
 
-@media (max-width: 576px) {
+@include mobile {
   .feedback-container {
     padding: 0 4px;
   }

@@ -1,4 +1,6 @@
 /* role-management.page.scss */
+@import "src/styles/variables";
+@import "src/styles/mixins";
 
 // Enhanced role display styling
 .role-info-display {
@@ -11,7 +13,7 @@
     border-radius: 4px;
     background: var(--ion-color-light);
     color: var(--ion-color-dark);
-    margin-left: 8px;
+    margin-left: $spacing-sm;
 
     &.standard-role {
       background: var(--ion-color-primary);
@@ -28,8 +30,8 @@
 // Improve existing role grid styling
 ion-grid {
   .role-row {
-    border-bottom: 1px solid var(--ion-color-light-shade);
-    padding: 8px 0;
+    border-bottom: $border-width-thin solid var(--ion-color-light-shade);
+    padding: $spacing-sm 0;
 
     &:last-child {
       border-bottom: none;

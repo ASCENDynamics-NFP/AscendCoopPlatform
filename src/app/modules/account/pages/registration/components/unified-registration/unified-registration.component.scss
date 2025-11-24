@@ -19,6 +19,9 @@
 ***********************************************************************************************/
 
 // Unified Registration Component - Enhanced Light & Dark Mode Styling
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 :host {
   // Base theme colors
   --unified-primary: #e87121;

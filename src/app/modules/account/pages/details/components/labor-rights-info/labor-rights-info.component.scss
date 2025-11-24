@@ -2,19 +2,25 @@
 * Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
 * Copyright (C) 2023  ASCENDynamics NFP
 ***********************************************************************************************/
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 .labor-rights-card {
-  border: 1px solid var(--ion-color-primary);
+  border: $border-width-thin solid var(--ion-color-primary);
+  border-radius: $border-radius-md;
+  padding: $spacing-md;
 }
 
 .labor-rights-card ion-card-title {
-  font-size: 1.5em;
-  margin-bottom: 16px;
+  font-size: 1.5rem;
+  margin-bottom: $spacing-md;
+  font-weight: $font-weight-semibold;
 }
 
 .title-with-privacy {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 
   .privacy-indicator {
     margin-left: auto;
@@ -22,27 +28,28 @@
 }
 
 .labor-rights-card .info-block {
-  margin-bottom: 16px;
+  margin-bottom: $spacing-md;
 }
 
 .labor-rights-card h2 {
-  font-size: 1.2em;
-  font-weight: bold;
-  color: #000;
+  font-size: 1.2rem;
+  font-weight: $font-weight-bold;
+  color: var(--ion-text-color);
   margin: 0;
 }
 
 .labor-rights-card p {
-  font-size: 1em;
+  font-size: 1rem;
   margin: 4px 0 0 0;
+  color: var(--ion-text-color);
 }
 
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .labor-rights-card h2 {
-    color: #fff;
+    color: var(--ion-text-color);
   }
 
   .labor-rights-card p {
-    color: #aaa;
+    color: var(--ion-color-medium);
   }
 }

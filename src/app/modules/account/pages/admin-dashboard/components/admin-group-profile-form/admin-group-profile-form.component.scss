@@ -1,3 +1,6 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 :host {
   display: block;
 }
@@ -19,19 +22,19 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 1.5rem 0 1rem 0;
-  padding: 0 1rem;
+  margin: $spacing-lg 0 $spacing-md 0;
+  padding: 0 $spacing-md;
 
   h3 {
     margin: 0;
     font-size: 1.2rem;
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     color: var(--ion-color-primary);
   }
 
   ion-button {
-    --padding-start: 8px;
-    --padding-end: 8px;
+    --padding-start: $spacing-sm;
+    --padding-end: $spacing-sm;
     --min-height: 32px;
     margin: 0;
 
@@ -42,10 +45,10 @@
 }
 
 .form-array-item {
-  margin-bottom: 1rem;
-  padding: 1rem;
-  border: 1px solid var(--ion-color-light);
-  border-radius: 8px;
+  margin-bottom: $spacing-md;
+  padding: $spacing-md;
+  border: $border-width-thin solid var(--ion-color-light);
+  border-radius: $border-radius-md;
 
   &:last-child {
     margin-bottom: 0;
@@ -55,19 +58,19 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
+    margin-bottom: $spacing-md;
+    padding-bottom: $spacing-sm;
     border-bottom: 1px solid var(--ion-color-light-shade);
 
     .item-number {
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       color: var(--ion-color-primary);
       font-size: 0.9rem;
     }
 
     .remove-button {
-      --padding-start: 8px;
-      --padding-end: 8px;
+      --padding-start: $spacing-sm;
+      --padding-end: $spacing-sm;
       --min-height: 32px;
       margin: 0;
 
@@ -80,14 +83,14 @@
   .form-fields {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: $spacing-sm;
 
     ion-item {
       --background: transparent;
       --padding-start: 0;
       --padding-end: 0;
       --inner-padding-end: 0;
-      margin-bottom: 0.5rem;
+      margin-bottom: $spacing-sm;
 
       &:last-child {
         margin-bottom: 0;
@@ -98,9 +101,9 @@
   // Email item specific styling
   &.email-item {
     .form-fields {
-      @media (min-width: 768px) {
+      @include desktop {
         flex-direction: row;
-        gap: 1rem;
+        gap: $spacing-md;
 
         ion-item {
           flex: 1;
@@ -117,10 +120,10 @@
   // Web link item specific styling
   &.web-link-item {
     .form-fields {
-      @media (min-width: 768px) {
+      @include desktop {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 1rem;
+        gap: $spacing-md;
 
         ion-item:last-child {
           grid-column: 1 / -1;
@@ -133,22 +136,22 @@
 // Date picker styling
 #foundingDatePicker {
   ion-button[slot="time-label"] {
-    --border-radius: 8px;
-    --padding-start: 12px;
-    --padding-end: 12px;
+    --border-radius: $border-radius-md;
+    --padding-start: $spacing-md; // 12px
+    --padding-end: $spacing-md; // 12px
     margin: 0;
     width: 100%;
     text-align: left;
 
     ion-icon {
-      margin-right: 8px;
+      margin-right: $spacing-sm;
     }
   }
 }
 
 .action-buttons {
-  padding: 1rem;
-  gap: 0.5rem;
+  padding: $spacing-md;
+  gap: $spacing-sm;
   display: flex;
   flex-direction: column;
 
@@ -160,16 +163,16 @@
 .helper-text {
   font-size: 0.875rem;
   color: var(--ion-color-medium);
-  margin-top: 0.5rem;
+  margin-top: $spacing-sm;
   text-align: center;
 }
 
 .add-link-section {
-  margin-top: 1rem;
-  padding: 0 1rem;
+  margin-top: $spacing-md;
+  padding: 0 $spacing-md;
 
   ion-button {
-    margin-bottom: 0.5rem;
+    margin-bottom: $spacing-sm;
   }
 }
 
@@ -184,9 +187,9 @@ ion-item {
 
 // Card styling
 ion-card {
-  margin: 1rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: $spacing-md;
+  border-radius: $border-radius-lg;
+  box-shadow: $box-shadow-md;
 }
 
 ion-card-header {
@@ -195,7 +198,7 @@ ion-card-header {
 
 ion-card-title {
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   color: var(--ion-color-primary);
 }
 
@@ -206,7 +209,7 @@ ion-card-subtitle {
 }
 
 // Responsive design
-@media (min-width: 768px) {
+@include desktop {
   .action-buttons {
     flex-direction: row;
     justify-content: space-between;
@@ -218,7 +221,7 @@ ion-card-subtitle {
   }
 
   ion-card {
-    margin: 1rem auto;
+    margin: $spacing-md auto;
     max-width: 800px;
   }
 }
@@ -241,11 +244,11 @@ ion-textarea {
 ion-item-divider {
   --background: var(--ion-color-light);
   --color: var(--ion-color-dark);
-  font-weight: 600;
-  margin: 1rem 0 0.5rem 0;
+  font-weight: $font-weight-semibold;
+  margin: $spacing-md 0 $spacing-sm 0;
 }
 
 // Spinner in button
 ion-button ion-spinner {
-  margin-right: 0.5rem;
+  margin-right: $spacing-sm;
 }

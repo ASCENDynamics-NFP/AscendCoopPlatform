@@ -17,6 +17,9 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 /* landing.page.scss */
 
 /* General Styles */
@@ -44,13 +47,13 @@ ion-header {
 
     h1 {
       font-size: 2.5rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
+      font-weight: $font-weight-semibold;
+      margin-bottom: $spacing-md;
     }
 
     p {
       font-size: 1.1rem;
-      margin-bottom: 1.25rem;
+      margin-bottom: $spacing-lg; // 1.25rem = 20px. Using lg (24px) or md (16px).
     }
 
     ion-button {
@@ -129,7 +132,7 @@ ion-header {
 
     figcaption {
       font-size: 2rem;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       // background-color: var(--ion-background-color);
       color: var(--ion-text-color);
       width: fit-content;
@@ -267,7 +270,7 @@ ion-header {
 }
 
 /* Responsive Styles */
-@media (max-width: 600px) {
+@include mobile {
   .hero {
     padding: 40px 0;
 

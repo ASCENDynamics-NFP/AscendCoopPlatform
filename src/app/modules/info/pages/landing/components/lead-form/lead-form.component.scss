@@ -1,12 +1,16 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 form {
   width: 100%;
   max-width: 500px;
-  margin: 1rem auto;
-  padding: 1rem;
-  background: var(--ion-card-background, #000);
-  border-radius: 8px;
+  margin: $spacing-md auto;
+  padding: $spacing-md;
+  background: var(--ion-card-background, #fff);
+  color: var(--ion-text-color, #000);
+  border-radius: $border-radius-md;
 }
 
 ion-item {
-  margin-bottom: 12px;
+  margin-bottom: $spacing-md;
 }

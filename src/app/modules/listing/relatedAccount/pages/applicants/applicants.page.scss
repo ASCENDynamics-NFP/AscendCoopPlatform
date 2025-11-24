@@ -17,6 +17,9 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 .pagination-toolbar {
   display: flex; /* Enable Flexbox */
   justify-content: center; /* Center items horizontally */
@@ -68,13 +71,9 @@
 }
 
 /* Responsive Design for Smaller Screens */
-@media (max-width: 768px) {
+@include mobile {
   .pagination-toolbar {
     flex-direction: column; /* Stack elements vertically */
     gap: 1rem; /* Reduced space between elements */
-  }
-
-  .pagination-range,
-  .pagination-controls {
   }
 }

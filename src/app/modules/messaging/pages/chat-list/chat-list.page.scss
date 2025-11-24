@@ -1,3 +1,6 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 // Chat List Styling - Improved readability with theme support
 :root {
   // Chat list theme variables
@@ -34,21 +37,21 @@ ion-header {
   flex-direction: column;
   align-items: flex-end;
   gap: 0.25rem;
-  padding: 4px 0;
+  padding: $spacing-xs 0;
 
   .timestamp {
     color: var(--chat-list-text-secondary-light);
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: $font-weight-medium;
     margin: 0;
   }
 
   .unread-badge {
     min-width: 22px;
     height: 22px;
-    border-radius: 11px;
+    border-radius: $border-radius-lg;
     font-size: 0.7rem;
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     background: #25d366; // WhatsApp green (consistent in both modes)
     color: white;
     display: flex;
@@ -58,7 +61,7 @@ ion-header {
 }
 
 // Dark mode overrides for chat meta
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .chat-meta {
     .timestamp {
       color: var(--chat-list-text-secondary-dark);
@@ -72,7 +75,7 @@ ion-header {
   font-size: 0.7rem;
   min-width: 20px;
   height: 20px;
-  border-radius: 10px;
+  border-radius: $border-radius-md;
   background: var(--ion-color-primary);
   color: white;
 }
@@ -99,7 +102,7 @@ ion-item {
   ion-avatar {
     width: 54px;
     height: 54px;
-    margin-right: 12px;
+    margin-right: $spacing-sm;
 
     img {
       border-radius: 50%;
@@ -112,19 +115,19 @@ ion-item {
     --background: var(--chat-list-unread-bg-light);
 
     ion-label h2 {
-      font-weight: 700;
+      font-weight: $font-weight-bold;
       color: #1a73e8;
     }
 
     ion-label p {
       color: var(--chat-list-text-primary-light);
-      font-weight: 500;
+      font-weight: $font-weight-medium;
     }
   }
 }
 
 // Dark mode support for chat items
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   ion-item {
     border-bottom-color: var(--chat-list-border-dark);
 
@@ -155,7 +158,7 @@ ion-item {
   min-width: 0; // Allows proper text truncation
 
   .chat-title {
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     font-size: 1rem;
     line-height: 1.3;
     color: var(--chat-list-text-primary-light);
@@ -180,7 +183,7 @@ ion-item {
 }
 
 // Dark mode support for chat preview
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .chat-preview {
     .chat-title {
       color: var(--chat-list-text-primary-dark);
@@ -195,7 +198,7 @@ ion-item {
 // Unread message styling
 .unread-chat {
   .chat-preview .chat-snippet {
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     color: var(--chat-list-text-primary-light);
   }
 
@@ -205,7 +208,7 @@ ion-item {
 }
 
 // Dark mode for unread chats
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .unread-chat {
     .chat-preview .chat-snippet {
       color: var(--chat-list-text-primary-dark);
@@ -222,7 +225,7 @@ ion-item ion-label {
   margin: 0;
 
   h2 {
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     color: var(--chat-list-text-primary-light);
     margin-bottom: 4px;
     font-size: 1rem;
@@ -245,7 +248,7 @@ ion-item ion-label {
 }
 
 // Dark mode for ion-label
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   ion-item ion-label {
     h2 {
       color: var(--chat-list-text-primary-dark);
@@ -276,7 +279,7 @@ ion-item ion-label {
   h2 {
     color: var(--chat-list-text-primary-light);
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     margin: 0 0 0.5rem 0;
   }
 
@@ -292,12 +295,12 @@ ion-item ion-label {
     --border-radius: 24px;
     --padding-start: 24px;
     --padding-end: 24px;
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
   }
 }
 
 // Dark mode for empty state
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .empty-state {
     ion-icon {
       color: var(--chat-list-text-secondary-dark);

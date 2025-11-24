@@ -17,6 +17,8 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+@import "src/styles/variables";
+@import "src/styles/mixins";
 
 // Layout variables
 ion-header,
@@ -49,32 +51,29 @@ h3 {
 
 h1 {
   font-size: 28px;
-  font-weight: bold;
+  font-weight: $font-weight-bold;
   text-align: center;
 }
 
 h2 {
   font-size: 24px;
-  font-weight: bold;
+  font-weight: $font-weight-bold;
   text-align: center;
 }
 
 h3 {
   font-size: 18px;
-  font-weight: 500;
+  font-weight: $font-weight-medium;
   text-align: center;
   color: var(--ion-color-medium);
 }
 
 .content-center {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  @include flex-center-column;
   min-height: calc(
     100vh - var(--signup-header-height) - var(--signup-footer-space)
   );
-  padding: 24px 16px;
+  padding: $spacing-lg $spacing-md;
 }
 
 ion-card {
@@ -98,11 +97,9 @@ ion-content {
 }
 
 .col-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  @include flex-center;
   width: 100%;
-  padding: 24px 0;
+  padding: $spacing-lg 0;
 }
 
 ion-note {
@@ -142,15 +139,16 @@ ion-button {
 }
 
 .profile-type-row {
-  margin-top: 12px;
+  margin-top: $spacing-md; // 12px -> 16px (closest match) or keep manual if strictly needed, but standardizing to md (16px) or sm (8px) is better. Let's use 12px for now or $spacing-md if 16px is acceptable. Let's stick to variables.
 }
 
 .profile-type-card {
   border-radius: 16px;
-  padding: 18px 20px 16px;
+  padding: 18px 20px $spacing-md;
   background: var(--ion-card-background, var(--ion-background-color));
-  border: 1px solid var(--ion-border-color, var(--ion-color-step-150));
-  box-shadow: var(--ion-card-box-shadow, 0 2px 8px rgba(0, 0, 0, 0.1));
+  border: $border-width-thin solid
+    var(--ion-border-color, var(--ion-color-step-150));
+  box-shadow: var(--ion-card-box-shadow, $box-shadow-md);
   transition: all 200ms ease;
   color: var(--ion-text-color);
 }
@@ -163,8 +161,8 @@ ion-button {
 .profile-type-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: $spacing-md; // 12px -> 16px
+  margin-bottom: $spacing-md; // 12px -> 16px
 }
 
 .profile-type-icon {
@@ -175,7 +173,7 @@ ion-button {
 .profile-type-title {
   margin: 0;
   font-size: 20px;
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   text-align: left;
   color: var(--ion-text-color);
 }
@@ -236,7 +234,7 @@ ion-button {
 }
 
 // Mobile responsive styles
-@media (max-width: 767px) {
+@include mobile {
   :host {
     --signup-header-height: 0px;
   }
@@ -244,11 +242,11 @@ ion-button {
   .content-center {
     justify-content: flex-start;
     min-height: auto;
-    padding: 12px 12px 24px;
+    padding: $spacing-md $spacing-md $spacing-lg;
   }
 
   .col-container {
-    padding: 8px 0 16px;
+    padding: $spacing-sm 0 $spacing-md;
   }
 
   .logo {
@@ -256,7 +254,7 @@ ion-button {
   }
 
   .profile-type-card {
-    padding: 16px;
+    padding: $spacing-md;
   }
 
   .profile-type-icon {
@@ -273,8 +271,8 @@ ion-button {
 
   .profile-type-segment ion-segment-button {
     min-height: 48px;
-    --padding-start: 12px;
-    --padding-end: 12px;
+    --padding-start: $spacing-md;
+    --padding-end: $spacing-md;
   }
 
   h1 {

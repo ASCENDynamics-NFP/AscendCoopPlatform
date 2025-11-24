@@ -17,8 +17,11 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 ion-card {
-  border: 1px solid var(--ion-color-primary);
+  border: $border-width-thin solid var(--ion-color-primary);
 }
 
 .header-container {
@@ -88,7 +91,7 @@ ion-thumbnail img {
   align-items: center;
   gap: 0.5rem;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   color: var(--ion-color-primary);
   margin: 0 0 0.75rem 0;
   padding: 0.5rem 0;
@@ -139,7 +142,7 @@ ion-thumbnail img {
 
   h3 {
     font-size: 1.2rem;
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     color: var(--ion-color-dark);
     margin: 0 0 0.5rem 0;
   }

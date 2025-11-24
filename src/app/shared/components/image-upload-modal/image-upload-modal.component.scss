@@ -18,6 +18,9 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 // Header styling
 ion-header {
   ion-toolbar {
@@ -25,10 +28,10 @@ ion-header {
     --color: var(--ion-color-primary-contrast);
 
     ion-title {
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: $spacing-sm;
 
       .title-icon {
         font-size: 1.2rem;
@@ -47,16 +50,16 @@ ion-header {
 // Image info card
 .image-info-card {
   background: var(--ion-color-light);
-  border-radius: 12px;
+  border-radius: $border-radius-lg;
   padding: 20px;
-  margin-bottom: 24px;
+  margin-bottom: $spacing-lg;
   border: 1px solid var(--ion-color-light-shade);
 
   .info-header {
     display: flex;
     align-items: flex-start;
-    gap: 16px;
-    margin-bottom: 16px;
+    gap: $spacing-md;
+    margin-bottom: $spacing-md;
 
     ion-icon {
       font-size: 2rem;
@@ -69,7 +72,7 @@ ion-header {
       h3 {
         margin: 0 0 4px 0;
         font-size: 1.1rem;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         color: var(--ion-color-dark);
       }
 
@@ -90,7 +93,7 @@ ion-header {
     .detail-item {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: $spacing-sm;
       font-size: 0.85rem;
       color: var(--ion-color-medium);
 
@@ -103,19 +106,19 @@ ion-header {
 
 // Current image section
 .current-image-section {
-  margin-bottom: 24px;
+  margin-bottom: $spacing-lg;
 
   h4 {
     margin: 0 0 12px 0;
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     color: var(--ion-color-dark);
     text-align: center;
   }
 
   .current-image-container {
     position: relative;
-    border-radius: 8px;
+    border-radius: $border-radius-md;
     overflow: hidden;
     border: 2px solid var(--ion-color-light-shade);
 
@@ -139,7 +142,7 @@ ion-header {
 
       p {
         color: white;
-        font-weight: 500;
+        font-weight: $font-weight-medium;
         margin: 0;
         padding: 8px 16px;
         background: rgba(0, 0, 0, 0.8);
@@ -166,7 +169,7 @@ ion-header {
 .upload-section {
   .drop-zone {
     border: 2px dashed var(--ion-color-medium);
-    border-radius: 12px;
+    border-radius: $border-radius-lg;
     padding: 32px 24px;
     text-align: center;
     transition: all 0.3s ease;
@@ -199,7 +202,7 @@ ion-header {
       h3 {
         margin: 0 0 8px 0;
         font-size: 1.2rem;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         color: var(--ion-color-dark);
       }
 
@@ -210,8 +213,8 @@ ion-header {
       }
 
       .browse-button {
-        --border-radius: 8px;
-        margin-bottom: 16px;
+        --border-radius: $border-radius-md;
+        margin-bottom: $spacing-md;
       }
 
       .file-input {
@@ -230,7 +233,7 @@ ion-header {
       width: 100%;
 
       .preview-container {
-        border-radius: 8px;
+        border-radius: $border-radius-md;
         overflow: hidden;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         margin: 0 auto 16px auto;
@@ -259,8 +262,8 @@ ion-header {
         align-items: center;
         justify-content: space-between;
         background: white;
-        padding: 12px 16px;
-        border-radius: 8px;
+        padding: 12px $spacing-md;
+        border-radius: $border-radius-md;
         border: 1px solid var(--ion-color-light-shade);
 
         .file-details {
@@ -277,7 +280,7 @@ ion-header {
             h4 {
               margin: 0 0 2px 0;
               font-size: 0.9rem;
-              font-weight: 600;
+              font-weight: $font-weight-semibold;
               color: var(--ion-color-dark);
               word-break: break-all;
             }
@@ -300,7 +303,7 @@ ion-header {
     p {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: $spacing-sm;
       margin: 0;
       font-size: 0.9rem;
 
@@ -313,18 +316,18 @@ ion-header {
   // Progress section
   .progress-section {
     margin-top: 20px;
-    padding: 16px;
+    padding: $spacing-md;
     background: var(--ion-color-light);
-    border-radius: 8px;
+    border-radius: $border-radius-md;
 
     .progress-info {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: $spacing-sm;
       margin-bottom: 12px;
       font-size: 0.9rem;
       color: var(--ion-color-primary);
-      font-weight: 500;
+      font-weight: $font-weight-medium;
 
       ion-icon {
         font-size: 1.2rem;
@@ -344,7 +347,7 @@ ion-footer {
   ion-toolbar {
     --background: transparent;
     --border-color: var(--ion-color-light-shade);
-    padding: 16px;
+    padding: $spacing-md;
 
     .footer-actions {
       display: flex;
@@ -353,9 +356,9 @@ ion-footer {
 
       .upload-button {
         flex: 1;
-        --border-radius: 8px;
+        --border-radius: $border-radius-md;
         height: 44px;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
 
         &:disabled {
           opacity: 0.6;
@@ -366,9 +369,9 @@ ion-footer {
 }
 
 // Responsive adjustments
-@media (max-width: 576px) {
+@include mobile {
   .upload-container {
-    padding: 0 8px;
+    padding: 0 $spacing-sm;
   }
 
   .image-info-card {

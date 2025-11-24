@@ -16,6 +16,17 @@
   padding-top: 24px; /* Extra space to account for header */
 }
 
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
+.timesheet-page {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 16px;
+}
+
 .timesheet-info {
   display: flex;
   justify-content: space-between;

@@ -18,12 +18,15 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 /* Profile Segments Styling */
 .profile-segments {
   margin: 0;
-  padding: 8px 16px;
+  padding: $spacing-sm $spacing-md;
   background: var(--ion-color-light);
-  border-bottom: 1px solid var(--ion-color-light-shade);
+  border-bottom: $border-width-thin solid var(--ion-color-light-shade);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -37,7 +40,7 @@
   --background: transparent;
   --background-checked: transparent;
   min-width: auto;
-  padding: 8px 12px;
+  padding: $spacing-sm $spacing-md;
 }
 
 .profile-segments ion-segment-button ion-icon {
@@ -47,13 +50,13 @@
 
 .profile-segments ion-segment-button ion-label {
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: $font-weight-medium;
   text-transform: none;
 }
 
 /* Segment Content Styling */
 .segment-content {
-  padding: 16px;
+  padding: $spacing-md;
   min-height: calc(100vh - 200px);
 }
 
@@ -73,13 +76,13 @@
 }
 
 /* Mobile responsiveness */
-@media (max-width: 768px) {
+@include mobile {
   .profile-segments {
-    padding: 6px 8px;
+    padding: 6px $spacing-sm;
   }
 
   .profile-segments ion-segment-button {
-    padding: 6px 8px;
+    padding: 6px $spacing-sm;
     min-width: 60px;
   }
 
@@ -92,12 +95,12 @@
   }
 
   .segment-content {
-    padding: 12px;
+    padding: $spacing-md;
   }
 }
 
 /* Dark mode support */
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .profile-segments {
     // transparent black background
     background: rgba(10, 10, 10, 0.7);

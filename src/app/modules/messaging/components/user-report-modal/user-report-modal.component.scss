@@ -17,6 +17,8 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+@import "src/styles/variables";
+@import "src/styles/mixins";
 
 // Global modal styling
 :host {
@@ -40,7 +42,7 @@
   h2 {
     margin: 8px 0;
     color: var(--ion-color-dark);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
   }
 
   .report-subtitle {
@@ -88,7 +90,7 @@
 .submit-button {
   margin-top: 20px;
   --border-radius: 8px;
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
 }
 
 .cancel-button {
@@ -113,7 +115,7 @@ ion-textarea {
 }
 
 // Make sure the modal looks good on smaller screens
-@media (max-width: 768px) {
+@include mobile {
   :host {
     .user-report-modal {
       --width: 95%;

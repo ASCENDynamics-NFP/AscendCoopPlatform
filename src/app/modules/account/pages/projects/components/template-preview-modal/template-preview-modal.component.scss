@@ -1,10 +1,13 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 .template-preview-content {
   /* Respect global theme background */
   --background: var(--ion-background-color);
 }
 
 .preview-container {
-  padding: 16px;
+  padding: $spacing-md;
   max-width: 800px;
   margin: 0 auto;
 }
@@ -14,11 +17,11 @@
   margin-bottom: 24px;
   padding: 24px;
   background: var(--ion-card-background);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: $border-radius-lg;
+  box-shadow: $box-shadow-sm;
 
   .template-icon-large {
-    margin-bottom: 16px;
+    margin-bottom: $spacing-md;
 
     ion-icon {
       font-size: 4rem;
@@ -27,41 +30,41 @@
 
   .template-name {
     font-size: 1.5rem;
-    font-weight: 600;
-    margin: 0 0 8px 0;
+    font-weight: $font-weight-semibold;
+    margin: 0 0 $spacing-sm 0;
     color: var(--ion-text-color);
   }
 
   .template-description {
     font-size: 1rem;
     color: var(--ion-color-step-600, var(--ion-color-medium));
-    margin: 0 0 16px 0;
+    margin: 0 0 $spacing-md 0;
     line-height: 1.5;
   }
 
   .category-chip {
     color: var(--ion-color-primary-contrast);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
   }
 }
 
 .template-details {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 16px;
+  gap: $spacing-md;
   margin-bottom: 24px;
 
   .detail-card {
     margin: 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: $box-shadow-sm;
 
     ion-card-header {
-      padding-bottom: 8px;
+      padding-bottom: $spacing-sm;
 
       ion-card-title {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: $spacing-sm;
         font-size: 1rem;
         color: var(--ion-text-color);
 
@@ -73,23 +76,23 @@
     }
 
     ion-card-content {
-      padding-top: 8px;
+      padding-top: $spacing-sm;
 
       .complexity-badge {
         font-size: 0.9rem;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
       }
 
       .timeframe-text {
         font-size: 1rem;
-        font-weight: 500;
+        font-weight: $font-weight-medium;
         color: var(--ion-text-color);
       }
 
       .group-types {
         display: flex;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: $spacing-sm;
       }
     }
   }
@@ -98,14 +101,14 @@
 .tasks-card,
 .roles-card,
 .metrics-card {
-  margin: 0 0 16px 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 0 0 $spacing-md 0;
+  box-shadow: $box-shadow-sm;
 
   ion-card-header {
     ion-card-title {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: $spacing-sm;
       color: var(--ion-text-color);
 
       ion-icon {
@@ -131,14 +134,14 @@
 
   .task-item {
     --background: var(--ion-item-background, var(--ion-card-background));
-    margin-bottom: 8px;
-    border-radius: 8px;
-    border: 1px solid var(--ion-border-color);
+    margin-bottom: $spacing-sm;
+    border-radius: $border-radius-md;
+    border: $border-width-thin solid var(--ion-border-color);
 
     ion-label {
       h3 {
         font-size: 0.95rem;
-        font-weight: 500;
+        font-weight: $font-weight-medium;
         color: var(--ion-text-color);
         margin: 0;
       }
@@ -155,16 +158,16 @@
 .roles-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
+  gap: $spacing-sm;
 
   .role-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px;
+    gap: $spacing-sm;
+    padding: $spacing-sm;
     background: var(--ion-item-background, var(--ion-card-background));
-    border-radius: 8px;
-    border: 1px solid var(--ion-border-color);
+    border-radius: $border-radius-md;
+    border: $border-width-thin solid var(--ion-border-color);
 
     ion-icon {
       color: var(--ion-color-primary);
@@ -173,7 +176,7 @@
 
     span {
       font-size: 0.9rem;
-      font-weight: 500;
+      font-weight: $font-weight-medium;
       color: var(--ion-text-color);
     }
   }
@@ -184,13 +187,13 @@
 
   .metric-item {
     --background: var(--ion-item-background, var(--ion-card-background));
-    margin-bottom: 8px;
-    border-radius: 8px;
-    border: 1px solid var(--ion-border-color);
+    margin-bottom: $spacing-sm;
+    border-radius: $border-radius-md;
+    border: $border-width-thin solid var(--ion-border-color);
 
     ion-label {
       font-size: 0.95rem;
-      font-weight: 500;
+      font-weight: $font-weight-medium;
       color: var(--ion-text-color);
     }
   }
@@ -200,8 +203,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  gap: 12px;
+  padding: $spacing-md;
+  gap: $spacing-sm;
 
   ion-button {
     flex: 1;
@@ -212,9 +215,9 @@
 /* Dark mode handled by CSS variables above; no media query needed */
 
 // Responsive design
-@media (max-width: 768px) {
+@include mobile {
   .preview-container {
-    padding: 12px;
+    padding: $spacing-sm;
   }
 
   .template-details {
@@ -243,6 +246,6 @@
 }
 
 .title-icon {
-  margin-right: 8px;
+  margin-right: $spacing-sm;
   color: var(--ion-color-primary);
 }

@@ -1,12 +1,49 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 form {
   width: 100%;
   max-width: 500px;
-  margin: 1rem auto;
-  padding: 1rem;
-  background: var(--ion-card-background, #000);
-  border-radius: 8px;
+  margin: $spacing-md auto;
+  padding: $spacing-lg;
+  background: var(--ion-card-background, var(--ion-item-background, #fff));
+  color: var(--ion-text-color, #000);
+  border-radius: $border-radius-lg;
+  box-shadow: $box-shadow-md;
+  border: 1px solid
+    var(--ion-border-color, var(--ion-color-step-150, rgba(0, 0, 0, 0.1)));
+
+  @include mobile {
+    padding: $spacing-md;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    background: var(--ion-card-background, #1e1e1e);
+    border-color: var(--ion-border-color, #333);
+  }
+}
+
+h2 {
+  margin-bottom: $spacing-lg;
+  color: var(--ion-text-color);
+  font-weight: $font-weight-bold;
 }
 
 ion-item {
-  margin-bottom: 12px;
+  margin-bottom: $spacing-md;
+  --background: var(--ion-color-light);
+  --border-radius: $border-radius-md;
+  --padding-start: $spacing-md;
+  border: 1px solid transparent;
+  transition: border-color 0.3s ease;
+
+  &.item-has-focus {
+    border-color: var(--ion-color-primary);
+  }
+}
+
+ion-button {
+  margin-top: $spacing-lg;
+  --border-radius: $border-radius-md;
+  font-weight: $font-weight-semibold;
 }

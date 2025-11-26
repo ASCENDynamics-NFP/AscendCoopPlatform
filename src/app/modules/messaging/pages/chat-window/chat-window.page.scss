@@ -1,3 +1,6 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 // Chat Window Styling - WhatsApp inspired design with theme support
 :root {
   // Chat window theme variables
@@ -37,7 +40,7 @@ ion-header {
 }
 
 // Dark mode for chat container
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .chat-container {
     background: var(--chat-background-dark);
   }
@@ -47,12 +50,12 @@ ion-header {
 .messages-container {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: $spacing-md;
   background: var(--chat-background-light);
 }
 
 // Dark mode for messages container
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .messages-container {
     background: var(--chat-background-dark);
   }
@@ -126,7 +129,7 @@ ion-header {
 }
 
 // Dark mode overrides for messages - simple color adjustments
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .message-wrapper {
     &.own-message .message-bubble {
       background: #0084ff;
@@ -161,13 +164,13 @@ ion-header {
 
 .sender-name {
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   color: var(--chat-text-secondary-light);
   margin-bottom: 0.25rem;
 }
 
 // Dark mode for sender name
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .sender-name {
     color: var(--chat-text-secondary-dark);
   }
@@ -183,7 +186,7 @@ ion-header {
   opacity: 0.8;
 
   .encryption-text {
-    font-weight: 500;
+    font-weight: $font-weight-medium;
     color: var(--ion-color-success);
   }
 
@@ -239,7 +242,7 @@ ion-header {
   bottom: 0;
   z-index: 100;
   background: var(--ion-background-color);
-  padding: 8px 16px;
+  padding: $spacing-sm $spacing-md;
   border-top: 1px solid var(--ion-color-light-shade);
 
   .file-preview-card {
@@ -250,9 +253,9 @@ ion-header {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      padding: 8px 0;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-semibold;
+      padding: $spacing-sm 0;
       color: var(--ion-color-dark);
 
       .cancel-preview-btn {
@@ -262,7 +265,7 @@ ion-header {
     }
 
     .file-preview-content {
-      padding: 8px 0;
+      padding: $spacing-sm 0;
       display: flex;
       flex-direction: column;
 
@@ -270,7 +273,7 @@ ion-header {
         img {
           max-width: 100%;
           max-height: 150px;
-          border-radius: 8px;
+          border-radius: $border-radius-md;
           object-fit: contain;
           display: block;
           margin: 0 auto;
@@ -280,7 +283,7 @@ ion-header {
       .video-preview video {
         max-width: 100%;
         max-height: 150px;
-        border-radius: 8px;
+        border-radius: $border-radius-md;
       }
 
       .audio-preview {
@@ -290,7 +293,7 @@ ion-header {
         gap: 12px;
 
         .audio-icon {
-          font-size: 48px;
+          font-size: $font-size-5xl;
           color: var(--ion-color-primary);
         }
 
@@ -304,13 +307,13 @@ ion-header {
         display: flex;
         align-items: center;
         gap: 16px;
-        padding: 16px;
+        padding: $spacing-md;
         background: var(--ion-color-step-50);
         border: 1px solid var(--ion-color-step-100);
-        border-radius: 8px;
+        border-radius: $border-radius-md;
 
         .file-type-icon {
-          font-size: 48px;
+          font-size: $font-size-5xl;
           color: var(--ion-color-primary);
         }
 
@@ -318,7 +321,7 @@ ion-header {
           flex: 1;
 
           .file-name {
-            font-weight: 600;
+            font-weight: $font-weight-semibold;
             margin-bottom: 4px;
             word-break: break-word;
             color: var(--ion-color-dark);
@@ -326,7 +329,7 @@ ion-header {
           }
 
           .file-type {
-            font-size: 12px;
+            font-size: $font-size-xs;
             color: var(--ion-color-medium);
             text-transform: uppercase;
           }
@@ -343,7 +346,7 @@ ion-header {
         order: 999; /* Ensure it appears at the bottom */
 
         .file-size {
-          font-size: 12px;
+          font-size: $font-size-xs;
           color: var(--ion-color-medium);
           margin-bottom: 8px;
         }
@@ -353,7 +356,7 @@ ion-header {
         }
 
         .send-file-btn {
-          --border-radius: 8px;
+          --border-radius: $border-radius-md;
           margin: 0;
           display: block !important;
           width: 100%;
@@ -368,7 +371,7 @@ ion-header {
 .image-message {
   position: relative;
   max-width: 280px;
-  border-radius: 12px;
+  border-radius: $border-radius-lg;
   overflow: hidden;
 
   img {
@@ -402,7 +405,7 @@ ion-header {
 
 .video-message {
   max-width: 280px;
-  border-radius: 12px;
+  border-radius: $border-radius-lg;
   overflow: hidden;
 
   video {
@@ -413,13 +416,13 @@ ion-header {
   }
 
   .media-info {
-    padding: 8px 12px;
+    padding: $spacing-sm $spacing-sm;
     background: var(--ion-color-step-50);
     border: 1px solid var(--ion-color-step-100);
     font-size: 12px;
 
     .file-name {
-      font-weight: 500;
+      font-weight: $font-weight-medium;
       margin-bottom: 2px;
       display: block;
       word-break: break-word;
@@ -429,14 +432,14 @@ ion-header {
 
     .file-size {
       color: var(--ion-color-medium-shade);
-      font-size: 11px;
+      font-size: $font-size-xxs;
     }
   }
 }
 
 .audio-message {
   max-width: 280px;
-  border-radius: 12px;
+  border-radius: $border-radius-lg;
   overflow: hidden;
   background: var(--ion-color-step-50);
   border: 1px solid var(--ion-color-step-100);
@@ -445,10 +448,10 @@ ion-header {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px;
+    padding: $spacing-sm;
 
     .audio-icon {
-      font-size: 24px;
+      font-size: $font-size-2xl;
       color: var(--ion-color-primary);
       flex-shrink: 0;
     }
@@ -457,8 +460,8 @@ ion-header {
       flex: 1;
 
       .file-name {
-        font-weight: 500;
-        font-size: 14px;
+        font-weight: $font-weight-medium;
+        font-size: $font-size-sm;
         margin-bottom: 2px;
         word-break: break-word;
         color: var(--ion-color-dark);
@@ -466,7 +469,7 @@ ion-header {
       }
 
       .file-size {
-        font-size: 12px;
+        font-size: $font-size-xs;
         color: var(--ion-color-medium-shade);
       }
     }
@@ -483,10 +486,10 @@ ion-header {
   align-items: center;
   gap: 16px;
   max-width: 280px;
-  padding: 16px;
+  padding: $spacing-md;
   background: var(--ion-color-step-50);
   border: 1px solid var(--ion-color-step-100);
-  border-radius: 8px;
+  border-radius: $border-radius-md;
 
   .file-icon-container {
     flex-shrink: 0;
@@ -511,7 +514,7 @@ ion-header {
 
       .file-name {
         flex: 1;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         font-size: 14px;
         line-height: 1.3;
         word-break: break-word;
@@ -536,19 +539,19 @@ ion-header {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      font-size: 12px;
+      font-size: $font-size-xs;
       color: var(--ion-color-medium);
       line-height: 1.2;
 
       .file-size {
-        font-weight: 500;
+        font-weight: $font-weight-medium;
         color: var(--ion-color-medium-shade);
       }
 
       .file-type {
         text-transform: uppercase;
         color: var(--ion-color-medium-tint);
-        font-size: 11px;
+        font-size: $font-size-xxs;
       }
     }
   }
@@ -557,7 +560,11 @@ ion-header {
 // Clickable file block styling
 .clickable-file-block {
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    transform $transition-fast,
+    background-color $transition-fast,
+    border-color $transition-fast,
+    box-shadow $transition-fast;
 
   &:hover {
     background: var(--ion-color-step-100) !important;
@@ -581,7 +588,7 @@ ion-header {
 }
 
 // Dark mode for file preview
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .file-preview-container {
     border-top-color: var(--ion-color-dark-shade);
 
@@ -724,7 +731,9 @@ body.dark {
   cursor: pointer;
   color: var(--ion-color-primary) !important;
   text-decoration: underline;
-  transition: all 0.2s ease;
+  transition:
+    transform $transition-fast,
+    color $transition-fast;
 
   &:hover {
     color: var(--ion-color-primary-shade) !important;
@@ -738,7 +747,7 @@ body.dark {
 }
 
 // Dark mode for clickable file name
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .clickable-file-name {
     color: var(--ion-color-primary-tint) !important;
 
@@ -779,7 +788,7 @@ body.dark {
 }
 
 // Dark mode for input area
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .message-input-footer {
     border-top-color: var(--chat-border-dark);
 
@@ -853,7 +862,7 @@ body.dark {
 
   span {
     color: var(--ion-color-warning-shade);
-    font-weight: 500;
+    font-weight: $font-weight-medium;
   }
 }
 

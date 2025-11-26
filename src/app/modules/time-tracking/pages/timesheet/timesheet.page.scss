@@ -1,3 +1,6 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 :host {
   display: block;
 }
@@ -14,6 +17,14 @@
   max-width: 1200px;
   margin: 0 auto;
   padding-top: 24px; /* Extra space to account for header */
+}
+
+.timesheet-page {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 16px;
 }
 
 .timesheet-info {
@@ -33,11 +44,11 @@
 
     ion-icon {
       color: var(--ion-color-primary);
-      font-size: 20px;
+      font-size: $font-size-xl;
     }
 
     .group-name {
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       font-size: 16px;
       color: var(--ion-color-dark);
     }
@@ -49,8 +60,8 @@
       --padding-end: 12px;
       --padding-top: 8px;
       --padding-bottom: 8px;
-      font-size: 14px;
-      font-weight: 500;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
 
       ion-icon {
         margin-right: 4px;
@@ -87,7 +98,7 @@
 
     .nav-text {
       margin: 0 4px;
-      font-weight: 500;
+      font-weight: $font-weight-medium;
     }
 
     @media (max-width: 480px) {
@@ -107,7 +118,7 @@
     h2 {
       margin: 0 0 4px 0;
       font-size: 1.3rem;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       color: var(--ion-color-dark, #333);
     }
 
@@ -115,7 +126,7 @@
       margin: 0;
       font-size: 0.9rem;
       color: var(--ion-color-medium-shade, #666);
-      font-weight: 500;
+      font-weight: $font-weight-medium;
     }
 
     @media (max-width: 480px) {
@@ -144,13 +155,13 @@
     align-items: center;
     gap: 8px;
     margin-top: 12px;
-    padding: 8px 12px;
+    padding: $spacing-xs $spacing-sm;
     border-radius: 8px;
     color: var(--ion-color-primary);
     font-size: 0.875rem;
 
     ion-icon {
-      font-size: 16px;
+      font-size: $font-size-base;
       flex-shrink: 0;
     }
   }
@@ -160,16 +171,16 @@
     align-items: center;
     gap: 8px;
     margin-top: 12px;
-    padding: 12px 16px;
+    padding: $spacing-sm $spacing-md;
     background: var(--ion-color-warning-tint, #fffacd);
     border: 1px solid var(--ion-color-warning, #ffc409);
     border-radius: 8px;
     color: var(--ion-color-warning-contrast, #1e1e1e);
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: $font-weight-medium;
 
     ion-icon {
-      font-size: 18px;
+      font-size: $font-size-lg;
       flex-shrink: 0;
       color: var(--ion-color-warning);
     }
@@ -188,7 +199,7 @@
     --border-radius: 8px;
     --padding-top: 14px;
     --padding-bottom: 14px;
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
 
     ion-icon {
       margin-right: 8px;
@@ -274,7 +285,7 @@
   text-align: center;
 
   ion-icon {
-    font-size: 48px;
+    font-size: $font-size-5xl;
     color: var(--ion-color-medium);
     margin-bottom: 16px;
   }
@@ -309,7 +320,7 @@
 // Return to current week button
 .return-current-week-btn {
   margin-top: 8px;
-  --font-size: 12px;
+  --font-size: $font-size-xs;
   --padding-start: 8px;
   --padding-end: 8px;
   --padding-top: 4px;
@@ -331,7 +342,7 @@
     gap: 12px;
 
     ion-icon {
-      font-size: 24px;
+      font-size: $font-size-2xl;
       flex-shrink: 0;
     }
 
@@ -341,7 +352,7 @@
       h3 {
         margin: 0 0 4px 0;
         font-size: 16px;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         color: var(--ion-color-success);
       }
 
@@ -377,7 +388,9 @@
 .submit-button {
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition:
+    transform $transition-base,
+    opacity $transition-base;
 
   &.submitting {
     --color: var(--ion-color-light);
@@ -403,7 +416,9 @@
 
 // Status badge transitions
 .status-info ion-badge {
-  transition: all 0.3s ease;
+  transition:
+    transform $transition-base,
+    opacity $transition-base;
 
   &.badge-pending {
     animation: pulse-badge 2s infinite;

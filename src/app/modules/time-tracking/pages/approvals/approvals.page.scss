@@ -1,3 +1,6 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 :host {
   display: block;
 }
@@ -42,7 +45,7 @@
       h1 {
         margin: 0 0 4px 0;
         font-size: 1.5rem;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         color: var(--ion-color-primary-shade);
       }
 
@@ -75,7 +78,7 @@
       h3 {
         margin: 0 0 4px 0;
         font-size: 1.1rem;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         color: var(--ion-color-dark);
       }
 
@@ -119,7 +122,7 @@
       gap: 8px;
       margin: 0 0 8px 0;
       font-size: 1.3rem;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       color: var(--ion-color-dark);
 
       ion-icon {
@@ -151,14 +154,14 @@
     h2 {
       margin: 0 0 4px 0;
       font-size: 1.1rem;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       color: var(--ion-color-dark);
     }
 
     h3 {
       margin: 0 0 4px 0;
       font-size: 1rem;
-      font-weight: 500;
+      font-weight: $font-weight-medium;
       color: var(--ion-color-primary);
     }
 
@@ -172,7 +175,7 @@
       margin-top: 4px;
       font-size: 0.85rem;
       color: var(--ion-color-primary);
-      font-weight: 500;
+      font-weight: $font-weight-medium;
     }
 
     .status-badge {
@@ -191,7 +194,7 @@
       --padding-start: 12px;
       --padding-end: 12px;
       font-size: 0.9rem;
-      font-weight: 500;
+      font-weight: $font-weight-medium;
 
       ion-icon {
         font-size: 1rem;
@@ -206,7 +209,7 @@
     ion-chip {
       --background: transparent;
       --color: var(--ion-color-contrast);
-      font-weight: 500;
+      font-weight: $font-weight-medium;
     }
   }
 }
@@ -225,7 +228,7 @@
     h4 {
       margin: 0 0 12px 0;
       font-size: 0.95rem;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       color: var(--ion-color-medium-shade);
     }
 
@@ -246,13 +249,13 @@
         }
 
         .date {
-          font-weight: 500;
+          font-weight: $font-weight-medium;
           color: var(--ion-color-dark);
           font-size: 0.9rem;
         }
 
         .project {
-          font-weight: 500;
+          font-weight: $font-weight-medium;
           color: var(--ion-color-secondary);
           font-size: 0.9rem;
           white-space: nowrap;
@@ -261,7 +264,7 @@
         }
 
         .hours {
-          font-weight: 600;
+          font-weight: $font-weight-semibold;
           color: var(--ion-color-primary);
           text-align: right;
           font-size: 0.9rem;
@@ -500,7 +503,7 @@ ion-button:focus-visible {
 
     ion-label {
       font-size: 0.875rem;
-      font-weight: 500;
+      font-weight: $font-weight-medium;
       color: var(--ion-color-medium-shade);
     }
 
@@ -543,7 +546,9 @@ ion-button:focus-visible {
 
 // Enhanced Visual Feedback for Timesheet Items
 .timesheet-item {
-  transition: all 0.3s ease-in-out;
+  transition:
+    box-shadow $transition-base,
+    transform $transition-base;
   position: relative;
   overflow: hidden;
 
@@ -612,8 +617,8 @@ ion-button:focus-visible {
 // Status badge enhancements
 .status-badge {
   ion-badge {
-    font-weight: 600;
-    padding: 6px 12px;
+    font-weight: $font-weight-semibold;
+    padding: 6px $spacing-sm;
     border-radius: 16px;
     font-size: 0.75rem;
     text-transform: uppercase;
@@ -630,8 +635,10 @@ ion-button:focus-visible {
     --border-radius: 8px;
     --padding-start: 12px;
     --padding-end: 12px;
-    font-weight: 500;
-    transition: all 0.2s ease;
+    font-weight: $font-weight-medium;
+    transition:
+      background-color $transition-fast,
+      transform $transition-fast;
 
     &:hover {
       transform: scale(1.05);
@@ -711,14 +718,14 @@ ion-button:focus-visible {
   text-align: center;
   color: var(--ion-color-medium);
   font-style: italic;
-  padding: 32px 16px;
+  padding: $spacing-xl $spacing-md;
   background: var(--ion-color-light-tint);
   border-radius: 8px;
   border: 2px dashed var(--ion-color-medium-tint);
 }
 
 // Dark mode specific styles
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .filter-controls {
     background: var(--ion-item-background, #000000);
     border: 1px solid var(--ion-color-step-250, #404040);

@@ -19,35 +19,38 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 *******************************************************************************/
 
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 // Error item styling
 .error-item {
   --background: rgba(var(--ion-color-danger-rgb), 0.1);
   --border-color: var(--ion-color-danger);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  margin-bottom: 16px;
+  border: $border-width-thin solid var(--border-color);
+  border-radius: $border-radius-md;
+  margin-bottom: $spacing-md;
 }
 
 // Quick Actions Section (Top Level)
 .quick-actions-section {
-  margin-bottom: 20px;
+  margin-bottom: $spacing-lg;
 
   .quick-actions-card {
     background: var(--ion-card-background);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: $border-radius-lg;
+    padding: $spacing-lg;
+    box-shadow: $box-shadow-sm;
 
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: $spacing-md;
 
       h3 {
         margin: 0;
         font-size: 1.2rem;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         color: var(--ion-text-color);
       }
 
@@ -60,19 +63,19 @@
     .actions-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
+      gap: $spacing-sm;
 
       .action-button {
         background: var(--ion-item-background, var(--ion-card-background));
-        border: 1px solid var(--ion-border-color);
-        border-radius: 8px;
-        padding: 16px 12px;
+        border: $border-width-thin solid var(--ion-border-color);
+        border-radius: $border-radius-md;
+        padding: $spacing-md $spacing-sm;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 8px;
+        gap: $spacing-sm;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: background-color $transition-fast;
         color: var(--ion-text-color);
 
         &:hover {
@@ -100,7 +103,7 @@
 
         span {
           font-size: 0.9rem;
-          font-weight: 500;
+          font-weight: $font-weight-medium;
           text-align: center;
         }
       }
@@ -117,34 +120,34 @@
 // Projects section cards
 // Projects section cards
 .projects-section {
-  margin-bottom: 20px;
+  margin-bottom: $spacing-lg;
 
   .section-header {
-    padding-bottom: 8px;
+    padding-bottom: $spacing-sm;
 
     ion-card-title {
       display: flex;
       align-items: center;
       font-size: 1.2rem;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       position: relative;
     }
 
     .title-icon {
-      margin-right: 10px;
+      margin-right: $spacing-sm;
       font-size: 1.3rem;
     }
 
     .count-badge {
       margin-left: auto;
       font-size: 0.8rem;
-      padding: 4px 8px;
+      padding: 4px $spacing-sm;
     }
 
     .close-btn {
-      margin-left: 8px;
-      --padding-start: 8px;
-      --padding-end: 8px;
+      margin-left: $spacing-sm;
+      --padding-start: $spacing-sm;
+      --padding-end: $spacing-sm;
       --color: var(--ion-color-medium);
 
       ion-icon {
@@ -161,20 +164,20 @@
 
   // Category grouping styles
   .category-group {
-    margin-bottom: 16px;
+    margin-bottom: $spacing-md;
 
     .category-divider {
       --background: var(--ion-color-light);
       --color: var(--ion-color-dark);
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
 
       ion-icon {
-        margin-right: 8px;
+        margin-right: $spacing-sm;
         font-size: 1.1rem;
       }
 
       ion-badge {
-        margin-left: 8px;
+        margin-left: $spacing-sm;
         font-size: 0.7rem;
       }
     }
@@ -188,8 +191,8 @@
 // Project items
 .project-item {
   --min-height: 60px;
-  --padding-start: 16px;
-  --padding-end: 16px;
+  --padding-start: $spacing-md;
+  --padding-end: $spacing-md;
   --inner-padding-end: 0;
   margin-bottom: 1px;
 
@@ -197,7 +200,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
 
     .project-status-icon {
       font-size: 1.2rem;
@@ -225,13 +228,13 @@
     flex: 1;
     display: flex;
     align-items: center;
-    margin-left: 12px;
+    margin-left: $spacing-sm;
 
     .project-details {
       width: 100%;
 
       .project-name {
-        font-weight: 500;
+        font-weight: $font-weight-medium;
         font-size: 1rem;
         margin-bottom: 2px;
       }
@@ -246,14 +249,14 @@
   }
 
   .project-name {
-    font-weight: 500;
+    font-weight: $font-weight-medium;
     font-size: 1rem;
   }
 
   .project-name-input {
     --padding-start: 0;
     --padding-end: 0;
-    font-weight: 500;
+    font-weight: $font-weight-medium;
     font-size: 1rem;
   }
 
@@ -266,7 +269,7 @@
 
 // Enhanced Card Content
 .enhanced-card-content {
-  padding: 16px;
+  padding: $spacing-md;
 
   .enhanced-empty-state {
     padding: 48px 24px;
@@ -289,9 +292,9 @@
       .empty-state-content {
         .empty-state-title {
           font-size: 1.5rem;
-          font-weight: 600;
+          font-weight: $font-weight-semibold;
           color: var(--ion-color-dark);
-          margin-bottom: 12px;
+          margin-bottom: $spacing-sm;
         }
 
         .empty-state-description {
@@ -302,9 +305,9 @@
         }
 
         .empty-state-action {
-          margin-top: 16px;
+          margin-top: $spacing-md;
           --border-radius: 24px;
-          font-weight: 500;
+          font-weight: $font-weight-medium;
         }
       }
     }
@@ -313,7 +316,7 @@
 
 // Modern Project Cards
 .enhanced-projects-list {
-  padding: 0 16px;
+  padding: 0 $spacing-md;
 
   .enhanced-project-item {
     --padding-start: 0;
@@ -321,17 +324,19 @@
     --inner-padding-start: 0;
     --inner-padding-end: 0;
     --min-height: auto;
-    margin-bottom: 16px;
-    border-radius: 16px;
+    margin-bottom: $spacing-md;
+    border-radius: $border-radius-lg;
     --background: var(--ion-card-background);
-    border: 1px solid var(--ion-border-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
+    border: $border-width-thin solid var(--ion-border-color);
+    box-shadow: $box-shadow-sm;
+    transition:
+      transform $transition-base,
+      box-shadow $transition-base;
     overflow: hidden;
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+      box-shadow: $box-shadow-md;
     }
 
     &.selected {
@@ -342,11 +347,11 @@
 
     // Inner content padding
     .item-native {
-      padding: 20px;
+      padding: $spacing-lg;
     }
 
     .project-status-container {
-      margin-right: 16px;
+      margin-right: $spacing-md;
 
       .status-indicator {
         position: relative;
@@ -354,7 +359,7 @@
         .project-avatar {
           width: 48px;
           height: 48px;
-          border-radius: 12px;
+          border-radius: $border-radius-lg;
           background: rgba(var(--ion-color-primary-rgb), 0.1);
           display: flex;
           align-items: center;
@@ -399,30 +404,30 @@
 
       .modern-project-info {
         .modern-project-header {
-          margin-bottom: 12px;
+          margin-bottom: $spacing-sm;
 
           .project-title-section {
             .modern-project-name {
               font-size: 1.25rem;
-              font-weight: 600;
+              font-weight: $font-weight-semibold;
               color: var(--ion-text-color);
-              margin: 0 0 8px 0;
+              margin: 0 0 $spacing-sm 0;
               line-height: 1.3;
             }
 
             .modern-badges {
               display: flex;
-              gap: 8px;
+              gap: $spacing-sm;
               flex-wrap: wrap;
               align-items: center;
 
               .modern-category-badge {
                 background: var(--background);
                 color: var(--color);
-                border: 1px solid var(--color);
+                border: $border-width-thin solid var(--color);
                 font-size: 0.8rem;
-                font-weight: 500;
-                --border-radius: 8px;
+                font-weight: $font-weight-medium;
+                --border-radius: $border-radius-md;
 
                 .category-icon {
                   font-size: 0.9rem;
@@ -432,7 +437,7 @@
 
               .modern-priority-badge {
                 font-size: 0.75rem;
-                font-weight: 600;
+                font-weight: $font-weight-semibold;
                 --border-radius: 6px;
 
                 .priority-icon {
@@ -446,7 +451,7 @@
 
         .modern-project-details {
           .modern-description {
-            margin: 0 0 12px 0;
+            margin: 0 0 $spacing-sm 0;
             color: var(--ion-color-medium-shade);
             font-size: 0.95rem;
             line-height: 1.5;
@@ -459,11 +464,11 @@
 
           // Enhanced Project Metadata
           .modern-metadata {
-            margin: 12px 0;
-            padding: 12px;
+            margin: $spacing-sm 0;
+            padding: $spacing-sm;
             background: var(--ion-item-background, var(--ion-card-background));
-            border-radius: 8px;
-            border: 1px solid var(--ion-border-color);
+            border-radius: $border-radius-md;
+            border: $border-width-thin solid var(--ion-border-color);
 
             .metadata-row {
               display: flex;
@@ -487,17 +492,17 @@
 
                 .metadata-label {
                   color: var(--ion-color-step-600, var(--ion-color-medium));
-                  font-weight: 500;
+                  font-weight: $font-weight-medium;
                 }
 
                 .metadata-value {
                   color: var(--ion-text-color);
-                  font-weight: 500;
+                  font-weight: $font-weight-medium;
                 }
 
                 .complexity-badge {
                   font-size: 0.75rem;
-                  font-weight: 600;
+                  font-weight: $font-weight-semibold;
                   --border-radius: 4px;
                 }
               }
@@ -507,8 +512,8 @@
           .modern-timeline {
             display: flex;
             flex-wrap: wrap;
-            gap: 16px;
-            margin: 12px 0;
+            gap: $spacing-md;
+            margin: $spacing-sm 0;
 
             .timeline-item {
               display: flex;
@@ -522,28 +527,28 @@
               }
 
               .timeline-text {
-                font-weight: 500;
+                font-weight: $font-weight-medium;
               }
             }
           }
 
           // Project Progress and Budget
           .modern-progress {
-            margin: 12px 0;
-            padding: 12px;
+            margin: $spacing-sm 0;
+            padding: $spacing-sm;
             background: color-mix(
               in oklab,
               var(--ion-color-success) 5%,
               transparent
             );
-            border-radius: 8px;
-            border: 1px solid
+            border-radius: $border-radius-md;
+            border: $border-width-thin solid
               color-mix(in oklab, var(--ion-color-success) 20%, transparent);
 
             .progress-row {
               display: flex;
               flex-direction: column;
-              gap: 12px;
+              gap: $spacing-sm;
 
               .progress-item {
                 .budget-display {
@@ -559,12 +564,12 @@
 
                     .budget-label {
                       color: var(--ion-color-medium);
-                      font-weight: 500;
+                      font-weight: $font-weight-medium;
                     }
 
                     .budget-amount {
                       color: var(--ion-color-success);
-                      font-weight: 600;
+                      font-weight: $font-weight-semibold;
                       font-size: 1rem;
                     }
                   }
@@ -582,7 +587,7 @@
 
                     .spending-amount {
                       color: var(--ion-color-primary);
-                      font-weight: 500;
+                      font-weight: $font-weight-medium;
 
                       &.over-budget {
                         color: var(--ion-color-danger);
@@ -595,7 +600,7 @@
 
                       &.over-budget {
                         color: var(--ion-color-danger);
-                        font-weight: 600;
+                        font-weight: $font-weight-semibold;
                       }
                     }
                   }
@@ -609,12 +614,12 @@
 
                   .metrics-label {
                     color: var(--ion-color-medium);
-                    font-weight: 500;
+                    font-weight: $font-weight-medium;
                   }
 
                   .metrics-count {
                     color: var(--ion-color-primary);
-                    font-weight: 600;
+                    font-weight: $font-weight-semibold;
                   }
                 }
               }
@@ -623,7 +628,7 @@
 
           // Project Tags
           .modern-tags {
-            margin: 12px 0 0 0;
+            margin: $spacing-sm 0 0 0;
 
             .tags-header {
               display: flex;
@@ -634,7 +639,7 @@
 
               .tags-label {
                 color: var(--ion-color-medium);
-                font-weight: 500;
+                font-weight: $font-weight-medium;
               }
             }
 
@@ -649,7 +654,7 @@
                 height: 24px;
 
                 &.more-tags {
-                  font-weight: 500;
+                  font-weight: $font-weight-medium;
                 }
               }
             }
@@ -662,14 +667,14 @@
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      gap: 12px;
-      margin-left: 16px;
+      gap: $spacing-sm;
+      margin-left: $spacing-md;
 
       .modern-quick-stats {
         .quick-stats-row {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: $spacing-sm;
 
           .priority-indicator {
             display: flex;
@@ -709,7 +714,7 @@
 
         .quick-action-btn,
         .archive-button {
-          --border-radius: 8px;
+          --border-radius: $border-radius-md;
           height: 32px;
           width: 32px;
         }
@@ -762,7 +767,7 @@
       .header-title-group {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: $spacing-sm;
 
         .title-icon {
           color: var(--ion-color-primary);
@@ -772,7 +777,7 @@
         .title-info {
           ion-card-title {
             font-size: 1.25rem;
-            font-weight: 600;
+            font-weight: $font-weight-semibold;
             margin: 0;
           }
 
@@ -787,10 +792,10 @@
       .header-stats {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: $spacing-sm;
 
         .count-badge {
-          font-weight: bold;
+          font-weight: $font-weight-bold;
         }
 
         .sort-button {
@@ -810,13 +815,13 @@
 .enhanced-grouped-list {
   .enhanced-project-item,
   .enhanced-grouped-item {
-    --padding-start: 16px;
-    --padding-end: 16px;
+    --padding-start: $spacing-md;
+    --padding-end: $spacing-md;
     --min-height: auto;
-    margin-bottom: 8px;
-    border-radius: 12px;
+    margin-bottom: $spacing-sm;
+    border-radius: $border-radius-lg;
     --background: var(--ion-color-light);
-    border: 1px solid var(--ion-color-light-shade);
+    border: $border-width-thin solid var(--ion-color-light-shade);
 
     &.selected {
       --background: rgba(var(--ion-color-primary-rgb), 0.1);
@@ -826,7 +831,7 @@
     .project-status-container {
       display: flex;
       align-items: center;
-      margin-right: 12px;
+      margin-right: $spacing-sm;
 
       .status-indicator {
         position: relative;
@@ -867,10 +872,10 @@
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin-bottom: 8px;
+          margin-bottom: $spacing-sm;
 
           .project-name {
-            font-weight: 600;
+            font-weight: $font-weight-semibold;
             font-size: 1.1rem;
             color: var(--ion-color-dark);
           }
@@ -893,7 +898,7 @@
 
             .priority-badge {
               font-size: 0.7rem;
-              font-weight: 600;
+              font-weight: $font-weight-semibold;
             }
           }
         }
@@ -913,7 +918,7 @@
 
           .project-status-info {
             display: flex;
-            gap: 16px;
+            gap: $spacing-md;
             flex-wrap: wrap;
 
             .status-text,
@@ -931,7 +936,7 @@
 
             .status-text {
               color: var(--ion-color-primary);
-              font-weight: 500;
+              font-weight: $font-weight-medium;
             }
           }
         }
@@ -942,7 +947,7 @@
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      gap: 8px;
+      gap: $spacing-sm;
 
       .project-stats {
         display: flex;
@@ -965,7 +970,7 @@
 
         .budget-info {
           color: var(--ion-color-success);
-          font-weight: 500;
+          font-weight: $font-weight-medium;
         }
       }
 
@@ -1004,7 +1009,7 @@
           .title-info {
             ion-card-title {
               font-size: 1.25rem;
-              font-weight: 600;
+              font-weight: $font-weight-semibold;
               margin: 0;
               color: var(--ion-color-medium);
             }
@@ -1021,10 +1026,10 @@
         .header-stats {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: $spacing-sm;
 
           .count-badge {
-            font-weight: bold;
+            font-weight: $font-weight-bold;
           }
 
           .expand-button {
@@ -1037,17 +1042,17 @@
 
   .enhanced-archived-list {
     .enhanced-archived-item {
-      --padding-start: 16px;
-      --padding-end: 16px;
+      --padding-start: $spacing-md;
+      --padding-end: $spacing-md;
       --min-height: auto;
-      margin-bottom: 8px;
-      border-radius: 12px;
+      margin-bottom: $spacing-sm;
+      border-radius: $border-radius-lg;
       --background: var(--ion-item-background, var(--ion-card-background));
-      border: 1px solid var(--ion-border-color);
+      border: $border-width-thin solid var(--ion-border-color);
       opacity: 0.9;
 
       .project-icon-container {
-        margin-right: 12px;
+        margin-right: $spacing-sm;
 
         .project-icon {
           font-size: 1.5rem;
@@ -1060,7 +1065,7 @@
 
         .project-main-info {
           .project-name {
-            font-weight: 500;
+            font-weight: $font-weight-medium;
             color: var(--ion-color-step-700, var(--ion-text-color));
             margin-bottom: 4px;
           }
@@ -1130,7 +1135,7 @@
 
   // Enhanced archived content styling
   .enhanced-archived-content {
-    padding: 16px;
+    padding: $spacing-md;
 
     .enhanced-archived-list {
       .modern-archived-card {
@@ -1139,32 +1144,35 @@
         --inner-padding-start: 0;
         --inner-padding-end: 0;
         --min-height: auto;
-        margin-bottom: 12px;
-        border-radius: 12px;
+        --min-height: auto;
+        margin-bottom: $spacing-sm;
+        border-radius: $border-radius-lg;
         --background: rgba(var(--ion-color-medium-rgb), 0.03);
-        border: 1px solid rgba(var(--ion-color-medium-rgb), 0.15);
+        border: $border-width-thin solid rgba(var(--ion-color-medium-rgb), 0.15);
         opacity: 0.9;
-        transition: all 0.3s ease;
+        transition:
+          transform $transition-base,
+          box-shadow $transition-base;
 
         &:hover {
           opacity: 1;
           transform: translateY(-1px);
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+          box-shadow: $box-shadow-sm;
         }
 
         // Inner content padding
         .item-native {
-          padding: 16px 20px 16px 20px;
+          padding: $spacing-md $spacing-lg $spacing-md $spacing-lg;
         }
 
         .project-icon-container {
           margin-left: 4px;
-          margin-right: 16px;
+          margin-right: $spacing-md;
 
           .archived-project-avatar {
             width: 40px;
             height: 40px;
-            border-radius: 10px;
+            border-radius: $border-radius-md;
             background: rgba(var(--ion-color-medium-rgb), 0.1);
             display: flex;
             align-items: center;
@@ -1183,11 +1191,11 @@
 
           .project-main-info {
             .archived-project-header {
-              margin-bottom: 8px;
+              margin-bottom: $spacing-sm;
 
               .modern-archived-name {
                 font-size: 1.1rem;
-                font-weight: 500;
+                font-weight: $font-weight-medium;
                 color: var(--ion-color-medium-shade);
                 margin: 0 0 6px 0;
                 line-height: 1.3;
@@ -1195,14 +1203,14 @@
 
               .archived-project-badges {
                 display: flex;
-                gap: 8px;
+                gap: $spacing-sm;
                 flex-wrap: wrap;
                 align-items: center;
 
                 .modern-archived-category {
                   background: var(--background);
                   color: var(--color);
-                  border: 1px solid var(--color);
+                  border: $border-width-thin solid var(--color);
                   opacity: 0.8;
                   font-size: 0.75rem;
                   --border-radius: 6px;
@@ -1215,7 +1223,7 @@
 
                 .modern-archived-badge {
                   font-size: 0.7rem;
-                  font-weight: 500;
+                  font-weight: $font-weight-medium;
                   --border-radius: 6px;
                   opacity: 0.8;
 
@@ -1229,10 +1237,10 @@
           }
 
           .modern-archived-details {
-            margin-top: 8px;
+            margin-top: $spacing-sm;
 
             .modern-archived-description {
-              margin: 0 0 8px 0;
+              margin: 0 0 $spacing-sm 0;
               color: var(--ion-color-medium);
               font-size: 0.9rem;
               line-height: 1.4;
@@ -1257,7 +1265,7 @@
                 }
 
                 span {
-                  font-weight: 500;
+                  font-weight: $font-weight-medium;
                 }
               }
             }
@@ -1265,13 +1273,13 @@
         }
 
         .modern-archived-actions {
-          margin-left: 12px;
+          margin-left: $spacing-sm;
           margin-right: 4px;
 
           .modern-restore-btn {
-            --border-radius: 8px;
+            --border-radius: $border-radius-md;
             font-size: 0.85rem;
-            font-weight: 500;
+            font-weight: $font-weight-medium;
             height: 36px;
 
             ion-icon {
@@ -1315,19 +1323,19 @@
 // Empty state
 .empty-state {
   text-align: center;
-  padding: 40px 20px;
+  padding: 40px $spacing-lg;
   color: var(--ion-color-medium);
 
   .empty-icon {
     font-size: 4rem;
-    margin-bottom: 16px;
+    margin-bottom: $spacing-md;
     opacity: 0.5;
   }
 
   p {
-    margin: 8px 0;
+    margin: $spacing-sm 0;
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: $font-weight-medium;
   }
 
   .empty-subtitle {
@@ -1338,11 +1346,11 @@
 }
 
 // Responsive design
-@media (max-width: 768px) {
+@include mobile {
   .project-item {
     --min-height: 56px;
-    --padding-start: 12px;
-    --padding-end: 12px;
+    --padding-start: $spacing-sm;
+    --padding-end: $spacing-sm;
 
     .project-name {
       font-size: 0.95rem;
@@ -1359,7 +1367,7 @@
 
 // Analytics Dashboard
 .analytics-dashboard {
-  margin: 16px 0;
+  margin: $spacing-md 0;
 
   .dashboard-header {
     background: linear-gradient(
@@ -1367,20 +1375,20 @@
       var(--ion-color-primary) 0%,
       var(--ion-color-primary-shade) 100%
     );
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
+    border-radius: $border-radius-lg;
+    padding: $spacing-lg;
+    margin-bottom: $spacing-md;
     color: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: $spacing-md;
 
     .header-content {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: $spacing-md;
 
       .dashboard-icon {
         font-size: 2.5rem;
@@ -1391,7 +1399,7 @@
         h2 {
           margin: 0;
           font-size: 1.5rem;
-          font-weight: 600;
+          font-weight: $font-weight-semibold;
         }
 
         p {
@@ -1412,7 +1420,7 @@
         .stat-number {
           display: block;
           font-size: 1.8rem;
-          font-weight: 700;
+          font-weight: $font-weight-bold;
           line-height: 1;
         }
 
@@ -1431,25 +1439,25 @@
   .analytics-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: $spacing-md;
 
     .main-analytics-card {
       grid-column: 1 / -1;
       background: var(--ion-color-light);
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border-radius: $border-radius-lg;
+      padding: $spacing-lg;
+      box-shadow: $box-shadow-sm;
 
       .card-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
+        margin-bottom: $spacing-lg;
 
         h3 {
           margin: 0;
           font-size: 1.2rem;
-          font-weight: 600;
+          font-weight: $font-weight-semibold;
           color: var(--ion-color-dark);
         }
       }
@@ -1488,7 +1496,7 @@
 
             .donut-total {
               font-size: 1.5rem;
-              font-weight: 700;
+              font-weight: $font-weight-bold;
               color: var(--ion-color-primary);
               line-height: 1;
             }
@@ -1506,16 +1514,18 @@
           flex: 1;
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: $spacing-sm;
 
           .legend-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 8px 12px;
-            border-radius: 8px;
+            gap: $spacing-sm;
+            padding: $spacing-sm $spacing-sm;
+            border-radius: $border-radius-md;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition:
+              background-color $transition-fast,
+              transform $transition-fast;
 
             &:hover {
               background: var(--ion-color-light-shade);
@@ -1531,13 +1541,13 @@
 
             .legend-label {
               flex: 1;
-              font-weight: 500;
+              font-weight: $font-weight-medium;
               color: var(--ion-color-dark);
               text-transform: capitalize;
             }
 
             .legend-value {
-              font-weight: 600;
+              font-weight: $font-weight-semibold;
               color: var(--ion-color-primary);
               font-size: 0.9rem;
             }
@@ -1550,14 +1560,16 @@
       grid-column: 1 / -1;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
+      gap: $spacing-md;
 
       .analytics-category-card {
         background: var(--ion-color-light);
-        border-radius: 12px;
-        padding: 20px;
+        border-radius: $border-radius-lg;
+        padding: $spacing-lg;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition:
+          background-color $transition-base,
+          border-color $transition-base;
         border: 2px solid transparent;
         position: relative;
         overflow: hidden;
@@ -1574,13 +1586,13 @@
         .card-header {
           display: flex;
           align-items: center;
-          gap: 12px;
-          margin-bottom: 16px;
+          gap: $spacing-sm;
+          margin-bottom: $spacing-md;
 
           .category-icon-wrapper {
             width: 48px;
             height: 48px;
-            border-radius: 12px;
+            border-radius: $border-radius-lg;
             background: var(--ion-color-light-shade);
             display: flex;
             align-items: center;
@@ -1594,7 +1606,7 @@
           h4 {
             margin: 0;
             font-size: 1.1rem;
-            font-weight: 600;
+            font-weight: $font-weight-semibold;
             color: var(--ion-color-dark);
             text-transform: capitalize;
           }
@@ -1604,7 +1616,7 @@
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
-          margin-bottom: 16px;
+          margin-bottom: $spacing-md;
 
           .primary-stat {
             display: flex;
@@ -1612,7 +1624,7 @@
 
             .stat-number {
               font-size: 2rem;
-              font-weight: 700;
+              font-weight: $font-weight-bold;
               color: var(--ion-color-primary);
               line-height: 1;
             }
@@ -1663,20 +1675,20 @@
     .quick-actions-card {
       grid-column: 1 / -1;
       background: var(--ion-color-light);
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border-radius: $border-radius-lg;
+      padding: $spacing-lg;
+      box-shadow: $box-shadow-sm;
 
       .card-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 16px;
+        margin-bottom: $spacing-md;
 
         h3 {
           margin: 0;
           font-size: 1.2rem;
-          font-weight: 600;
+          font-weight: $font-weight-semibold;
           color: var(--ion-color-dark);
         }
 
@@ -1689,19 +1701,21 @@
       .actions-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 12px;
+        gap: $spacing-sm;
 
         .action-button {
           background: var(--ion-color-light-shade);
-          border: 1px solid var(--ion-color-light-tint);
-          border-radius: 8px;
-          padding: 16px 12px;
+          border: $border-width-thin solid var(--ion-color-light-tint);
+          border-radius: $border-radius-md;
+          padding: $spacing-md $spacing-sm;
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 8px;
+          gap: $spacing-sm;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition:
+            background-color $transition-fast,
+            transform $transition-fast;
           color: var(--ion-color-dark);
 
           &:hover {
@@ -1717,7 +1731,7 @@
 
           span {
             font-size: 0.9rem;
-            font-weight: 500;
+            font-weight: $font-weight-medium;
           }
         }
       }
@@ -1726,7 +1740,7 @@
 }
 
 // Responsive design
-@media (max-width: 768px) {
+@include mobile {
   .analytics-dashboard {
     .dashboard-header {
       flex-direction: column;
@@ -1743,7 +1757,7 @@
 
       .main-analytics-card .chart-container {
         flex-direction: column;
-        gap: 16px;
+        gap: $spacing-md;
       }
 
       .category-cards-grid {
@@ -1758,7 +1772,7 @@
 }
 
 // Dark mode support
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .analytics-dashboard {
     .dashboard-header {
       background: linear-gradient(
@@ -1831,20 +1845,20 @@
   --max-width: 800px;
   --height: 90vh;
   --max-height: 900px;
-  --border-radius: 12px;
+  --border-radius: $border-radius-lg;
 
   ion-backdrop {
     background: rgba(0, 0, 0, 0.6);
   }
 
   .modal-wrapper {
-    border-radius: 12px;
+    border-radius: $border-radius-lg;
     overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: $box-shadow-lg;
   }
 }
 
-@media (max-width: 768px) {
+@include mobile {
   .template-preview-modal {
     --width: 95vw;
     --height: 95vh;

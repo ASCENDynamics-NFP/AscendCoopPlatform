@@ -1,10 +1,11 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 .week-view-container {
-  padding: 16px;
+  padding: $spacing-md;
 
   .week-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    @include flex-between;
     margin-bottom: 20px;
     flex-wrap: wrap;
 
@@ -17,9 +18,9 @@
     ion-button {
       margin-left: 16px;
 
-      @media (max-width: 768px) {
+      @include mobile {
         margin-left: 0;
-        margin-top: 8px;
+        margin-top: $spacing-sm;
         width: 100%;
       }
     }
@@ -36,12 +37,12 @@
       ion-card-title {
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 18px;
+        gap: $spacing-sm;
+        font-size: $font-size-lg;
         color: var(--ion-color-warning-shade);
 
         ion-icon {
-          font-size: 24px;
+          font-size: $font-size-2xl;
         }
       }
 
@@ -78,7 +79,7 @@
   display: block;
   overflow-x: auto;
 
-  @media (max-width: 768px) {
+  @include mobile {
     display: none;
   }
 }
@@ -88,14 +89,14 @@
   border-collapse: collapse;
   margin-bottom: 20px;
   background: var(--ion-background-color, #ffffff);
-  border-radius: 8px;
+  border-radius: $border-radius-md;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: $box-shadow-md;
 
   th {
     background-color: var(--ion-color-primary, #3880ff);
     color: white;
-    padding: 12px 8px;
+    padding: $spacing-sm $spacing-xs;
     text-align: center;
     font-weight: 600;
     font-size: 0.9rem;
@@ -122,7 +123,7 @@
     &.project-cell {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: $spacing-sm;
       min-width: 200px;
 
       .project-name-display {
@@ -198,7 +199,7 @@
 
     td {
       border-bottom: none;
-      padding: 12px 8px;
+      padding: $spacing-sm $spacing-xs;
       color: var(--ion-text-color, #000000);
     }
   }
@@ -208,21 +209,19 @@
 .mobile-view {
   display: none;
 
-  @media (max-width: 768px) {
+  @include mobile {
     display: block;
   }
 }
 
 .project-card {
-  margin-bottom: 16px;
-  border-radius: 12px;
+  margin-bottom: $spacing-md;
+  border-radius: $border-radius-lg;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 
   .project-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
+    @include flex-between;
+    margin-bottom: $spacing-sm;
 
     .project-selector {
       flex: 1;
@@ -268,7 +267,7 @@
       }
 
       ion-col {
-        padding: 8px 4px;
+        padding: $spacing-xs 4px;
 
         &:first-child {
           ion-label {
@@ -331,7 +330,7 @@
       }
 
       ion-col {
-        padding: 4px 8px;
+        padding: 4px $spacing-xs;
         color: var(--ion-text-color) !important;
 
         ion-label {
@@ -376,7 +375,7 @@
 }
 
 // Responsive adjustments
-@media (max-width: 480px) {
+@include mobile {
   .week-view-container {
     padding: 12px;
   }
@@ -400,7 +399,7 @@
     }
 
     ion-card-content {
-      padding: 8px 12px;
+      padding: $spacing-xs $spacing-sm;
     }
   }
 }
@@ -461,12 +460,12 @@ ion-select:focus-within {
   --padding-end: 12px;
   --padding-top: 6px;
   --padding-bottom: 6px;
-  font-size: 14px;
+  font-size: $font-size-sm;
   font-weight: 500;
 
   ion-icon {
     margin-right: 4px;
-    font-size: 16px;
+    font-size: $font-size-base;
   }
 }
 
@@ -548,7 +547,7 @@ ion-input[type="number"] {
     z-index: 2;
 
     ion-icon {
-      font-size: 16px;
+      font-size: $font-size-base;
       color: var(--ion-color-medium);
       opacity: 0.5;
       transition: opacity 0.2s;
@@ -623,7 +622,7 @@ ion-input[type="number"] {
     flex-shrink: 0;
 
     ion-icon {
-      font-size: 18px;
+      font-size: $font-size-lg;
       color: var(--ion-color-medium);
 
       &.has-notes {
@@ -641,7 +640,7 @@ ion-input[type="number"] {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 12px 16px;
+    padding: $spacing-sm $spacing-md;
     flex: 1;
     min-width: 0;
     overflow: hidden;
@@ -691,7 +690,7 @@ ion-input[type="number"] {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
+  padding: $spacing-xs $spacing-sm;
   background-color: var(--ion-color-light);
   border-radius: 6px;
   border: 1px solid var(--ion-color-medium);
@@ -712,7 +711,7 @@ ion-input[type="number"] {
   }
 
   ion-badge {
-    font-size: 10px;
+    font-size: 0.625rem;
     padding: 2px 6px;
     flex-shrink: 0;
   }

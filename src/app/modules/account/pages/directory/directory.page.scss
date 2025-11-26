@@ -3,11 +3,14 @@
 * Copyright (C) 2023  ASCENDynamics NFP
 ***********************************************************************************************/
 
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 .filters-toolbar {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 4px 8px;
+  gap: $spacing-sm;
+  padding: $spacing-xs $spacing-sm;
 
   ion-segment {
     margin-bottom: 4px;
@@ -17,7 +20,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     flex-wrap: wrap;
 
     .sort-item {
@@ -33,7 +36,7 @@
 
   h3 {
     margin: 0 0 2px 0;
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
   }
 
   p {
@@ -48,7 +51,7 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .filters-toolbar {
     background: var(--ion-card-background, var(--ion-color-step-100));
   }

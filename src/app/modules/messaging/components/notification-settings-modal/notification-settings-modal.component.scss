@@ -1,3 +1,6 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 .section {
   margin-bottom: 24px;
 
@@ -7,12 +10,12 @@
     gap: 8px;
     margin-bottom: 16px;
     padding-left: 16px;
-    font-size: 16px;
-    font-weight: 600;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
     color: var(--ion-color-primary);
 
     ion-icon {
-      font-size: 18px;
+      font-size: $font-size-lg;
     }
   }
 }
@@ -22,24 +25,24 @@
     --inner-padding-end: 16px;
     --inner-padding-start: 16px;
     --background: var(--ion-color-light);
-    border-radius: 12px;
+    border-radius: $border-radius-lg;
     margin-bottom: 8px;
 
     ion-label {
       h3 {
         margin-bottom: 4px;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
       }
 
       p {
         color: var(--ion-color-medium);
-        font-size: 14px;
+        font-size: $font-size-sm;
         margin: 0;
       }
     }
 
     ion-icon {
-      font-size: 24px;
+      font-size: $font-size-2xl;
     }
   }
 }
@@ -58,7 +61,7 @@ ion-list {
     ion-label {
       h3 {
         margin-bottom: 2px;
-        font-weight: 500;
+        font-weight: $font-weight-medium;
       }
 
       p {
@@ -93,11 +96,11 @@ ion-card {
       align-items: center;
       gap: 8px;
       margin-bottom: 12px;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       color: var(--ion-color-primary);
 
       ion-icon {
-        font-size: 18px;
+        font-size: $font-size-lg;
       }
     }
 

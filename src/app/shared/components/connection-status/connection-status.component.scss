@@ -1,3 +1,6 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 :host {
   display: block;
 }
@@ -7,7 +10,7 @@
   height: 24px;
 
   ion-icon {
-    font-size: 16px;
+    font-size: $font-size-base;
   }
 }
 
@@ -24,7 +27,7 @@
 
 ion-chip {
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform $transition-fast;
 
   &:hover {
     transform: scale(1.02);

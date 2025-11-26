@@ -17,18 +17,21 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
-  padding: 0 8px;
+  margin-bottom: $spacing-md;
+  padding: 0 $spacing-sm;
 }
 
 .section-header h3 {
   margin: 0;
   color: var(--ion-color-primary);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
 }
 
 .add-faq-btn {
@@ -37,13 +40,13 @@
 }
 
 .faq-item {
-  margin-bottom: 1rem;
+  margin-bottom: $spacing-md;
 }
 
 .faq-card {
-  border: 1px solid var(--ion-color-light-shade);
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: $border-width-thin solid var(--ion-color-light-shade);
+  border-radius: $border-radius-md;
+  box-shadow: $box-shadow-sm;
 }
 
 .faq-item-title {
@@ -51,7 +54,7 @@
   justify-content: space-between;
   align-items: center;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   color: var(--ion-color-dark);
 }
 
@@ -61,8 +64,8 @@
 }
 
 .faq-actions ion-button {
-  --padding-start: 8px;
-  --padding-end: 8px;
+  --padding-start: $spacing-sm;
+  --padding-end: $spacing-sm;
   margin: 0;
 }
 
@@ -72,20 +75,20 @@
 
 .empty-state {
   text-align: center;
-  padding: 3rem 1rem;
+  padding: 3rem $spacing-md;
   color: var(--ion-color-medium);
 }
 
 .empty-icon {
   font-size: 4rem;
-  margin-bottom: 1rem;
+  margin-bottom: $spacing-md;
   opacity: 0.5;
 }
 
 .empty-state h4 {
   margin: 0 0 0.5rem 0;
   font-size: 1.2rem;
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   color: var(--ion-color-dark);
 }
 
@@ -117,11 +120,11 @@ ion-note[color="danger"] {
 }
 
 /* Mobile responsiveness */
-@media (max-width: 768px) {
+@include mobile {
   .section-header {
     flex-direction: column;
     align-items: stretch;
-    gap: 1rem;
+    gap: $spacing-md;
   }
 
   .add-faq-btn {
@@ -131,7 +134,7 @@ ion-note[color="danger"] {
   .faq-item-title {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: $spacing-sm;
   }
 
   .faq-actions {

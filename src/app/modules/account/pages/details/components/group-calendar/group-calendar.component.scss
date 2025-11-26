@@ -17,27 +17,33 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 *******************************************************************************/
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 .calendar-card {
-  border: 1px solid var(--ion-color-primary);
+  border: $border-width-thin solid var(--ion-color-primary);
+  border-radius: $border-radius-md;
+  padding: $spacing-md;
 }
 
 .calendar-card ion-card-title {
-  font-size: 1.5em;
-  margin-bottom: 16px;
+  font-size: 1.5rem;
+  margin-bottom: $spacing-md;
+  font-weight: $font-weight-semibold;
 }
 
 .title-with-privacy {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 
   .privacy-indicator {
     margin-left: auto;
   }
 }
 
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .calendar-card ion-card-title {
-    color: #fff;
+    color: var(--ion-text-color);
   }
 }

@@ -18,6 +18,8 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 @import "../../../../../../styles/segment";
+@import "src/styles/variables";
+@import "src/styles/mixins";
 
 .placeholder-thumbnail {
   width: 100%;
@@ -39,7 +41,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-left: 8px;
+  margin-left: $spacing-sm;
 
   .primary-actions {
     display: flex;
@@ -48,8 +50,8 @@
   }
 
   ion-button {
-    --padding-start: 8px;
-    --padding-end: 8px;
+    --padding-start: $spacing-sm;
+    --padding-end: $spacing-sm;
     margin: 0;
     min-width: 40px;
     height: 40px;
@@ -64,21 +66,21 @@
 .action-popover {
   --padding-start: 0;
   --padding-end: 0;
-  --padding-top: 8px;
-  --padding-bottom: 8px;
+  --padding-top: $spacing-sm;
+  --padding-bottom: $spacing-sm;
 
   ion-list {
     padding: 0;
   }
 
   ion-item {
-    --padding-start: 16px;
-    --padding-end: 16px;
+    --padding-start: $spacing-md;
+    --padding-end: $spacing-md;
     --min-height: 44px;
     font-size: 0.9rem;
 
     ion-icon {
-      margin-right: 12px;
+      margin-right: $spacing-sm;
       font-size: 1.1rem;
     }
 
@@ -93,11 +95,11 @@
 }
 
 ion-item {
-  --padding-end: 8px;
+  --padding-end: $spacing-sm;
 
   // Ensure proper spacing for the new action layout
   ion-label {
-    margin-right: 8px;
+    margin-right: $spacing-sm;
   }
 }
 

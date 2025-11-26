@@ -18,50 +18,53 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 // ================================
 // VARIABLES - LIGHT & DARK MODE
 // ================================
 :root {
-  --registration-primary: #e87121;
-  --registration-primary-light: #f39c4c;
-  --registration-success: #2dd36f;
-  --registration-radius: 12px;
+  --registration-primary: var(--ion-color-primary);
+  --registration-primary-light: var(--ion-color-primary-tint);
+  --registration-success: var(--ion-color-success);
+  --registration-radius: #{$border-radius-lg};
   --registration-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 // Light mode colors
 :root {
-  --registration-border: #e1e5e9;
-  --registration-text: #3c4043;
-  --registration-text-light: #5f6368;
-  --registration-bg: #f8f9fa;
-  --registration-card-bg: #ffffff;
-  --registration-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  --registration-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.15);
+  --registration-border: var(--ion-border-color);
+  --registration-text: var(--ion-text-color);
+  --registration-text-light: var(--ion-color-medium);
+  --registration-bg: var(--ion-background-color);
+  --registration-card-bg: var(--ion-card-background);
+  --registration-shadow: #{$box-shadow-sm};
+  --registration-shadow-hover: #{$box-shadow-md};
 }
 
 // Dark mode colors
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   :root {
-    --registration-border: #3c4043;
-    --registration-text: #e8eaed;
-    --registration-text-light: #9aa0a6;
-    --registration-bg: #202124;
-    --registration-card-bg: #303134;
-    --registration-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --registration-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --registration-border: var(--ion-border-color);
+    --registration-text: var(--ion-text-color);
+    --registration-text-light: var(--ion-color-medium);
+    --registration-bg: var(--ion-background-color);
+    --registration-card-bg: var(--ion-card-background);
+    --registration-shadow: #{$box-shadow-sm};
+    --registration-shadow-hover: #{$box-shadow-md};
   }
 }
 
 // Manual dark mode class support
 .dark {
-  --registration-border: #3c4043;
-  --registration-text: #e8eaed;
-  --registration-text-light: #9aa0a6;
-  --registration-bg: #202124;
-  --registration-card-bg: #303134;
-  --registration-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --registration-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --registration-border: var(--ion-border-color);
+  --registration-text: var(--ion-text-color);
+  --registration-text-light: var(--ion-color-medium);
+  --registration-bg: var(--ion-background-color);
+  --registration-card-bg: var(--ion-card-background);
+  --registration-shadow: #{$box-shadow-sm};
+  --registration-shadow-hover: #{$box-shadow-md};
 }
 
 // ================================
@@ -70,7 +73,7 @@
 .registration-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: $spacing-lg;
   min-height: calc(100vh - 120px);
   background: var(--registration-bg);
   position: relative;
@@ -108,13 +111,13 @@
     z-index: 1;
   }
 
-  @media (max-width: 768px) {
-    padding: 16px;
+  @include mobile {
+    padding: $spacing-md;
     min-height: calc(100vh - 80px);
   }
 
   @media (max-width: 480px) {
-    padding: 12px;
+    padding: $spacing-sm;
   }
 }
 
@@ -122,8 +125,8 @@
 // PROGRESS STEPS
 // ================================
 .progress-container {
-  margin-bottom: 40px;
-  padding: 20px 0;
+  margin-bottom: $spacing-xl;
+  padding: $spacing-lg 0;
 }
 
 .progress-steps {
@@ -150,17 +153,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
-    font-size: 16px;
+    font-weight: $font-weight-semibold;
+    font-size: $font-size-base;
     transition: var(--registration-transition);
     border: 2px solid var(--registration-border);
     box-shadow: var(--registration-shadow);
   }
 
   .step-label {
-    margin-top: 8px;
-    font-size: 12px;
-    font-weight: 500;
+    margin-top: $spacing-sm;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
     color: var(--registration-text-light);
     text-align: center;
     transition: var(--registration-transition);
@@ -176,7 +179,7 @@
 
     .step-label {
       color: var(--ion-color-primary);
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
     }
   }
 
@@ -210,7 +213,7 @@
 // ================================
 .welcome-section {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: $spacing-xl;
   animation: fadeInUp 0.6s ease-out;
 }
 
@@ -221,15 +224,15 @@
   .welcome-icon {
     font-size: 4rem;
     color: var(--registration-primary);
-    margin-bottom: 20px;
+    margin-bottom: $spacing-lg;
     animation: pulse 2s infinite;
   }
 
   h1 {
     font-size: 2.5rem;
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     color: var(--registration-text);
-    margin-bottom: 16px;
+    margin-bottom: $spacing-md;
     line-height: 1.2;
   }
 
@@ -245,14 +248,14 @@
 // TYPE SELECTION
 // ================================
 .type-selection {
-  margin-bottom: 40px;
+  margin-bottom: $spacing-xl;
   transition: var(--registration-transition);
 
   &.compact {
-    margin-bottom: 20px;
+    margin-bottom: $spacing-lg;
 
     .type-grid {
-      margin-top: 10px;
+      margin-top: $spacing-sm;
     }
   }
 }
@@ -260,20 +263,20 @@
 .section-title {
   text-align: center;
   font-size: 1.8rem;
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   color: var(--registration-text);
-  margin-bottom: 30px;
+  margin-bottom: $spacing-lg;
 }
 
 .section-title-small {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: $spacing-sm;
   font-size: 1.2rem;
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   color: var(--registration-text);
-  margin-bottom: 20px;
+  margin-bottom: $spacing-lg;
 
   .change-type-btn {
     --color: var(--registration-primary);
@@ -281,7 +284,7 @@
 }
 
 .type-grid {
-  margin-top: 20px;
+  margin-top: $spacing-lg;
 }
 
 // ================================
@@ -380,7 +383,7 @@
     height: auto;
 
     .card-content {
-      padding: 15px;
+      padding: $spacing-md;
     }
 
     .card-icon {
@@ -388,7 +391,7 @@
       height: 40px;
 
       ion-icon {
-        font-size: 20px;
+        font-size: $font-size-xl;
       }
     }
 
@@ -409,7 +412,7 @@
 }
 
 .card-content {
-  padding: 30px 20px;
+  padding: 30px $spacing-lg;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -431,12 +434,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: $spacing-lg;
   transition: var(--registration-transition);
   box-shadow: 0 4px 12px rgba(232, 113, 33, 0.2);
 
   ion-icon {
-    font-size: 28px;
+    font-size: 1.75rem;
     transition: var(--registration-transition);
     // Ensure better visibility in all contexts
     filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
@@ -452,15 +455,15 @@
 
   h3 {
     font-size: 1.3rem;
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     color: var(--registration-text);
-    margin-bottom: 8px;
+    margin-bottom: $spacing-sm;
   }
 
   p {
     font-size: 0.95rem;
     color: var(--registration-text-light);
-    margin-bottom: 20px;
+    margin-bottom: $spacing-lg;
     line-height: 1.4;
   }
 }
@@ -475,7 +478,7 @@
     font-size: 0.9rem;
     color: var(--registration-text-light);
     position: relative;
-    padding-left: 20px;
+    padding-left: $spacing-lg;
     transition: var(--registration-transition);
 
     &::before {
@@ -483,7 +486,7 @@
       position: absolute;
       left: 0;
       color: var(--registration-success);
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       transition: var(--registration-transition);
     }
 
@@ -505,7 +508,7 @@
   right: 15px;
 
   ion-icon {
-    font-size: 24px;
+    font-size: $font-size-2xl;
   }
 }
 
@@ -522,9 +525,9 @@
 
   h2 {
     font-size: 1.6rem;
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     color: var(--registration-text);
-    margin-bottom: 8px;
+    margin-bottom: $spacing-sm;
   }
 
   p {
@@ -579,9 +582,9 @@
 // ================================
 // RESPONSIVE DESIGN
 // ================================
-@media (max-width: 768px) {
+@include mobile {
   .registration-container {
-    padding: 16px;
+    padding: $spacing-md;
   }
 
   .welcome-content {
@@ -595,16 +598,16 @@
   }
 
   .type-card .card-content {
-    padding: 20px 15px;
+    padding: $spacing-lg $spacing-md;
   }
 
   .registration-form {
-    padding: 20px;
+    padding: $spacing-lg;
   }
 
   .progress-steps {
     .step-connector {
-      margin: 0 10px;
+      margin: 0 $spacing-sm;
     }
   }
 }

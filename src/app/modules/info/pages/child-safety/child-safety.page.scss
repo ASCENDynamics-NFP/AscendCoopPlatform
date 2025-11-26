@@ -17,36 +17,39 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 .container {
-  padding: 20px;
+  padding: $spacing-lg;
   max-width: 800px;
   margin: 0 auto;
 }
 
 .section {
-  margin-bottom: 24px;
+  margin-bottom: $spacing-lg;
 }
 
 .section h2 {
   color: var(--ion-color-primary);
-  margin-bottom: 12px;
+  margin-bottom: $spacing-sm;
   font-size: 1.2em;
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
 }
 
 .section p {
   line-height: 1.6;
-  margin-bottom: 12px;
+  margin-bottom: $spacing-sm;
 }
 
 .section ul,
 .section ol {
-  padding-left: 20px;
+  padding-left: $spacing-lg;
   line-height: 1.6;
 }
 
 .section li {
-  margin-bottom: 8px;
+  margin-bottom: $spacing-xs;
 }
 
 ion-list {
@@ -57,11 +60,11 @@ ion-item {
   --background: transparent;
   --inner-border-width: 0;
   --border-style: none;
-  margin-bottom: 8px;
+  margin-bottom: $spacing-sm;
 }
 
 ion-item ion-label h3 {
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   margin-bottom: 4px;
 }
 

@@ -19,6 +19,9 @@
 ***********************************************************************************************/
 
 // Unified Registration Component - Enhanced Light & Dark Mode Styling
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 :host {
   // Base theme colors
   --unified-primary: #e87121;
@@ -120,7 +123,9 @@
   margin-bottom: 1.5rem;
   box-shadow: var(--unified-shadow-lg);
   border: 1px solid var(--unified-border);
-  transition: all 0.3s ease;
+  transition:
+    transform $transition-base,
+    box-shadow $transition-base;
   position: relative;
   overflow: hidden;
 
@@ -155,7 +160,7 @@
   .section-title {
     color: var(--unified-text);
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     margin: 0 0 0.5rem 0;
     text-align: center;
     background: linear-gradient(
@@ -191,8 +196,10 @@
     --border-style: solid;
 
     margin-bottom: 1rem;
-    transition: all 0.2s ease;
-    font-weight: 500;
+    transition:
+      background-color $transition-fast,
+      transform $transition-fast;
+    font-weight: $font-weight-medium;
 
     &.required-field {
       --border-color: var(--unified-primary);
@@ -244,7 +251,7 @@
     margin-top: -0.75rem;
     margin-bottom: 0.5rem;
     padding-left: 16px;
-    font-weight: 500;
+    font-weight: $font-weight-medium;
     display: flex;
     align-items: center;
     gap: 0.25rem;
@@ -289,7 +296,9 @@
     box-shadow: var(--unified-shadow-lg);
     border: 1px solid var(--unified-border);
     background: var(--unified-card-bg);
-    transition: all 0.3s ease;
+    transition:
+      transform $transition-base,
+      box-shadow $transition-base;
 
     &:hover {
       box-shadow: var(--unified-shadow-xl);
@@ -302,7 +311,9 @@
     --color: var(--unified-text);
     --border-color: var(--unified-border);
     --min-height: 60px;
-    transition: all 0.3s ease;
+    transition:
+      transform $transition-base,
+      box-shadow $transition-base;
 
     &:hover {
       --background: var(--unified-card-bg-hover);
@@ -311,7 +322,7 @@
     ion-label {
       h4 {
         color: var(--unified-text);
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         font-size: 1.125rem;
         margin: 0;
         background: linear-gradient(
@@ -341,7 +352,7 @@
     h5 {
       color: var(--unified-text);
       font-size: 1.125rem;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       margin: 0 0 1rem 0;
       padding-bottom: 0.5rem;
       border-bottom: 2px solid var(--unified-border);
@@ -371,7 +382,9 @@
       background: var(--unified-bg-secondary);
       border-radius: 12px;
       border: 1px solid var(--unified-border-light);
-      transition: all 0.3s ease;
+      transition:
+        background-color $transition-base,
+        border-color $transition-base;
 
       &:hover {
         background: var(--unified-card-bg-hover);
@@ -395,7 +408,9 @@
       --padding-end: 14px;
 
       margin-bottom: 1rem;
-      transition: all 0.2s ease;
+      transition:
+        background-color $transition-fast,
+        transform $transition-fast;
       font-weight: 400;
 
       &.ion-focused {
@@ -469,13 +484,15 @@
     --padding-end: 32px;
     --box-shadow: var(--unified-shadow-lg);
 
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     font-size: 1.125rem;
     margin-bottom: 1rem;
     min-width: 200px;
     position: relative;
     overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition:
+      transform $transition-base,
+      opacity $transition-base;
     z-index: 1;
 
     // Shine effect on hover

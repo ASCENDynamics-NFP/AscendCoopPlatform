@@ -18,17 +18,20 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 .admin-dashboard-container {
-  padding: 16px;
+  padding: $spacing-md;
 }
 
 .dashboard-header {
-  margin-bottom: 20px;
+  margin-bottom: $spacing-lg;
 
   .group-info {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: $spacing-md;
 
     .group-avatar {
       width: 60px;
@@ -47,7 +50,7 @@
       h2 {
         margin: 0 0 4px 0;
         font-size: 1.5rem;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         color: var(--ion-color-dark);
       }
 
@@ -73,10 +76,10 @@
 }
 
 .dashboard-segments {
-  margin-bottom: 24px;
+  margin-bottom: $spacing-lg;
   background: var(--ion-color-light);
-  border-radius: 8px;
-  padding: 4px;
+  border-radius: $border-radius-md;
+  padding: $spacing-xs;
   overflow: visible; // Ensure badges are not clipped
   min-width: max-content; // Prevent segment buttons from wrapping
   width: 100%;
@@ -85,15 +88,15 @@
     --color-checked: var(--ion-color-primary);
     --background-checked: var(--ion-color-primary-contrast);
     --border-radius: 6px;
-    --padding-start: 8px;
-    --padding-end: 8px;
+    --padding-start: $spacing-sm;
+    --padding-end: $spacing-sm;
     overflow: visible; // Ensure badges are not clipped
     flex: none; // Prevent flex shrinking on mobile
     min-width: fit-content; // Ensure buttons maintain their size
 
     ion-label {
       font-size: 0.8rem;
-      font-weight: 500;
+      font-weight: $font-weight-medium;
       position: relative;
       padding-top: 6px; // Add padding to prevent badge cutoff
       padding-right: 6px; // Add padding to prevent badge cutoff
@@ -106,11 +109,9 @@
         min-width: 16px;
         height: 16px;
         font-size: 0.6rem;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        @include flex-center;
         z-index: 10; // Ensure badge appears above other elements
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); // Add shadow for better visibility
       }
@@ -121,9 +122,9 @@
       margin-bottom: 2px;
     }
 
-    @media (max-width: 768px) {
-      --padding-start: 12px;
-      --padding-end: 12px;
+    @include mobile {
+      --padding-start: $spacing-md; // 12px
+      --padding-end: $spacing-md; // 12px
       min-width: 48px; // Ensure touch targets are large enough
 
       ion-label {
@@ -133,10 +134,10 @@
   }
 
   // Mobile-specific adjustments for better scrolling
-  @media (max-width: 768px) {
-    padding: 4px 8px;
-    margin-left: -8px;
-    margin-right: -8px;
+  @include mobile {
+    padding: $spacing-xs $spacing-sm; // 4px 8px
+    margin-left: -$spacing-sm; // -8px
+    margin-right: -$spacing-sm; // -8px
 
     ion-segment-button {
       margin: 0 2px;
@@ -148,15 +149,15 @@
   h3 {
     color: var(--ion-color-dark);
     font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 16px;
+    font-weight: $font-weight-semibold;
+    margin-bottom: $spacing-md;
   }
 
   h4 {
     color: var(--ion-color-dark);
     font-size: 1.1rem;
-    font-weight: 500;
-    margin-bottom: 12px;
+    font-weight: $font-weight-medium;
+    margin-bottom: $spacing-sm;
   }
 }
 
@@ -165,8 +166,8 @@
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: $spacing-md;
+    margin-bottom: $spacing-lg;
 
     .stat-card {
       margin: 0;
@@ -179,12 +180,12 @@
       }
 
       ion-card-content {
-        padding: 20px 16px;
+        padding: 20px $spacing-md;
         position: relative;
 
         .stat-value {
           font-size: 1.6rem;
-          font-weight: 700;
+          font-weight: $font-weight-bold;
           color: var(--ion-color-primary);
           margin-bottom: 4px;
         }
@@ -198,8 +199,8 @@
 
         .stat-icon {
           position: absolute;
-          top: 16px;
-          right: 16px;
+          top: $spacing-md;
+          right: $spacing-md;
           font-size: 1.5rem;
           color: var(--ion-color-primary);
           opacity: 0.6;
@@ -219,23 +220,23 @@
   }
 
   .quick-actions-section {
-    margin: 24px 0;
+    margin: $spacing-lg 0;
 
     h4 {
-      margin-bottom: 12px;
+      margin-bottom: $spacing-sm;
       color: var(--ion-color-dark);
       font-size: 1.1rem;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
     }
 
     .quick-actions-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
+      gap: $spacing-sm;
 
       ion-button {
-        --border-radius: 8px;
-        --border-width: 2px;
+        --border-radius: $border-radius-md;
+        --border-width: $border-width-thick;
         --color: var(--ion-color-primary);
         margin: 0;
         height: 48px;
@@ -250,26 +251,26 @@
         }
       }
 
-      @media (max-width: 768px) {
+      @include mobile {
         grid-template-columns: 1fr;
       }
     }
   }
 
   .recent-activity {
-    margin: 24px 0;
+    margin: $spacing-lg 0;
 
     h4 {
-      margin-bottom: 12px;
+      margin-bottom: $spacing-sm;
       color: var(--ion-color-dark);
       font-size: 1.1rem;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
     }
 
     ion-card {
       margin: 0;
-      --border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      --border-radius: $border-radius-lg;
+      box-shadow: $box-shadow-md;
 
       ion-card-content {
         padding: 0;
@@ -280,18 +281,18 @@
       }
 
       ion-item {
-        --padding-start: 16px;
-        --inner-padding-end: 16px;
+        --padding-start: $spacing-md;
+        --inner-padding-end: $spacing-md;
         --min-height: 60px;
 
         ion-icon {
-          margin-right: 16px;
+          margin-right: $spacing-md;
         }
 
         ion-label {
           h3 {
             font-size: 1rem;
-            font-weight: 500;
+            font-weight: $font-weight-medium;
             margin-bottom: 4px;
           }
 
@@ -309,27 +310,27 @@
   }
 
   .admin-tips {
-    margin: 24px 0;
+    margin: $spacing-lg 0;
 
     h4 {
-      margin-bottom: 12px;
+      margin-bottom: $spacing-sm;
       color: var(--ion-color-dark);
       font-size: 1.1rem;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
     }
 
     .tips-card {
       margin: 0;
-      --border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      --border-radius: $border-radius-lg;
+      box-shadow: $box-shadow-md;
       border-left: 4px solid var(--ion-color-primary);
 
       .tips-list {
         .tip-item {
           display: flex;
           align-items: flex-start;
-          gap: 12px;
-          margin-bottom: 16px;
+          gap: $spacing-sm;
+          margin-bottom: $spacing-md;
 
           &:last-child {
             margin-bottom: 0;
@@ -356,26 +357,26 @@
   }
 
   .group-glance {
-    margin: 24px 0;
+    margin: $spacing-lg 0;
 
     h4 {
-      margin-bottom: 12px;
+      margin-bottom: $spacing-sm;
       color: var(--ion-color-dark);
       font-size: 1.1rem;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
     }
 
     ion-card {
       margin: 0;
-      --border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      --border-radius: $border-radius-lg;
+      box-shadow: $box-shadow-md;
     }
 
     .glance-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 8px 0;
+      gap: $spacing-sm;
+      padding: $spacing-sm 0;
 
       ion-icon {
         font-size: 1.4rem;
@@ -396,7 +397,7 @@
         .glance-value {
           font-size: 0.95rem;
           color: var(--ion-color-dark);
-          font-weight: 500;
+          font-weight: $font-weight-medium;
         }
       }
     }
@@ -405,11 +406,11 @@
   .quick-actions {
     .action-buttons {
       display: grid;
-      gap: 12px;
+      gap: $spacing-sm;
 
       ion-button {
         margin: 0;
-        --border-radius: 8px;
+        --border-radius: $border-radius-md;
 
         ion-icon {
           margin-right: 8px;
@@ -427,14 +428,14 @@
 .listings-section,
 .settings-section {
   ion-card {
-    margin: 16px 0;
-    --border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin: $spacing-md 0;
+    --border-radius: $border-radius-lg;
+    box-shadow: $box-shadow-md;
 
     ion-card-header {
       ion-card-title {
         color: var(--ion-color-dark);
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
       }
     }
 
@@ -451,19 +452,20 @@
 .roles-actions,
 .listings-actions {
   display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
   flex-wrap: wrap;
 
   ion-button {
-    --border-radius: 8px;
+    --border-radius: $border-radius-md;
   }
 }
 
 // Responsive design
-@media (max-width: 768px) {
+// Responsive design
+@include mobile {
   .admin-dashboard-container {
-    padding: 12px;
+    padding: $spacing-md;
   }
 
   .dashboard-header {
@@ -484,11 +486,11 @@
   .overview-section {
     .stats-grid {
       grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 12px;
+      gap: $spacing-sm;
 
       .stat-card {
         ion-card-content {
-          padding: 16px 12px;
+          padding: $spacing-md $spacing-sm;
 
           .stat-value {
             font-size: 1.5rem;
@@ -520,7 +522,7 @@ ion-header {
     --color: var(--ion-color-primary-contrast);
 
     ion-title {
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
     }
 
     ion-button {
@@ -533,7 +535,7 @@ ion-header {
 .faqs-section {
   .no-faqs-message {
     text-align: center;
-    padding: 24px;
+    padding: $spacing-lg;
 
     p {
       margin: 0;
@@ -542,7 +544,7 @@ ion-header {
   }
 
   ion-card {
-    margin-bottom: 16px;
+    margin-bottom: $spacing-md;
 
     ion-card-header {
       ion-card-subtitle {
@@ -574,14 +576,14 @@ ion-header {
   .listings-stats {
     display: flex;
     justify-content: space-around;
-    margin: 16px 0;
+    margin: $spacing-md 0;
 
     .stat-item {
       text-align: center;
 
       .stat-number {
         font-size: 1.8rem;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         color: var(--ion-color-primary);
         margin-bottom: 4px;
       }
@@ -594,17 +596,17 @@ ion-header {
   }
 
   .listings-quick-links {
-    margin-top: 16px;
+    margin-top: $spacing-md;
     text-align: right;
   }
 
   .pending-applicants {
-    margin-top: 20px;
+    margin-top: $spacing-lg;
 
     h4 {
-      margin: 0 0 12px 0;
+      margin: 0 0 $spacing-sm 0;
       font-size: 1.1rem;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       color: var(--ion-color-dark);
     }
 
@@ -615,7 +617,7 @@ ion-header {
 
     .applicant-actions {
       display: flex;
-      gap: 8px;
+      gap: $spacing-sm;
       align-items: center;
     }
 
@@ -629,10 +631,10 @@ ion-header {
 .members-section {
   .members-actions {
     display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-lg;
 
-    @media (max-width: 768px) {
+    @include mobile {
       flex-direction: column;
     }
 
@@ -643,7 +645,7 @@ ion-header {
 
   .request-actions {
     display: flex;
-    gap: 8px;
+    gap: $spacing-sm;
     align-items: center;
   }
 
@@ -660,7 +662,7 @@ ion-header {
       }
 
       ion-icon {
-        font-size: 14px;
+        font-size: $font-size-sm;
       }
     }
   }
@@ -668,14 +670,14 @@ ion-header {
   .overview-stats {
     display: flex;
     justify-content: space-around;
-    margin: 16px 0;
+    margin: $spacing-md 0;
 
     .stat-item {
       text-align: center;
 
       .stat-number {
         font-size: 1.8rem;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         color: var(--ion-color-primary);
         margin-bottom: 4px;
       }
@@ -705,14 +707,14 @@ ion-header {
   }
 
   .role-info {
-    margin-bottom: 16px;
+    margin-bottom: $spacing-md;
 
     ul {
-      margin: 12px 0;
-      padding-left: 20px;
+      margin: $spacing-sm 0;
+      padding-left: $spacing-lg;
 
       li {
-        margin-bottom: 8px;
+        margin-bottom: $spacing-sm;
         color: var(--ion-color-dark);
 
         strong {
@@ -725,10 +727,10 @@ ion-header {
   .role-quick-links {
     display: flex;
     justify-content: space-between;
-    margin-top: 16px;
+    margin-top: $spacing-md;
 
-    @media (max-width: 768px) {
-      gap: 8px;
+    @include mobile {
+      gap: $spacing-sm;
     }
   }
 }
@@ -736,7 +738,7 @@ ion-header {
 // Settings Section Styling
 .settings-section {
   .admin-info {
-    margin-bottom: 16px;
+    margin-bottom: $spacing-md;
 
     p {
       margin: 4px 0;
@@ -749,11 +751,11 @@ ion-header {
       &.owner-badge {
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
+        gap: $spacing-sm;
+        padding: $spacing-sm $spacing-md;
         background: rgba(var(--ion-color-primary-rgb), 0.1);
-        border-radius: 8px;
-        margin: 8px 0;
+        border-radius: $border-radius-md;
+        margin: $spacing-sm 0;
 
         ion-icon {
           font-size: 1.1rem;
@@ -761,14 +763,14 @@ ion-header {
 
         strong {
           color: var(--ion-color-primary);
-          font-weight: 600;
+          font-weight: $font-weight-semibold;
         }
       }
     }
   }
 
   ion-card {
-    margin-bottom: 16px;
+    margin-bottom: $spacing-md;
 
     &[color="danger"] {
       --background: var(--ion-color-danger);
@@ -792,7 +794,7 @@ ion-header {
       ion-label {
         h3 {
           color: var(--ion-color-dark);
-          font-weight: 600;
+          font-weight: $font-weight-semibold;
           margin-bottom: 4px;
         }
 
@@ -869,7 +871,7 @@ ion-header {
       h3 {
         margin: 0 0 4px 0;
         font-size: 1.2rem;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         color: var(--ion-text-color, #000);
       }
 
@@ -888,7 +890,7 @@ ion-header {
     ion-button {
       min-width: 200px;
       height: 44px;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
     }
   }
 
@@ -980,7 +982,7 @@ ion-header {
 
     .alert-button-confirm {
       color: var(--ion-color-danger) !important;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
     }
   }
 }
@@ -1092,7 +1094,7 @@ ion-header {
       h4 {
         margin: 0 0 8px 0;
         font-size: 1.1rem;
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         color: var(--ion-color-dark);
       }
 

@@ -1,8 +1,11 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 .footer {
   background-color: var(--ion-background-color);
   color: var(--ion-text-color);
   padding: 2.5rem 0;
-  border-top: 1px solid var(--ion-border-color);
+  border-top: $border-width-thin solid var(--ion-border-color);
 
   ion-grid {
     max-width: 75rem;
@@ -86,7 +89,7 @@
 }
 
 /* Responsive Styles */
-@media (min-width: 768px) {
+@include desktop {
   .footer-logo,
   .footer-nav,
   .footer-social {
@@ -98,7 +101,7 @@
   }
 }
 
-@media (max-width: 767px) {
+@include mobile {
   .footer-nav ul {
     align-items: center;
   }

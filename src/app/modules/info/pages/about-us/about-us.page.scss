@@ -1,13 +1,16 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 /* About Us Page Styles */
 .content-image {
   max-height: 300px;
   width: 100%;
   object-fit: cover;
-  margin-bottom: 1rem;
+  margin-bottom: $spacing-md;
 }
 
 .text-section {
-  padding: 1rem;
+  padding: $spacing-md;
   font-size: 1rem;
   line-height: 1.6;
 }
@@ -16,12 +19,12 @@ p {
   color: var(--ion-text-color);
   font-size: 1.1rem;
   line-height: 1.7;
-  margin-bottom: 1rem;
+  margin-bottom: $spacing-md;
 }
 
 ion-card-title {
   font-size: 1.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: $spacing-md;
 }
 
 ul {
@@ -35,13 +38,13 @@ ul {
 }
 
 /* Responsive Styles */
-@media (min-width: 768px) {
+@include desktop {
   .text-section {
-    padding: 2rem;
+    padding: $spacing-xl;
   }
 }
 
-@media (max-width: 767px) {
+@include mobile {
   .features h2 {
     padding: 0;
   }

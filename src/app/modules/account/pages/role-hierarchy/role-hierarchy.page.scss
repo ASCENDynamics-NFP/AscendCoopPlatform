@@ -1,4 +1,6 @@
 /* role-hierarchy.page.scss */
+@import "src/styles/variables";
+@import "src/styles/mixins";
 
 // Controls Section
 .controls-section {
@@ -16,26 +18,26 @@
     );
     border-radius: 1px;
   }
-  padding-bottom: 8px;
+  padding-bottom: $spacing-sm;
 
   ion-card {
     margin: 0;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border-radius: $border-radius-lg;
+    box-shadow: $box-shadow-md;
   }
 
   .controls-row {
     display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-md;
     flex-wrap: wrap;
 
     ion-button {
       flex: 1;
       min-width: 120px;
-      --border-radius: 8px;
+      --border-radius: $border-radius-md;
 
-      @media (max-width: 768px) {
+      @include mobile {
         flex: 1 1 calc(50% - 4px);
         min-width: 0;
       }
@@ -43,21 +45,21 @@
   }
 
   .hierarchy-search {
-    --border-radius: 8px;
-    --box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    --border-radius: $border-radius-md;
+    --box-shadow: $box-shadow-sm;
   }
 }
 
 // Tree Container
 .tree-container {
-  padding: 0 16px 16px;
+  padding: 0 $spacing-md $spacing-md;
   overflow-x: auto;
 
   &.horizontal {
     .tree {
       display: flex;
       flex-direction: row;
-      padding: 20px 0;
+      padding: $spacing-lg 0;
       min-width: max-content;
     }
 
@@ -69,7 +71,7 @@
     .children-tree {
       display: flex;
       flex-direction: row;
-      margin-top: 20px;
+      margin-top: $spacing-lg;
       padding-left: 0;
     }
 
@@ -88,21 +90,23 @@
 
 .tree-node {
   position: relative;
-  margin-bottom: 16px;
+  margin-bottom: $spacing-md;
 }
 
 // Role Card Styling
 .role-card {
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--ion-color-light-shade);
+  border-radius: $border-radius-lg;
+  box-shadow: $box-shadow-md;
+  border: $border-width-thin solid var(--ion-color-light-shade);
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition:
+    box-shadow $transition-base,
+    transform $transition-base;
   margin-left: 0;
 
   &:hover {
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+    box-shadow: $box-shadow-lg;
     transform: translateY(-2px);
   }
 }
@@ -111,7 +115,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  padding: $spacing-md $spacing-lg;
   background: linear-gradient(
     135deg,
     var(--ion-color-primary-tint) 0%,
@@ -122,12 +126,12 @@
   .role-info {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: $spacing-sm;
     flex: 1;
   }
 
   .role-icon {
-    font-size: 24px;
+    font-size: $font-size-2xl;
     color: white;
   }
 
@@ -138,7 +142,7 @@
   .role-title {
     margin: 0;
     font-size: 1.2rem;
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     color: white;
   }
 
@@ -151,7 +155,7 @@
   .role-controls {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
   }
 
   .role-stats {
@@ -163,39 +167,39 @@
   }
 
   .expand-button {
-    --padding-start: 8px;
-    --padding-end: 8px;
+    --padding-start: $spacing-sm;
+    --padding-end: $spacing-sm;
     --color: white;
     min-width: 32px;
 
     ion-icon {
-      font-size: 20px;
+      font-size: $font-size-xl;
     }
   }
 }
 
 // Accounts Section
 .accounts-section {
-  padding: 16px 20px;
+  padding: $spacing-md $spacing-lg;
   background: white;
 }
 
 .accounts-grid {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-sm;
 }
 
 .account-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
+  gap: $spacing-sm;
+  padding: $spacing-sm;
   background: var(--ion-color-light);
-  border-radius: 8px;
-  border: 1px solid var(--ion-color-light-shade);
+  border-radius: $border-radius-md;
+  border: $border-width-thin solid var(--ion-color-light-shade);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform $transition-fast;
 
   &:hover {
     background: var(--ion-color-primary-tint);
@@ -221,7 +225,7 @@
   }
 
   .default-avatar {
-    font-size: 32px;
+    font-size: $font-size-4xl;
     color: var(--ion-color-medium);
   }
 }
@@ -232,12 +236,12 @@
   .account-name {
     margin: 0 0 4px 0;
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     color: var(--ion-color-dark);
   }
 
   .account-tagline {
-    margin: 0 0 8px 0;
+    margin: 0 0 $spacing-sm 0;
     font-size: 0.85rem;
     color: var(--ion-color-medium);
     line-height: 1.3;
@@ -245,34 +249,34 @@
 
   .role-badge {
     font-size: 0.75rem;
-    --padding-start: 8px;
-    --padding-end: 8px;
+    --padding-start: $spacing-sm;
+    --padding-end: $spacing-sm;
     --padding-top: 4px;
     --padding-bottom: 4px;
   }
 }
 
 .account-action {
-  --padding-start: 8px;
-  --padding-end: 8px;
+  --padding-start: $spacing-sm;
+  --padding-end: $spacing-sm;
   --color: var(--ion-color-medium);
 }
 
 // Children Tree
 .children-tree {
   list-style: none;
-  padding-left: 20px;
-  margin-top: 16px;
+  padding-left: $spacing-lg;
+  margin-top: $spacing-md;
 }
 
 // Responsive Design
-@media (max-width: 768px) {
+@include mobile {
   .controls-section {
-    padding: 12px;
+    padding: $spacing-md;
   }
 
   .tree-container {
-    padding: 0 12px 12px;
+    padding: 0 $spacing-md $spacing-md;
   }
 
   .role-card {
@@ -280,11 +284,11 @@
   }
 
   .accounts-section {
-    padding: 12px 16px;
+    padding: $spacing-md $spacing-md;
   }
 
   .children-tree {
-    padding-left: 16px;
+    padding-left: $spacing-md;
   }
 }
 
@@ -292,13 +296,13 @@
   .controls-section .controls-row {
     ion-button {
       flex: 1 1 100%;
-      margin-bottom: 8px;
+      margin-bottom: $spacing-sm;
     }
   }
 
   .account-card {
-    padding: 8px;
-    gap: 8px;
+    padding: $spacing-sm;
+    gap: $spacing-sm;
   }
 
   .account-avatar {
@@ -336,7 +340,7 @@
 }
 
 // Dark Mode Support
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .role-card {
     background: var(--ion-color-step-50);
     border-color: var(--ion-color-step-150);

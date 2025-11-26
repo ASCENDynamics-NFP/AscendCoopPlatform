@@ -18,17 +18,20 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 ion-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 8px; /* Add padding for spacing */
+  padding: 0 $spacing-sm; /* Add padding for spacing */
 }
 
 .toolbar-content {
   display: flex;
   align-items: center;
-  gap: 8px; /* Spacing between logo and title */
+  gap: $spacing-sm; /* Spacing between logo and title */
   flex-grow: 1; /* Take up available space between start and end buttons */
   color: var(--ion-color-primary);
 }
@@ -40,7 +43,7 @@ ion-toolbar {
 
 .header-title {
   font-size: 1.25rem;
-  font-weight: 500;
+  font-weight: $font-weight-medium;
   letter-spacing: 0.0125em;
   white-space: nowrap; /* Prevent text wrapping */
   text-align: left;
@@ -49,13 +52,13 @@ ion-toolbar {
 .toolbar-buttons {
   display: flex;
   align-items: center;
-  gap: 8px; /* Spacing between buttons/avatars */
+  gap: $spacing-sm; /* Spacing between buttons/avatars */
 }
 
 .auth-area {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .padded-avatar {
@@ -69,20 +72,26 @@ ion-title {
   margin: 0; /* Reset any default margins */
 }
 
-ion-buttons ion-button {
-  --padding-start: 8px;
-  --padding-end: 8px;
+// Login/Signup buttons styling
+.auth-area ion-button {
+  --padding-start: $spacing-md !important;
+  --padding-end: $spacing-md !important;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
   --border-radius: 20px;
+  font-size: 0.875rem;
+  text-transform: none;
+  min-width: 80px;
 }
 
-@media (max-width: 500px) {
+@include mobile {
   .toolbar-logo {
     display: none;
   }
 }
 
 /* Hide avatar/login area on desktop when host has class */
-@media (min-width: 768px) {
+@include desktop {
   :host(.hide-avatar-desktop) .auth-area {
     display: none;
   }

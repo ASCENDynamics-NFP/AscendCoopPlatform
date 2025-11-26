@@ -1,21 +1,24 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 // ================================
 // COMPACT FILTER DESIGN
 // ================================
 
 .project-filters {
   background: var(--ion-color-light);
-  border-radius: 8px;
-  padding: 8px;
-  margin: 8px 0;
-  border: 1px solid var(--ion-color-medium-tint);
+  border-radius: $border-radius-md;
+  padding: $spacing-sm;
+  margin: $spacing-sm 0;
+  border: $border-width-thin solid var(--ion-color-medium-tint);
 
-  @media (prefers-color-scheme: dark) {
+  @include dark-mode {
     background: var(--ion-color-dark);
     border-color: var(--ion-color-medium-shade);
   }
 
   // Dark mode searchbar fix - more global approach
-  @media (prefers-color-scheme: dark) {
+  @include dark-mode {
     ion-searchbar {
       --color: #fff !important;
       --background: transparent !important;
@@ -44,10 +47,10 @@
   .main-filter-row {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-sm;
 
-    @media (min-width: 768px) {
+    @include desktop {
       flex-direction: row;
       align-items: center;
     }
@@ -65,13 +68,13 @@
         --clear-button-color: var(--ion-color-medium);
         padding: 0;
         margin: 0;
-        border: 1px solid var(--ion-color-medium-tint);
+        border: $border-width-thin solid var(--ion-color-medium-tint);
         border-radius: 6px;
         height: 36px;
         min-height: 36px;
         max-height: 36px;
 
-        @media (prefers-color-scheme: dark) {
+        @include dark-mode {
           --color: var(--ion-color-light);
           --placeholder-color: var(--ion-color-medium-shade);
           --clear-button-color: var(--ion-color-medium-shade);
@@ -92,7 +95,7 @@
         }
 
         // Dark mode specific input styling
-        @media (prefers-color-scheme: dark) {
+        @include dark-mode {
           .searchbar-input,
           input.searchbar-input {
             color: var(--ion-color-light) !important;
@@ -135,7 +138,7 @@
       flex-direction: column;
       gap: 6px;
 
-      @media (min-width: 768px) {
+      @include desktop {
         flex-direction: row;
         align-items: center;
       }
@@ -144,16 +147,16 @@
         --placeholder-color: var(--ion-color-medium);
         --color: var(--ion-color-dark);
         min-width: 140px;
-        border: 1px solid var(--ion-color-medium-tint);
+        border: $border-width-thin solid var(--ion-color-medium-tint);
         border-radius: 6px;
-        padding: 0 12px;
+        padding: 0 $spacing-md;
         height: 36px;
         min-height: 36px;
         max-height: 36px;
         display: flex;
         align-items: center;
 
-        @media (prefers-color-scheme: dark) {
+        @include dark-mode {
           --color: var(--ion-color-light);
           border-color: var(--ion-color-medium-shade);
         }
@@ -180,14 +183,14 @@
           --color: var(--ion-color-dark);
           --color-checked: var(--ion-color-primary);
           --background-checked: var(--ion-color-primary-tint);
-          border: 1px solid var(--ion-color-medium-tint);
+          border: $border-width-thin solid var(--ion-color-medium-tint);
           border-radius: 6px;
           height: 36px;
           min-height: 36px;
           max-height: 36px;
           min-width: 180px;
 
-          @media (prefers-color-scheme: dark) {
+          @include dark-mode {
             --color: var(--ion-color-light);
             border-color: var(--ion-color-medium-shade);
           }
@@ -211,11 +214,11 @@
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: $spacing-sm;
     padding: 4px 0;
-    border-top: 1px solid var(--ion-color-medium-tint);
+    border-top: $border-width-thin solid var(--ion-color-medium-tint);
 
-    @media (prefers-color-scheme: dark) {
+    @include dark-mode {
       border-color: var(--ion-color-medium-shade);
     }
 
@@ -242,7 +245,7 @@
           --color: var(--ion-color-dark);
           --background: transparent;
 
-          @media (prefers-color-scheme: dark) {
+          @include dark-mode {
             --border-color: var(--ion-color-medium-shade);
             --color: var(--ion-color-light);
           }
@@ -258,13 +261,13 @@
     .status-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: $spacing-sm;
 
       .project-count {
         --background: var(--ion-color-primary);
         --color: white;
-        --padding-start: 8px;
-        --padding-end: 8px;
+        --padding-start: $spacing-sm;
+        --padding-end: $spacing-sm;
         font-weight: 500;
         font-size: 0.7rem;
         border-radius: 12px;
@@ -291,7 +294,7 @@
 }
 
 // Mobile responsive adjustments
-@media (max-width: 768px) {
+@include mobile {
   .project-filters {
     .main-filter-row {
       .controls-section {
@@ -450,7 +453,7 @@
           background: var(--projects-card-bg);
           border: 2px solid var(--projects-border);
           border-radius: 10px;
-          padding: 12px 16px;
+          padding: $spacing-sm $spacing-md;
           transition: var(--projects-transition);
           position: relative;
           overflow: hidden;
@@ -633,7 +636,7 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 8px;
-      padding: 10px 12px;
+      padding: 10px $spacing-sm;
       background: var(--projects-card-bg);
       border: 2px solid var(--projects-border);
       border-radius: 8px;
@@ -689,7 +692,7 @@
         .category-filter,
         .sort-controls {
           .filter-card {
-            padding: 12px 16px;
+            padding: $spacing-sm $spacing-md;
 
             .filter-header {
               .filter-icon {

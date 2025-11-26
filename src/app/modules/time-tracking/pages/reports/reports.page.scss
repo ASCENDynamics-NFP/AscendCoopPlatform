@@ -1,3 +1,6 @@
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 .reports-container {
   padding: 1rem;
   max-width: 1200px;
@@ -79,7 +82,7 @@
 
     th {
       background-color: var(--ion-color-light);
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       color: var(--ion-color-dark);
       position: sticky;
       top: 0;
@@ -118,7 +121,7 @@
     }
 
     .project-hours {
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       color: var(--ion-color-primary);
     }
   }
@@ -138,7 +141,7 @@
     .percentage {
       min-width: 40px;
       text-align: right;
-      font-weight: 500;
+      font-weight: $font-weight-medium;
       color: var(--ion-color-primary);
     }
   }
@@ -305,7 +308,7 @@
 }
 
 // Dark mode support
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .report-table {
     th {
       background-color: var(--ion-color-dark);
@@ -349,7 +352,9 @@
     border-radius: 8px;
     background: var(--ion-color-light);
     margin-bottom: 1rem;
-    transition: all 0.3s ease;
+    transition:
+      box-shadow $transition-base,
+      transform $transition-base;
 
     &:hover {
       transform: translateY(-2px);
@@ -373,14 +378,14 @@
         h3 {
           margin: 0;
           font-size: 1.25rem;
-          font-weight: 600;
+          font-weight: $font-weight-semibold;
           color: var(--ion-color-dark);
           flex: 1;
         }
 
         .category-hours {
           font-size: 1.1rem;
-          font-weight: 500;
+          font-weight: $font-weight-medium;
           color: var(--ion-color-primary);
         }
       }
@@ -399,7 +404,7 @@
 }
 
 // Dark mode support for category breakdown
-@media (prefers-color-scheme: dark) {
+@include dark-mode {
   .category-breakdown {
     .category-breakdown-item {
       background: var(--ion-color-dark-shade);

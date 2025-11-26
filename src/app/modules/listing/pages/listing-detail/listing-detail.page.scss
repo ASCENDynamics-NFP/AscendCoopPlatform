@@ -17,9 +17,12 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
+@import "src/styles/variables";
+@import "src/styles/mixins";
+
 ion-card {
-  margin: 16px;
-  border-radius: 12px;
+  margin: $spacing-md;
+  border-radius: $border-radius-lg;
   border: 1px solid var(--ion-color-primary);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease;
@@ -38,13 +41,13 @@ ion-card-header {
   border-bottom: 1px solid var(--ion-color-light-shade);
 
   ion-icon {
-    font-size: 24px;
+    font-size: $font-size-2xl;
     color: var(--ion-color-primary);
   }
 
   ion-card-title {
     font-size: 1.5em;
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
   }
 }
 
@@ -58,8 +61,8 @@ ion-card-header {
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
-  padding: 8px;
-  border-radius: 8px;
+  padding: $spacing-sm;
+  border-radius: $border-radius-md;
   background: var(--ion-color-light);
 
   span {
@@ -77,8 +80,8 @@ ion-card-header {
   align-items: center;
   gap: 12px;
   margin-bottom: 16px;
-  padding: 8px;
-  border-radius: 8px;
+  padding: $spacing-sm;
+  border-radius: $border-radius-md;
   background: var(--ion-color-light);
 
   span {
@@ -93,8 +96,8 @@ ion-card-header {
 
 .location-item {
   margin-bottom: 20px;
-  padding: 12px;
-  border-radius: 8px;
+  padding: $spacing-sm;
+  border-radius: $border-radius-md;
   background: var(--ion-color-light);
 
   p {
@@ -118,8 +121,8 @@ ion-card-header {
 
 ion-badge {
   margin-right: 6px;
-  padding: 6px 12px;
-  border-radius: 12px;
+  padding: 6px $spacing-sm;
+  border-radius: $border-radius-lg;
 }
 
 .list-item {
@@ -127,11 +130,11 @@ ion-badge {
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
-  padding: 8px;
-  border-radius: 8px;
+  padding: $spacing-sm;
+  border-radius: $border-radius-md;
 
   ion-icon {
-    font-size: 20px;
+    font-size: $font-size-xl;
     color: var(--ion-color-primary);
   }
 
@@ -140,15 +143,7 @@ ion-badge {
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  .contact-item,
-  .time-item,
-  .skill-item,
-  .location-item,
-  .list-item {
-    // background: var(--ion-color-dark-shade);
-  }
-
+@include dark-mode {
   ion-card,
   .contact-item span,
   .location-item p {
@@ -166,7 +161,4 @@ ion-badge {
   ion-button {
     min-width: 200px;
   }
-}
-
-@media (prefers-color-scheme: light) {
 }

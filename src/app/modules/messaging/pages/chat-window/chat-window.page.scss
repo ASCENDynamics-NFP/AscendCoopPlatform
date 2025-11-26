@@ -253,7 +253,7 @@ ion-header {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 14px;
+      font-size: $font-size-sm;
       font-weight: $font-weight-semibold;
       padding: $spacing-sm 0;
       color: var(--ion-color-dark);
@@ -293,7 +293,7 @@ ion-header {
         gap: 12px;
 
         .audio-icon {
-          font-size: 48px;
+          font-size: $font-size-5xl;
           color: var(--ion-color-primary);
         }
 
@@ -313,7 +313,7 @@ ion-header {
         border-radius: $border-radius-md;
 
         .file-type-icon {
-          font-size: 48px;
+          font-size: $font-size-5xl;
           color: var(--ion-color-primary);
         }
 
@@ -329,7 +329,7 @@ ion-header {
           }
 
           .file-type {
-            font-size: 12px;
+            font-size: $font-size-xs;
             color: var(--ion-color-medium);
             text-transform: uppercase;
           }
@@ -346,7 +346,7 @@ ion-header {
         order: 999; /* Ensure it appears at the bottom */
 
         .file-size {
-          font-size: 12px;
+          font-size: $font-size-xs;
           color: var(--ion-color-medium);
           margin-bottom: 8px;
         }
@@ -432,7 +432,7 @@ ion-header {
 
     .file-size {
       color: var(--ion-color-medium-shade);
-      font-size: 11px;
+      font-size: $font-size-xxs;
     }
   }
 }
@@ -451,7 +451,7 @@ ion-header {
     padding: $spacing-sm;
 
     .audio-icon {
-      font-size: 24px;
+      font-size: $font-size-2xl;
       color: var(--ion-color-primary);
       flex-shrink: 0;
     }
@@ -461,7 +461,7 @@ ion-header {
 
       .file-name {
         font-weight: $font-weight-medium;
-        font-size: 14px;
+        font-size: $font-size-sm;
         margin-bottom: 2px;
         word-break: break-word;
         color: var(--ion-color-dark);
@@ -469,7 +469,7 @@ ion-header {
       }
 
       .file-size {
-        font-size: 12px;
+        font-size: $font-size-xs;
         color: var(--ion-color-medium-shade);
       }
     }
@@ -539,7 +539,7 @@ ion-header {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      font-size: 12px;
+      font-size: $font-size-xs;
       color: var(--ion-color-medium);
       line-height: 1.2;
 
@@ -551,7 +551,7 @@ ion-header {
       .file-type {
         text-transform: uppercase;
         color: var(--ion-color-medium-tint);
-        font-size: 11px;
+        font-size: $font-size-xxs;
       }
     }
   }
@@ -560,7 +560,11 @@ ion-header {
 // Clickable file block styling
 .clickable-file-block {
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    transform $transition-fast,
+    background-color $transition-fast,
+    border-color $transition-fast,
+    box-shadow $transition-fast;
 
   &:hover {
     background: var(--ion-color-step-100) !important;
@@ -727,7 +731,9 @@ body.dark {
   cursor: pointer;
   color: var(--ion-color-primary) !important;
   text-decoration: underline;
-  transition: all 0.2s ease;
+  transition:
+    transform $transition-fast,
+    color $transition-fast;
 
   &:hover {
     color: var(--ion-color-primary-shade) !important;

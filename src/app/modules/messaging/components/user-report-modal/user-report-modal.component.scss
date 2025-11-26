@@ -35,7 +35,7 @@
   margin-bottom: 24px;
 
   .report-icon {
-    font-size: 48px;
+    font-size: $font-size-5xl;
     margin-bottom: 16px;
   }
 
@@ -55,7 +55,7 @@
 
 .character-count {
   text-align: right;
-  font-size: 12px;
+  font-size: $font-size-xs;
   color: var(--ion-color-medium);
   margin-top: 4px;
   margin-bottom: 16px;
@@ -70,14 +70,14 @@
     gap: 12px;
 
     ion-icon {
-      font-size: 20px;
+      font-size: $font-size-xl;
       margin-top: 2px;
       flex-shrink: 0;
     }
 
     p {
       margin: 0;
-      font-size: 14px;
+      font-size: $font-size-sm;
       line-height: 1.4;
 
       strong {
@@ -125,7 +125,7 @@ ion-textarea {
 
   .report-header {
     .report-icon {
-      font-size: 40px;
+      font-size: 2.5rem;
     }
 
     h2 {

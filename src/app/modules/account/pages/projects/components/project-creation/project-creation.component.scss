@@ -73,7 +73,7 @@
         padding: $spacing-md;
         margin-bottom: $spacing-md;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: opacity $transition-fast;
         background: var(--ion-color-light-shade);
         position: relative;
 

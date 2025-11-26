@@ -39,7 +39,9 @@
 
 .category-chip {
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition:
+    transform $transition-base,
+    box-shadow $transition-base;
 
   &:hover {
     transform: translateY(-2px);
@@ -79,7 +81,9 @@
     margin-bottom: 0.5rem;
     border-radius: $border-radius-md;
     border: $border-width-thin solid var(--ion-color-light-shade);
-    transition: all 0.2s ease;
+    transition:
+      background-color $transition-fast,
+      border-color $transition-fast;
 
     &:hover {
       background: var(--ion-color-light-tint);

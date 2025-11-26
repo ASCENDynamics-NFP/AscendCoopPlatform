@@ -154,7 +154,7 @@
     align-items: center;
     justify-content: center;
     font-weight: $font-weight-semibold;
-    font-size: 16px;
+    font-size: $font-size-base;
     transition: var(--registration-transition);
     border: 2px solid var(--registration-border);
     box-shadow: var(--registration-shadow);
@@ -162,7 +162,7 @@
 
   .step-label {
     margin-top: $spacing-sm;
-    font-size: 12px;
+    font-size: $font-size-xs;
     font-weight: $font-weight-medium;
     color: var(--registration-text-light);
     text-align: center;
@@ -391,7 +391,7 @@
       height: 40px;
 
       ion-icon {
-        font-size: 20px;
+        font-size: $font-size-xl;
       }
     }
 
@@ -439,7 +439,7 @@
   box-shadow: 0 4px 12px rgba(232, 113, 33, 0.2);
 
   ion-icon {
-    font-size: 28px;
+    font-size: 1.75rem;
     transition: var(--registration-transition);
     // Ensure better visibility in all contexts
     filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
@@ -508,7 +508,7 @@
   right: 15px;
 
   ion-icon {
-    font-size: 24px;
+    font-size: $font-size-2xl;
   }
 }
 

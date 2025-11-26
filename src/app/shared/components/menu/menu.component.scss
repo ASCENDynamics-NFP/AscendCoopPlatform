@@ -51,7 +51,7 @@
 
 ion-item {
   position: relative;
-  transition: all 0.3s ease;
+  transition: background-color $transition-base;
 
   &::before {
     content: "";

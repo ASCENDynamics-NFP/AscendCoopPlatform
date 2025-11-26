@@ -54,7 +54,7 @@ h3 {
 }
 
 h2 {
-  font-size: 24px;
+  font-size: $font-size-2xl;
   font-weight: $font-weight-bold;
   text-align: center;
 }
@@ -80,12 +80,8 @@ ion-content {
   --padding-bottom: 0;
   --background: var(--ion-background-color);
   --color: var(--ion-text-color);
-  min-height: 100vh; /* Changed from height: 100%; */
-  display: flex;
-  flex-direction: column;
 
   &::part(scroll) {
-    flex: 1;
     display: flex;
     flex-direction: column;
     min-height: 100%;
@@ -98,16 +94,14 @@ ion-content {
 }
 
 ion-card-content.content-center {
-  // flex: 1 0 auto;
+  // flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
 app-info-footer {
-  margin-bottom: 0;
   flex-shrink: 0;
-  margin-top: auto;
 }
 
 .col-container {

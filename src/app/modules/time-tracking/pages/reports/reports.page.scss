@@ -352,7 +352,9 @@
     border-radius: 8px;
     background: var(--ion-color-light);
     margin-bottom: 1rem;
-    transition: all 0.3s ease;
+    transition:
+      box-shadow $transition-base,
+      transform $transition-base;
 
     &:hover {
       transform: translateY(-2px);

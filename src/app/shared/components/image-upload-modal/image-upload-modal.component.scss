@@ -172,7 +172,7 @@ ion-header {
     border-radius: $border-radius-lg;
     padding: 32px 24px;
     text-align: center;
-    transition: all 0.3s ease;
+    transition: opacity $transition-base;
     background: var(--ion-color-light);
     min-height: 200px;
     display: flex;

@@ -70,7 +70,7 @@
     margin-bottom: 8px;
     background: var(--step-color);
     border-radius: $border-radius-lg;
-    transition: all 0.2s ease;
+    transition: background-color $transition-fast;
 
     &.clickable {
       cursor: pointer;
@@ -168,7 +168,7 @@
     background: var(--step-color);
     border-radius: $border-radius-lg;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color $transition-fast;
 
     &:hover {
       background: var(--step-color-hover);

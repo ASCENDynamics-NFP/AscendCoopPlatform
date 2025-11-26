@@ -10,12 +10,12 @@
     gap: 8px;
     margin-bottom: 16px;
     padding-left: 16px;
-    font-size: 16px;
+    font-size: $font-size-base;
     font-weight: $font-weight-semibold;
     color: var(--ion-color-primary);
 
     ion-icon {
-      font-size: 18px;
+      font-size: $font-size-lg;
     }
   }
 }
@@ -36,13 +36,13 @@
 
       p {
         color: var(--ion-color-medium);
-        font-size: 14px;
+        font-size: $font-size-sm;
         margin: 0;
       }
     }
 
     ion-icon {
-      font-size: 24px;
+      font-size: $font-size-2xl;
     }
   }
 }
@@ -100,7 +100,7 @@ ion-card {
       color: var(--ion-color-primary);
 
       ion-icon {
-        font-size: 18px;
+        font-size: $font-size-lg;
       }
     }
 

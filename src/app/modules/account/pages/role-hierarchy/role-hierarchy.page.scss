@@ -100,7 +100,9 @@
   box-shadow: $box-shadow-md;
   border: $border-width-thin solid var(--ion-color-light-shade);
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition:
+    box-shadow $transition-base,
+    transform $transition-base;
   margin-left: 0;
 
   &:hover {
@@ -129,7 +131,7 @@
   }
 
   .role-icon {
-    font-size: 24px;
+    font-size: $font-size-2xl;
     color: white;
   }
 
@@ -171,7 +173,7 @@
     min-width: 32px;
 
     ion-icon {
-      font-size: 20px;
+      font-size: $font-size-xl;
     }
   }
 }
@@ -197,7 +199,7 @@
   border-radius: $border-radius-md;
   border: $border-width-thin solid var(--ion-color-light-shade);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform $transition-fast;
 
   &:hover {
     background: var(--ion-color-primary-tint);
@@ -223,7 +225,7 @@
   }
 
   .default-avatar {
-    font-size: 32px;
+    font-size: $font-size-4xl;
     color: var(--ion-color-medium);
   }
 }

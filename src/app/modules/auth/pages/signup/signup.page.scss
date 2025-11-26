@@ -55,7 +55,7 @@ h3 {
 }
 
 h2 {
-  font-size: 24px;
+  font-size: $font-size-2xl;
   font-weight: $font-weight-bold;
   text-align: center;
 }
@@ -75,9 +75,6 @@ ion-card {
 }
 
 ion-content {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
   --padding-start: 0;
   --padding-end: 0;
   --padding-top: var(--signup-header-height);
@@ -106,9 +103,7 @@ ion-card-content.content-center {
 }
 
 app-info-footer {
-  margin-bottom: 0;
   flex-shrink: 0;
-  margin-top: auto;
 }
 
 .col-container {
@@ -172,7 +167,9 @@ app-info-footer {
   border: $border-width-thin solid
     var(--ion-border-color, var(--ion-color-step-150));
   box-shadow: var(--ion-card-box-shadow, $box-shadow-md);
-  transition: all 200ms ease;
+  transition:
+    box-shadow $transition-fast,
+    transform $transition-fast;
   color: var(--ion-text-color);
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -191,13 +188,13 @@ app-info-footer {
 }
 
 .profile-type-icon {
-  font-size: 32px;
+  font-size: $font-size-4xl;
   color: var(--ion-color-primary);
 }
 
 .profile-type-title {
   margin: 0;
-  font-size: 20px;
+  font-size: $font-size-xl;
   font-weight: $font-weight-bold;
   text-align: left;
   color: var(--ion-text-color);
@@ -205,7 +202,7 @@ app-info-footer {
 
 .profile-type-description {
   margin: 4px 0 0;
-  font-size: 14px;
+  font-size: $font-size-sm;
   color: var(--ion-color-medium);
   line-height: 1.5;
   word-wrap: break-word;
@@ -235,12 +232,12 @@ app-info-footer {
 }
 
 .profile-type-segment ion-icon {
-  font-size: 20px;
+  font-size: $font-size-lg;
 }
 
 .profile-type-helper {
   margin: 10px 0 0;
-  font-size: 13px;
+  font-size: $font-size-xs;
   color: var(--ion-color-medium);
   line-height: 1.4;
 }
@@ -289,15 +286,15 @@ app-info-footer {
   }
 
   .profile-type-icon {
-    font-size: 28px;
+    font-size: 1.75rem;
   }
 
   .profile-type-title {
-    font-size: 18px;
+    font-size: $font-size-lg;
   }
 
   .profile-type-description {
-    font-size: 13px;
+    font-size: $font-size-xs;
   }
 
   .profile-type-segment ion-segment-button {
@@ -307,10 +304,10 @@ app-info-footer {
   }
 
   h1 {
-    font-size: 24px;
+    font-size: $font-size-2xl;
   }
 
   h3 {
-    font-size: 16px;
+    font-size: $font-size-base;
   }
 }

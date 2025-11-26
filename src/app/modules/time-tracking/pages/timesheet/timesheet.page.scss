@@ -44,7 +44,7 @@
 
     ion-icon {
       color: var(--ion-color-primary);
-      font-size: 20px;
+      font-size: $font-size-xl;
     }
 
     .group-name {
@@ -60,7 +60,7 @@
       --padding-end: 12px;
       --padding-top: 8px;
       --padding-bottom: 8px;
-      font-size: 14px;
+      font-size: $font-size-sm;
       font-weight: $font-weight-medium;
 
       ion-icon {
@@ -161,7 +161,7 @@
     font-size: 0.875rem;
 
     ion-icon {
-      font-size: 16px;
+      font-size: $font-size-base;
       flex-shrink: 0;
     }
   }
@@ -180,7 +180,7 @@
     font-weight: $font-weight-medium;
 
     ion-icon {
-      font-size: 18px;
+      font-size: $font-size-lg;
       flex-shrink: 0;
       color: var(--ion-color-warning);
     }
@@ -285,7 +285,7 @@
   text-align: center;
 
   ion-icon {
-    font-size: 48px;
+    font-size: $font-size-5xl;
     color: var(--ion-color-medium);
     margin-bottom: 16px;
   }
@@ -320,7 +320,7 @@
 // Return to current week button
 .return-current-week-btn {
   margin-top: 8px;
-  --font-size: 12px;
+  --font-size: $font-size-xs;
   --padding-start: 8px;
   --padding-end: 8px;
   --padding-top: 4px;
@@ -342,7 +342,7 @@
     gap: 12px;
 
     ion-icon {
-      font-size: 24px;
+      font-size: $font-size-2xl;
       flex-shrink: 0;
     }
 
@@ -388,7 +388,9 @@
 .submit-button {
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition:
+    transform $transition-base,
+    opacity $transition-base;
 
   &.submitting {
     --color: var(--ion-color-light);
@@ -414,7 +416,9 @@
 
 // Status badge transitions
 .status-info ion-badge {
-  transition: all 0.3s ease;
+  transition:
+    transform $transition-base,
+    opacity $transition-base;
 
   &.badge-pending {
     animation: pulse-badge 2s infinite;

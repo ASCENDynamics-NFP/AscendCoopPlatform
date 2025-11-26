@@ -75,7 +75,7 @@
         align-items: center;
         gap: $spacing-sm;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: background-color $transition-fast;
         color: var(--ion-text-color);
 
         &:hover {
@@ -329,7 +329,9 @@
     --background: var(--ion-card-background);
     border: $border-width-thin solid var(--ion-border-color);
     box-shadow: $box-shadow-sm;
-    transition: all 0.3s ease;
+    transition:
+      transform $transition-base,
+      box-shadow $transition-base;
     overflow: hidden;
 
     &:hover {
@@ -1148,7 +1150,9 @@
         --background: rgba(var(--ion-color-medium-rgb), 0.03);
         border: $border-width-thin solid rgba(var(--ion-color-medium-rgb), 0.15);
         opacity: 0.9;
-        transition: all 0.3s ease;
+        transition:
+          transform $transition-base,
+          box-shadow $transition-base;
 
         &:hover {
           opacity: 1;
@@ -1519,7 +1523,9 @@
             padding: $spacing-sm $spacing-sm;
             border-radius: $border-radius-md;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition:
+              background-color $transition-fast,
+              transform $transition-fast;
 
             &:hover {
               background: var(--ion-color-light-shade);
@@ -1561,7 +1567,9 @@
         border-radius: $border-radius-lg;
         padding: $spacing-lg;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition:
+          background-color $transition-base,
+          border-color $transition-base;
         border: 2px solid transparent;
         position: relative;
         overflow: hidden;
@@ -1705,7 +1713,9 @@
           align-items: center;
           gap: $spacing-sm;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition:
+            background-color $transition-fast,
+            transform $transition-fast;
           color: var(--ion-color-dark);
 
           &:hover {

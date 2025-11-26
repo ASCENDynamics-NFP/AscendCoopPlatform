@@ -29,7 +29,7 @@ export class ChatHelperService {
   }> {
     const result = {
       canAccess: false,
-      otherParticipantId: null,
+      otherParticipantId: null as string | null,
       isContactBlocked: false,
       canSendMessages: true,
     };

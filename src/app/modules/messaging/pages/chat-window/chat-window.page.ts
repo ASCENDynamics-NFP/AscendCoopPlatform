@@ -57,6 +57,7 @@ import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {UserReportModalComponent} from "../../components/user-report-modal/user-report-modal.component";
 import {ChatParticipantsModalComponent} from "../../components/chat-participants-modal/chat-participants-modal.component";
+import {ChatHelperService} from "../../services/chat-helper.service";
 
 @Component({
   selector: "app-chat-window",
@@ -112,6 +113,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     private networkService: NetworkConnectionService,
     private offlineSync: OfflineSyncService,
     private platform: Platform,
+    private chatHelper: ChatHelperService,
   ) {}
 
   ngOnInit() {
@@ -322,69 +324,20 @@ export class ChatWindowPage implements OnInit, OnDestroy {
    * Validate user has access to this chat based on relationships
    */
   private async validateChatAccess(chat: Chat) {
-    try {
-      if (!this.currentUserId) {
-        this.showErrorToast("Authentication required");
-        this.router.navigate(["/messaging/chats"]);
-        return;
-      }
+    if (!this.currentUserId) return;
 
-      // Check if user is a participant
-      if (!chat.participants.includes(this.currentUserId)) {
-        this.showErrorToast("You don't have access to this chat");
-        this.router.navigate(["/messaging/chats"]);
-        return;
-      }
+    const result = await this.chatHelper.validateChatAccess(
+      chat,
+      this.currentUserId,
+    );
 
-      // For group chats, skip individual relationship validation
-      if (chat.isGroup) {
-        return;
-      }
-
-      // For 1-on-1 chats, validate relationship with the other participant
-      this.otherParticipantId =
-        chat.participants.find((p) => p !== this.currentUserId) || null;
-
-      if (this.otherParticipantId) {
-        // Check if contact is blocked
-        this.isContactBlocked =
-          (await firstValueFrom(
-            this.relationshipService.isUserBlocked(
-              this.currentUserId,
-              this.otherParticipantId,
-            ),
-          )) || false;
-
-        // Check if can message
-        this.canSendMessages =
-          !this.isContactBlocked &&
-          ((await firstValueFrom(
-            this.relationshipService.canMessage(
-              this.currentUserId,
-              this.otherParticipantId,
-            ),
-          )) ||
-            false);
-
-        // Validate that user can access this chat
-        if (
-          !(await firstValueFrom(
-            this.relationshipService.canMessage(
-              this.currentUserId,
-              this.otherParticipantId,
-            ),
-          ))
-        ) {
-          this.showErrorToast("You can only message accepted friends");
-          this.router.navigate(["/messaging/chats"]);
-          return;
-        }
-      }
-    } catch (error) {
-      console.error("Error validating chat access:", error);
-      this.showErrorToast("Error validating chat access");
-      this.router.navigate(["/messaging/chats"]);
+    if (!result.canAccess) {
+      return;
     }
+
+    this.otherParticipantId = result.otherParticipantId;
+    this.isContactBlocked = result.isContactBlocked;
+    this.canSendMessages = result.canSendMessages;
   }
 
   /**
@@ -470,7 +423,17 @@ export class ChatWindowPage implements OnInit, OnDestroy {
       );
     } catch (error) {
       console.error("Error sending message:", error);
-      this.showErrorToast("Failed to send message");
+
+      // Handle specific encryption errors
+      const errorMessage = (error as any).message;
+      if (
+        errorMessage &&
+        errorMessage.includes("Cannot send encrypted message")
+      ) {
+        this.showErrorToast(errorMessage);
+      } else {
+        this.showErrorToast("Failed to send message");
+      }
 
       // Update optimistic message status to failed
       this.messages = this.messages.map((msg) =>
@@ -539,7 +502,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     }
 
     this.selectedFile = file;
-    this.filePreviewType = this.getFilePreviewType(file);
+    this.filePreviewType = this.chatHelper.getFilePreviewType(file);
 
     // Create preview URL for images and videos
     if (this.filePreviewType === "image" || this.filePreviewType === "video") {
@@ -550,23 +513,6 @@ export class ChatWindowPage implements OnInit, OnDestroy {
 
     // Trigger change detection for OnPush strategy
     this.cdr.detectChanges();
-  }
-
-  /**
-   * Get file preview type based on MIME type
-   */
-  private getFilePreviewType(
-    file: File,
-  ): "image" | "video" | "audio" | "document" {
-    if (file.type.startsWith("image/")) {
-      return "image";
-    } else if (file.type.startsWith("video/")) {
-      return "video";
-    } else if (file.type.startsWith("audio/")) {
-      return "audio";
-    } else {
-      return "document";
-    }
   }
 
   /**
@@ -611,23 +557,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
    * Get file icon based on file type
    */
   getFileIcon(fileType: string): string {
-    if (fileType.startsWith("image/")) return "image-outline";
-    if (fileType.startsWith("video/")) return "videocam-outline";
-    if (fileType.startsWith("audio/")) return "musical-notes-outline";
-    if (fileType.includes("pdf")) return "document-text-outline";
-    if (fileType.includes("word") || fileType.includes("doc"))
-      return "document-outline";
-    if (fileType.includes("excel") || fileType.includes("sheet"))
-      return "grid-outline";
-    if (fileType.includes("powerpoint") || fileType.includes("presentation"))
-      return "easel-outline";
-    if (
-      fileType.includes("zip") ||
-      fileType.includes("rar") ||
-      fileType.includes("archive")
-    )
-      return "archive-outline";
-    return "document-outline";
+    return this.chatHelper.getFileIcon(fileType);
   }
 
   /**

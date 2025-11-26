@@ -93,6 +93,7 @@ export interface CreateRelationshipRequest {
 }
 
 export interface SearchAccountsRequest {
+  query?: string;
   location?: {
     latitude: number;
     longitude: number;

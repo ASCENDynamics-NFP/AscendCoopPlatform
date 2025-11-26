@@ -55,13 +55,7 @@ export const routes: Routes = [
         (m) => m.MessagingModule,
       ),
   },
-  {
-    path: "account/:accountId/time-tracking",
-    loadChildren: () =>
-      import("./modules/time-tracking/time-tracking.module").then(
-        (m) => m.TimeTrackingModule,
-      ),
-  },
+
   {
     path: "time-entry",
     loadChildren: () =>

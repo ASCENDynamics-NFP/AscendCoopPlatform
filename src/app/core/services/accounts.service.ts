@@ -24,7 +24,7 @@ import {AngularFirestore} from "@angular/fire/compat/firestore";
 import {combineLatest, Observable, of} from "rxjs";
 import {catchError, map, tap} from "rxjs/operators";
 import {Account, RelatedAccount} from "../../../../shared/models/account.model";
-import {RelatedListing} from "../../../../shared/models/related-listing.model";
+
 import {FirestoreService} from "./firestore.service";
 import {
   FirebaseFunctionsService,
@@ -119,27 +119,6 @@ export class AccountsService {
   // ===== LEGACY METHODS (keeping for backward compatibility) =====
 
   /**
-   * @deprecated Use searchAccounts() with SearchAccountsRequest instead
-   */
-  searchAccountByName(
-    collectionName: string,
-    searchTerm: string,
-  ): Observable<Account[]> {
-    // Convert to new search format
-    return this.searchAccounts({
-      // We can't filter by name directly in the new function
-      // This method should be updated to use text search when available
-      limit: 20,
-    }).pipe(
-      map((accounts) =>
-        accounts.filter((account) =>
-          account.name?.toLowerCase().includes(searchTerm.toLowerCase()),
-        ),
-      ),
-    );
-  }
-
-  /**
    * @deprecated Direct Firestore access - consider using callable functions for relationships
    */
   getRelatedAccounts(accountId: string): Observable<RelatedAccount[]> {
@@ -158,53 +137,6 @@ export class AccountsService {
       catchError((error) => {
         console.error("Error getting related accounts:", error);
         return of([]);
-      }),
-    );
-  }
-
-  /**
-   * @deprecated Use searchAccounts() instead with proper filtering
-   */
-  getAllAccounts(): Observable<Account[]> {
-    return this.searchAccounts({
-      limit: 1000, // Increased limit for directory page
-    });
-  }
-
-  /**
-   * Get account with related data - using mixed approach
-   * TODO: Replace with pure callable functions when relationship functions are available
-   */
-  getAccountWithRelated(accountId: string): Observable<{
-    account: Account | null;
-    relatedAccounts: RelatedAccount[];
-    relatedListings: RelatedListing[];
-  }> {
-    return combineLatest([
-      this.getAccount(accountId), // Using callable function
-      this.getRelatedAccounts(accountId), // Legacy Firestore access
-      this.afs
-        .collection<RelatedListing>(`accounts/${accountId}/relatedListings`)
-        .snapshotChanges()
-        .pipe(
-          map((actions) =>
-            actions.map((action) => {
-              const data = action.payload.doc.data() as RelatedListing;
-              const id = action.payload.doc.id;
-              return {...data, id};
-            }),
-          ),
-          catchError(() => of([])),
-        ),
-    ]).pipe(
-      map(([account, relatedAccounts, relatedListings]) => ({
-        account,
-        relatedAccounts,
-        relatedListings,
-      })),
-      catchError((error) => {
-        console.error("Error getting account with related data:", error);
-        return of({account: null, relatedAccounts: [], relatedListings: []});
       }),
     );
   }

@@ -2,7 +2,8 @@
   <app-header [title]="'time_tracking.time_approvals'" [defaultHref]="'/'">
     <ion-button
       header-end
-      [routerLink]="['/account', accountId, 'time-tracking', 'reports']"
+      [routerLink]="['/time-entry', 'reports']"
+      [queryParams]="{accountId: accountId}"
       fill="outline"
     >
       <ion-icon name="analytics-outline" slot="icon-only"></ion-icon>
@@ -120,7 +121,6 @@
               >
             </ion-select>
           </ion-item>
-
         </div>
 
         <div class="filter-row">

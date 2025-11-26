@@ -129,7 +129,10 @@ export class ApprovalsPage implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.accountId = this.route.snapshot.paramMap.get("accountId") ?? "";
+    this.accountId =
+      this.route.snapshot.queryParamMap.get("accountId") ??
+      this.route.snapshot.paramMap.get("accountId") ??
+      "";
 
     // Load account data
     this.account$ = this.store.select(selectAccountById(this.accountId));

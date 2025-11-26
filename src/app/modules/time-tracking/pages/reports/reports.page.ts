@@ -438,8 +438,11 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit() {
-    // Get accountId from route parameters
-    this.currentAccountId = this.route.snapshot.paramMap.get("accountId") ?? "";
+    // Get accountId from route parameters (supports both query and path params for backward compatibility)
+    this.currentAccountId =
+      this.route.snapshot.queryParamMap.get("accountId") ??
+      this.route.snapshot.paramMap.get("accountId") ??
+      "";
 
     if (this.currentAccountId) {
       // Dispatch action to load projects into the store

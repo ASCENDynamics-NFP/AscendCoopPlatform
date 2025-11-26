@@ -130,7 +130,17 @@ export class EncryptedChatService {
       if (currentUserId === userId) {
         const storedKeyPair =
           await this.encryptionService.getStoredKeyPair(userId);
+
         if (storedKeyPair) {
+          // Self-healing: Ensure public key exists in Firestore
+          // This fixes cases where key generation succeeded locally but failed to upload
+          this.ensurePublicKeyInFirestore(
+            userId,
+            storedKeyPair.publicKey,
+          ).catch((err: any) =>
+            console.warn("Background public key check failed:", err),
+          );
+
           return storedKeyPair.publicKey;
         }
 
@@ -139,23 +149,7 @@ export class EncryptedChatService {
         await this.encryptionService.storeKeyPair(keyPair, userId);
 
         // Store public key in Firestore for other users
-        const publicKeyString = await this.encryptionService.exportPublicKey(
-          keyPair.publicKey,
-        );
-
-        try {
-          await this.firestore.collection("userKeys").doc(userId).set({
-            publicKey: publicKeyString,
-            createdAt: new Date(),
-            userId: userId,
-          });
-        } catch (firestoreError) {
-          console.warn(
-            "Failed to store public key in Firestore:",
-            firestoreError,
-          );
-          // Continue - local key generation was successful
-        }
+        await this.ensurePublicKeyInFirestore(userId, keyPair.publicKey);
 
         return keyPair.publicKey;
       }
@@ -299,10 +293,13 @@ export class EncryptedChatService {
           );
         }
 
-        // If some participants couldn't receive encrypted message, log warning but continue
+        // If some participants couldn't receive encrypted message, fail if encryption was explicitly requested
         if (encryptionFailures > 0) {
           console.warn(
             `${encryptionFailures} participants cannot receive encrypted message`,
+          );
+          throw new Error(
+            "Cannot send encrypted message: One or more recipients have not enabled encryption",
           );
         }
 
@@ -1189,6 +1186,38 @@ export class EncryptedChatService {
         success: false,
         message: `Failed to regenerate keys: ${errorMessage}`,
       };
+    }
+  }
+
+  /**
+   * Helper to ensure public key is stored in Firestore
+   */
+  private async ensurePublicKeyInFirestore(
+    userId: string,
+    publicKey: CryptoKey,
+  ): Promise<void> {
+    try {
+      // Check if key already exists to avoid unnecessary writes
+      const userKeyDoc = await firstValueFrom(
+        this.firestore.collection("userKeys").doc(userId).get(),
+      );
+
+      if (!userKeyDoc.exists) {
+        console.log(
+          `Restoring missing public key to Firestore for user ${userId}`,
+        );
+        const publicKeyString =
+          await this.encryptionService.exportPublicKey(publicKey);
+
+        await this.firestore.collection("userKeys").doc(userId).set({
+          publicKey: publicKeyString,
+          createdAt: new Date(),
+          userId: userId,
+        });
+      }
+    } catch (error) {
+      console.warn("Failed to ensure public key in Firestore:", error);
+      // Don't throw - we want to be resilient
     }
   }
 }

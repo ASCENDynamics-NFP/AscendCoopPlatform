@@ -30,7 +30,7 @@ import {AccessService} from "../services/access.service";
 export const adminGroupOwnerGuard: CanActivateFn = (route) => {
   const store = inject(Store);
   const access = inject(AccessService);
-  const accountId = route.params["accountId"];
+  const accountId = route.params["accountId"] || route.queryParams["accountId"];
   if (!accountId) return of(false);
 
   return combineLatest([

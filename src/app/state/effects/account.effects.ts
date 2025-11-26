@@ -77,7 +77,7 @@ export class AccountEffects {
       ofType(AccountActions.loadAccounts),
       // TEMP: Removed freshness check to force reload
       switchMap(() => {
-        return this.accountsService.getAllAccounts().pipe(
+        return this.accountsService.searchAccounts({limit: 1000}).pipe(
           map((accounts) => {
             return AccountActions.loadAccountsSuccess({accounts});
           }),
@@ -215,7 +215,7 @@ export class AccountEffects {
       ofType(AccountActions.searchAccounts),
       debounceTime(300),
       switchMap(({query}) =>
-        from(this.accountsService.searchAccountByName("accounts", query)).pipe(
+        this.accountsService.searchAccounts({query, limit: 20}).pipe(
           map((accountsData) => {
             const accounts: Account[] = (accountsData || []).map(
               (accountData) => ({

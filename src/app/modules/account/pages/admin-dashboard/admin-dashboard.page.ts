@@ -345,21 +345,15 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
   }
 
   navigateToTimeTrackingApprovals() {
-    this.router.navigate([
-      "/account",
-      this.accountId,
-      "time-tracking",
-      "approvals",
-    ]);
+    this.router.navigate(["/time-entry", "approvals"], {
+      queryParams: {accountId: this.accountId},
+    });
   }
 
   navigateToTimeTrackingReports() {
-    this.router.navigate([
-      "/account",
-      this.accountId,
-      "time-tracking",
-      "reports",
-    ]);
+    this.router.navigate(["/time-entry", "reports"], {
+      queryParams: {accountId: this.accountId},
+    });
   }
 
   navigateToMembers() {

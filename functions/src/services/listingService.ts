@@ -1,11 +1,17 @@
 /**
  * Listing Service - Centralized business logic for listing operations
  */
-import {getFirestore, Timestamp, WriteBatch} from "firebase-admin/firestore";
+import {
+  getFirestore,
+  Timestamp,
+  WriteBatch,
+  GeoPoint,
+} from "firebase-admin/firestore";
 import {logger} from "firebase-functions/v2";
 import {HttpsError} from "firebase-functions/v2/https";
 import * as functions from "firebase-functions/v2";
 import {NotificationService} from "./notificationService";
+import {geocodeAddress} from "../utils/geocoding";
 
 const db = getFirestore();
 
@@ -32,6 +38,8 @@ export interface CreateListingRequest {
     }>;
   };
   requirements?: string[];
+  responsibilities?: string[];
+  benefits?: string[];
   skills?: string[];
   timeCommitment?: {
     hoursPerWeek?: number;
@@ -147,6 +155,8 @@ export class ListingService {
       "remote",
       "contactInformation",
       "requirements",
+      "responsibilities",
+      "benefits",
       "skills",
       "timeCommitment",
       "iconImage",
@@ -227,6 +237,8 @@ export class ListingService {
           addresses: geocodedAddresses,
         },
         requirements: data.requirements || [],
+        responsibilities: data.responsibilities || [],
+        benefits: data.benefits || [],
         skills: data.skills || [],
         timeCommitment: data.timeCommitment || {},
         iconImage: data.iconImage || null,
@@ -923,10 +935,55 @@ export class ListingService {
     }
   }
 
+  /**
+   * Geocode addresses using Google Maps Geocoding API
+   * Populates geopoint field on each address that can be geocoded
+   */
   private static async geocodeAddresses(addresses: any[]): Promise<any[]> {
-    // Implementation would depend on your geocoding utility
-    // For now, return addresses as-is
-    return addresses;
+    if (!addresses || addresses.length === 0) {
+      return addresses;
+    }
+
+    const geocodedAddresses = await Promise.all(
+      addresses.map(async (address) => {
+        // Skip if already has geopoint or is marked as remote
+        if (address.geopoint || address.remote) {
+          return address;
+        }
+
+        // Build address string for geocoding
+        const addressParts = [
+          address.street,
+          address.city,
+          address.state,
+          address.zipcode || address.zipCode,
+          address.country,
+        ].filter(Boolean);
+
+        if (addressParts.length === 0) {
+          return address;
+        }
+
+        const addressString = addressParts.join(", ");
+
+        try {
+          const result = await geocodeAddress(addressString);
+          if (result) {
+            return {
+              ...address,
+              formatted: result.formatted_address,
+              geopoint: new GeoPoint(result.lat, result.lng),
+            };
+          }
+        } catch (error) {
+          logger.warn(`Failed to geocode address: ${addressString}`, error);
+        }
+
+        return address;
+      }),
+    );
+
+    return geocodedAddresses;
   }
 
   private static async createOwnerRelationships(
@@ -1100,6 +1157,8 @@ export class ListingService {
     location?: {latitude: number; longitude: number; radius?: number};
     remote?: boolean;
     skills?: string[];
+    hoursPerWeekMin?: number;
+    hoursPerWeekMax?: number;
     limit?: number;
     startAfter?: string;
     requesterId: string;
@@ -1149,10 +1208,25 @@ export class ListingService {
 
       const limit = Math.min(options.limit || 20, 50);
 
-      let query = db
-        .collection("listings")
-        .where("status", "==", "active")
-        .limit(limit + 1);
+      // Determine if we need post-query filtering
+      const hasPostQueryFilters =
+        (options.skills && options.skills.length > 0) ||
+        options.hoursPerWeekMin !== undefined ||
+        options.hoursPerWeekMax !== undefined ||
+        options.query ||
+        (options.location && !options.remote);
+
+      let query = db.collection("listings").where("status", "==", "active");
+
+      // Only apply limit at query level if no post-query filters
+      // Otherwise, fetch more to allow filtering
+      if (!hasPostQueryFilters) {
+        query = query.limit(limit + 1);
+      } else {
+        // Fetch more listings to account for post-query filtering
+        // Cap at 200 to avoid excessive reads
+        query = query.limit(200);
+      }
 
       // Apply filters that can be done at database level
       if (options.type) {
@@ -1185,15 +1259,33 @@ export class ListingService {
       })) as any[];
 
       // Apply location filtering (post-query for geographic search)
+      // Looks for geopoint in contactInformation.addresses[]
       if (options.location && !options.remote) {
         const {latitude, longitude, radius = 25} = options.location;
         listings = listings.filter((listing) => {
-          if (!listing.location?.coordinates) return false;
+          // Find the first address with a geopoint (prefer primary address)
+          const addresses = listing.contactInformation?.addresses || [];
+          const primaryAddress = addresses.find(
+            (addr: any) => addr.isPrimaryAddress && addr.geopoint,
+          );
+          const addressWithGeo =
+            primaryAddress || addresses.find((addr: any) => addr.geopoint);
+
+          if (!addressWithGeo?.geopoint) return false;
+
+          // GeoPoint from Firestore has _latitude and _longitude properties
+          const geopoint = addressWithGeo.geopoint;
+          const listingLat = geopoint._latitude ?? geopoint.latitude;
+          const listingLng = geopoint._longitude ?? geopoint.longitude;
+
+          if (listingLat === undefined || listingLng === undefined)
+            return false;
+
           const distance = this.calculateDistance(
             latitude,
             longitude,
-            listing.location.coordinates.latitude,
-            listing.location.coordinates.longitude,
+            listingLat,
+            listingLng,
           );
           return distance <= radius;
         });
@@ -1202,17 +1294,56 @@ export class ListingService {
       // Apply skills filtering
       if (options.skills && options.skills.length > 0) {
         const skillsLower = options.skills.map((s) => s.toLowerCase());
+        logger.info("Skills filter applied", {
+          requestedSkills: skillsLower,
+          listingsBeforeFilter: listings.length,
+        });
         listings = listings.filter((listing) => {
-          if (!listing.requiredSkills || !Array.isArray(listing.requiredSkills))
+          if (!listing.skills || !Array.isArray(listing.skills)) {
+            logger.debug(`Listing ${listing.id} has no skills array`);
             return false;
-          const listingSkills = listing.requiredSkills.map((s: string) =>
-            s.toLowerCase(),
+          }
+          // Handle SkillRequirement objects: extract 'name' property
+          const listingSkills = listing.skills.map((s: any) =>
+            (typeof s === "string" ? s : s.name || "").toLowerCase(),
           );
-          return skillsLower.some((skill) =>
+          const hasMatch = skillsLower.some((skill) =>
             listingSkills.some((listingSkill: string) =>
               listingSkill.includes(skill),
             ),
           );
+          if (!hasMatch) {
+            logger.debug(`Listing ${listing.id} skills don't match`, {
+              listingSkills,
+              requestedSkills: skillsLower,
+            });
+          }
+          return hasMatch;
+        });
+        logger.info("Skills filter result", {
+          listingsAfterFilter: listings.length,
+        });
+      }
+
+      // Apply hours per week filtering
+      if (
+        options.hoursPerWeekMin !== undefined ||
+        options.hoursPerWeekMax !== undefined
+      ) {
+        listings = listings.filter((listing) => {
+          const hours = listing.timeCommitment?.hoursPerWeek;
+          if (hours === undefined || hours === null) return false;
+          if (
+            options.hoursPerWeekMin !== undefined &&
+            hours < options.hoursPerWeekMin
+          )
+            return false;
+          if (
+            options.hoursPerWeekMax !== undefined &&
+            hours > options.hoursPerWeekMax
+          )
+            return false;
+          return true;
         });
       }
 
@@ -1235,30 +1366,28 @@ export class ListingService {
       const hasMore = listings.length > limit;
       const resultListings = listings.slice(0, limit);
 
-      // Remove sensitive data and add computed fields
+      // Return full listing data (excluding only internal/sensitive fields)
       const publicListings = resultListings.map((listing) => ({
         id: listing.id,
         title: listing.title,
+        organization: listing.organization,
         description: listing.description,
         type: listing.type,
         category: listing.category,
         status: listing.status,
-        requiredSkills: listing.requiredSkills,
         remote: listing.remote,
-        location: listing.location
-          ? {
-              address: listing.location.address,
-              city: listing.location.city,
-              state: listing.location.state,
-              country: listing.location.country,
-            }
-          : null,
-        budget: listing.budget,
+        skills: listing.skills,
+        requirements: listing.requirements,
+        responsibilities: listing.responsibilities,
+        benefits: listing.benefits,
+        contactInformation: listing.contactInformation,
         timeCommitment: listing.timeCommitment,
-        applicationCount: listing.applicationCount || 0,
+        iconImage: listing.iconImage,
+        heroImage: listing.heroImage,
+        ownerAccountId: listing.ownerAccountId,
         createdBy: listing.createdBy,
         createdAt: listing.createdAt,
-        updatedAt: listing.updatedAt,
+        lastModifiedAt: listing.lastModifiedAt,
       }));
 
       return {

@@ -41,7 +41,7 @@ export const selectListingsState =
 export const selectRelatedAccountsByListingId = (listingId: string) =>
   createSelector(
     selectListingsState,
-    (state: ListingsState) => state.relatedAccounts[listingId] || [],
+    (state: ListingsState) => state?.relatedAccounts?.[listingId] || [],
   );
 
 // Select all listings
@@ -76,25 +76,49 @@ export const selectSelectedListing = createSelector(
 // Select loading state
 export const selectLoading = createSelector(
   selectListingsState,
-  (state: ListingsState) => state.loading,
+  (state: ListingsState) => state?.loading ?? false,
 );
 
 // Select error state
 export const selectError = createSelector(
   selectListingsState,
-  (state: ListingsState) => state.error,
+  (state: ListingsState) => state?.error ?? null,
 );
 
 // Select filter type
 export const selectFilterType = createSelector(
   selectListingsState,
-  (state: ListingsState) => state.filterType,
+  (state: ListingsState) => state?.filterType ?? "all",
 );
 
 // Select search query
 export const selectSearchQuery = createSelector(
   selectListingsState,
-  (state: ListingsState) => state.searchQuery,
+  (state: ListingsState) => state?.searchQuery ?? "",
+);
+
+// Select advanced filters
+export const selectAdvancedFilters = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state?.advancedFilters,
+);
+
+// Select if advanced search is active
+export const selectIsAdvancedSearchActive = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state?.isAdvancedSearchActive ?? false,
+);
+
+// Select has more results
+export const selectHasMoreResults = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state?.hasMoreResults ?? false,
+);
+
+// Select next cursor for pagination
+export const selectNextCursor = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state?.nextCursor,
 );
 
 // Select filtered listings
@@ -127,14 +151,14 @@ export const selectFilteredListings = createSelector(
 // Cache and Freshness Selectors
 export const selectListingsLastUpdated = createSelector(
   selectListingsState,
-  (state: ListingsState) => state.listingsLastUpdated,
+  (state: ListingsState) => state?.listingsLastUpdated ?? null,
 );
 
 export const selectRelatedAccountsLastUpdated = (listingId: string) =>
   createSelector(
     selectListingsState,
     (state: ListingsState) =>
-      state.relatedAccountsLastUpdated[listingId] || null,
+      state?.relatedAccountsLastUpdated?.[listingId] || null,
   );
 
 // Determine if listings are fresh

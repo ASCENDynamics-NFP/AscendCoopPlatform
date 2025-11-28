@@ -22,6 +22,7 @@
 import {createReducer, on} from "@ngrx/store";
 import {createEntityAdapter, EntityAdapter, EntityState} from "@ngrx/entity";
 import * as ListingsActions from "../actions/listings.actions";
+import {AdvancedFilters} from "../actions/listings.actions";
 import {Listing} from "@shared/models/listing.model";
 import {ListingRelatedAccount} from "@shared/models/listing-related-account.model";
 
@@ -33,6 +34,12 @@ export interface ListingsState extends EntityState<Listing> {
   filterType: string; // Type of listing to filter (e.g., 'all', 'active')
   searchQuery: string; // Search query for filtering listings
 
+  // Advanced filtering state
+  advancedFilters: AdvancedFilters;
+  isAdvancedSearchActive: boolean;
+  hasMoreResults: boolean;
+  nextCursor: string | null;
+
   // Timestamps for cache invalidation
   listingsLastUpdated: number | null;
   relatedAccountsLastUpdated: {[listingId: string]: number | null};
@@ -41,6 +48,18 @@ export interface ListingsState extends EntityState<Listing> {
 export const listingsAdapter: EntityAdapter<Listing> =
   createEntityAdapter<Listing>({selectId: (listing) => listing.id});
 
+const initialAdvancedFilters: AdvancedFilters = {
+  location: null,
+  radiusKm: null,
+  skills: [],
+  type: null,
+  remote: null,
+  hoursPerWeekMin: null,
+  hoursPerWeekMax: null,
+  limit: 20,
+  startAfter: null,
+};
+
 const initialState: ListingsState = listingsAdapter.getInitialState({
   relatedAccounts: {},
   selectedListingId: null,
@@ -48,6 +67,11 @@ const initialState: ListingsState = listingsAdapter.getInitialState({
   error: null,
   filterType: "all",
   searchQuery: "",
+  // Advanced filtering state
+  advancedFilters: initialAdvancedFilters,
+  isAdvancedSearchActive: false,
+  hasMoreResults: false,
+  nextCursor: null,
   // Timestamps for cache invalidation
   listingsLastUpdated: null,
   relatedAccountsLastUpdated: {},
@@ -217,4 +241,55 @@ export const listingsReducer = createReducer(
     console.error("Failed to update related account:", error);
     return state;
   }),
+
+  // Advanced Search Actions
+  on(ListingsActions.advancedSearchListings, (state, {filters}) => ({
+    ...state,
+    loading: true,
+    error: null,
+    advancedFilters: {...state.advancedFilters, ...filters},
+    isAdvancedSearchActive: true,
+  })),
+
+  on(
+    ListingsActions.advancedSearchListingsSuccess,
+    (state, {listings, hasMore, nextCursor}) =>
+      listingsAdapter.setAll(listings, {
+        ...state,
+        loading: false,
+        hasMoreResults: hasMore,
+        nextCursor: nextCursor || null,
+        listingsLastUpdated: Date.now(),
+      }),
+  ),
+
+  on(ListingsActions.advancedSearchListingsFailure, (state, {error}) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
+
+  on(ListingsActions.updateAdvancedFilters, (state, {filters}) => ({
+    ...state,
+    advancedFilters: {...state.advancedFilters, ...filters},
+  })),
+
+  on(ListingsActions.clearAdvancedFilters, (state) => ({
+    ...state,
+    advancedFilters: initialAdvancedFilters,
+    isAdvancedSearchActive: false,
+    hasMoreResults: false,
+    nextCursor: null,
+    // Invalidate cache to force fresh load
+    listingsLastUpdated: null,
+  })),
+
+  on(ListingsActions.loadMoreListings, (state) => ({
+    ...state,
+    loading: true,
+    advancedFilters: {
+      ...state.advancedFilters,
+      startAfter: state.nextCursor,
+    },
+  })),
 );

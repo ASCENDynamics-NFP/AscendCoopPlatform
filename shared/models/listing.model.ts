@@ -33,8 +33,8 @@ export interface TimeCommitment {
   hoursPerWeek: number;
   duration: string;
   schedule: string;
-  startDate: Timestamp;
-  endDate: Timestamp;
+  startDate?: Timestamp;
+  endDate?: Timestamp;
   isFlexible: boolean;
 }
 

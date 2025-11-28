@@ -3,7 +3,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
-    "types": ["jasmine"],
+    "types": ["jasmine", "google.maps"],
     "paths": {
       "@southdevs/capacitor-google-auth": [
         "src/testing/capacitor-google-auth.mock.ts"

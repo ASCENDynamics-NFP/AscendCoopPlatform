@@ -460,6 +460,8 @@ export const searchListings = onCall(
       location,
       remote,
       skills,
+      hoursPerWeekMin,
+      hoursPerWeekMax,
       limit = 20,
       startAfter,
     } = request.data as {
@@ -469,6 +471,8 @@ export const searchListings = onCall(
       location?: {latitude: number; longitude: number; radius?: number};
       remote?: boolean;
       skills?: string[];
+      hoursPerWeekMin?: number;
+      hoursPerWeekMax?: number;
       limit?: number;
       startAfter?: string;
     };
@@ -481,6 +485,8 @@ export const searchListings = onCall(
         location,
         remote,
         skills,
+        hoursPerWeekMin,
+        hoursPerWeekMax,
         limit: Math.min(limit, 50), // Cap at 50
         startAfter,
         requesterId: userId,

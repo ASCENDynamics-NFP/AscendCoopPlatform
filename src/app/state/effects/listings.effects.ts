@@ -38,6 +38,7 @@ import {ListingsService} from "../../core/services/listings.service";
 import {FirebaseFunctionsService} from "../../core/services/firebase-functions.service";
 import {StorageService} from "../../core/services/storage.service";
 import * as ListingsActions from "../actions/listings.actions";
+import {AdvancedFilters} from "../actions/listings.actions";
 import {Listing} from "../../../../shared/models/listing.model";
 import {serverTimestamp} from "@angular/fire/firestore";
 import {ListingRelatedAccount} from "../../../../shared/models/listing-related-account.model";
@@ -50,7 +51,11 @@ import {
   selectListingById,
   selectAreListingsFresh,
   selectAreRelatedAccountsFresh,
+  selectAdvancedFilters,
+  selectNextCursor,
+  selectAllListings,
 } from "../selectors/listings.selectors";
+import {SearchListingsRequest} from "../../core/services/firebase-functions.service";
 
 @Injectable()
 export class ListingsEffects {
@@ -149,9 +154,16 @@ export class ListingsEffects {
     this.actions$.pipe(
       ofType(ListingsActions.loadListings),
       withLatestFrom(this.store.select(selectAreListingsFresh)),
-      filter(([_, areFresh]) => !areFresh), // Only load if not fresh
-      switchMap(() =>
-        this.listingsService
+      switchMap(([_, areFresh]) => {
+        // If data is fresh, dispatch success with empty action to reset loading
+        if (areFresh) {
+          return this.store.select(selectAllListings).pipe(
+            take(1),
+            map((listings) => ListingsActions.loadListingsSuccess({listings})),
+          );
+        }
+        // Otherwise fetch from backend
+        return this.listingsService
           .getCollectionWithCondition<Listing>(
             "listings",
             "status",
@@ -163,8 +175,8 @@ export class ListingsEffects {
             catchError((error) =>
               of(ListingsActions.loadListingsFailure({error: error.message})),
             ),
-          ),
-      ),
+          );
+      }),
     ),
   );
 
@@ -568,6 +580,181 @@ export class ListingsEffects {
       ),
     ),
   );
+
+  // Advanced search listings using backend callable function
+  advancedSearchListings$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ListingsActions.advancedSearchListings),
+      debounceTime(300),
+      switchMap(({filters}) => {
+        // Convert AdvancedFilters to SearchListingsRequest
+        const searchRequest: SearchListingsRequest = {};
+
+        // NOTE: Location filtering is currently disabled because listings
+        // don't have geocoded coordinates in the expected format.
+        // TODO: Enable once listings have location.coordinates field populated
+        // if (filters.location) {
+        //   searchRequest.location = {
+        //     latitude: filters.location.latitude,
+        //     longitude: filters.location.longitude,
+        //   };
+        // }
+        // if (filters.radiusKm) {
+        //   searchRequest.radiusKm = filters.radiusKm;
+        // }
+
+        if (filters.skills && filters.skills.length > 0) {
+          searchRequest.skills = filters.skills;
+        }
+
+        if (filters.type) {
+          searchRequest.type = filters.type as
+            | "volunteer"
+            | "job"
+            | "event"
+            | "project";
+        }
+
+        if (filters.remote !== null && filters.remote !== undefined) {
+          searchRequest.remote = filters.remote;
+        }
+
+        if (
+          filters.hoursPerWeekMin !== null &&
+          filters.hoursPerWeekMin !== undefined
+        ) {
+          searchRequest.hoursPerWeekMin = filters.hoursPerWeekMin;
+        }
+
+        if (
+          filters.hoursPerWeekMax !== null &&
+          filters.hoursPerWeekMax !== undefined
+        ) {
+          searchRequest.hoursPerWeekMax = filters.hoursPerWeekMax;
+        }
+
+        if (filters.limit) {
+          searchRequest.limit = filters.limit;
+        }
+
+        if (filters.startAfter) {
+          searchRequest.startAfter = filters.startAfter;
+        }
+
+        return this.listingsService.searchListings(searchRequest).pipe(
+          map((listings) =>
+            ListingsActions.advancedSearchListingsSuccess({
+              listings,
+              hasMore: listings.length === (filters.limit || 20),
+              nextCursor:
+                listings.length > 0
+                  ? listings[listings.length - 1].id
+                  : undefined,
+            }),
+          ),
+          catchError((error) => {
+            this.showToast(`Search failed: ${error.message}`, "danger");
+            return of(
+              ListingsActions.advancedSearchListingsFailure({
+                error: error.message,
+              }),
+            );
+          }),
+        );
+      }),
+    ),
+  );
+
+  // Load more listings (pagination)
+  loadMoreListings$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ListingsActions.loadMoreListings),
+      withLatestFrom(
+        this.store.select(selectAdvancedFilters),
+        this.store.select(selectNextCursor),
+      ),
+      filter(([_, __, nextCursor]) => !!nextCursor),
+      switchMap(([_, filters, nextCursor]) => {
+        const searchRequest: SearchListingsRequest = {
+          ...this.buildSearchRequest(filters),
+          startAfter: nextCursor || undefined,
+        };
+
+        return this.listingsService.searchListings(searchRequest).pipe(
+          map((newListings) =>
+            ListingsActions.advancedSearchListingsSuccess({
+              listings: newListings,
+              hasMore: newListings.length === (filters.limit || 20),
+              nextCursor:
+                newListings.length > 0
+                  ? newListings[newListings.length - 1].id
+                  : undefined,
+            }),
+          ),
+          catchError((error) =>
+            of(
+              ListingsActions.advancedSearchListingsFailure({
+                error: error.message,
+              }),
+            ),
+          ),
+        );
+      }),
+    ),
+  );
+
+  // Helper to build search request from filters
+  private buildSearchRequest(filters: AdvancedFilters): SearchListingsRequest {
+    const searchRequest: SearchListingsRequest = {};
+
+    // Location filtering - uses contactInformation.addresses[].geopoint on backend
+    if (filters.location) {
+      searchRequest.location = {
+        latitude: filters.location.latitude,
+        longitude: filters.location.longitude,
+      };
+    }
+
+    if (filters.radiusKm) {
+      searchRequest.radiusKm = filters.radiusKm;
+    }
+
+    if (filters.skills && filters.skills.length > 0) {
+      searchRequest.skills = filters.skills;
+    }
+
+    if (filters.type) {
+      searchRequest.type = filters.type as
+        | "volunteer"
+        | "job"
+        | "event"
+        | "project";
+    }
+
+    if (filters.remote !== null && filters.remote !== undefined) {
+      searchRequest.remote = filters.remote;
+    }
+
+    if (
+      filters.hoursPerWeekMin !== null &&
+      filters.hoursPerWeekMin !== undefined
+    ) {
+      searchRequest.hoursPerWeekMin = filters.hoursPerWeekMin;
+    }
+
+    if (
+      filters.hoursPerWeekMax !== null &&
+      filters.hoursPerWeekMax !== undefined
+    ) {
+      searchRequest.hoursPerWeekMax = filters.hoursPerWeekMax;
+    }
+
+    if (filters.limit) {
+      searchRequest.limit = filters.limit;
+    }
+
+    return searchRequest;
+  }
 
   private showToast(message: string, color: string) {
     this.toastController

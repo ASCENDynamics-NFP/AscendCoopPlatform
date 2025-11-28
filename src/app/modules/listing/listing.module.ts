@@ -40,6 +40,9 @@ import {PhoneFormatPipe} from "../../shared/pipes/phone-format.pipe";
 import {SharedModule} from "../../shared/shared.module";
 import {ApplyPage} from "./relatedAccount/pages/apply/apply.page";
 import {ApplicantDetailsModalComponent} from "./relatedAccount/pages/applicants/components/applicant-details-modal/applicant-details-modal.component";
+import {ListingFilterComponent} from "./components/listing-filter/listing-filter.component";
+import {ListingsMapComponent} from "./components/listings-map/listings-map.component";
+import {GoogleMapsModule} from "@angular/google-maps";
 
 @NgModule({
   declarations: [
@@ -55,6 +58,8 @@ import {ApplicantDetailsModalComponent} from "./relatedAccount/pages/applicants/
     PhoneFormatPipe,
     HeroComponent,
     ApplicantDetailsModalComponent,
+    ListingFilterComponent,
+    ListingsMapComponent,
   ],
   imports: [
     CommonModule,
@@ -64,6 +69,7 @@ import {ApplicantDetailsModalComponent} from "./relatedAccount/pages/applicants/
     ReactiveFormsModule,
     ListingRoutingModule,
     SharedModule,
+    GoogleMapsModule,
     StoreModule.forFeature("listings", listingsReducer),
     EffectsModule.forFeature([ListingsEffects]),
   ],

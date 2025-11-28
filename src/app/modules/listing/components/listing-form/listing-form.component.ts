@@ -17,7 +17,15 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, Input, Output, EventEmitter, OnInit} from "@angular/core";
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+} from "@angular/core";
 import {FormBuilder, FormGroup, Validators, FormArray} from "@angular/forms";
 import {
   Listing,
@@ -59,7 +67,7 @@ import {AccountsService} from "../../../../core/services/accounts.service";
   templateUrl: "./listing-form.component.html",
   styleUrls: ["./listing-form.component.scss"],
 })
-export class ListingFormComponent implements OnInit {
+export class ListingFormComponent implements OnInit, OnChanges {
   @Input() listing: Listing | null = null;
   @Output() formSubmit = new EventEmitter<any>();
   currentStep = 1; // Start at the first step
@@ -67,6 +75,7 @@ export class ListingFormComponent implements OnInit {
   useAccountContactInfo = false;
   private backupContactInfo: ContactInformation | null = null;
   private currentAccount?: Account;
+  private listingInitialized = false; // Track if listing data has been loaded into form
 
   listingForm!: FormGroup;
   listingTypes = ["volunteer", "job", "internship", "gig"];
@@ -111,20 +120,15 @@ export class ListingFormComponent implements OnInit {
       remote: [false],
       ownerAccountId: [""],
       ownerAccountType: ["user"],
-      timeCommitment: this.fb.group(
-        {
-          hoursPerWeek: [
-            "",
-            [Validators.required, Validators.min(1), Validators.max(168)],
-          ],
-          duration: ["", Validators.required],
-          schedule: ["", Validators.required],
-          startDate: [null, Validators.required],
-          endDate: [null],
-          isFlexible: [false],
-        },
-        {validator: this.dateRangeValidator},
-      ),
+      timeCommitment: this.fb.group({
+        hoursPerWeek: [
+          "",
+          [Validators.required, Validators.min(1), Validators.max(168)],
+        ],
+        duration: ["", Validators.required],
+        schedule: ["", Validators.required],
+        isFlexible: [false],
+      }),
       skills: this.fb.array([]),
       requirements: this.fb.array([]),
       responsibilities: this.fb.array([]),
@@ -137,13 +141,11 @@ export class ListingFormComponent implements OnInit {
     });
   }
 
-  dateRangeValidator(group: FormGroup) {
-    const start = group.get("startDate")?.value;
-    const end = group.get("endDate")?.value;
-    if (start && end && new Date(start) > new Date(end)) {
-      return {dateRange: true};
+  ngOnChanges(changes: SimpleChanges) {
+    // Handle listing input changes (important for async loading via | async pipe)
+    if (changes["listing"] && changes["listing"].currentValue) {
+      this.initializeFormWithListing(changes["listing"].currentValue);
     }
-    return null;
   }
 
   ngOnInit() {
@@ -161,24 +163,10 @@ export class ListingFormComponent implements OnInit {
         }
       });
 
-    if (this.listing) {
-      const formValue = {
-        ...this.listing,
-        timeCommitment: {
-          ...this.listing.timeCommitment,
-          startDate: this.convertToISOString(
-            this.listing.timeCommitment.startDate,
-          ),
-          endDate: this.convertToISOString(this.listing.timeCommitment.endDate),
-        },
-      };
-      this.listingForm.patchValue(formValue);
-      this.initializeFormArrays(this.listing);
-      // Prevent changing owner only when truly editing an existing listing
-      if (this.isEditMode) {
-        this.listingForm.get("ownerAccountId")?.disable({emitEvent: false});
-      }
-    } else {
+    // Initialize form with listing if already available (won't run if async)
+    if (this.listing && !this.listingInitialized) {
+      this.initializeFormWithListing(this.listing);
+    } else if (!this.listing) {
       // New listing - populate from account and owner choices
       this.store
         .select(selectAuthUser)
@@ -233,6 +221,66 @@ export class ListingFormComponent implements OnInit {
     const organization =
       selected?.name || this.listingForm.get("organization")?.value;
     this.listingForm.patchValue({ownerAccountType, organization});
+  }
+
+  /**
+   * Initialize form with listing data (called from ngOnInit or ngOnChanges)
+   */
+  private initializeFormWithListing(listing: Listing) {
+    if (this.listingInitialized) return; // Prevent re-initialization
+
+    const formValue = {
+      ...listing,
+      timeCommitment: {
+        ...listing.timeCommitment,
+      },
+    };
+    this.listingForm.patchValue(formValue);
+    this.initializeFormArrays(listing);
+
+    // If listing is missing ownerAccountId or organization, populate from current user
+    const hasOwner =
+      listing.ownerAccountId && listing.ownerAccountId.length > 0;
+    const hasOrganization =
+      listing.organization && listing.organization.length > 0;
+
+    if (!hasOwner || !hasOrganization) {
+      // Fetch current user's account to fill in missing data
+      this.store
+        .select(selectAuthUser)
+        .pipe(
+          first(),
+          switchMap((user) =>
+            user ? this.store.select(selectAccountById(user.uid)) : of(null),
+          ),
+          filter(
+            (account): account is Account =>
+              account !== null && account !== undefined,
+          ),
+          take(1),
+        )
+        .subscribe((account) => {
+          const patchData: any = {};
+          if (!hasOwner) {
+            patchData.ownerAccountId = account.id;
+            patchData.ownerAccountType = account.type;
+          }
+          if (!hasOrganization) {
+            patchData.organization = account.name;
+          }
+          if (Object.keys(patchData).length > 0) {
+            this.listingForm.patchValue(patchData);
+          }
+        });
+
+      // Allow editing ownerAccountId if it was missing (data recovery)
+      // Don't disable the field in this case
+    } else if (this.isEditMode) {
+      // Only disable ownerAccountId if it's a valid edit with existing owner
+      this.listingForm.get("ownerAccountId")?.disable({emitEvent: false});
+    }
+
+    this.listingInitialized = true;
   }
 
   private initializeFormFromAccount(
@@ -507,20 +555,13 @@ export class ListingFormComponent implements OnInit {
         .select(selectAuthUser)
         .pipe(take(1))
         .subscribe((user) => {
-          const formValue = this.listingForm.value;
+          // Use getRawValue() to include disabled fields like ownerAccountId
+          const formValue = this.listingForm.getRawValue();
           const listing = {
             ...formValue,
             id: this.listing?.id || null,
             timeCommitment: {
               ...formValue.timeCommitment,
-              startDate: formValue.timeCommitment.startDate
-                ? Timestamp.fromDate(
-                    new Date(formValue.timeCommitment.startDate),
-                  )
-                : null,
-              endDate: formValue.timeCommitment.endDate
-                ? Timestamp.fromDate(new Date(formValue.timeCommitment.endDate))
-                : null,
             },
             status,
             iconImage: user?.iconImage || "",

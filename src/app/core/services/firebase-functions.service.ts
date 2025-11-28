@@ -114,6 +114,8 @@ export interface SearchListingsRequest {
   type?: "volunteer" | "job" | "event" | "project";
   remote?: boolean;
   category?: string;
+  hoursPerWeekMin?: number;
+  hoursPerWeekMax?: number;
   limit?: number;
   startAfter?: string;
 }

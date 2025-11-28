@@ -32,16 +32,23 @@ import {
 import {NavController} from "@ionic/angular";
 import {Listing} from "@shared/models/listing.model";
 import * as ListingsActions from "../../../../state/actions/listings.actions";
+import {AdvancedFilters} from "../../../../state/actions/listings.actions";
 import {AppState} from "../../../../state/app.state";
 import {
   selectFilteredListings,
   selectLoading,
   selectError,
+  selectAdvancedFilters,
+  selectIsAdvancedSearchActive,
+  selectHasMoreResults,
+  selectAllListings,
 } from "../../../../state/selectors/listings.selectors";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {MetaService} from "../../../../core/services/meta.service";
 import {debounceTime, distinctUntilChanged} from "rxjs/operators";
+import {ListingFilterValues} from "../../components/listing-filter/listing-filter.component";
+import {environment} from "../../../../../environments/environment";
 
 @Component({
   selector: "app-listings",
@@ -54,7 +61,39 @@ export class ListingsPage implements OnInit, OnDestroy {
   loading$: Observable<boolean>;
   error$: Observable<string | null>;
   authUser$: Observable<AuthUser | null>;
+  advancedFilters$: Observable<AdvancedFilters>;
+  isAdvancedSearchActive$: Observable<boolean>;
+  hasMoreResults$: Observable<boolean>;
   listingTypes = ["all", "volunteer", "job", "internship", "gig"];
+
+  // View mode: list or map
+  viewMode: "list" | "map" = "list";
+  mapsLoaded = false;
+  userLocation: {latitude: number; longitude: number} | null = null;
+
+  // Filter panel state
+  isFilterExpanded = false;
+  activeFilterCount = 0;
+  availableSkills: string[] = [
+    "JavaScript",
+    "TypeScript",
+    "Angular",
+    "React",
+    "Node.js",
+    "Python",
+    "Java",
+    "Project Management",
+    "Marketing",
+    "Fundraising",
+    "Grant Writing",
+    "Event Planning",
+    "Social Media",
+    "Graphic Design",
+    "Data Analysis",
+    "Community Outreach",
+    "Teaching",
+    "Mentoring",
+  ];
 
   private searchSubject = new Subject<string>();
   private searchSub?: Subscription;
@@ -75,6 +114,11 @@ export class ListingsPage implements OnInit, OnDestroy {
     this.listings$ = this.store.select(selectFilteredListings);
     this.loading$ = this.store.select(selectLoading);
     this.error$ = this.store.select(selectError);
+    this.advancedFilters$ = this.store.select(selectAdvancedFilters);
+    this.isAdvancedSearchActive$ = this.store.select(
+      selectIsAdvancedSearchActive,
+    );
+    this.hasMoreResults$ = this.store.select(selectHasMoreResults);
 
     // Calculate total items dynamically
     this.totalItems$ = this.listings$.pipe(map((listings) => listings.length));
@@ -205,6 +249,97 @@ export class ListingsPage implements OnInit, OnDestroy {
 
   goToPage(pageNumber: number) {
     this.currentPageSubject.next(pageNumber);
+  }
+
+  onFilterChange(filterValues: ListingFilterValues) {
+    const advancedFilters: AdvancedFilters = {
+      location: filterValues.location,
+      radiusKm: filterValues.radiusKm,
+      skills: filterValues.skills,
+      remote: filterValues.remote,
+      hoursPerWeekMin: filterValues.hoursPerWeekMin,
+      hoursPerWeekMax: filterValues.hoursPerWeekMax,
+      limit: 20,
+    };
+
+    // Check if any filter is active
+    const hasActiveFilters = !!(
+      filterValues.location ||
+      filterValues.radiusKm ||
+      (filterValues.skills && filterValues.skills.length > 0) ||
+      filterValues.remote ||
+      filterValues.hoursPerWeekMin ||
+      filterValues.hoursPerWeekMax
+    );
+
+    if (hasActiveFilters) {
+      this.store.dispatch(
+        ListingsActions.advancedSearchListings({filters: advancedFilters}),
+      );
+    } else {
+      // If no filters, clear and load all listings
+      this.store.dispatch(ListingsActions.clearAdvancedFilters());
+      this.store.dispatch(ListingsActions.loadListings());
+    }
+
+    // Reset pagination
+    this.currentPageSubject.next(1);
+  }
+
+  onFilterExpandedChange(expanded: boolean) {
+    this.isFilterExpanded = expanded;
+  }
+
+  toggleFilter() {
+    this.isFilterExpanded = !this.isFilterExpanded;
+  }
+
+  onActiveFilterCountChange(count: number) {
+    this.activeFilterCount = count;
+  }
+
+  loadMoreResults() {
+    this.store.dispatch(ListingsActions.loadMoreListings());
+  }
+
+  toggleViewMode() {
+    if (this.viewMode === "list") {
+      this.viewMode = "map";
+      if (!this.mapsLoaded) {
+        this.loadGoogleMaps();
+      }
+    } else {
+      this.viewMode = "list";
+    }
+  }
+
+  private loadGoogleMaps() {
+    // Check if already loaded
+    if (typeof google !== "undefined" && google.maps) {
+      this.mapsLoaded = true;
+      return;
+    }
+
+    const apiKey = environment.googleMapsApiKey;
+    if (!apiKey || apiKey === "YOUR_GOOGLE_MAPS_API_KEY_HERE") {
+      console.warn("Google Maps API key not configured");
+      this.mapsLoaded = true; // Still show map component (will show error state)
+      return;
+    }
+
+    // Dynamically load Google Maps script
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=marker`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      this.mapsLoaded = true;
+    };
+    script.onerror = () => {
+      console.error("Failed to load Google Maps");
+      this.mapsLoaded = true; // Show error state
+    };
+    document.head.appendChild(script);
   }
 
   ngOnDestroy() {

@@ -42,6 +42,11 @@ import {NotificationService} from "../../../messaging/services/notification.serv
 import {AccessService} from "../../../../core/services/access.service";
 import {ImageUploadModalComponent} from "../../../../shared/components/image-upload-modal/image-upload-modal.component";
 import {TranslateService} from "@ngx-translate/core";
+import {
+  LANGUAGE_OPTIONS_SIMPLE,
+  saveLanguagePreference,
+  SupportedLanguageCode,
+} from "../../../../core/constants/languages";
 
 @Component({
   selector: "app-admin-dashboard",
@@ -84,10 +89,7 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
   ];
 
   // Localization options
-  languageList = [
-    {code: "en", text: "English"},
-    {code: "fr", text: "Français"},
-  ];
+  languageList = LANGUAGE_OPTIONS_SIMPLE;
 
   constructor(
     private route: ActivatedRoute,
@@ -533,6 +535,8 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
 
   // Localization: update preferred language and persist
   updateLanguage(lang: string) {
+    // Save preference to localStorage for persistence across sessions
+    saveLanguagePreference(lang as SupportedLanguageCode);
     this.translateService.use(lang);
     this.account$.pipe(take(1)).subscribe((account) => {
       if (!account) return;

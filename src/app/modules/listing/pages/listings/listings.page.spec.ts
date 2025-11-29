@@ -101,7 +101,7 @@ describe("ListingsPage", () => {
 
     await TestBed.configureTestingModule({
       declarations: [ListingsPage],
-      imports: [IonicModule.forRoot()],
+      imports: [IonicModule.forRoot(), TranslateTestingModule],
       providers: [
         provideMockStore(),
         {provide: NavController, useValue: navCtrlSpy},

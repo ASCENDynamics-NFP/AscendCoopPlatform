@@ -31,6 +31,11 @@ import {register} from "swiper/element/bundle";
 import {GoogleAuth} from "@southdevs/capacitor-google-auth";
 import {Capacitor} from "@capacitor/core";
 import {environment} from "../environments/environment";
+import {
+  SUPPORTED_LANGUAGE_CODES,
+  DEFAULT_LANGUAGE,
+  detectUserLanguage,
+} from "./core/constants/languages";
 
 //  Import and Register Swiper
 register();
@@ -49,7 +54,7 @@ export class AppComponent implements OnInit {
     private store: Store,
     private platform: Platform,
   ) {
-    this.translate.addLangs(["en", "fr"]);
+    this.translate.addLangs([...SUPPORTED_LANGUAGE_CODES]);
     this.initializeApp();
 
     // Initialize the observable
@@ -75,12 +80,13 @@ export class AppComponent implements OnInit {
         });
       }
 
-      // Set the default language
-      this.translate.setDefaultLang("en");
+      // Set the default language (fallback)
+      this.translate.setDefaultLang(DEFAULT_LANGUAGE);
 
-      // Optionally, get the user's preferred language
+      // Determine the best language to use
       const browserLang = this.translate.getBrowserLang();
-      this.translate.use(browserLang?.match(/en|fr|es/) ? browserLang : "en");
+      const selectedLang = detectUserLanguage(browserLang);
+      this.translate.use(selectedLang);
     });
   }
 

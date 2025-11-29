@@ -28,6 +28,11 @@ import {
 } from "@angular/core";
 import {FormBuilder, FormGroup, FormControl, Validators} from "@angular/forms";
 import {TranslateService} from "@ngx-translate/core";
+import {
+  LANGUAGE_OPTIONS,
+  saveLanguagePreference,
+  SupportedLanguageCode,
+} from "../../../../../../core/constants/languages";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {
   Account,
@@ -72,10 +77,7 @@ export class SettingsComponent implements OnChanges, OnInit, OnDestroy {
     projectsVisibility: FormControl<string>;
   }>;
 
-  languageList = [
-    {code: "en", name: "english", text: "English"},
-    {code: "fr", name: "french", text: "Français"},
-  ];
+  languageList = LANGUAGE_OPTIONS;
 
   constructor(
     private fb: FormBuilder,
@@ -154,6 +156,8 @@ export class SettingsComponent implements OnChanges, OnInit, OnDestroy {
 
   onLanguageChange() {
     const lang = this.settingsForm.value.language ?? "en";
+    // Save preference to localStorage for persistence across sessions
+    saveLanguagePreference(lang as SupportedLanguageCode);
     this.translateService.use(lang);
     this.languageChange.emit(lang);
   }

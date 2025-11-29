@@ -74,8 +74,17 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </ion-toolbar>
 
   <ion-toolbar>
-    <ion-segment scrollable (ionChange)="filterListings($event)">
-      <ion-segment-button *ngFor="let type of listingTypes" [value]="type">
+    <ion-segment
+      scrollable
+      value="all"
+      (ionChange)="filterListings($event)"
+      class="listing-type-segment"
+    >
+      <ion-segment-button
+        *ngFor="let type of listingTypes"
+        [value]="type"
+        [class]="'segment-' + type"
+      >
         <ion-icon [name]="getIconForType(type)"></ion-icon>
         <ion-label>{{type | titlecase}}</ion-label>
       </ion-segment-button>

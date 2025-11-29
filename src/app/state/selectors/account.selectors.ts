@@ -261,3 +261,12 @@ export const selectAreGroupRolesFresh = (groupId: string) =>
     selectGroupRolesLastUpdated(groupId),
     (groupRolesLastUpdated) => !isStale(groupRolesLastUpdated, ACCOUNTS_TTL),
   );
+
+// User Skills Selector (for skill matching with listings)
+export const selectUserSkills = createSelector(
+  selectSelectedAccount,
+  (account): string[] => {
+    if (!account || account.type !== "user") return [];
+    return account.professionalInformation?.skillsAndExpertise || [];
+  },
+);

@@ -71,30 +71,30 @@ Enhance the Listings module with advanced search, location-based discovery, impr
 
 > **Note**: `ListingRelatedAccount` model already has `status: "applied" | "accepted" | "declined" | "withdrawn"`. Consider adding `"reviewing"` and `"interviewed"` stages.
 
-- [ ] Extend `ListingRelatedAccount.status` enum with new stages:
+- [x] Extend `ListingRelatedAccount.status` enum with new stages:
   - Current: `applied` → `accepted` | `declined` | `withdrawn`
   - Proposed: `applied` → `reviewing` → `interviewed` → `accepted` | `declined` | `withdrawn`
-- [ ] Create `ApplicantPipelineComponent` with kanban-style columns
-- [ ] Add drag-and-drop between status columns (use existing `manageApplication()` callable to update status)
-- [ ] Show applicant count badge per status column
+- [x] Create `ApplicantPipelineComponent` with kanban-style columns
+- [x] Add drag-and-drop between status columns (use existing `manageApplication()` callable to update status)
+- [x] Show applicant count badge per status column
 
 ### Bulk Actions
 
-- [ ] Add multi-select checkboxes to applicant list
-- [ ] Add "Select All" / "Deselect All" buttons
-- [ ] Add bulk status update dropdown (calls `manageApplication()` for each selected)
-- [ ] Add bulk message action (send to all selected)
-- [ ] Add bulk export to CSV (applicant name, email, phone, status, applicationDate)
+- [x] Add multi-select checkboxes to applicant list
+- [x] Add "Select All" / "Deselect All" buttons
+- [x] Add bulk status update dropdown (calls `manageApplication()` for each selected)
+- [ ] Add bulk message action (send to all selected) - _deferred: requires messaging module enhancements_
+- [x] Add bulk export to CSV (applicant name, email, phone, status, applicationDate)
 
 ### Messaging Integration
 
-- [ ] Add "Message Applicant" button on applicant card
-- [ ] Deep link to messaging module with pre-filled recipient (`/messaging?userId={accountId}`)
-- [ ] Show unread message indicator on applicant cards (requires cross-module state)
+- [x] Add "Message Applicant" button on applicant card
+- [x] Deep link to messaging module with pre-filled recipient (`/messaging/new-chat?recipientId={accountId}`)
+- [ ] Show unread message indicator on applicant cards (requires cross-module state) - _deferred to avoid coupling_
 
 ### Decision Required
 
-- [ ] **Schema migration strategy**: Add new status values with backward compatibility (existing "applied"/"accepted"/"declined"/"withdrawn" continue to work)
+- [x] **Schema migration strategy**: Add new status values with backward compatibility (existing "applied"/"accepted"/"declined"/"withdrawn" continue to work)
 
 ---
 
@@ -102,32 +102,32 @@ Enhance the Listings module with advanced search, location-based discovery, impr
 
 ### Skill Match Visualization
 
-- [ ] Create `SkillMatchService` to compare user profile skills with listing `SkillRequirement[]`
-- [ ] Calculate match percentage: `(matchedSkills / totalRequired) * 100`
-- [ ] Weight required skills higher than optional (`SkillRequirement.required`)
-- [ ] Add match percentage badge to listing cards
-- [ ] Color-code badge (green >75%, yellow 50-75%, gray <50%)
-- [ ] Add tooltip showing matched vs missing skills on hover
+- [x] Create `SkillMatchService` to compare user profile skills with listing `SkillRequirement[]`
+- [x] Calculate match percentage: `(matchedSkills / totalRequired) * 100`
+- [x] Weight required skills higher than optional (`SkillRequirement.required`)
+- [x] Add match percentage badge to listing cards
+- [x] Color-code badge (green >75%, yellow 50-75%, gray <50%)
+- [x] Add tooltip showing matched vs missing skills on hover
 
 ### Visual Hierarchy Improvements
 
-- [ ] Redesign listing card layout with clearer information hierarchy
-- [ ] Add listing type icon/color coding:
+- [x] Redesign listing card layout with clearer information hierarchy
+- [x] Add listing type icon/color coding:
   - `volunteer` = green
   - `job` = blue
   - `internship` = orange
   - `gig` = purple
-- [ ] Add remote work badge/icon when `Listing.remote === true`
-- [ ] Add time commitment summary (e.g., "10-15 hrs/week") from `TimeCommitment.hoursPerWeek`
-- [ ] Add "Posted X days ago" timestamp (calculate from `createdAt`)
-- [ ] Add organization logo thumbnail (`Listing.iconImage`)
+- [x] Add remote work badge/icon when `Listing.remote === true`
+- [x] Add time commitment summary (e.g., "10-15 hrs/week") from `TimeCommitment.hoursPerWeek`
+- [x] Add "Posted X days ago" timestamp (calculate from `createdAt`)
+- [x] Add organization logo thumbnail (`Listing.iconImage`)
 
 ### Responsive Design
 
-- [ ] Optimize card grid for mobile (single column)
-- [ ] Optimize card grid for tablet (2 columns)
-- [ ] Optimize card grid for desktop (3-4 columns)
-- [ ] Ensure filter panel collapses to bottom sheet modal on mobile
+- [x] Optimize card grid for mobile (single column)
+- [x] Optimize card grid for tablet (2 columns)
+- [x] Optimize card grid for desktop (3-4 columns)
+- [x] Ensure filter panel collapses to bottom sheet modal on mobile
 
 ---
 

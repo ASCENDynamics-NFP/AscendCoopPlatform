@@ -44,6 +44,7 @@ import {ApplicantDetailsModalComponent} from "./relatedAccount/pages/applicants/
 import {ApplicantPipelineComponent} from "./relatedAccount/pages/applicants/components/applicant-pipeline/applicant-pipeline.component";
 import {ListingFilterComponent} from "./components/listing-filter/listing-filter.component";
 import {ListingsMapComponent} from "./components/listings-map/listings-map.component";
+import {ListingCardComponent} from "./components/listing-card/listing-card.component";
 import {GoogleMapsModule} from "@angular/google-maps";
 
 @NgModule({
@@ -63,6 +64,7 @@ import {GoogleMapsModule} from "@angular/google-maps";
     ApplicantPipelineComponent,
     ListingFilterComponent,
     ListingsMapComponent,
+    ListingCardComponent,
   ],
   imports: [
     CommonModule,

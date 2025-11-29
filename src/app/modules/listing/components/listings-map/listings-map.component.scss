@@ -144,3 +144,23 @@
     }
   }
 }
+
+// Dark mode adjustments
+@media (prefers-color-scheme: dark) {
+  .no-locations-overlay,
+  .empty-overlay {
+    ion-card {
+      background: rgba(0, 0, 0, 0.95);
+    }
+
+    ion-card-content {
+      p {
+        color: #ffffff;
+
+        &.hint {
+          color: #cccccc;
+        }
+      }
+    }
+  }
+}

@@ -29,13 +29,13 @@ import {
 import {Store} from "@ngrx/store";
 import {
   Observable,
+  Subject,
+  Subscription,
   BehaviorSubject,
   combineLatest,
   map,
-  Subject,
-  Subscription,
 } from "rxjs";
-import {NavController} from "@ionic/angular";
+import {InfiniteScrollCustomEvent, NavController} from "@ionic/angular";
 import {Listing} from "@shared/models/listing.model";
 import * as ListingsActions from "../../../../state/actions/listings.actions";
 import {AdvancedFilters} from "../../../../state/actions/listings.actions";
@@ -49,6 +49,7 @@ import {
   selectHasMoreResults,
   selectAllListings,
 } from "../../../../state/selectors/listings.selectors";
+import {selectUserSkills} from "../../../../state/selectors/account.selectors";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {MetaService} from "../../../../core/services/meta.service";
@@ -63,10 +64,12 @@ import {environment} from "../../../../../environments/environment";
 })
 export class ListingsPage implements OnInit, OnDestroy {
   listings$: Observable<Listing[]>;
-  paginatedListings$: Observable<Listing[]>;
+  displayedListings$: Observable<Listing[]>;
+  hasMoreListings$: Observable<boolean>;
   loading$: Observable<boolean>;
   error$: Observable<string | null>;
   authUser$: Observable<AuthUser | null>;
+  userSkills$: Observable<string[]>;
   advancedFilters$: Observable<AdvancedFilters>;
   isAdvancedSearchActive$: Observable<boolean>;
   hasMoreResults$: Observable<boolean>;
@@ -104,12 +107,11 @@ export class ListingsPage implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private searchSub?: Subscription;
 
-  // Pagination State
-  pageSize = 10;
-  currentPageSubject = new BehaviorSubject<number>(1);
-  currentPage$ = this.currentPageSubject.asObservable();
-  totalItems$: Observable<number>;
-  totalPages$: Observable<number>;
+  // Infinite scroll state
+  private readonly itemsPerLoad = 12;
+  private displayedCountSubject = new BehaviorSubject<number>(
+    this.itemsPerLoad,
+  );
 
   constructor(
     private metaService: MetaService,
@@ -119,6 +121,7 @@ export class ListingsPage implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
   ) {
     this.authUser$ = this.store.select(selectAuthUser);
+    this.userSkills$ = this.store.select(selectUserSkills);
     this.listings$ = this.store.select(selectFilteredListings);
     this.loading$ = this.store.select(selectLoading);
     this.error$ = this.store.select(selectError);
@@ -128,24 +131,17 @@ export class ListingsPage implements OnInit, OnDestroy {
     );
     this.hasMoreResults$ = this.store.select(selectHasMoreResults);
 
-    // Calculate total items dynamically
-    this.totalItems$ = this.listings$.pipe(map((listings) => listings.length));
-
-    // Calculate total pages
-    this.totalPages$ = this.totalItems$.pipe(
-      map((totalItems) => Math.ceil(totalItems / this.pageSize)),
-    );
-
-    // Paginate listings
-    this.paginatedListings$ = combineLatest([
+    // Display listings with infinite scroll - derived once from listings$ and displayedCount$
+    this.displayedListings$ = combineLatest([
       this.listings$,
-      this.currentPage$,
-    ]).pipe(
-      map(([listings, currentPage]) => {
-        const startIndex = (currentPage - 1) * this.pageSize;
-        return listings.slice(startIndex, startIndex + this.pageSize);
-      }),
-    );
+      this.displayedCountSubject,
+    ]).pipe(map(([listings, count]) => listings.slice(0, count)));
+
+    // Check if there are more listings to load - created once, not per change detection
+    this.hasMoreListings$ = combineLatest([
+      this.listings$,
+      this.displayedCountSubject,
+    ]).pipe(map(([listings, count]) => count < listings.length));
   }
 
   ionViewWillEnter() {
@@ -255,8 +251,16 @@ export class ListingsPage implements OnInit, OnDestroy {
     return iconMap[type.toLowerCase()] || "help-outline";
   }
 
-  goToPage(pageNumber: number) {
-    this.currentPageSubject.next(pageNumber);
+  /**
+   * Load more listings for infinite scroll
+   */
+  loadMore(event: InfiniteScrollCustomEvent) {
+    // Increment the displayed count. The reactive hasMoreListings$ observable will automatically
+    // disable the infinite scroll when all items are displayed.
+    this.displayedCountSubject.next(
+      this.displayedCountSubject.value + this.itemsPerLoad,
+    );
+    event.target.complete();
   }
 
   onFilterChange(filterValues: ListingFilterValues) {
@@ -290,8 +294,15 @@ export class ListingsPage implements OnInit, OnDestroy {
       this.store.dispatch(ListingsActions.loadListings());
     }
 
-    // Reset pagination
-    this.currentPageSubject.next(1);
+    // Reset infinite scroll
+    this.resetInfiniteScroll();
+  }
+
+  /**
+   * Reset infinite scroll to initial state
+   */
+  resetInfiniteScroll() {
+    this.displayedCountSubject.next(this.itemsPerLoad);
   }
 
   onFilterExpandedChange(expanded: boolean) {

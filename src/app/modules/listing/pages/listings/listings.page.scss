@@ -86,3 +86,90 @@
     font-size: 14px;
   }
 }
+
+// Responsive Listings Card Grid
+.listings-grid {
+  display: grid;
+  gap: 16px;
+  padding: 16px;
+
+  // Mobile: 1 column
+  grid-template-columns: 1fr;
+
+  // Tablet: 2 columns
+  @media (min-width: 576px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  // Small Desktop: 3 columns
+  @media (min-width: 992px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  // Large Desktop: 4 columns
+  @media (min-width: 1400px) {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+}
+
+// Skeleton loading cards
+.listing-card-skeleton {
+  border-radius: 12px;
+  overflow: hidden;
+  height: 280px;
+
+  ion-card-header {
+    padding: 12px 16px;
+  }
+
+  ion-card-content {
+    padding: 0 16px 16px;
+  }
+}
+
+// No listings message
+.no-listings-text {
+  display: block;
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--ion-color-medium);
+}
+
+// Load more button
+.load-more-btn {
+  margin: 16px;
+}
+
+// Filter panel mobile bottom sheet (triggered by class)
+@media (max-width: 575px) {
+  .filter-panel-toolbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--ion-background-color);
+    z-index: 100;
+    max-height: 60vh;
+    overflow-y: auto;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+
+    &::before {
+      content: "";
+      display: block;
+      width: 40px;
+      height: 4px;
+      background: var(--ion-color-light-shade);
+      border-radius: 2px;
+      margin: 12px auto 8px;
+    }
+  }
+
+  // Add padding at bottom when filter is expanded to prevent content being hidden
+  ion-content.filter-expanded {
+    --padding-bottom: 300px;
+  }
+}

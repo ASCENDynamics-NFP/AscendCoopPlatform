@@ -108,23 +108,59 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <!-- List View -->
   <ng-container *ngIf="viewMode === 'list'">
     <ng-container
-      *ngIf="(loading$ | async) && !(paginatedListings$ | async)?.length; else content"
+      *ngIf="(loading$ | async) && !(displayedListings$ | async)?.length; else content"
     >
-      <ion-list>
-        <ion-item *ngFor="let i of [1,2,3,4,5]">
-          <ion-thumbnail slot="start">
+      <!-- Skeleton Loading Cards -->
+      <div class="listings-grid">
+        <ion-card *ngFor="let i of [1,2,3,4,5,6]" class="listing-card-skeleton">
+          <ion-skeleton-text
+            animated
+            style="height: 4px; width: 100%"
+          ></ion-skeleton-text>
+          <ion-card-header>
+            <div style="display: flex; gap: 12px; align-items: flex-start">
+              <ion-skeleton-text
+                animated
+                style="width: 48px; height: 48px; border-radius: 8px"
+              ></ion-skeleton-text>
+              <div style="flex: 1">
+                <ion-skeleton-text
+                  animated
+                  style="width: 80%; height: 18px"
+                ></ion-skeleton-text>
+                <ion-skeleton-text
+                  animated
+                  style="width: 50%; height: 14px; margin-top: 4px"
+                ></ion-skeleton-text>
+              </div>
+            </div>
+          </ion-card-header>
+          <ion-card-content>
             <ion-skeleton-text
               animated
-              style="width: 64px; height: 64px"
+              style="width: 100%; height: 14px"
             ></ion-skeleton-text>
-          </ion-thumbnail>
-          <ion-label>
-            <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
-            <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
-            <ion-skeleton-text animated style="width: 40%"></ion-skeleton-text>
-          </ion-label>
-        </ion-item>
-      </ion-list>
+            <ion-skeleton-text
+              animated
+              style="width: 90%; height: 14px; margin-top: 4px"
+            ></ion-skeleton-text>
+            <ion-skeleton-text
+              animated
+              style="width: 70%; height: 14px; margin-top: 4px"
+            ></ion-skeleton-text>
+            <div style="display: flex; gap: 8px; margin-top: 12px">
+              <ion-skeleton-text
+                animated
+                style="width: 80px; height: 28px; border-radius: 14px"
+              ></ion-skeleton-text>
+              <ion-skeleton-text
+                animated
+                style="width: 60px; height: 28px; border-radius: 14px"
+              ></ion-skeleton-text>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
     </ng-container>
 
     <ng-template #content>
@@ -134,38 +170,20 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         </ion-text>
       </ng-container>
 
-      <ion-list>
-        <ion-item
-          *ngFor="let listing of paginatedListings$ | async"
-          [routerLink]="['/listings', listing.id]"
-        >
-          <ion-thumbnail slot="start">
-            <ion-img
-              [src]="listing.iconImage || 'assets/image/logo/ASCENDynamics NFP-logos_transparent.png'"
-            ></ion-img>
-          </ion-thumbnail>
-          <ion-label>
-            <h2>{{ listing.title }}</h2>
-            <h3>{{ listing.organization }}</h3>
-            <p>{{ listing.description | slice:0:100 }}...</p>
-            <ion-badge color="primary"
-              >{{ listing.type | titlecase }}</ion-badge
-            >
-            <ion-badge *ngIf="listing.remote" color="success"
-              >{{ 'listings.remote' | translate }}</ion-badge
-            >
-            <p *ngIf="!listing.remote">{{ getListingLocation(listing) }}</p>
-            <ion-note>
-              <ion-icon name="time-outline"></ion-icon>
-              {{ listing.timeCommitment.hoursPerWeek }} hrs/week
-            </ion-note>
-          </ion-label>
-        </ion-item>
-      </ion-list>
+      <!-- Listings Card Grid -->
+      <div class="listings-grid">
+        <app-listing-card
+          *ngFor="let listing of displayedListings$ | async"
+          [listing]="listing"
+          [userSkills]="(userSkills$ | async) || []"
+          [showMatchBadge]="!!(authUser$ | async)"
+        ></app-listing-card>
+      </div>
+
       <ion-text
-        class="ion-padding"
+        class="ion-padding no-listings-text"
         *ngIf="
-        (paginatedListings$ | async)?.length === 0 &&
+        (displayedListings$ | async)?.length === 0 &&
         !(loading$ | async) &&
         !(error$ | async)
       "
@@ -173,28 +191,31 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         {{ 'listings.no_listings' | translate }}
       </ion-text>
 
-      <!-- Pagination Component -->
-      <ion-footer>
-        <app-pagination
-          [totalItems]="(listings$ | async)?.length || 0"
-          [pageSize]="pageSize"
-          [maxVisiblePages]="5"
-          (pageChange)="goToPage($event)"
-        ></app-pagination>
-
-        <!-- Load More Button for Server-Side Pagination -->
-        <ion-button
-          *ngIf="(isAdvancedSearchActive$ | async) && (hasMoreResults$ | async)"
-          expand="block"
-          fill="outline"
-          (click)="loadMoreResults()"
-          [disabled]="loading$ | async"
-          class="load-more-btn"
+      <!-- Infinite Scroll -->
+      <ion-infinite-scroll
+        threshold="100px"
+        (ionInfinite)="loadMore($event)"
+        [disabled]="!(hasMoreListings$ | async)"
+      >
+        <ion-infinite-scroll-content
+          loadingSpinner="crescent"
+          [loadingText]="'listings.loading_more' | translate"
         >
-          <ion-spinner *ngIf="loading$ | async" name="crescent"></ion-spinner>
-          <span *ngIf="!(loading$ | async)">Load More Results</span>
-        </ion-button>
-      </ion-footer>
+        </ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+
+      <!-- Load More Button for Server-Side Pagination (Advanced Search) -->
+      <ion-button
+        *ngIf="(isAdvancedSearchActive$ | async) && (hasMoreResults$ | async)"
+        expand="block"
+        fill="outline"
+        (click)="loadMoreResults()"
+        [disabled]="loading$ | async"
+        class="load-more-btn"
+      >
+        <ion-spinner *ngIf="loading$ | async" name="crescent"></ion-spinner>
+        <span *ngIf="!(loading$ | async)">Load More Results</span>
+      </ion-button>
     </ng-template>
   </ng-container>
 

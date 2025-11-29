@@ -1,0 +1,114 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<div class="map-container" [style.height]="height">
+  <google-map
+    [center]="center"
+    [zoom]="zoom"
+    [options]="mapOptions"
+    width="100%"
+    [height]="height"
+    (idle)="onMapIdle()"
+  >
+    <!-- User location marker -->
+    <map-marker
+      *ngIf="userLocation"
+      [position]="{lat: userLocation.latitude, lng: userLocation.longitude}"
+      [options]="userMarkerOptions"
+    ></map-marker>
+
+    <!-- Info Window for selected organization -->
+    <map-info-window #infoWindow>
+      <div class="info-window" *ngIf="selectedOrganization">
+        <div class="info-header">
+          <img
+            *ngIf="selectedOrganization.iconImage"
+            [src]="selectedOrganization.iconImage"
+            alt="Organization logo"
+            class="info-logo"
+          />
+          <ion-icon
+            *ngIf="!selectedOrganization.iconImage"
+            name="business"
+            class="info-icon"
+          ></ion-icon>
+          <div class="info-titles">
+            <h3 class="info-title">{{ selectedOrganization.name }}</h3>
+            <p class="info-tagline" *ngIf="selectedOrganization.tagline">
+              {{ selectedOrganization.tagline }}
+            </p>
+          </div>
+        </div>
+
+        <div class="info-badges">
+          <ion-badge color="tertiary">
+            {{ "directory.groups" | translate }}
+          </ion-badge>
+        </div>
+
+        <p class="info-description" *ngIf="selectedOrganization.description">
+          {{ selectedOrganization.description | slice: 0 : 100
+          }}{{ selectedOrganization.description.length > 100 ? "..." : "" }}
+        </p>
+
+        <div
+          class="info-meta"
+          *ngIf="getOrganizationLocation(selectedOrganization)"
+        >
+          <ion-icon name="location-outline"></ion-icon>
+          <span>{{ getOrganizationLocation(selectedOrganization) }}</span>
+        </div>
+
+        <ion-button
+          fill="solid"
+          size="small"
+          expand="block"
+          (click)="onViewDetails()"
+        >
+          {{ "common.view_details" | translate }}
+        </ion-button>
+      </div>
+    </map-info-window>
+  </google-map>
+
+  <!-- No organizations with location message -->
+  <div
+    class="no-locations-overlay"
+    *ngIf="organizations.length > 0 && organizationMarkers.length === 0"
+  >
+    <ion-card>
+      <ion-card-content>
+        <ion-icon name="location-outline" color="medium"></ion-icon>
+        <p>{{ "directory.no_locations" | translate }}</p>
+        <p class="hint">{{ "directory.no_locations_hint" | translate }}</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-overlay" *ngIf="organizations.length === 0">
+    <ion-card>
+      <ion-card-content>
+        <ion-icon name="map-outline" color="medium"></ion-icon>
+        <p>{{ "directory.no_organizations_map" | translate }}</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</div>

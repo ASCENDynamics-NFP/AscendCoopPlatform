@@ -32,7 +32,7 @@ export interface CreateListingRequest {
       street?: string;
       city?: string;
       state?: string;
-      zipCode?: string;
+      zipcode?: string;
       country?: string;
       remote?: boolean;
     }>;
@@ -182,7 +182,7 @@ export class ListingService {
             street: addr?.street,
             city: addr?.city,
             state: addr?.state,
-            zipCode: addr?.zipCode,
+            zipcode: addr?.zipcode,
             country: addr?.country,
             remote: addr?.remote,
           }));
@@ -956,7 +956,7 @@ export class ListingService {
           address.street,
           address.city,
           address.state,
-          address.zipcode || address.zipCode,
+          address.zipcode,
           address.country,
         ].filter(Boolean);
 

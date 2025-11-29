@@ -26,6 +26,7 @@ import {
   OnInit,
   OnDestroy,
   Output,
+  AfterViewInit,
 } from "@angular/core";
 import {FormBuilder, FormGroup} from "@angular/forms";
 import {Subject} from "rxjs";
@@ -51,10 +52,13 @@ export interface RadiusOption {
   templateUrl: "./listing-filter.component.html",
   styleUrls: ["./listing-filter.component.scss"],
 })
-export class ListingFilterComponent implements OnInit, OnDestroy {
+export class ListingFilterComponent
+  implements OnInit, OnDestroy, AfterViewInit
+{
   @Input() availableSkills: string[] = [];
   @Input() isExpanded = false;
   @Input() showToggleButton = true;
+  @Input() initialFilterValues: ListingFilterValues | null = null;
   @Output() filterChange = new EventEmitter<ListingFilterValues>();
   @Output() expandedChange = new EventEmitter<boolean>();
   @Output() activeFilterCountChange = new EventEmitter<number>();
@@ -90,6 +94,24 @@ export class ListingFilterComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // Restore state from initial values if provided
+    if (this.initialFilterValues) {
+      this.currentLocation = this.initialFilterValues.location || null;
+      if (this.currentLocation) {
+        this.locationStatus = "success";
+      }
+      this.filterForm.patchValue(
+        {
+          radiusKm: this.initialFilterValues.radiusKm || null,
+          skills: this.initialFilterValues.skills || [],
+          remote: this.initialFilterValues.remote || null,
+          hoursPerWeekMin: this.initialFilterValues.hoursPerWeekMin || null,
+          hoursPerWeekMax: this.initialFilterValues.hoursPerWeekMax || null,
+        },
+        {emitEvent: false},
+      );
+    }
+
     // Debounce filter emissions to avoid excessive API calls
     this.filterTrigger$
       .pipe(debounceTime(100), takeUntil(this.destroy$))
@@ -103,6 +125,13 @@ export class ListingFilterComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.triggerFilterUpdate();
       });
+  }
+
+  ngAfterViewInit() {
+    // Emit initial active filter count after view init to ensure parent is ready
+    Promise.resolve().then(() => {
+      this.activeFilterCountChange.emit(this.getActiveFilterCount());
+    });
   }
 
   ngOnDestroy() {

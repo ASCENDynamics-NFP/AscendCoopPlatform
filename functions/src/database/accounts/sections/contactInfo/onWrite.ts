@@ -25,22 +25,57 @@ export const onWriteContactInfo = onDocumentWritten(
     const addressesBefore = before?.addresses || [];
     const addressesAfter = after?.addresses || [];
 
+    // Check if any addresses need geocoding (missing geopoint or address changed)
     let needsUpdate = false;
-    if (addressesBefore.length !== addressesAfter.length) {
+    const addressesNeedingGeocode: boolean[] = [];
+
+    for (let i = 0; i < addressesAfter.length; i++) {
+      const addrAfter = addressesAfter[i];
+      const addrBefore = addressesBefore[i];
+
+      // Skip if no meaningful address data
+      if (
+        !addrAfter?.street &&
+        !addrAfter?.city &&
+        !addrAfter?.state &&
+        !addrAfter?.country
+      ) {
+        addressesNeedingGeocode.push(false);
+        continue;
+      }
+
+      // Check if address already has geopoint
+      if (addrAfter.geopoint) {
+        // If address has geopoint, check if address fields changed
+        const beforeStr = addrBefore
+          ? [
+              addrBefore.street,
+              addrBefore.city,
+              addrBefore.state,
+              addrBefore.country,
+            ]
+              .filter(Boolean)
+              .join(",")
+          : "";
+        const afterStr = [
+          addrAfter.street,
+          addrAfter.city,
+          addrAfter.state,
+          addrAfter.country,
+        ]
+          .filter(Boolean)
+          .join(",");
+
+        if (beforeStr === afterStr) {
+          // Address unchanged, keep existing geopoint
+          addressesNeedingGeocode.push(false);
+          continue;
+        }
+      }
+
+      // Address needs geocoding (new, changed, or missing geopoint)
+      addressesNeedingGeocode.push(true);
       needsUpdate = true;
-    } else if (addressesAfter.length > 0) {
-      needsUpdate = addressesBefore.some((addr: any, i: number) => {
-        const b = [addr?.street, addr?.city, addr?.state, addr?.country].join(
-          ",",
-        );
-        const a = [
-          addressesAfter[i]?.street,
-          addressesAfter[i]?.city,
-          addressesAfter[i]?.state,
-          addressesAfter[i]?.country,
-        ].join(",");
-        return b !== a;
-      });
     }
 
     if (!needsUpdate) return;
@@ -48,16 +83,23 @@ export const onWriteContactInfo = onDocumentWritten(
     try {
       logger.info("Geocoding contactInfo addresses for account", {
         accountId: event.params.accountId,
+        addressCount: addressesAfter.length,
+        addressesNeedingGeocode: addressesNeedingGeocode.filter(Boolean).length,
       });
 
       const newAddresses = await Promise.all(
-        (addressesAfter || []).map(async (addr: any) => {
-          if (!addr?.street && !addr?.city && !addr?.state && !addr?.country) {
+        addressesAfter.map(async (addr: any, i: number) => {
+          // Skip if this address doesn't need geocoding
+          if (!addressesNeedingGeocode[i]) {
             return addr;
           }
+
           const addrStr = [addr.street, addr.city, addr.state, addr.country]
             .filter(Boolean)
             .join(", ");
+
+          if (!addrStr) return addr;
+
           const geocoded = await geocodeAddress(addrStr);
           if (geocoded) {
             return {

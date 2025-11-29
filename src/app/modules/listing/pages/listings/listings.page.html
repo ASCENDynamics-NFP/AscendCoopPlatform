@@ -65,8 +65,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <ion-toolbar *ngIf="isFilterExpanded" class="filter-panel-toolbar">
     <app-listing-filter
       [availableSkills]="availableSkills"
-      [isExpanded]="true"
+      [isExpanded]="isFilterExpanded"
       [showToggleButton]="false"
+      [initialFilterValues]="currentFilterValues"
       (filterChange)="onFilterChange($event)"
       (expandedChange)="onFilterExpandedChange($event)"
       (activeFilterCountChange)="onActiveFilterCountChange($event)"

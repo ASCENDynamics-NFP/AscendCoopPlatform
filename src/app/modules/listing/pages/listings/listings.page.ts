@@ -83,6 +83,7 @@ export class ListingsPage implements OnInit, OnDestroy {
   // Filter panel state
   isFilterExpanded = false;
   activeFilterCount = 0;
+  currentFilterValues: ListingFilterValues | null = null;
   availableSkills: string[] = [
     "JavaScript",
     "TypeScript",
@@ -264,6 +265,9 @@ export class ListingsPage implements OnInit, OnDestroy {
   }
 
   onFilterChange(filterValues: ListingFilterValues) {
+    // Store filter values so they persist when panel closes/reopens
+    this.currentFilterValues = filterValues;
+
     const advancedFilters: AdvancedFilters = {
       location: filterValues.location,
       radiusKm: filterValues.radiusKm,

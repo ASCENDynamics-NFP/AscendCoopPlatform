@@ -17,7 +17,13 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  NgZone,
+  ChangeDetectorRef,
+} from "@angular/core";
 import {Router} from "@angular/router";
 import {Store} from "@ngrx/store";
 import {BehaviorSubject, Observable, Subject, combineLatest, of} from "rxjs";
@@ -27,8 +33,10 @@ import {
   map,
   startWith,
   switchMap,
+  takeUntil,
 } from "rxjs/operators";
 import {Account} from "@shared/models/account.model";
+import {InfiniteScrollCustomEvent} from "@ionic/angular";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {
   selectFilteredAccounts,
@@ -37,6 +45,8 @@ import {
   selectRelatedAccountsByAccountId,
 } from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
+import {DirectoryFilterValues} from "../../components/directory-filter/directory-filter.component";
+import {environment} from "../../../../../environments/environment";
 
 type DirectoryType = "all" | "user" | "group";
 
@@ -45,7 +55,7 @@ type DirectoryType = "all" | "user" | "group";
   templateUrl: "./directory.page.html",
   styleUrls: ["./directory.page.scss"],
 })
-export class DirectoryPage implements OnInit {
+export class DirectoryPage implements OnInit, OnDestroy {
   loading$: Observable<boolean>;
   authUserId$ = this.store
     .select(selectAuthUser)
@@ -60,20 +70,40 @@ export class DirectoryPage implements OnInit {
   onlyMyConnections$ = new BehaviorSubject<boolean>(false);
   sort$ = new BehaviorSubject<"name-asc" | "name-desc">("name-asc");
 
-  // Pagination
-  pageSize = 12;
-  currentPage$ = new BehaviorSubject<number>(1);
+  // Filter panel state
+  isFilterExpanded = false;
+  activeFilterCount = 0;
+
+  // View mode: list or map
+  viewMode: "list" | "map" = "list";
+  mapsLoaded = false;
+  userLocation: {latitude: number; longitude: number} | null = null;
+
+  // Infinite scroll
+  private readonly itemsPerLoad = 12;
+  readonly skeletonItems = Array.from({length: this.itemsPerLoad});
+  private displayedCountSubject = new BehaviorSubject<number>(
+    this.itemsPerLoad,
+  );
+  private allItems$!: Observable<Account[]>;
+  hasMoreItems$!: Observable<boolean>;
   totalItems$!: Observable<number>;
   paginated$!: Observable<Account[]>;
+  // All items for the map (only groups)
+  allOrganizations$!: Observable<Account[]>;
   private relStatusMap = new Map<
     string,
     "pending" | "accepted" | "blocked" | "declined"
   >();
   private relationships$!: Observable<any[]>;
+  private destroy$ = new Subject<void>();
+  private mapsCheckInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     private store: Store,
     private router: Router,
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef,
   ) {
     this.loading$ = this.store.select(selectAccountLoading);
   }
@@ -88,11 +118,13 @@ export class DirectoryPage implements OnInit {
         uid ? this.store.select(selectRelatedAccountsByAccountId(uid)) : of([]),
       ),
     );
-    this.relationships$.subscribe((rels: any[]) => {
-      const m = new Map<string, any>();
-      (rels || []).forEach((r) => m.set(r.id, r.status));
-      this.relStatusMap = m as any;
-    });
+    this.relationships$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((rels: any[]) => {
+        const m = new Map<string, any>();
+        (rels || []).forEach((r) => m.set(r.id, r.status));
+        this.relStatusMap = m as any;
+      });
 
     const term$ = this.searchTerms.pipe(
       startWith(this.searchedValue),
@@ -185,13 +217,27 @@ export class DirectoryPage implements OnInit {
       }),
     );
 
-    // Total count and page slice
+    // Store all items for infinite scroll
+    this.allItems$ = combined$;
+
+    // Total count
     this.totalItems$ = combined$.pipe(map((arr) => arr.length));
-    this.paginated$ = combineLatest([combined$, this.currentPage$]).pipe(
-      map(([arr, page]) => {
-        const start = (page - 1) * this.pageSize;
-        return arr.slice(start, start + this.pageSize);
-      }),
+
+    // Displayed items with infinite scroll
+    this.paginated$ = combineLatest([
+      combined$,
+      this.displayedCountSubject,
+    ]).pipe(map(([arr, count]) => arr.slice(0, count)));
+
+    // Check if there are more items to load
+    this.hasMoreItems$ = combineLatest([
+      combined$,
+      this.displayedCountSubject,
+    ]).pipe(map(([arr, count]) => count < arr.length));
+
+    // All organizations for the map (filtered to only groups)
+    this.allOrganizations$ = combined$.pipe(
+      map((arr) => arr.filter((acc) => acc.type === "group")),
     );
   }
 
@@ -200,38 +246,51 @@ export class DirectoryPage implements OnInit {
     const value = (ev?.detail?.value || ev?.target?.value || "").toString();
     this.searchedValue = value;
     this.searchTerms.next(value);
-    this.currentPage$.next(1);
+    this.resetInfiniteScroll();
   }
 
   setType(type: DirectoryType | undefined | null) {
     const norm: DirectoryType =
       type === "user" || type === "group" || type === "all" ? type : "all";
     this.type$.next(norm);
-    this.currentPage$.next(1);
+    this.resetInfiniteScroll();
   }
 
   togglePrivateGroups(v: boolean) {
     this.includePrivateGroups$.next(v);
-    this.currentPage$.next(1);
+    this.resetInfiniteScroll();
   }
 
   toggleMyGroups(v: boolean) {
     this.onlyMyGroups$.next(v);
-    this.currentPage$.next(1);
+    this.resetInfiniteScroll();
   }
 
   toggleMyConnections(v: boolean) {
     this.onlyMyConnections$.next(v);
-    this.currentPage$.next(1);
+    this.resetInfiniteScroll();
   }
 
   setSort(v: "name-asc" | "name-desc") {
     this.sort$.next(v);
-    this.currentPage$.next(1);
+    this.resetInfiniteScroll();
   }
 
-  goToPage(p: number) {
-    this.currentPage$.next(p);
+  /**
+   * Load more items for infinite scroll
+   */
+  loadMore(event: InfiniteScrollCustomEvent) {
+    this.displayedCountSubject.next(
+      this.displayedCountSubject.value + this.itemsPerLoad,
+    );
+    event.target.complete();
+  }
+
+  /**
+   * Reset infinite scroll to initial state
+   */
+  private resetInfiniteScroll() {
+    this.displayedCountSubject.next(this.itemsPerLoad);
   }
 
   openAccount(acc: Account) {
@@ -242,5 +301,111 @@ export class DirectoryPage implements OnInit {
     if (!id) return undefined;
     const s = this.relStatusMap.get(id as string);
     return s === "accepted" || s === "pending" ? s : undefined;
+  }
+
+  getTypeBadgeLabel(type: string): string {
+    return type === "group" ? "directory.groups" : "directory.users";
+  }
+
+  // Filter panel methods
+  toggleFilter() {
+    this.isFilterExpanded = !this.isFilterExpanded;
+  }
+
+  onFilterChange(filterValues: DirectoryFilterValues) {
+    this.includePrivateGroups$.next(filterValues.includePrivateGroups);
+    this.onlyMyGroups$.next(filterValues.onlyMyGroups);
+    this.onlyMyConnections$.next(filterValues.onlyMyConnections);
+    this.sort$.next(filterValues.sort);
+    this.resetInfiniteScroll();
+  }
+
+  onFilterExpandedChange(expanded: boolean) {
+    this.isFilterExpanded = expanded;
+  }
+
+  onActiveFilterCountChange(count: number) {
+    this.activeFilterCount = count;
+  }
+
+  // Map view methods
+  toggleViewMode() {
+    if (this.viewMode === "list") {
+      this.viewMode = "map";
+      if (!this.mapsLoaded) {
+        this.loadGoogleMaps();
+      }
+    } else {
+      this.viewMode = "list";
+    }
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+    // Clear maps loading interval if still running
+    if (this.mapsCheckInterval) {
+      clearInterval(this.mapsCheckInterval);
+      this.mapsCheckInterval = null;
+    }
+  }
+
+  private loadGoogleMaps() {
+    // Check if already loaded
+    if (typeof google !== "undefined" && google.maps) {
+      this.mapsLoaded = true;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    // Check if script is already being loaded
+    if (document.querySelector('script[src*="maps.googleapis.com"]')) {
+      // Script is loading, wait for it
+      this.mapsCheckInterval = setInterval(() => {
+        if (typeof google !== "undefined" && google.maps) {
+          if (this.mapsCheckInterval) {
+            clearInterval(this.mapsCheckInterval);
+            this.mapsCheckInterval = null;
+          }
+          this.ngZone.run(() => {
+            this.mapsLoaded = true;
+            this.cdr.detectChanges();
+          });
+        }
+      }, 100);
+      return;
+    }
+
+    const apiKey = environment.googleMapsApiKey;
+    if (!apiKey || apiKey === "YOUR_GOOGLE_MAPS_API_KEY_HERE") {
+      console.warn("Google Maps API key not configured");
+      this.mapsLoaded = true; // Still show map component (will show error state)
+      this.cdr.detectChanges();
+      return;
+    }
+
+    // Dynamically load Google Maps script
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=marker`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      this.ngZone.run(() => {
+        this.mapsLoaded = true;
+        this.cdr.detectChanges();
+      });
+    };
+    script.onerror = () => {
+      console.error("Failed to load Google Maps");
+      this.ngZone.run(() => {
+        this.mapsLoaded = true; // Show error state
+        this.cdr.detectChanges();
+      });
+    };
+    document.head.appendChild(script);
+  }
+
+  viewOrganization(id: string) {
+    this.router.navigate(["/account", id]);
   }
 }

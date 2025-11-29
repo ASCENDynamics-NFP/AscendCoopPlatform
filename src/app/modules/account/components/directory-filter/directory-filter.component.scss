@@ -1,0 +1,114 @@
+/***********************************************************************************************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+*
+* This file is part of Nonprofit Social Networking Platform.
+*
+* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+
+* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+
+* You should have received a copy of the GNU Affero General Public License
+* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+***********************************************************************************************/
+// src/app/modules/account/components/directory-filter/directory-filter.component.scss
+
+.filter-panel {
+  width: 100%;
+}
+
+.filter-toggle {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  margin: 0;
+  text-transform: none;
+  font-weight: 500;
+}
+
+.filter-content {
+  padding: 12px 16px;
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  margin: 8px 0;
+}
+
+.filter-grid {
+  display: grid;
+  gap: 16px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.filter-section {
+  .filter-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--ion-color-medium);
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+}
+
+.toggle-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.toggle-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --background: transparent;
+  --min-height: 36px;
+
+  ion-toggle {
+    font-size: 0.875rem;
+  }
+}
+
+.sort-select {
+  width: 100%;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  background: var(--ion-background-color);
+  border-radius: 8px;
+  border: 1px solid var(--ion-color-light-shade);
+}
+
+.clear-filters-btn {
+  margin-top: 12px;
+  --color: var(--ion-color-medium);
+  font-size: 0.875rem;
+}
+
+// Dark mode adjustments
+:host-context(body.dark) {
+  .filter-content {
+    background: var(--ion-color-step-100);
+  }
+
+  .sort-select {
+    background: var(--ion-color-step-50);
+    border-color: var(--ion-color-step-150);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .filter-content {
+    background: var(--ion-color-step-100);
+  }
+
+  .sort-select {
+    background: var(--ion-color-step-50);
+    border-color: var(--ion-color-step-150);
+  }
+}

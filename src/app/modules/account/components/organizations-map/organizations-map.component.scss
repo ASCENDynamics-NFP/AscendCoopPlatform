@@ -1,0 +1,148 @@
+/***********************************************************************************************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+*
+* This file is part of Nonprofit Social Networking Platform.
+*
+* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+
+* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+
+* You should have received a copy of the GNU Affero General Public License
+* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+***********************************************************************************************/
+
+.map-container {
+  position: relative;
+  width: 100%;
+
+  google-map {
+    width: 100%;
+  }
+}
+
+.info-window {
+  padding: 8px;
+  max-width: 280px;
+
+  .info-header {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+
+  .info-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+
+  .info-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 48px;
+    color: var(--ion-color-medium);
+  }
+
+  .info-titles {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .info-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ion-text-color);
+    line-height: 1.2;
+  }
+
+  .info-tagline {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: var(--ion-color-medium);
+    line-height: 1.3;
+  }
+
+  .info-badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+
+    ion-badge {
+      font-size: 10px;
+      padding: 4px 8px;
+    }
+  }
+
+  .info-description {
+    margin: 0 0 8px;
+    font-size: 13px;
+    color: var(--ion-text-color);
+    line-height: 1.4;
+  }
+
+  .info-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--ion-color-medium);
+    margin-bottom: 12px;
+
+    ion-icon {
+      font-size: 14px;
+    }
+  }
+
+  ion-button {
+    margin: 0;
+  }
+}
+
+.no-locations-overlay,
+.empty-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+
+  ion-card {
+    margin: 0;
+    max-width: 300px;
+    text-align: center;
+    background: rgba(var(--ion-background-color-rgb), 0.95);
+    backdrop-filter: blur(4px);
+
+    ion-card-content {
+      padding: 24px;
+    }
+
+    ion-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--ion-text-color);
+
+      &.hint {
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--ion-color-medium);
+      }
+    }
+  }
+}

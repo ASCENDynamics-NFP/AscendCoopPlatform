@@ -39,7 +39,7 @@ export interface CreateAccountRequest {
       street?: string;
       city?: string;
       state?: string;
-      zipCode?: string;
+      zipcode?: string;
       country?: string;
     }>;
   };
@@ -68,7 +68,7 @@ export interface CreateListingRequest {
       street?: string;
       city?: string;
       state?: string;
-      zipCode?: string;
+      zipcode?: string;
       country?: string;
       remote?: boolean;
     }>;

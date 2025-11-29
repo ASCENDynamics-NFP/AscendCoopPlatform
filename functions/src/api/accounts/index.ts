@@ -7,6 +7,7 @@ import {
   AccountService,
   CreateAccountRequest,
 } from "../../services/accountService";
+import {googleApiKey} from "../../utils/geocoding";
 
 /**
  * Create a new account
@@ -17,6 +18,7 @@ export const createAccount = onCall(
     enforceAppCheck: false,
     memory: "512MiB",
     timeoutSeconds: 60,
+    secrets: [googleApiKey],
   },
   async (request) => {
     if (!request.auth?.uid) {
@@ -68,6 +70,7 @@ export const updateAccount = onCall(
     enforceAppCheck: false, // Temporarily disabled for testing
     memory: "512MiB",
     timeoutSeconds: 60,
+    secrets: [googleApiKey],
   },
   async (request) => {
     if (!request.auth?.uid) {

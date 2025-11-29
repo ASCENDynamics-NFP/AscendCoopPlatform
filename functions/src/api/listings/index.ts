@@ -7,6 +7,7 @@ import {
   ListingService,
   CreateListingRequest,
 } from "../../services/listingService";
+import {googleApiKey} from "../../utils/geocoding";
 
 /**
  * Create a new listing
@@ -17,6 +18,7 @@ export const createListing = onCall(
     enforceAppCheck: false,
     memory: "512MiB",
     timeoutSeconds: 60,
+    secrets: [googleApiKey],
   },
   async (request) => {
     if (!request.auth?.uid) {
@@ -73,6 +75,7 @@ export const updateListing = onCall(
     enforceAppCheck: false,
     memory: "512MiB",
     timeoutSeconds: 60,
+    secrets: [googleApiKey],
   },
   async (request) => {
     if (!request.auth?.uid) {

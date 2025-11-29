@@ -50,9 +50,8 @@ const {
   selectEntities: selectListingEntities,
 } = listingsAdapter.getSelectors();
 
-export const selectAllListings = createSelector(
-  selectListingsState,
-  selectAllListingsArray,
+export const selectAllListings = createSelector(selectListingsState, (state) =>
+  state ? selectAllListingsArray(state) : [],
 );
 
 // Select a specific listing by ID
@@ -66,7 +65,7 @@ export const selectListingById = (listingId: string) =>
 export const selectSelectedListing = createSelector(
   selectListingsState,
   (state) =>
-    state.selectedListingId
+    state?.selectedListingId
       ? (selectListingEntities(state)[state.selectedListingId] as
           | Listing
           | undefined)

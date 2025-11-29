@@ -19,7 +19,13 @@
 ***********************************************************************************************/
 // src/app/modules/listing/pages/listings/listings.page.ts
 
-import {Component, OnInit, OnDestroy} from "@angular/core";
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  NgZone,
+  ChangeDetectorRef,
+} from "@angular/core";
 import {Store} from "@ngrx/store";
 import {
   Observable,
@@ -109,6 +115,8 @@ export class ListingsPage implements OnInit, OnDestroy {
     private metaService: MetaService,
     private navCtrl: NavController,
     private store: Store<AppState>,
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef,
   ) {
     this.authUser$ = this.store.select(selectAuthUser);
     this.listings$ = this.store.select(selectFilteredListings);
@@ -317,6 +325,7 @@ export class ListingsPage implements OnInit, OnDestroy {
     // Check if already loaded
     if (typeof google !== "undefined" && google.maps) {
       this.mapsLoaded = true;
+      this.cdr.detectChanges();
       return;
     }
 
@@ -324,6 +333,7 @@ export class ListingsPage implements OnInit, OnDestroy {
     if (!apiKey || apiKey === "YOUR_GOOGLE_MAPS_API_KEY_HERE") {
       console.warn("Google Maps API key not configured");
       this.mapsLoaded = true; // Still show map component (will show error state)
+      this.cdr.detectChanges();
       return;
     }
 
@@ -333,11 +343,17 @@ export class ListingsPage implements OnInit, OnDestroy {
     script.async = true;
     script.defer = true;
     script.onload = () => {
-      this.mapsLoaded = true;
+      this.ngZone.run(() => {
+        this.mapsLoaded = true;
+        this.cdr.detectChanges();
+      });
     };
     script.onerror = () => {
       console.error("Failed to load Google Maps");
-      this.mapsLoaded = true; // Show error state
+      this.ngZone.run(() => {
+        this.mapsLoaded = true; // Show error state
+        this.cdr.detectChanges();
+      });
     };
     document.head.appendChild(script);
   }

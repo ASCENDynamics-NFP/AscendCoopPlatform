@@ -38,23 +38,30 @@ Enhance the Listings module with advanced search, location-based discovery, impr
 
 ### Map Component
 
-- [ ] Create `ListingsMapComponent` for map view display
-- [ ] Add map/list view toggle button to `listings.page.html`
-- [ ] Display listing markers using `contactInformation.addresses[]` coordinates
-- [ ] Implement marker clustering for dense areas
-- [ ] Add marker popup with listing preview (title, type, organization)
-- [ ] Implement click-to-navigate from marker to listing detail
+- [x] Create `ListingsMapComponent` for map view display
+- [x] Add map/list view toggle button to `listings.page.html`
+- [x] Display listing markers using `contactInformation.addresses[]` coordinates
+- [x] Implement marker clustering for dense areas
+- [x] Add marker popup with listing preview (title, type, organization)
+- [x] Implement click-to-navigate from marker to listing detail
 
 ### Geolocation Integration
 
-- [ ] Add "Near Me" quick filter button
-- [ ] Request user geolocation permission (reference existing implementation in homepage)
-- [ ] Auto-populate location filter with user's current location
+- [x] Add "Near Me" quick filter button (uses existing location filter in filter panel)
+- [x] Request user geolocation permission (reference existing implementation in homepage)
+- [x] Auto-populate location filter with user's current location
 - [ ] Store last-used location in user preferences
 
 ### Decision Required
 
-- [ ] **Choose map library**: Google Maps / Leaflet / Mapbox
+- [x] **Choose map library**: Google Maps (with `@angular/google-maps` and `@googlemaps/markerclusterer`)
+
+### Backend Location Support
+
+- [x] Fix location filtering in `searchListings` to use `contactInformation.addresses[].geopoint`
+- [x] Implement `geocodeAddresses` using Google Maps Geocoding API
+- [x] Enable location params in frontend `buildSearchRequest` effect
+- [x] Add `googleMapsApiKey` to environment files
 
 ---
 

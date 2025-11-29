@@ -63,8 +63,6 @@ describe("HeroComponent", () => {
       hoursPerWeek: 10,
       duration: "3 months",
       schedule: "Flexible",
-      startDate: Timestamp.fromDate(new Date()),
-      endDate: Timestamp.fromDate(new Date()),
       isFlexible: true,
     },
     skills: [{name: "Test Skill", level: "beginner", required: true}],

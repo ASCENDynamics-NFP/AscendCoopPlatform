@@ -20,13 +20,72 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
 <ion-header>
   <app-header [title]="'menu.listings'"></app-header>
-  <ion-toolbar>
-    <ion-searchbar (ionInput)="searchListings($event)"></ion-searchbar>
+
+  <!-- Search and Filter Row -->
+  <ion-toolbar class="search-filter-toolbar">
+    <div class="search-filter-container">
+      <ion-searchbar
+        (ionInput)="searchListings($event)"
+        class="listing-searchbar"
+      ></ion-searchbar>
+      <ion-button
+        fill="clear"
+        size="small"
+        (click)="toggleFilter()"
+        class="filter-toggle-btn"
+      >
+        <ion-icon slot="start" name="options-outline"></ion-icon>
+        <ion-badge
+          *ngIf="activeFilterCount > 0"
+          color="primary"
+          class="filter-badge"
+        >
+          {{ activeFilterCount }}
+        </ion-badge>
+        <ion-icon
+          slot="end"
+          [name]="isFilterExpanded ? 'chevron-up-outline' : 'chevron-down-outline'"
+        ></ion-icon>
+      </ion-button>
+      <!-- View Toggle: List/Map -->
+      <ion-button
+        fill="clear"
+        size="small"
+        (click)="toggleViewMode()"
+        class="view-toggle-btn"
+      >
+        <ion-icon
+          [name]="viewMode === 'list' ? 'map-outline' : 'list-outline'"
+        ></ion-icon>
+      </ion-button>
+    </div>
+  </ion-toolbar>
+
+  <!-- Filter Panel (expands below search bar) -->
+  <ion-toolbar *ngIf="isFilterExpanded" class="filter-panel-toolbar">
+    <app-listing-filter
+      [availableSkills]="availableSkills"
+      [isExpanded]="isFilterExpanded"
+      [showToggleButton]="false"
+      [initialFilterValues]="currentFilterValues"
+      (filterChange)="onFilterChange($event)"
+      (expandedChange)="onFilterExpandedChange($event)"
+      (activeFilterCountChange)="onActiveFilterCountChange($event)"
+    ></app-listing-filter>
   </ion-toolbar>
 
   <ion-toolbar>
-    <ion-segment scrollable (ionChange)="filterListings($event)">
-      <ion-segment-button *ngFor="let type of listingTypes" [value]="type">
+    <ion-segment
+      scrollable
+      value="all"
+      (ionChange)="filterListings($event)"
+      class="listing-type-segment"
+    >
+      <ion-segment-button
+        *ngFor="let type of listingTypes"
+        [value]="type"
+        [class]="'segment-' + type"
+      >
         <ion-icon [name]="getIconForType(type)"></ion-icon>
         <ion-label>{{type | titlecase}}</ion-label>
       </ion-segment-button>
@@ -41,89 +100,143 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <ng-container
-    *ngIf="(loading$ | async) && !(paginatedListings$ | async)?.length; else content"
-  >
-    <ion-list>
-      <ion-item *ngFor="let i of [1,2,3,4,5]">
-        <ion-thumbnail slot="start">
-          <ion-skeleton-text
-            animated
-            style="width: 64px; height: 64px"
-          ></ion-skeleton-text>
-        </ion-thumbnail>
-        <ion-label>
-          <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
-          <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
-          <ion-skeleton-text animated style="width: 40%"></ion-skeleton-text>
-        </ion-label>
-      </ion-item>
-    </ion-list>
+  <!-- Map View -->
+  <ng-container *ngIf="viewMode === 'map'">
+    <app-listings-map
+      *ngIf="mapsLoaded"
+      [listings]="(listings$ | async) || []"
+      [userLocation]="userLocation"
+      [height]="'calc(100vh - 200px)'"
+      (listingSelected)="viewListing($event)"
+    ></app-listings-map>
+    <div *ngIf="!mapsLoaded" class="map-loading">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading map...</p>
+    </div>
   </ng-container>
 
-  <ng-template #content>
-    <ng-container *ngIf="error$ | async as error">
-      <ion-text color="danger">
-        <p>{{ error }}</p>
-      </ion-text>
+  <!-- List View -->
+  <ng-container *ngIf="viewMode === 'list'">
+    <ng-container
+      *ngIf="(loading$ | async) && !(displayedListings$ | async)?.length; else content"
+    >
+      <!-- Skeleton Loading Cards -->
+      <div class="listings-grid">
+        <ion-card *ngFor="let i of [1,2,3,4,5,6]" class="listing-card-skeleton">
+          <ion-skeleton-text
+            animated
+            style="height: 4px; width: 100%"
+          ></ion-skeleton-text>
+          <ion-card-header>
+            <div style="display: flex; gap: 12px; align-items: flex-start">
+              <ion-skeleton-text
+                animated
+                style="width: 48px; height: 48px; border-radius: 8px"
+              ></ion-skeleton-text>
+              <div style="flex: 1">
+                <ion-skeleton-text
+                  animated
+                  style="width: 80%; height: 18px"
+                ></ion-skeleton-text>
+                <ion-skeleton-text
+                  animated
+                  style="width: 50%; height: 14px; margin-top: 4px"
+                ></ion-skeleton-text>
+              </div>
+            </div>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-skeleton-text
+              animated
+              style="width: 100%; height: 14px"
+            ></ion-skeleton-text>
+            <ion-skeleton-text
+              animated
+              style="width: 90%; height: 14px; margin-top: 4px"
+            ></ion-skeleton-text>
+            <ion-skeleton-text
+              animated
+              style="width: 70%; height: 14px; margin-top: 4px"
+            ></ion-skeleton-text>
+            <div style="display: flex; gap: 8px; margin-top: 12px">
+              <ion-skeleton-text
+                animated
+                style="width: 80px; height: 28px; border-radius: 14px"
+              ></ion-skeleton-text>
+              <ion-skeleton-text
+                animated
+                style="width: 60px; height: 28px; border-radius: 14px"
+              ></ion-skeleton-text>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
     </ng-container>
 
-    <ion-list>
-      <ion-item
-        *ngFor="let listing of paginatedListings$ | async"
-        [routerLink]="['/listings', listing.id]"
+    <ng-template #content>
+      <ng-container *ngIf="error$ | async as error">
+        <ion-text color="danger">
+          <p>{{ error }}</p>
+        </ion-text>
+      </ng-container>
+
+      <!-- Listings Card Grid -->
+      <div class="listings-grid">
+        <app-listing-card
+          *ngFor="let listing of displayedListings$ | async"
+          [listing]="listing"
+          [userSkills]="(userSkills$ | async) || []"
+          [showMatchBadge]="!!(authUser$ | async)"
+        ></app-listing-card>
+      </div>
+
+      <ion-text
+        class="ion-padding no-listings-text"
+        *ngIf="
+        (displayedListings$ | async)?.length === 0 &&
+        !(loading$ | async) &&
+        !(error$ | async)
+      "
       >
-        <ion-thumbnail slot="start">
-          <ion-img
-            [src]="listing.iconImage || 'assets/image/logo/ASCENDynamics NFP-logos_transparent.png'"
-          ></ion-img>
-        </ion-thumbnail>
-        <ion-label>
-          <h2>{{ listing.title }}</h2>
-          <h3>{{ listing.organization }}</h3>
-          <p>{{ listing.description | slice:0:100 }}...</p>
-          <ion-badge color="primary">{{ listing.type | titlecase }}</ion-badge>
-          <ion-badge *ngIf="listing.remote" color="success"
-            >{{ 'listings.remote' | translate }}</ion-badge
-          >
-          <p *ngIf="!listing.remote">{{ getListingLocation(listing) }}</p>
-          <ion-note>
-            <ion-icon name="time-outline"></ion-icon>
-            {{ listing.timeCommitment.hoursPerWeek }} hrs/week
-          </ion-note>
-        </ion-label>
-      </ion-item>
-    </ion-list>
-    <ion-text
-      class="ion-padding"
-      *ngIf="
-      (paginatedListings$ | async)?.length === 0 &&
-      !(loading$ | async) &&
-      !(error$ | async)
-    "
-    >
-      {{ 'listings.no_listings' | translate }}
-    </ion-text>
+        {{ 'listings.no_listings' | translate }}
+      </ion-text>
 
-    <ion-fab
-      vertical="bottom"
-      horizontal="end"
-      slot="fixed"
-      *ngIf="authUser$ | async"
-    >
-      <ion-fab-button routerLink="/listings/create">
-        <ion-icon name="add"></ion-icon>
-      </ion-fab-button>
-    </ion-fab>
+      <!-- Infinite Scroll -->
+      <ion-infinite-scroll
+        threshold="100px"
+        (ionInfinite)="loadMore($event)"
+        [disabled]="!(hasMoreListings$ | async)"
+      >
+        <ion-infinite-scroll-content
+          loadingSpinner="crescent"
+          [loadingText]="'listings.loading_more' | translate"
+        >
+        </ion-infinite-scroll-content>
+      </ion-infinite-scroll>
 
-    <!-- Pagination Component -->
-    <ion-footer>
-      <app-pagination
-        [totalItems]="(listings$ | async)?.length || 0"
-        [pageSize]="pageSize"
-        [maxVisiblePages]="5"
-        (pageChange)="goToPage($event)"
-      ></app-pagination>
-    </ion-footer>
-  </ng-template>
+      <!-- Load More Button for Server-Side Pagination (Advanced Search) -->
+      <ion-button
+        *ngIf="(isAdvancedSearchActive$ | async) && (hasMoreResults$ | async)"
+        expand="block"
+        fill="outline"
+        (click)="loadMoreResults()"
+        [disabled]="loading$ | async"
+        class="load-more-btn"
+      >
+        <ion-spinner *ngIf="loading$ | async" name="crescent"></ion-spinner>
+        <span *ngIf="!(loading$ | async)">Load More Results</span>
+      </ion-button>
+    </ng-template>
+  </ng-container>
+
+  <ion-fab
+    vertical="bottom"
+    horizontal="end"
+    slot="fixed"
+    *ngIf="authUser$ | async"
+  >
+    <ion-fab-button routerLink="/listings/create">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

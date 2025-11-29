@@ -39,7 +39,7 @@ export interface CreateAccountRequest {
       street?: string;
       city?: string;
       state?: string;
-      zipCode?: string;
+      zipcode?: string;
       country?: string;
     }>;
   };
@@ -68,7 +68,7 @@ export interface CreateListingRequest {
       street?: string;
       city?: string;
       state?: string;
-      zipCode?: string;
+      zipcode?: string;
       country?: string;
       remote?: boolean;
     }>;
@@ -114,6 +114,8 @@ export interface SearchListingsRequest {
   type?: "volunteer" | "job" | "event" | "project";
   remote?: boolean;
   category?: string;
+  hoursPerWeekMin?: number;
+  hoursPerWeekMax?: number;
   limit?: number;
   startAfter?: string;
 }
@@ -602,7 +604,7 @@ export class FirebaseFunctionsService {
   manageApplication(
     listingId: string,
     applicantId: string,
-    status: "accepted" | "declined",
+    status: "reviewing" | "interviewed" | "accepted" | "declined",
     notes?: string,
   ): Observable<any> {
     const callable = this.fns.httpsCallable("manageApplication");

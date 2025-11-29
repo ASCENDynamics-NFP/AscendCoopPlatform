@@ -41,7 +41,7 @@ export const selectListingsState =
 export const selectRelatedAccountsByListingId = (listingId: string) =>
   createSelector(
     selectListingsState,
-    (state: ListingsState) => state.relatedAccounts[listingId] || [],
+    (state: ListingsState) => state?.relatedAccounts?.[listingId] || [],
   );
 
 // Select all listings
@@ -50,9 +50,8 @@ const {
   selectEntities: selectListingEntities,
 } = listingsAdapter.getSelectors();
 
-export const selectAllListings = createSelector(
-  selectListingsState,
-  selectAllListingsArray,
+export const selectAllListings = createSelector(selectListingsState, (state) =>
+  state ? selectAllListingsArray(state) : [],
 );
 
 // Select a specific listing by ID
@@ -66,7 +65,7 @@ export const selectListingById = (listingId: string) =>
 export const selectSelectedListing = createSelector(
   selectListingsState,
   (state) =>
-    state.selectedListingId
+    state?.selectedListingId
       ? (selectListingEntities(state)[state.selectedListingId] as
           | Listing
           | undefined)
@@ -76,25 +75,49 @@ export const selectSelectedListing = createSelector(
 // Select loading state
 export const selectLoading = createSelector(
   selectListingsState,
-  (state: ListingsState) => state.loading,
+  (state: ListingsState) => state?.loading ?? false,
 );
 
 // Select error state
 export const selectError = createSelector(
   selectListingsState,
-  (state: ListingsState) => state.error,
+  (state: ListingsState) => state?.error ?? null,
 );
 
 // Select filter type
 export const selectFilterType = createSelector(
   selectListingsState,
-  (state: ListingsState) => state.filterType,
+  (state: ListingsState) => state?.filterType ?? "all",
 );
 
 // Select search query
 export const selectSearchQuery = createSelector(
   selectListingsState,
-  (state: ListingsState) => state.searchQuery,
+  (state: ListingsState) => state?.searchQuery ?? "",
+);
+
+// Select advanced filters
+export const selectAdvancedFilters = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state?.advancedFilters,
+);
+
+// Select if advanced search is active
+export const selectIsAdvancedSearchActive = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state?.isAdvancedSearchActive ?? false,
+);
+
+// Select has more results
+export const selectHasMoreResults = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state?.hasMoreResults ?? false,
+);
+
+// Select next cursor for pagination
+export const selectNextCursor = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state?.nextCursor,
 );
 
 // Select filtered listings
@@ -127,14 +150,14 @@ export const selectFilteredListings = createSelector(
 // Cache and Freshness Selectors
 export const selectListingsLastUpdated = createSelector(
   selectListingsState,
-  (state: ListingsState) => state.listingsLastUpdated,
+  (state: ListingsState) => state?.listingsLastUpdated ?? null,
 );
 
 export const selectRelatedAccountsLastUpdated = (listingId: string) =>
   createSelector(
     selectListingsState,
     (state: ListingsState) =>
-      state.relatedAccountsLastUpdated[listingId] || null,
+      state?.relatedAccountsLastUpdated?.[listingId] || null,
   );
 
 // Determine if listings are fresh
@@ -150,3 +173,30 @@ export const selectAreRelatedAccountsFresh = (listingId: string) =>
     (relatedAccountsLastUpdated) =>
       !isStale(relatedAccountsLastUpdated, LISTINGS_TTL),
   );
+
+// Applicant Selection Selectors for Bulk Operations
+export const selectSelectedApplicantIds = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state?.selectedApplicantIds ?? [],
+);
+
+export const selectIsApplicantSelected = (applicantId: string) =>
+  createSelector(selectSelectedApplicantIds, (selectedIds) =>
+    selectedIds.includes(applicantId),
+  );
+
+export const selectSelectedApplicantsCount = createSelector(
+  selectSelectedApplicantIds,
+  (selectedIds) => selectedIds.length,
+);
+
+// Group related accounts by status for pipeline view
+export const selectRelatedAccountsByStatus = (listingId: string) =>
+  createSelector(selectRelatedAccountsByListingId(listingId), (accounts) => ({
+    applied: accounts.filter((a) => a.status === "applied"),
+    reviewing: accounts.filter((a) => a.status === "reviewing"),
+    interviewed: accounts.filter((a) => a.status === "interviewed"),
+    accepted: accounts.filter((a) => a.status === "accepted"),
+    declined: accounts.filter((a) => a.status === "declined"),
+    withdrawn: accounts.filter((a) => a.status === "withdrawn"),
+  }));

@@ -1,0 +1,206 @@
+/***********************************************************************************************
+* Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+* Copyright (C) 2023  ASCENDynamics NFP
+*
+* This file is part of Nonprofit Social Networking Platform.
+*
+* Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+
+* Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+
+* You should have received a copy of the GNU Affero General Public License
+* along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+***********************************************************************************************/
+
+:host {
+  display: block;
+}
+
+.filter-toggle-btn {
+  --padding-start: 12px;
+  --padding-end: 12px;
+
+  .filter-badge {
+    margin-left: 8px;
+    font-size: 12px;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+  }
+}
+
+.filter-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition:
+    max-height 0.3s ease-in-out,
+    padding 0.3s ease-in-out;
+  background: var(--ion-background-color);
+  border-radius: 8px;
+  padding: 0 16px;
+
+  &.expanded {
+    max-height: 800px;
+    padding: 16px;
+    border: 1px solid var(--ion-border-color, #e0e0e0);
+    margin-top: 8px;
+  }
+}
+
+.filter-section {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ion-border-color, #e0e0e0);
+
+  &:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ion-color-dark);
+  margin-bottom: 12px;
+
+  ion-icon {
+    font-size: 18px;
+    color: var(--ion-color-primary);
+  }
+}
+
+.location-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+
+  ion-chip {
+    margin: 0;
+
+    ion-icon:last-child {
+      cursor: pointer;
+      margin-left: 4px;
+
+      &:hover {
+        color: var(--ion-color-danger);
+      }
+    }
+  }
+}
+
+.location-error {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+
+  ion-icon {
+    font-size: 16px;
+  }
+}
+
+.location-note {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--ion-color-medium);
+  margin-top: 8px;
+  font-style: italic;
+
+  ion-icon {
+    font-size: 14px;
+    color: var(--ion-color-warning);
+  }
+}
+
+.radius-select {
+  width: 100%;
+  max-width: 200px;
+}
+
+.remote-toggle {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --background: transparent;
+
+  ion-icon {
+    color: var(--ion-color-primary);
+    margin-right: 12px;
+  }
+}
+
+.selected-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+
+  ion-chip {
+    margin: 0;
+    font-size: 12px;
+    height: 28px;
+  }
+}
+
+.hours-display {
+  display: block;
+  text-align: center;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.date-range {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  ion-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    --background: transparent;
+    flex: 1;
+    min-width: 140px;
+  }
+}
+
+.filter-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ion-border-color, #e0e0e0);
+}
+
+// Responsive adjustments
+@media (max-width: 576px) {
+  .filter-panel.expanded {
+    max-height: none;
+  }
+
+  .date-range {
+    flex-direction: column;
+    gap: 8px;
+
+    ion-item {
+      min-width: 100%;
+    }
+  }
+
+  .location-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

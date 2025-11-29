@@ -6,6 +6,7 @@ import {
   Timestamp,
   WriteBatch,
   FieldValue,
+  GeoPoint,
 } from "firebase-admin/firestore";
 import {getStorage} from "firebase-admin/storage";
 import {getAuth} from "firebase-admin/auth";
@@ -45,7 +46,7 @@ export interface CreateAccountRequest {
       street?: string;
       city?: string;
       state?: string;
-      zipCode?: string;
+      zipcode?: string;
       country?: string;
     }>;
   };
@@ -183,7 +184,7 @@ export class AccountService {
               addr.street,
               addr.city,
               addr.state,
-              addr.zipCode,
+              addr.zipcode,
               addr.country,
             ]
               .filter(Boolean)
@@ -191,7 +192,13 @@ export class AccountService {
 
             if (addressString) {
               const geocoded = await geocodeAddress(addressString);
-              return geocoded ? {...addr, ...geocoded} : addr;
+              if (geocoded) {
+                return {
+                  ...addr,
+                  formatted: geocoded.formatted_address,
+                  geopoint: new GeoPoint(geocoded.lat, geocoded.lng),
+                };
+              }
             }
             return addr;
           }),
@@ -322,14 +329,20 @@ export class AccountService {
                 addr.street,
                 addr.city,
                 addr.state,
-                addr.zipCode,
+                addr.zipcode,
                 addr.country,
               ]
                 .filter(Boolean)
                 .join(", ");
               if (addressString) {
                 const geocoded = await geocodeAddress(addressString);
-                return geocoded ? {...addr, ...geocoded} : addr;
+                if (geocoded) {
+                  return {
+                    ...addr,
+                    formatted: geocoded.formatted_address,
+                    geopoint: new GeoPoint(geocoded.lat, geocoded.lng),
+                  };
+                }
               }
               return addr;
             }),
@@ -349,19 +362,26 @@ export class AccountService {
       batch.update(accountRef, updates);
 
       // Update contact info in sections/contactInfo document if provided
+      // Use a transaction to safely handle createdAt/createdBy preservation
       if (contactInfoUpdate) {
         const contactInfoDocRef = accountRef
           .collection("sections")
           .doc("contactInfo");
-        batch.set(
-          contactInfoDocRef,
-          {
+        await db.runTransaction(async (transaction) => {
+          const existingContactDoc = await transaction.get(contactInfoDocRef);
+          const isNewDoc = !existingContactDoc.exists;
+          // Use set WITHOUT merge to fully replace the document
+          // This ensures arrays (addresses, emails, phoneNumbers) are completely replaced
+          // Only add createdAt/createdBy on new document creation
+          transaction.set(contactInfoDocRef, {
             ...contactInfoUpdate,
+            ...(isNewDoc
+              ? {createdAt: Timestamp.now(), createdBy: request.userId}
+              : {}),
             lastModifiedAt: Timestamp.now(),
             lastModifiedBy: request.userId,
-          },
-          {merge: true},
-        );
+          });
+        });
       }
 
       // Update related documents (relatedAccounts, relatedListings)
@@ -1363,8 +1383,69 @@ export class AccountService {
       const hasMore = accounts.length > limit;
       const resultAccounts = accounts.slice(0, limit);
 
+      // Fetch contactInformation for group accounts (for map display)
+      // PRIVACY: Only include addresses if contactInformation visibility is 'public'
+      // This respects the privacy settings without requiring viewer authentication
+      const accountsWithContactInfo = await Promise.all(
+        resultAccounts.map(async (account) => {
+          if (account.type === "group") {
+            try {
+              // Check privacy settings first
+              const contactInfoVisibility =
+                account.privacySettings?.contactInformation?.visibility;
+
+              // Only include contact info if visibility is explicitly 'public'
+              // Default to NOT including if visibility is missing or set to anything else
+              if (contactInfoVisibility !== "public") {
+                return account;
+              }
+
+              const contactInfoDoc = await db
+                .collection("accounts")
+                .doc(account.id)
+                .collection("sections")
+                .doc("contactInfo")
+                .get();
+
+              if (contactInfoDoc.exists) {
+                const contactData = contactInfoDoc.data();
+                // Only include addresses (with geopoints) for map display
+                // Exclude sensitive data like emails and phone numbers
+                if (
+                  contactData?.addresses &&
+                  contactData.addresses.length > 0
+                ) {
+                  return {
+                    ...account,
+                    contactInformation: {
+                      addresses: contactData.addresses.map((addr: any) => ({
+                        street: addr.street,
+                        city: addr.city,
+                        state: addr.state,
+                        country: addr.country,
+                        zipcode: addr.zipcode,
+                        isPrimaryAddress: addr.isPrimaryAddress,
+                        geopoint: addr.geopoint, // Include geopoint for map
+                        formatted: addr.formatted,
+                      })),
+                    },
+                  };
+                }
+              }
+            } catch (err) {
+              // If we can't fetch contact info, just return account without it
+              logger.warn(
+                `Could not fetch contactInfo for group ${account.id}:`,
+                err,
+              );
+            }
+          }
+          return account;
+        }),
+      );
+
       // Remove sensitive data
-      const publicAccounts = resultAccounts.map((account) => ({
+      const publicAccounts = accountsWithContactInfo.map((account) => ({
         id: account.id,
         name: account.name,
         username: account.username,
@@ -1385,6 +1466,8 @@ export class AccountService {
         projectCount: account.projectCount,
         createdAt: account.createdAt,
         tagline: account.tagline, // Add tagline to the returned data
+        // Include contactInformation for groups (addresses only, for map display)
+        contactInformation: account.contactInformation || null,
       }));
 
       return {

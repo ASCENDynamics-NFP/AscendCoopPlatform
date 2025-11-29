@@ -6,32 +6,146 @@
 @import "src/styles/variables";
 @import "src/styles/mixins";
 
-.filters-toolbar {
+// Type colors
+$type-user-color: #17a2b8; // Teal/Cyan for users
+$type-group-color: #6f42c1; // Purple for organizations
+$type-all-color: var(--ion-color-primary); // Primary for "All"
+
+// Search and Filter Toolbar
+.search-filter-toolbar {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  --min-height: 44px;
+}
+
+.search-filter-container {
   display: flex;
-  flex-direction: column;
-  gap: $spacing-sm;
-  padding: $spacing-xs $spacing-sm;
+  align-items: center;
+  width: 100%;
+  padding: 0 8px;
+  gap: 4px;
 
-  ion-segment {
-    margin-bottom: 4px;
+  .directory-searchbar {
+    flex: 1;
+    --padding-start: 0;
+    --padding-end: 0;
+    padding-inline: 0;
+    min-width: 0;
   }
+}
 
-  .toggle-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: $spacing-sm;
-    flex-wrap: wrap;
+.filter-toggle-btn {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  flex-shrink: 0;
+  margin: 0;
 
-    .sort-item {
-      --inner-padding-end: 0;
+  .filter-badge {
+    margin-left: 4px;
+    font-size: 11px;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+  }
+}
+
+.view-toggle-btn {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.filter-panel-toolbar {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+// Segment toolbar - remove extra spacing
+.segment-toolbar {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  --min-height: 40px;
+}
+
+// Directory type segment with colored tabs
+.directory-type-segment {
+  ion-segment-button {
+    --indicator-color: transparent;
+    --color: var(--ion-color-medium);
+    --color-checked: var(--ion-color-primary);
+    min-width: auto;
+    font-size: 0.85rem;
+
+    ion-icon {
+      font-size: 18px;
+      margin-bottom: 2px;
+    }
+
+    ion-label {
+      font-size: 0.75rem;
+      text-transform: capitalize;
+    }
+
+    // All - Primary color
+    &.segment-all {
+      --color-checked: var(--ion-color-primary);
+      --indicator-color: var(--ion-color-primary);
+
+      &.segment-button-checked {
+        ion-icon,
+        ion-label {
+          color: var(--ion-color-primary);
+        }
+      }
+    }
+
+    // User - Teal
+    &.segment-user {
+      --color-checked: #{$type-user-color};
+      --indicator-color: #{$type-user-color};
+
+      &.segment-button-checked {
+        ion-icon,
+        ion-label {
+          color: $type-user-color;
+        }
+      }
+    }
+
+    // Organization - Purple
+    &.segment-organization {
+      --color-checked: #{$type-group-color};
+      --indicator-color: #{$type-group-color};
+
+      &.segment-button-checked {
+        ion-icon,
+        ion-label {
+          color: $type-group-color;
+        }
+      }
     }
   }
 }
 
+// Results List
 .results-list {
   ion-item {
     --min-height: 60px;
+
+    &.type-user {
+      --border-color: rgba($type-user-color, 0.2);
+    }
+
+    &.type-organization {
+      --border-color: rgba($type-group-color, 0.2);
+    }
   }
 
   h3 {
@@ -42,6 +156,10 @@
   p {
     margin: 0;
     color: var(--ion-color-medium);
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .status-icons {
@@ -49,10 +167,105 @@
     align-items: center;
     gap: 6px;
   }
+
+  .type-badge {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+
+    &.user-badge {
+      --background: rgba($type-user-color, 0.15);
+      --color: #{$type-user-color};
+    }
+
+    &.organization-badge {
+      --background: rgba($type-group-color, 0.15);
+      --color: #{$type-group-color};
+    }
+  }
+}
+
+// No results state
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  color: var(--ion-color-medium);
+
+  ion-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+}
+
+// Map loading state
+.map-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 200px);
+  color: var(--ion-color-medium);
+
+  ion-spinner {
+    --color: var(--ion-color-primary);
+    margin-bottom: 16px;
+    width: 48px;
+    height: 48px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+}
+
+// Filter panel mobile bottom sheet
+@media (max-width: 575px) {
+  .filter-panel-toolbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--ion-background-color);
+    z-index: 100;
+    max-height: 60vh;
+    overflow-y: auto;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+
+    &::before {
+      content: "";
+      display: block;
+      width: 40px;
+      height: 4px;
+      background: var(--ion-color-light-shade);
+      border-radius: 2px;
+      margin: 12px auto 8px;
+    }
+  }
 }
 
 @include dark-mode {
-  .filters-toolbar {
+  .filter-panel-toolbar {
     background: var(--ion-card-background, var(--ion-color-step-100));
+  }
+
+  .type-badge {
+    &.user-badge {
+      --background: rgba($type-user-color, 0.25);
+    }
+
+    &.organization-badge {
+      --background: rgba($type-group-color, 0.25);
+    }
   }
 }

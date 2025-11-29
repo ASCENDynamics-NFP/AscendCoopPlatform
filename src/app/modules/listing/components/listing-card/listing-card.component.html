@@ -1,0 +1,111 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<ion-card
+  class="listing-card"
+  [ngClass]="getTypeClass()"
+  [routerLink]="['/listings', listing.id]"
+>
+  <!-- Type Color Bar -->
+  <div class="type-bar"></div>
+
+  <ion-card-header>
+    <div class="card-header-content">
+      <!-- Organization Icon -->
+      <div class="org-icon-wrapper">
+        <ion-img
+          [src]="
+            listing.iconImage ||
+            'assets/image/logo/ASCENDynamics NFP-logos_transparent.png'
+          "
+          alt="Organization logo"
+          class="org-icon"
+        ></ion-img>
+      </div>
+
+      <div class="header-text">
+        <ion-card-title class="listing-title">{{
+          listing.title
+        }}</ion-card-title>
+        <ion-card-subtitle class="listing-org">{{
+          listing.organization
+        }}</ion-card-subtitle>
+      </div>
+
+      <!-- Skill Match Badge -->
+      <div
+        *ngIf="showMatchBadge && skillMatch && userSkills.length > 0"
+        class="match-badge-wrapper"
+        [title]="tooltipText"
+      >
+        <ion-badge [color]="skillMatch.color" class="match-badge">
+          {{ skillMatch.percentage }}% match
+        </ion-badge>
+      </div>
+    </div>
+  </ion-card-header>
+
+  <ion-card-content>
+    <!-- Description -->
+    <p class="listing-description">
+      {{ listing.description | slice: 0 : 120
+      }}{{ (listing.description.length || 0) > 120 ? "..." : "" }}
+    </p>
+
+    <!-- Metadata Row -->
+    <div class="metadata-row">
+      <!-- Type Badge -->
+      <ion-chip class="type-chip" [ngClass]="getTypeClass()">
+        <ion-icon [name]="getTypeIcon()"></ion-icon>
+        <ion-label>{{ listing.type | titlecase }}</ion-label>
+      </ion-chip>
+
+      <!-- Remote Badge -->
+      <ion-chip *ngIf="listing.remote" class="remote-chip" color="success">
+        <ion-icon name="globe-outline"></ion-icon>
+        <ion-label>{{ "listings.remote" | translate }}</ion-label>
+      </ion-chip>
+
+      <!-- Time Commitment -->
+      <ion-chip class="time-chip">
+        <ion-icon name="time-outline"></ion-icon>
+        <ion-label>{{ getTimeCommitment() }}</ion-label>
+      </ion-chip>
+    </div>
+
+    <!-- Footer Row -->
+    <div class="footer-row">
+      <!-- Location -->
+      <div class="location" *ngIf="!listing.remote">
+        <ion-icon name="location-outline"></ion-icon>
+        <span>{{ getLocation() }}</span>
+      </div>
+
+      <!-- Posted Time -->
+      <div class="posted-time">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <span *ngIf="listing.createdAt"
+          >Posted {{ listing.createdAt | timeAgo }}</span
+        >
+        <span *ngIf="!listing.createdAt">Recently posted</span>
+      </div>
+    </div>
+  </ion-card-content>
+</ion-card>

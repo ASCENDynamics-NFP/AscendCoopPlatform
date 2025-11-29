@@ -30,4 +30,6 @@ export const environment = {
     measurementId: process.env.FIREBASE_MEASUREMENT_ID,
     apiUrl: process.env.FIREBASE_API_URL,
   },
+  googleMapsApiKey:
+    process.env.GOOGLE_MAPS_API_KEY || "YOUR_GOOGLE_MAPS_API_KEY_HERE",
 };

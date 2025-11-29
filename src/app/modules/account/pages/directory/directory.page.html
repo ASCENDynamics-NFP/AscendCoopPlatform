@@ -1,114 +1,193 @@
 <ion-header>
-  <app-header [title]="'Directory'"></app-header>
-  <ion-toolbar class="filters-toolbar">
+  <app-header [title]="'menu.directory'"></app-header>
+
+  <!-- Search and Filter Row -->
+  <ion-toolbar class="search-filter-toolbar">
+    <div class="search-filter-container">
+      <ion-searchbar
+        [debounce]="300"
+        [placeholder]="'directory.search_placeholder' | translate"
+        (ionInput)="search($event)"
+        class="directory-searchbar"
+      ></ion-searchbar>
+      <ion-button
+        fill="clear"
+        size="small"
+        (click)="toggleFilter()"
+        class="filter-toggle-btn"
+      >
+        <ion-icon slot="start" name="options-outline"></ion-icon>
+        <ion-badge
+          *ngIf="activeFilterCount > 0"
+          color="primary"
+          class="filter-badge"
+        >
+          {{ activeFilterCount }}
+        </ion-badge>
+        <ion-icon
+          slot="end"
+          [name]="isFilterExpanded ? 'chevron-up-outline' : 'chevron-down-outline'"
+        ></ion-icon>
+      </ion-button>
+      <!-- View Toggle: List/Map -->
+      <ion-button
+        fill="clear"
+        size="small"
+        (click)="toggleViewMode()"
+        class="view-toggle-btn"
+      >
+        <ion-icon
+          [name]="viewMode === 'list' ? 'map-outline' : 'list-outline'"
+        ></ion-icon>
+      </ion-button>
+    </div>
+  </ion-toolbar>
+
+  <!-- Filter Panel (expands below search bar) -->
+  <ion-toolbar *ngIf="isFilterExpanded" class="filter-panel-toolbar">
+    <app-directory-filter
+      [isExpanded]="isFilterExpanded"
+      [showToggleButton]="false"
+      [initialIncludePrivateGroups]="(includePrivateGroups$ | async) ?? true"
+      [initialOnlyMyGroups]="(onlyMyGroups$ | async) ?? false"
+      [initialOnlyMyConnections]="(onlyMyConnections$ | async) ?? false"
+      [initialSort]="(sort$ | async) ?? 'name-asc'"
+      (filterChange)="onFilterChange($event)"
+      (expandedChange)="onFilterExpandedChange($event)"
+      (activeFilterCountChange)="onActiveFilterCountChange($event)"
+    ></app-directory-filter>
+  </ion-toolbar>
+
+  <!-- Type Segment -->
+  <ion-toolbar class="segment-toolbar">
     <ion-segment
       [value]="(type$ | async) || 'all'"
       (ionChange)="setType($any($event.detail.value))"
+      class="directory-type-segment"
     >
-      <ion-segment-button value="all">
+      <ion-segment-button value="all" class="segment-all">
         <ion-icon name="albums-outline"></ion-icon>
-        <ion-label>All</ion-label>
+        <ion-label>{{ "directory.all" | translate }}</ion-label>
       </ion-segment-button>
-      <ion-segment-button value="user">
+      <ion-segment-button value="user" class="segment-user">
         <ion-icon name="person-outline"></ion-icon>
-        <ion-label>Users</ion-label>
+        <ion-label>{{ "directory.users" | translate }}</ion-label>
       </ion-segment-button>
-      <ion-segment-button value="group">
-        <ion-icon name="people-outline"></ion-icon>
-        <ion-label>Groups</ion-label>
+      <ion-segment-button value="group" class="segment-organization">
+        <ion-icon name="business-outline"></ion-icon>
+        <ion-label>{{ "directory.groups" | translate }}</ion-label>
       </ion-segment-button>
     </ion-segment>
-
-    <ion-searchbar
-      [debounce]="300"
-      placeholder="Search profiles"
-      (ionInput)="search($event)"
-    ></ion-searchbar>
-
-    <div class="toggle-row">
-      <ion-toggle
-        (ionChange)="togglePrivateGroups($event.detail.checked)"
-        [checked]="true"
-      >
-        Include my private groups
-      </ion-toggle>
-      <ion-toggle (ionChange)="toggleMyGroups($event.detail.checked)">
-        My groups only
-      </ion-toggle>
-      <ion-toggle (ionChange)="toggleMyConnections($event.detail.checked)">
-        My connections only
-      </ion-toggle>
-
-      <ion-item lines="none" class="sort-item">
-        <ion-label>Sort</ion-label>
-        <ion-select
-          [value]="'name-asc'"
-          interface="popover"
-          (ionChange)="setSort($event.detail.value)"
-        >
-          <ion-select-option value="name-asc">Name A→Z</ion-select-option>
-          <ion-select-option value="name-desc">Name Z→A</ion-select-option>
-        </ion-select>
-      </ion-item>
-    </div>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-list class="results-list">
-    <ng-container *ngIf="(paginated$ | async)?.length; else noResults">
-      <ion-item
-        *ngFor="let acc of paginated$ | async"
-        (click)="openAccount(acc)"
-        detail="true"
-        button
-      >
-        <ion-avatar slot="start">
-          <img *ngIf="acc.iconImage" [src]="acc.iconImage" [alt]="acc.name" />
-          <ion-icon
-            *ngIf="!acc.iconImage"
-            [name]="acc.type === 'group' ? 'people-circle' : 'person-circle'"
-            size="large"
-          ></ion-icon>
-        </ion-avatar>
-        <ion-label>
-          <h3>{{ acc.name }}</h3>
-          <p>{{ acc.tagline || acc.description }}</p>
-        </ion-label>
-        <div slot="end" class="status-icons">
-          <ion-icon
-            *ngIf="getRelStatus(acc.id)==='pending'"
-            name="hourglass"
-            color="warning"
-          ></ion-icon>
-          <ion-icon
-            *ngIf="getRelStatus(acc.id)==='accepted'"
-            name="checkmark-circle"
-            color="success"
-          ></ion-icon>
-          <ion-badge color="secondary" *ngIf="acc.type === 'group'"
-            >Group</ion-badge
-          >
-          <ion-badge color="tertiary" *ngIf="acc.type === 'user'"
-            >User</ion-badge
-          >
-        </div>
-      </ion-item>
+  <!-- Map View (Organizations only) -->
+  <ng-container *ngIf="viewMode === 'map'">
+    <app-organizations-map
+      *ngIf="mapsLoaded"
+      [organizations]="(allOrganizations$ | async) || []"
+      [userLocation]="userLocation"
+      [height]="'calc(100vh - 200px)'"
+      (organizationSelected)="viewOrganization($event)"
+    ></app-organizations-map>
+    <div *ngIf="!mapsLoaded" class="map-loading">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>{{ 'directory.loading_map' | translate }}</p>
+    </div>
+  </ng-container>
+
+  <!-- List View -->
+  <ng-container *ngIf="viewMode === 'list'">
+    <!-- Loading State -->
+    <ng-container *ngIf="loading$ | async">
+      <ion-list>
+        <ion-item *ngFor="let i of skeletonItems">
+          <ion-avatar slot="start">
+            <ion-skeleton-text
+              animated
+              style="width: 100%; height: 100%"
+            ></ion-skeleton-text>
+          </ion-avatar>
+          <ion-label>
+            <ion-skeleton-text
+              animated
+              style="width: 60%; height: 16px"
+            ></ion-skeleton-text>
+            <ion-skeleton-text
+              animated
+              style="width: 80%; height: 14px; margin-top: 4px"
+            ></ion-skeleton-text>
+          </ion-label>
+        </ion-item>
+      </ion-list>
     </ng-container>
-  </ion-list>
 
-  <app-pagination
-    [totalItems]="(totalItems$ | async) || 0"
-    [pageSize]="pageSize"
-    [maxVisiblePages]="5"
-    (pageChange)="goToPage($event)"
-  ></app-pagination>
+    <!-- Results List -->
+    <ion-list class="results-list" *ngIf="!(loading$ | async)">
+      <ng-container *ngIf="(paginated$ | async)?.length; else noResults">
+        <ion-item
+          *ngFor="let acc of paginated$ | async"
+          (click)="openAccount(acc)"
+          detail="true"
+          button
+          [class.type-user]="acc.type === 'user'"
+          [class.type-organization]="acc.type === 'group'"
+        >
+          <ion-avatar slot="start">
+            <img *ngIf="acc.iconImage" [src]="acc.iconImage" [alt]="acc.name" />
+            <ion-icon
+              *ngIf="!acc.iconImage"
+              [name]="acc.type === 'group' ? 'people-circle' : 'person-circle'"
+              size="large"
+            ></ion-icon>
+          </ion-avatar>
+          <ion-label>
+            <h3>{{ acc.name }}</h3>
+            <p>{{ acc.tagline || acc.description }}</p>
+          </ion-label>
+          <div slot="end" class="status-icons">
+            <ion-icon
+              *ngIf="getRelStatus(acc.id)==='pending'"
+              name="hourglass"
+              color="warning"
+            ></ion-icon>
+            <ion-icon
+              *ngIf="getRelStatus(acc.id)==='accepted'"
+              name="checkmark-circle"
+              color="success"
+            ></ion-icon>
+            <ion-badge
+              class="type-badge"
+              [class.user-badge]="acc.type === 'user'"
+              [class.organization-badge]="acc.type === 'group'"
+            >
+              {{ getTypeBadgeLabel(acc.type) | translate }}
+            </ion-badge>
+          </div>
+        </ion-item>
+      </ng-container>
+    </ion-list>
 
-  <ng-template #noResults>
-    <ion-item lines="none">
-      <ion-label class="ion-text-center"
-        >No results. Try a different search.</ion-label
+    <!-- Infinite Scroll -->
+    <ion-infinite-scroll
+      threshold="100px"
+      (ionInfinite)="loadMore($event)"
+      [disabled]="!(hasMoreItems$ | async)"
+    >
+      <ion-infinite-scroll-content
+        loadingSpinner="crescent"
+        [loadingText]="'directory.loading_more' | translate"
       >
-    </ion-item>
-  </ng-template>
+      </ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+
+    <!-- No Results Template -->
+    <ng-template #noResults>
+      <div class="no-results">
+        <ion-icon name="search-outline" size="large"></ion-icon>
+        <p>{{ "directory.no_results" | translate }}</p>
+      </div>
+    </ng-template>
+  </ng-container>
 </ion-content>

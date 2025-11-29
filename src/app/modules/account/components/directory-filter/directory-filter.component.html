@@ -1,0 +1,102 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<div class="filter-panel" [class.expanded]="isExpanded">
+  <!-- Toggle Button (optional) -->
+  <ion-button
+    *ngIf="showToggleButton"
+    fill="clear"
+    size="small"
+    (click)="toggleExpanded()"
+    class="filter-toggle"
+  >
+    <ion-icon slot="start" name="options-outline"></ion-icon>
+    <span>{{ "directory.filters" | translate }}</span>
+    <ion-icon
+      slot="end"
+      [name]="isExpanded ? 'chevron-up-outline' : 'chevron-down-outline'"
+    ></ion-icon>
+  </ion-button>
+
+  <!-- Filter Content -->
+  <div class="filter-content" *ngIf="isExpanded">
+    <div class="filter-grid">
+      <!-- Relationship Filters -->
+      <div class="filter-section">
+        <div class="filter-label">{{ "directory.show" | translate }}</div>
+        <div class="toggle-group">
+          <ion-item lines="none" class="toggle-item">
+            <ion-toggle
+              [checked]="includePrivateGroups"
+              (ionChange)="onIncludePrivateGroupsChange($event)"
+            >
+              {{ "directory.include_private_groups" | translate }}
+            </ion-toggle>
+          </ion-item>
+          <ion-item lines="none" class="toggle-item">
+            <ion-toggle
+              [checked]="onlyMyGroups"
+              (ionChange)="onOnlyMyGroupsChange($event)"
+            >
+              {{ "directory.my_groups_only" | translate }}
+            </ion-toggle>
+          </ion-item>
+          <ion-item lines="none" class="toggle-item">
+            <ion-toggle
+              [checked]="onlyMyConnections"
+              (ionChange)="onOnlyMyConnectionsChange($event)"
+            >
+              {{ "directory.my_connections_only" | translate }}
+            </ion-toggle>
+          </ion-item>
+        </div>
+      </div>
+
+      <!-- Sort -->
+      <div class="filter-section">
+        <div class="filter-label">{{ "directory.sort_by" | translate }}</div>
+        <ion-select
+          [value]="sort"
+          interface="popover"
+          (ionChange)="onSortChange($event)"
+          class="sort-select"
+        >
+          <ion-select-option value="name-asc">{{
+            "directory.name_asc" | translate
+          }}</ion-select-option>
+          <ion-select-option value="name-desc">{{
+            "directory.name_desc" | translate
+          }}</ion-select-option>
+        </ion-select>
+      </div>
+    </div>
+
+    <!-- Clear Filters Button -->
+    <ion-button
+      fill="clear"
+      size="small"
+      (click)="clearFilters()"
+      class="clear-filters-btn"
+    >
+      <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+      {{ "directory.clear_filters" | translate }}
+    </ion-button>
+  </div>
+</div>

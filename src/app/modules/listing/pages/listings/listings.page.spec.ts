@@ -37,6 +37,8 @@ import {
   selectLoading,
   selectError,
 } from "../../../../state/selectors/listings.selectors";
+import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
+import {selectUserSkills} from "../../../../state/selectors/account.selectors";
 import {AppState} from "../../../../state/app.state";
 import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 import {TranslateTestingModule} from "../../../../shared/testing/translate-testing.module";
@@ -99,7 +101,7 @@ describe("ListingsPage", () => {
 
     await TestBed.configureTestingModule({
       declarations: [ListingsPage],
-      imports: [IonicModule.forRoot()],
+      imports: [IonicModule.forRoot(), TranslateTestingModule],
       providers: [
         provideMockStore(),
         {provide: NavController, useValue: navCtrlSpy},
@@ -115,6 +117,8 @@ describe("ListingsPage", () => {
     store.overrideSelector(selectFilteredListings, mockListings);
     store.overrideSelector(selectLoading, false);
     store.overrideSelector(selectError, null);
+    store.overrideSelector(selectAuthUser, null);
+    store.overrideSelector(selectUserSkills, []);
 
     fixture.detectChanges();
   });

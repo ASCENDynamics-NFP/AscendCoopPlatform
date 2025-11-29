@@ -77,7 +77,8 @@ export const environment = {
   googleAuth: {
     webClientId: '${process.env.GOOGLE_AUTH_WEB_CLIENT_ID || ""}',
     androidClientId: '${process.env.GOOGLE_AUTH_ANDROID_CLIENT_ID || ""}',
-  }
+  },
+  googleMapsApiKey: '${process.env.GOOGLE_MAPS_API_KEY || ""}',
 };
 `;
 

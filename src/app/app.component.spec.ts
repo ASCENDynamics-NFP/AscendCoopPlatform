@@ -26,6 +26,7 @@ import {of} from "rxjs";
 import * as AuthActions from "./state/actions/auth.actions";
 import {selectIsLoggedIn} from "./state/selectors/auth.selectors";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
+import {SUPPORTED_LANGUAGE_CODES} from "./core/constants/languages";
 
 describe("AppComponent", () => {
   let component: AppComponent;
@@ -104,7 +105,9 @@ describe("AppComponent", () => {
   });
 
   it("should set up language on construction", () => {
-    expect(mockTranslateService.addLangs).toHaveBeenCalledWith(["en", "fr"]);
+    expect(mockTranslateService.addLangs).toHaveBeenCalledWith([
+      ...SUPPORTED_LANGUAGE_CODES,
+    ]);
   });
 
   it("should select isLoggedIn$ from the store", () => {

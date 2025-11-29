@@ -23,6 +23,19 @@ import {createAction, props} from "@ngrx/store";
 import {Listing} from "@shared/models/listing.model";
 import {ListingRelatedAccount} from "@shared/models/listing-related-account.model";
 
+// Advanced filter interface for server-side search
+export interface AdvancedFilters {
+  location?: {latitude: number; longitude: number} | null;
+  radiusKm?: number | null;
+  skills?: string[];
+  type?: string | null;
+  remote?: boolean | null;
+  hoursPerWeekMin?: number | null;
+  hoursPerWeekMax?: number | null;
+  limit?: number;
+  startAfter?: string | null;
+}
+
 export const loadListings = createAction("[Listings Page] Load Listings");
 
 export const clearListingsState = createAction("[Listings] Clear Listings");
@@ -183,5 +196,67 @@ export const unsaveListingSuccess = createAction(
 
 export const unsaveListingFailure = createAction(
   "[Listings] Unsave Listing Failure",
+  props<{error: string}>(),
+);
+
+// Advanced Search Actions
+export const advancedSearchListings = createAction(
+  "[Listings Page] Advanced Search Listings",
+  props<{filters: AdvancedFilters}>(),
+);
+
+export const advancedSearchListingsSuccess = createAction(
+  "[Listings API] Advanced Search Listings Success",
+  props<{listings: Listing[]; hasMore: boolean; nextCursor?: string}>(),
+);
+
+export const advancedSearchListingsFailure = createAction(
+  "[Listings API] Advanced Search Listings Failure",
+  props<{error: string}>(),
+);
+
+export const updateAdvancedFilters = createAction(
+  "[Listings Page] Update Advanced Filters",
+  props<{filters: AdvancedFilters}>(),
+);
+
+export const clearAdvancedFilters = createAction(
+  "[Listings Page] Clear Advanced Filters",
+);
+
+export const loadMoreListings = createAction(
+  "[Listings Page] Load More Listings",
+);
+
+// Applicant Selection Actions for Bulk Operations
+export const toggleApplicantSelection = createAction(
+  "[Listings] Toggle Applicant Selection",
+  props<{applicantId: string}>(),
+);
+
+export const selectAllApplicants = createAction(
+  "[Listings] Select All Applicants",
+  props<{applicantIds: string[]}>(),
+);
+
+export const clearApplicantSelection = createAction(
+  "[Listings] Clear Applicant Selection",
+);
+
+export const bulkUpdateStatus = createAction(
+  "[Listings] Bulk Update Status",
+  props<{
+    listingId: string;
+    applicantIds: string[];
+    status: "reviewing" | "interviewed" | "accepted" | "declined";
+  }>(),
+);
+
+export const bulkUpdateStatusSuccess = createAction(
+  "[Listings] Bulk Update Status Success",
+);
+
+export const bulkUpdateStatusFailure = createAction(
+  "[Listings] Bulk Update Status Failure",
   props<{error: string}>(),
 );

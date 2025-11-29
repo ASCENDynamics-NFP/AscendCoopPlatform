@@ -32,6 +32,7 @@ import {ImageUploadModalComponent} from "./components/image-upload-modal/image-u
 import {PaginationComponent} from "./components/pagination/pagination.component";
 import {UserReportModalComponent} from "../modules/messaging/components/user-report-modal/user-report-modal.component";
 import {ConnectionStatusComponent} from "./components/connection-status/connection-status.component";
+import {TimeAgoPipe} from "./pipes/time-ago.pipe";
 
 @NgModule({
   declarations: [
@@ -42,6 +43,7 @@ import {ConnectionStatusComponent} from "./components/connection-status/connecti
     UserMenuComponent,
     UserReportModalComponent,
     ConnectionStatusComponent,
+    TimeAgoPipe,
   ],
   imports: [
     IonicModule,
@@ -67,6 +69,7 @@ import {ConnectionStatusComponent} from "./components/connection-status/connecti
     PaginationComponent,
     UserReportModalComponent,
     ConnectionStatusComponent,
+    TimeAgoPipe,
   ],
 })
 export class SharedModule {}

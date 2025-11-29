@@ -22,6 +22,7 @@ import {CommonModule} from "@angular/common";
 import {IonicModule} from "@ionic/angular";
 import {StoreModule} from "@ngrx/store";
 import {EffectsModule} from "@ngrx/effects";
+import {DragDropModule} from "@angular/cdk/drag-drop";
 import {ListingsPage} from "./pages/listings/listings.page";
 import {ListingRoutingModule} from "./listing-routing.module";
 import {listingsReducer} from "../../state/reducers/listings.reducer";
@@ -40,6 +41,11 @@ import {PhoneFormatPipe} from "../../shared/pipes/phone-format.pipe";
 import {SharedModule} from "../../shared/shared.module";
 import {ApplyPage} from "./relatedAccount/pages/apply/apply.page";
 import {ApplicantDetailsModalComponent} from "./relatedAccount/pages/applicants/components/applicant-details-modal/applicant-details-modal.component";
+import {ApplicantPipelineComponent} from "./relatedAccount/pages/applicants/components/applicant-pipeline/applicant-pipeline.component";
+import {ListingFilterComponent} from "./components/listing-filter/listing-filter.component";
+import {ListingsMapComponent} from "./components/listings-map/listings-map.component";
+import {ListingCardComponent} from "./components/listing-card/listing-card.component";
+import {GoogleMapsModule} from "@angular/google-maps";
 
 @NgModule({
   declarations: [
@@ -55,6 +61,10 @@ import {ApplicantDetailsModalComponent} from "./relatedAccount/pages/applicants/
     PhoneFormatPipe,
     HeroComponent,
     ApplicantDetailsModalComponent,
+    ApplicantPipelineComponent,
+    ListingFilterComponent,
+    ListingsMapComponent,
+    ListingCardComponent,
   ],
   imports: [
     CommonModule,
@@ -64,6 +74,8 @@ import {ApplicantDetailsModalComponent} from "./relatedAccount/pages/applicants/
     ReactiveFormsModule,
     ListingRoutingModule,
     SharedModule,
+    GoogleMapsModule,
+    DragDropModule,
     StoreModule.forFeature("listings", listingsReducer),
     EffectsModule.forFeature([ListingsEffects]),
   ],

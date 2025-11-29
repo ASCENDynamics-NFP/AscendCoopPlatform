@@ -17,4 +17,252 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-@import '../../../../../styles/segment';
+@import "../../../../../styles/segment";
+
+// Type colors (matching listing-card.component.scss)
+$type-volunteer-color: #28a745; // Green
+$type-job-color: #007bff; // Blue
+$type-internship-color: #fd7e14; // Orange
+$type-gig-color: #6f42c1; // Purple
+$type-all-color: var(--ion-color-primary); // Primary for "All"
+
+// Listing type segment with colored tabs
+.listing-type-segment {
+  ion-segment-button {
+    --indicator-color: transparent;
+    --color: var(--ion-color-medium);
+    --color-checked: var(--ion-color-primary);
+    min-width: auto;
+    font-size: 0.85rem;
+
+    ion-icon {
+      font-size: 18px;
+      margin-bottom: 2px;
+    }
+
+    ion-label {
+      font-size: 0.75rem;
+      text-transform: capitalize;
+    }
+
+    // All - Primary color
+    &.segment-all {
+      --color-checked: var(--ion-color-primary);
+      --indicator-color: var(--ion-color-primary);
+
+      &.segment-button-checked {
+        ion-icon,
+        ion-label {
+          color: var(--ion-color-primary);
+        }
+      }
+    }
+
+    // Volunteer - Green
+    &.segment-volunteer {
+      --color-checked: #{$type-volunteer-color};
+      --indicator-color: #{$type-volunteer-color};
+
+      &.segment-button-checked {
+        ion-icon,
+        ion-label {
+          color: $type-volunteer-color;
+        }
+      }
+    }
+
+    // Job - Blue
+    &.segment-job {
+      --color-checked: #{$type-job-color};
+      --indicator-color: #{$type-job-color};
+
+      &.segment-button-checked {
+        ion-icon,
+        ion-label {
+          color: $type-job-color;
+        }
+      }
+    }
+
+    // Internship - Orange
+    &.segment-internship {
+      --color-checked: #{$type-internship-color};
+      --indicator-color: #{$type-internship-color};
+
+      &.segment-button-checked {
+        ion-icon,
+        ion-label {
+          color: $type-internship-color;
+        }
+      }
+    }
+
+    // Gig - Purple
+    &.segment-gig {
+      --color-checked: #{$type-gig-color};
+      --indicator-color: #{$type-gig-color};
+
+      &.segment-button-checked {
+        ion-icon,
+        ion-label {
+          color: $type-gig-color;
+        }
+      }
+    }
+  }
+}
+
+.search-filter-toolbar {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+.search-filter-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0 8px;
+  gap: 4px;
+
+  .listing-searchbar {
+    flex: 1;
+    --padding-start: 0;
+    --padding-end: 0;
+    padding-inline: 0;
+    min-width: 0;
+  }
+}
+
+.filter-toggle-btn,
+.view-toggle-btn {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  flex-shrink: 0;
+  margin: 0;
+
+  .filter-badge {
+    margin-left: 4px;
+    font-size: 11px;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+  }
+}
+
+.filter-panel-toolbar {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+// Map loading state
+.map-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 200px);
+  gap: 16px;
+
+  ion-spinner {
+    --color: var(--ion-color-primary);
+    width: 48px;
+    height: 48px;
+  }
+
+  p {
+    margin: 0;
+    color: var(--ion-color-medium);
+    font-size: 14px;
+  }
+}
+
+// Responsive Listings Card Grid
+.listings-grid {
+  display: grid;
+  gap: 16px;
+  padding: 16px;
+
+  // Mobile: 1 column
+  grid-template-columns: 1fr;
+
+  // Tablet: 2 columns
+  @media (min-width: 576px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  // Small Desktop: 3 columns
+  @media (min-width: 992px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  // Large Desktop: 4 columns
+  @media (min-width: 1400px) {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+}
+
+// Skeleton loading cards
+.listing-card-skeleton {
+  border-radius: 12px;
+  overflow: hidden;
+  height: 280px;
+
+  ion-card-header {
+    padding: 12px 16px;
+  }
+
+  ion-card-content {
+    padding: 0 16px 16px;
+  }
+}
+
+// No listings message
+.no-listings-text {
+  display: block;
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--ion-color-medium);
+}
+
+// Load more button
+.load-more-btn {
+  margin: 16px;
+}
+
+// Filter panel mobile bottom sheet (triggered by class)
+@media (max-width: 575px) {
+  .filter-panel-toolbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--ion-background-color);
+    z-index: 100;
+    max-height: 60vh;
+    overflow-y: auto;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+
+    &::before {
+      content: "";
+      display: block;
+      width: 40px;
+      height: 4px;
+      background: var(--ion-color-light-shade);
+      border-radius: 2px;
+      margin: 12px auto 8px;
+    }
+  }
+
+  // Add padding at bottom when filter is expanded to prevent content being hidden
+  ion-content.filter-expanded {
+    --padding-bottom: 300px;
+  }
+}

@@ -7,6 +7,7 @@ import {
   ListingService,
   CreateListingRequest,
 } from "../../services/listingService";
+import {googleApiKey} from "../../utils/geocoding";
 
 /**
  * Create a new listing
@@ -17,6 +18,7 @@ export const createListing = onCall(
     enforceAppCheck: false,
     memory: "512MiB",
     timeoutSeconds: 60,
+    secrets: [googleApiKey],
   },
   async (request) => {
     if (!request.auth?.uid) {
@@ -73,6 +75,7 @@ export const updateListing = onCall(
     enforceAppCheck: false,
     memory: "512MiB",
     timeoutSeconds: 60,
+    secrets: [googleApiKey],
   },
   async (request) => {
     if (!request.auth?.uid) {
@@ -291,7 +294,7 @@ export const manageApplication = onCall(
     const {listingId, applicantId, status, notes} = request.data as {
       listingId: string;
       applicantId: string;
-      status: "accepted" | "declined";
+      status: "reviewing" | "interviewed" | "accepted" | "declined";
       notes?: string;
     };
 
@@ -302,10 +305,11 @@ export const manageApplication = onCall(
       );
     }
 
-    if (!["accepted", "declined"].includes(status)) {
+    const validStatuses = ["reviewing", "interviewed", "accepted", "declined"];
+    if (!validStatuses.includes(status)) {
       throw new HttpsError(
         "invalid-argument",
-        'Status must be "accepted" or "declined"',
+        `Status must be one of: ${validStatuses.join(", ")}`,
       );
     }
 
@@ -460,6 +464,8 @@ export const searchListings = onCall(
       location,
       remote,
       skills,
+      hoursPerWeekMin,
+      hoursPerWeekMax,
       limit = 20,
       startAfter,
     } = request.data as {
@@ -469,6 +475,8 @@ export const searchListings = onCall(
       location?: {latitude: number; longitude: number; radius?: number};
       remote?: boolean;
       skills?: string[];
+      hoursPerWeekMin?: number;
+      hoursPerWeekMax?: number;
       limit?: number;
       startAfter?: string;
     };
@@ -481,6 +489,8 @@ export const searchListings = onCall(
         location,
         remote,
         skills,
+        hoursPerWeekMin,
+        hoursPerWeekMax,
         limit: Math.min(limit, 50), // Cap at 50
         startAfter,
         requesterId: userId,

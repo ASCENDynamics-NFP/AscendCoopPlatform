@@ -22,6 +22,23 @@
 import {BaseDocument} from "./base-document";
 import {Timestamp, FieldValue} from "firebase/firestore";
 
+/**
+ * Application status values for the hiring pipeline.
+ * - applied: Initial state when applicant submits
+ * - reviewing: Listing owner is reviewing the application
+ * - interviewed: Applicant has been interviewed
+ * - accepted: Application accepted
+ * - declined: Application declined
+ * - withdrawn: Applicant withdrew their application
+ */
+export type ApplicationStatus =
+  | "applied"
+  | "reviewing"
+  | "interviewed"
+  | "accepted"
+  | "declined"
+  | "withdrawn";
+
 export interface ListingRelatedAccount extends BaseDocument {
   accountId: string; // ID of the applicant's account
   iconImage?: string;
@@ -31,7 +48,7 @@ export interface ListingRelatedAccount extends BaseDocument {
   email: string;
   phone?: string;
   listingId: string; // ID of the listing
-  status: "applied" | "accepted" | "declined" | "withdrawn";
+  status: ApplicationStatus;
   applicationDate: Timestamp | FieldValue;
   notes?: string;
   resumeFile?: File | null;

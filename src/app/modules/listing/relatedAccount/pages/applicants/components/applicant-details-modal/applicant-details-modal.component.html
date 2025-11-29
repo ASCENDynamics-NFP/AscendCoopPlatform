@@ -92,14 +92,45 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <!-- Action Buttons -->
   <ion-grid>
     <ion-row>
-      <ion-col size="6">
+      <ion-col size="4">
         <ion-button expand="block" color="medium" (click)="copyEmail()">
           Copy Email
         </ion-button>
       </ion-col>
-      <ion-col size="6">
+      <ion-col size="4">
         <ion-button expand="block" color="primary" (click)="viewProfile()">
           View Profile
+        </ion-button>
+      </ion-col>
+      <ion-col size="4">
+        <ion-button
+          expand="block"
+          color="tertiary"
+          (click)="messageApplicant()"
+        >
+          Message
+        </ion-button>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="6">
+        <ion-button
+          expand="block"
+          color="secondary"
+          (click)="markAsReviewing()"
+        >
+          <ion-icon slot="start" name="eye-outline"></ion-icon>
+          Reviewing
+        </ion-button>
+      </ion-col>
+      <ion-col size="6">
+        <ion-button
+          expand="block"
+          color="warning"
+          (click)="markAsInterviewed()"
+        >
+          <ion-icon slot="start" name="chatbubbles-outline"></ion-icon>
+          Interviewed
         </ion-button>
       </ion-col>
     </ion-row>

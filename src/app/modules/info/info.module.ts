@@ -41,7 +41,6 @@ import {LandingPage} from "./pages/landing/landing.page";
 import {InfoFooterComponent} from "./components/info-footer/info-footer.component";
 import {HomepageListingsComponent} from "./components/homepage-listings/homepage-listings.component";
 import {LeadFormComponent} from "./components/lead-form/lead-form.component";
-import {TimeAgoPipe} from "../../shared/pipes/time-ago.pipe";
 
 @NgModule({
   declarations: [
@@ -58,7 +57,6 @@ import {TimeAgoPipe} from "../../shared/pipes/time-ago.pipe";
     InfoFooterComponent,
     HomepageListingsComponent,
     LeadFormComponent,
-    TimeAgoPipe,
   ],
   exports: [InfoFooterComponent],
   imports: [

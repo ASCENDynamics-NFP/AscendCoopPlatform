@@ -693,10 +693,12 @@ export class AccountEffects {
       uploadedResumeUrl = await this.storageService.uploadFile(filePath, file);
     }
 
-    // Never store professionalInformation or laborRights on the main account doc
+    // Never store professionalInformation, laborRights, or contactInformation on the main account doc
+    // contactInformation is saved separately via callable functions to the sections/contactInfo subcollection
     const {
       professionalInformation,
       laborRights,
+      contactInformation,
       ...accountUpdateWithoutPrivate
     } = updatedAccount;
     // Volunteer preferences are user-specific; do not persist for non-user accounts

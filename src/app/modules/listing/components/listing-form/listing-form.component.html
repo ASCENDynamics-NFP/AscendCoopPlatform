@@ -332,55 +332,6 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             </ion-col>
           </ion-row>
 
-          <!-- Start Date and End Date Fields -->
-          <ion-row>
-            <!-- Start Date Field -->
-            <ion-col size="12" size-md="6">
-              <ion-datetime
-                label="Start Date"
-                label-placement="floating"
-                fill="outline"
-                formControlName="startDate"
-                presentation="date"
-                [preferWheel]="false"
-                [class.ion-invalid]="
-                  listingForm.get('timeCommitment.startDate')?.invalid &&
-                  listingForm.get('timeCommitment.startDate')?.touched
-                "
-              ></ion-datetime>
-              <ion-note
-                color="danger"
-                *ngIf="
-                  listingForm.get('timeCommitment.startDate')?.invalid &&
-                  listingForm.get('timeCommitment.startDate')?.touched
-                "
-              >
-                Start date is required.
-              </ion-note>
-            </ion-col>
-
-            <!-- End Date Field -->
-            <ion-col size="12" size-md="6">
-              <ion-datetime
-                label="End Date"
-                label-placement="floating"
-                fill="outline"
-                formControlName="endDate"
-                presentation="date"
-                [preferWheel]="false"
-                [class.ion-invalid]="
-                  listingForm.get('timeCommitment')?.errors?.['dateRange']
-                "
-              ></ion-datetime>
-              <ion-note
-                color="danger"
-                *ngIf="listingForm.get('timeCommitment')?.errors?.['dateRange']"
-              >
-                End date must be after start date.
-              </ion-note>
-            </ion-col>
-          </ion-row>
-
           <!-- Flexible Schedule Toggle -->
           <ion-row>
             <ion-col>

@@ -71,6 +71,9 @@ import {ProjectFiltersComponent} from "./pages/projects/components/project-filte
 import {BulkActionsComponent} from "./pages/projects/components/bulk-actions/bulk-actions.component";
 import {ProjectCreationComponent} from "./pages/projects/components/project-creation/project-creation.component";
 import {TemplatePreviewModalComponent} from "./pages/projects/components/template-preview-modal/template-preview-modal.component";
+import {DirectoryFilterComponent} from "./components/directory-filter/directory-filter.component";
+import {OrganizationsMapComponent} from "./components/organizations-map/organizations-map.component";
+import {GoogleMapsModule} from "@angular/google-maps";
 
 @NgModule({
   declarations: [
@@ -113,6 +116,8 @@ import {TemplatePreviewModalComponent} from "./pages/projects/components/templat
     BulkActionsComponent,
     ProjectCreationComponent,
     TemplatePreviewModalComponent,
+    DirectoryFilterComponent,
+    OrganizationsMapComponent,
     SafeUrlPipe,
     CategorySelectorComponent,
   ],
@@ -125,6 +130,7 @@ import {TemplatePreviewModalComponent} from "./pages/projects/components/templat
     RouterModule,
     TranslateModule,
     ReactiveFormsModule,
+    GoogleMapsModule,
     StoreModule.forFeature("accounts", accountReducer),
     EffectsModule.forFeature([AccountEffects, ProjectsEffects]),
   ],

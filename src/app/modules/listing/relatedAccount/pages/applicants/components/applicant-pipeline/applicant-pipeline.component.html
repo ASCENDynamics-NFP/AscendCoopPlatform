@@ -1,0 +1,75 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<div class="pipeline-container">
+  <div
+    class="pipeline-column"
+    *ngFor="let column of columns; trackBy: trackByColumnId"
+  >
+    <div class="column-header" [attr.data-color]="column.color">
+      <span class="column-title">{{ column.label }}</span>
+      <ion-badge [color]="column.color">{{ column.accounts.length }}</ion-badge>
+    </div>
+
+    <div
+      class="column-content"
+      cdkDropList
+      [id]="'pipeline-' + column.id"
+      [cdkDropListData]="column.accounts"
+      [cdkDropListConnectedTo]="getConnectedLists()"
+      (cdkDropListDropped)="drop($event, column)"
+      [cdkDropListDisabled]="column.id === 'withdrawn'"
+    >
+      <div
+        class="applicant-card"
+        *ngFor="let account of column.accounts; trackBy: trackByAccountId"
+        cdkDrag
+        [cdkDragDisabled]="column.id === 'withdrawn'"
+        (click)="onApplicantClick(account)"
+      >
+        <div class="card-content">
+          <ion-avatar class="applicant-avatar">
+            <img
+              *ngIf="account.iconImage"
+              [src]="account.iconImage"
+              alt="{{ account.firstName }} {{ account.lastName }}"
+            />
+            <ion-icon
+              *ngIf="!account.iconImage"
+              name="person-circle-outline"
+            ></ion-icon>
+          </ion-avatar>
+          <div class="applicant-info">
+            <h4>{{ account.firstName }} {{ account.lastName }}</h4>
+            <p class="applicant-email">{{ account.email }}</p>
+          </div>
+        </div>
+
+        <!-- Drag placeholder -->
+        <div class="drag-placeholder" *cdkDragPlaceholder></div>
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-column" *ngIf="column.accounts.length === 0">
+        <ion-icon name="person-outline"></ion-icon>
+        <p>No applicants</p>
+      </div>
+    </div>
+  </div>
+</div>

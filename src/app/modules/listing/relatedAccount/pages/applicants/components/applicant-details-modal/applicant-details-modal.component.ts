@@ -24,7 +24,10 @@ import {ModalController} from "@ionic/angular";
 import {Router} from "@angular/router";
 import {Store} from "@ngrx/store";
 import {AppState} from "../../../../../../../state/app.state";
-import {ListingRelatedAccount} from "@shared/models/listing-related-account.model";
+import {
+  ListingRelatedAccount,
+  ApplicationStatus,
+} from "@shared/models/listing-related-account.model";
 import * as ListingsActions from "../../../../../../../state/actions/listings.actions";
 
 @Component({
@@ -64,8 +67,26 @@ export class ApplicantDetailsModalComponent {
     this.closeModal();
   }
 
+  messageApplicant() {
+    // Navigate to new chat with pre-selected recipient
+    this.router.navigate(["/messaging/new-chat"], {
+      queryParams: {recipientId: this.relatedAccount.id},
+    });
+    this.closeModal();
+  }
+
+  // Update status to reviewing
+  markAsReviewing() {
+    this.updateApplicationStatus("reviewing", "Marked as reviewing!");
+  }
+
+  // Update status to interviewed
+  markAsInterviewed() {
+    this.updateApplicationStatus("interviewed", "Marked as interviewed!");
+  }
+
   private updateApplicationStatus(
-    status: "applied" | "accepted" | "declined" | "withdrawn",
+    status: ApplicationStatus,
     successMessage: string,
   ) {
     const updatedAccount = {

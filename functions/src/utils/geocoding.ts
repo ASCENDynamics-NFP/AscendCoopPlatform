@@ -33,7 +33,7 @@ export interface GeocodeResult {
 }
 
 // Define the secret
-const googleApiKey = defineSecret("GOOGLE_API_KEY");
+export const googleApiKey = defineSecret("GOOGLE_API_KEY");
 
 /**
  * Geocode an address string using Google's Geocoding API

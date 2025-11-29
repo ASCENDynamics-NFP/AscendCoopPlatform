@@ -47,6 +47,7 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
   isSubmitting = false;
   maxLinks = 10; // Maximum number of web links allowed
   maxAddresses = 3; // Maximum number of addresses allowed
+  private skipNextContactInfoReload = false; // Flag to prevent reload after save
 
   constructor(
     private fb: FormBuilder,
@@ -59,7 +60,6 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     if (this.account) {
-      console.log("ngOnInit - account:", this.account);
       this.populateForm(this.account);
       // Load gated contact info from sections subdoc when available (owner/admin)
       if (this.account.id) {
@@ -79,7 +79,17 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes["account"] && changes["account"].currentValue) {
-      console.log("ngOnChanges - account:", changes["account"].currentValue);
+      // Skip if form has unsaved changes (user is editing) or we just saved
+      if (this.profileForm?.dirty) {
+        return;
+      }
+      if (this.skipNextContactInfoReload) {
+        this.skipNextContactInfoReload = false;
+        // Still populate main form fields but not contact info
+        this.populateForm(changes["account"].currentValue);
+        return;
+      }
+
       this.populateForm(changes["account"].currentValue);
       const acc = changes["account"].currentValue as Account;
       if (acc?.id) {
@@ -211,12 +221,6 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
       // Use full ISO string for ion-datetime to ensure proper recognition
       foundingDateValue = foundingDate.toISOString();
     }
-
-    console.log("Founding date conversion:", {
-      original: account.groupDetails?.dateFounded,
-      converted: foundingDate,
-      isoValue: foundingDateValue,
-    });
 
     // Update the form with the account data
     this.profileForm.patchValue({
@@ -486,14 +490,29 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
           } as any),
         );
       } catch (e) {
-        console.warn("Failed to save contact info subdocument:", e);
+        console.error(
+          "[AdminGroupProfileForm] Failed to save contact info:",
+          e,
+        );
       }
+
+      // Set flag to prevent ngOnChanges from reloading contactInfo and overwriting user's edits
+      this.skipNextContactInfoReload = true;
+
+      // IMPORTANT: Remove contactInformation from the account update
+      // It was already saved via the callable function above
+      // If we include it here, it will overwrite with stale data from NgRx store
+      const accountForNgrx = {...updatedAccount};
+      delete (accountForNgrx as any).contactInformation;
 
       this.store.dispatch(
         AccountActions.updateAccount({
-          account: updatedAccount,
+          account: accountForNgrx,
         }),
       );
+
+      // Mark form as pristine after successful save
+      this.profileForm.markAsPristine();
 
       // Reset submitting state after a delay
       setTimeout(() => {

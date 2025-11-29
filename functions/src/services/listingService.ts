@@ -612,12 +612,12 @@ export class ListingService {
   }
 
   /**
-   * Accept or reject an application
+   * Update application status in the pipeline
    */
   static async updateApplicationStatus(
     listingId: string,
     applicantId: string,
-    status: "accepted" | "declined",
+    status: "reviewing" | "interviewed" | "accepted" | "declined",
     userId: string,
     notes?: string,
   ): Promise<void> {

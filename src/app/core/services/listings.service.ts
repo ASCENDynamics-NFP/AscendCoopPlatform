@@ -124,7 +124,7 @@ export class ListingsService {
   manageApplication(
     listingId: string,
     applicantId: string,
-    status: "accepted" | "declined",
+    status: "reviewing" | "interviewed" | "accepted" | "declined",
     notes?: string,
   ): Observable<any> {
     return this.firebaseFunctions.manageApplication(

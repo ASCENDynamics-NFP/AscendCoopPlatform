@@ -31,17 +31,23 @@ import {
   switchMap,
   catchError,
 } from "rxjs";
-import {ListingRelatedAccount} from "@shared/models/listing-related-account.model";
+import {
+  ListingRelatedAccount,
+  ApplicationStatus,
+} from "@shared/models/listing-related-account.model";
 import {AppState} from "../../../../../state/app.state";
 import * as ListingsActions from "../../../../../state/actions/listings.actions";
 import {
   selectListingById,
   selectRelatedAccountsByListingId,
+  selectRelatedAccountsByStatus,
+  selectSelectedApplicantIds,
+  selectSelectedApplicantsCount,
 } from "../../../../../state/selectors/listings.selectors";
 import {ActivatedRoute, Router} from "@angular/router";
 import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
 import {Listing} from "@shared/models/listing.model";
-import {ModalController} from "@ionic/angular";
+import {ModalController, ToastController} from "@ionic/angular";
 import {ApplicantDetailsModalComponent} from "./components/applicant-details-modal/applicant-details-modal.component";
 import {MetaService} from "../../../../../core/services/meta.service";
 import {selectAccountById} from "../../../../../state/selectors/account.selectors";
@@ -55,11 +61,21 @@ import {filter} from "rxjs/operators";
 })
 export class ApplicantsPage implements OnInit {
   relatedAccounts$: Observable<ListingRelatedAccount[]> = new Observable();
+  accountsByStatus$!: Observable<
+    Record<ApplicationStatus, ListingRelatedAccount[]>
+  >;
   paginatedAccounts$!: Observable<ListingRelatedAccount[]>;
   currentPageSubject = new BehaviorSubject<number>(1);
   currentPage$ = this.currentPageSubject.asObservable();
   pageSize = 20; // Items per page
   maxVisiblePages = 5; // Max visible page numbers
+
+  // View mode: list or pipeline
+  viewMode: "list" | "pipeline" = "list";
+
+  // Bulk selection
+  selectedApplicantIds$!: Observable<string[]>;
+  selectedCount$!: Observable<number>;
 
   totalItems$!: Observable<number>;
   totalPages$!: Observable<number>;
@@ -90,6 +106,7 @@ export class ApplicantsPage implements OnInit {
     private store: Store<AppState>,
     private route: ActivatedRoute,
     private modalController: ModalController,
+    private toastController: ToastController,
     private router: Router,
     private access: AccessService,
   ) {}
@@ -113,6 +130,17 @@ export class ApplicantsPage implements OnInit {
       this.relatedAccounts$ = this.store.select(
         selectRelatedAccountsByListingId(this.listingId),
       );
+
+      // Pipeline view data
+      this.accountsByStatus$ = this.store.select(
+        selectRelatedAccountsByStatus(this.listingId),
+      );
+
+      // Bulk selection
+      this.selectedApplicantIds$ = this.store.select(
+        selectSelectedApplicantIds,
+      );
+      this.selectedCount$ = this.store.select(selectSelectedApplicantsCount);
 
       this.loading$ = this.store.select((state) => state.listings.loading);
       this.error$ = this.store.select((state) => state.listings.error);
@@ -288,5 +316,144 @@ export class ApplicantsPage implements OnInit {
     this.currentPage$.pipe(take(1)).subscribe((currentPage) => {
       this.currentPageSubject.next(currentPage - 1);
     });
+  }
+
+  // View mode toggle
+  toggleViewMode(mode: "list" | "pipeline") {
+    this.viewMode = mode;
+  }
+
+  // Pipeline status change handler
+  onStatusChange(event: {
+    account: ListingRelatedAccount;
+    newStatus: ApplicationStatus;
+  }) {
+    this.store.dispatch(
+      ListingsActions.updateRelatedAccount({
+        listingId: this.listingId,
+        relatedAccount: {...event.account, status: event.newStatus},
+      }),
+    );
+  }
+
+  // Bulk selection methods
+  toggleSelection(applicantId: string) {
+    this.store.dispatch(
+      ListingsActions.toggleApplicantSelection({applicantId}),
+    );
+  }
+
+  selectAll() {
+    this.relatedAccounts$.pipe(take(1)).subscribe((accounts) => {
+      const applicantIds = accounts.map((a) => a.id);
+      this.store.dispatch(ListingsActions.selectAllApplicants({applicantIds}));
+    });
+  }
+
+  deselectAll() {
+    this.store.dispatch(ListingsActions.clearApplicantSelection());
+  }
+
+  isSelected(applicantId: string): Observable<boolean> {
+    return this.selectedApplicantIds$.pipe(
+      map((ids) => ids.includes(applicantId)),
+    );
+  }
+
+  // Bulk status update
+  bulkUpdateStatus(
+    status: "reviewing" | "interviewed" | "accepted" | "declined",
+  ) {
+    this.selectedApplicantIds$.pipe(take(1)).subscribe((applicantIds) => {
+      if (applicantIds.length === 0) {
+        this.showToast("No applicants selected", "warning");
+        return;
+      }
+
+      this.store.dispatch(
+        ListingsActions.bulkUpdateStatus({
+          listingId: this.listingId,
+          applicantIds,
+          status,
+        }),
+      );
+    });
+  }
+
+  // Export to CSV
+  exportToCsv() {
+    this.relatedAccounts$.pipe(take(1)).subscribe((accounts) => {
+      this.selectedApplicantIds$.pipe(take(1)).subscribe((selectedIds) => {
+        // If there are selected items, export only those; otherwise export all
+        const accountsToExport =
+          selectedIds.length > 0
+            ? accounts.filter((a) => selectedIds.includes(a.id))
+            : accounts;
+
+        if (accountsToExport.length === 0) {
+          this.showToast("No applicants to export", "warning");
+          return;
+        }
+
+        // Create CSV content
+        const headers = [
+          "Name",
+          "Email",
+          "Phone",
+          "Status",
+          "Application Date",
+        ];
+        const rows = accountsToExport.map((account) => {
+          const date =
+            account.applicationDate && "toDate" in account.applicationDate
+              ? (account.applicationDate as any).toDate().toISOString()
+              : "";
+          return [
+            `${account.firstName} ${account.lastName}`,
+            account.email,
+            account.phone || "",
+            account.status,
+            date,
+          ];
+        });
+
+        const csvContent = [
+          headers.join(","),
+          ...rows.map((row) =>
+            row
+              .map((cell) => `"${String(cell).replace(/"/g, '""')}"`)
+              .join(","),
+          ),
+        ].join("\n");
+
+        // Download the file
+        const blob = new Blob([csvContent], {type: "text/csv;charset=utf-8;"});
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute(
+          "download",
+          `applicants-${this.listingId}-${new Date().toISOString().split("T")[0]}.csv`,
+        );
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        this.showToast(
+          `Exported ${accountsToExport.length} applicant(s)`,
+          "success",
+        );
+      });
+    });
+  }
+
+  private async showToast(message: string, color: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2000,
+      color,
+    });
+    await toast.present();
   }
 }

@@ -29,6 +29,7 @@ import {ListingRelatedAccount} from "@shared/models/listing-related-account.mode
 export interface ListingsState extends EntityState<Listing> {
   relatedAccounts: {[listingId: string]: ListingRelatedAccount[]};
   selectedListingId: string | null; // Currently selected listing
+  selectedApplicantIds: string[]; // Selected applicants for bulk actions
   loading: boolean; // Indicates if a request is in progress
   error: string | null; // Stores any errors
   filterType: string; // Type of listing to filter (e.g., 'all', 'active')
@@ -63,6 +64,7 @@ const initialAdvancedFilters: AdvancedFilters = {
 const initialState: ListingsState = listingsAdapter.getInitialState({
   relatedAccounts: {},
   selectedListingId: null,
+  selectedApplicantIds: [],
   loading: false,
   error: null,
   filterType: "all",
@@ -291,5 +293,38 @@ export const listingsReducer = createReducer(
       ...state.advancedFilters,
       startAfter: state.nextCursor,
     },
+  })),
+
+  // Applicant Selection Actions for Bulk Operations
+  on(ListingsActions.toggleApplicantSelection, (state, {applicantId}) => {
+    const isSelected = state.selectedApplicantIds.includes(applicantId);
+    return {
+      ...state,
+      selectedApplicantIds: isSelected
+        ? state.selectedApplicantIds.filter((id) => id !== applicantId)
+        : [...state.selectedApplicantIds, applicantId],
+    };
+  }),
+
+  on(ListingsActions.selectAllApplicants, (state, {applicantIds}) => ({
+    ...state,
+    selectedApplicantIds: applicantIds,
+  })),
+
+  on(ListingsActions.clearApplicantSelection, (state) => ({
+    ...state,
+    selectedApplicantIds: [],
+  })),
+
+  on(ListingsActions.bulkUpdateStatusSuccess, (state) => ({
+    ...state,
+    selectedApplicantIds: [],
+    loading: false,
+  })),
+
+  on(ListingsActions.bulkUpdateStatusFailure, (state, {error}) => ({
+    ...state,
+    loading: false,
+    error,
   })),
 );

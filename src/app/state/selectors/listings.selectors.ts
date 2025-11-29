@@ -173,3 +173,30 @@ export const selectAreRelatedAccountsFresh = (listingId: string) =>
     (relatedAccountsLastUpdated) =>
       !isStale(relatedAccountsLastUpdated, LISTINGS_TTL),
   );
+
+// Applicant Selection Selectors for Bulk Operations
+export const selectSelectedApplicantIds = createSelector(
+  selectListingsState,
+  (state: ListingsState) => state?.selectedApplicantIds ?? [],
+);
+
+export const selectIsApplicantSelected = (applicantId: string) =>
+  createSelector(selectSelectedApplicantIds, (selectedIds) =>
+    selectedIds.includes(applicantId),
+  );
+
+export const selectSelectedApplicantsCount = createSelector(
+  selectSelectedApplicantIds,
+  (selectedIds) => selectedIds.length,
+);
+
+// Group related accounts by status for pipeline view
+export const selectRelatedAccountsByStatus = (listingId: string) =>
+  createSelector(selectRelatedAccountsByListingId(listingId), (accounts) => ({
+    applied: accounts.filter((a) => a.status === "applied"),
+    reviewing: accounts.filter((a) => a.status === "reviewing"),
+    interviewed: accounts.filter((a) => a.status === "interviewed"),
+    accepted: accounts.filter((a) => a.status === "accepted"),
+    declined: accounts.filter((a) => a.status === "declined"),
+    withdrawn: accounts.filter((a) => a.status === "withdrawn"),
+  }));

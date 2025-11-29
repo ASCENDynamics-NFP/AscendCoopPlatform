@@ -227,3 +227,36 @@ export const clearAdvancedFilters = createAction(
 export const loadMoreListings = createAction(
   "[Listings Page] Load More Listings",
 );
+
+// Applicant Selection Actions for Bulk Operations
+export const toggleApplicantSelection = createAction(
+  "[Listings] Toggle Applicant Selection",
+  props<{applicantId: string}>(),
+);
+
+export const selectAllApplicants = createAction(
+  "[Listings] Select All Applicants",
+  props<{applicantIds: string[]}>(),
+);
+
+export const clearApplicantSelection = createAction(
+  "[Listings] Clear Applicant Selection",
+);
+
+export const bulkUpdateStatus = createAction(
+  "[Listings] Bulk Update Status",
+  props<{
+    listingId: string;
+    applicantIds: string[];
+    status: "reviewing" | "interviewed" | "accepted" | "declined";
+  }>(),
+);
+
+export const bulkUpdateStatusSuccess = createAction(
+  "[Listings] Bulk Update Status Success",
+);
+
+export const bulkUpdateStatusFailure = createAction(
+  "[Listings] Bulk Update Status Failure",
+  props<{error: string}>(),
+);

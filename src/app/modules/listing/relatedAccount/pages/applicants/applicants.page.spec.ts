@@ -137,6 +137,7 @@ describe("ApplicantsPage", () => {
       listingsAdapter.getInitialState({
         relatedAccounts: {[mockListingId]: mockAccounts},
         selectedListingId: null,
+        selectedApplicantIds: [],
         loading: false,
         error: null,
         filterType: "all",

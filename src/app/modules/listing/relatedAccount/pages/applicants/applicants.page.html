@@ -32,50 +32,149 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     [showButtons]="false"
   ></app-hero>
 
+  <!-- View Mode Toggle & Actions Toolbar -->
+  <ion-toolbar *ngIf="isOwner$ | async" class="actions-toolbar">
+    <ion-segment [(ngModel)]="viewMode" (ionChange)="toggleViewMode(viewMode)">
+      <ion-segment-button value="list">
+        <ion-icon name="list-outline"></ion-icon>
+        <ion-label>List</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="pipeline">
+        <ion-icon name="git-branch-outline"></ion-icon>
+        <ion-label>Pipeline</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <ion-buttons slot="end">
+      <ion-button (click)="exportToCsv()" title="Export to CSV">
+        <ion-icon slot="icon-only" name="download-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Bulk Actions Bar (visible when items are selected) -->
+  <ion-toolbar
+    *ngIf="(isOwner$ | async) && (selectedCount$ | async) as count"
+    class="bulk-actions-bar"
+    [class.visible]="count > 0"
+  >
+    <ion-label slot="start" class="selection-count">
+      {{ count }} selected
+    </ion-label>
+
+    <ion-buttons slot="start">
+      <ion-button size="small" (click)="selectAll()"> Select All </ion-button>
+      <ion-button size="small" (click)="deselectAll()">
+        Deselect All
+      </ion-button>
+    </ion-buttons>
+
+    <ion-buttons slot="end">
+      <ion-button
+        color="secondary"
+        fill="solid"
+        size="small"
+        (click)="bulkUpdateStatus('reviewing')"
+      >
+        <ion-icon slot="start" name="eye-outline"></ion-icon>
+        Reviewing
+      </ion-button>
+      <ion-button
+        color="tertiary"
+        fill="solid"
+        size="small"
+        (click)="bulkUpdateStatus('interviewed')"
+      >
+        <ion-icon slot="start" name="chatbubbles-outline"></ion-icon>
+        Interviewed
+      </ion-button>
+      <ion-button
+        color="success"
+        fill="solid"
+        size="small"
+        (click)="bulkUpdateStatus('accepted')"
+      >
+        <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+        Accept
+      </ion-button>
+      <ion-button
+        color="danger"
+        fill="solid"
+        size="small"
+        (click)="bulkUpdateStatus('declined')"
+      >
+        <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+        Decline
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
   <ion-loading
     *ngIf="loading$ | async"
     message="Loading applicants..."
   ></ion-loading>
 
-  <ion-list *ngIf="!(loading$ | async)">
-    <ion-item
-      *ngFor="let account of paginatedAccounts$ | async"
-      (click)="openApplicantDetailsModal(account)"
-    >
-      <ion-avatar slot="start">
-        <img *ngIf="account.iconImage" [src]="account.iconImage" />
-      </ion-avatar>
-      <ion-label>
-        <h2>{{ account.firstName }} {{ account.lastName }}</h2>
-        <h3 *ngIf="isOwner$ | async">{{ account.email }}</h3>
-        <p *ngIf="account.phone && (isOwner$ | async)">
-          {{ account.phone | phoneFormat }}
-        </p>
-        <p *ngIf="isOwner$ | async">
-          Applied: {{ account.applicationDate | timestamp }}
-        </p>
-        <!-- <p *ngIf="account.notes && (isOwner$ | async)">
-          Notes: {{ account.notes }}
-        </p> -->
-      </ion-label>
-      <ion-badge
-        *ngIf="isOwner$ | async"
-        slot="end"
-        [color]="account.status === 'accepted' ? 'success' :
-        account.status === 'declined' ? 'danger' : 'primary' "
+  <!-- List View -->
+  <ng-container *ngIf="viewMode === 'list'">
+    <ion-list *ngIf="!(loading$ | async)">
+      <ion-item
+        *ngFor="let account of paginatedAccounts$ | async"
+        (click)="openApplicantDetailsModal(account)"
       >
-        {{ account.status }}
-      </ion-badge>
-      <!-- <ion-button
-        slot="end"
-        fill="clear"
-        [routerLink]="['/account', account.accountId]"
-      >
-        <ion-icon name="person-circle-outline"></ion-icon>
-        View Profile
-      </ion-button> -->
-    </ion-item>
-  </ion-list>
+        <!-- Checkbox for bulk selection -->
+        <ion-checkbox
+          *ngIf="isOwner$ | async"
+          slot="start"
+          [checked]="isSelected(account.id) | async"
+          (ionChange)="toggleSelection(account.id)"
+          (click)="$event.stopPropagation()"
+        ></ion-checkbox>
+
+        <ion-avatar slot="start">
+          <img *ngIf="account.iconImage" [src]="account.iconImage" />
+          <ion-icon
+            *ngIf="!account.iconImage"
+            name="person-circle-outline"
+            style="font-size: 40px"
+          ></ion-icon>
+        </ion-avatar>
+        <ion-label>
+          <h2>{{ account.firstName }} {{ account.lastName }}</h2>
+          <h3 *ngIf="isOwner$ | async">{{ account.email }}</h3>
+          <p *ngIf="account.phone && (isOwner$ | async)">
+            {{ account.phone | phoneFormat }}
+          </p>
+          <p *ngIf="isOwner$ | async">
+            Applied: {{ account.applicationDate | timestamp }}
+          </p>
+        </ion-label>
+        <ion-badge
+          *ngIf="isOwner$ | async"
+          slot="end"
+          [color]="
+            account.status === 'accepted' ? 'success' :
+            account.status === 'declined' ? 'danger' :
+            account.status === 'reviewing' ? 'secondary' :
+            account.status === 'interviewed' ? 'tertiary' :
+            account.status === 'withdrawn' ? 'medium' : 'primary'
+          "
+        >
+          {{ account.status }}
+        </ion-badge>
+      </ion-item>
+    </ion-list>
+  </ng-container>
+
+  <!-- Pipeline View -->
+  <ng-container *ngIf="viewMode === 'pipeline' && (isOwner$ | async)">
+    <app-applicant-pipeline
+      *ngIf="accountsByStatus$ | async as accountsByStatus"
+      [accountsByStatus]="accountsByStatus"
+      (statusChange)="onStatusChange($event)"
+      (applicantClick)="openApplicantDetailsModal($event)"
+    ></app-applicant-pipeline>
+  </ng-container>
+
   <ion-text
     class="ion-padding"
     *ngIf="
@@ -92,8 +191,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </ion-text>
 </ion-content>
 
-<!-- Pagination Controls -->
-<ion-footer>
+<!-- Pagination Controls (only for list view) -->
+<ion-footer *ngIf="viewMode === 'list'">
   <app-pagination
     [totalItems]="(relatedAccounts$ | async)?.length || 0"
     [pageSize]="pageSize"

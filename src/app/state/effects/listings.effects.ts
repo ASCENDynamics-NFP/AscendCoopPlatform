@@ -494,14 +494,18 @@ export class ListingsEffects {
   updateRelatedAccount$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListingsActions.updateRelatedAccount),
-      mergeMap(({listingId, relatedAccount}) =>
-        this.listingsService
+      mergeMap(({listingId, relatedAccount}) => {
+        // Support all pipeline status values
+        const status = relatedAccount.status as
+          | "reviewing"
+          | "interviewed"
+          | "accepted"
+          | "declined";
+        return this.listingsService
           .manageApplication(
             listingId,
             relatedAccount.id,
-            (relatedAccount.status as any) === "accepted"
-              ? "accepted"
-              : "declined",
+            status,
             (relatedAccount as any).notes,
           )
           .pipe(
@@ -518,8 +522,8 @@ export class ListingsEffects {
                 }),
               ),
             ),
-          ),
-      ),
+          );
+      }),
     ),
   );
 
@@ -765,4 +769,47 @@ export class ListingsEffects {
       })
       .then((toast) => toast.present());
   }
+
+  // Bulk update status effect - loops through selected applicants
+  bulkUpdateStatus$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ListingsActions.bulkUpdateStatus),
+      mergeMap(({listingId, applicantIds, status}) => {
+        // Create an array of update calls
+        const updateCalls = applicantIds.map((applicantId) =>
+          this.listingsService.manageApplication(
+            listingId,
+            applicantId,
+            status,
+          ),
+        );
+
+        // Execute all updates in parallel
+        return from(
+          Promise.all(updateCalls.map((call) => call.toPromise())),
+        ).pipe(
+          map(() => {
+            this.showToast(
+              `Successfully updated ${applicantIds.length} applicant(s) to ${status}`,
+              "success",
+            );
+            // Reload related accounts to refresh the view
+            this.store.dispatch(
+              ListingsActions.loadListingRelatedAccounts({listingId}),
+            );
+            return ListingsActions.bulkUpdateStatusSuccess();
+          }),
+          catchError((error) => {
+            this.showToast(
+              `Error updating applicants: ${error.message}`,
+              "danger",
+            );
+            return of(
+              ListingsActions.bulkUpdateStatusFailure({error: error.message}),
+            );
+          }),
+        );
+      }),
+    ),
+  );
 }

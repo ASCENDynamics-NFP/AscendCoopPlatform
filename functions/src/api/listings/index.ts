@@ -294,7 +294,7 @@ export const manageApplication = onCall(
     const {listingId, applicantId, status, notes} = request.data as {
       listingId: string;
       applicantId: string;
-      status: "accepted" | "declined";
+      status: "reviewing" | "interviewed" | "accepted" | "declined";
       notes?: string;
     };
 
@@ -305,10 +305,11 @@ export const manageApplication = onCall(
       );
     }
 
-    if (!["accepted", "declined"].includes(status)) {
+    const validStatuses = ["reviewing", "interviewed", "accepted", "declined"];
+    if (!validStatuses.includes(status)) {
       throw new HttpsError(
         "invalid-argument",
-        'Status must be "accepted" or "declined"',
+        `Status must be one of: ${validStatuses.join(", ")}`,
       );
     }
 

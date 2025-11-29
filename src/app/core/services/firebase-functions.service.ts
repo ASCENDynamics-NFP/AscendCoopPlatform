@@ -604,7 +604,7 @@ export class FirebaseFunctionsService {
   manageApplication(
     listingId: string,
     applicantId: string,
-    status: "accepted" | "declined",
+    status: "reviewing" | "interviewed" | "accepted" | "declined",
     notes?: string,
   ): Observable<any> {
     const callable = this.fns.httpsCallable("manageApplication");

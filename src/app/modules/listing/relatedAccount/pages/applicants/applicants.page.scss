@@ -77,3 +77,60 @@
     gap: 1rem; /* Reduced space between elements */
   }
 }
+
+/* Actions Toolbar */
+.actions-toolbar {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  border-bottom: 1px solid var(--ion-color-light-shade);
+
+  ion-segment {
+    max-width: 280px;
+  }
+
+  ion-segment-button {
+    --padding-start: 12px;
+    --padding-end: 12px;
+
+    ion-icon {
+      margin-right: 4px;
+    }
+  }
+}
+
+/* Bulk Actions Bar */
+.bulk-actions-bar {
+  --background: var(--ion-color-light);
+  --padding-start: 16px;
+  --padding-end: 16px;
+  border-bottom: 1px solid var(--ion-color-light-shade);
+
+  .selection-count {
+    font-weight: 600;
+    font-size: 14px;
+    margin-right: 16px;
+  }
+
+  ion-button {
+    --border-radius: 6px;
+    margin: 0 4px;
+    font-size: 12px;
+
+    ion-icon {
+      font-size: 16px;
+    }
+  }
+}
+
+/* Checkbox styling in list */
+ion-checkbox {
+  --size: 22px;
+  margin-right: 8px;
+}
+
+/* Status badge improvements */
+ion-badge {
+  text-transform: capitalize;
+  font-size: 11px;
+  padding: 4px 8px;
+}

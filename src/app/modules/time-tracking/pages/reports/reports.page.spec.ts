@@ -29,6 +29,7 @@ import {IonicModule} from "@ionic/angular";
 import {FormsModule} from "@angular/forms";
 import {ActivatedRoute} from "@angular/router";
 import {of} from "rxjs";
+import {TranslateModule} from "@ngx-translate/core";
 
 describe("ReportsPage", () => {
   let component: ReportsPage;
@@ -82,7 +83,7 @@ describe("ReportsPage", () => {
 
     await TestBed.configureTestingModule({
       declarations: [ReportsPage],
-      imports: [IonicModule.forRoot(), FormsModule],
+      imports: [IonicModule.forRoot(), FormsModule, TranslateModule.forRoot()],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
         {provide: AnalyticsService, useValue: analyticsServiceSpy},
@@ -121,7 +122,7 @@ describe("ReportsPage", () => {
   });
 
   it("should initialize with default values", () => {
-    expect(component.selectedReportType).toBe("monthly");
+    expect(component.selectedReportType).toBe("overview");
     expect(component.selectedUserId).toBe("");
     expect(component.selectedProjectId).toBe("");
     expect(component.isLoading).toBeFalse();
@@ -129,8 +130,8 @@ describe("ReportsPage", () => {
   });
 
   it("should have available reports configured", () => {
-    expect(component.availableReports).toHaveSize(7);
-    expect(component.availableReports[0].type).toBe("monthly");
+    expect(component.availableReports).toHaveSize(4);
+    expect(component.availableReports[0].type).toBe("overview");
     expect(component.availableReports[0].enabled).toBeTrue();
   });
 
@@ -140,16 +141,14 @@ describe("ReportsPage", () => {
 
     component.generateReport();
 
-    expect(
-      mockAnalyticsService.getMonthlyTimeTrackingReport,
-    ).toHaveBeenCalled();
+    expect(mockAnalyticsService.getTimeTrackingAnalytics).toHaveBeenCalled();
     // Note: isLoading will be false after the observable completes synchronously
     expect(component.error).toBeNull();
   });
 
   it("should handle report type selection", () => {
-    component.onReportTypeChange("quarterly");
-    expect(component.selectedReportType).toBe("quarterly");
+    component.onReportTypeChange("project");
+    expect(component.selectedReportType).toBe("project");
   });
 
   it("should handle user selection", () => {

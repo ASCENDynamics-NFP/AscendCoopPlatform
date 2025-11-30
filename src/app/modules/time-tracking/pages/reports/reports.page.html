@@ -1,5 +1,24 @@
 <ion-header [translucent]="true">
-  <app-header [plainTitle]="'Time Tracking Reports'" [defaultHref]="'/time-entry'">
+  <app-header
+    [plainTitle]="'time_tracking.reports' | translate"
+    [defaultHref]="'/account/' + currentAccountId + '/time-tracking/approvals'"
+  >
+    <ion-button
+      header-end
+      [routerLink]="['/account', currentAccountId, 'admin']"
+      fill="outline"
+      [attr.aria-label]="'admin.dashboard' | translate"
+    >
+      <ion-icon name="grid-outline" slot="icon-only"></ion-icon>
+    </ion-button>
+    <ion-button
+      header-end
+      [routerLink]="['/account', currentAccountId, 'time-tracking', 'approvals']"
+      fill="outline"
+      [attr.aria-label]="'time_tracking.time_approvals' | translate"
+    >
+      <ion-icon name="checkmark-done-outline" slot="icon-only"></ion-icon>
+    </ion-button>
   </app-header>
 </ion-header>
 
@@ -8,111 +27,242 @@
     <!-- Report Controls -->
     <ion-card class="report-controls">
       <ion-card-header>
-        <ion-card-title>Report Configuration</ion-card-title>
+        <ion-card-title
+          >{{ 'time_tracking.report_configuration' | translate
+          }}</ion-card-title
+        >
       </ion-card-header>
       <ion-card-content>
-        <ion-row>
+        <!-- Date Range Presets -->
+        <div class="date-presets-section">
+          <ion-label class="section-label"
+            >{{ 'time_tracking.date_range' | translate }}</ion-label
+          >
+          <div
+            class="date-preset-chips"
+            role="group"
+            aria-label="Date range presets"
+          >
+            <ion-chip
+              *ngFor="let preset of dateRangePresets"
+              [color]="selectedDatePreset === preset.key ? 'primary' : 'medium'"
+              [outline]="selectedDatePreset !== preset.key"
+              (click)="onDatePresetChange(preset.key)"
+              role="button"
+              [attr.aria-pressed]="selectedDatePreset === preset.key"
+              [attr.aria-label]="preset.label"
+            >
+              <ion-icon
+                [name]="preset.icon"
+                slot="start"
+                aria-hidden="true"
+              ></ion-icon>
+              <ion-label>{{ preset.label }}</ion-label>
+            </ion-chip>
+          </div>
+          <p
+            class="date-range-display"
+            *ngIf="customStartDate && customEndDate"
+            aria-live="polite"
+          >
+            <ion-icon name="calendar-outline" aria-hidden="true"></ion-icon>
+            {{ getDateRangeDisplay() }}
+          </p>
+        </div>
+
+        <!-- Custom Date Range (shown when custom is selected) -->
+        <ion-row
+          *ngIf="selectedDatePreset === 'custom'"
+          class="custom-date-row"
+        >
           <ion-col size="12" size-md="6">
             <ion-item>
-              <ion-label position="stacked">Report Type</ion-label>
-              <ion-select
-                [(ngModel)]="selectedReportType"
-                (ionChange)="onReportTypeChange($event.detail.value)"
+              <ion-label position="stacked"
+                >{{ 'time_tracking.start_date' | translate }}</ion-label
               >
-                <ion-select-option
-                  *ngFor="let report of availableReports"
-                  [value]="report.type"
-                >
-                  {{report.name}}
-                </ion-select-option>
-              </ion-select>
+              <ion-datetime-button
+                datetime="startDatePicker"
+              ></ion-datetime-button>
+              <ion-modal [keepContentsMounted]="true">
+                <ng-template>
+                  <ion-datetime
+                    id="startDatePicker"
+                    [(ngModel)]="customStartDate"
+                    (ionChange)="onCustomDateChange()"
+                    presentation="date"
+                    max="2030-12-31"
+                    min="2020-01-01"
+                  >
+                  </ion-datetime>
+                </ng-template>
+              </ion-modal>
             </ion-item>
           </ion-col>
-          <ion-col size="12" size-md="6" *ngIf="selectedReportType === 'user'">
+          <ion-col size="12" size-md="6">
             <ion-item>
-              <ion-label position="stacked">Select User</ion-label>
-              <ion-select
-                [(ngModel)]="selectedUserId"
-                (ionChange)="onUserSelectionChange($event.detail.value)"
+              <ion-label position="stacked"
+                >{{ 'time_tracking.end_date' | translate }}</ion-label
               >
-                <ion-select-option value="">All Users</ion-select-option>
-                <ion-select-option
-                  *ngFor="let user of availableUsers$ | async"
-                  [value]="user.id"
-                >
-                  {{user.name}}
-                </ion-select-option>
-              </ion-select>
+              <ion-datetime-button
+                datetime="endDatePicker"
+              ></ion-datetime-button>
+              <ion-modal [keepContentsMounted]="true">
+                <ng-template>
+                  <ion-datetime
+                    id="endDatePicker"
+                    [(ngModel)]="customEndDate"
+                    (ionChange)="onCustomDateChange()"
+                    presentation="date"
+                    max="2030-12-31"
+                    min="2020-01-01"
+                  >
+                  </ion-datetime>
+                </ng-template>
+              </ion-modal>
             </ion-item>
           </ion-col>
         </ion-row>
 
-        <ion-row *ngIf="selectedReportType === 'project'">
-          <ion-col size="12" size-md="6">
-            <ion-item>
-              <ion-label position="stacked">Select Project</ion-label>
-              <ion-select
-                [(ngModel)]="selectedProjectId"
-                (ionChange)="onProjectSelectionChange($event.detail.value)"
+        <!-- Filter Row: Report Focus, Category, Auto-generate -->
+        <div class="filter-row">
+          <div class="filter-item">
+            <ion-label class="filter-label"
+              >{{ 'time_tracking.report_focus' | translate }}</ion-label
+            >
+            <ion-select
+              [(ngModel)]="selectedReportType"
+              (ionChange)="onReportTypeChange($event.detail.value)"
+              interface="popover"
+              class="compact-select"
+            >
+              <ion-select-option
+                *ngFor="let report of availableReports"
+                [value]="report.type"
               >
-                <ion-select-option value="">All Projects</ion-select-option>
-                <ion-select-option
-                  *ngFor="let project of availableProjects$ | async"
-                  [value]="project.id"
+                {{report.name}}
+              </ion-select-option>
+            </ion-select>
+          </div>
+
+          <div class="filter-item" *ngIf="selectedReportType === 'user'">
+            <ion-label class="filter-label"
+              >{{ 'time_tracking.select_user' | translate }}</ion-label
+            >
+            <ion-select
+              [(ngModel)]="selectedUserId"
+              (ionChange)="onUserSelectionChange($event.detail.value)"
+              interface="popover"
+              class="compact-select"
+            >
+              <ion-select-option value=""
+                >{{ 'time_tracking.all_users' | translate }}</ion-select-option
+              >
+              <ion-select-option
+                *ngFor="let user of availableUsers$ | async"
+                [value]="user.id"
+              >
+                {{user.name}}
+              </ion-select-option>
+            </ion-select>
+          </div>
+
+          <div class="filter-item" *ngIf="selectedReportType === 'project'">
+            <ion-label class="filter-label"
+              >{{ 'time_tracking.select_project' | translate }}</ion-label
+            >
+            <ion-select
+              [(ngModel)]="selectedProjectId"
+              (ionChange)="onProjectSelectionChange($event.detail.value)"
+              interface="popover"
+              class="compact-select"
+            >
+              <ion-select-option value=""
+                >{{ 'time_tracking.all_projects' | translate
+                }}</ion-select-option
+              >
+              <ion-select-option
+                *ngFor="let project of availableProjects$ | async"
+                [value]="project.id"
+              >
+                {{project.name}}
+              </ion-select-option>
+            </ion-select>
+          </div>
+
+          <div class="filter-item">
+            <ion-label class="filter-label"
+              >{{ 'time_tracking.filter_by_category' | translate }}</ion-label
+            >
+            <ion-select
+              [(ngModel)]="selectedCategoryId"
+              (ionChange)="onCategorySelectionChange($event.detail.value)"
+              interface="popover"
+              class="compact-select"
+            >
+              <ion-select-option value=""
+                >{{ 'time_tracking.all_categories' | translate
+                }}</ion-select-option
+              >
+              <ion-select-option
+                *ngFor="let category of availableCategories"
+                [value]="category"
+              >
+                {{category}}
+              </ion-select-option>
+            </ion-select>
+          </div>
+
+          <div class="filter-item auto-generate-item">
+            <ion-toggle [(ngModel)]="autoGenerateEnabled">
+              {{ 'time_tracking.auto_generate' | translate }}
+            </ion-toggle>
+          </div>
+        </div>
+
+        <!-- Comparison Mode -->
+        <ion-row class="comparison-mode-row">
+          <ion-col size="12" size-md="6">
+            <ion-item lines="none" class="comparison-toggle">
+              <ion-toggle
+                [checked]="comparisonEnabled"
+                (ionChange)="toggleComparisonMode()"
+                slot="start"
+              ></ion-toggle>
+              <ion-label>
+                <strong
+                  >{{ 'time_tracking.compare_periods' | translate }}</strong
                 >
-                  {{project.name}}
+                <p class="comparison-hint">
+                  {{ 'time_tracking.compare_periods_hint' | translate }}
+                </p>
+              </ion-label>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-md="6" *ngIf="comparisonEnabled">
+            <ion-item>
+              <ion-label position="stacked"
+                >{{ 'time_tracking.compare_with' | translate }}</ion-label
+              >
+              <ion-select
+                [(ngModel)]="comparisonDatePreset"
+                (ionChange)="onComparisonDatePresetChange($event.detail.value)"
+              >
+                <ion-select-option
+                  *ngFor="let preset of dateRangePresets"
+                  [value]="preset.key"
+                  [disabled]="preset.key === 'custom'"
+                >
+                  {{ preset.label }}
                 </ion-select-option>
               </ion-select>
             </ion-item>
-          </ion-col>
-        </ion-row>
-
-        <!-- Category Filtering (available for all report types) -->
-        <ion-row>
-          <ion-col size="12" size-md="6">
-            <ion-item>
-              <ion-label position="stacked">Filter by Category</ion-label>
-              <ion-select
-                [(ngModel)]="selectedCategoryId"
-                (ionChange)="onCategorySelectionChange($event.detail.value)"
-              >
-                <ion-select-option value="">All Categories</ion-select-option>
-                <ion-select-option
-                  *ngFor="let category of availableCategories"
-                  [value]="category"
-                >
-                  {{category}}
-                </ion-select-option>
-              </ion-select>
-            </ion-item>
-          </ion-col>
-        </ion-row>
-
-        <!-- Custom Date Range -->
-        <ion-row *ngIf="selectedReportType === 'custom'">
-          <ion-col size="12" size-md="6">
-            <ion-item>
-              <ion-label position="stacked">Start Date</ion-label>
-              <ion-datetime
-                [(ngModel)]="customStartDate"
-                presentation="date"
-                max="2030-12-31"
-                min="2020-01-01"
-              >
-              </ion-datetime>
-            </ion-item>
-          </ion-col>
-          <ion-col size="12" size-md="6">
-            <ion-item>
-              <ion-label position="stacked">End Date</ion-label>
-              <ion-datetime
-                [(ngModel)]="customEndDate"
-                presentation="date"
-                max="2030-12-31"
-                min="2020-01-01"
-              >
-              </ion-datetime>
-            </ion-item>
+            <p
+              class="comparison-date-display"
+              *ngIf="comparisonStartDate && comparisonEndDate"
+            >
+              <ion-icon name="calendar-outline"></ion-icon>
+              {{ getComparisonDateRangeDisplay() }}
+            </p>
           </ion-col>
         </ion-row>
 
@@ -124,19 +274,8 @@
               (click)="generateReport()"
               [disabled]="isLoading"
             >
-              <ion-icon name="analytics-outline" slot="start"></ion-icon>
-              Generate Report
-            </ion-button>
-          </ion-col>
-          <ion-col size="12" size-md="auto">
-            <ion-button
-              expand="block"
-              fill="outline"
-              (click)="refreshReport()"
-              [disabled]="isLoading"
-            >
               <ion-icon name="refresh-outline" slot="start"></ion-icon>
-              Refresh
+              {{ 'time_tracking.generate_report' | translate }}
             </ion-button>
           </ion-col>
           <ion-col size="12" size-md="auto">
@@ -147,18 +286,86 @@
               [disabled]="!analytics$ || isLoading"
             >
               <ion-icon name="download-outline" slot="start"></ion-icon>
-              Export CSV
+              {{ 'time_tracking.export_csv' | translate }}
             </ion-button>
+          </ion-col>
+          <ion-col size="12" size-md="auto">
+            <ion-button
+              expand="block"
+              fill="outline"
+              color="tertiary"
+              (click)="exportToPDF()"
+              [disabled]="!currentAnalytics || isLoading || isExportingPDF"
+            >
+              <ion-spinner
+                *ngIf="isExportingPDF"
+                name="crescent"
+                slot="start"
+              ></ion-spinner>
+              <ion-icon
+                *ngIf="!isExportingPDF"
+                name="document-outline"
+                slot="start"
+              ></ion-icon>
+              {{ 'time_tracking.export_pdf' | translate }}
+            </ion-button>
+          </ion-col>
+          <ion-col size="12" size-md="auto">
+            <ion-button
+              expand="block"
+              fill="outline"
+              color="secondary"
+              (click)="openSaveConfigModal()"
+            >
+              <ion-icon name="bookmark-outline" slot="start"></ion-icon>
+              {{ 'time_tracking.save_config' | translate }}
+            </ion-button>
+          </ion-col>
+        </ion-row>
+
+        <!-- Saved Configurations -->
+        <ion-row *ngIf="savedConfigs.length > 0" class="saved-configs-row">
+          <ion-col size="12">
+            <div class="saved-configs-section">
+              <ion-label class="saved-configs-label">
+                <ion-icon name="bookmarks-outline"></ion-icon>
+                {{ 'time_tracking.saved_configs' | translate }}
+              </ion-label>
+              <div class="saved-configs-list">
+                <ion-chip
+                  *ngFor="let config of savedConfigs"
+                  [color]="selectedSavedConfig?.id === config.id ? 'primary' : 'medium'"
+                  (click)="loadConfig(config.id)"
+                  class="saved-config-chip"
+                  role="button"
+                  [attr.aria-label]="('time_tracking.load_config' | translate) + ': ' + config.name"
+                  [attr.aria-pressed]="selectedSavedConfig?.id === config.id"
+                >
+                  <ion-icon
+                    name="bookmark"
+                    *ngIf="selectedSavedConfig?.id === config.id"
+                    aria-hidden="true"
+                  ></ion-icon>
+                  <ion-icon
+                    name="bookmark-outline"
+                    *ngIf="selectedSavedConfig?.id !== config.id"
+                    aria-hidden="true"
+                  ></ion-icon>
+                  <ion-label>{{ config.name }}</ion-label>
+                  <ion-icon
+                    name="close-circle"
+                    class="delete-config-icon"
+                    (click)="deleteConfig(config.id, $event)"
+                    role="button"
+                    [attr.aria-label]="('time_tracking.delete_config' | translate) + ': ' + config.name"
+                  ></ion-icon>
+                </ion-chip>
+              </div>
+            </div>
           </ion-col>
         </ion-row>
       </ion-card-content>
     </ion-card>
-
-    <!-- Loading State -->
-    <div *ngIf="isLoading" class="loading-container">
-      <ion-spinner></ion-spinner>
-      <p>Generating report...</p>
-    </div>
 
     <!-- Error State -->
     <div *ngIf="error" class="error-container">
@@ -170,213 +377,475 @@
       </ion-card>
     </div>
 
-    <!-- Report Results -->
-    <div *ngIf="currentAnalytics" class="report-results">
-      <!-- Summary Cards -->
-      <ion-row class="summary-cards">
+    <!-- Report Results Container with Loading Overlay -->
+    <div class="report-results-wrapper">
+      <!-- Loading Overlay (using shared component) -->
+      <app-time-tracking-loading
+        *ngIf="isLoading"
+        [isLoading]="isLoading"
+        [mode]="'overlay'"
+        [message]="'time_tracking.generating_report'"
+      ></app-time-tracking-loading>
+
+      <!-- Report Results -->
+      <div
+        *ngIf="currentAnalytics"
+        class="report-results"
+        [class.is-loading]="isLoading"
+      >
+        <!-- Summary Cards -->
+        <div class="summary-cards-grid">
+          <div class="metric-card entries">
+            <div class="metric-icon">
+              <ion-icon name="list-outline"></ion-icon>
+            </div>
+            <div class="metric-content">
+              <div class="metric-value">
+                {{ currentAnalytics.totalEntries }}
+              </div>
+              <div class="metric-label">
+                {{ 'time_tracking.entries' | translate }}
+              </div>
+              <div
+                *ngIf="comparisonEnabled && comparisonAnalytics"
+                class="metric-comparison"
+                [ngClass]="getComparisonDisplay(currentAnalytics.totalEntries, comparisonAnalytics.totalEntries).class"
+              >
+                <ion-icon
+                  [name]="getComparisonDisplay(currentAnalytics.totalEntries, comparisonAnalytics.totalEntries).icon"
+                ></ion-icon>
+                {{ getComparisonDisplay(currentAnalytics.totalEntries,
+                comparisonAnalytics.totalEntries).value }}
+              </div>
+            </div>
+          </div>
+          <div class="metric-card hours">
+            <div class="metric-icon">
+              <ion-icon name="time-outline"></ion-icon>
+            </div>
+            <div class="metric-content">
+              <div class="metric-value">
+                {{ currentAnalytics.totalHours | number:'1.1-1' }}
+              </div>
+              <div class="metric-label">
+                {{ 'time_tracking.total_hours' | translate }}
+              </div>
+              <div
+                *ngIf="comparisonEnabled && comparisonAnalytics"
+                class="metric-comparison"
+                [ngClass]="getComparisonDisplay(currentAnalytics.totalHours, comparisonAnalytics.totalHours).class"
+              >
+                <ion-icon
+                  [name]="getComparisonDisplay(currentAnalytics.totalHours, comparisonAnalytics.totalHours).icon"
+                ></ion-icon>
+                {{ getComparisonDisplay(currentAnalytics.totalHours,
+                comparisonAnalytics.totalHours).value }}
+              </div>
+            </div>
+          </div>
+          <div class="metric-card approved">
+            <div class="metric-icon">
+              <ion-icon name="checkmark-circle-outline"></ion-icon>
+            </div>
+            <div class="metric-content">
+              <div class="metric-value">
+                {{ currentAnalytics.totalApprovedHours | number:'1.1-1' }}
+              </div>
+              <div class="metric-label">
+                {{ 'time_tracking.approved_hours' | translate }}
+              </div>
+              <div
+                *ngIf="comparisonEnabled && comparisonAnalytics"
+                class="metric-comparison"
+                [ngClass]="getComparisonDisplay(currentAnalytics.totalApprovedHours, comparisonAnalytics.totalApprovedHours).class"
+              >
+                <ion-icon
+                  [name]="getComparisonDisplay(currentAnalytics.totalApprovedHours, comparisonAnalytics.totalApprovedHours).icon"
+                ></ion-icon>
+                {{ getComparisonDisplay(currentAnalytics.totalApprovedHours,
+                comparisonAnalytics.totalApprovedHours).value }}
+              </div>
+            </div>
+          </div>
+          <div class="metric-card users">
+            <div class="metric-icon">
+              <ion-icon name="people-outline"></ion-icon>
+            </div>
+            <div class="metric-content">
+              <div class="metric-value">
+                {{ getUniqueUsersCount(currentAnalytics) }}
+              </div>
+              <div class="metric-label">
+                {{ 'time_tracking.unique_users' | translate }}
+              </div>
+              <div
+                *ngIf="comparisonEnabled && comparisonAnalytics"
+                class="metric-comparison"
+                [ngClass]="getComparisonDisplay(getUniqueUsersCount(currentAnalytics), getUniqueUsersCount(comparisonAnalytics)).class"
+              >
+                <ion-icon
+                  [name]="getComparisonDisplay(getUniqueUsersCount(currentAnalytics), getUniqueUsersCount(comparisonAnalytics)).icon"
+                ></ion-icon>
+                {{ getComparisonDisplay(getUniqueUsersCount(currentAnalytics),
+                getUniqueUsersCount(comparisonAnalytics)).value }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comparison Period Info Banner -->
         <div
-          *ngFor="let stat of getSummaryStats(currentAnalytics)"
-          class="summary-card"
+          *ngIf="comparisonEnabled && comparisonAnalytics"
+          class="comparison-banner"
         >
-          <ion-col size="12" size-md="3">
-            <ion-card class="metric-card">
+          <ion-icon name="git-compare-outline"></ion-icon>
+          <span>
+            {{ 'time_tracking.comparing_with' | translate }}: {{
+            getComparisonDateRangeDisplay() }}
+          </span>
+        </div>
+
+        <!-- Charts Section -->
+        <ion-row>
+          <ion-col size="12" size-lg="6">
+            <ion-card>
+              <ion-card-header>
+                <ion-card-title
+                  >{{ 'time_tracking.hours_by_status' | translate
+                  }}</ion-card-title
+                >
+              </ion-card-header>
               <ion-card-content>
-                <div class="metric-value">{{stat.value}}</div>
-                <div class="metric-label">{{stat.label}}</div>
+                <div
+                  class="chart-container"
+                  *ngIf="hasStatusChartData(); else noStatusData"
+                  role="img"
+                  [attr.aria-label]="'time_tracking.hours_by_status' | translate"
+                >
+                  <canvas
+                    baseChart
+                    [data]="statusChartData"
+                    [options]="statusChartOptions"
+                    [type]="statusChartType"
+                    width="400"
+                    height="300"
+                    aria-hidden="true"
+                  >
+                  </canvas>
+                  <!-- Screen reader accessible data -->
+                  <table class="sr-only" aria-label="Hours by status data">
+                    <thead>
+                      <tr>
+                        <th>{{ 'time_tracking.status' | translate }}</th>
+                        <th>{{ 'time_tracking.hours' | translate }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        *ngFor="let label of statusChartData.labels; let i = index"
+                      >
+                        <td>{{ label }}</td>
+                        <td>
+                          {{ statusChartData.datasets[0] ?
+                          statusChartData.datasets[0].data[i] : '' }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <ng-template #noStatusData>
+                  <div class="chart-empty-state">
+                    <ion-icon
+                      name="pie-chart-outline"
+                      aria-hidden="true"
+                    ></ion-icon>
+                    <p>{{ 'time_tracking.no_chart_data' | translate }}</p>
+                    <span
+                      >{{ 'time_tracking.adjust_filters' | translate }}</span
+                    >
+                  </div>
+                </ng-template>
               </ion-card-content>
             </ion-card>
           </ion-col>
-        </div>
-      </ion-row>
-
-      <!-- Charts Section -->
-      <ion-row>
-        <ion-col size="12" size-lg="6">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-title>Hours by Status</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="chart-container">
-                <canvas
-                  baseChart
-                  [data]="statusChartData"
-                  [options]="statusChartOptions"
-                  [type]="statusChartType"
-                  width="400"
-                  height="300"
+          <ion-col size="12" size-lg="6">
+            <ion-card>
+              <ion-card-header>
+                <ion-card-title
+                  >{{ 'time_tracking.monthly_trend' | translate
+                  }}</ion-card-title
                 >
-                </canvas>
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-        <ion-col size="12" size-lg="6">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-title>Monthly Trend</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="chart-container">
-                <canvas
-                  baseChart
-                  [data]="trendChartData"
-                  [options]="trendChartOptions"
-                  [type]="trendChartType"
-                  width="400"
-                  height="300"
+              </ion-card-header>
+              <ion-card-content>
+                <div
+                  class="chart-container"
+                  *ngIf="hasTrendChartData(); else noTrendData"
+                  role="img"
+                  [attr.aria-label]="'time_tracking.monthly_trend' | translate"
                 >
-                </canvas>
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-      </ion-row>
+                  <canvas
+                    baseChart
+                    [data]="trendChartData"
+                    [options]="trendChartOptions"
+                    [type]="trendChartType"
+                    width="400"
+                    height="300"
+                    aria-hidden="true"
+                  >
+                  </canvas>
+                  <!-- Screen reader accessible data -->
+                  <table class="sr-only" aria-label="Monthly trend data">
+                    <thead>
+                      <tr>
+                        <th>{{ 'time_tracking.month' | translate }}</th>
+                        <th>{{ 'time_tracking.hours' | translate }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        *ngFor="let label of trendChartData.labels; let i = index"
+                      >
+                        <td>{{ label }}</td>
+                        <td>
+                          {{ trendChartData.datasets[0] ?
+                          trendChartData.datasets[0].data[i] : '' }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <ng-template #noTrendData>
+                  <div class="chart-empty-state">
+                    <ion-icon
+                      name="trending-up-outline"
+                      aria-hidden="true"
+                    ></ion-icon>
+                    <p>{{ 'time_tracking.no_chart_data' | translate }}</p>
+                    <span
+                      >{{ 'time_tracking.adjust_filters' | translate }}</span
+                    >
+                  </div>
+                </ng-template>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
 
-      <!-- Project Distribution Chart -->
-      <ion-row>
-        <ion-col size="12" size-lg="8">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-title>Project Distribution</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="chart-container">
-                <canvas
-                  baseChart
-                  [data]="projectChartData"
-                  [options]="projectChartOptions"
-                  [type]="projectChartType"
-                  width="600"
-                  height="300"
+        <!-- Project Distribution Chart -->
+        <ion-row>
+          <ion-col size="12" size-lg="8">
+            <ion-card>
+              <ion-card-header>
+                <ion-card-title
+                  >{{ 'time_tracking.project_distribution' | translate
+                  }}</ion-card-title
                 >
-                </canvas>
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-
-      <!-- Category Distribution Chart (shown for category reports or when category data exists) -->
-      <ion-row
-        *ngIf="selectedReportType === 'category' || categoryChartData.datasets.length > 0"
-      >
-        <ion-col size="12" size-lg="6">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-title>Time Distribution by Category</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="chart-container">
-                <canvas
-                  baseChart
-                  [data]="categoryChartData"
-                  [options]="categoryChartOptions"
-                  [type]="categoryChartType"
-                  width="600"
-                  height="300"
+                <ion-note
+                  *ngIf="hasProjectChartData()"
+                  class="chart-click-hint"
                 >
-                </canvas>
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-
-      <!-- Project Breakdown -->
-      <ion-card
-        *ngIf="currentAnalytics.entriesByProject && (currentAnalytics.entriesByProject | keyvalue).length > 0"
-      >
-        <ion-card-header>
-          <ion-card-title>Project Breakdown</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <div
-            *ngFor="let project of currentAnalytics.entriesByProject | keyvalue"
-            class="project-breakdown-item"
-          >
-            <div class="project-header">
-              <h3>{{project.value.name}}</h3>
-              <span class="project-hours"
-                >{{project.value.hours | number:'1.1-1'}} hours</span
-              >
-            </div>
-            <div class="project-stats">
-              <span>{{project.value.entries}} entries</span>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- User Performance -->
-      <ion-card
-        *ngIf="currentAnalytics.entriesByUser && (currentAnalytics.entriesByUser | keyvalue).length > 0"
-      >
-        <ion-card-header>
-          <ion-card-title>User Performance</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <div
-            *ngFor="let user of currentAnalytics.entriesByUser | keyvalue"
-            class="user-breakdown-item"
-          >
-            <div class="user-header">
-              <div class="user-info">
-                <h3>{{user.value.name}}</h3>
-                <p>{{user.value.hours | number:'1.1-1'}} hours logged</p>
-              </div>
-            </div>
-            <div class="user-stats">
-              <div class="stat">
-                <span class="stat-value">{{user.value.entries}}</span>
-                <span class="stat-label">Entries</span>
-              </div>
-              <div class="stat">
-                <span class="stat-value"
-                  >{{user.value.approvedHours | number:'1.1-1'}}</span
+                  <ion-icon name="hand-left-outline"></ion-icon>
+                  {{ 'time_tracking.click_for_details' | translate }}
+                </ion-note>
+              </ion-card-header>
+              <ion-card-content>
+                <div
+                  *ngIf="hasProjectChartData(); else noProjectData"
+                  class="chart-container chart-container--dynamic"
+                  [class.chart-container--scrollable]="projectChartNeedsScroll()"
+                  [class.chart-container--has-scroll]="projectChartNeedsScroll()"
+                  [style.height.px]="getProjectChartHeight()"
                 >
-                <span class="stat-label">Approved Hours</span>
-              </div>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- Category Breakdown (shown for category reports) -->
-      <ion-card
-        *ngIf="selectedReportType === 'category' && categoryChartData.datasets.length > 0"
-      >
-        <ion-card-header>
-          <ion-card-title>Category Breakdown</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <div class="category-breakdown">
-            <div
-              *ngFor="let category of categoryChartData.labels; index as i"
-              class="category-breakdown-item"
-            >
-              <div class="category-header">
-                <div class="category-info">
                   <div
-                    class="category-color-indicator"
-                    [style.background-color]="getCategoryColor(i)"
-                  ></div>
-                  <h3>{{category}}</h3>
-                  <span class="category-hours">
-                    {{getCategoryHours(i) | number:'1.1-1'}} hours
+                    class="chart-scroll-content"
+                    [style.min-width.px]="projectChartNeedsScroll() ? getProjectChartMinWidth() : null"
+                  >
+                    <canvas
+                      baseChart
+                      [data]="projectChartData"
+                      [options]="projectChartOptions"
+                      [type]="projectChartType"
+                    >
+                    </canvas>
+                  </div>
+                </div>
+                <ng-template #noProjectData>
+                  <div class="chart-empty-state">
+                    <ion-icon name="bar-chart-outline"></ion-icon>
+                    <p>{{ 'time_tracking.no_chart_data' | translate }}</p>
+                    <span
+                      >{{ 'time_tracking.adjust_filters' | translate }}</span
+                    >
+                  </div>
+                </ng-template>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+
+        <!-- Category Distribution Chart (shown for category reports or when category data exists) -->
+        <ion-row
+          *ngIf="selectedReportType === 'category' || categoryChartData.datasets.length > 0"
+        >
+          <ion-col size="12" size-lg="6">
+            <ion-card>
+              <ion-card-header>
+                <ion-card-title
+                  >{{ 'time_tracking.time_distribution_by_category' | translate
+                  }}</ion-card-title
+                >
+              </ion-card-header>
+              <ion-card-content>
+                <div
+                  *ngIf="hasCategoryChartData(); else noCategoryData"
+                  class="chart-container chart-container--dynamic"
+                  [style.height.px]="getCategoryChartHeight()"
+                >
+                  <canvas
+                    baseChart
+                    [data]="categoryChartData"
+                    [options]="categoryChartOptions"
+                    [type]="categoryChartType"
+                  >
+                  </canvas>
+                </div>
+                <ng-template #noCategoryData>
+                  <div class="chart-empty-state">
+                    <ion-icon name="grid-outline"></ion-icon>
+                    <p>{{ 'time_tracking.no_chart_data' | translate }}</p>
+                    <span
+                      >{{ 'time_tracking.adjust_filters' | translate }}</span
+                    >
+                  </div>
+                </ng-template>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+
+        <!-- Project Breakdown -->
+        <ion-card
+          *ngIf="currentAnalytics.entriesByProject && (currentAnalytics.entriesByProject | keyvalue).length > 0"
+        >
+          <ion-card-header>
+            <ion-card-title
+              >{{ 'time_tracking.project_breakdown' | translate
+              }}</ion-card-title
+            >
+          </ion-card-header>
+          <ion-card-content>
+            <div
+              *ngFor="let project of currentAnalytics.entriesByProject | keyvalue"
+              class="project-breakdown-item"
+            >
+              <div class="project-header">
+                <h3>{{project.value.name}}</h3>
+                <span class="project-hours"
+                  >{{project.value.hours | number:'1.1-1'}} hours</span
+                >
+              </div>
+              <div class="project-stats">
+                <span>{{project.value.entries}} entries</span>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- User Performance -->
+        <ion-card
+          *ngIf="currentAnalytics.entriesByUser && (currentAnalytics.entriesByUser | keyvalue).length > 0"
+        >
+          <ion-card-header>
+            <ion-card-title
+              >{{ 'time_tracking.user_performance' | translate
+              }}</ion-card-title
+            >
+          </ion-card-header>
+          <ion-card-content>
+            <div
+              *ngFor="let user of currentAnalytics.entriesByUser | keyvalue"
+              class="user-breakdown-item clickable"
+              (click)="openUserDetailModal(user.key, user.value.name, user.value)"
+              role="button"
+              [attr.aria-label]="'View details for ' + user.value.name"
+              tabindex="0"
+              (keypress.enter)="openUserDetailModal(user.key, user.value.name, user.value)"
+            >
+              <div class="user-header">
+                <div class="user-info">
+                  <h3>
+                    {{user.value.name}}
+                    <ion-icon
+                      name="chevron-forward-outline"
+                      class="drill-down-icon"
+                    ></ion-icon>
+                  </h3>
+                  <p>
+                    {{user.value.hours | number:'1.1-1'}} {{
+                    'time_tracking.hours' | translate }}
+                  </p>
+                </div>
+              </div>
+              <div class="user-stats">
+                <div class="stat">
+                  <span class="stat-value">{{user.value.entries}}</span>
+                  <span class="stat-label"
+                    >{{ 'time_tracking.entries' | translate }}</span
+                  >
+                </div>
+                <div class="stat">
+                  <span class="stat-value"
+                    >{{user.value.approvedHours | number:'1.1-1'}}</span
+                  >
+                  <span class="stat-label"
+                    >{{ 'time_tracking.approved_hours' | translate }}</span
+                  >
+                </div>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Category Breakdown (shown for category reports) -->
+        <ion-card
+          *ngIf="selectedReportType === 'category' && categoryChartData.datasets.length > 0"
+        >
+          <ion-card-header>
+            <ion-card-title
+              >{{ 'time_tracking.category_breakdown' | translate
+              }}</ion-card-title
+            >
+          </ion-card-header>
+          <ion-card-content>
+            <div class="category-breakdown">
+              <div
+                *ngFor="let category of categoryChartData.labels; index as i"
+                class="category-breakdown-item"
+              >
+                <div class="category-header">
+                  <div class="category-info">
+                    <div
+                      class="category-color-indicator"
+                      [style.background-color]="getCategoryColor(i)"
+                    ></div>
+                    <h3>{{category}}</h3>
+                    <span class="category-hours">
+                      {{getCategoryHours(i) | number:'1.1-1'}} hours
+                    </span>
+                  </div>
+                </div>
+                <div class="category-stats">
+                  <span class="category-percentage">
+                    {{(getCategoryHours(i) / getTotalCategoryHours() * 100) |
+                    number:'1.1-1'}}% {{ 'time_tracking.of_total_time' |
+                    translate }}
                   </span>
                 </div>
               </div>
-              <div class="category-stats">
-                <span class="category-percentage">
-                  {{(getCategoryHours(i) / getTotalCategoryHours() * 100) |
-                  number:'1.1-1'}}% of total time
-                </span>
-              </div>
             </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
+          </ion-card-content>
+        </ion-card>
+      </div>
     </div>
 
     <!-- No Data State -->
@@ -385,11 +854,8 @@
       class="no-data-state"
     >
       <ion-icon name="analytics-outline" size="large"></ion-icon>
-      <h3>No Report Generated</h3>
-      <p>
-        Configure your report settings and click "Generate Report" to view
-        analytics.
-      </p>
+      <h3>{{ 'time_tracking.no_report_generated' | translate }}</h3>
+      <p>{{ 'time_tracking.no_report_message' | translate }}</p>
     </div>
   </div>
 </ion-content>

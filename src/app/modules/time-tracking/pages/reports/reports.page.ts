@@ -25,10 +25,17 @@ import {
   ElementRef,
   AfterViewInit,
 } from "@angular/core";
+import {trigger, state, style, animate, transition} from "@angular/animations";
 import {Store} from "@ngrx/store";
 import {ActivatedRoute} from "@angular/router";
-import {Observable, Subject, combineLatest, Subscription} from "rxjs";
-import {takeUntil, map} from "rxjs/operators";
+import {
+  Observable,
+  Subject,
+  combineLatest,
+  Subscription,
+  BehaviorSubject,
+} from "rxjs";
+import {takeUntil, map, debounceTime, skip, take} from "rxjs/operators";
 import {
   AnalyticsService,
   TimeTrackingAnalytics,
@@ -46,6 +53,16 @@ import {selectActiveProjectsByAccount} from "../../../../state/selectors/project
 import {selectRelatedAccountsByAccountId} from "../../../../state/selectors/account.selectors";
 import * as ProjectsActions from "../../../../state/actions/projects.actions";
 import {StandardProjectCategory} from "../../../../../../shared/models/standard-project-template.model";
+import {
+  AlertController,
+  ModalController,
+  ToastController,
+} from "@ionic/angular";
+import {
+  UserDetailModalComponent,
+  UserDetailData,
+  UserTimeEntry,
+} from "../../components/user-detail-modal/user-detail-modal.component";
 import {
   ChartData,
   ChartOptions,
@@ -65,6 +82,8 @@ import {
   Legend,
   Filler,
 } from "chart.js";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 // Register Chart.js components
 Chart.register(
@@ -86,22 +105,149 @@ Chart.register(
 export interface ReportConfig {
   name: string;
   description: string;
-  type:
-    | "monthly"
-    | "quarterly"
-    | "yearly"
-    | "custom"
-    | "user"
-    | "project"
-    | "category";
+  type: "overview" | "user" | "project" | "category";
   icon: string;
   enabled: boolean;
+}
+
+export type DateRangePreset =
+  | "this_week"
+  | "last_week"
+  | "this_month"
+  | "last_month"
+  | "this_quarter"
+  | "last_quarter"
+  | "this_year"
+  | "last_year"
+  | "custom";
+
+export interface SavedReportConfig {
+  id: string;
+  name: string;
+  createdAt: string;
+  reportType: string;
+  datePreset: DateRangePreset;
+  customStartDate?: string;
+  customEndDate?: string;
+  selectedUserId?: string;
+  selectedProjectId?: string;
+  selectedCategoryId?: string;
+  autoGenerateEnabled: boolean;
+}
+
+const SAVED_CONFIGS_STORAGE_KEY = "reports-saved-configurations";
+
+// Configuration constants
+const AUTO_GENERATE_DEBOUNCE_MS = 500;
+const URL_REVOKE_DELAY_MS = 100;
+const DATE_PICKER_MIN_YEAR = 2020;
+const DATE_PICKER_MAX_YEAR = 2030;
+
+/**
+ * Interface for date range calculation result
+ */
+interface DateRange {
+  startDate: Date;
+  endDate: Date;
+}
+
+/**
+ * Calculate start and end dates for a given date range preset
+ * @param preset - The date range preset to calculate
+ * @returns DateRange with start and end dates, or null for 'custom' preset
+ */
+function calculateDateRange(preset: DateRangePreset): DateRange | null {
+  if (preset === "custom") {
+    return null;
+  }
+
+  const today = new Date();
+  let startDate: Date;
+  let endDate: Date;
+
+  switch (preset) {
+    case "this_week":
+      // Week starts on Sunday
+      startDate = new Date(today);
+      startDate.setDate(today.getDate() - today.getDay());
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 6);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+
+    case "last_week":
+      startDate = new Date(today);
+      startDate.setDate(today.getDate() - today.getDay() - 7);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 6);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+
+    case "this_month":
+      startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+      endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+
+    case "last_month":
+      startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+
+    case "this_quarter": {
+      const currentQuarter = Math.floor(today.getMonth() / 3);
+      startDate = new Date(today.getFullYear(), currentQuarter * 3, 1);
+      endDate = new Date(today.getFullYear(), currentQuarter * 3 + 3, 0);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+    }
+
+    case "last_quarter": {
+      const lastQuarter = Math.floor(today.getMonth() / 3) - 1;
+      const yearForQuarter =
+        lastQuarter < 0 ? today.getFullYear() - 1 : today.getFullYear();
+      const adjustedQuarter = lastQuarter < 0 ? 3 : lastQuarter;
+      startDate = new Date(yearForQuarter, adjustedQuarter * 3, 1);
+      endDate = new Date(yearForQuarter, adjustedQuarter * 3 + 3, 0);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+    }
+
+    case "this_year":
+      startDate = new Date(today.getFullYear(), 0, 1);
+      endDate = new Date(today.getFullYear(), 11, 31);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+
+    case "last_year":
+      startDate = new Date(today.getFullYear() - 1, 0, 1);
+      endDate = new Date(today.getFullYear() - 1, 11, 31);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+
+    default:
+      return null;
+  }
+
+  return {startDate, endDate};
 }
 
 @Component({
   selector: "app-reports",
   templateUrl: "./reports.page.html",
   styleUrls: ["./reports.page.scss"],
+  animations: [
+    trigger("fadeInOut", [
+      transition(":enter", [
+        style({opacity: 0}),
+        animate("200ms ease-in", style({opacity: 1})),
+      ]),
+      transition(":leave", [animate("150ms ease-out", style({opacity: 0}))]),
+    ]),
+  ],
 })
 export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
@@ -280,66 +426,80 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
   exportProgress = 0;
   error: string | null = null;
 
-  // Report configuration
+  // Report configuration - focused on WHAT to analyze, not WHEN
   availableReports: ReportConfig[] = [
     {
-      name: "Monthly Report",
-      description: "Volunteer hours and activities for the current month",
-      type: "monthly",
-      icon: "calendar-outline",
+      name: "Overview",
+      description: "Summary of all time tracking with charts and breakdowns",
+      type: "overview",
+      icon: "analytics-outline",
       enabled: true,
     },
     {
-      name: "Quarterly Report",
-      description: "Comprehensive volunteer impact for the quarter",
-      type: "quarterly",
-      icon: "bar-chart-outline",
-      enabled: true,
-    },
-    {
-      name: "Yearly Summary",
-      description: "Annual volunteer contribution analysis",
-      type: "yearly",
-      icon: "trophy-outline",
-      enabled: true,
-    },
-    {
-      name: "User Report",
+      name: "By User",
       description: "Individual volunteer contribution details",
       type: "user",
       icon: "person-outline",
       enabled: true,
     },
     {
-      name: "Project Report",
+      name: "By Project",
       description: "Project-specific time tracking analysis",
       type: "project",
       icon: "folder-outline",
       enabled: true,
     },
     {
-      name: "Category Report",
+      name: "By Category",
       description: "Analyze time distribution across project categories",
       type: "category",
       icon: "pie-chart-outline",
       enabled: true,
     },
-    {
-      name: "Custom Report",
-      description: "Generate custom reports with date ranges and filters",
-      type: "custom",
-      icon: "filter-outline",
-      enabled: true,
-    },
   ];
 
   // Current report settings
-  selectedReportType: ReportConfig["type"] = "monthly";
+  selectedReportType: ReportConfig["type"] = "overview";
   selectedUserId: string = "";
   selectedProjectId: string = "";
   selectedCategoryId: StandardProjectCategory | "" = "";
   customStartDate: string = "";
   customEndDate: string = "";
+
+  // Date range presets
+  selectedDatePreset: DateRangePreset = "this_month";
+  dateRangePresets: {key: DateRangePreset; label: string; icon: string}[] = [
+    {key: "this_week", label: "This Week", icon: "today-outline"},
+    {key: "last_week", label: "Last Week", icon: "calendar-outline"},
+    {key: "this_month", label: "This Month", icon: "calendar-outline"},
+    {key: "last_month", label: "Last Month", icon: "calendar-outline"},
+    {key: "this_quarter", label: "This Quarter", icon: "stats-chart-outline"},
+    {key: "last_quarter", label: "Last Quarter", icon: "stats-chart-outline"},
+    {key: "this_year", label: "This Year", icon: "calendar-outline"},
+    {key: "last_year", label: "Last Year", icon: "calendar-outline"},
+    {key: "custom", label: "Custom Range", icon: "options-outline"},
+  ];
+
+  // Auto-generate configuration
+  autoGenerateEnabled = true;
+  private filterChange$ = new BehaviorSubject<void>(undefined);
+
+  // Cached data for synchronous access (used in filename generation)
+  private cachedUsers: RelatedAccount[] = [];
+  private cachedProjects: Project[] = [];
+
+  // Saved report configurations
+  savedConfigs: SavedReportConfig[] = [];
+  showSaveConfigModal = false;
+  newConfigName = "";
+  selectedSavedConfig: SavedReportConfig | null = null;
+
+  // Period Comparison Mode
+  comparisonEnabled = false;
+  comparisonDatePreset: DateRangePreset = "last_month";
+  comparisonStartDate: string = "";
+  comparisonEndDate: string = "";
+  comparisonAnalytics: TimeTrackingAnalytics | null = null;
 
   // Available categories for filtering
   availableCategories: StandardProjectCategory[] = [
@@ -394,6 +554,11 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
     {key: "isApproved", label: "Is Approved", category: "Calculated"},
     {key: "isWeekend", label: "Is Weekend", category: "Calculated"},
   ];
+
+  // PDF Export configuration
+  @ViewChild("reportContent") reportContent!: ElementRef;
+  isExportingPDF = false;
+  pdfExportProgress = 0;
   categoryChartOptions: ChartOptions<"doughnut"> = {
     responsive: true,
     maintainAspectRatio: false,
@@ -433,8 +598,107 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
     private store: Store,
     private analyticsService: AnalyticsService,
     private route: ActivatedRoute,
+    private alertController: AlertController,
+    private modalController: ModalController,
+    private toastController: ToastController,
   ) {
     this.authUser$ = this.store.select(selectAuthUser);
+    this.initializeChartClickHandlers();
+  }
+
+  /**
+   * Initialize click handlers for interactive charts
+   */
+  private initializeChartClickHandlers(): void {
+    // Add onClick handlers to chart options
+    this.projectChartOptions.onClick = (event, elements, chart) => {
+      if (elements.length > 0) {
+        const index = elements[0].index;
+        const label = chart.data.labels?.[index] as string;
+        const value = chart.data.datasets[0]?.data[index] as number;
+        this.showChartItemDetails("project", label, value);
+      }
+    };
+
+    this.statusChartOptions.onClick = (event, elements, chart) => {
+      if (elements.length > 0) {
+        const index = elements[0].index;
+        const label = chart.data.labels?.[index] as string;
+        const value = chart.data.datasets[0]?.data[index] as number;
+        this.showChartItemDetails("status", label, value);
+      }
+    };
+
+    this.categoryChartOptions.onClick = (event, elements, chart) => {
+      if (elements.length > 0) {
+        const index = elements[0].index;
+        const label = chart.data.labels?.[index] as string;
+        const value = chart.data.datasets[0]?.data[index] as number;
+        this.showChartItemDetails("category", label, value);
+      }
+    };
+
+    // Update cursor style to indicate clickability
+    this.projectChartOptions.onHover = (event, elements) => {
+      const target = event.native?.target as HTMLElement;
+      if (target) {
+        target.style.cursor = elements.length > 0 ? "pointer" : "default";
+      }
+    };
+
+    this.statusChartOptions.onHover = (event, elements) => {
+      const target = event.native?.target as HTMLElement;
+      if (target) {
+        target.style.cursor = elements.length > 0 ? "pointer" : "default";
+      }
+    };
+
+    this.categoryChartOptions.onHover = (event, elements) => {
+      const target = event.native?.target as HTMLElement;
+      if (target) {
+        target.style.cursor = elements.length > 0 ? "pointer" : "default";
+      }
+    };
+  }
+
+  /**
+   * Show details toast when clicking on a chart element
+   */
+  async showChartItemDetails(
+    type: "project" | "status" | "category",
+    label: string,
+    value: number,
+  ): Promise<void> {
+    const totalHours = this.currentAnalytics?.totalHours || 1;
+    const percentage = ((value / totalHours) * 100).toFixed(1);
+
+    let message = "";
+    switch (type) {
+      case "project":
+        message = `${label}: ${value.toFixed(1)} hours (${percentage}% of total)`;
+        break;
+      case "status":
+        message = `${label}: ${value.toFixed(1)} hours (${percentage}% of total)`;
+        break;
+      case "category":
+        message = `${label}: ${value.toFixed(1)} hours (${percentage}% of total)`;
+        break;
+    }
+
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      position: "bottom",
+      color: "dark",
+      cssClass: "chart-detail-toast",
+      buttons: [
+        {
+          icon: "close",
+          role: "cancel",
+        },
+      ],
+    });
+    await toast.present();
   }
 
   ngOnInit() {
@@ -449,8 +713,40 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
 
       this.loadAvailableProjects();
       this.loadAvailableUsers();
-      this.generateReport();
+
+      // Load saved configurations
+      this.loadSavedConfigs();
+
+      // Set up auto-generate on filter change with debounce
+      this.setupAutoGenerate();
+
+      // Apply default date preset and generate initial report
+      this.applyDatePreset(this.selectedDatePreset);
     }
+  }
+
+  /**
+   * Set up auto-generate subscription with debounce
+   */
+  private setupAutoGenerate() {
+    this.filterChange$
+      .pipe(
+        skip(1), // Skip the initial value
+        debounceTime(AUTO_GENERATE_DEBOUNCE_MS),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(() => {
+        if (this.autoGenerateEnabled) {
+          this.generateReport();
+        }
+      });
+  }
+
+  /**
+   * Trigger filter change for auto-generate
+   */
+  private triggerFilterChange() {
+    this.filterChange$.next();
   }
 
   ngAfterViewInit() {
@@ -463,14 +759,336 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
       this.analyticsSubscription.unsubscribe();
     }
 
+    this.filterChange$.complete();
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  // ============================================================
+  // Saved Report Configurations
+  // ============================================================
+
+  /**
+   * Load saved configurations from localStorage
+   */
+  private loadSavedConfigs() {
+    try {
+      const stored = localStorage.getItem(
+        SAVED_CONFIGS_STORAGE_KEY + "-" + this.currentAccountId,
+      );
+      if (stored) {
+        this.savedConfigs = JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error("Error loading saved configurations:", error);
+      this.savedConfigs = [];
+    }
+  }
+
+  /**
+   * Save current configuration
+   */
+  saveCurrentConfig() {
+    if (!this.newConfigName.trim()) {
+      return;
+    }
+
+    const config: SavedReportConfig = {
+      id: `config-${Date.now()}`,
+      name: this.newConfigName.trim(),
+      createdAt: new Date().toISOString(),
+      reportType: this.selectedReportType,
+      datePreset: this.selectedDatePreset,
+      customStartDate: this.customStartDate || undefined,
+      customEndDate: this.customEndDate || undefined,
+      selectedUserId: this.selectedUserId || undefined,
+      selectedProjectId: this.selectedProjectId || undefined,
+      selectedCategoryId: this.selectedCategoryId || undefined,
+      autoGenerateEnabled: this.autoGenerateEnabled,
+    };
+
+    this.savedConfigs.push(config);
+    this.saveSavedConfigs();
+
+    // Reset modal
+    this.newConfigName = "";
+    this.showSaveConfigModal = false;
+  }
+
+  /**
+   * Load a saved configuration
+   */
+  loadConfig(configId: string) {
+    const config = this.savedConfigs.find((c) => c.id === configId);
+    if (!config) {
+      return;
+    }
+
+    this.selectedReportType =
+      config.reportType as typeof this.selectedReportType;
+    this.selectedDatePreset = config.datePreset;
+    this.customStartDate = config.customStartDate || "";
+    this.customEndDate = config.customEndDate || "";
+    this.selectedUserId = config.selectedUserId || "";
+    this.selectedProjectId = config.selectedProjectId || "";
+    this.selectedCategoryId =
+      (config.selectedCategoryId as StandardProjectCategory) || "";
+    this.autoGenerateEnabled = config.autoGenerateEnabled;
+
+    this.selectedSavedConfig = config;
+
+    // Apply date preset
+    if (config.datePreset !== "custom") {
+      this.applyDatePreset(config.datePreset);
+    }
+
+    // Generate report with loaded config
+    this.generateReport();
+  }
+
+  /**
+   * Delete a saved configuration
+   */
+  deleteConfig(configId: string, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    this.savedConfigs = this.savedConfigs.filter((c) => c.id !== configId);
+    this.saveSavedConfigs();
+
+    if (this.selectedSavedConfig?.id === configId) {
+      this.selectedSavedConfig = null;
+    }
+  }
+
+  /**
+   * Save configurations to localStorage
+   */
+  private saveSavedConfigs() {
+    try {
+      localStorage.setItem(
+        SAVED_CONFIGS_STORAGE_KEY + "-" + this.currentAccountId,
+        JSON.stringify(this.savedConfigs),
+      );
+    } catch (error) {
+      console.error("Error saving configurations:", error);
+    }
+  }
+
+  /**
+   * Open save configuration modal
+   */
+  async openSaveConfigModal() {
+    const alert = await this.alertController.create({
+      header: "Save Configuration",
+      message: "Save your current filter settings for quick access later.",
+      inputs: [
+        {
+          name: "configName",
+          type: "text",
+          placeholder: "e.g., Monthly Project Report",
+          attributes: {
+            maxlength: 50,
+          },
+        },
+      ],
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "Save",
+          handler: (data) => {
+            if (data.configName && data.configName.trim()) {
+              this.newConfigName = data.configName.trim();
+              this.saveCurrentConfig();
+              return true;
+            }
+            return false;
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Close save configuration modal
+   */
+  closeSaveConfigModal() {
+    this.showSaveConfigModal = false;
+    this.newConfigName = "";
+  }
+
+  // ============================================================
+  // Period Comparison Mode
+  // ============================================================
+
+  /**
+   * Toggle comparison mode
+   */
+  toggleComparisonMode() {
+    this.comparisonEnabled = !this.comparisonEnabled;
+    if (this.comparisonEnabled) {
+      // Auto-select comparison period based on current selection
+      this.autoSelectComparisonPeriod();
+      this.fetchComparisonData();
+    } else {
+      this.comparisonAnalytics = null;
+    }
+    this.triggerFilterChange();
+  }
+
+  /**
+   * Auto-select a logical comparison period
+   */
+  private autoSelectComparisonPeriod() {
+    const presetMap: Record<DateRangePreset, DateRangePreset> = {
+      this_week: "last_week",
+      last_week: "this_week",
+      this_month: "last_month",
+      last_month: "this_month",
+      this_quarter: "last_quarter",
+      last_quarter: "this_quarter",
+      this_year: "last_year",
+      last_year: "this_year",
+      custom: "last_month",
+    };
+    this.comparisonDatePreset = presetMap[this.selectedDatePreset];
+    this.applyComparisonDatePreset(this.comparisonDatePreset);
+  }
+
+  /**
+   * Apply comparison date preset
+   */
+  applyComparisonDatePreset(preset: DateRangePreset) {
+    this.comparisonDatePreset = preset;
+
+    const dateRange = calculateDateRange(preset);
+    if (!dateRange) {
+      return;
+    }
+
+    this.comparisonStartDate = dateRange.startDate.toISOString();
+    this.comparisonEndDate = dateRange.endDate.toISOString();
+  }
+
+  /**
+   * Handle comparison date preset change
+   */
+  onComparisonDatePresetChange(preset: DateRangePreset) {
+    this.applyComparisonDatePreset(preset);
+    if (this.comparisonEnabled) {
+      this.fetchComparisonData();
+    }
+  }
+
+  /**
+   * Fetch comparison period data
+   */
+  private fetchComparisonData() {
+    if (!this.comparisonStartDate || !this.comparisonEndDate) {
+      return;
+    }
+
+    const filters: TimeTrackingReportFilters = {
+      accountId: this.currentAccountId,
+      startDate: new Date(this.comparisonStartDate),
+      endDate: new Date(this.comparisonEndDate),
+    };
+
+    // Apply same filters as main report
+    if (this.selectedUserId) {
+      filters.userId = this.selectedUserId;
+    }
+    if (this.selectedProjectId) {
+      filters.projectId = this.selectedProjectId;
+    }
+    if (this.selectedCategoryId) {
+      filters.category = this.selectedCategoryId;
+    }
+
+    this.analyticsService
+      .getTimeTrackingAnalytics(filters)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (analytics) => {
+          this.comparisonAnalytics = analytics;
+        },
+        error: (error) => {
+          console.error("Comparison analytics error:", error);
+          this.comparisonAnalytics = null;
+        },
+      });
+  }
+
+  /**
+   * Calculate percentage change between two values
+   */
+  getPercentageChange(current: number, comparison: number): number {
+    if (comparison === 0) {
+      return current > 0 ? 100 : 0;
+    }
+    return ((current - comparison) / comparison) * 100;
+  }
+
+  /**
+   * Get comparison display for a metric
+   */
+  getComparisonDisplay(
+    current: number,
+    comparison: number,
+  ): {value: string; class: string; icon: string} {
+    const change = this.getPercentageChange(current, comparison);
+    const formatted = Math.abs(change).toFixed(1);
+
+    if (change > 0) {
+      return {
+        value: `+${formatted}%`,
+        class: "comparison-up",
+        icon: "trending-up",
+      };
+    } else if (change < 0) {
+      return {
+        value: `-${formatted}%`,
+        class: "comparison-down",
+        icon: "trending-down",
+      };
+    } else {
+      return {
+        value: "0%",
+        class: "comparison-neutral",
+        icon: "remove",
+      };
+    }
+  }
+
+  /**
+   * Get comparison date range display
+   */
+  getComparisonDateRangeDisplay(): string {
+    if (!this.comparisonStartDate || !this.comparisonEndDate) {
+      return "";
+    }
+    const start = new Date(this.comparisonStartDate);
+    const end = new Date(this.comparisonEndDate);
+    return `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
   }
 
   private loadAvailableProjects() {
     this.availableProjects$ = this.store.select(
       selectActiveProjectsByAccount(this.currentAccountId),
     );
+
+    // Cache projects for synchronous access in filename generation
+    this.availableProjects$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((projects) => {
+        this.cachedProjects = projects;
+      });
   }
 
   private loadAvailableUsers() {
@@ -484,6 +1102,11 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
           ),
         ),
       );
+
+    // Cache users for synchronous access in filename generation
+    this.availableUsers$.pipe(takeUntil(this.destroy$)).subscribe((users) => {
+      this.cachedUsers = users;
+    });
   }
 
   /**
@@ -535,53 +1158,8 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
       filters.endDate = new Date(this.customEndDate);
     }
 
-    // Add filters based on report type
+    // Add filters based on report type (what to focus on)
     switch (this.selectedReportType) {
-      case "monthly":
-        // Pass additional filters to monthly report
-        const monthlyAdditionalFilters: Partial<TimeTrackingReportFilters> = {};
-        if (this.selectedUserId)
-          monthlyAdditionalFilters.userId = this.selectedUserId;
-        if (this.selectedProjectId)
-          monthlyAdditionalFilters.projectId = this.selectedProjectId;
-        if (this.selectedCategoryId)
-          monthlyAdditionalFilters.category = this.selectedCategoryId;
-
-        this.analytics$ = this.analyticsService.getMonthlyTimeTrackingReport(
-          new Date().getFullYear(),
-          new Date().getMonth() + 1,
-          this.currentAccountId,
-          monthlyAdditionalFilters,
-        );
-        break;
-
-      case "quarterly":
-        // Pass additional filters to quarterly report
-        const quarterlyAdditionalFilters: Partial<TimeTrackingReportFilters> =
-          {};
-        if (this.selectedUserId)
-          quarterlyAdditionalFilters.userId = this.selectedUserId;
-        if (this.selectedProjectId)
-          quarterlyAdditionalFilters.projectId = this.selectedProjectId;
-        if (this.selectedCategoryId)
-          quarterlyAdditionalFilters.category = this.selectedCategoryId;
-
-        const currentQuarter = Math.floor(new Date().getMonth() / 3) + 1;
-        this.analytics$ = this.analyticsService.getQuarterlyTimeTrackingReport(
-          new Date().getFullYear(),
-          currentQuarter,
-          this.currentAccountId,
-          quarterlyAdditionalFilters,
-        );
-        break;
-
-      case "yearly":
-        filters.startDate = new Date(new Date().getFullYear(), 0, 1);
-        filters.endDate = new Date(new Date().getFullYear(), 11, 31);
-        this.analytics$ =
-          this.analyticsService.getTimeTrackingAnalytics(filters);
-        break;
-
       case "user":
         if (this.selectedUserId) {
           filters.userId = this.selectedUserId;
@@ -605,18 +1183,9 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
           this.analyticsService.getTimeTrackingAnalytics(filters);
         break;
 
-      case "custom":
-        if (this.customStartDate) {
-          filters.startDate = new Date(this.customStartDate);
-        }
-        if (this.customEndDate) {
-          filters.endDate = new Date(this.customEndDate);
-        }
-        this.analytics$ =
-          this.analyticsService.getTimeTrackingAnalytics(filters);
-        break;
-
+      case "overview":
       default:
+        // Overview shows all data for the selected date range
         this.analytics$ =
           this.analyticsService.getTimeTrackingAnalytics(filters);
     }
@@ -631,6 +1200,11 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
           if (analytics) {
             // Update chart data when analytics data is available
             this.updateChartData(analytics);
+
+            // Fetch comparison data if enabled
+            if (this.comparisonEnabled) {
+              this.fetchComparisonData();
+            }
           }
         },
         error: (error) => {
@@ -744,9 +1318,9 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
       General: 0,
     };
 
-    // Subscribe to projects to get category information
+    // Subscribe to projects to get category information (take(1) to avoid multiple subscriptions)
     this.availableProjects$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(take(1), takeUntil(this.destroy$))
       .subscribe((projects) => {
         // Reset category hours
         Object.keys(categoryHours).forEach((key) => {
@@ -796,7 +1370,20 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
    */
   onReportTypeChange(reportType: ReportConfig["type"]) {
     this.selectedReportType = reportType;
-    this.generateReport();
+
+    // Clear user/project selections when switching to overview or other types
+    if (reportType === "overview") {
+      this.selectedUserId = "";
+      this.selectedProjectId = "";
+    } else if (reportType === "user") {
+      // Clear project selection when switching to user focus
+      this.selectedProjectId = "";
+    } else if (reportType === "project") {
+      // Clear user selection when switching to project focus
+      this.selectedUserId = "";
+    }
+
+    this.triggerFilterChange();
   }
 
   /**
@@ -804,9 +1391,7 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
    */
   onUserSelectionChange(userId: string) {
     this.selectedUserId = userId;
-    if (this.selectedReportType === "user") {
-      this.generateReport();
-    }
+    this.triggerFilterChange();
   }
 
   /**
@@ -814,9 +1399,7 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
    */
   onProjectSelectionChange(projectId: string) {
     this.selectedProjectId = projectId;
-    if (this.selectedReportType === "project") {
-      this.generateReport();
-    }
+    this.triggerFilterChange();
   }
 
   /**
@@ -824,8 +1407,105 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
    */
   onCategorySelectionChange(categoryId: StandardProjectCategory | "") {
     this.selectedCategoryId = categoryId;
-    // Category filtering can be applied to any report type
-    this.generateReport();
+    this.triggerFilterChange();
+  }
+
+  /**
+   * Apply a date range preset
+   */
+  applyDatePreset(preset: DateRangePreset) {
+    this.selectedDatePreset = preset;
+
+    const dateRange = calculateDateRange(preset);
+    if (!dateRange) {
+      // For custom date range, just keep current report type
+      return;
+    }
+
+    this.customStartDate = dateRange.startDate.toISOString();
+    this.customEndDate = dateRange.endDate.toISOString();
+
+    this.triggerFilterChange();
+  }
+
+  /**
+   * Handle date preset change from UI
+   */
+  onDatePresetChange(preset: DateRangePreset) {
+    this.applyDatePreset(preset);
+  }
+
+  /**
+   * Handle custom date range change
+   */
+  onCustomDateChange() {
+    if (this.customStartDate && this.customEndDate) {
+      this.selectedDatePreset = "custom";
+      this.triggerFilterChange();
+    }
+  }
+
+  /**
+   * Get formatted date range string for display
+   */
+  getDateRangeDisplay(): string {
+    if (!this.customStartDate || !this.customEndDate) {
+      return "Select date range";
+    }
+
+    const startDate = new Date(this.customStartDate);
+    const endDate = new Date(this.customEndDate);
+
+    const options: Intl.DateTimeFormatOptions = {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    };
+
+    return `${startDate.toLocaleDateString("en-US", options)} - ${endDate.toLocaleDateString("en-US", options)}`;
+  }
+
+  /**
+   * Get unique users count from analytics
+   */
+  getUniqueUsersCount(analytics: TimeTrackingAnalytics | null): number {
+    if (!analytics || !analytics.entriesByUser) return 0;
+    return Object.keys(analytics.entriesByUser).length;
+  }
+
+  /**
+   * Open user detail modal for drill-down view
+   */
+  async openUserDetailModal(
+    userId: string,
+    userName: string,
+    userData: {
+      name: string;
+      entries: number;
+      hours: number;
+      approvedHours: number;
+    },
+  ): Promise<void> {
+    const modal = await this.modalController.create({
+      component: UserDetailModalComponent,
+      componentProps: {
+        userData: {
+          userId,
+          userName,
+          totalHours: userData.hours,
+          approvedHours: userData.approvedHours,
+          entryCount: userData.entries,
+          entries: [], // Entries list not available in aggregated analytics
+        },
+        dateRange: {
+          start: this.customStartDate,
+          end: this.customEndDate,
+        },
+      },
+      cssClass: "user-detail-modal",
+    });
+
+    await modal.present();
   }
 
   /**
@@ -864,6 +1544,104 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
     if (this.categoryChartData.datasets.length === 0) return 0;
 
     return (this.categoryChartData.datasets[0].data[index] as number) || 0;
+  }
+
+  /**
+   * Calculate dynamic chart height based on number of items
+   * @param itemCount Number of items in the chart
+   * @param minHeight Minimum height in pixels (default: 250)
+   * @param heightPerItem Additional height per item beyond base (default: 30)
+   * @param maxHeight Maximum height cap in pixels (default: 600)
+   * @param baseItems Number of items that fit in minimum height (default: 5)
+   */
+  getChartHeight(
+    itemCount: number,
+    minHeight: number = 250,
+    heightPerItem: number = 30,
+    maxHeight: number = 600,
+    baseItems: number = 5,
+  ): number {
+    if (itemCount <= baseItems) {
+      return minHeight;
+    }
+
+    const extraItems = itemCount - baseItems;
+    const calculatedHeight = minHeight + extraItems * heightPerItem;
+
+    return Math.min(calculatedHeight, maxHeight);
+  }
+
+  /**
+   * Get project chart container height based on number of projects
+   */
+  getProjectChartHeight(): number {
+    const projectCount = this.projectChartData.labels?.length || 0;
+    return this.getChartHeight(projectCount, 250, 35, 600, 5);
+  }
+
+  /**
+   * Get category chart container height based on number of categories
+   */
+  getCategoryChartHeight(): number {
+    const categoryCount = this.categoryChartData.labels?.length || 0;
+    return this.getChartHeight(categoryCount, 250, 30, 500, 5);
+  }
+
+  /**
+   * Check if project chart needs horizontal scrolling (many items)
+   */
+  projectChartNeedsScroll(): boolean {
+    const projectCount = this.projectChartData.labels?.length || 0;
+    return projectCount > 8;
+  }
+
+  /**
+   * Get minimum width for scrollable project chart
+   */
+  getProjectChartMinWidth(): number {
+    const projectCount = this.projectChartData.labels?.length || 0;
+    if (projectCount <= 8) return 100; // percentage
+    return Math.max(100, projectCount * 80); // 80px per project
+  }
+
+  /**
+   * Check if status chart has data to display
+   */
+  hasStatusChartData(): boolean {
+    if (!this.statusChartData.datasets?.length) return false;
+    const data = this.statusChartData.datasets[0]?.data || [];
+    return data.some((value) => (value as number) > 0);
+  }
+
+  /**
+   * Check if project chart has data to display
+   */
+  hasProjectChartData(): boolean {
+    if (!this.projectChartData.labels?.length) return false;
+    if (!this.projectChartData.datasets?.length) return false;
+    const data = this.projectChartData.datasets[0]?.data || [];
+    return data.some((value) => (value as number) > 0);
+  }
+
+  /**
+   * Check if trend chart has data to display
+   */
+  hasTrendChartData(): boolean {
+    if (!this.trendChartData.labels?.length) return false;
+    if (!this.trendChartData.datasets?.length) return false;
+    return this.trendChartData.datasets.some((dataset) =>
+      dataset.data?.some((value) => (value as number) > 0),
+    );
+  }
+
+  /**
+   * Check if category chart has data to display
+   */
+  hasCategoryChartData(): boolean {
+    if (!this.categoryChartData.labels?.length) return false;
+    if (!this.categoryChartData.datasets?.length) return false;
+    const data = this.categoryChartData.datasets[0]?.data || [];
+    return data.some((value) => (value as number) > 0);
   }
 
   /**
@@ -1017,8 +1795,8 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
         link.click();
         document.body.removeChild(link);
 
-        // Clean up the object URL
-        setTimeout(() => URL.revokeObjectURL(url), 100);
+        // Clean up the object URL after download starts
+        setTimeout(() => URL.revokeObjectURL(url), URL_REVOKE_DELAY_MS);
 
         // Show success message
         console.log(
@@ -1051,27 +1829,23 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
     const filterParts: string[] = [];
 
     if (filters.userId && this.selectedReportType !== "user") {
-      // Try to find user name from available users
-      this.availableUsers$.pipe(takeUntil(this.destroy$)).subscribe((users) => {
-        const user = users.find((u) => u.id === filters.userId);
-        if (user) {
-          filterParts.push(`user-${user.name?.replace(/[^a-zA-Z0-9]/g, "")}`);
-        }
-      });
+      // Use cached users for synchronous access
+      const user = this.cachedUsers.find((u) => u.id === filters.userId);
+      if (user) {
+        filterParts.push(`user-${user.name?.replace(/[^a-zA-Z0-9]/g, "")}`);
+      }
     }
 
     if (filters.projectId && this.selectedReportType !== "project") {
-      // Try to find project name from available projects
-      this.availableProjects$
-        .pipe(takeUntil(this.destroy$))
-        .subscribe((projects) => {
-          const project = projects.find((p) => p.id === filters.projectId);
-          if (project) {
-            filterParts.push(
-              `project-${project.name?.replace(/[^a-zA-Z0-9]/g, "")}`,
-            );
-          }
-        });
+      // Use cached projects for synchronous access
+      const project = this.cachedProjects.find(
+        (p) => p.id === filters.projectId,
+      );
+      if (project) {
+        filterParts.push(
+          `project-${project.name?.replace(/[^a-zA-Z0-9]/g, "")}`,
+        );
+      }
     }
 
     if (filters.category) {
@@ -1097,6 +1871,405 @@ export class ReportsPage implements OnInit, OnDestroy, AfterViewInit {
     }
 
     return `${filename}.csv`;
+  }
+
+  /**
+   * Export current report as PDF with charts
+   */
+  async exportToPDF() {
+    if (!this.currentAnalytics) {
+      this.error = "No report data available. Please generate a report first.";
+      return;
+    }
+
+    this.isExportingPDF = true;
+    this.pdfExportProgress = 0;
+    this.error = null;
+
+    try {
+      // Create new PDF document (A4 size)
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 15;
+      let yPosition = margin;
+
+      this.pdfExportProgress = 10;
+
+      // Add organization header/branding
+      pdf.setFontSize(20);
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(59, 89, 152); // ASCENDynamics blue
+      pdf.text("ASCENDynamics NFP", margin, yPosition);
+      yPosition += 8;
+
+      pdf.setFontSize(16);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text("Time Tracking Report", margin, yPosition);
+      yPosition += 6;
+
+      // Add generation timestamp
+      pdf.setFontSize(10);
+      pdf.setTextColor(100, 100, 100);
+      const timestamp = new Date().toLocaleString();
+      pdf.text(`Generated: ${timestamp}`, margin, yPosition);
+      yPosition += 10;
+
+      // Add report configuration details
+      pdf.setFontSize(11);
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Report Configuration", margin, yPosition);
+      yPosition += 6;
+
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(10);
+      pdf.text(
+        `Report Type: ${this.getReportTypeName(this.selectedReportType)}`,
+        margin,
+        yPosition,
+      );
+      yPosition += 5;
+      pdf.text(`Date Range: ${this.getDateRangeDisplay()}`, margin, yPosition);
+      yPosition += 10;
+
+      this.pdfExportProgress = 20;
+
+      // Add summary statistics
+      yPosition = this.addSummaryToPDF(pdf, yPosition, margin, pageWidth);
+      this.pdfExportProgress = 30;
+
+      // Capture and add charts
+      const chartContainers = document.querySelectorAll(".chart-container");
+      const chartCards = document.querySelectorAll("ion-card");
+
+      // Find charts section and capture each chart
+      let chartIndex = 0;
+      for (const card of Array.from(chartCards)) {
+        const chartContainer = card.querySelector(".chart-container");
+        if (chartContainer && chartContainer instanceof HTMLElement) {
+          // Check if we need a new page
+          if (yPosition > pageHeight - 100) {
+            pdf.addPage();
+            yPosition = margin;
+          }
+
+          try {
+            // Get chart title from card header
+            const titleElement = card.querySelector("ion-card-title");
+            const chartTitle = titleElement?.textContent?.trim() || "Chart";
+
+            // Add chart title
+            pdf.setFontSize(12);
+            pdf.setFont("helvetica", "bold");
+            pdf.text(chartTitle, margin, yPosition);
+            yPosition += 6;
+
+            // Capture chart as image
+            const canvas = await html2canvas(chartContainer, {
+              backgroundColor: "#ffffff",
+              scale: 2,
+              logging: false,
+              useCORS: true,
+            });
+
+            const imgData = canvas.toDataURL("image/png");
+            const imgWidth = pageWidth - margin * 2;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            // Add chart image to PDF
+            pdf.addImage(
+              imgData,
+              "PNG",
+              margin,
+              yPosition,
+              imgWidth,
+              imgHeight,
+            );
+            yPosition += imgHeight + 10;
+
+            chartIndex++;
+            this.pdfExportProgress =
+              30 + Math.min(50, Math.round((chartIndex / 4) * 50));
+          } catch (chartError) {
+            console.warn(`Failed to capture chart: ${chartError}`);
+          }
+        }
+      }
+
+      this.pdfExportProgress = 85;
+
+      // Add breakdown tables if available
+      yPosition = this.addBreakdownsToPDF(pdf, yPosition, margin, pageWidth);
+      this.pdfExportProgress = 95;
+
+      // Add footer to all pages
+      const totalPages = pdf.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setTextColor(150, 150, 150);
+        pdf.text(
+          `Page ${i} of ${totalPages}`,
+          pageWidth - margin - 20,
+          pageHeight - 10,
+        );
+        pdf.text(
+          "© ASCENDynamics NFP - Time Tracking Report",
+          margin,
+          pageHeight - 10,
+        );
+      }
+
+      // Save the PDF
+      const filename = this.generatePDFFilename();
+      pdf.save(filename);
+
+      this.pdfExportProgress = 100;
+
+      // Reset after short delay
+      setTimeout(() => {
+        this.isExportingPDF = false;
+        this.pdfExportProgress = 0;
+      }, 500);
+    } catch (error) {
+      console.error("PDF export error:", error);
+      this.error = "Failed to generate PDF. Please try again.";
+      this.isExportingPDF = false;
+      this.pdfExportProgress = 0;
+    }
+  }
+
+  /**
+   * Add summary statistics section to PDF
+   */
+  private addSummaryToPDF(
+    pdf: jsPDF,
+    yPosition: number,
+    margin: number,
+    pageWidth: number,
+  ): number {
+    if (!this.currentAnalytics) return yPosition;
+
+    pdf.setFontSize(12);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Summary Statistics", margin, yPosition);
+    yPosition += 8;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(10);
+
+    const stats = [
+      {
+        label: "Total Entries",
+        value: this.currentAnalytics.totalEntries.toString(),
+      },
+      {
+        label: "Total Hours",
+        value: this.currentAnalytics.totalHours.toFixed(1) + " hrs",
+      },
+      {
+        label: "Approved Hours",
+        value: this.currentAnalytics.totalApprovedHours.toFixed(1) + " hrs",
+      },
+      {
+        label: "Pending Hours",
+        value:
+          (
+            this.currentAnalytics.totalHours -
+            this.currentAnalytics.totalApprovedHours
+          ).toFixed(1) + " hrs",
+      },
+      {
+        label: "Active Users",
+        value: Object.keys(
+          this.currentAnalytics.entriesByUser || {},
+        ).length.toString(),
+      },
+      {
+        label: "Active Projects",
+        value: Object.keys(
+          this.currentAnalytics.entriesByProject || {},
+        ).length.toString(),
+      },
+      {
+        label: "Avg Hours/Entry",
+        value:
+          this.currentAnalytics.averageHoursPerEntry?.toFixed(1) + " hrs" ||
+          "N/A",
+      },
+    ];
+
+    // Draw summary in a grid format
+    const colWidth = (pageWidth - margin * 2) / 3;
+    let col = 0;
+    let rowY = yPosition;
+
+    for (const stat of stats) {
+      const xPos = margin + col * colWidth;
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(stat.label, xPos, rowY);
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(stat.value, xPos, rowY + 5);
+
+      col++;
+      if (col >= 3) {
+        col = 0;
+        rowY += 15;
+      }
+    }
+
+    return rowY + 15;
+  }
+
+  /**
+   * Add breakdown sections to PDF
+   */
+  private addBreakdownsToPDF(
+    pdf: jsPDF,
+    yPosition: number,
+    margin: number,
+    pageWidth: number,
+  ): number {
+    if (!this.currentAnalytics) return yPosition;
+
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    // Project breakdown using mostActiveProjects
+    if (this.currentAnalytics.mostActiveProjects?.length > 0) {
+      if (yPosition > pageHeight - 60) {
+        pdf.addPage();
+        yPosition = margin;
+      }
+
+      pdf.setFontSize(12);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Project Breakdown", margin, yPosition);
+      yPosition += 8;
+
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "normal");
+
+      // Table header
+      pdf.setFillColor(240, 240, 240);
+      pdf.rect(margin, yPosition - 4, pageWidth - margin * 2, 7, "F");
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Project", margin + 2, yPosition);
+      pdf.text("Hours", margin + 80, yPosition);
+      pdf.text("Entries", margin + 110, yPosition);
+      pdf.text("% of Total", margin + 140, yPosition);
+      yPosition += 6;
+
+      pdf.setFont("helvetica", "normal");
+      const projects = this.currentAnalytics.mostActiveProjects.slice(0, 10);
+      for (const project of projects) {
+        if (yPosition > pageHeight - 15) {
+          pdf.addPage();
+          yPosition = margin;
+        }
+
+        const projectName =
+          project.projectName.length > 30
+            ? project.projectName.substring(0, 30) + "..."
+            : project.projectName;
+        const percentage =
+          this.currentAnalytics.totalHours > 0
+            ? (
+                (project.totalHours / this.currentAnalytics.totalHours) *
+                100
+              ).toFixed(1)
+            : "0.0";
+
+        pdf.text(projectName, margin + 2, yPosition);
+        pdf.text(project.totalHours.toFixed(1), margin + 80, yPosition);
+        pdf.text(project.entriesCount.toString(), margin + 110, yPosition);
+        pdf.text(percentage + "%", margin + 140, yPosition);
+        yPosition += 5;
+      }
+
+      yPosition += 10;
+    }
+
+    // User breakdown using mostActiveUsers
+    if (this.currentAnalytics.mostActiveUsers?.length > 0) {
+      if (yPosition > pageHeight - 60) {
+        pdf.addPage();
+        yPosition = margin;
+      }
+
+      pdf.setFontSize(12);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("User Breakdown", margin, yPosition);
+      yPosition += 8;
+
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "normal");
+
+      // Table header
+      pdf.setFillColor(240, 240, 240);
+      pdf.rect(margin, yPosition - 4, pageWidth - margin * 2, 7, "F");
+      pdf.setFont("helvetica", "bold");
+      pdf.text("User", margin + 2, yPosition);
+      pdf.text("Hours", margin + 80, yPosition);
+      pdf.text("Approved", margin + 110, yPosition);
+      pdf.text("% of Total", margin + 145, yPosition);
+      yPosition += 6;
+
+      pdf.setFont("helvetica", "normal");
+      const users = this.currentAnalytics.mostActiveUsers.slice(0, 10);
+      for (const user of users) {
+        if (yPosition > pageHeight - 15) {
+          pdf.addPage();
+          yPosition = margin;
+        }
+
+        const userName =
+          user.userName.length > 30
+            ? user.userName.substring(0, 30) + "..."
+            : user.userName;
+        const percentage =
+          this.currentAnalytics.totalHours > 0
+            ? (
+                (user.totalHours / this.currentAnalytics.totalHours) *
+                100
+              ).toFixed(1)
+            : "0.0";
+
+        pdf.text(userName, margin + 2, yPosition);
+        pdf.text(user.totalHours.toFixed(1), margin + 80, yPosition);
+        pdf.text(user.approvedHours.toFixed(1), margin + 110, yPosition);
+        pdf.text(percentage + "%", margin + 145, yPosition);
+        yPosition += 5;
+      }
+
+      yPosition += 10;
+    }
+
+    return yPosition;
+  }
+
+  /**
+   * Generate filename for PDF export
+   */
+  private generatePDFFilename(): string {
+    const datePart = new Date().toISOString().split("T")[0];
+    const reportType = this.selectedReportType || "overview";
+    return `time-tracking-report-${reportType}-${datePart}.pdf`;
+  }
+
+  /**
+   * Get human-readable report type name
+   */
+  private getReportTypeName(type: string): string {
+    const names: Record<string, string> = {
+      overview: "Overview",
+      user: "By User",
+      project: "By Project",
+      category: "By Category",
+    };
+    return names[type] || type;
   }
 
   /**

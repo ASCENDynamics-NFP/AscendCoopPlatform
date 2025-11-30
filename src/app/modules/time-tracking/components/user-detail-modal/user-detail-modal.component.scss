@@ -1,0 +1,352 @@
+/*******************************************************************************
+ * Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+ * Copyright (C) 2023  ASCENDynamics NFP
+ *
+ * This file is part of Nonprofit Social Networking Platform.
+ *
+ * Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+ *******************************************************************************/
+
+.user-detail-content {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 16px;
+  --padding-bottom: 16px;
+}
+
+.date-range-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.875rem;
+  color: var(--ion-color-medium);
+
+  ion-icon {
+    font-size: 1.1rem;
+  }
+}
+
+// Overview Section
+.overview-section {
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+
+    .summary-card {
+      background: var(--ion-card-background, var(--ion-background-color));
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+      .summary-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--ion-color-primary);
+        line-height: 1.2;
+      }
+
+      .summary-label {
+        font-size: 0.75rem;
+        color: var(--ion-color-medium);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 4px;
+      }
+    }
+  }
+
+  .status-list {
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--ion-color-light);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .status-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        ion-icon {
+          font-size: 1.25rem;
+        }
+
+        .status-name {
+          font-weight: 500;
+        }
+      }
+
+      .status-stats {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .hours {
+          color: var(--ion-color-medium);
+          font-size: 0.875rem;
+        }
+
+        ion-badge {
+          min-width: 28px;
+          text-align: center;
+        }
+      }
+    }
+  }
+
+  .project-list {
+    .project-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--ion-color-light);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .project-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        min-width: 0;
+
+        ion-icon {
+          font-size: 1.25rem;
+          flex-shrink: 0;
+        }
+
+        .project-name {
+          font-weight: 500;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+
+      .project-stats {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 2px;
+
+        .hours {
+          font-weight: 600;
+          color: var(--ion-color-dark);
+        }
+
+        .percentage {
+          font-size: 0.75rem;
+          color: var(--ion-color-medium);
+        }
+      }
+    }
+  }
+}
+
+// Entries Section
+.entries-section {
+  .entry-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+
+    h3 {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    p {
+      color: var(--ion-color-medium);
+      font-size: 0.875rem;
+    }
+
+    .entry-notes {
+      font-style: italic;
+      margin-top: 4px;
+      max-width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .entry-hours {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+
+      .hours-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--ion-color-primary);
+      }
+
+      .hours-label {
+        font-size: 0.7rem;
+        color: var(--ion-color-medium);
+        text-transform: uppercase;
+      }
+    }
+  }
+}
+
+// Projects Section
+.projects-section {
+  .project-detail-card {
+    margin-bottom: 12px;
+
+    ion-card-title {
+      font-size: 1rem;
+    }
+
+    ion-card-subtitle {
+      font-size: 0.75rem;
+    }
+
+    .project-stats-row {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 16px;
+
+      .stat {
+        text-align: center;
+
+        .stat-value {
+          display: block;
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: var(--ion-color-primary);
+        }
+
+        .stat-label {
+          font-size: 0.75rem;
+          color: var(--ion-color-medium);
+          text-transform: uppercase;
+        }
+      }
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: var(--ion-color-light);
+      border-radius: 4px;
+      overflow: hidden;
+
+      .progress-fill {
+        height: 100%;
+        background: var(--ion-color-primary);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+      }
+    }
+  }
+}
+
+// Empty State
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+
+  ion-icon {
+    font-size: 48px;
+    color: var(--ion-color-medium);
+    margin-bottom: 16px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 1rem;
+  }
+}
+
+// Dark mode
+@media (prefers-color-scheme: dark) {
+  .date-range-info {
+    background: var(--ion-color-step-100, #1e1e1e);
+    border: 1px solid var(--ion-color-step-200, #333333);
+    color: var(--ion-color-medium-tint);
+
+    ion-icon {
+      color: var(--ion-color-primary-tint);
+    }
+  }
+
+  .overview-section {
+    .summary-grid {
+      .summary-card {
+        background: var(--ion-color-step-50, #1a1a1a);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--ion-color-step-150, #2a2a2a);
+      }
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 576px) {
+  .overview-section {
+    .summary-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+
+      .summary-card {
+        padding: 12px;
+
+        .summary-value {
+          font-size: 1.5rem;
+        }
+      }
+    }
+  }
+}
+
+// Summary Only Notice
+.summary-only-notice {
+  margin-top: 16px;
+
+  .notice-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    ion-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    p {
+      margin: 0;
+      color: var(--ion-color-medium);
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+  }
+}

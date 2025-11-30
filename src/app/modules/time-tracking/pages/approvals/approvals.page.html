@@ -1,9 +1,21 @@
 <ion-header [translucent]="true">
-  <app-header [title]="'time_tracking.time_approvals'" [defaultHref]="'/'">
+  <app-header
+    [title]="'time_tracking.time_approvals'"
+    [defaultHref]="'/account/' + accountId + '/admin'"
+  >
+    <ion-button
+      header-end
+      [routerLink]="['/account', accountId, 'admin']"
+      fill="outline"
+      [attr.aria-label]="'admin.dashboard' | translate"
+    >
+      <ion-icon name="grid-outline" slot="icon-only"></ion-icon>
+    </ion-button>
     <ion-button
       header-end
       [routerLink]="['/account', accountId, 'time-tracking', 'reports']"
       fill="outline"
+      [attr.aria-label]="'time_tracking.reports' | translate"
     >
       <ion-icon name="analytics-outline" slot="icon-only"></ion-icon>
     </ion-button>
@@ -18,6 +30,32 @@
       >
     </ion-toolbar>
   </ion-header>
+
+  <!-- New Updates Available Banner -->
+  <div class="update-banner" *ngIf="hasNewUpdates" @slideDown>
+    <div class="update-banner-content">
+      <ion-icon name="refresh-outline"></ion-icon>
+      <span>{{ 'time_tracking.new_updates_available' | translate }}</span>
+    </div>
+    <div class="update-banner-actions">
+      <ion-button
+        size="small"
+        fill="solid"
+        color="light"
+        (click)="refreshData()"
+      >
+        {{ 'time_tracking.refresh_now' | translate }}
+      </ion-button>
+      <ion-button
+        size="small"
+        fill="clear"
+        color="light"
+        (click)="dismissUpdateBanner()"
+      >
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+  </div>
 
   <div class="content-container">
     <!-- Header Section -->
@@ -272,6 +310,7 @@
             size="small"
             (click)="toggleSortDirection()"
             class="sort-direction-btn"
+            [attr.aria-label]="(sortDirection === 'asc' ? 'time_tracking.sort_ascending' : 'time_tracking.sort_descending') | translate"
           >
             <ion-icon
               [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"
@@ -375,6 +414,8 @@
                 size="small"
                 (click)="allExpanded ? collapseAllGroups() : expandAllGroups()"
                 class="expand-collapse-btn"
+                [attr.aria-label]="(allExpanded ? 'time_tracking.collapse_all' : 'time_tracking.expand_all') | translate"
+                [attr.aria-expanded]="allExpanded"
               >
                 <ion-icon
                   [name]="allExpanded ? 'chevron-collapse-outline' : 'chevron-expand-outline'"
@@ -529,6 +570,7 @@
                         class="notes-button"
                         (click)="openNotesModal(entry); $event.stopPropagation()"
                         [color]="hasEntryNotes(entry) ? 'primary' : undefined"
+                        [attr.aria-label]="'time_tracking.view_notes' | translate"
                       >
                         <ion-icon
                           [name]="
@@ -561,10 +603,12 @@
       </ng-container>
     </div>
 
-    <!-- Loading State -->
-    <div class="loading-container" *ngIf="!(displayEntries$ | async)">
-      <ion-spinner></ion-spinner>
-      <p>{{ 'time_tracking.loading_timesheet_data' | translate }}</p>
-    </div>
+    <!-- Loading State (using shared component) -->
+    <app-time-tracking-loading
+      *ngIf="!(displayEntries$ | async)"
+      [isLoading]="true"
+      [mode]="'inline'"
+      [message]="'time_tracking.loading_timesheet_data'"
+    ></app-time-tracking-loading>
   </div>
 </ion-content>

@@ -24,11 +24,11 @@ import {trigger, style, transition, animate} from "@angular/animations";
 import {Store} from "@ngrx/store";
 import {ActivatedRoute} from "@angular/router";
 import {Observable, Subscription, combineLatest, BehaviorSubject} from "rxjs";
-import {map, filter, take} from "rxjs/operators";
+import {map, filter, take, skip} from "rxjs/operators";
 import {Timestamp} from "firebase/firestore";
-import {TimeEntry} from "@shared/models/time-entry.model";
-import {AuthUser} from "@shared/models/auth-user.model";
-import {Account} from "@shared/models/account.model";
+import {TimeEntry} from "../../../../../../shared/models/time-entry.model";
+import {AuthUser} from "../../../../../../shared/models/auth-user.model";
+import {Account} from "../../../../../../shared/models/account.model";
 import * as TimeTrackingActions from "../../../../state/actions/time-tracking.actions";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
@@ -51,9 +51,15 @@ interface GroupedEntries {
   weekStart: Date;
   entries: TimeEntry[];
   totalHours: number;
-  status: "draft" | "pending" | "approved" | "rejected";
+  status: TimesheetStatus;
   projectName?: string;
 }
+
+/** Shared type for timesheet entry status */
+type TimesheetStatus = "draft" | "pending" | "approved" | "rejected";
+
+/** Shared type for status filter including 'all' option */
+type StatusFilter = "all" | TimesheetStatus;
 
 interface SummaryStats {
   pending: {count: number; hours: number};
@@ -64,12 +70,27 @@ interface SummaryStats {
 
 interface ApprovalsPreferences {
   showAllWeeks: boolean;
-  statusFilter: "all" | "pending" | "approved" | "rejected";
+  statusFilter: StatusFilter;
   sortBy: "date" | "user" | "hours" | "status";
   sortDirection: "asc" | "desc";
 }
 
+// Configuration constants
 const APPROVALS_STORAGE_KEY = "approvals-preferences";
+const UNDO_DELAY_MS = 10000; // 10 seconds to undo
+const UPDATE_CHECK_INTERVAL_MS = 60000; // 60 seconds between update checks
+
+/**
+ * Calculate the start of the week (Sunday) for a given date.
+ * @param date - The date to calculate the week start for. Defaults to today.
+ * @returns A Date object representing midnight on the Sunday of that week.
+ */
+function getWeekStartDate(date: Date = new Date()): Date {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - d.getDay());
+  return d;
+}
 
 @Component({
   selector: "app-approvals",
@@ -92,6 +113,21 @@ const APPROVALS_STORAGE_KEY = "approvals-preferences";
         ),
       ]),
     ]),
+    trigger("slideDown", [
+      transition(":enter", [
+        style({transform: "translateY(-100%)", opacity: 0}),
+        animate(
+          "300ms ease-out",
+          style({transform: "translateY(0)", opacity: 1}),
+        ),
+      ]),
+      transition(":leave", [
+        animate(
+          "200ms ease-in",
+          style({transform: "translateY(-100%)", opacity: 0}),
+        ),
+      ]),
+    ]),
   ],
 })
 export class ApprovalsPage implements OnInit, OnDestroy {
@@ -103,17 +139,12 @@ export class ApprovalsPage implements OnInit, OnDestroy {
   summaryStats$!: Observable<SummaryStats>;
 
   // Navigation and filtering properties
-  currentWeekStart: Date = (() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    d.setDate(d.getDate() - d.getDay());
-    return d;
-  })();
+  currentWeekStart: Date = getWeekStartDate();
 
   showAllWeeks = false;
 
   // Filter properties
-  statusFilter: "all" | "pending" | "approved" | "rejected" = "all";
+  statusFilter: StatusFilter = "all";
   sortBy: "date" | "user" | "hours" | "status" = "date";
   sortDirection: "asc" | "desc" = "desc";
   isProcessing = false;
@@ -143,21 +174,11 @@ export class ApprovalsPage implements OnInit, OnDestroy {
       rejectionReason?: string;
     }
   >();
-  private readonly UNDO_DELAY_MS = 10000; // 10 seconds to undo
 
   // Reactive streams for properties that affect data filtering
   private showAllWeeks$ = new BehaviorSubject<boolean>(false);
-  private currentWeekStart$ = new BehaviorSubject<Date>(
-    (() => {
-      const d = new Date();
-      d.setHours(0, 0, 0, 0);
-      d.setDate(d.getDate() - d.getDay());
-      return d;
-    })(),
-  );
-  private statusFilter$ = new BehaviorSubject<
-    "all" | "pending" | "approved" | "rejected"
-  >("all");
+  private currentWeekStart$ = new BehaviorSubject<Date>(getWeekStartDate());
+  private statusFilter$ = new BehaviorSubject<StatusFilter>("all");
   private sortBy$ = new BehaviorSubject<"date" | "user" | "hours" | "status">(
     "date",
   );
@@ -165,6 +186,14 @@ export class ApprovalsPage implements OnInit, OnDestroy {
   private userSearchTerm$ = new BehaviorSubject<string>("");
 
   private subscriptions = new Subscription();
+
+  // Real-time update detection
+  hasNewUpdates = false;
+  lastUpdateCheck: Date | null = null;
+  private updateCheckInterval: ReturnType<typeof setInterval> | null = null;
+  private lastKnownEntryCount = 0;
+  private isRefreshing = false;
+  private refreshSubscription: Subscription | null = null;
 
   constructor(
     private store: Store<AppState>,
@@ -181,18 +210,50 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     // Load saved preferences from localStorage
     this.loadPreferences();
 
-    // Load account data
-    this.account$ = this.store.select(selectAccountById(this.accountId));
-    this.currentUser$ = this.store.select(selectAuthUser);
+    // Initialize store selectors
+    this.initializeStoreSelectors();
 
     // Initialize reactive streams with current values
+    this.initializeReactiveStreams();
+
+    // Dispatch store actions to load data
+    this.dispatchInitialLoadActions();
+
+    // Set up observable pipelines
+    this.setupGroupedEntriesObservable();
+    this.setupDisplayEntriesObservable();
+    this.setupSummaryStatsObservable();
+
+    // Set up update detection
+    this.setupUpdateDetection();
+
+    // Start periodic update checking
+    this.startUpdateChecking();
+  }
+
+  /**
+   * Initialize store selectors for account and user data
+   */
+  private initializeStoreSelectors(): void {
+    this.account$ = this.store.select(selectAccountById(this.accountId));
+    this.currentUser$ = this.store.select(selectAuthUser);
+  }
+
+  /**
+   * Initialize reactive streams with current preference values
+   */
+  private initializeReactiveStreams(): void {
     this.showAllWeeks$.next(this.showAllWeeks);
     this.currentWeekStart$.next(this.currentWeekStart);
     this.statusFilter$.next(this.statusFilter);
     this.sortBy$.next(this.sortBy);
     this.sortDirection$.next(this.sortDirection);
+  }
 
-    // Load account and time entries
+  /**
+   * Dispatch initial NgRx actions to load account and time entry data
+   */
+  private dispatchInitialLoadActions(): void {
     this.store.dispatch(
       AccountActions.loadAccount({accountId: this.accountId}),
     );
@@ -201,8 +262,12 @@ export class ApprovalsPage implements OnInit, OnDestroy {
         accountId: this.accountId,
       }),
     );
+  }
 
-    // Create grouped entries observables
+  /**
+   * Set up the grouped entries observable pipeline
+   */
+  private setupGroupedEntriesObservable(): void {
     this.groupedEntries$ = combineLatest([
       this.store.select(selectAllEntriesForAccount(this.accountId)),
       this.showAllWeeks$,
@@ -238,7 +303,12 @@ export class ApprovalsPage implements OnInit, OnDestroy {
         },
       ),
     );
+  }
 
+  /**
+   * Set up the display entries observable with search filtering
+   */
+  private setupDisplayEntriesObservable(): void {
     this.displayEntries$ = combineLatest([
       this.groupedEntries$,
       this.userSearchTerm$,
@@ -259,8 +329,12 @@ export class ApprovalsPage implements OnInit, OnDestroy {
         return this.sortGroupedEntries(groups, this.sortBy, this.sortDirection);
       }),
     );
+  }
 
-    // Create summary statistics observable (based on unfiltered grouped entries)
+  /**
+   * Set up the summary statistics observable
+   */
+  private setupSummaryStatsObservable(): void {
     this.summaryStats$ = combineLatest([
       this.store.select(selectAllEntriesForAccount(this.accountId)),
       this.showAllWeeks$,
@@ -271,10 +345,45 @@ export class ApprovalsPage implements OnInit, OnDestroy {
         const filteredEntries = showAllWeeks
           ? entries
           : this.filterEntriesByWeek(entries, currentWeekStart);
-        return this.calculateSummaryStats(
-          this.groupEntriesByUserAndWeek(filteredEntries),
-        );
+        const groups = this.groupEntriesByUserAndWeek(filteredEntries);
+        return this.calculateSummaryStats(groups);
       }),
+    );
+  }
+
+  /**
+   * Set up subscription for detecting new updates
+   */
+  private setupUpdateDetection(): void {
+    this.subscriptions.add(
+      this.store
+        .select(selectAllEntriesForAccount(this.accountId))
+        .subscribe((entries) => {
+          if (!entries) return;
+
+          const currentCount = entries.length;
+
+          // Initialize on first load
+          if (this.lastKnownEntryCount === 0) {
+            this.lastKnownEntryCount = currentCount;
+            return;
+          }
+
+          // Only show update banner if:
+          // 1. Count has changed from what we knew
+          // 2. We've done at least one update check (not initial load)
+          // 3. We're not currently refreshing (to prevent immediate re-trigger)
+          if (
+            currentCount !== this.lastKnownEntryCount &&
+            this.lastUpdateCheck &&
+            !this.isRefreshing
+          ) {
+            this.hasNewUpdates = true;
+          }
+
+          // Update the known count
+          this.lastKnownEntryCount = currentCount;
+        }),
     );
   }
 
@@ -283,6 +392,16 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     this.showAllWeeks$.complete();
     this.currentWeekStart$.complete();
     this.userSearchTerm$.complete();
+
+    // Clear update check interval
+    if (this.updateCheckInterval) {
+      clearInterval(this.updateCheckInterval);
+    }
+
+    // Cancel any pending refresh subscription
+    if (this.refreshSubscription) {
+      this.refreshSubscription.unsubscribe();
+    }
 
     // Clear all pending undo actions and execute them immediately
     this.pendingActions.forEach((action) => {
@@ -418,20 +537,9 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     this.allPendingSelected = false;
   }
 
+  /** Returns the count of currently selected items */
   getSelectedCount(): number {
     return this.selectedGroups.size;
-  }
-
-  getSelectedPendingGroups(): GroupedEntries[] {
-    let result: GroupedEntries[] = [];
-    this.displayEntries$.pipe(take(1)).subscribe((groups) => {
-      result = groups.filter(
-        (group) =>
-          group.status === "pending" &&
-          this.selectedGroups.has(this.getGroupKey(group)),
-      );
-    });
-    return result;
   }
 
   private updateAllPendingSelectedState(): void {
@@ -636,7 +744,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     const timeoutId = setTimeout(() => {
       this.executeStatusUpdate(group, status, rejectionReason);
       this.pendingActions.delete(actionKey);
-    }, this.UNDO_DELAY_MS);
+    }, UNDO_DELAY_MS);
 
     // Store the pending action
     this.pendingActions.set(actionKey, {
@@ -665,7 +773,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
 
     const toast = await this.toastController.create({
       message,
-      duration: this.UNDO_DELAY_MS,
+      duration: UNDO_DELAY_MS,
       color: status === "approved" ? "success" : "warning",
       position: "bottom",
       buttons: [
@@ -680,12 +788,6 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     });
 
     await toast.present();
-
-    // When toast dismisses naturally (not by undo), the action will execute via timeout
-    toast.onDidDismiss().then((result) => {
-      // If dismissed by undo button, the handler already took care of it
-      // If dismissed by timeout or swipe, the setTimeout will handle execution
-    });
   }
 
   /**
@@ -701,7 +803,11 @@ export class ApprovalsPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Execute the actual status update (called after undo delay)
+   * Execute the actual status update (called after undo delay).
+   * Dispatches NgRx actions to update each entry and sends notifications.
+   * @param group - The grouped entries to update
+   * @param status - The new status to apply
+   * @param rejectionReason - Optional reason for rejection
    */
   private executeStatusUpdate(
     group: GroupedEntries,
@@ -714,79 +820,96 @@ export class ApprovalsPage implements OnInit, OnDestroy {
         filter((user) => !!user),
         take(1),
       )
-      .subscribe((currentUser) => {
-        const approvalTimestamp = Timestamp.now();
+      .subscribe({
+        next: (currentUser) => {
+          try {
+            const approvalTimestamp = Timestamp.now();
 
-        group.entries.forEach((entry) => {
-          const statusChange = {
-            status,
-            changedBy: currentUser!.uid,
-            changedByName:
-              currentUser!.displayName || currentUser!.email || "Unknown",
-            changedAt: approvalTimestamp,
-            reason: rejectionReason,
-          };
+            group.entries.forEach((entry) => {
+              const statusChange = {
+                status,
+                changedBy: currentUser!.uid,
+                changedByName:
+                  currentUser!.displayName || currentUser!.email || "Unknown",
+                changedAt: approvalTimestamp,
+                reason: rejectionReason,
+              };
 
-          // Add to note history for admin actions
-          const noteHistoryEntry = {
-            id: `${status}_${approvalTimestamp.seconds}`,
-            content:
-              status === "approved"
-                ? "Timesheet approved"
-                : `Timesheet rejected: ${rejectionReason || "No reason provided"}`,
-            createdBy: currentUser!.uid,
-            createdByName:
-              currentUser!.displayName || currentUser!.email || "Unknown",
-            createdAt: approvalTimestamp,
-            type: "admin" as const,
-          };
+              // Add to note history for admin actions
+              const noteHistoryEntry = {
+                id: `${status}_${approvalTimestamp.seconds}`,
+                content:
+                  status === "approved"
+                    ? "Timesheet approved"
+                    : `Timesheet rejected: ${rejectionReason || "No reason provided"}`,
+                createdBy: currentUser!.uid,
+                createdByName:
+                  currentUser!.displayName || currentUser!.email || "Unknown",
+                createdAt: approvalTimestamp,
+                type: "admin" as const,
+              };
 
-          const baseEntry: TimeEntry = {
-            ...entry,
-            status,
-            // Audit fields
-            approvedBy: currentUser!.uid,
-            approvedByName:
-              currentUser!.displayName || currentUser!.email || "Unknown",
-            approvedAt: approvalTimestamp,
-            originalHours: entry.originalHours || entry.hours,
-            rejectionReason:
-              status === "rejected" ? rejectionReason : undefined,
-            statusHistory: [...(entry.statusHistory || []), statusChange],
-            noteHistory: [...(entry.noteHistory || []), noteHistoryEntry],
-          };
+              const baseEntry: TimeEntry = {
+                ...entry,
+                status,
+                // Audit fields
+                approvedBy: currentUser!.uid,
+                approvedByName:
+                  currentUser!.displayName || currentUser!.email || "Unknown",
+                approvedAt: approvalTimestamp,
+                originalHours: entry.originalHours || entry.hours,
+                rejectionReason:
+                  status === "rejected" ? rejectionReason : undefined,
+                statusHistory: [...(entry.statusHistory || []), statusChange],
+                noteHistory: [...(entry.noteHistory || []), noteHistoryEntry],
+              };
 
-          this.store.dispatch(
-            TimeTrackingActions.updateTimeEntry({entry: baseEntry}),
+              this.store.dispatch(
+                TimeTrackingActions.updateTimeEntry({entry: baseEntry}),
+              );
+            });
+
+            // Send notifications to user
+            if (status === "approved") {
+              this.notificationService.notifyTimesheetApproved(
+                group.userId,
+                group.weekStart,
+                group.totalHours,
+                currentUser!.displayName || currentUser!.email || "Unknown",
+                currentUser!.uid,
+                group.entries[0].accountId,
+              );
+            } else if (status === "rejected") {
+              this.notificationService.notifyTimesheetRejected(
+                group.userId,
+                group.weekStart,
+                group.totalHours,
+                rejectionReason || "",
+                currentUser!.displayName || currentUser!.email || "Unknown",
+                currentUser!.uid,
+                group.entries[0].accountId,
+              );
+            }
+
+            this.showToast(
+              `Timesheet ${status} for ${group.userName}`,
+              status === "approved" ? "success" : "warning",
+            );
+          } catch (error) {
+            console.error("Error updating timesheet status:", error);
+            this.showToast(
+              `Failed to ${status === "approved" ? "approve" : "reject"} timesheet. Please try again.`,
+              "danger",
+            );
+          }
+        },
+        error: (error) => {
+          console.error("Error getting current user:", error);
+          this.showToast(
+            "Authentication error. Please refresh and try again.",
+            "danger",
           );
-        });
-
-        // Send notifications to user
-        if (status === "approved") {
-          this.notificationService.notifyTimesheetApproved(
-            group.userId,
-            group.weekStart,
-            group.totalHours,
-            currentUser!.displayName || currentUser!.email || "Unknown",
-            currentUser!.uid,
-            group.entries[0].accountId,
-          );
-        } else if (status === "rejected") {
-          this.notificationService.notifyTimesheetRejected(
-            group.userId,
-            group.weekStart,
-            group.totalHours,
-            rejectionReason || "",
-            currentUser!.displayName || currentUser!.email || "Unknown",
-            currentUser!.uid,
-            group.entries[0].accountId,
-          );
-        }
-
-        this.showToast(
-          `Timesheet ${status} for ${group.userName}`,
-          status === "approved" ? "success" : "warning",
-        );
+        },
       });
   }
 
@@ -847,11 +970,9 @@ export class ApprovalsPage implements OnInit, OnDestroy {
    * Jump to the current week (week containing today)
    */
   jumpToThisWeek() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    today.setDate(today.getDate() - today.getDay());
-    this.currentWeekStart = today;
-    this.currentWeekStart$.next(today);
+    const thisWeekStart = getWeekStartDate();
+    this.currentWeekStart = thisWeekStart;
+    this.currentWeekStart$.next(thisWeekStart);
     this.selectedDate = new Date().toISOString();
   }
 
@@ -859,10 +980,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
    * Check if the current view is showing this week
    */
   isCurrentWeek(): boolean {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const thisWeekStart = new Date(today);
-    thisWeekStart.setDate(today.getDate() - today.getDay());
+    const thisWeekStart = getWeekStartDate();
     return this.currentWeekStart.getTime() === thisWeekStart.getTime();
   }
 
@@ -873,10 +991,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     const value = event.detail.value;
     if (!value || Array.isArray(value)) return;
     const selectedDate = new Date(value);
-    selectedDate.setHours(0, 0, 0, 0);
-    // Calculate the week start (Sunday) for the selected date
-    const weekStart = new Date(selectedDate);
-    weekStart.setDate(selectedDate.getDate() - selectedDate.getDay());
+    const weekStart = getWeekStartDate(selectedDate);
     this.currentWeekStart = weekStart;
     this.currentWeekStart$.next(weekStart);
     this.selectedDate = value;
@@ -916,8 +1031,11 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     return this.getWeekRange(this.currentWeekStart);
   }
 
-  // Filter control methods
-  setStatusFilter(status: "all" | "pending" | "approved" | "rejected") {
+  /**
+   * Set the status filter for displaying timesheets
+   * @param status - The status to filter by, or 'all' for no filter
+   */
+  setStatusFilter(status: StatusFilter) {
     this.statusFilter = status;
     this.statusFilter$.next(status);
     this.savePreferences();
@@ -1149,7 +1267,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
         `${groups.length} timesheets ${status}`,
         status === "approved" ? "success" : "warning",
       );
-    }, this.UNDO_DELAY_MS);
+    }, UNDO_DELAY_MS);
 
     // Store the bulk pending action (store first group as representative)
     this.pendingActions.set(bulkActionKey, {
@@ -1176,7 +1294,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
 
     const toast = await this.toastController.create({
       message,
-      duration: this.UNDO_DELAY_MS,
+      duration: UNDO_DELAY_MS,
       color: status === "approved" ? "success" : "warning",
       position: "bottom",
       buttons: [
@@ -1230,7 +1348,10 @@ export class ApprovalsPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Calculate summary statistics from grouped entries
+   * Calculate summary statistics from grouped entries.
+   * This is a pure function with no side effects.
+   * @param groups - The grouped time entries to calculate stats for
+   * @returns Summary statistics object
    */
   private calculateSummaryStats(groups: GroupedEntries[]): SummaryStats {
     const stats: SummaryStats = {
@@ -1261,6 +1382,89 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     });
 
     return stats;
+  }
+
+  /**
+   * Start periodic update checking
+   */
+  startUpdateChecking(): void {
+    this.updateCheckInterval = setInterval(() => {
+      this.checkForUpdates();
+    }, UPDATE_CHECK_INTERVAL_MS);
+  }
+
+  /**
+   * Stop periodic update checking
+   */
+  stopUpdateChecking(): void {
+    if (this.updateCheckInterval) {
+      clearInterval(this.updateCheckInterval);
+      this.updateCheckInterval = null;
+    }
+  }
+
+  /**
+   * Check if there are new updates available
+   */
+  checkForUpdates(): void {
+    // Re-dispatch the load action to check for new data
+    // The subscription will compare counts
+    this.store.dispatch(
+      TimeTrackingActions.loadAllTimeEntriesForAccount({
+        accountId: this.accountId,
+      }),
+    );
+    this.lastUpdateCheck = new Date();
+  }
+
+  /**
+   * Refresh data and dismiss update banner.
+   * Uses subscription-based approach to detect when new data arrives.
+   */
+  refreshData(): void {
+    this.hasNewUpdates = false;
+    this.isRefreshing = true;
+
+    // Cancel any existing refresh subscription
+    if (this.refreshSubscription) {
+      this.refreshSubscription.unsubscribe();
+    }
+
+    // Subscribe to the next emission of entries (after the current one)
+    // This ensures we wait for the actual data update, not a timeout
+    this.refreshSubscription = this.store
+      .select(selectAllEntriesForAccount(this.accountId))
+      .pipe(
+        skip(1), // Skip the current value, wait for next emission
+        take(1), // Take only one emission then complete
+      )
+      .subscribe({
+        next: () => {
+          this.isRefreshing = false;
+          this.refreshSubscription = null;
+        },
+        error: () => {
+          // Reset on error as well
+          this.isRefreshing = false;
+          this.refreshSubscription = null;
+        },
+      });
+
+    // Dispatch the action to load data
+    this.store.dispatch(
+      TimeTrackingActions.loadAllTimeEntriesForAccount({
+        accountId: this.accountId,
+      }),
+    );
+
+    this.showToast("Data refreshed", "success");
+  }
+
+  /**
+   * Dismiss the new updates banner
+   */
+  dismissUpdateBanner(): void {
+    this.hasNewUpdates = false;
   }
 
   /**

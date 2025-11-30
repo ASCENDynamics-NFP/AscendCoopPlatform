@@ -1,0 +1,165 @@
+/*******************************************************************************
+ * Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+ * Copyright (C) 2023  ASCENDynamics NFP
+ *
+ * This file is part of Nonprofit Social Networking Platform.
+ *
+ * Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+ *******************************************************************************/
+
+// Shared loading component styles for Time Tracking module
+// Provides consistent loading states across Approvals and Reports pages
+
+// Overlay mode - appears over existing content
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(var(--ion-background-color-rgb, 255, 255, 255), 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  border-radius: 8px;
+
+  .loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    background: var(--ion-card-background, var(--ion-background-color));
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+
+    ion-spinner {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      color: var(--ion-color-medium);
+      font-size: 1rem;
+      margin: 0;
+      font-weight: 500;
+    }
+  }
+}
+
+// Inline mode - centered loading for empty states
+.loading-inline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  min-height: 200px;
+
+  ion-spinner {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+}
+
+// Skeleton mode - placeholder content
+.loading-skeleton {
+  padding: 16px;
+
+  .skeleton-item {
+    background: var(--ion-card-background, var(--ion-background-color));
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+    .skeleton-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+
+      ion-skeleton-text {
+        height: 20px;
+        border-radius: 4px;
+      }
+    }
+
+    .skeleton-body {
+      margin-bottom: 12px;
+
+      ion-skeleton-text {
+        height: 16px;
+        border-radius: 4px;
+        margin-bottom: 8px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+
+    .skeleton-footer {
+      ion-skeleton-text {
+        height: 14px;
+        border-radius: 4px;
+      }
+    }
+  }
+}
+
+// Dark mode adjustments
+@media (prefers-color-scheme: dark) {
+  .loading-overlay {
+    background: rgba(var(--ion-background-color-rgb, 0, 0, 0), 0.85);
+
+    .loading-content {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  .loading-skeleton {
+    .skeleton-item {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+
+// Animation for fade in/out
+:host {
+  .loading-overlay,
+  .loading-inline {
+    animation: fadeIn 0.2s ease-in;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

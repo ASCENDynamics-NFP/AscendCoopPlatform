@@ -35,6 +35,8 @@ import {WeekViewComponent} from "./components/week-view/week-view.component";
 import {NotesModalComponent} from "./components/notes-modal/notes-modal.component";
 import {AddProjectModalComponent} from "./components/add-project-modal/add-project-modal.component";
 import {StatusHistoryModalComponent} from "./components/status-history-modal/status-history-modal.component";
+import {TimeTrackingLoadingComponent} from "./components/time-tracking-loading/time-tracking-loading.component";
+import {UserDetailModalComponent} from "./components/user-detail-modal/user-detail-modal.component";
 import {timeTrackingReducer} from "../../state/reducers/time-tracking.reducer";
 import {TimeTrackingEffects} from "../../state/effects/time-tracking.effects";
 import {ProjectsEffects} from "../../state/effects/projects.effects";
@@ -59,6 +61,8 @@ import {TimesheetNotificationService} from "./services/timesheet-notification.se
     SharedModule,
     TimeTrackingRoutingModule,
     BaseChartDirective,
+    TimeTrackingLoadingComponent,
+    UserDetailModalComponent,
     StoreModule.forFeature("timeTracking", timeTrackingReducer),
     EffectsModule.forFeature([TimeTrackingEffects, ProjectsEffects]),
   ],

@@ -1,0 +1,235 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ userData.userName }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar *ngIf="hasDetailedEntries">
+    <ion-segment [(ngModel)]="selectedView" mode="ios">
+      <ion-segment-button value="overview">
+        <ion-label>{{ "time_tracking.overview" | translate }}</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="entries">
+        <ion-label>{{ "time_tracking.entries" | translate }}</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="projects">
+        <ion-label>{{ "time_tracking.projects" | translate }}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="user-detail-content">
+  <!-- Date Range Info -->
+  <div
+    class="date-range-info"
+    *ngIf="dateRange && (dateRange.start || dateRange.end)"
+  >
+    <ion-icon name="calendar-outline"></ion-icon>
+    <span
+      >{{ formatDateRange(dateRange.start) }} –
+      {{ formatDateRange(dateRange.end) }}</span
+    >
+  </div>
+
+  <!-- Overview Tab (Always shown) -->
+  <div
+    *ngIf="selectedView === 'overview' || !hasDetailedEntries"
+    class="overview-section"
+  >
+    <!-- Summary Stats -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-value">
+          {{ userData.totalHours | number: "1.1-1" }}
+        </div>
+        <div class="summary-label">
+          {{ "time_tracking.total_hours" | translate }}
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-value">
+          {{ userData.approvedHours | number: "1.1-1" }}
+        </div>
+        <div class="summary-label">
+          {{ "time_tracking.approved_hours" | translate }}
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-value">{{ userData.entryCount }}</div>
+        <div class="summary-label">
+          {{ "time_tracking.entries" | translate }}
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-value">
+          {{ getApprovalRate() | number: "1.0-0" }}%
+        </div>
+        <div class="summary-label">
+          {{ "time_tracking.approval_rate" | translate }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Breakdown (Only if detailed entries available) -->
+    <ion-card *ngIf="hasDetailedEntries && statusBreakdown.length > 0">
+      <ion-card-header>
+        <ion-card-title>{{
+          "time_tracking.status_breakdown" | translate
+        }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="status-list">
+          <div *ngFor="let status of statusBreakdown" class="status-item">
+            <div class="status-info">
+              <ion-icon
+                [name]="getStatusIcon(status.status)"
+                [color]="getStatusColor(status.status)"
+              ></ion-icon>
+              <span class="status-name">{{ status.status | titlecase }}</span>
+            </div>
+            <div class="status-stats">
+              <span class="hours"
+                >{{ status.hours | number: "1.1-1" }} hrs</span
+              >
+              <ion-badge [color]="getStatusColor(status.status)">{{
+                status.count
+              }}</ion-badge>
+            </div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Top Projects (Only if detailed entries available) -->
+    <ion-card *ngIf="hasDetailedEntries && projectBreakdown.length > 0">
+      <ion-card-header>
+        <ion-card-title>{{
+          "time_tracking.top_projects" | translate
+        }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="project-list">
+          <div
+            *ngFor="let project of projectBreakdown.slice(0, 5)"
+            class="project-item"
+          >
+            <div class="project-info">
+              <ion-icon name="folder-outline" color="primary"></ion-icon>
+              <span class="project-name">{{ project.projectName }}</span>
+            </div>
+            <div class="project-stats">
+              <span class="hours"
+                >{{ project.totalHours | number: "1.1-1" }} hrs</span
+              >
+              <span class="percentage"
+                >{{
+                  (project.totalHours / userData.totalHours) * 100
+                    | number: "1.0-0"
+                }}%</span
+              >
+            </div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Summary-Only Notice -->
+    <ion-card *ngIf="!hasDetailedEntries" class="summary-only-notice">
+      <ion-card-content>
+        <div class="notice-content">
+          <ion-icon
+            name="information-circle-outline"
+            color="primary"
+          ></ion-icon>
+          <p>{{ "time_tracking.summary_data_only" | translate }}</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Entries Tab (Only if detailed entries available) -->
+  <div
+    *ngIf="selectedView === 'entries' && hasDetailedEntries"
+    class="entries-section"
+  >
+    <ion-list>
+      <ion-item *ngFor="let entry of userData.entries" class="entry-item">
+        <ion-icon
+          [name]="getStatusIcon(entry.status)"
+          [color]="getStatusColor(entry.status)"
+          slot="start"
+        ></ion-icon>
+        <ion-label>
+          <h3>{{ entry.projectName }}</h3>
+          <p>{{ formatDate(entry.date) }}</p>
+          <p *ngIf="entry.notes" class="entry-notes">{{ entry.notes }}</p>
+        </ion-label>
+        <div slot="end" class="entry-hours">
+          <span class="hours-value">{{ entry.hours }}</span>
+          <span class="hours-label">hrs</span>
+        </div>
+      </ion-item>
+    </ion-list>
+    <div *ngIf="userData.entries.length === 0" class="empty-state">
+      <ion-icon name="document-text-outline"></ion-icon>
+      <p>{{ "time_tracking.no_entries" | translate }}</p>
+    </div>
+  </div>
+
+  <!-- Projects Tab (Only if detailed entries available) -->
+  <div
+    *ngIf="selectedView === 'projects' && hasDetailedEntries"
+    class="projects-section"
+  >
+    <ion-card
+      *ngFor="let project of projectBreakdown"
+      class="project-detail-card"
+    >
+      <ion-card-header>
+        <ion-card-title>{{ project.projectName }}</ion-card-title>
+        <ion-card-subtitle
+          >{{ project.entryCount }}
+          {{ "time_tracking.entries" | translate }}</ion-card-subtitle
+        >
+      </ion-card-header>
+      <ion-card-content>
+        <div class="project-stats-row">
+          <div class="stat">
+            <span class="stat-value">{{
+              project.totalHours | number: "1.1-1"
+            }}</span>
+            <span class="stat-label">{{
+              "time_tracking.hours" | translate
+            }}</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value"
+              >{{
+                (project.totalHours / userData.totalHours) * 100
+                  | number: "1.0-0"
+              }}%</span
+            >
+            <span class="stat-label">{{
+              "time_tracking.of_total_time" | translate
+            }}</span>
+          </div>
+        </div>
+        <!-- Progress bar showing percentage of total -->
+        <div class="progress-bar">
+          <div
+            class="progress-fill"
+            [style.width.%]="(project.totalHours / userData.totalHours) * 100"
+          ></div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+    <div *ngIf="projectBreakdown.length === 0" class="empty-state">
+      <ion-icon name="folder-outline"></ion-icon>
+      <p>{{ "time_tracking.no_projects" | translate }}</p>
+    </div>
+  </div>
+</ion-content>

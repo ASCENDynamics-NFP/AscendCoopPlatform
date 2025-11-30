@@ -1,0 +1,51 @@
+<!-- Time Tracking Loading Component -->
+<ng-container *ngIf="isLoading">
+  <!-- Overlay Mode - Used when loading over existing content -->
+  <div *ngIf="mode === 'overlay'" class="loading-overlay">
+    <div class="loading-content">
+      <ion-spinner [name]="spinnerName" [color]="spinnerColor"></ion-spinner>
+      <p *ngIf="message">{{ message | translate }}</p>
+    </div>
+  </div>
+
+  <!-- Inline Mode - Used for initial loading / empty state -->
+  <div *ngIf="mode === 'inline'" class="loading-inline">
+    <ion-spinner [name]="spinnerName" [color]="spinnerColor"></ion-spinner>
+    <p *ngIf="message">{{ message | translate }}</p>
+  </div>
+
+  <!-- Skeleton Mode - Placeholder content while loading -->
+  <div *ngIf="mode === 'skeleton'" class="loading-skeleton">
+    <div
+      *ngFor="let item of [].constructor(skeletonCount)"
+      class="skeleton-item"
+    >
+      <div class="skeleton-header">
+        <ion-skeleton-text
+          [animated]="true"
+          style="width: 40%"
+        ></ion-skeleton-text>
+        <ion-skeleton-text
+          [animated]="true"
+          style="width: 20%"
+        ></ion-skeleton-text>
+      </div>
+      <div class="skeleton-body">
+        <ion-skeleton-text
+          [animated]="true"
+          style="width: 100%"
+        ></ion-skeleton-text>
+        <ion-skeleton-text
+          [animated]="true"
+          style="width: 80%"
+        ></ion-skeleton-text>
+      </div>
+      <div class="skeleton-footer">
+        <ion-skeleton-text
+          [animated]="true"
+          style="width: 30%"
+        ></ion-skeleton-text>
+      </div>
+    </div>
+  </div>
+</ng-container>

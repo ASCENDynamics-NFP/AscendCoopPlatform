@@ -58,6 +58,190 @@
   }
 }
 
+// Summary Statistics Card
+.summary-stats-card {
+  margin-bottom: 24px;
+  padding: 20px;
+  border-radius: 12px;
+  background: var(--ion-color-light);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--ion-color-medium-tint);
+
+  .stats-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--ion-color-medium-tint);
+
+    ion-icon {
+      font-size: 1.4rem;
+      color: var(--ion-color-primary);
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: $font-weight-semibold;
+      color: var(--ion-color-dark);
+    }
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+
+    @media (max-width: 992px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 10px;
+    background: var(--ion-background-color, #fff);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    transition:
+      transform $transition-fast,
+      box-shadow $transition-fast;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      flex-shrink: 0;
+
+      ion-icon {
+        font-size: 1.5rem;
+      }
+    }
+
+    .stat-content {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+
+      .stat-value {
+        font-size: 1.75rem;
+        font-weight: $font-weight-bold;
+        line-height: 1.2;
+      }
+
+      .stat-label {
+        font-size: 0.85rem;
+        font-weight: $font-weight-medium;
+        color: var(--ion-color-medium-shade);
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+
+      .stat-hours {
+        font-size: 0.9rem;
+        font-weight: $font-weight-medium;
+        margin-top: 4px;
+      }
+    }
+
+    // Status-specific colors
+    &.pending {
+      border-left: 4px solid var(--ion-color-warning);
+
+      .stat-icon {
+        background: rgba(var(--ion-color-warning-rgb), 0.15);
+
+        ion-icon {
+          color: var(--ion-color-warning);
+        }
+      }
+
+      .stat-value {
+        color: var(--ion-color-warning-shade);
+      }
+
+      .stat-hours {
+        color: var(--ion-color-warning-shade);
+      }
+    }
+
+    &.approved {
+      border-left: 4px solid var(--ion-color-success);
+
+      .stat-icon {
+        background: rgba(var(--ion-color-success-rgb), 0.15);
+
+        ion-icon {
+          color: var(--ion-color-success);
+        }
+      }
+
+      .stat-value {
+        color: var(--ion-color-success-shade);
+      }
+
+      .stat-hours {
+        color: var(--ion-color-success-shade);
+      }
+    }
+
+    &.rejected {
+      border-left: 4px solid var(--ion-color-danger);
+
+      .stat-icon {
+        background: rgba(var(--ion-color-danger-rgb), 0.15);
+
+        ion-icon {
+          color: var(--ion-color-danger);
+        }
+      }
+
+      .stat-value {
+        color: var(--ion-color-danger-shade);
+      }
+
+      .stat-hours {
+        color: var(--ion-color-danger-shade);
+      }
+    }
+
+    &.total {
+      border-left: 4px solid var(--ion-color-primary);
+
+      .stat-icon {
+        background: rgba(var(--ion-color-primary-rgb), 0.15);
+
+        ion-icon {
+          color: var(--ion-color-primary);
+        }
+      }
+
+      .stat-value {
+        color: var(--ion-color-primary-shade);
+      }
+
+      .stat-hours {
+        color: var(--ion-color-primary-shade);
+      }
+    }
+  }
+}
+
 .controls-section {
   margin-bottom: 24px;
   padding: 16px;
@@ -71,15 +255,55 @@
     justify-content: space-between;
     margin-bottom: 16px;
 
+    .nav-label {
+      @media (max-width: 600px) {
+        display: none;
+      }
+    }
+
+    .current-period-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      flex: 1;
+    }
+
     .current-period {
       text-align: center;
-      flex: 1;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition:
+        background-color $transition-fast,
+        box-shadow $transition-fast;
+
+      &.clickable {
+        cursor: pointer;
+
+        &:hover {
+          background: rgba(var(--ion-color-primary-rgb), 0.08);
+        }
+
+        &:active {
+          background: rgba(var(--ion-color-primary-rgb), 0.12);
+        }
+      }
 
       h3 {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
         margin: 0 0 4px 0;
         font-size: 1.1rem;
         font-weight: $font-weight-semibold;
         color: var(--ion-color-dark);
+
+        .calendar-icon {
+          font-size: 1rem;
+          color: var(--ion-color-primary);
+          transition: transform $transition-fast;
+        }
       }
 
       p {
@@ -88,24 +312,35 @@
         color: var(--ion-color-medium-shade);
       }
     }
-  }
 
-  .view-controls {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
+    .date-picker-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      margin-top: 8px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--ion-color-medium-tint);
+      overflow: hidden;
 
-    ion-segment {
-      flex: 1;
-      max-width: 400px;
+      ion-datetime {
+        --background: #ffffff;
+        max-width: 320px;
+      }
     }
 
-    ion-toggle {
-      --handle-background: var(--ion-color-primary);
-      --background: var(--ion-color-medium-tint);
-      --background-checked: var(--ion-color-primary-tint);
-      margin-left: auto;
+    .jump-to-today-btn {
+      margin-top: 4px;
+      --color: var(--ion-color-primary);
+      font-size: 0.85rem;
+      font-weight: $font-weight-medium;
+
+      ion-icon {
+        font-size: 1rem;
+      }
     }
   }
 }
@@ -116,11 +351,19 @@
   .section-header {
     margin-bottom: 16px;
 
+    .section-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
     h2 {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin: 0 0 8px 0;
+      margin: 0;
       font-size: 1.3rem;
       font-weight: $font-weight-semibold;
       color: var(--ion-color-dark);
@@ -128,6 +371,22 @@
       ion-icon {
         font-size: 1.4rem;
         color: var(--ion-color-primary);
+      }
+    }
+
+    .expand-collapse-controls {
+      display: flex;
+      gap: 8px;
+
+      .expand-collapse-btn {
+        --padding-start: 12px;
+        --padding-end: 12px;
+        font-size: 0.875rem;
+        font-weight: $font-weight-medium;
+
+        ion-icon {
+          font-size: 1.1rem;
+        }
       }
     }
 
@@ -149,6 +408,25 @@
   border-radius: 8px;
   margin-bottom: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+
+  // Expand chevron styling
+  .expand-chevron {
+    font-size: 1.4rem;
+    color: var(--ion-color-medium);
+    margin-left: 8px;
+    transition:
+      transform $transition-fast,
+      color $transition-fast;
+  }
+
+  &.expanded .expand-chevron {
+    color: var(--ion-color-primary);
+  }
+
+  &:hover .expand-chevron {
+    color: var(--ion-color-primary);
+  }
 
   ion-label {
     h2 {
@@ -277,6 +555,25 @@
         }
       }
     }
+
+    .history-action {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--ion-color-light-shade);
+      display: flex;
+      justify-content: flex-end;
+
+      .view-history-btn {
+        --padding-start: 12px;
+        --padding-end: 12px;
+        font-size: 0.875rem;
+        font-weight: $font-weight-medium;
+
+        ion-icon {
+          font-size: 1.1rem;
+        }
+      }
+    }
   }
 }
 
@@ -342,21 +639,6 @@
         }
       }
     }
-
-    .view-controls {
-      flex-direction: column;
-      gap: 12px;
-
-      ion-segment {
-        max-width: none;
-        font-size: 0.9rem;
-      }
-
-      ion-toggle {
-        margin-left: 0;
-        align-self: flex-start;
-      }
-    }
   }
 
   .timesheet-item {
@@ -403,8 +685,20 @@
       gap: 4px;
 
       ion-button {
-        flex: 1;
+        --padding-start: 8px;
+        --padding-end: 8px;
         --height: 32px;
+        min-width: 32px;
+
+        // Hide text labels on small screens, show only icons
+        .button-label {
+          display: none;
+        }
+
+        ion-icon {
+          margin: 0;
+          font-size: 1.1rem;
+        }
       }
     }
   }
@@ -413,20 +707,46 @@
     .time-entries-details {
       .entries-grid {
         .entry-row {
-          grid-template-columns: 1fr;
-          gap: 4px;
-          text-align: left;
+          // Two-row layout: date + hours on top, project below
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 4px 8px;
+          padding: 10px 0;
 
-          .date,
-          .project,
-          .hours {
+          .date {
+            flex: 1;
+            min-width: 100px;
             text-align: left;
           }
 
+          .hours {
+            text-align: right;
+            flex-shrink: 0;
+            min-width: 45px;
+          }
+
           .project {
+            flex-basis: 100%;
+            order: 3;
             font-weight: 400;
             color: var(--ion-color-secondary-shade);
+            font-size: 0.8rem;
+            white-space: normal;
+            margin-top: 2px;
           }
+
+          .notes-button {
+            order: 4;
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+          }
+
+          // Make entry-row relative for notes button positioning
+          position: relative;
+          padding-right: 36px;
         }
       }
     }
@@ -472,74 +792,208 @@ ion-button:focus-visible {
 // Filter Controls Styling
 .filter-controls {
   margin: 16px 0;
-  padding: 16px;
+  padding: 12px 16px;
   background: var(--ion-color-light);
   border-radius: 8px;
   border: 1px solid var(--ion-color-light-shade);
 
+  &.compact {
+    padding: 12px 16px;
+  }
+
   .filter-row {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     margin-bottom: 12px;
-    align-items: flex-end;
+    align-items: center;
     flex-wrap: wrap;
 
     &:last-child {
       margin-bottom: 0;
     }
-
-    @media (max-width: 768px) {
-      flex-direction: column;
-      gap: 8px;
-      align-items: stretch;
-    }
   }
 
-  .filter-item {
-    flex: 1;
-    min-width: 140px;
-    --padding-start: 0;
-    --padding-end: 0;
+  // Primary row: search + toggle
+  .primary-row {
+    .search-item {
+      flex: 1;
+      min-width: 200px;
+      max-width: 350px;
+      --padding-start: 0;
+      --padding-end: 0;
+      --inner-padding-end: 0;
+    }
 
-    ion-label {
+    .show-all-toggle {
+      --handle-background: var(--ion-color-primary);
+      --background: var(--ion-color-medium-tint);
+      --background-checked: var(--ion-color-primary-tint);
       font-size: 0.875rem;
-      font-weight: $font-weight-medium;
-      color: var(--ion-color-medium-shade);
+      margin-left: auto;
     }
 
-    ion-select,
-    ion-toggle {
-      margin-top: 4px;
-    }
+    @media (max-width: 600px) {
+      flex-direction: column;
+      align-items: stretch;
 
-    @media (max-width: 768px) {
-      min-width: unset;
+      .search-item {
+        max-width: unset;
+      }
+
+      .show-all-toggle {
+        margin-left: 0;
+        align-self: flex-start;
+      }
     }
   }
 
-  .sort-direction-btn {
-    --padding-start: 8px;
-    --padding-end: 8px;
-    margin-top: 8px;
-    font-size: 0.875rem;
+  // Secondary row: status, sort, direction
+  .secondary-row {
+    .filter-item {
+      --padding-start: 0;
+      --padding-end: 0;
+      --inner-padding-end: 0;
+      min-width: auto;
+
+      .compact-select {
+        min-width: 120px;
+        --padding-start: 8px;
+        --padding-end: 8px;
+        font-size: 0.875rem;
+      }
+    }
+
+    .sort-direction-btn {
+      --padding-start: 8px;
+      --padding-end: 8px;
+      --height: 36px;
+      font-size: 1rem;
+
+      ion-icon {
+        font-size: 1.1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .filter-item .compact-select {
+        min-width: 100px;
+      }
+    }
+  }
+
+  .search-input-wrapper {
+    display: flex;
+    align-items: center;
+    background: var(--ion-background-color, #ffffff);
+    border: 1px solid var(--ion-color-medium-tint);
+    border-radius: 8px;
+    padding: 0 12px;
+    transition:
+      border-color $transition-fast,
+      box-shadow $transition-fast;
+
+    &:focus-within {
+      border-color: var(--ion-color-primary);
+      box-shadow: 0 0 0 2px rgba(var(--ion-color-primary-rgb), 0.15);
+    }
+
+    .search-icon {
+      color: var(--ion-color-medium);
+      font-size: 1.1rem;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+
+    .search-input {
+      flex: 1;
+      --padding-start: 0;
+      --padding-end: 0;
+      --padding-top: 8px;
+      --padding-bottom: 8px;
+      --background: transparent;
+      font-size: 0.9rem;
+    }
+
+    .clear-search-btn {
+      --padding-start: 4px;
+      --padding-end: 4px;
+      margin: 0;
+      flex-shrink: 0;
+
+      ion-icon {
+        font-size: 1.1rem;
+        color: var(--ion-color-medium);
+      }
+
+      &:hover ion-icon {
+        color: var(--ion-color-danger);
+      }
+    }
   }
 
   .bulk-actions {
     display: flex;
+    flex-direction: column;
     gap: 12px;
-    margin-top: 16px;
-    padding-top: 16px;
+    margin-top: 12px;
+    padding-top: 12px;
     border-top: 1px solid var(--ion-color-light-shade);
-    justify-content: center;
 
-    @media (max-width: 768px) {
-      flex-direction: column;
-      gap: 8px;
+    .selection-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: center;
+
+      .select-all-btn {
+        --padding-start: 8px;
+        --padding-end: 12px;
+        font-size: 0.875rem;
+
+        ion-icon {
+          font-size: 1.2rem;
+        }
+      }
+
+      .selection-count {
+        font-size: 0.875rem;
+        font-weight: $font-weight-medium;
+        color: var(--ion-color-primary);
+        background: rgba(var(--ion-color-primary-rgb), 0.1);
+        padding: 4px 12px;
+        border-radius: 16px;
+      }
     }
 
-    ion-button {
-      --padding-start: 16px;
-      --padding-end: 16px;
+    .bulk-action-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      ion-button {
+        --padding-start: 16px;
+        --padding-end: 16px;
+
+        .count-badge {
+          margin-left: 4px;
+          font-weight: $font-weight-bold;
+        }
+      }
+
+      .export-btn {
+        margin-left: auto;
+
+        @media (max-width: 768px) {
+          margin-left: 0;
+          margin-top: 8px;
+        }
+      }
     }
   }
 }
@@ -552,31 +1006,48 @@ ion-button:focus-visible {
   position: relative;
   overflow: hidden;
 
-  // Status-based styling
-  &.approved {
-    background: var(--ion-color-success-tint);
-    border-left: 4px solid var(--ion-color-success);
-    animation: approvalPulse 0.6s ease-out;
+  // Ensure text is always readable with dark colors
+  ion-label {
+    h2,
+    h3 {
+      color: var(--ion-color-dark) !important;
+    }
 
-    .status-icon {
-      animation: iconBounce 0.5s ease-out;
+    p {
+      color: var(--ion-color-dark-shade) !important;
+    }
+  }
+
+  // Status-based styling - using subtle backgrounds with colored accents
+  &.approved {
+    --background: rgba(var(--ion-color-success-rgb), 0.08);
+    background: rgba(var(--ion-color-success-rgb), 0.08);
+    border-left: 4px solid var(--ion-color-success);
+
+    ion-label h3 {
+      color: var(--ion-color-success-shade) !important;
     }
   }
 
   &.rejected {
-    background: var(--ion-color-danger-tint);
+    --background: rgba(var(--ion-color-danger-rgb), 0.08);
+    background: rgba(var(--ion-color-danger-rgb), 0.08);
     border-left: 4px solid var(--ion-color-danger);
-    animation: rejectionShake 0.6s ease-out;
 
-    .status-icon {
-      animation: iconBounce 0.5s ease-out;
+    ion-label h3 {
+      color: var(--ion-color-danger-shade) !important;
     }
   }
 
   &.pending {
-    background: var(--ion-color-warning-tint);
+    --background: rgba(var(--ion-color-warning-rgb), 0.08);
+    background: rgba(var(--ion-color-warning-rgb), 0.08);
     border-left: 4px solid var(--ion-color-warning);
     position: relative;
+
+    ion-label h3 {
+      color: var(--ion-color-warning-shade) !important;
+    }
 
     &::before {
       content: "";
@@ -596,9 +1067,10 @@ ion-button:focus-visible {
   }
 
   &.draft {
-    background: var(--ion-color-medium-tint);
+    --background: rgba(var(--ion-color-medium-rgb), 0.08);
+    background: rgba(var(--ion-color-medium-rgb), 0.08);
     border-left: 4px solid var(--ion-color-medium);
-    opacity: 0.8;
+    opacity: 0.85;
   }
 
   // Enhanced hover effects
@@ -611,6 +1083,74 @@ ion-button:focus-visible {
   &:focus-within {
     outline: 2px solid var(--ion-color-primary);
     outline-offset: 2px;
+  }
+
+  // Selection checkbox styling
+  .selection-checkbox {
+    --size: 22px;
+    --checkbox-background: var(--ion-color-light);
+    --checkbox-background-checked: var(--ion-color-primary);
+    --border-color: var(--ion-color-medium);
+    --border-color-checked: var(--ion-color-primary);
+    --border-width: 2px;
+    --border-radius: 4px;
+    --checkmark-color: var(--ion-color-primary-contrast);
+    margin-right: $spacing-sm;
+    margin-left: 0;
+    flex-shrink: 0;
+
+    &::part(container) {
+      border-radius: 4px;
+    }
+  }
+
+  // Selected state styling
+  &.selected {
+    --background: rgba(var(--ion-color-primary-rgb), 0.12);
+    background: rgba(var(--ion-color-primary-rgb), 0.12);
+    box-shadow: 0 0 0 2px var(--ion-color-primary);
+
+    &.pending {
+      border-left-color: var(--ion-color-primary);
+    }
+  }
+}
+
+// Dark mode adjustments for selection
+@include dark-mode {
+  .timesheet-item {
+    .selection-checkbox {
+      --checkbox-background: var(--ion-color-dark-shade);
+      --border-color: var(--ion-color-medium-shade);
+    }
+
+    &.selected {
+      --background: rgba(var(--ion-color-primary-rgb), 0.2);
+      background: rgba(var(--ion-color-primary-rgb), 0.2);
+    }
+  }
+
+  // Dark mode for week picker
+  .week-navigation {
+    .current-period {
+      &.clickable:hover {
+        background: rgba(var(--ion-color-primary-rgb), 0.15);
+      }
+
+      h3 {
+        color: #ffffff !important;
+      }
+    }
+
+    .date-picker-dropdown {
+      background: #1e1e1e !important;
+      border-color: var(--ion-color-medium-shade);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+
+      ion-datetime {
+        --background: #1e1e1e !important;
+      }
+    }
   }
 }
 
@@ -650,38 +1190,9 @@ ion-button:focus-visible {
   }
 }
 
-// Animations
-@keyframes approvalPulse {
-  0% {
-    background: var(--ion-color-success);
-  }
-  50% {
-    background: var(--ion-color-success-tint);
-  }
-  100% {
-    background: var(--ion-color-success-tint);
-  }
-}
-
-@keyframes rejectionShake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  10%,
-  30%,
-  50%,
-  70%,
-  90% {
-    transform: translateX(-2px);
-  }
-  20%,
-  40%,
-  60%,
-  80% {
-    transform: translateX(2px);
-  }
-}
+// Note: Entry/fade-in animations were removed to prevent bright flashes on initial load.
+// Status colors are now applied statically. The pendingPulse animation below is retained
+// for the subtle pending indicator effect on pending timesheet items.
 
 @keyframes pendingPulse {
   0%,
@@ -690,16 +1201,6 @@ ion-button:focus-visible {
   }
   50% {
     opacity: 1;
-  }
-}
-
-@keyframes iconBounce {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.2);
   }
 }
 
@@ -729,5 +1230,94 @@ ion-button:focus-visible {
   .filter-controls {
     background: var(--ion-item-background, #000000);
     border: 1px solid var(--ion-color-step-250, #404040);
+
+    .search-row {
+      border-bottom-color: var(--ion-color-step-250, #404040);
+    }
+
+    .search-input-wrapper {
+      background: var(--ion-color-step-100, #1a1a1a);
+      border-color: var(--ion-color-step-250, #404040);
+
+      &:focus-within {
+        border-color: var(--ion-color-primary);
+      }
+
+      .search-icon {
+        color: var(--ion-color-medium-tint);
+      }
+
+      .search-input {
+        --color: #ffffff;
+        --placeholder-color: var(--ion-color-medium);
+        color: #ffffff !important;
+
+        input {
+          color: #ffffff !important;
+        }
+      }
+    }
+  }
+
+  .summary-stats-card {
+    background: var(--ion-item-background, #1e1e1e);
+    border-color: var(--ion-color-step-250, #404040);
+
+    .stats-header {
+      border-bottom-color: var(--ion-color-step-250, #404040);
+
+      h3 {
+        color: #ffffff;
+      }
+    }
+
+    .stat-item {
+      background: var(--ion-color-step-100, #2a2a2a);
+
+      .stat-label {
+        color: var(--ion-color-medium);
+      }
+    }
+  }
+
+  // Timesheet items in dark mode - ensure readable text
+  .timesheet-item {
+    ion-label {
+      p {
+        color: var(--ion-color-medium-tint) !important;
+      }
+    }
+
+    &.approved {
+      --background: rgba(var(--ion-color-success-rgb), 0.15);
+      background: rgba(var(--ion-color-success-rgb), 0.15);
+
+      ion-label h3 {
+        color: var(--ion-color-success-tint) !important;
+      }
+    }
+
+    &.rejected {
+      --background: rgba(var(--ion-color-danger-rgb), 0.15);
+      background: rgba(var(--ion-color-danger-rgb), 0.15);
+
+      ion-label h3 {
+        color: var(--ion-color-danger-tint) !important;
+      }
+    }
+
+    &.pending {
+      --background: rgba(var(--ion-color-warning-rgb), 0.15);
+      background: rgba(var(--ion-color-warning-rgb), 0.15);
+
+      ion-label h3 {
+        color: var(--ion-color-warning-tint) !important;
+      }
+    }
+
+    &.draft {
+      --background: rgba(var(--ion-color-medium-rgb), 0.15);
+      background: rgba(var(--ion-color-medium-rgb), 0.15);
+    }
   }
 }

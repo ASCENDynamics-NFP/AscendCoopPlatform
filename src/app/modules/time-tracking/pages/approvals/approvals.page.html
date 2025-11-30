@@ -33,6 +33,76 @@
       </div>
     </div>
 
+    <!-- Summary Statistics Card -->
+    <div class="summary-stats-card" *ngIf="summaryStats$ | async as stats">
+      <div class="stats-header">
+        <ion-icon name="stats-chart-outline"></ion-icon>
+        <h3>{{ 'time_tracking.summary_statistics' | translate }}</h3>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-item pending">
+          <div class="stat-icon">
+            <ion-icon name="hourglass-outline"></ion-icon>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value">{{ stats.pending.count }}</span>
+            <span class="stat-label"
+              >{{ 'time_tracking.pending' | translate }}</span
+            >
+            <span class="stat-hours"
+              >{{ stats.pending.hours | number:'1.1-1' }} {{
+              'time_tracking.hours' | translate }}</span
+            >
+          </div>
+        </div>
+        <div class="stat-item approved">
+          <div class="stat-icon">
+            <ion-icon name="checkmark-done-circle-outline"></ion-icon>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value">{{ stats.approved.count }}</span>
+            <span class="stat-label"
+              >{{ 'time_tracking.approved' | translate }}</span
+            >
+            <span class="stat-hours"
+              >{{ stats.approved.hours | number:'1.1-1' }} {{
+              'time_tracking.hours' | translate }}</span
+            >
+          </div>
+        </div>
+        <div class="stat-item rejected">
+          <div class="stat-icon">
+            <ion-icon name="ban-outline"></ion-icon>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value">{{ stats.rejected.count }}</span>
+            <span class="stat-label"
+              >{{ 'time_tracking.rejected' | translate }}</span
+            >
+            <span class="stat-hours"
+              >{{ stats.rejected.hours | number:'1.1-1' }} {{
+              'time_tracking.hours' | translate }}</span
+            >
+          </div>
+        </div>
+        <div class="stat-item total">
+          <div class="stat-icon">
+            <ion-icon name="layers-outline"></ion-icon>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value">{{ stats.total.count }}</span>
+            <span class="stat-label"
+              >{{ 'time_tracking.total_timesheets' | translate }}</span
+            >
+            <span class="stat-hours"
+              >{{ stats.total.hours | number:'1.1-1' }} {{ 'time_tracking.hours'
+              | translate }}</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Navigation and Controls Section -->
     <div class="controls-section">
       <!-- Week Navigation -->
@@ -42,14 +112,60 @@
           size="small"
           (click)="previousWeek()"
           [disabled]="showAllWeeks"
+          [attr.aria-label]="'time_tracking.previous_week' | translate"
         >
           <ion-icon name="chevron-back" slot="start"></ion-icon>
-          {{ 'time_tracking.previous_week' | translate }}
+          <span class="nav-label"
+            >{{ 'time_tracking.previous_week' | translate }}</span
+          >
         </ion-button>
 
-        <div class="current-period">
-          <h3>{{ getCurrentWeekLabel() }}</h3>
-          <p>{{ getCurrentWeekRange() }}</p>
+        <div class="current-period-wrapper">
+          <div
+            class="current-period"
+            [class.clickable]="!showAllWeeks"
+            (click)="toggleDatePicker()"
+            role="button"
+            [attr.aria-expanded]="isDatePickerOpen"
+            [attr.aria-label]="'time_tracking.select_week' | translate"
+          >
+            <h3>
+              {{ getCurrentWeekLabel() }}
+              <ion-icon
+                *ngIf="!showAllWeeks"
+                [name]="isDatePickerOpen ? 'calendar' : 'calendar-outline'"
+                class="calendar-icon"
+              ></ion-icon>
+            </h3>
+            <p>{{ getCurrentWeekRange() }}</p>
+          </div>
+
+          <!-- Date Picker Dropdown -->
+          <div
+            class="date-picker-dropdown"
+            *ngIf="isDatePickerOpen && !showAllWeeks"
+          >
+            <ion-datetime
+              presentation="date"
+              [value]="selectedDate"
+              (ionChange)="onDateSelected($event)"
+              [firstDayOfWeek]="0"
+              size="cover"
+            ></ion-datetime>
+          </div>
+
+          <!-- Jump to This Week Button -->
+          <ion-button
+            *ngIf="!showAllWeeks && !isCurrentWeek()"
+            fill="clear"
+            size="small"
+            class="jump-to-today-btn"
+            (click)="jumpToThisWeek()"
+            [attr.aria-label]="'time_tracking.jump_to_this_week' | translate"
+          >
+            <ion-icon name="today-outline" slot="start"></ion-icon>
+            {{ 'time_tracking.this_week' | translate }}
+          </ion-button>
         </div>
 
         <ion-button
@@ -57,53 +173,61 @@
           size="small"
           (click)="nextWeek()"
           [disabled]="showAllWeeks"
+          [attr.aria-label]="'time_tracking.next_week' | translate"
         >
-          {{ 'time_tracking.next_week' | translate }}
+          <span class="nav-label"
+            >{{ 'time_tracking.next_week' | translate }}</span
+          >
           <ion-icon name="chevron-forward" slot="end"></ion-icon>
         </ion-button>
       </div>
 
-      <!-- View Mode Selector -->
-      <div class="view-controls">
-        <ion-segment
-          [(ngModel)]="viewMode"
-          (ionChange)="setViewMode($event.detail.value)"
-        >
-          <ion-segment-button value="by-user">
-            <ion-label>{{ 'time_tracking.by_user' | translate }}</ion-label>
-            <ion-icon name="person"></ion-icon>
-          </ion-segment-button>
-          <ion-segment-button value="by-project">
-            <ion-label>{{ 'time_tracking.by_project' | translate }}</ion-label>
-            <ion-icon name="folder"></ion-icon>
-          </ion-segment-button>
-          <ion-segment-button value="all">
-            <ion-label>{{ 'time_tracking.all' | translate }}</ion-label>
-            <ion-icon name="list"></ion-icon>
-          </ion-segment-button>
-        </ion-segment>
-
-        <ion-toggle
-          [checked]="showAllWeeks"
-          (ionChange)="toggleShowAllWeeks($event)"
-        >
-          {{ 'time_tracking.show_all_weeks' | translate }}
-        </ion-toggle>
-      </div>
-
       <!-- Filter Controls -->
-      <div class="filter-controls">
-        <div class="filter-row">
-          <!-- Status Filter -->
+      <div class="filter-controls compact">
+        <!-- First Row: Search and Show All Weeks -->
+        <div class="filter-row primary-row">
+          <ion-item lines="none" class="filter-item search-item">
+            <div class="search-input-wrapper">
+              <ion-icon name="search-outline" class="search-icon"></ion-icon>
+              <ion-input
+                type="text"
+                [(ngModel)]="userSearchTerm"
+                (ionInput)="onUserSearchChange($event)"
+                [placeholder]="'time_tracking.search_user_placeholder' | translate"
+                [clearInput]="false"
+                class="search-input"
+              ></ion-input>
+              <ion-button
+                *ngIf="userSearchTerm"
+                fill="clear"
+                size="small"
+                (click)="clearUserSearch()"
+                class="clear-search-btn"
+                [attr.aria-label]="'time_tracking.clear_search' | translate"
+              >
+                <ion-icon name="close-circle" slot="icon-only"></ion-icon>
+              </ion-button>
+            </div>
+          </ion-item>
+
+          <ion-toggle
+            [checked]="showAllWeeks"
+            (ionChange)="toggleShowAllWeeks($event)"
+            class="show-all-toggle"
+          >
+            {{ 'time_tracking.show_all_weeks' | translate }}
+          </ion-toggle>
+        </div>
+
+        <!-- Second Row: Status, Sort, Direction -->
+        <div class="filter-row secondary-row">
           <ion-item lines="none" class="filter-item">
-            <ion-label position="stacked"
-              >{{ 'time_tracking.filter_by_status' | translate }}</ion-label
-            >
             <ion-select
               [(ngModel)]="statusFilter"
               (ionChange)="setStatusFilter($event.detail.value)"
               interface="popover"
-              placeholder="All Statuses"
+              [placeholder]="'time_tracking.all_statuses' | translate"
+              class="compact-select"
             >
               <ion-select-option value="all"
                 >{{ 'time_tracking.all_statuses' | translate
@@ -121,24 +245,18 @@
             </ion-select>
           </ion-item>
 
-        </div>
-
-        <div class="filter-row">
-          <!-- Sort Controls -->
           <ion-item lines="none" class="filter-item">
-            <ion-label position="stacked"
-              >{{ 'time_tracking.sort_by' | translate }}</ion-label
-            >
             <ion-select
               [(ngModel)]="sortBy"
               (ionChange)="setSortBy($event.detail.value)"
               interface="popover"
+              class="compact-select"
             >
               <ion-select-option value="date"
                 >{{ 'time_tracking.date' | translate }}</ion-select-option
               >
               <ion-select-option value="user"
-                >{{ 'time_tracking.user' | translate }}</ion-select-option
+                >{{ 'time_tracking.name' | translate }}</ion-select-option
               >
               <ion-select-option value="hours"
                 >{{ 'time_tracking.hours' | translate }}</ion-select-option
@@ -149,53 +267,91 @@
             </ion-select>
           </ion-item>
 
-          <!-- Sort Direction Toggle -->
-          <ion-item lines="none" class="filter-item">
+          <ion-button
+            fill="clear"
+            size="small"
+            (click)="toggleSortDirection()"
+            class="sort-direction-btn"
+          >
+            <ion-icon
+              [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"
+            ></ion-icon>
+          </ion-button>
+        </div>
+
+        <!-- Bulk Actions Row -->
+        <div class="bulk-actions">
+          <!-- Selection Controls -->
+          <div class="selection-controls">
             <ion-button
               fill="clear"
               size="small"
-              (click)="toggleSortDirection()"
-              class="sort-direction-btn"
+              (click)="allPendingSelected ? deselectAll() : selectAllPending()"
+              class="select-all-btn"
             >
               <ion-icon
-                [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"
+                [name]="allPendingSelected ? 'checkbox' : 'square-outline'"
                 slot="start"
               ></ion-icon>
-              {{ sortDirection === 'asc' ? ('time_tracking.ascending' |
-              translate) : ('time_tracking.descending' | translate) }}
+              {{ allPendingSelected ? ('time_tracking.deselect_all' | translate)
+              : ('time_tracking.select_all_pending' | translate) }}
             </ion-button>
-          </ion-item>
-        </div>
+            <span class="selection-count" *ngIf="getSelectedCount() > 0">
+              {{ getSelectedCount() }} {{ 'time_tracking.selected' | translate
+              }}
+            </span>
+          </div>
 
-        <!-- Bulk Actions -->
-        <div class="bulk-actions" *ngIf="viewMode === 'by-user'">
-          <ion-button
-            fill="outline"
-            color="success"
-            size="small"
-            [disabled]="isProcessing"
-            (click)="bulkApprove()"
-          >
-            <ion-icon
-              [name]="isProcessing ? 'hourglass' : 'checkmark-done'"
-              slot="start"
-            ></ion-icon>
-            {{ 'time_tracking.approve_all_pending' | translate }}
-          </ion-button>
+          <!-- Bulk Action Buttons -->
+          <div class="bulk-action-buttons">
+            <ion-button
+              fill="outline"
+              color="success"
+              size="small"
+              [disabled]="isProcessing"
+              (click)="bulkApprove()"
+            >
+              <ion-icon
+                [name]="isProcessing ? 'hourglass' : 'checkmark-done'"
+                slot="start"
+              ></ion-icon>
+              {{ getSelectedCount() > 0 ? ('time_tracking.approve_selected' |
+              translate) : ('time_tracking.approve_all_pending' | translate) }}
+              <span *ngIf="getSelectedCount() > 0" class="count-badge"
+                >({{ getSelectedCount() }})</span
+              >
+            </ion-button>
 
-          <ion-button
-            fill="outline"
-            color="danger"
-            size="small"
-            [disabled]="isProcessing"
-            (click)="bulkReject()"
-          >
-            <ion-icon
-              [name]="isProcessing ? 'hourglass' : 'close-circle'"
-              slot="start"
-            ></ion-icon>
-            {{ 'time_tracking.reject_all_pending' | translate }}
-          </ion-button>
+            <ion-button
+              fill="outline"
+              color="danger"
+              size="small"
+              [disabled]="isProcessing"
+              (click)="bulkReject()"
+            >
+              <ion-icon
+                [name]="isProcessing ? 'hourglass' : 'close-circle'"
+                slot="start"
+              ></ion-icon>
+              {{ getSelectedCount() > 0 ? ('time_tracking.reject_selected' |
+              translate) : ('time_tracking.reject_all_pending' | translate) }}
+              <span *ngIf="getSelectedCount() > 0" class="count-badge"
+                >({{ getSelectedCount() }})</span
+              >
+            </ion-button>
+
+            <!-- Export CSV Button -->
+            <ion-button
+              fill="outline"
+              color="medium"
+              size="small"
+              (click)="exportToCSV()"
+              class="export-btn"
+            >
+              <ion-icon name="download-outline" slot="start"></ion-icon>
+              {{ 'time_tracking.export_csv' | translate }}
+            </ion-button>
+          </div>
         </div>
       </div>
     </div>
@@ -204,12 +360,33 @@
     <div class="approvals-section">
       <ng-container *ngIf="displayEntries$ | async as displayEntries">
         <div class="section-header">
-          <h2>
-            <ion-icon [name]="getViewIcon()"></ion-icon>
-            {{ getViewTitleKey() | translate }}
-          </h2>
+          <div class="section-title-row">
+            <h2>
+              <ion-icon name="person-outline"></ion-icon>
+              {{ 'time_tracking.timesheets_by_user' | translate }}
+            </h2>
+            <!-- Expand/Collapse All Buttons -->
+            <div
+              class="expand-collapse-controls"
+              *ngIf="displayEntries.length > 0"
+            >
+              <ion-button
+                fill="clear"
+                size="small"
+                (click)="allExpanded ? collapseAllGroups() : expandAllGroups()"
+                class="expand-collapse-btn"
+              >
+                <ion-icon
+                  [name]="allExpanded ? 'chevron-collapse-outline' : 'chevron-expand-outline'"
+                  slot="start"
+                ></ion-icon>
+                {{ allExpanded ? ('time_tracking.collapse_all' | translate) :
+                ('time_tracking.expand_all' | translate) }}
+              </ion-button>
+            </div>
+          </div>
           <p *ngIf="displayEntries.length === 0" class="no-entries">
-            {{ getEmptyMessageKey() | translate }}
+            {{ 'time_tracking.no_timesheets_period' | translate }}
           </p>
         </div>
 
@@ -231,7 +408,22 @@
               [class.rejected]="group.status === 'rejected'"
               [class.pending]="group.status === 'pending'"
               [class.draft]="group.status === 'draft'"
+              [class.expanded]="isGroupExpanded(group)"
+              [class.selected]="isGroupSelected(group)"
+              (click)="toggleGroupExpansion(group)"
+              button
             >
+              <!-- Selection Checkbox for Pending Items -->
+              <ion-checkbox
+                *ngIf="group.status === 'pending'"
+                slot="start"
+                [checked]="isGroupSelected(group)"
+                (ionChange)="toggleGroupSelection(group, $event)"
+                (click)="$event.stopPropagation()"
+                class="selection-checkbox"
+                aria-label="Select timesheet for bulk action"
+              ></ion-checkbox>
+
               <ion-icon
                 [name]="getStatusIcon(group.status)"
                 [color]="getStatusColor(group.status)"
@@ -260,28 +452,43 @@
                 </div>
               </ion-label>
 
+              <!-- Expand/Collapse Chevron -->
+              <ion-icon
+                [name]="isGroupExpanded(group) ? 'chevron-up' : 'chevron-down'"
+                slot="end"
+                class="expand-chevron"
+                [attr.aria-label]="isGroupExpanded(group) ? ('time_tracking.click_to_collapse' | translate) : ('time_tracking.click_to_expand' | translate)"
+              ></ion-icon>
+
               <div
                 class="action-buttons"
                 slot="end"
                 *ngIf="group.status === 'pending'"
+                (click)="$event.stopPropagation()"
               >
                 <ion-button
                   fill="outline"
                   color="success"
                   size="small"
-                  (click)="approveTimesheet(group)"
+                  (click)="approveTimesheet(group); $event.stopPropagation()"
+                  [attr.aria-label]="'time_tracking.approve' | translate"
                 >
                   <ion-icon name="checkmark" slot="start"></ion-icon>
-                  {{ 'time_tracking.approve' | translate }}
+                  <span class="button-label"
+                    >{{ 'time_tracking.approve' | translate }}</span
+                  >
                 </ion-button>
                 <ion-button
                   fill="outline"
                   color="danger"
                   size="small"
-                  (click)="rejectTimesheet(group)"
+                  (click)="rejectTimesheet(group); $event.stopPropagation()"
+                  [attr.aria-label]="'time_tracking.reject' | translate"
                 >
                   <ion-icon name="close" slot="start"></ion-icon>
-                  {{ 'time_tracking.reject' | translate }}
+                  <span class="button-label"
+                    >{{ 'time_tracking.reject' | translate }}</span
+                  >
                 </ion-button>
               </div>
 
@@ -297,7 +504,12 @@
               </div>
             </ion-item>
 
-            <ion-item class="details-item">
+            <!-- Collapsible Details Section -->
+            <ion-item
+              class="details-item"
+              *ngIf="isGroupExpanded(group)"
+              @slideInOut
+            >
               <ion-label>
                 <div class="time-entries-details">
                   <h4>{{ 'time_tracking.time_entry_details' | translate }}</h4>
@@ -315,7 +527,7 @@
                         fill="clear"
                         size="small"
                         class="notes-button"
-                        (click)="openNotesModal(entry)"
+                        (click)="openNotesModal(entry); $event.stopPropagation()"
                         [color]="hasEntryNotes(entry) ? 'primary' : undefined"
                       >
                         <ion-icon
@@ -327,6 +539,19 @@
                         ></ion-icon>
                       </ion-button>
                     </div>
+                  </div>
+
+                  <!-- View History Button -->
+                  <div class="history-action">
+                    <ion-button
+                      fill="clear"
+                      size="small"
+                      (click)="openStatusHistoryModal(group); $event.stopPropagation()"
+                      class="view-history-btn"
+                    >
+                      <ion-icon name="time-outline" slot="start"></ion-icon>
+                      {{ 'time_tracking.view_history' | translate }}
+                    </ion-button>
                   </div>
                 </div>
               </ion-label>

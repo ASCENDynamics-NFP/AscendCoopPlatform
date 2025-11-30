@@ -1,0 +1,102 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      <ion-icon name="time-outline" class="title-icon"></ion-icon>
+      {{ "time_tracking.status_history" | translate }}
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="history-content">
+  <div class="history-container">
+    <!-- User Header -->
+    <div class="user-header">
+      <ion-avatar class="user-avatar">
+        <ion-icon name="person"></ion-icon>
+      </ion-avatar>
+      <div class="user-info">
+        <h2>{{ group.userName }}</h2>
+        <p>
+          {{ "time_tracking.week_of" | translate }}
+          {{ group.weekStart | date: "mediumDate" }}
+        </p>
+        <div class="summary-row">
+          <ion-chip [color]="getStatusColor(group.status)" size="small">
+            <ion-icon
+              [name]="getStatusIcon(group.status)"
+              slot="start"
+            ></ion-icon>
+            {{ getStatusLabel(group.status) }}
+          </ion-chip>
+          <span class="hours-badge"
+            >{{ group.totalHours | number: "1.1-1" }}
+            {{ "time_tracking.hours" | translate }}</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline" *ngIf="statusHistory.length > 0">
+      <div
+        class="timeline-item"
+        *ngFor="
+          let item of statusHistory;
+          let i = index;
+          let last = last;
+          trackBy: trackByIndex
+        "
+        [ngClass]="'status-' + item.status"
+      >
+        <!-- Timeline Connector -->
+        <div class="timeline-connector">
+          <div class="timeline-dot" [ngClass]="'dot-' + item.status">
+            <ion-icon [name]="getStatusIcon(item.status)"></ion-icon>
+          </div>
+          <div class="timeline-line" *ngIf="!last"></div>
+        </div>
+
+        <!-- Timeline Content -->
+        <div class="timeline-content">
+          <div class="timeline-header">
+            <span class="status-label">{{ getStatusLabel(item.status) }}</span>
+            <span
+              class="timeline-time"
+              [title]="formatTimestamp(item.changedAt)"
+            >
+              {{ getRelativeTime(item.changedAt) }}
+            </span>
+          </div>
+
+          <div class="timeline-body">
+            <div class="changed-by">
+              <ion-icon name="person-outline"></ion-icon>
+              <span>{{ item.changedByName }}</span>
+            </div>
+
+            <div class="reason-box" *ngIf="item.reason">
+              <ion-icon name="chatbubble-outline"></ion-icon>
+              <p>{{ item.reason }}</p>
+            </div>
+          </div>
+
+          <div class="timeline-footer">
+            <span class="full-date">{{ formatTimestamp(item.changedAt) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-history" *ngIf="statusHistory.length === 0">
+      <ion-icon name="time-outline" class="empty-icon"></ion-icon>
+      <h3>{{ "time_tracking.no_history" | translate }}</h3>
+      <p>{{ "time_tracking.no_history_message" | translate }}</p>
+    </div>
+  </div>
+</ion-content>

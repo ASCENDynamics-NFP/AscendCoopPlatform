@@ -141,7 +141,7 @@ Enhance the Listings module with advanced search, location-based discovery, impr
 - ✅ Complex geo queries handled server-side
 - ✅ Better performance for large datasets
 - ⚠️ Cold start latency (~1-2s first request)
-- [ ] Confirm approach with team
+- [x] Confirm approach with team
 
 ### 2. Map Component Library
 
@@ -151,9 +151,9 @@ Enhance the Listings module with advanced search, location-based discovery, impr
 | Leaflet     | Free, open-source, lightweight | Less polished, manual tile provider |
 | Mapbox      | Beautiful maps, good free tier | Complexity, another dependency      |
 
-- [ ] Check if Google Maps API key already exists in `environment.ts`
-- [ ] Evaluate bundle size impact
-- [ ] Make final library decision
+- [x] Check if Google Maps API key already exists in `environment.ts`
+- [x] Evaluate bundle size impact
+- [x] Make final library decision
 
 ### 3. Applicant Status Model Change
 
@@ -162,8 +162,8 @@ Enhance the Listings module with advanced search, location-based discovery, impr
 - Existing statuses remain valid: `"applied"`, `"accepted"`, `"declined"`, `"withdrawn"`
 - Add new optional statuses: `"reviewing"`, `"interviewed"`
 - Update `manageApplication()` callable to accept new status values
-- [ ] Update Firestore security rules for new status values
-- [ ] No migration script needed (additive change)
+- [x] Update Firestore security rules for new status values
+- [x] No migration script needed (additive change)
 
 ---
 

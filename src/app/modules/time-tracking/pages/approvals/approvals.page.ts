@@ -20,6 +20,7 @@
 // src/app/modules/time-tracking/pages/approvals/approvals.page.ts
 
 import {Component, OnInit, OnDestroy} from "@angular/core";
+import {trigger, style, transition, animate} from "@angular/animations";
 import {Store} from "@ngrx/store";
 import {ActivatedRoute} from "@angular/router";
 import {Observable, Subscription, combineLatest, BehaviorSubject} from "rxjs";
@@ -41,6 +42,7 @@ import {
 } from "@ionic/angular";
 import {TimesheetNotificationService} from "../../services/timesheet-notification.service";
 import {NotesModalComponent} from "../../components/notes-modal/notes-modal.component";
+import {StatusHistoryModalComponent} from "../../components/status-history-modal/status-history-modal.component";
 
 interface GroupedEntries {
   userId: string;
@@ -53,33 +55,52 @@ interface GroupedEntries {
   projectName?: string;
 }
 
-interface ProjectGroupedEntries {
-  projectId: string;
-  projectName: string;
-  totalHours: number;
-  users: {
-    userId: string;
-    userName: string;
-    entries: TimeEntry[];
-    totalHours: number;
-    status: "draft" | "pending" | "approved" | "rejected";
-  }[];
+interface SummaryStats {
+  pending: {count: number; hours: number};
+  approved: {count: number; hours: number};
+  rejected: {count: number; hours: number};
+  total: {count: number; hours: number};
 }
 
-type ViewMode = "all" | "by-user" | "by-project";
+interface ApprovalsPreferences {
+  showAllWeeks: boolean;
+  statusFilter: "all" | "pending" | "approved" | "rejected";
+  sortBy: "date" | "user" | "hours" | "status";
+  sortDirection: "asc" | "desc";
+}
+
+const APPROVALS_STORAGE_KEY = "approvals-preferences";
 
 @Component({
   selector: "app-approvals",
   templateUrl: "./approvals.page.html",
   styleUrls: ["./approvals.page.scss"],
+  animations: [
+    trigger("slideInOut", [
+      transition(":enter", [
+        style({height: "0", opacity: 0, overflow: "hidden"}),
+        animate(
+          "200ms ease-out",
+          style({height: "*", opacity: 1, overflow: "hidden"}),
+        ),
+      ]),
+      transition(":leave", [
+        style({height: "*", opacity: 1, overflow: "hidden"}),
+        animate(
+          "200ms ease-in",
+          style({height: "0", opacity: 0, overflow: "hidden"}),
+        ),
+      ]),
+    ]),
+  ],
 })
 export class ApprovalsPage implements OnInit, OnDestroy {
   accountId: string = "";
   account$!: Observable<Account | undefined>;
   currentUser$!: Observable<AuthUser | null>;
   groupedEntries$!: Observable<GroupedEntries[]>;
-  projectGroupedEntries$!: Observable<ProjectGroupedEntries[]>;
   displayEntries$!: Observable<GroupedEntries[]>;
+  summaryStats$!: Observable<SummaryStats>;
 
   // Navigation and filtering properties
   currentWeekStart: Date = (() => {
@@ -89,7 +110,6 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     return d;
   })();
 
-  viewMode: ViewMode = "by-user";
   showAllWeeks = false;
 
   // Filter properties
@@ -97,6 +117,33 @@ export class ApprovalsPage implements OnInit, OnDestroy {
   sortBy: "date" | "user" | "hours" | "status" = "date";
   sortDirection: "asc" | "desc" = "desc";
   isProcessing = false;
+
+  // User search property
+  userSearchTerm = "";
+
+  // Collapsible groups tracking
+  expandedGroups = new Set<string>();
+  allExpanded = false;
+
+  // Selection tracking for batch operations
+  selectedGroups = new Set<string>();
+  allPendingSelected = false;
+
+  // Week picker state
+  isDatePickerOpen = false;
+  selectedDate: string = new Date().toISOString();
+
+  // Undo functionality - track pending actions
+  private pendingActions = new Map<
+    string,
+    {
+      timeoutId: ReturnType<typeof setTimeout>;
+      group: GroupedEntries;
+      status: "approved" | "rejected";
+      rejectionReason?: string;
+    }
+  >();
+  private readonly UNDO_DELAY_MS = 10000; // 10 seconds to undo
 
   // Reactive streams for properties that affect data filtering
   private showAllWeeks$ = new BehaviorSubject<boolean>(false);
@@ -115,7 +162,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     "date",
   );
   private sortDirection$ = new BehaviorSubject<"asc" | "desc">("desc");
-  private viewMode$ = new BehaviorSubject<ViewMode>("by-user");
+  private userSearchTerm$ = new BehaviorSubject<string>("");
 
   private subscriptions = new Subscription();
 
@@ -130,6 +177,9 @@ export class ApprovalsPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.accountId = this.route.snapshot.paramMap.get("accountId") ?? "";
+
+    // Load saved preferences from localStorage
+    this.loadPreferences();
 
     // Load account data
     this.account$ = this.store.select(selectAccountById(this.accountId));
@@ -189,76 +239,41 @@ export class ApprovalsPage implements OnInit, OnDestroy {
       ),
     );
 
-    this.projectGroupedEntries$ = combineLatest([
-      this.store.select(selectAllEntriesForAccount(this.accountId)),
-      this.showAllWeeks$,
-      this.currentWeekStart$,
-      this.statusFilter$,
-      this.sortBy$,
-      this.sortDirection$,
-    ]).pipe(
-      filter(([entries]) => !!entries),
-      map(
-        ([
-          entries,
-          showAllWeeks,
-          currentWeekStart,
-          statusFilter,
-          sortBy,
-          sortDirection,
-        ]) => {
-          const filteredEntries = showAllWeeks
-            ? entries
-            : this.filterEntriesByWeek(entries, currentWeekStart);
-          let projectGroupedEntries =
-            this.groupEntriesByProject(filteredEntries);
-
-          // Apply status filtering at the user level within projects
-          if (statusFilter !== "all") {
-            projectGroupedEntries = projectGroupedEntries
-              .map((project) => ({
-                ...project,
-                users: project.users.filter((user) => {
-                  return user.status === statusFilter;
-                }),
-              }))
-              .filter((project) => project.users.length > 0);
-          }
-
-          return this.sortProjectGroupedEntries(
-            projectGroupedEntries,
-            sortBy,
-            sortDirection,
-          );
-        },
-      ),
-    );
-
     this.displayEntries$ = combineLatest([
       this.groupedEntries$,
-      this.projectGroupedEntries$,
-      this.viewMode$,
+      this.userSearchTerm$,
     ]).pipe(
-      map(([groupedEntries, projectGroups, viewMode]) => {
+      map(([groupedEntries, searchTerm]) => {
         let groups = groupedEntries;
 
-        if (viewMode === "by-project") {
-          const projectEntries: GroupedEntries[] = [];
-          projectGroups.forEach((project) => {
-            project.users.forEach((user) => {
-              const userGroups = this.groupEntriesByUserAndWeek(
-                user.entries,
-              ).map((group) => ({
-                ...group,
-                projectName: project.projectName,
-              }));
-              projectEntries.push(...userGroups);
-            });
-          });
-          groups = projectEntries;
+        // Apply user search filter
+        if (searchTerm && searchTerm.trim().length > 0) {
+          const normalizedSearch = searchTerm.toLowerCase().trim();
+          groups = groups.filter(
+            (group) =>
+              group.userName.toLowerCase().includes(normalizedSearch) ||
+              group.userEmail.toLowerCase().includes(normalizedSearch),
+          );
         }
 
         return this.sortGroupedEntries(groups, this.sortBy, this.sortDirection);
+      }),
+    );
+
+    // Create summary statistics observable (based on unfiltered grouped entries)
+    this.summaryStats$ = combineLatest([
+      this.store.select(selectAllEntriesForAccount(this.accountId)),
+      this.showAllWeeks$,
+      this.currentWeekStart$,
+    ]).pipe(
+      filter(([entries]) => !!entries),
+      map(([entries, showAllWeeks, currentWeekStart]) => {
+        const filteredEntries = showAllWeeks
+          ? entries
+          : this.filterEntriesByWeek(entries, currentWeekStart);
+        return this.calculateSummaryStats(
+          this.groupEntriesByUserAndWeek(filteredEntries),
+        );
       }),
     );
   }
@@ -267,6 +282,167 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
     this.showAllWeeks$.complete();
     this.currentWeekStart$.complete();
+    this.userSearchTerm$.complete();
+
+    // Clear all pending undo actions and execute them immediately
+    this.pendingActions.forEach((action) => {
+      clearTimeout(action.timeoutId);
+      this.executeStatusUpdate(
+        action.group,
+        action.status,
+        action.rejectionReason,
+      );
+    });
+    this.pendingActions.clear();
+  }
+
+  // Preferences persistence methods
+  private loadPreferences(): void {
+    try {
+      const stored = localStorage.getItem(APPROVALS_STORAGE_KEY);
+      if (stored) {
+        const prefs: ApprovalsPreferences = JSON.parse(stored);
+        if (typeof prefs.showAllWeeks === "boolean")
+          this.showAllWeeks = prefs.showAllWeeks;
+        if (prefs.statusFilter) this.statusFilter = prefs.statusFilter;
+        if (prefs.sortBy) this.sortBy = prefs.sortBy;
+        if (prefs.sortDirection) this.sortDirection = prefs.sortDirection;
+      }
+    } catch {
+      // If parsing fails, use defaults
+      console.warn(
+        "Failed to load approvals preferences from localStorage. Using default settings.",
+      );
+    }
+  }
+
+  private savePreferences(): void {
+    try {
+      const prefs: ApprovalsPreferences = {
+        showAllWeeks: this.showAllWeeks,
+        statusFilter: this.statusFilter,
+        sortBy: this.sortBy,
+        sortDirection: this.sortDirection,
+      };
+      localStorage.setItem(APPROVALS_STORAGE_KEY, JSON.stringify(prefs));
+    } catch {
+      // localStorage might be full or disabled
+      console.warn("Failed to save approvals preferences to localStorage");
+    }
+  }
+
+  // User search methods
+  onUserSearchChange(event: CustomEvent<{value?: string | null}>) {
+    const searchTerm = event.detail?.value ?? "";
+    this.userSearchTerm = searchTerm;
+    this.userSearchTerm$.next(searchTerm);
+  }
+
+  clearUserSearch() {
+    this.userSearchTerm = "";
+    this.userSearchTerm$.next("");
+  }
+
+  // Collapsible group methods
+  getGroupKey(group: GroupedEntries): string {
+    return `${group.userId}_${group.weekStart.getTime()}`;
+  }
+
+  isGroupExpanded(group: GroupedEntries): boolean {
+    return this.expandedGroups.has(this.getGroupKey(group));
+  }
+
+  toggleGroupExpansion(group: GroupedEntries): void {
+    const key = this.getGroupKey(group);
+    if (this.expandedGroups.has(key)) {
+      this.expandedGroups.delete(key);
+    } else {
+      this.expandedGroups.add(key);
+    }
+    this.updateAllExpandedState();
+  }
+
+  expandAllGroups(): void {
+    this.displayEntries$.pipe(take(1)).subscribe((groups) => {
+      groups.forEach((group) => {
+        this.expandedGroups.add(this.getGroupKey(group));
+      });
+      this.allExpanded = true;
+    });
+  }
+
+  collapseAllGroups(): void {
+    this.expandedGroups.clear();
+    this.allExpanded = false;
+  }
+
+  private updateAllExpandedState(): void {
+    this.displayEntries$.pipe(take(1)).subscribe((groups) => {
+      this.allExpanded =
+        groups.length > 0 &&
+        groups.every((group) =>
+          this.expandedGroups.has(this.getGroupKey(group)),
+        );
+    });
+  }
+
+  // Selection methods for batch operations
+  isGroupSelected(group: GroupedEntries): boolean {
+    return this.selectedGroups.has(this.getGroupKey(group));
+  }
+
+  toggleGroupSelection(group: GroupedEntries, event: Event): void {
+    event.stopPropagation();
+    const key = this.getGroupKey(group);
+    if (this.selectedGroups.has(key)) {
+      this.selectedGroups.delete(key);
+    } else {
+      this.selectedGroups.add(key);
+    }
+    this.updateAllPendingSelectedState();
+  }
+
+  selectAllPending(): void {
+    this.displayEntries$.pipe(take(1)).subscribe((groups) => {
+      groups
+        .filter((group) => group.status === "pending")
+        .forEach((group) => {
+          this.selectedGroups.add(this.getGroupKey(group));
+        });
+      this.allPendingSelected = true;
+    });
+  }
+
+  deselectAll(): void {
+    this.selectedGroups.clear();
+    this.allPendingSelected = false;
+  }
+
+  getSelectedCount(): number {
+    return this.selectedGroups.size;
+  }
+
+  getSelectedPendingGroups(): GroupedEntries[] {
+    let result: GroupedEntries[] = [];
+    this.displayEntries$.pipe(take(1)).subscribe((groups) => {
+      result = groups.filter(
+        (group) =>
+          group.status === "pending" &&
+          this.selectedGroups.has(this.getGroupKey(group)),
+      );
+    });
+    return result;
+  }
+
+  private updateAllPendingSelectedState(): void {
+    this.displayEntries$.pipe(take(1)).subscribe((groups) => {
+      const pendingGroups = groups.filter((g) => g.status === "pending");
+      this.allPendingSelected =
+        pendingGroups.length > 0 &&
+        pendingGroups.every((group) =>
+          this.selectedGroups.has(this.getGroupKey(group)),
+        );
+    });
   }
 
   private groupEntriesByUserAndWeek(entries: TimeEntry[]): GroupedEntries[] {
@@ -344,66 +520,6 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     });
   }
 
-  private groupEntriesByProject(entries: TimeEntry[]): ProjectGroupedEntries[] {
-    const grouped = new Map<string, ProjectGroupedEntries>();
-
-    // Filter out draft entries as they shouldn't appear in approvals
-    const submittedEntries = entries.filter(
-      (entry) => entry.status !== "draft",
-    );
-
-    submittedEntries.forEach((entry) => {
-      const projectId = entry.projectId;
-      const projectName = entry.projectName || "Unknown Project";
-
-      if (!grouped.has(projectId)) {
-        grouped.set(projectId, {
-          projectId,
-          projectName,
-          totalHours: 0,
-          users: [],
-        });
-      }
-
-      const project = grouped.get(projectId)!;
-
-      // Find or create user group within this project
-      let userGroup = project.users.find((u) => u.userId === entry.userId);
-      if (!userGroup) {
-        userGroup = {
-          userId: entry.userId,
-          userName: entry.userName || "Unknown User",
-          entries: [],
-          totalHours: 0,
-          status: "pending",
-        };
-        project.users.push(userGroup);
-      }
-
-      userGroup.entries.push(entry);
-      userGroup.totalHours += entry.hours;
-      project.totalHours += entry.hours;
-
-      // Update user name if this entry has a more complete name
-      if (entry.userName && entry.userName !== "Unknown User") {
-        userGroup.userName = entry.userName;
-      }
-
-      // Determine overall status for the user within this project
-      if (userGroup.entries.some((e) => e.status === "rejected")) {
-        userGroup.status = "rejected";
-      } else if (userGroup.entries.every((e) => e.status === "approved")) {
-        userGroup.status = "approved";
-      } else {
-        userGroup.status = "pending";
-      }
-    });
-
-    return Array.from(grouped.values()).sort((a, b) => {
-      return a.projectName.localeCompare(b.projectName);
-    });
-  }
-
   getWeekRange(weekStart: Date): string {
     const endDate = new Date(weekStart);
     endDate.setDate(endDate.getDate() + 6);
@@ -449,6 +565,18 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     const alert = await this.alertController.create({
       header: "Reject Timesheet",
       message: `Reject ${group.totalHours} hours for ${group.userName} for week ${this.getWeekRange(group.weekStart)}?`,
+      inputs: [
+        {
+          name: "reason",
+          type: "textarea",
+          placeholder: "Please provide a reason for rejection (required)",
+          attributes: {
+            rows: 3,
+            minlength: 10,
+            maxlength: 500,
+          },
+        },
+      ],
       buttons: [
         {
           text: "Cancel",
@@ -456,8 +584,16 @@ export class ApprovalsPage implements OnInit, OnDestroy {
         },
         {
           text: "Reject",
-          handler: () => {
-            this.updateTimesheetStatus(group, "rejected");
+          handler: (data) => {
+            const reason = data.reason?.trim();
+            if (!reason || reason.length < 10) {
+              this.showValidationError(
+                "Please provide a rejection reason (at least 10 characters).",
+              );
+              return false; // Prevent alert from closing
+            }
+            this.updateTimesheetStatus(group, "rejected", reason);
+            return true;
           },
         },
       ],
@@ -466,13 +602,118 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
+  /**
+   * Show a validation error toast
+   */
+  private async showValidationError(message: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      color: "warning",
+      position: "top",
+    });
+    await toast.present();
+  }
+
+  /**
+   * Schedule a timesheet status update with undo capability
+   */
   private updateTimesheetStatus(
     group: GroupedEntries,
     status: "approved" | "rejected",
+    rejectionReason?: string,
+  ) {
+    const actionKey = this.getGroupKey(group);
+
+    // Cancel any existing pending action for this group
+    if (this.pendingActions.has(actionKey)) {
+      const existingAction = this.pendingActions.get(actionKey)!;
+      clearTimeout(existingAction.timeoutId);
+      this.pendingActions.delete(actionKey);
+    }
+
+    // Schedule the actual update after delay
+    const timeoutId = setTimeout(() => {
+      this.executeStatusUpdate(group, status, rejectionReason);
+      this.pendingActions.delete(actionKey);
+    }, this.UNDO_DELAY_MS);
+
+    // Store the pending action
+    this.pendingActions.set(actionKey, {
+      timeoutId,
+      group,
+      status,
+      rejectionReason,
+    });
+
+    // Show undo toast
+    this.showUndoToast(group, status);
+  }
+
+  /**
+   * Show a toast with undo button
+   */
+  private async showUndoToast(
+    group: GroupedEntries,
+    status: "approved" | "rejected",
+  ) {
+    const actionKey = this.getGroupKey(group);
+    const message =
+      status === "approved"
+        ? `Approving timesheet for ${group.userName}...`
+        : `Rejecting timesheet for ${group.userName}...`;
+
+    const toast = await this.toastController.create({
+      message,
+      duration: this.UNDO_DELAY_MS,
+      color: status === "approved" ? "success" : "warning",
+      position: "bottom",
+      buttons: [
+        {
+          text: "Undo",
+          role: "cancel",
+          handler: () => {
+            this.undoAction(actionKey);
+          },
+        },
+      ],
+    });
+
+    await toast.present();
+
+    // When toast dismisses naturally (not by undo), the action will execute via timeout
+    toast.onDidDismiss().then((result) => {
+      // If dismissed by undo button, the handler already took care of it
+      // If dismissed by timeout or swipe, the setTimeout will handle execution
+    });
+  }
+
+  /**
+   * Cancel a pending action (undo)
+   */
+  private undoAction(actionKey: string) {
+    const pendingAction = this.pendingActions.get(actionKey);
+    if (pendingAction) {
+      clearTimeout(pendingAction.timeoutId);
+      this.pendingActions.delete(actionKey);
+      this.showToast("Action undone", "medium");
+    }
+  }
+
+  /**
+   * Execute the actual status update (called after undo delay)
+   */
+  private executeStatusUpdate(
+    group: GroupedEntries,
+    status: "approved" | "rejected",
+    rejectionReason?: string,
   ) {
     // Get current user for audit trail
     this.currentUser$
-      .pipe(filter((user) => !!user))
+      .pipe(
+        filter((user) => !!user),
+        take(1),
+      )
       .subscribe((currentUser) => {
         const approvalTimestamp = Timestamp.now();
 
@@ -483,6 +724,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
             changedByName:
               currentUser!.displayName || currentUser!.email || "Unknown",
             changedAt: approvalTimestamp,
+            reason: rejectionReason,
           };
 
           // Add to note history for admin actions
@@ -491,7 +733,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
             content:
               status === "approved"
                 ? "Timesheet approved"
-                : "Timesheet rejected",
+                : `Timesheet rejected: ${rejectionReason || "No reason provided"}`,
             createdBy: currentUser!.uid,
             createdByName:
               currentUser!.displayName || currentUser!.email || "Unknown",
@@ -507,7 +749,9 @@ export class ApprovalsPage implements OnInit, OnDestroy {
             approvedByName:
               currentUser!.displayName || currentUser!.email || "Unknown",
             approvedAt: approvalTimestamp,
-            originalHours: entry.originalHours || entry.hours, // Preserve original if not already set
+            originalHours: entry.originalHours || entry.hours,
+            rejectionReason:
+              status === "rejected" ? rejectionReason : undefined,
             statusHistory: [...(entry.statusHistory || []), statusChange],
             noteHistory: [...(entry.noteHistory || []), noteHistoryEntry],
           };
@@ -532,7 +776,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
             group.userId,
             group.weekStart,
             group.totalHours,
-            "",
+            rejectionReason || "",
             currentUser!.displayName || currentUser!.email || "Unknown",
             currentUser!.uid,
             group.entries[0].accountId,
@@ -599,19 +843,59 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     this.currentWeekStart$.next(newDate);
   }
 
-  toggleShowAllWeeks(event: any) {
-    this.showAllWeeks = event.detail.checked;
-    this.showAllWeeks$.next(this.showAllWeeks);
+  /**
+   * Jump to the current week (week containing today)
+   */
+  jumpToThisWeek() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    today.setDate(today.getDate() - today.getDay());
+    this.currentWeekStart = today;
+    this.currentWeekStart$.next(today);
+    this.selectedDate = new Date().toISOString();
   }
 
-  setViewMode(mode: any) {
-    if (
-      mode &&
-      (mode === "all" || mode === "by-user" || mode === "by-project")
-    ) {
-      this.viewMode = mode as ViewMode;
-      this.viewMode$.next(this.viewMode);
+  /**
+   * Check if the current view is showing this week
+   */
+  isCurrentWeek(): boolean {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const thisWeekStart = new Date(today);
+    thisWeekStart.setDate(today.getDate() - today.getDay());
+    return this.currentWeekStart.getTime() === thisWeekStart.getTime();
+  }
+
+  /**
+   * Handle date selection from date picker
+   */
+  onDateSelected(event: CustomEvent<{value?: string | string[] | null}>) {
+    const value = event.detail.value;
+    if (!value || Array.isArray(value)) return;
+    const selectedDate = new Date(value);
+    selectedDate.setHours(0, 0, 0, 0);
+    // Calculate the week start (Sunday) for the selected date
+    const weekStart = new Date(selectedDate);
+    weekStart.setDate(selectedDate.getDate() - selectedDate.getDay());
+    this.currentWeekStart = weekStart;
+    this.currentWeekStart$.next(weekStart);
+    this.selectedDate = value;
+    this.isDatePickerOpen = false;
+  }
+
+  /**
+   * Toggle the date picker popover
+   */
+  toggleDatePicker() {
+    if (!this.showAllWeeks) {
+      this.isDatePickerOpen = !this.isDatePickerOpen;
     }
+  }
+
+  toggleShowAllWeeks(event: CustomEvent<{checked: boolean}>) {
+    this.showAllWeeks = event.detail.checked;
+    this.showAllWeeks$.next(this.showAllWeeks);
+    this.savePreferences();
   }
 
   getCurrentWeekLabel(): string {
@@ -636,47 +920,19 @@ export class ApprovalsPage implements OnInit, OnDestroy {
   setStatusFilter(status: "all" | "pending" | "approved" | "rejected") {
     this.statusFilter = status;
     this.statusFilter$.next(status);
+    this.savePreferences();
   }
 
   setSortBy(sortBy: "date" | "user" | "hours" | "status") {
     this.sortBy = sortBy;
     this.sortBy$.next(sortBy);
+    this.savePreferences();
   }
 
   toggleSortDirection() {
     this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc";
     this.sortDirection$.next(this.sortDirection);
-  }
-
-  getViewTitleKey(): string {
-    switch (this.viewMode) {
-      case "by-project":
-        return "time_tracking.timesheets_by_project";
-      case "all":
-        return "time_tracking.all_timesheets";
-      case "by-user":
-      default:
-        return "time_tracking.timesheets_by_user";
-    }
-  }
-
-  getEmptyMessageKey(): string {
-    if (this.viewMode === "by-project") {
-      return "time_tracking.no_project_timesheets_period";
-    }
-    return "time_tracking.no_timesheets_period";
-  }
-
-  getViewIcon(): string {
-    switch (this.viewMode) {
-      case "by-project":
-        return "folder-outline";
-      case "all":
-        return "list-outline";
-      case "by-user":
-      default:
-        return "person-outline";
-    }
+    this.savePreferences();
   }
 
   // Sorting methods
@@ -711,57 +967,24 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     return sortedEntries;
   }
 
-  private sortProjectGroupedEntries(
-    entries: ProjectGroupedEntries[],
-    sortBy: "date" | "user" | "hours" | "status",
-    direction: "asc" | "desc",
-  ): ProjectGroupedEntries[] {
-    return entries.map((project) => ({
-      ...project,
-      users: [...project.users].sort((a, b) => {
-        let comparison = 0;
-
-        switch (sortBy) {
-          case "user":
-            comparison = a.userName.localeCompare(b.userName);
-            break;
-          case "hours":
-            comparison = a.totalHours - b.totalHours;
-            break;
-          case "status":
-            const statusOrder = {
-              pending: 1,
-              approved: 2,
-              rejected: 3,
-              draft: 4,
-            };
-            comparison = statusOrder[a.status] - statusOrder[b.status];
-            break;
-          case "date":
-            // For projects, sort by first entry date
-            const aFirstDate = this.toDate(a.entries[0]?.date);
-            const bFirstDate = this.toDate(b.entries[0]?.date);
-            comparison = aFirstDate.getTime() - bFirstDate.getTime();
-            break;
-        }
-
-        return direction === "asc" ? comparison : -comparison;
-      }),
-    }));
-  }
-
   // Bulk approval methods
   async bulkApprove() {
+    const selectedCount = this.getSelectedCount();
+    const message =
+      selectedCount > 0
+        ? `Approve ${selectedCount} selected timesheet(s)?`
+        : "Approve all pending timesheets?";
+
     const alert = await this.alertController.create({
       header: "Bulk Approve",
-      message: "Approve all pending timesheets?",
+      message,
       buttons: [
         {
           text: "Cancel",
           role: "cancel",
         },
         {
-          text: "Approve All",
+          text: selectedCount > 0 ? `Approve ${selectedCount}` : "Approve All",
           role: "confirm",
           cssClass: "confirm-button",
           handler: () => {
@@ -775,20 +998,45 @@ export class ApprovalsPage implements OnInit, OnDestroy {
   }
 
   async bulkReject() {
+    const selectedCount = this.getSelectedCount();
+    const message =
+      selectedCount > 0
+        ? `Reject ${selectedCount} selected timesheet(s)?`
+        : "Reject all pending timesheets?";
+
     const alert = await this.alertController.create({
       header: "Bulk Reject",
-      message: "Reject all pending timesheets?",
+      message,
+      inputs: [
+        {
+          name: "reason",
+          type: "textarea",
+          placeholder: "Please provide a reason for rejection (required)",
+          attributes: {
+            rows: 3,
+            minlength: 10,
+            maxlength: 500,
+          },
+        },
+      ],
       buttons: [
         {
           text: "Cancel",
           role: "cancel",
         },
         {
-          text: "Reject All",
-          role: "confirm",
+          text: selectedCount > 0 ? `Reject ${selectedCount}` : "Reject All",
           cssClass: "danger-button",
-          handler: () => {
-            this.performBulkAction("rejected");
+          handler: (data) => {
+            const reason = data.reason?.trim();
+            if (!reason || reason.length < 10) {
+              this.showValidationError(
+                "Please provide a rejection reason (at least 10 characters).",
+              );
+              return false; // Prevent alert from closing
+            }
+            this.performBulkAction("rejected", reason);
+            return true;
           },
         },
       ],
@@ -825,7 +1073,10 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     return isNaN(coerced.getTime()) ? new Date(0) : coerced;
   }
 
-  private performBulkAction(status: "approved" | "rejected") {
+  private performBulkAction(
+    status: "approved" | "rejected",
+    rejectionReason?: string,
+  ) {
     // Prevent multiple clicks
     if (this.isProcessing) {
       return;
@@ -837,30 +1088,109 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     this.groupedEntries$
       .pipe(take(1))
       .subscribe((entries: GroupedEntries[]) => {
-        const pendingEntries = entries.filter(
-          (group) => group.status === "pending",
-        );
+        let entriesToProcess: GroupedEntries[];
 
-        if (pendingEntries.length === 0) {
+        // If there are selected items, process only those; otherwise process all pending
+        if (this.selectedGroups.size > 0) {
+          entriesToProcess = entries.filter(
+            (group) =>
+              group.status === "pending" &&
+              this.selectedGroups.has(this.getGroupKey(group)),
+          );
+        } else {
+          entriesToProcess = entries.filter(
+            (group) => group.status === "pending",
+          );
+        }
+
+        if (entriesToProcess.length === 0) {
           this.showToast("No pending timesheets to process", "warning");
           this.isProcessing = false;
           return;
         }
 
-        // Process all entries synchronously since updateTimesheetStatus is void
-        pendingEntries.forEach((group) => {
-          this.updateTimesheetStatus(group, status);
-        });
+        // Schedule bulk action with undo capability
+        this.scheduleBulkAction(entriesToProcess, status, rejectionReason);
 
-        // Show completion message and reset processing flag
-        setTimeout(() => {
-          this.showToast(
-            `${pendingEntries.length} timesheets ${status}`,
-            status === "approved" ? "success" : "warning",
-          );
-          this.isProcessing = false;
-        }, 100); // Small delay to ensure all dispatches are processed
+        // Clear selection after scheduling
+        this.selectedGroups.clear();
+        this.allPendingSelected = false;
+        this.isProcessing = false;
       });
+  }
+
+  /**
+   * Schedule a bulk action with undo capability
+   */
+  private scheduleBulkAction(
+    groups: GroupedEntries[],
+    status: "approved" | "rejected",
+    rejectionReason?: string,
+  ) {
+    const bulkActionKey = `bulk_${Date.now()}`;
+
+    // Cancel any individual pending actions for these groups
+    groups.forEach((group) => {
+      const actionKey = this.getGroupKey(group);
+      if (this.pendingActions.has(actionKey)) {
+        const existingAction = this.pendingActions.get(actionKey)!;
+        clearTimeout(existingAction.timeoutId);
+        this.pendingActions.delete(actionKey);
+      }
+    });
+
+    // Schedule the bulk update after delay
+    const timeoutId = setTimeout(() => {
+      groups.forEach((group) => {
+        this.executeStatusUpdate(group, status, rejectionReason);
+      });
+      this.pendingActions.delete(bulkActionKey);
+      this.showToast(
+        `${groups.length} timesheets ${status}`,
+        status === "approved" ? "success" : "warning",
+      );
+    }, this.UNDO_DELAY_MS);
+
+    // Store the bulk pending action (store first group as representative)
+    this.pendingActions.set(bulkActionKey, {
+      timeoutId,
+      group: groups[0],
+      status,
+      rejectionReason,
+    });
+
+    // Show bulk undo toast
+    this.showBulkUndoToast(bulkActionKey, groups.length, status);
+  }
+
+  /**
+   * Show a toast with undo button for bulk actions
+   */
+  private async showBulkUndoToast(
+    bulkActionKey: string,
+    count: number,
+    status: "approved" | "rejected",
+  ) {
+    const actionWord = status === "approved" ? "Approving" : "Rejecting";
+    const message = `${actionWord} ${count} timesheet${count > 1 ? "s" : ""}...`;
+
+    const toast = await this.toastController.create({
+      message,
+      duration: this.UNDO_DELAY_MS,
+      color: status === "approved" ? "success" : "warning",
+      position: "bottom",
+      buttons: [
+        {
+          text: "Undo",
+          role: "cancel",
+          handler: () => {
+            this.undoAction(bulkActionKey);
+          },
+        },
+      ],
+    });
+
+    await toast.present();
   }
 
   hasEntryNotes(entry: TimeEntry): boolean {
@@ -884,5 +1214,172 @@ export class ApprovalsPage implements OnInit, OnDestroy {
     });
 
     await modal.present();
+  }
+
+  async openStatusHistoryModal(group: GroupedEntries) {
+    const modal = await this.modalController.create({
+      component: StatusHistoryModalComponent,
+      componentProps: {
+        group,
+      },
+      cssClass: "status-history-modal",
+      backdropDismiss: true,
+    });
+
+    await modal.present();
+  }
+
+  /**
+   * Calculate summary statistics from grouped entries
+   */
+  private calculateSummaryStats(groups: GroupedEntries[]): SummaryStats {
+    const stats: SummaryStats = {
+      pending: {count: 0, hours: 0},
+      approved: {count: 0, hours: 0},
+      rejected: {count: 0, hours: 0},
+      total: {count: 0, hours: 0},
+    };
+
+    groups.forEach((group) => {
+      stats.total.count++;
+      stats.total.hours += group.totalHours;
+
+      switch (group.status) {
+        case "pending":
+          stats.pending.count++;
+          stats.pending.hours += group.totalHours;
+          break;
+        case "approved":
+          stats.approved.count++;
+          stats.approved.hours += group.totalHours;
+          break;
+        case "rejected":
+          stats.rejected.count++;
+          stats.rejected.hours += group.totalHours;
+          break;
+      }
+    });
+
+    return stats;
+  }
+
+  /**
+   * Export current filtered view to CSV
+   */
+  exportToCSV() {
+    this.displayEntries$.pipe(take(1)).subscribe((entries) => {
+      if (!entries || entries.length === 0) {
+        this.showToast("No data to export", "warning");
+        return;
+      }
+
+      // Build CSV content
+      const headers = [
+        "User",
+        "Week Start",
+        "Week End",
+        "Total Hours",
+        "Status",
+        "Entries Count",
+        "Approved By",
+        "Approved Date",
+        "Rejection Reason",
+      ];
+
+      const rows = entries.map((group) => {
+        const weekEnd = new Date(group.weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+
+        // Get approval info from first entry (all entries in group have same approval)
+        const firstEntry = group.entries[0];
+        const approvedBy = firstEntry?.approvedByName || "";
+        const approvedAt = firstEntry?.approvedAt
+          ? this.toDate(firstEntry.approvedAt).toLocaleDateString()
+          : "";
+        const rejectionReason = firstEntry?.rejectionReason || "";
+
+        return [
+          this.escapeCSV(group.userName),
+          group.weekStart.toLocaleDateString(),
+          weekEnd.toLocaleDateString(),
+          group.totalHours.toFixed(2),
+          group.status,
+          group.entries.length.toString(),
+          this.escapeCSV(approvedBy),
+          approvedAt,
+          this.escapeCSV(rejectionReason),
+        ];
+      });
+
+      // Combine headers and rows
+      const csvContent = [
+        headers.join(","),
+        ...rows.map((row) => row.join(",")),
+      ].join("\n");
+
+      // Generate filename with date range
+      const dateStr = this.showAllWeeks
+        ? "all-time"
+        : `week-${this.currentWeekStart.toISOString().split("T")[0]}`;
+      const statusStr =
+        this.statusFilter !== "all" ? `-${this.statusFilter}` : "";
+      const filename = `timesheet-approvals-${dateStr}${statusStr}.csv`;
+
+      // Download file
+      this.downloadCSV(csvContent, filename);
+      this.showToast(
+        `Exported ${entries.length} records to ${filename}`,
+        "success",
+      );
+    });
+  }
+
+  /**
+   * Escapes a string value for safe inclusion in a CSV file.
+   *
+   * If the value contains a comma, double quote, or newline, it will be wrapped in double quotes,
+   * and any existing double quotes will be escaped by doubling them (" -> "").
+   * This follows RFC 4180 CSV escaping rules for fields.
+   *
+   * @param value The string value to escape for CSV.
+   * @returns The escaped string, safe for CSV output.
+   *
+   * Edge cases handled:
+   * - Values containing commas, double quotes, or newlines are quoted and quotes are escaped.
+   * - Empty or falsy values return an empty string.
+   * Triggers download of a CSV file by creating a temporary anchor element and simulating a click.
+   *
+   * This approach is used for cross-browser compatibility. While modern browsers support
+   * direct Blob downloads and the File API, some older browsers and certain mobile browsers
+   * do not reliably support the `download` attribute or direct Blob downloads. Creating a
+   * temporary DOM element and triggering a click ensures the download works across a wider
+   * range of browsers, including legacy and mobile environments.
+   *
+   * @param content - The CSV content to download.
+   * @param filename - The filename for the downloaded CSV.
+   */
+  private escapeCSV(value: string): string {
+    if (!value) return "";
+    // If value contains comma, quote, or newline, wrap in quotes and escape existing quotes
+    if (value.includes(",") || value.includes('"') || value.includes("\n")) {
+      return `"${value.replace(/"/g, '""')}"`;
+    }
+    return value;
+  }
+
+  /**
+   * Trigger download of CSV file
+   */
+  private downloadCSV(content: string, filename: string) {
+    const blob = new Blob([content], {type: "text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 }

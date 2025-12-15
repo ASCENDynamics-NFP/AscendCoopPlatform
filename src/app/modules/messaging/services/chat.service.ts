@@ -486,6 +486,23 @@ export class ChatService {
   }
 
   /**
+   * Delete an entire chat conversation
+   * This deletes the chat document but not the messages (for data retention)
+   * Messages can be cleaned up separately if needed
+   */
+  deleteChat(chatId: string): Observable<void> {
+    return from(
+      this.firestore.collection(this.CHATS_COLLECTION).doc(chatId).delete(),
+    ).pipe(
+      map(() => void 0),
+      catchError((error) => {
+        console.error("Error deleting chat:", error);
+        return throwError(() => error);
+      }),
+    );
+  }
+
+  /**
    * Leave a chat
    */
   leaveChat(chatId: string, userId: string): Observable<void> {

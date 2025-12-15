@@ -93,6 +93,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   lastMessageTimestamp: any = null;
   isEverythingLoaded = false;
   isHistoryLoading = false;
+  isMessagesLoading = true; // Track initial message load
   private initialLoadComplete = false;
 
   // File preview properties
@@ -264,8 +265,22 @@ export class ChatWindowPage implements OnInit, OnDestroy {
           this.lastMessageTimestamp = oldestMessage.timestamp;
         }
 
-        if (shouldScroll) {
-          // Use a few attempts to fight layout shifts
+        // Hide loading skeleton immediately on first emission
+        // Use requestAnimationFrame to ensure DOM is ready
+        if (this.isMessagesLoading) {
+          requestAnimationFrame(() => {
+            this.isMessagesLoading = false;
+            // Trigger change detection and scroll after DOM update
+            requestAnimationFrame(() => {
+              if (shouldScroll) {
+                this.scrollToBottom();
+                setTimeout(() => this.scrollToBottom(), 100);
+                setTimeout(() => this.scrollToBottom(), 300);
+              }
+            });
+          });
+        } else if (shouldScroll) {
+          // Normal scroll behavior for subsequent updates
           this.scrollToBottom();
           setTimeout(() => this.scrollToBottom(), 100);
           setTimeout(() => this.scrollToBottom(), 300);
@@ -903,6 +918,16 @@ export class ChatWindowPage implements OnInit, OnDestroy {
         });
       }
     }
+
+    // Add delete chat option (always shown)
+    buttons.push({
+      text: "Delete Chat",
+      icon: "trash-outline",
+      role: "destructive",
+      handler: () => {
+        this.deleteChat();
+      },
+    });
 
     buttons.push({
       text: "Cancel",
@@ -1555,6 +1580,10 @@ export class ChatWindowPage implements OnInit, OnDestroy {
           role: "destructive",
           handler: async () => {
             try {
+              // Optimistically remove message from local array
+              this.messages = this.messages.filter((m) => m.id !== message.id);
+
+              // Delete from Firestore
               await firstValueFrom(
                 this.chatService.deleteMessage(this.chatId!, message.id),
               );
@@ -1562,6 +1591,42 @@ export class ChatWindowPage implements OnInit, OnDestroy {
             } catch (error) {
               console.error("Error deleting message:", error);
               this.showErrorToast("Failed to delete message");
+              // Reload messages on error to restore the message
+              // The subscription will pick up the current state
+            }
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Delete entire chat conversation
+   */
+  private async deleteChat() {
+    const alert = await this.alertController.create({
+      header: "Delete Chat",
+      message:
+        "Are you sure you want to delete this entire chat? This will remove it from your chat list. This action cannot be undone.",
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "Delete",
+          role: "destructive",
+          handler: async () => {
+            try {
+              await firstValueFrom(this.chatService.deleteChat(this.chatId!));
+              this.showToast("Chat deleted successfully", "short");
+              // Navigate back to chat list
+              this.router.navigate(["/messaging/chats"]);
+            } catch (error) {
+              console.error("Error deleting chat:", error);
+              this.showErrorToast("Failed to delete chat");
             }
           },
         },
@@ -1762,6 +1827,65 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     if (!lastNewMessage || !lastLocalMessage) return true;
 
     return lastNewMessage.id !== lastLocalMessage.id;
+  }
+
+  /**
+   * Check if a message is from a different day than the previous message
+   * Used to show date separators in chat
+   */
+  shouldShowDateSeparator(currentIndex: number): boolean {
+    if (currentIndex === 0) return true; // Always show for first message
+
+    const currentMessage = this.messages[currentIndex];
+    const previousMessage = this.messages[currentIndex - 1];
+
+    if (!currentMessage?.timestamp || !previousMessage?.timestamp) return false;
+
+    const currentDate = this.getMessageDate(currentMessage.timestamp);
+    const previousDate = this.getMessageDate(previousMessage.timestamp);
+
+    return currentDate.toDateString() !== previousDate.toDateString();
+  }
+
+  /**
+   * Get formatted date label for a message (e.g., "Today", "Yesterday", or the date)
+   */
+  getDateLabel(message: Message): string {
+    if (!message?.timestamp) return "";
+
+    const messageDate = this.getMessageDate(message.timestamp);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    // Reset time parts for accurate date comparison
+    today.setHours(0, 0, 0, 0);
+    yesterday.setHours(0, 0, 0, 0);
+    messageDate.setHours(0, 0, 0, 0);
+
+    if (messageDate.getTime() === today.getTime()) {
+      return "Today";
+    } else if (messageDate.getTime() === yesterday.getTime()) {
+      return "Yesterday";
+    } else {
+      // Format as "Mon, Jan 15, 2025"
+      return messageDate.toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    }
+  }
+
+  /**
+   * Convert Firestore timestamp to Date
+   */
+  private getMessageDate(timestamp: any): Date {
+    if (timestamp?.toDate) {
+      return timestamp.toDate();
+    }
+    return new Date(timestamp);
   }
 
   /**

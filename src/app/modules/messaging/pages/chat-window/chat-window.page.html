@@ -26,14 +26,31 @@
     </ion-infinite-scroll-content>
   </ion-infinite-scroll>
 
+  <!-- Loading Skeleton for Initial Messages Load -->
+  <div *ngIf="isMessagesLoading" class="messages-loading">
+    <div class="loading-skeleton">
+      <ion-skeleton-text animated style="width: 70%; height: 60px; border-radius: 16px; margin: 8px 0 8px auto;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 60%; height: 50px; border-radius: 16px; margin: 8px auto 8px 0;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 75%; height: 65px; border-radius: 16px; margin: 8px 0 8px auto;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 55%; height: 45px; border-radius: 16px; margin: 8px auto 8px 0;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 65%; height: 55px; border-radius: 16px; margin: 8px 0 8px auto;"></ion-skeleton-text>
+    </div>
+  </div>
+
   <!-- Messages List -->
-  <div class="messages-container">
-    <div
-      *ngFor="let message of messages; trackBy: trackByMessageId"
-      class="message-wrapper"
-      [class.own-message]="isOwnMessage(message)"
-      [class.other-message]="!isOwnMessage(message)"
-    >
+  <div *ngIf="!isMessagesLoading" class="messages-container">
+    <ng-container *ngFor="let message of messages; let i = index; trackBy: trackByMessageId">
+      <!-- Date Separator -->
+      <div *ngIf="shouldShowDateSeparator(i)" class="date-separator">
+        <span class="date-label">{{ getDateLabel(message) }}</span>
+      </div>
+
+      <!-- Message -->
+      <div
+        class="message-wrapper"
+        [class.own-message]="isOwnMessage(message)"
+        [class.other-message]="!isOwnMessage(message)"
+      >
       <!-- User Avatar (for incoming messages) -->
       <div
         *ngIf="!isOwnMessage(message) && message?.senderId"
@@ -206,8 +223,9 @@
             </ion-icon>
           </span>
         </div>
+        </div>
       </div>
-    </div>
+    </ng-container>
   </div>
 
   <!-- Loading indicator -->

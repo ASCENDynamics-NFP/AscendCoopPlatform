@@ -76,7 +76,7 @@ interface ApprovalsPreferences {
 }
 
 // Configuration constants
-const APPROVALS_STORAGE_KEY = "approvals-preferences";
+export const APPROVALS_STORAGE_KEY = "approvals-preferences";
 const UNDO_DELAY_MS = 10000; // 10 seconds to undo
 const UPDATE_CHECK_INTERVAL_MS = 60000; // 60 seconds between update checks
 

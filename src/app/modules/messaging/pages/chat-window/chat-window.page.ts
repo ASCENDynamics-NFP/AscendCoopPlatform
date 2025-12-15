@@ -29,14 +29,22 @@ import {
 import {ActivatedRoute, Router} from "@angular/router";
 import {
   IonContent,
+  IonInfiniteScroll,
   ToastController,
   ActionSheetController,
   ModalController,
   AlertController,
   Platform,
 } from "@ionic/angular";
-import {Observable, Subject, of, firstValueFrom} from "rxjs";
-import {takeUntil, map, take} from "rxjs/operators";
+import {
+  Observable,
+  Subject,
+  of,
+  firstValueFrom,
+  Subscription,
+  combineLatest,
+} from "rxjs";
+import {takeUntil, map, take, tap, switchMap, finalize} from "rxjs/operators";
 import {
   Chat,
   Message,
@@ -65,6 +73,8 @@ import {ChatParticipantsModalComponent} from "../../components/chat-participants
 })
 export class ChatWindowPage implements OnInit, OnDestroy {
   @ViewChild(IonContent, {static: false}) content!: IonContent;
+  @ViewChild(IonInfiniteScroll) infiniteScroll!: IonInfiniteScroll;
+  private destroy$ = new Subject<void>();
   @ViewChild("messageInput", {static: false}) messageInput!: ElementRef;
 
   chatId!: string;
@@ -78,13 +88,20 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   isContactBlocked = false;
   isDesktop = false;
 
+  // Infinite Scroll properties
+  readonly MESSAGE_LIMIT = 10;
+  lastMessageTimestamp: any = null;
+  isEverythingLoaded = false;
+  isHistoryLoading = false;
+  private initialLoadComplete = false;
+
   // File preview properties
   selectedFile: File | null = null;
   filePreviewUrl: string | null = null;
   filePreviewType: "image" | "video" | "audio" | "document" | null = null;
   isUploadingFile = false;
   canSendMessages = true;
-  private destroy$ = new Subject<void>();
+  // private destroy$ = new Subject<void>(); // Moved this declaration up
 
   // Encryption properties
   encryptionEnabled = false;
@@ -166,8 +183,14 @@ export class ChatWindowPage implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error("Error loading chat:", error);
-        this.showErrorToast("Error loading chat");
-        this.router.navigate(["/messaging/chats"]);
+        // Only navigate away if it's NOT a permission error (which happens on logout)
+        if (
+          error.code !== "permission-denied" &&
+          error.message !== "Missing or insufficient permissions."
+        ) {
+          this.showErrorToast("Error loading chat");
+          this.router.navigate(["/messaging/chats"]);
+        }
       },
     });
 
@@ -177,6 +200,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
 
   /**
    * Load messages with encryption support
+   * This subscribes to real-time updates for the recent messages (Head)
    */
   private loadMessages() {
     if (!this.currentUserId) {
@@ -184,31 +208,161 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     }
 
     // Use encrypted chat service if encryption is enabled, otherwise use regular service
+    let messagesSource$: Observable<Message[]>;
+
+    // Always fetch just the latest batch for the real-time listener
+    // History will be loaded via loadMoreMessages
+    const limit = this.MESSAGE_LIMIT;
+
     if (this.encryptionEnabled) {
-      this.messages$ = this.encryptedChatService.getDecryptedMessages(
+      messagesSource$ = this.encryptedChatService.getDecryptedMessages(
         this.chatId,
         this.currentUserId,
+        limit,
       );
     } else {
-      this.messages$ = this.chatService.getChatMessages(this.chatId);
+      messagesSource$ = this.chatService.getChatMessages(this.chatId, limit);
     }
 
     // Subscribe to messages and update local array
-    this.messages$.pipe(takeUntil(this.destroy$)).subscribe({
+    messagesSource$.pipe(takeUntil(this.destroy$)).subscribe({
       next: (messages) => {
-        // Merge server messages with local optimistic messages
+        // Merge server messages with local optimistic messages and historical messages
         this.messages = this.mergeMessages(messages);
 
         // Pre-load sender accounts for avatar display
         this.preloadSenderAccounts(messages);
 
-        setTimeout(() => this.scrollToBottom(), 100);
+        // Determine scroll behavior
+        // 1. If it's the initial load sequence (which might include decryption updates), stick to bottom.
+        // 2. If the user was already at the bottom, stay at the bottom (new message or expansion).
+        // 3. If it's a completely new incoming message, scroll to it.
+
+        const isAtBottom = this.isUserAtBottom();
+        const isInitialLoadSequence = !this.initialLoadComplete;
+
+        // Mark initial load complete after first valid render (with a delay to allow for decryption/rendering)
+        // We use a property to track if we've ever successfully settled at the bottom
+        if (!this.lastMessageTimestamp && this.messages.length > 0) {
+          // First time we have messages
+          // Don't set initialLoadComplete immediately, wait for stability
+          setTimeout(() => {
+            this.initialLoadComplete = true;
+          }, 2000); // Give it 2 seconds of "stickiness" for initial load
+        }
+
+        const shouldScroll =
+          isInitialLoadSequence ||
+          isAtBottom ||
+          this.isNewMessageReceived(messages);
+
+        // Update timestamp marker for history loading
+        if (this.messages.length > 0) {
+          // The oldest message in the current list
+          // Note: messages are sorted [oldest, ..., newest]
+          const oldestMessage = this.messages[0];
+          this.lastMessageTimestamp = oldestMessage.timestamp;
+        }
+
+        if (shouldScroll) {
+          // Use a few attempts to fight layout shifts
+          this.scrollToBottom();
+          setTimeout(() => this.scrollToBottom(), 100);
+          setTimeout(() => this.scrollToBottom(), 300);
+        }
       },
       error: (error) => {
         console.error("Error loading messages:", error);
         this.showErrorToast("Error loading messages");
       },
     });
+  }
+
+  /**
+   * Load more messages (History) when scrolling up
+   */
+  loadMoreMessages(event: any) {
+    if (this.isEverythingLoaded || this.isHistoryLoading) {
+      event.target.complete();
+      return;
+    }
+
+    this.isHistoryLoading = true;
+
+    // Use the oldest message timestamp as the cursor
+    const oldestMessage = this.messages[0];
+    if (!oldestMessage || !oldestMessage.timestamp) {
+      event.target.complete();
+      this.isHistoryLoading = false;
+      return;
+    }
+
+    const cursor = oldestMessage.timestamp;
+
+    // Fetch history
+    let history$: Observable<Message[]>;
+
+    if (this.encryptionEnabled && this.currentUserId) {
+      history$ = this.encryptedChatService.getDecryptedHistory(
+        this.chatId,
+        cursor,
+        this.MESSAGE_LIMIT,
+        this.currentUserId,
+      );
+    } else {
+      history$ = this.chatService.getChatHistory(
+        this.chatId,
+        cursor,
+        this.MESSAGE_LIMIT,
+      );
+    }
+
+    history$.pipe(take(1)).subscribe({
+      next: (historicalMessages) => {
+        if (historicalMessages.length < this.MESSAGE_LIMIT) {
+          this.isEverythingLoaded = true;
+          if (this.infiniteScroll) {
+            this.infiniteScroll.disabled = true;
+          }
+        }
+
+        if (historicalMessages.length > 0) {
+          // Prepend historical messages to the current list
+          // Merge to avoid duplicates
+          const newMessages = this.mergeHistory(
+            historicalMessages,
+            this.messages,
+          );
+          this.messages = newMessages;
+
+          // Preload avatars for new messages
+          this.preloadSenderAccounts(historicalMessages);
+
+          // Restore scroll position (approximated)
+          // Ideally we would calculate height diff, but for now we just let Ionic handle it
+          // or the user stays where they are relative to the content
+        }
+
+        event.target.complete();
+        this.isHistoryLoading = false;
+      },
+      error: (error) => {
+        console.error("Error loading chat history:", error);
+        event.target.complete();
+        this.isHistoryLoading = false;
+      },
+    });
+  }
+
+  /**
+   * Merge historical messages with current messages
+   */
+  private mergeHistory(history: Message[], current: Message[]): Message[] {
+    const currentIds = new Set(current.map((m) => m.id));
+    const uniqueHistory = history.filter((m) => !currentIds.has(m.id));
+    // History comes oldest -> newest. Current is oldest -> newest.
+    // So we want [History, Current]
+    return [...uniqueHistory, ...current];
   }
 
   /**
@@ -324,8 +478,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   private async validateChatAccess(chat: Chat) {
     try {
       if (!this.currentUserId) {
-        this.showErrorToast("Authentication required");
-        this.router.navigate(["/messaging/chats"]);
+        // User logged out, just return
         return;
       }
 
@@ -380,10 +533,16 @@ export class ChatWindowPage implements OnInit, OnDestroy {
           return;
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error validating chat access:", error);
-      this.showErrorToast("Error validating chat access");
-      this.router.navigate(["/messaging/chats"]);
+      // Only navigate away if it's NOT a permission error (which happens on logout)
+      if (
+        error?.code !== "permission-denied" &&
+        error?.message !== "Missing or insufficient permissions."
+      ) {
+        this.showErrorToast("Error validating chat access");
+        this.router.navigate(["/messaging/chats"]);
+      }
     }
   }
 
@@ -1586,5 +1745,35 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     if (target) {
       target.src = "assets/image/logo/ASCENDynamics NFP-logos_transparent.png";
     }
+  }
+  /**
+   * Check if a new message has been received at the bottom of the list
+   */
+  private isNewMessageReceived(newMessages: Message[]): boolean {
+    if (newMessages.length === 0) return false;
+
+    // If local list is empty, it's new
+    if (this.messages.length === 0) return true;
+
+    // Check if the last message in the new batch is different from the last message we had
+    const lastNewMessage = newMessages[newMessages.length - 1];
+    const lastLocalMessage = this.messages[this.messages.length - 1];
+
+    if (!lastNewMessage || !lastLocalMessage) return true;
+
+    return lastNewMessage.id !== lastLocalMessage.id;
+  }
+
+  /**
+   * Check if user is scrolled near the bottom
+   */
+  private isUserAtBottom(): boolean {
+    if (!this.content) return true; // Default to true if content not ready
+
+    // We can't synchronously check scroll position easily in Ionic without getting the scroll element
+    // So we assume true for now if we haven't tracked it, OR we could track it on scroll events.
+    // For simplicity, let's rely on the sticky logic: we assume if we just sent a message or it's new, we want to scroll.
+    // To properly implement "don't scroll if user is reading history", we need to track scroll events.
+    return true;
   }
 }

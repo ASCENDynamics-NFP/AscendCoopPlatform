@@ -599,7 +599,7 @@ export class AuthEffects {
         from(signOut(this.auth)).pipe(
           tap(() => {
             this.successHandler.handleSuccess("You have been signed out!");
-            this.router.navigate(["/auth/login"]);
+            // Navigation moved to signOutSuccess$ to ensure store state is updated first
           }),
           switchMap(() => [
             AuthActions.signOutSuccess(),
@@ -613,6 +613,18 @@ export class AuthEffects {
         ),
       ),
     ),
+  );
+
+  // Sign-Out Success Effect: Navigate after state is cleared
+  signOutSuccess$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(AuthActions.signOutSuccess),
+        tap(() => {
+          this.router.navigate(["/"], {replaceUrl: true});
+        }),
+      ),
+    {dispatch: false},
   );
 
   // Send Password Reset Email Effect

@@ -24,7 +24,7 @@ import {
   tick,
   discardPeriodicTasks,
 } from "@angular/core/testing";
-import {ApprovalsPage} from "./approvals.page";
+import {ApprovalsPage, APPROVALS_STORAGE_KEY} from "./approvals.page";
 import {
   IonicModule,
   AlertController,
@@ -162,7 +162,7 @@ describe("ApprovalsPage", () => {
     ) as jasmine.SpyObj<ModalController>;
 
     // Clear localStorage to ensure default values in tests
-    localStorage.removeItem("approvals_preferences");
+    localStorage.removeItem(APPROVALS_STORAGE_KEY);
 
     fixture = TestBed.createComponent(ApprovalsPage);
     component = fixture.componentInstance;
@@ -174,7 +174,7 @@ describe("ApprovalsPage", () => {
       component.stopUpdateChecking();
     }
     // Clean up localStorage
-    localStorage.removeItem("approvals_preferences");
+    localStorage.removeItem(APPROVALS_STORAGE_KEY);
     fixture.destroy();
   });
 

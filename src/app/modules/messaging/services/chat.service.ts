@@ -106,54 +106,61 @@ export class ChatService {
    * Get user's chats with real-time updates (offline-optimized)
    */
   getUserChats(): Observable<Chat[]> {
-    const userId = this.getCurrentUserIdSync();
-    const isOnline = this.networkService.isCurrentlyOnline();
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user?.uid) {
+          // User logged out? Stop listening immediately.
+          return of([]);
+        }
 
-    // Optimize query based on connection status
-    const limit = isOnline ? 50 : 20; // Load fewer chats when offline
+        const userId = user.uid;
+        const isOnline = this.networkService.isCurrentlyOnline();
 
-    return this.firestore
-      .collection<any>(this.CHATS_COLLECTION, (ref) =>
-        ref
-          .where("participants", "array-contains", userId)
-          .orderBy("lastMessageTimestamp", "desc")
-          .limit(limit),
-      )
-      .valueChanges({idField: "id"})
-      .pipe(
-        map((chats: any[]) => chats as Chat[]),
-        catchError((error) => {
-          console.error("Error fetching user chats:", error);
+        // Optimize query based on connection status
+        const limit = isOnline ? 50 : 20; // Load fewer chats when offline
 
-          // In offline mode, try to return cached data if available
-          if (!isOnline) {
-            console.log("Attempting to serve cached chats...");
-            // The AngularFirestore automatically handles offline cache
-            // So this error likely means no cached data is available
-          }
-
-          return throwError(() => error);
-        }),
-      );
+        return this.firestore
+          .collection<any>(this.CHATS_COLLECTION, (ref) =>
+            ref
+              .where("participants", "array-contains", userId)
+              .orderBy("lastMessageTimestamp", "desc")
+              .limit(limit),
+          )
+          .valueChanges({idField: "id"})
+          .pipe(
+            map((chats: any[]) => chats as Chat[]),
+            catchError((error) => {
+              console.error("Error fetching user chats:", error);
+              return throwError(() => error);
+            }),
+          );
+      }),
+    );
   }
 
   /**
    * Get a specific chat by ID with real-time updates (offline-optimized)
    */
   getChat(chatId: string): Observable<Chat | null> {
-    const options = this.firestoreOffline.getQueryOptions("messaging");
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user?.uid) {
+          return of(null);
+        }
 
-    return this.firestore
-      .collection<any>(this.CHATS_COLLECTION)
-      .doc(chatId)
-      .valueChanges({idField: "id"})
-      .pipe(
-        map((chat: any) => (chat as Chat) || null),
-        catchError((error) => {
-          console.error("Error fetching chat:", error);
-          return throwError(() => error);
-        }),
-      );
+        return this.firestore
+          .collection<any>(this.CHATS_COLLECTION)
+          .doc(chatId)
+          .valueChanges({idField: "id"})
+          .pipe(
+            map((chat: any) => (chat as Chat) || null),
+            catchError((error) => {
+              console.error("Error fetching chat:", error);
+              return throwError(() => error);
+            }),
+          );
+      }),
+    );
   }
 
   /**
@@ -163,6 +170,51 @@ export class ChatService {
     chatId: string,
     limitCount: number = 50,
   ): Observable<Message[]> {
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user?.uid) {
+          return of([]);
+        }
+
+        const isOnline = this.networkService.isCurrentlyOnline();
+
+        // Adjust limit based on connection status
+        const optimizedLimit = isOnline ? limitCount : Math.min(limitCount, 20);
+
+        return this.firestore
+          .collection<Message>(
+            `${this.CHATS_COLLECTION}/${chatId}/${this.MESSAGES_COLLECTION}`,
+            (ref) => ref.orderBy("timestamp", "desc").limit(optimizedLimit),
+          )
+          .valueChanges({idField: "id"})
+          .pipe(
+            map(
+              (messages) =>
+                messages
+                  .map((message) => ({
+                    ...message,
+                    timestamp: message.timestamp || new Date(),
+                  }))
+                  .reverse(), // Reverse to show oldest first
+            ),
+            catchError((error) => {
+              console.error("Error fetching chat messages:", error);
+              return throwError(() => error);
+            }),
+          );
+      }),
+    );
+  }
+
+  /**
+   * Get historical messages for a chat using cursor-based pagination
+   * Returns a one-time snapshot (not a real-time stream)
+   */
+  getChatHistory(
+    chatId: string,
+    startAfter: any,
+    limitCount: number = 20,
+  ): Observable<Message[]> {
     const isOnline = this.networkService.isCurrentlyOnline();
 
     // Adjust limit based on connection status
@@ -171,27 +223,28 @@ export class ChatService {
     return this.firestore
       .collection<Message>(
         `${this.CHATS_COLLECTION}/${chatId}/${this.MESSAGES_COLLECTION}`,
-        (ref) => ref.orderBy("timestamp", "desc").limit(optimizedLimit),
+        (ref) =>
+          ref
+            .orderBy("timestamp", "desc")
+            .startAfter(startAfter)
+            .limit(optimizedLimit),
       )
-      .valueChanges({idField: "id"})
+      .get()
       .pipe(
-        map(
-          (messages) =>
-            messages
-              .map((message) => ({
-                ...message,
-                timestamp: message.timestamp || new Date(),
-              }))
-              .reverse(), // Reverse to show oldest first
-        ),
+        map((snapshot) => {
+          return snapshot.docs
+            .map((doc) => {
+              const data = doc.data();
+              return {
+                ...data,
+                id: doc.id,
+                timestamp: data.timestamp || new Date(),
+              } as Message;
+            })
+            .reverse(); // Reverse to show oldest first (chronological order)
+        }),
         catchError((error) => {
-          console.error("Error fetching chat messages:", error);
-
-          // In offline mode, provide user feedback
-          if (!isOnline) {
-            console.log("Offline mode: returning cached messages if available");
-          }
-
+          console.error("Error fetching chat history:", error);
           return throwError(() => error);
         }),
       );

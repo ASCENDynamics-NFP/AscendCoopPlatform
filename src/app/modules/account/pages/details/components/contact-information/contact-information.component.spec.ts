@@ -19,25 +19,43 @@
 ***********************************************************************************************/
 import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
 import {IonicModule} from "@ionic/angular";
+import {ReactiveFormsModule} from "@angular/forms";
 
 import {ContactInformationComponent} from "./contact-information.component";
 import {getFirebaseTestProviders} from "../../../../../../testing/test-utilities";
+import {AccountSectionsService} from "../../../../services/account-sections.service";
+import {of} from "rxjs";
+import {provideMockStore} from "@ngrx/store/testing";
 
 describe("ContactInformationComponent", () => {
   let component: ContactInformationComponent;
   let fixture: ComponentFixture<ContactInformationComponent>;
+  let mockAccountSectionsService: jasmine.SpyObj<AccountSectionsService>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    mockAccountSectionsService = jasmine.createSpyObj(
+      "AccountSectionsService",
+      ["contactInfo$"],
+    );
+    mockAccountSectionsService.contactInfo$.and.returnValue(of(null));
+
+    await TestBed.configureTestingModule({
       declarations: [ContactInformationComponent],
-      imports: [IonicModule.forRoot()],
-      providers: [...getFirebaseTestProviders()],
+      imports: [ReactiveFormsModule, IonicModule.forRoot()],
+      providers: [
+        ...getFirebaseTestProviders(),
+        {
+          provide: AccountSectionsService,
+          useValue: mockAccountSectionsService,
+        },
+        provideMockStore({}),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ContactInformationComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
   it("should create", () => {
     expect(component).toBeTruthy();

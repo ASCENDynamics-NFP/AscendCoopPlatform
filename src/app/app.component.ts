@@ -40,6 +40,8 @@ import {
 //  Import and Register Swiper
 register();
 
+import {AuthSyncService} from "./core/services/auth-sync.service";
+
 @Component({
   selector: "app-root",
   templateUrl: "app.component.html",
@@ -53,6 +55,7 @@ export class AppComponent implements OnInit {
     private translate: TranslateService,
     private store: Store,
     private platform: Platform,
+    private authSyncService: AuthSyncService, // Injected to activate the service
   ) {
     this.translate.addLangs([...SUPPORTED_LANGUAGE_CODES]);
     this.initializeApp();

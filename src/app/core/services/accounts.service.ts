@@ -22,7 +22,7 @@
 import {Injectable} from "@angular/core";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
 import {combineLatest, Observable, of} from "rxjs";
-import {catchError, map, tap} from "rxjs/operators";
+import {catchError, map} from "rxjs/operators";
 import {Account, RelatedAccount} from "../../../../shared/models/account.model";
 import {RelatedListing} from "../../../../shared/models/related-listing.model";
 import {FirestoreService} from "./firestore.service";
@@ -33,6 +33,11 @@ import {
   SearchAccountsRequest,
 } from "./firebase-functions.service";
 
+import {switchMap} from "rxjs/operators";
+import {Store} from "@ngrx/store";
+import {AuthState} from "../../state/reducers/auth.reducer";
+import {selectAuthUser} from "../../state/selectors/auth.selectors";
+
 @Injectable({
   providedIn: "root",
 })
@@ -41,6 +46,7 @@ export class AccountsService {
     private afs: AngularFirestore,
     private firestore: FirestoreService,
     private firebaseFunctions: FirebaseFunctionsService,
+    private store: Store<{auth: AuthState}>,
   ) {}
 
   // ===== CALLABLE FUNCTION METHODS =====
@@ -143,21 +149,29 @@ export class AccountsService {
    * @deprecated Direct Firestore access - consider using callable functions for relationships
    */
   getRelatedAccounts(accountId: string): Observable<RelatedAccount[]> {
-    const relatedAccountsRef = this.afs.collection<RelatedAccount>(
-      `accounts/${accountId}/relatedAccounts`,
-    );
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user?.uid) {
+          return of([]);
+        }
 
-    return relatedAccountsRef.snapshotChanges().pipe(
-      map((actions) =>
-        actions.map((action) => {
-          const data = action.payload.doc.data() as RelatedAccount;
-          const id = action.payload.doc.id;
-          return {...data, id};
-        }),
-      ),
-      catchError((error) => {
-        console.error("Error getting related accounts:", error);
-        return of([]);
+        const relatedAccountsRef = this.afs.collection<RelatedAccount>(
+          `accounts/${accountId}/relatedAccounts`,
+        );
+
+        return relatedAccountsRef.snapshotChanges().pipe(
+          map((actions) =>
+            actions.map((action) => {
+              const data = action.payload.doc.data() as RelatedAccount;
+              const id = action.payload.doc.id;
+              return {...data, id};
+            }),
+          ),
+          catchError((error) => {
+            console.error("Error getting related accounts:", error);
+            return of([]);
+          }),
+        );
       }),
     );
   }

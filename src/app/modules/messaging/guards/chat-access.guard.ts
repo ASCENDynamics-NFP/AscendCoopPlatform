@@ -74,7 +74,8 @@ export class ChatAccessGuard implements CanActivate {
       catchError((error) => {
         console.error("Error in ChatAccessGuard:", error);
         this.showErrorToast("Error accessing chat");
-        return of(this.router.createUrlTree(["/messaging/chats"]));
+        // On error (likely permission), go to login, not chat list
+        return of(this.router.createUrlTree(["/auth/login"]));
       }),
     );
   }

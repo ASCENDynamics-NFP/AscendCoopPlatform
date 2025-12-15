@@ -224,7 +224,7 @@ export class EncryptedChatService {
       }
 
       // Check if encryption is available before attempting encryption
-      if (!this.isEncryptionAvailable(request.chatId)) {
+      if (!(await this.isEncryptionAvailable(request.chatId))) {
         console.warn(
           "Encryption not available, falling back to unencrypted message",
         );
@@ -384,11 +384,12 @@ export class EncryptedChatService {
       // Get encrypted message key for this user
       const encryptedKey = message.encryptedKeys![userId];
       if (!encryptedKey) {
+        // This is expected for historical messages sent before the user was added to the chat
+        // or before the user had encryption keys set up.
         console.warn(
-          `No encrypted key found for user ${userId}, available keys:`,
-          Object.keys(message.encryptedKeys!),
+          `[EncryptedChat] Skipping message ${message.id}: No key for user ${userId}`,
         );
-        return "🔒 Encrypted message (no access key)";
+        return "🔒 Encrypted message (sent before you joined or encryption was set up)";
       }
 
       // Decrypt the message key
@@ -412,22 +413,19 @@ export class EncryptedChatService {
 
       return decryptedText;
     } catch (error) {
-      console.error("Error decrypting message:", error);
-
       // Type the error properly
       const typedError = error as Error;
 
-      // Check if this might be a key mismatch issue
+      // Check if this might be a key mismatch issue (OperationError)
       if (typedError.name === "OperationError") {
         console.warn(
-          "OperationError detected - key import/export issue, but NOT regenerating keys to preserve message history",
+          `[EncryptedChat] Decryption failed for message ${message.id} (Key Mismatch):`,
+          typedError.message,
         );
-        // DO NOT regenerate keys automatically as this would make old messages unreadable
-        // Instead, return a helpful message that suggests manual key regeneration if needed
-        return "🔒 Encrypted message (key mismatch - refresh page or regenerate keys if this persists)";
+        return "🔒 Encrypted message (decryption key mismatch - keys may have been changed)";
       }
 
-      // Return a user-friendly fallback instead of throwing
+      console.error("[EncryptedChat] Error decrypting message:", error);
       return "🔒 Encrypted message (unable to decrypt)";
     }
   }
@@ -470,9 +468,13 @@ export class EncryptedChatService {
    * Get messages with zero-flicker decryption using combined observable streams
    * Hides encrypted messages until they are successfully decrypted
    */
-  getDecryptedMessages(chatId: string, userId: string): Observable<Message[]> {
+  getDecryptedMessages(
+    chatId: string,
+    userId: string,
+    limit: number = 20,
+  ): Observable<Message[]> {
     return combineLatest([
-      this.chatService.getChatMessages(chatId),
+      this.chatService.getChatMessages(chatId, limit),
       this.updateTrigger.asObservable(),
     ]).pipe(
       map(([messages, _trigger]) => {
@@ -526,6 +528,59 @@ export class EncryptedChatService {
         });
       }),
       shareReplay(1),
+    );
+  }
+
+  /**
+   * Get decrypted historical messages
+   * Reuses the same caching and decryption logic as the real-time stream
+   */
+  getDecryptedHistory(
+    chatId: string,
+    startAfter: any,
+    limit: number,
+    userId: string,
+  ): Observable<Message[]> {
+    return this.chatService.getChatHistory(chatId, startAfter, limit).pipe(
+      map((messages) => {
+        // Process messages for decryption
+        messages.forEach((message) => {
+          const messageId = message.id || `temp_${Date.now()}_${Math.random()}`;
+          const cacheKey = `${messageId}_${userId}`;
+
+          if (
+            message.isEncrypted &&
+            this.isValidEncryptedMessage(message) &&
+            !this.decryptedCache.has(cacheKey)
+          ) {
+            // Start async decryption for any messages not already in cache
+            this.startAsyncDecryption(message, userId, messageId, cacheKey);
+          }
+        });
+
+        // Return messages with decrypted content if available in cache, or placeholder
+        return messages.map((message) => {
+          if (!message.isEncrypted) return message;
+
+          const messageId = message.id;
+          const cacheKey = `${messageId}_${userId}`;
+
+          if (this.decryptedCache.has(cacheKey)) {
+            return {
+              ...message,
+              text: this.decryptedCache.get(cacheKey),
+            };
+          }
+
+          // If not yet decrypted, return as is (but decryption has started in background)
+          // The UI should handle showing a loading state or "decrypting..."
+          // Note: Since this is a one-time fetch, we might need to handle the update
+          // differently than the real-time stream.
+          // For now, we return valid messages, and the component can subscribe
+          // to updateTrigger if it wants to be notified of late decryptions.
+          return message;
+        });
+      }),
     );
   }
 
@@ -602,6 +657,7 @@ export class EncryptedChatService {
 
   /**
    * Check if encryption is available for a chat
+   * Returns true only if all participants have public keys available
    */
   async isEncryptionAvailable(chatId: string): Promise<boolean> {
     try {
@@ -610,9 +666,10 @@ export class EncryptedChatService {
         return false;
       }
 
-      // For this demo, encryption is available if:
+      // For encryption to be available:
       // 1. The browser supports Web Crypto API
       // 2. The current user has encryption enabled
+      // 3. All participants have public keys available
       const userId = await firstValueFrom(this.getCurrentUserId());
       if (!userId) {
         return false;
@@ -625,7 +682,22 @@ export class EncryptedChatService {
 
       // Check if user has a stored key pair (encryption enabled)
       const keyPair = await this.encryptionService.getStoredKeyPair(userId);
-      return keyPair !== null;
+      if (!keyPair) {
+        return false;
+      }
+
+      // Check if all participants have public keys available
+      for (const participantId of chat.participants) {
+        const publicKey = await this.getUserPublicKey(participantId);
+        if (!publicKey) {
+          console.warn(
+            `Encryption not available: participant ${participantId} has no public key`,
+          );
+          return false;
+        }
+      }
+
+      return true;
     } catch (error) {
       console.error("Error checking encryption availability:", error);
       return false;

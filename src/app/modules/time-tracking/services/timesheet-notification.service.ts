@@ -22,12 +22,13 @@
 import {Injectable} from "@angular/core";
 import {ToastController} from "@ionic/angular";
 import {Store} from "@ngrx/store";
+import {AuthState} from "../../../state/reducers/auth.reducer";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
 import {Timestamp} from "firebase/firestore";
 import {TimeEntry} from "../../../../../shared/models/time-entry.model";
 import {selectAuthUser} from "../../../state/selectors/auth.selectors";
-import {filter, take} from "rxjs/operators";
-import {firstValueFrom} from "rxjs";
+import {filter, take, switchMap} from "rxjs/operators";
+import {firstValueFrom, of} from "rxjs";
 
 interface TimesheetNotification {
   id: string;
@@ -51,7 +52,7 @@ interface TimesheetNotification {
 export class TimesheetNotificationService {
   constructor(
     private toastController: ToastController,
-    private store: Store,
+    private store: Store<{auth: AuthState}>,
     private firestore: AngularFirestore,
   ) {}
 
@@ -260,14 +261,21 @@ export class TimesheetNotificationService {
    * Get notifications for current user
    */
   getUserNotifications(userId: string) {
-    return this.firestore
-      .collection<TimesheetNotification>("notifications", (ref) =>
-        ref
-          .where("userId", "==", userId)
-          .orderBy("createdAt", "desc")
-          .limit(50),
-      )
-      .valueChanges();
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user?.uid) {
+          return of([]);
+        }
+        return this.firestore
+          .collection<TimesheetNotification>("notifications", (ref) =>
+            ref
+              .where("userId", "==", userId)
+              .orderBy("createdAt", "desc")
+              .limit(50),
+          )
+          .valueChanges();
+      }),
+    );
   }
 
   /**

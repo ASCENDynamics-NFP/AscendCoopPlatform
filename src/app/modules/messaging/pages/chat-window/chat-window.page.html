@@ -13,6 +13,19 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="chat-content">
+  <!-- Infinite Scroll (History) -->
+  <ion-infinite-scroll
+    position="top"
+    (ionInfinite)="loadMoreMessages($event)"
+    [disabled]="isEverythingLoaded"
+  >
+    <ion-infinite-scroll-content
+      loadingSpinner="bubbles"
+      loadingText="Loading history..."
+    >
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+
   <!-- Messages List -->
   <div class="messages-container">
     <div

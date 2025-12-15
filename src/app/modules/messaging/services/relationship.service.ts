@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 import {Injectable} from "@angular/core";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
-import {Observable, from, throwError, combineLatest} from "rxjs";
+import {Observable, from, throwError, combineLatest, of} from "rxjs";
 import {map, catchError} from "rxjs/operators";
 
 export interface RelatedAccount {
@@ -31,6 +31,11 @@ export interface RelatedAccount {
   relationshipType?: string;
 }
 
+import {switchMap} from "rxjs/operators";
+import {Store} from "@ngrx/store";
+import {AuthState} from "../../../state/reducers/auth.reducer";
+import {selectAuthUser} from "../../../state/selectors/auth.selectors";
+
 @Injectable({
   providedIn: "root",
 })
@@ -38,7 +43,10 @@ export class RelationshipService {
   private readonly ACCOUNTS_COLLECTION = "accounts";
   private readonly RELATED_ACCOUNTS_COLLECTION = "relatedAccounts";
 
-  constructor(private firestore: AngularFirestore) {}
+  constructor(
+    private firestore: AngularFirestore,
+    private store: Store<{auth: AuthState}>,
+  ) {}
 
   /**
    * Check if two users have an accepted relationship (bidirectional check)
@@ -47,41 +55,49 @@ export class RelationshipService {
     currentUserId: string,
     targetUserId: string,
   ): Observable<RelatedAccount | null> {
-    // Check relationship from current user's perspective
-    const forwardCheck = this.firestore
-      .collection<RelatedAccount>(
-        `${this.ACCOUNTS_COLLECTION}/${currentUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
-        (ref) =>
-          ref
-            .where("targetId", "==", targetUserId)
-            .where("status", "==", "accepted")
-            .limit(1),
-      )
-      .valueChanges({idField: "id"});
-
-    // Check relationship from target user's perspective
-    const reverseCheck = this.firestore
-      .collection<RelatedAccount>(
-        `${this.ACCOUNTS_COLLECTION}/${targetUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
-        (ref) =>
-          ref
-            .where("targetId", "==", currentUserId)
-            .where("status", "==", "accepted")
-            .limit(1),
-      )
-      .valueChanges({idField: "id"});
-
     // Return the first relationship found from either direction
-    return combineLatest([forwardCheck, reverseCheck]).pipe(
-      map(([forward, reverse]) => {
-        // Return the first non-empty result
-        if (forward && forward.length > 0) return forward[0];
-        if (reverse && reverse.length > 0) return reverse[0];
-        return null;
-      }),
-      catchError((error) => {
-        console.error("Error checking relationship status:", error);
-        return throwError(() => error);
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user?.uid) {
+          return of(null);
+        }
+
+        // Check relationship from current user's perspective
+        const forwardCheck = this.firestore
+          .collection<RelatedAccount>(
+            `${this.ACCOUNTS_COLLECTION}/${currentUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
+            (ref) =>
+              ref
+                .where("targetId", "==", targetUserId)
+                .where("status", "==", "accepted")
+                .limit(1),
+          )
+          .valueChanges({idField: "id"});
+
+        // Check relationship from target user's perspective
+        const reverseCheck = this.firestore
+          .collection<RelatedAccount>(
+            `${this.ACCOUNTS_COLLECTION}/${targetUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
+            (ref) =>
+              ref
+                .where("targetId", "==", currentUserId)
+                .where("status", "==", "accepted")
+                .limit(1),
+          )
+          .valueChanges({idField: "id"});
+
+        return combineLatest([forwardCheck, reverseCheck]).pipe(
+          map(([forward, reverse]) => {
+            // Return the first non-empty result
+            if (forward && forward.length > 0) return forward[0];
+            if (reverse && reverse.length > 0) return reverse[0];
+            return null;
+          }),
+          catchError((error) => {
+            console.error("Error checking relationship status:", error);
+            return throwError(() => error);
+          }),
+        );
       }),
     );
   }
@@ -116,21 +132,28 @@ export class RelationshipService {
    * Get all accepted relationships for user (friends list)
    */
   getAcceptedRelationships(userId: string): Observable<RelatedAccount[]> {
-    return this.firestore
-      .collection<RelatedAccount>(
-        `${this.ACCOUNTS_COLLECTION}/${userId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
-        (ref) => ref.where("status", "==", "accepted"),
-      )
-      .valueChanges({idField: "id"})
-      .pipe(
-        map((relationships) => {
-          return relationships;
-        }),
-        catchError((error) => {
-          console.error("Error fetching accepted relationships:", error);
-          return throwError(() => error);
-        }),
-      );
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user?.uid) {
+          return of([]);
+        }
+        return this.firestore
+          .collection<RelatedAccount>(
+            `${this.ACCOUNTS_COLLECTION}/${userId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
+            (ref) => ref.where("status", "==", "accepted"),
+          )
+          .valueChanges({idField: "id"})
+          .pipe(
+            map((relationships) => {
+              return relationships;
+            }),
+            catchError((error) => {
+              console.error("Error fetching accepted relationships:", error);
+              return throwError(() => error);
+            }),
+          );
+      }),
+    );
   }
 
   /**
@@ -231,18 +254,25 @@ export class RelationshipService {
    * Get all blocked relationships for user
    */
   getBlockedRelationships(userId: string): Observable<RelatedAccount[]> {
-    return this.firestore
-      .collection<RelatedAccount>(
-        `${this.ACCOUNTS_COLLECTION}/${userId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
-        (ref) => ref.where("status", "==", "blocked"),
-      )
-      .valueChanges({idField: "id"})
-      .pipe(
-        catchError((error) => {
-          console.error("Error fetching blocked relationships:", error);
-          return throwError(() => error);
-        }),
-      );
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user?.uid) {
+          return of([]);
+        }
+        return this.firestore
+          .collection<RelatedAccount>(
+            `${this.ACCOUNTS_COLLECTION}/${userId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
+            (ref) => ref.where("status", "==", "blocked"),
+          )
+          .valueChanges({idField: "id"})
+          .pipe(
+            catchError((error) => {
+              console.error("Error fetching blocked relationships:", error);
+              return throwError(() => error);
+            }),
+          );
+      }),
+    );
   }
 
   /**
@@ -252,22 +282,29 @@ export class RelationshipService {
     currentUserId: string,
     targetUserId: string,
   ): Observable<boolean> {
-    return this.firestore
-      .collection<RelatedAccount>(
-        `${this.ACCOUNTS_COLLECTION}/${currentUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
-        (ref) =>
-          ref
-            .where("targetId", "==", targetUserId)
-            .where("status", "==", "blocked")
-            .limit(1),
-      )
-      .valueChanges()
-      .pipe(
-        map((relationships) => relationships.length > 0),
-        catchError((error) => {
-          console.error("Error checking block status:", error);
-          return from([false]);
-        }),
-      );
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user?.uid) {
+          return of(false);
+        }
+        return this.firestore
+          .collection<RelatedAccount>(
+            `${this.ACCOUNTS_COLLECTION}/${currentUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
+            (ref) =>
+              ref
+                .where("targetId", "==", targetUserId)
+                .where("status", "==", "blocked")
+                .limit(1),
+          )
+          .valueChanges()
+          .pipe(
+            map((relationships) => relationships.length > 0),
+            catchError((error) => {
+              console.error("Error checking block status:", error);
+              return from([false]);
+            }),
+          );
+      }),
+    );
   }
 }

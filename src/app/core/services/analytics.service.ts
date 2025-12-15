@@ -21,14 +21,17 @@
 
 import {Injectable} from "@angular/core";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
-import {Observable, combineLatest} from "rxjs";
-import {map, switchMap, catchError} from "rxjs/operators";
+import {Observable, combineLatest, of} from "rxjs";
+import {map, switchMap, catchError, take} from "rxjs/operators";
 import {TimeTrackingService} from "./time-tracking.service";
 import {GroupRole} from "../../../../shared/models/group-role.model";
 import {Project} from "../../../../shared/models/project.model";
 import {TimeEntry} from "../../../../shared/models/time-entry.model";
 import {StandardRoleCategory} from "../../../../shared/models/standard-role-template.model";
 import {StandardProjectCategory} from "../../../../shared/models/standard-project-template.model";
+import {Store} from "@ngrx/store";
+import {AuthState} from "../../state/reducers/auth.reducer";
+import {selectAuthUser} from "../../state/selectors/auth.selectors";
 
 export interface RoleAnalytics {
   totalRoles: number;
@@ -136,6 +139,52 @@ export interface CrossAccountMetrics {
   };
 }
 
+export const DEFAULT_ROLE_ANALYTICS: RoleAnalytics = {
+  totalRoles: 0,
+  rolesByCategory: {},
+  rolesByType: {organization: 0, user: 0},
+  standardVsCustomRoles: {standard: 0, custom: 0},
+  accountsWithRoles: 0,
+  averageRolesPerAccount: 0,
+};
+
+export const DEFAULT_PROJECT_ANALYTICS: ProjectAnalytics = {
+  totalProjects: 0,
+  projectsByCategory: {},
+  projectsByStatus: {},
+  activeProjects: 0,
+  archivedProjects: 0,
+  standardVsCustomProjects: {standard: 0, custom: 0},
+  accountsWithProjects: 0,
+  averageProjectsPerAccount: 0,
+};
+
+export const DEFAULT_TIME_TRACKING_ANALYTICS: TimeTrackingAnalytics = {
+  totalEntries: 0,
+  totalHours: 0,
+  totalApprovedHours: 0,
+  entriesByStatus: {},
+  hoursByStatus: {},
+  entriesByProject: {},
+  entriesByUser: {},
+  monthlyStats: {},
+  weeklyStats: {},
+  averageHoursPerEntry: 0,
+  averageApprovalTime: 0,
+  mostActiveUsers: [],
+  mostActiveProjects: [],
+  approvalMetrics: {
+    approvalRate: 0,
+    rejectionRate: 0,
+    pendingRate: 0,
+    averageDaysToApproval: 0,
+  },
+  timeDistribution: {
+    byDayOfWeek: {},
+    byTimeOfMonth: {},
+  },
+};
+
 @Injectable({
   providedIn: "root",
 })
@@ -143,6 +192,7 @@ export class AnalyticsService {
   constructor(
     private firestore: AngularFirestore,
     private timeTrackingService: TimeTrackingService,
+    private store: Store<{auth: AuthState}>,
   ) {}
 
   /**
@@ -179,111 +229,142 @@ export class AnalyticsService {
    * Get role analytics using collection group queries
    */
   getRoleAnalytics(): Observable<RoleAnalytics> {
-    return this.firestore
-      .collectionGroup<GroupRole>("roles")
-      .valueChanges()
-      .pipe(
-        map((roles) => {
-          const rolesByCategory: {[key in StandardRoleCategory]?: number} = {};
-          const rolesByType = {organization: 0, user: 0};
-          const standardVsCustomRoles = {standard: 0, custom: 0};
-          const accountIds = new Set<string>();
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user?.uid) {
+          // Return empty/zero metrics if logged out
+          return of(DEFAULT_ROLE_ANALYTICS);
+        }
+        return this.firestore
+          .collectionGroup<GroupRole>("group_roles")
+          .valueChanges()
+          .pipe(
+            map((roles) => {
+              const totalRoles = roles.length;
+              const rolesByCategory: {[key in StandardRoleCategory]?: number} =
+                {};
+              const rolesByType = {organization: 0, user: 0};
+              const standardVsCustomRoles = {standard: 0, custom: 0};
+              const accountsWithRoles = new Set<string>();
 
-          roles.forEach((role) => {
-            // Extract accountId from role ID or use a different method
-            const accountId = this.extractAccountIdFromRole(role);
-            if (accountId) accountIds.add(accountId);
+              roles.forEach((role) => {
+                const accountId = this.extractAccountIdFromRole(role);
+                if (accountId) accountsWithRoles.add(accountId);
 
-            // Count by category
-            if (role.standardCategory) {
-              rolesByCategory[role.standardCategory] =
-                (rolesByCategory[role.standardCategory] || 0) + 1;
-            }
+                // Category stats
+                const category =
+                  role.standardCategory ||
+                  ("Uncategorized" as StandardRoleCategory);
+                rolesByCategory[category] =
+                  (rolesByCategory[category] || 0) + 1;
 
-            // Count by type
-            rolesByType[role.roleType || "organization"]++;
+                // Type stats (handle potential missing type)
+                const type = role.roleType || "organization";
+                if (type === "organization") rolesByType.organization++;
+                else rolesByType.user++;
 
-            // Count standard vs custom
-            if (role.isStandardRole) {
-              standardVsCustomRoles.standard++;
-            } else {
-              standardVsCustomRoles.custom++;
-            }
-          });
+                // Standard vs Custom
+                if (role.isStandardRole) standardVsCustomRoles.standard++;
+                else standardVsCustomRoles.custom++;
+              });
 
-          return {
-            totalRoles: roles.length,
-            rolesByCategory,
-            rolesByType,
-            standardVsCustomRoles,
-            accountsWithRoles: accountIds.size,
-            averageRolesPerAccount:
-              accountIds.size > 0 ? roles.length / accountIds.size : 0,
-          };
-        }),
-      );
+              // Assuming we can't easily get total accounts from here without another query,
+              // we'll calculate average based on unique accounts involved in roles for now,
+              // or leave it to the CrossAccount analytics to combine with total accounts.
+              const averageRolesPerAccount =
+                accountsWithRoles.size > 0
+                  ? totalRoles / accountsWithRoles.size
+                  : 0;
+
+              return {
+                totalRoles,
+                rolesByCategory,
+                rolesByType,
+                standardVsCustomRoles,
+                accountsWithRoles: accountsWithRoles.size,
+                averageRolesPerAccount,
+              };
+            }),
+            catchError((error) => {
+              console.error("Error fetching role analytics:", error);
+              return of(DEFAULT_ROLE_ANALYTICS);
+            }),
+          );
+      }),
+    );
   }
 
   /**
    * Get project analytics using collection group queries
    */
   getProjectAnalytics(): Observable<ProjectAnalytics> {
-    return this.firestore
-      .collectionGroup<Project>("projects")
-      .valueChanges()
-      .pipe(
-        map((projects) => {
-          const projectsByCategory: {
-            [key in StandardProjectCategory]?: number;
-          } = {};
-          const projectsByStatus: {[status: string]: number} = {};
-          const standardVsCustomProjects = {standard: 0, custom: 0};
-          const accountIds = new Set<string>();
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user?.uid) {
+          return of(DEFAULT_PROJECT_ANALYTICS);
+        }
+        return this.firestore
+          .collectionGroup<Project>("projects")
+          .valueChanges()
+          .pipe(
+            map((projects) => {
+              const projectsByCategory: {
+                [key in StandardProjectCategory]?: number;
+              } = {};
+              const projectsByStatus: {[status: string]: number} = {};
+              const standardVsCustomProjects = {standard: 0, custom: 0};
+              const accountIds = new Set<string>();
 
-          let activeProjects = 0;
-          let archivedProjects = 0;
+              let activeProjects = 0;
+              let archivedProjects = 0;
 
-          projects.forEach((project) => {
-            accountIds.add(project.accountId);
+              projects.forEach((project) => {
+                if (project.accountId) accountIds.add(project.accountId);
 
-            // Count by category
-            if (project.standardCategory) {
-              projectsByCategory[project.standardCategory] =
-                (projectsByCategory[project.standardCategory] || 0) + 1;
-            }
+                // Count by category
+                if (project.standardCategory) {
+                  projectsByCategory[project.standardCategory] =
+                    (projectsByCategory[project.standardCategory] || 0) + 1;
+                }
 
-            // Count by status
-            const status = project.status || "Unknown";
-            projectsByStatus[status] = (projectsByStatus[status] || 0) + 1;
+                // Count by status
+                const status = project.status || "Unknown";
+                projectsByStatus[status] = (projectsByStatus[status] || 0) + 1;
 
-            // Count active vs archived
-            if (project.archived) {
-              archivedProjects++;
-            } else {
-              activeProjects++;
-            }
+                // Count active vs archived
+                if (project.archived) {
+                  archivedProjects++;
+                } else {
+                  activeProjects++;
+                }
 
-            // Count standard vs custom
-            if (project.isStandardProject) {
-              standardVsCustomProjects.standard++;
-            } else {
-              standardVsCustomProjects.custom++;
-            }
-          });
+                // Standard vs Custom (assuming projects can be standard or custom)
+                if (project.isStandardProject) {
+                  standardVsCustomProjects.standard++;
+                } else {
+                  standardVsCustomProjects.custom++;
+                }
+              });
 
-          return {
-            totalProjects: projects.length,
-            projectsByCategory,
-            projectsByStatus,
-            activeProjects,
-            archivedProjects,
-            standardVsCustomProjects,
-            accountsWithProjects: accountIds.size,
-            averageProjectsPerAccount:
-              accountIds.size > 0 ? projects.length / accountIds.size : 0,
-          };
-        }),
-      );
+              return {
+                totalProjects: projects.length,
+                projectsByCategory,
+                projectsByStatus,
+                activeProjects,
+                archivedProjects,
+                standardVsCustomProjects,
+                accountsWithProjects: accountIds.size,
+                averageProjectsPerAccount:
+                  accountIds.size > 0 ? projects.length / accountIds.size : 0,
+              };
+            }),
+            catchError((error) => {
+              console.error("Error fetching project analytics:", error);
+              return of(DEFAULT_PROJECT_ANALYTICS);
+            }),
+          );
+      }),
+    );
   }
 
   /**
@@ -293,24 +374,41 @@ export class AnalyticsService {
     totalAccounts: number;
     accountsByType: {[type: string]: number};
   }> {
-    return this.firestore
-      .collection("accounts")
-      .valueChanges()
-      .pipe(
-        map((accounts: any[]) => {
-          const accountsByType: {[type: string]: number} = {};
-
-          accounts.forEach((account) => {
-            const type = account.type || "Unknown";
-            accountsByType[type] = (accountsByType[type] || 0) + 1;
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user?.uid) {
+          return of({
+            totalAccounts: 0,
+            accountsByType: {},
           });
+        }
+        return this.firestore
+          .collection("accounts")
+          .valueChanges()
+          .pipe(
+            map((accounts: any[]) => {
+              const accountsByType: {[type: string]: number} = {};
 
-          return {
-            totalAccounts: accounts.length,
-            accountsByType,
-          };
-        }),
-      );
+              accounts.forEach((account) => {
+                const type = account.type || "Unknown";
+                accountsByType[type] = (accountsByType[type] || 0) + 1;
+              });
+
+              return {
+                totalAccounts: accounts.length,
+                accountsByType,
+              };
+            }),
+            catchError((error) => {
+              console.error("Error fetching account analytics:", error);
+              return of({
+                totalAccounts: 0,
+                accountsByType: {},
+              });
+            }),
+          );
+      }),
+    );
   }
 
   /**
@@ -322,32 +420,53 @@ export class AnalyticsService {
     averageRolesPerAccount: number;
     roleNames: {[name: string]: number};
   }> {
-    return this.firestore
-      .collectionGroup<GroupRole>("roles", (ref) =>
-        ref.where("standardCategory", "==", category),
-      )
-      .valueChanges()
-      .pipe(
-        map((roles) => {
-          const accountIds = new Set<string>();
-          const roleNames: {[name: string]: number} = {};
-
-          roles.forEach((role) => {
-            const accountId = this.extractAccountIdFromRole(role);
-            if (accountId) accountIds.add(accountId);
-
-            roleNames[role.name] = (roleNames[role.name] || 0) + 1;
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user?.uid) {
+          return of({
+            totalRoles: 0,
+            accountsUsingCategory: 0,
+            averageRolesPerAccount: 0,
+            roleNames: {},
           });
+        }
+        return this.firestore
+          .collectionGroup<GroupRole>("roles", (ref) =>
+            ref.where("standardCategory", "==", category),
+          )
+          .valueChanges()
+          .pipe(
+            map((roles) => {
+              const accountIds = new Set<string>();
+              const roleNames: {[name: string]: number} = {};
 
-          return {
-            totalRoles: roles.length,
-            accountsUsingCategory: accountIds.size,
-            averageRolesPerAccount:
-              accountIds.size > 0 ? roles.length / accountIds.size : 0,
-            roleNames,
-          };
-        }),
-      );
+              roles.forEach((role) => {
+                const accountId = this.extractAccountIdFromRole(role);
+                if (accountId) accountIds.add(accountId);
+
+                roleNames[role.name] = (roleNames[role.name] || 0) + 1;
+              });
+
+              return {
+                totalRoles: roles.length,
+                accountsUsingCategory: accountIds.size,
+                averageRolesPerAccount:
+                  accountIds.size > 0 ? roles.length / accountIds.size : 0,
+                roleNames,
+              };
+            }),
+            catchError((error) => {
+              console.error("Error fetching role category analytics:", error);
+              return of({
+                totalRoles: 0,
+                accountsUsingCategory: 0,
+                averageRolesPerAccount: 0,
+                roleNames: {},
+              });
+            }),
+          );
+      }),
+    );
   }
 
   /**
@@ -360,36 +479,64 @@ export class AnalyticsService {
     projectNames: {[name: string]: number};
     statusDistribution: {[status: string]: number};
   }> {
-    return this.firestore
-      .collectionGroup<Project>("projects", (ref) =>
-        ref.where("standardCategory", "==", category),
-      )
-      .valueChanges()
-      .pipe(
-        map((projects) => {
-          const accountIds = new Set<string>();
-          const projectNames: {[name: string]: number} = {};
-          const statusDistribution: {[status: string]: number} = {};
-
-          projects.forEach((project) => {
-            accountIds.add(project.accountId);
-
-            projectNames[project.name] = (projectNames[project.name] || 0) + 1;
-
-            const status = project.status || "Unknown";
-            statusDistribution[status] = (statusDistribution[status] || 0) + 1;
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user?.uid) {
+          return of({
+            totalProjects: 0,
+            accountsUsingCategory: 0,
+            averageProjectsPerAccount: 0,
+            projectNames: {},
+            statusDistribution: {},
           });
+        }
+        return this.firestore
+          .collectionGroup<Project>("projects", (ref) =>
+            ref.where("standardCategory", "==", category),
+          )
+          .valueChanges()
+          .pipe(
+            map((projects) => {
+              const accountIds = new Set<string>();
+              const projectNames: {[name: string]: number} = {};
+              const statusDistribution: {[status: string]: number} = {};
 
-          return {
-            totalProjects: projects.length,
-            accountsUsingCategory: accountIds.size,
-            averageProjectsPerAccount:
-              accountIds.size > 0 ? projects.length / accountIds.size : 0,
-            projectNames,
-            statusDistribution,
-          };
-        }),
-      );
+              projects.forEach((project) => {
+                if (project.accountId) accountIds.add(project.accountId);
+
+                projectNames[project.name] =
+                  (projectNames[project.name] || 0) + 1;
+
+                const status = project.status || "Unknown";
+                statusDistribution[status] =
+                  (statusDistribution[status] || 0) + 1;
+              });
+
+              return {
+                totalProjects: projects.length,
+                accountsUsingCategory: accountIds.size,
+                averageProjectsPerAccount:
+                  accountIds.size > 0 ? projects.length / accountIds.size : 0,
+                projectNames,
+                statusDistribution,
+              };
+            }),
+            catchError((error) => {
+              console.error(
+                "Error fetching project category analytics:",
+                error,
+              );
+              return of({
+                totalProjects: 0,
+                accountsUsingCategory: 0,
+                averageProjectsPerAccount: 0,
+                projectNames: {},
+                statusDistribution: {},
+              });
+            }),
+          );
+      }),
+    );
   }
 
   /**
@@ -403,69 +550,98 @@ export class AnalyticsService {
       [accountType: string]: {standard: number; custom: number};
     };
   }> {
-    return this.firestore
-      .collection("accounts")
-      .valueChanges()
-      .pipe(
-        switchMap((accounts: any[]) => {
-          const accountMap = new Map<string, any>();
-          accounts.forEach((acc) => accountMap.set(acc.id, acc));
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user?.uid) {
+          return of({
+            roleStandardization: {},
+            projectStandardization: {},
+          });
+        }
+        return this.firestore
+          .collection("accounts")
+          .valueChanges()
+          .pipe(
+            switchMap((accounts: any[]) => {
+              const accountMap = new Map<string, any>();
+              accounts.forEach((acc) => accountMap.set(acc.id, acc));
 
-          return combineLatest([
-            this.firestore.collectionGroup<GroupRole>("roles").valueChanges(),
-            this.firestore.collectionGroup<Project>("projects").valueChanges(),
-          ]).pipe(
-            map(([roles, projects]) => {
-              const roleStandardization: {
-                [accountType: string]: {standard: number; custom: number};
-              } = {};
-              const projectStandardization: {
-                [accountType: string]: {standard: number; custom: number};
-              } = {};
+              return combineLatest([
+                this.firestore
+                  .collectionGroup<GroupRole>("roles")
+                  .valueChanges(),
+                this.firestore
+                  .collectionGroup<Project>("projects")
+                  .valueChanges(),
+              ]).pipe(
+                map(([roles, projects]) => {
+                  const roleStandardization: {
+                    [accountType: string]: {standard: number; custom: number};
+                  } = {};
+                  const projectStandardization: {
+                    [accountType: string]: {standard: number; custom: number};
+                  } = {};
 
-              // Analyze roles
-              roles.forEach((role) => {
-                const accountId = this.extractAccountIdFromRole(role);
-                const account = accountId ? accountMap.get(accountId) : null;
-                if (!account) return;
+                  // Analyze roles
+                  roles.forEach((role) => {
+                    const accountId = this.extractAccountIdFromRole(role);
+                    const account = accountId
+                      ? accountMap.get(accountId)
+                      : null;
+                    if (!account) return;
 
-                const accountType = account.type || "Unknown";
-                if (!roleStandardization[accountType]) {
-                  roleStandardization[accountType] = {standard: 0, custom: 0};
-                }
+                    const accountType = account.type || "Unknown";
+                    if (!roleStandardization[accountType]) {
+                      roleStandardization[accountType] = {
+                        standard: 0,
+                        custom: 0,
+                      };
+                    }
 
-                if (role.isStandardRole) {
-                  roleStandardization[accountType].standard++;
-                } else {
-                  roleStandardization[accountType].custom++;
-                }
+                    if (role.isStandardRole) {
+                      roleStandardization[accountType].standard++;
+                    } else {
+                      roleStandardization[accountType].custom++;
+                    }
+                  });
+
+                  // Analyze projects
+                  projects.forEach((project) => {
+                    const account = accountMap.get(project.accountId);
+                    if (!account) return;
+
+                    const accountType = account.type || "Unknown";
+                    if (!projectStandardization[accountType]) {
+                      projectStandardization[accountType] = {
+                        standard: 0,
+                        custom: 0,
+                      };
+                    }
+
+                    if (project.isStandardProject) {
+                      projectStandardization[accountType].standard++;
+                    } else {
+                      projectStandardization[accountType].custom++;
+                    }
+                  });
+
+                  return {roleStandardization, projectStandardization};
+                }),
+              );
+            }),
+            catchError((error) => {
+              console.error(
+                "Error fetching standardization adoption analytics:",
+                error,
+              );
+              return of({
+                roleStandardization: {},
+                projectStandardization: {},
               });
-
-              // Analyze projects
-              projects.forEach((project) => {
-                const account = accountMap.get(project.accountId);
-                if (!account) return;
-
-                const accountType = account.type || "Unknown";
-                if (!projectStandardization[accountType]) {
-                  projectStandardization[accountType] = {
-                    standard: 0,
-                    custom: 0,
-                  };
-                }
-
-                if (project.isStandardProject) {
-                  projectStandardization[accountType].standard++;
-                } else {
-                  projectStandardization[accountType].custom++;
-                }
-              });
-
-              return {roleStandardization, projectStandardization};
             }),
           );
-        }),
-      );
+      }),
+    );
   }
 
   /**
@@ -474,86 +650,100 @@ export class AnalyticsService {
   getTimeTrackingAnalyticsWithProjects(
     filters?: TimeTrackingReportFilters,
   ): Observable<TimeTrackingAnalytics> {
-    // Validate filters first
-    this.validateFilters(filters);
-
-    if (!filters?.accountId) {
-      throw new Error("accountId is required for time tracking analytics");
-    }
-
-    // Get both time entries and project data for category filtering
-    return combineLatest([
-      this.timeTrackingService.getAccountTimeEntries(filters.accountId, {
-        startDate: filters.startDate?.toISOString(),
-        endDate: filters.endDate?.toISOString(),
-      }),
-      this.firestore
-        .collection(`accounts/${filters.accountId}/projects`)
-        .valueChanges(),
-    ]).pipe(
-      map(([entries, projects]) => {
-        let filteredEntries = entries;
-
-        if (filters) {
-          // Create a map of project ID to project category for efficient lookup
-          const projectCategoryMap = new Map<string, StandardProjectCategory>();
-          (projects as any[]).forEach((project) => {
-            if (project.id && project.standardCategory) {
-              projectCategoryMap.set(project.id, project.standardCategory);
-            }
-          });
-
-          filteredEntries = entries.filter((entry) => {
-            const entryAny = entry as any;
-
-            if (filters.userId && entryAny.userId !== filters.userId)
-              return false;
-            if (filters.projectId && entryAny.projectId !== filters.projectId)
-              return false;
-            if (filters.status && entryAny.status !== filters.status)
-              return false;
-
-            // Category filtering using project data lookup
-            if (filters.category && entryAny.projectId) {
-              const projectCategory = projectCategoryMap.get(
-                entryAny.projectId,
-              );
-              if (projectCategory !== filters.category) return false;
-            }
-
-            if (filters.startDate || filters.endDate) {
-              const entryDate = this.toDate(entryAny.date);
-              if (!entryDate) return false;
-
-              // Include entries on the start date
-              if (filters.startDate) {
-                const startOfDay = new Date(filters.startDate);
-                startOfDay.setHours(0, 0, 0, 0);
-                if (entryDate < startOfDay) return false;
-              }
-
-              // Include entries on the end date (through end of day)
-              if (filters.endDate) {
-                const endOfDay = new Date(filters.endDate);
-                endOfDay.setHours(23, 59, 59, 999);
-                if (entryDate > endOfDay) return false;
-              }
-            }
-
-            return true;
-          });
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user?.uid) {
+          return of(DEFAULT_TIME_TRACKING_ANALYTICS);
         }
 
-        return this.calculateTimeTrackingMetrics(
-          filteredEntries as unknown as TimeEntry[],
+        // Validate filters first
+        this.validateFilters(filters);
+
+        if (!filters?.accountId) {
+          throw new Error("accountId is required for time tracking analytics");
+        }
+
+        // Get both time entries and project data for category filtering
+        return combineLatest([
+          this.timeTrackingService.getAccountTimeEntries(filters.accountId, {
+            startDate: filters.startDate?.toISOString(),
+            endDate: filters.endDate?.toISOString(),
+          }),
+          this.firestore
+            .collection(`accounts/${filters.accountId}/projects`)
+            .valueChanges(),
+        ]).pipe(
+          map(([entries, projects]) => {
+            let filteredEntries = entries;
+
+            if (filters) {
+              // Create a map of project ID to project category for efficient lookup
+              const projectCategoryMap = new Map<
+                string,
+                StandardProjectCategory
+              >();
+              (projects as any[]).forEach((project) => {
+                if (project.id && project.standardCategory) {
+                  projectCategoryMap.set(project.id, project.standardCategory);
+                }
+              });
+
+              filteredEntries = entries.filter((entry) => {
+                const entryAny = entry as any;
+
+                if (filters.userId && entryAny.userId !== filters.userId)
+                  return false;
+                if (
+                  filters.projectId &&
+                  entryAny.projectId !== filters.projectId
+                )
+                  return false;
+                if (filters.status && entryAny.status !== filters.status)
+                  return false;
+
+                // Category filtering using project data lookup
+                if (filters.category && entryAny.projectId) {
+                  const projectCategory = projectCategoryMap.get(
+                    entryAny.projectId,
+                  );
+                  if (projectCategory !== filters.category) return false;
+                }
+
+                if (filters.startDate || filters.endDate) {
+                  const entryDate = this.toDate(entryAny.date);
+                  if (!entryDate) return false;
+
+                  // Include entries on the start date
+                  if (filters.startDate) {
+                    const startOfDay = new Date(filters.startDate);
+                    startOfDay.setHours(0, 0, 0, 0);
+                    if (entryDate < startOfDay) return false;
+                  }
+
+                  // Include entries on the end date (through end of day)
+                  if (filters.endDate) {
+                    const endOfDay = new Date(filters.endDate);
+                    endOfDay.setHours(23, 59, 59, 999);
+                    if (entryDate > endOfDay) return false;
+                  }
+                }
+
+                return true;
+              });
+            }
+
+            return this.calculateTimeTrackingMetrics(
+              filteredEntries as unknown as TimeEntry[],
+            );
+          }),
+          catchError((error) => {
+            console.error(
+              "Error loading time tracking analytics with projects:",
+              error,
+            );
+            return of(DEFAULT_TIME_TRACKING_ANALYTICS);
+          }),
         );
-      }),
-      catchError((error) => {
-        console.error(
-          "Error loading time tracking analytics with projects:",
-          error,
-        );
-        throw error;
       }),
     );
   }
@@ -622,79 +812,90 @@ export class AnalyticsService {
   getTimeTrackingAnalytics(
     filters?: TimeTrackingReportFilters,
   ): Observable<TimeTrackingAnalytics> {
-    // Validate filters first
-    this.validateFilters(filters);
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user?.uid) {
+          return of(DEFAULT_TIME_TRACKING_ANALYTICS);
+        }
 
-    if (!filters?.accountId) {
-      throw new Error("accountId is required for time tracking analytics");
-    }
+        // Validate filters first
+        this.validateFilters(filters);
 
-    // Only pass minimal options to the service to get all relevant data
-    // Then do comprehensive filtering client-side for more control
-    const requestOptions = {
-      // Only pass date filters to the service to reduce the initial dataset
-      startDate: filters.startDate?.toISOString(),
-      endDate: filters.endDate?.toISOString(),
-    };
+        if (!filters?.accountId) {
+          throw new Error("accountId is required for time tracking analytics");
+        }
 
-    return this.timeTrackingService
-      .getAccountTimeEntries(filters.accountId, requestOptions)
-      .pipe(
-        map((entries) => {
-          let filteredEntries = entries;
+        // Only pass minimal options to the service to get all relevant data
+        // Then do comprehensive filtering client-side for more control
+        const requestOptions = {
+          // Only pass date filters to the service to reduce the initial dataset
+          startDate: filters.startDate?.toISOString(),
+          endDate: filters.endDate?.toISOString(),
+        };
 
-          if (filters) {
-            filteredEntries = entries.filter((entry) => {
-              const entryAny = entry as any;
+        return this.timeTrackingService
+          .getAccountTimeEntries(filters.accountId, requestOptions)
+          .pipe(
+            map((entries) => {
+              let filteredEntries = entries;
 
-              if (filters.userId && entryAny.userId !== filters.userId)
-                return false;
-              if (filters.projectId && entryAny.projectId !== filters.projectId)
-                return false;
-              if (filters.status && entryAny.status !== filters.status)
-                return false;
+              if (filters) {
+                filteredEntries = entries.filter((entry) => {
+                  const entryAny = entry as any;
 
-              // Category filtering - requires project category data to be available
-              // This could be from a joined query or if category was denormalized in time entries
-              if (
-                filters.category &&
-                entryAny.projectCategory &&
-                entryAny.projectCategory !== filters.category
-              )
-                return false;
+                  if (filters.userId && entryAny.userId !== filters.userId)
+                    return false;
+                  if (
+                    filters.projectId &&
+                    entryAny.projectId !== filters.projectId
+                  )
+                    return false;
+                  if (filters.status && entryAny.status !== filters.status)
+                    return false;
 
-              if (filters.startDate || filters.endDate) {
-                const entryDate = this.toDate(entryAny.date);
-                if (!entryDate) return false;
+                  // Category filtering - requires project category data to be available
+                  // This could be from a joined query or if category was denormalized in time entries
+                  if (
+                    filters.category &&
+                    entryAny.projectCategory &&
+                    entryAny.projectCategory !== filters.category
+                  )
+                    return false;
 
-                // Include entries on the start date
-                if (filters.startDate) {
-                  const startOfDay = new Date(filters.startDate);
-                  startOfDay.setHours(0, 0, 0, 0);
-                  if (entryDate < startOfDay) return false;
-                }
+                  if (filters.startDate || filters.endDate) {
+                    const entryDate = this.toDate(entryAny.date);
+                    if (!entryDate) return false;
 
-                // Include entries on the end date (through end of day)
-                if (filters.endDate) {
-                  const endOfDay = new Date(filters.endDate);
-                  endOfDay.setHours(23, 59, 59, 999);
-                  if (entryDate > endOfDay) return false;
-                }
+                    // Include entries on the start date
+                    if (filters.startDate) {
+                      const startOfDay = new Date(filters.startDate);
+                      startOfDay.setHours(0, 0, 0, 0);
+                      if (entryDate < startOfDay) return false;
+                    }
+
+                    // Include entries on the end date (through end of day)
+                    if (filters.endDate) {
+                      const endOfDay = new Date(filters.endDate);
+                      endOfDay.setHours(23, 59, 59, 999);
+                      if (entryDate > endOfDay) return false;
+                    }
+                  }
+
+                  return true;
+                });
               }
 
-              return true;
-            });
-          }
-
-          return this.calculateTimeTrackingMetrics(
-            filteredEntries as unknown as TimeEntry[],
+              return this.calculateTimeTrackingMetrics(
+                filteredEntries as unknown as TimeEntry[],
+              );
+            }),
+            catchError((error) => {
+              console.error("Error loading time tracking analytics:", error);
+              return of(DEFAULT_TIME_TRACKING_ANALYTICS);
+            }),
           );
-        }),
-        catchError((error) => {
-          console.error("Error loading time tracking analytics:", error);
-          throw error;
-        }),
-      );
+      }),
+    );
   }
 
   /**
@@ -807,111 +1008,124 @@ export class AnalyticsService {
     filters?: TimeTrackingReportFilters,
     options: CSVExportOptions = {format: "detailed"},
   ): Observable<any[]> {
-    // Validate filters first
-    this.validateFilters(filters);
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        if (!user?.uid) {
+          return of([]);
+        }
 
-    if (!filters?.accountId) {
-      throw new Error("accountId is required for time tracking data export");
-    }
+        // Validate filters first
+        this.validateFilters(filters);
 
-    // Get both time entries and project data to populate project categories
-    return combineLatest([
-      this.timeTrackingService.getAccountTimeEntries(filters.accountId, {
-        startDate: filters.startDate?.toISOString(),
-        endDate: filters.endDate?.toISOString(),
-      }),
-      this.firestore
-        .collection(`accounts/${filters.accountId}/projects`)
-        .valueChanges({idField: "id"}),
-    ]).pipe(
-      map(([entries, projects]) => {
-        // Create a map of project ID to project data for efficient lookup
-        const projectMap = new Map<string, any>();
-        (projects as any[]).forEach((project) => {
-          if (project.id) {
-            projectMap.set(project.id, project);
-          }
-        });
+        if (!filters?.accountId) {
+          throw new Error(
+            "accountId is required for time tracking data export",
+          );
+        }
 
-        // Populate project category for each time entry
-        const enrichedEntries = entries.map((entry) => {
-          const entryAny = entry as any;
-          const project = projectMap.get(entryAny.projectId);
+        // Get both time entries and project data to populate project categories
+        return combineLatest([
+          this.timeTrackingService.getAccountTimeEntries(filters.accountId, {
+            startDate: filters.startDate?.toISOString(),
+            endDate: filters.endDate?.toISOString(),
+          }),
+          this.firestore
+            .collection(`accounts/${filters.accountId}/projects`)
+            .valueChanges({idField: "id"}),
+        ]).pipe(
+          map(([entries, projects]) => {
+            // Create a map of project ID to project data for efficient lookup
+            const projectMap = new Map<string, any>();
+            (projects as any[]).forEach((project) => {
+              if (project.id) {
+                projectMap.set(project.id, project);
+              }
+            });
 
-          const enriched = {
-            ...entryAny,
-            projectCategory: project?.standardCategory || "",
-            projectName: entryAny.projectName || project?.name || "",
-          };
+            // Populate project category for each time entry
+            const enrichedEntries = entries.map((entry) => {
+              const entryAny = entry as any;
+              const project = projectMap.get(entryAny.projectId);
 
-          if (!project) {
-            console.warn(
-              "[Analytics Service] No project found for projectId:",
-              entryAny.projectId,
-            );
-          } else if (!project.standardCategory) {
-            console.warn(
-              "[Analytics Service] Project missing standardCategory:",
-              project.id,
-              project.name,
-            );
-          }
+              const enriched = {
+                ...entryAny,
+                projectCategory: project?.standardCategory || "",
+                projectName: entryAny.projectName || project?.name || "",
+              };
 
-          return enriched;
-        });
-
-        let filteredEntries = enrichedEntries;
-
-        if (filters) {
-          filteredEntries = enrichedEntries.filter((entry) => {
-            const entryAny = entry as any;
-            if (filters.userId && entryAny.userId !== filters.userId)
-              return false;
-            if (filters.projectId && entryAny.projectId !== filters.projectId)
-              return false;
-            if (filters.status && entryAny.status !== filters.status)
-              return false;
-
-            // Category filtering using populated project category data
-            if (
-              filters.category &&
-              entryAny.projectCategory !== filters.category
-            )
-              return false;
-
-            if (filters.startDate || filters.endDate) {
-              const entryDate = this.toDate(entryAny.date);
-              if (!entryDate) return false;
-
-              // Include entries on the start date
-              if (filters.startDate) {
-                const startOfDay = new Date(filters.startDate);
-                startOfDay.setHours(0, 0, 0, 0);
-                if (entryDate < startOfDay) return false;
+              if (!project) {
+                console.warn(
+                  "[Analytics Service] No project found for projectId:",
+                  entryAny.projectId,
+                );
+              } else if (!project.standardCategory) {
+                console.warn(
+                  "[Analytics Service] Project missing standardCategory:",
+                  project.id,
+                  project.name,
+                );
               }
 
-              // Include entries on the end date (through end of day)
-              if (filters.endDate) {
-                const endOfDay = new Date(filters.endDate);
-                endOfDay.setHours(23, 59, 59, 999);
-                if (entryDate > endOfDay) return false;
-              }
+              return enriched;
+            });
+
+            let filteredEntries = enrichedEntries;
+
+            if (filters) {
+              filteredEntries = enrichedEntries.filter((entry) => {
+                const entryAny = entry as any;
+                if (filters.userId && entryAny.userId !== filters.userId)
+                  return false;
+                if (
+                  filters.projectId &&
+                  entryAny.projectId !== filters.projectId
+                )
+                  return false;
+                if (filters.status && entryAny.status !== filters.status)
+                  return false;
+
+                // Category filtering using populated project category data
+                if (
+                  filters.category &&
+                  entryAny.projectCategory !== filters.category
+                )
+                  return false;
+
+                if (filters.startDate || filters.endDate) {
+                  const entryDate = this.toDate(entryAny.date);
+                  if (!entryDate) return false;
+
+                  // Include entries on the start date
+                  if (filters.startDate) {
+                    const startOfDay = new Date(filters.startDate);
+                    startOfDay.setHours(0, 0, 0, 0);
+                    if (entryDate < startOfDay) return false;
+                  }
+
+                  // Include entries on the end date (through end of day)
+                  if (filters.endDate) {
+                    const endOfDay = new Date(filters.endDate);
+                    endOfDay.setHours(23, 59, 59, 999);
+                    if (entryDate > endOfDay) return false;
+                  }
+                }
+
+                return true;
+              });
             }
 
-            return true;
-          });
-        }
-
-        // Generate different export formats based on options
-        switch (options.format) {
-          case "summary":
-            return this.generateSummaryCSVData(filteredEntries, options);
-          case "analytics":
-            return this.generateAnalyticsCSVData(filteredEntries, options);
-          case "detailed":
-          default:
-            return this.generateDetailedCSVData(filteredEntries, options);
-        }
+            // Generate different export formats based on options
+            switch (options.format) {
+              case "summary":
+                return this.generateSummaryCSVData(filteredEntries, options);
+              case "analytics":
+                return this.generateAnalyticsCSVData(filteredEntries, options);
+              case "detailed":
+              default:
+                return this.generateDetailedCSVData(filteredEntries, options);
+            }
+          }),
+        );
       }),
     );
   }

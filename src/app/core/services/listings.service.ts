@@ -33,6 +33,11 @@ import {
   SearchListingsRequest,
 } from "./firebase-functions.service";
 
+import {switchMap, take} from "rxjs/operators";
+import {Store} from "@ngrx/store";
+import {AuthState} from "../../state/reducers/auth.reducer";
+import {selectAuthUser} from "../../state/selectors/auth.selectors";
+
 /** Listings Service */
 @Injectable({
   providedIn: "root",
@@ -48,6 +53,7 @@ export class ListingsService {
     private http: HttpClient,
     private afs: AngularFirestore,
     private firebaseFunctions: FirebaseFunctionsService,
+    private store: Store<{auth: AuthState}>,
   ) {}
 
   // ===== CALLABLE FUNCTION METHODS =====
@@ -139,11 +145,20 @@ export class ListingsService {
    * Search listings using callable function with filtering options
    */
   searchListings(searchParams: SearchListingsRequest): Observable<Listing[]> {
-    return this.firebaseFunctions.searchListings(searchParams).pipe(
-      map((result) => result.listings || []),
-      catchError((error) => {
-        console.error("Error searching listings:", error);
-        return of([]);
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        // Strict Auth Requirement: Do not call backend if not logged in.
+        if (!user?.uid) {
+          return of([]);
+        }
+
+        return this.firebaseFunctions.searchListings(searchParams).pipe(
+          map((result) => result.listings || []),
+          catchError((error) => {
+            console.error("Error searching listings:", error);
+            return of([]);
+          }),
+        );
       }),
     );
   }
@@ -232,34 +247,43 @@ export class ListingsService {
     fullPath: string,
     conditions?: {field: string; operator: WhereFilterOp; value: any}[],
   ): Observable<T[]> {
-    const collectionRef = this.afs.collection<T>(fullPath, (ref) => {
-      let query: Query<DocumentData> = ref;
-      if (conditions) {
-        conditions.forEach((condition) => {
-          query = query.where(
-            condition.field,
-            condition.operator,
-            condition.value,
-          );
-        });
-      }
-      return query;
-    });
+    return this.store.select(selectAuthUser).pipe(
+      switchMap((user) => {
+        // If user is logged out AND trying to access protected accounts path
+        if (!user?.uid && fullPath.startsWith("accounts/")) {
+          return of([]);
+        }
 
-    return collectionRef.snapshotChanges().pipe(
-      map((actions) =>
-        actions.map((action) => {
-          const data = action.payload.doc.data() as T;
-          const id = action.payload.doc.id;
-          return {...data, id};
-        }),
-      ),
-      catchError((error) => {
-        console.error(
-          `Error retrieving documents from path: ${fullPath}`,
-          error,
+        const collectionRef = this.afs.collection<T>(fullPath, (ref) => {
+          let query: Query<DocumentData> = ref;
+          if (conditions) {
+            conditions.forEach((condition) => {
+              query = query.where(
+                condition.field,
+                condition.operator,
+                condition.value,
+              );
+            });
+          }
+          return query;
+        });
+
+        return collectionRef.snapshotChanges().pipe(
+          map((actions) =>
+            actions.map((action) => {
+              const data = action.payload.doc.data() as T;
+              const id = action.payload.doc.id;
+              return {...data, id};
+            }),
+          ),
+          catchError((error) => {
+            console.error(
+              `Error retrieving documents from path: ${fullPath}`,
+              error,
+            );
+            return of([]);
+          }),
         );
-        return of([]);
       }),
     );
   }

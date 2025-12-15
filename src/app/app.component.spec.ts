@@ -27,6 +27,7 @@ import * as AuthActions from "./state/actions/auth.actions";
 import {selectIsLoggedIn} from "./state/selectors/auth.selectors";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
 import {SUPPORTED_LANGUAGE_CODES} from "./core/constants/languages";
+import {AuthSyncService} from "./core/services/auth-sync.service";
 
 describe("AppComponent", () => {
   let component: AppComponent;
@@ -57,6 +58,8 @@ describe("AppComponent", () => {
       ready: jasmine.createSpy().and.returnValue(Promise.resolve()),
     };
 
+    const mockAuthSyncService = {};
+
     await TestBed.configureTestingModule({
       declarations: [AppComponent],
       imports: [StoreModule.forRoot({})],
@@ -65,6 +68,7 @@ describe("AppComponent", () => {
         {provide: TranslateService, useValue: mockTranslateService},
         {provide: Store, useValue: mockStore},
         {provide: Platform, useValue: mockPlatform},
+        {provide: AuthSyncService, useValue: mockAuthSyncService},
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();

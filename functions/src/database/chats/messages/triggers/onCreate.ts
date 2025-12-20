@@ -104,17 +104,32 @@ export const onCreateMessage = onDocumentCreated(
  * Update chat document with latest message metadata
  * @param {string} chatId - The ID of the chat to update
  * @param {Message} messageData - The message data containing metadata
- * @param {Chat} chatData - The chat data (currently unused but kept for future use)
+ * @param {Chat} chatData - The chat data containing participant information
  * @return {Promise<void>} Promise that resolves when update is complete
  */
 async function updateChatMetadata(
   chatId: string,
   messageData: Message,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   chatData: Chat,
 ): Promise<void> {
   try {
     const lastMessage = getLastMessageText(messageData);
+
+    // Get current unread counts or initialize empty object
+    const chatDoc = await db.collection("chats").doc(chatId).get();
+    const currentUnreadCounts = (chatDoc.data() as any)?.unreadCounts || {};
+
+    // Increment unread count for all participants except the sender
+    const updatedUnreadCounts: {[key: string]: number} = {
+      ...currentUnreadCounts,
+    };
+    chatData.participants.forEach((participantId) => {
+      if (participantId !== messageData.senderId) {
+        updatedUnreadCounts[participantId] =
+          (currentUnreadCounts[participantId] || 0) + 1;
+      }
+    });
+
     const updateData = {
       lastMessage,
       lastMessageTimestamp: messageData.timestamp,
@@ -122,10 +137,13 @@ async function updateChatMetadata(
       lastMessageSenderName: messageData.senderName || null,
       lastModifiedAt: messageData.timestamp,
       lastModifiedBy: messageData.senderId,
+      unreadCounts: updatedUnreadCounts,
     };
 
     await db.collection("chats").doc(chatId).update(updateData);
-    logger.info(`Updated chat metadata for ${chatId}`);
+    logger.info(`Updated chat metadata and unread counts for ${chatId}`, {
+      unreadCounts: updatedUnreadCounts,
+    });
   } catch (error) {
     logger.error(`Error updating chat metadata for ${chatId}:`, error);
     throw error;

@@ -76,6 +76,7 @@ import {AuthState} from "../reducers/auth.reducer";
 import {Settings} from "@shared/models/account.model";
 import {selectAccountById} from "../selectors/account.selectors";
 import {FirebaseFunctionsService} from "../../core/services/firebase-functions.service";
+import {KeyBackupService} from "../../modules/messaging/services/key-backup.service";
 
 @Injectable()
 export class AuthEffects {
@@ -110,6 +111,7 @@ export class AuthEffects {
     private authNavigationService: AuthNavigationService,
     private translate: TranslateService,
     private firebaseFunctionsService: FirebaseFunctionsService,
+    private keyBackupService: KeyBackupService,
   ) {}
 
   // Initialize Auth and Process Sign-In Link
@@ -352,8 +354,13 @@ export class AuthEffects {
   signIn$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.signIn),
-      switchMap(({email, password}) =>
-        from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
+      switchMap(({email, password}) => {
+        // Capture password for key backup
+        this.keyBackupService.capturePasswordOnLogin(password);
+
+        return from(
+          signInWithEmailAndPassword(this.auth, email, password),
+        ).pipe(
           switchMap(async (result) => {
             if (!result.user.emailVerified) {
               try {
@@ -407,8 +414,8 @@ export class AuthEffects {
             this.errorHandler.handleFirebaseAuthError(error);
             return of(AuthActions.signInFailure({error}));
           }),
-        ),
-      ),
+        );
+      }),
     ),
   );
 

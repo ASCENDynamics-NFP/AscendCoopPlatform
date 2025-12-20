@@ -1,0 +1,145 @@
+<ion-card>
+  <ion-card-header>
+    <ion-card-title>
+      <ion-icon name="lock-closed"></ion-icon>
+      Encryption Settings
+    </ion-card-title>
+  </ion-card-header>
+
+  <ion-card-content>
+    <ion-spinner *ngIf="isLoading"></ion-spinner>
+
+    <div *ngIf="!isLoading">
+      <!-- Backup Status -->
+      <ion-list>
+        <ion-item>
+          <ion-label>
+            <h3>Backup Status</h3>
+            <p>{{ backupStatus.hasBackup ? "Backed up" : "Not backed up" }}</p>
+          </ion-label>
+          <ion-icon
+            slot="end"
+            [name]="backupStatus.hasBackup ? 'cloud-done' : 'cloud-offline'"
+            [color]="backupStatus.hasBackup ? 'success' : 'warning'"
+          ></ion-icon>
+        </ion-item>
+
+        <ion-item *ngIf="backupStatus.hasBackup">
+          <ion-label>
+            <h3>Protection Method</h3>
+            <p>{{ authMethodText }}</p>
+          </ion-label>
+        </ion-item>
+
+        <ion-item *ngIf="backupStatus.hasBackup">
+          <ion-label>
+            <h3>Last Backup</h3>
+            <p>{{ lastBackupText }}</p>
+          </ion-label>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>
+            <h3>Local Keys</h3>
+            <p>
+              {{ hasLocalKeys ? "Available on this device" : "Not available" }}
+            </p>
+          </ion-label>
+          <ion-icon
+            slot="end"
+            [name]="hasLocalKeys ? 'key' : 'key-outline'"
+            [color]="hasLocalKeys ? 'success' : 'medium'"
+          ></ion-icon>
+        </ion-item>
+      </ion-list>
+
+      <!-- Actions -->
+      <div class="ion-margin-top">
+        <!-- Backup Now Button -->
+        <ion-button
+          expand="block"
+          (click)="backupNow()"
+          [disabled]="isLoading || !hasLocalKeys"
+        >
+          <ion-icon name="cloud-upload" slot="start"></ion-icon>
+          {{ backupStatus.hasBackup ? "Update Backup" : "Backup Now" }}
+        </ion-button>
+
+        <!-- Restore Keys Button -->
+        <ion-button
+          expand="block"
+          fill="outline"
+          (click)="restoreKeys()"
+          [disabled]="isLoading || !backupStatus.hasBackup"
+        >
+          <ion-icon name="cloud-download" slot="start"></ion-icon>
+          Restore Keys
+        </ion-button>
+
+        <!-- Change Password/Passphrase Button -->
+        <ion-button
+          expand="block"
+          fill="outline"
+          color="medium"
+          (click)="changePassword()"
+          [disabled]="isLoading || !backupStatus.hasBackup"
+        >
+          <ion-icon name="create" slot="start"></ion-icon>
+          Change
+          {{
+            backupStatus.authMethod === "password" ? "Password" : "Passphrase"
+          }}
+        </ion-button>
+
+        <!-- Generate New Keys Button -->
+        <ion-button
+          expand="block"
+          fill="outline"
+          color="warning"
+          (click)="generateNewKeys()"
+          [disabled]="isLoading"
+        >
+          <ion-icon name="refresh" slot="start"></ion-icon>
+          Generate New Keys
+        </ion-button>
+
+        <!-- Clear Local Keys Button -->
+        <ion-button
+          expand="block"
+          fill="clear"
+          color="danger"
+          (click)="clearLocalKeys()"
+          [disabled]="isLoading || !hasLocalKeys"
+        >
+          <ion-icon name="trash" slot="start"></ion-icon>
+          Clear Local Keys
+        </ion-button>
+      </div>
+
+      <!-- Information Section -->
+      <ion-card color="light" class="ion-margin-top">
+        <ion-card-header>
+          <ion-card-subtitle>
+            <ion-icon name="information-circle"></ion-icon>
+            About Encryption
+          </ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <p>
+            Your encrypted messages are protected with end-to-end encryption.
+            Backing up your encryption keys allows you to access your messages
+            on multiple devices.
+          </p>
+          <p>
+            <strong>Important:</strong> If you lose your
+            {{
+              backupStatus.authMethod === "password"
+                ? "password"
+                : "passphrase"
+            }}, you will permanently lose access to your encrypted messages.
+          </p>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </ion-card-content>
+</ion-card>

@@ -51,13 +51,13 @@
         <p class="timestamp">
           {{ getFormattedTime(chat.lastMessageTimestamp) }}
         </p>
-        <!-- Use notification service for unread counts -->
+        <!-- Unread count from chat document -->
         <ion-badge
-          *ngIf="(unreadCounts$ | async) && ((unreadCounts$ | async)?.[chat.id] || 0) > 0"
+          *ngIf="getUnreadCount(chat) > 0"
           color="primary"
           class="unread-badge"
         >
-          {{ (unreadCounts$ | async)?.[chat.id] }}
+          {{ getUnreadCount(chat) }}
         </ion-badge>
       </div>
     </ion-item>

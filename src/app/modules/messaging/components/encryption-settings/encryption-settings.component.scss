@@ -1,0 +1,32 @@
+ion-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+ion-list {
+  margin-bottom: 16px;
+}
+
+ion-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+}
+
+ion-card[color="light"] {
+  ion-card-subtitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 8px 0;
+    font-size: 0.9rem;
+  }
+}
+
+ion-button {
+  margin-bottom: 8px;
+}

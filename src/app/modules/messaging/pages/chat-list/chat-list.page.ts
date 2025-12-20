@@ -106,12 +106,11 @@ export class ChatListPage implements OnInit, OnDestroy {
   /**
    * Get unread count for a specific chat
    */
-  getUnreadCount(chatId: string): Observable<number> {
-    return new Observable((observer) => {
-      this.unreadCounts$.pipe(takeUntil(this.destroy$)).subscribe((counts) => {
-        observer.next(counts[chatId] || 0);
-      });
-    });
+  getUnreadCount(chat: Chat): number {
+    if (!this.currentUserId || !chat.unreadCount) {
+      return 0;
+    }
+    return chat.unreadCount[this.currentUserId] || 0;
   }
 
   /**

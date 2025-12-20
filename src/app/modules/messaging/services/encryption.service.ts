@@ -369,4 +369,118 @@ export class EncryptionService {
     localStorage.removeItem(`encryptionPublicKey_${userId}`);
     localStorage.removeItem(`encryptionPrivateKey_${userId}`);
   }
+
+  /**
+   * Derive encryption key from password using PBKDF2
+   * @param password - User's password or passphrase
+   * @param salt - Salt for key derivation (32 bytes)
+   * @param iterations - Number of PBKDF2 iterations (recommended: 100,000)
+   * @returns AES-256 key for encryption/decryption
+   */
+  async deriveKeyFromPassword(
+    password: string,
+    salt: Uint8Array,
+    iterations: number,
+  ): Promise<CryptoKey> {
+    // Convert password to key material
+    const passwordBuffer = new TextEncoder().encode(password);
+    const keyMaterial = await crypto.subtle.importKey(
+      "raw",
+      passwordBuffer,
+      "PBKDF2",
+      false,
+      ["deriveBits", "deriveKey"],
+    );
+
+    // Derive AES-GCM key
+    return await crypto.subtle.deriveKey(
+      {
+        name: "PBKDF2",
+        salt: salt,
+        iterations: iterations,
+        hash: "SHA-256",
+      },
+      keyMaterial,
+      {
+        name: "AES-GCM",
+        length: 256,
+      },
+      false, // not extractable
+      ["encrypt", "decrypt"],
+    );
+  }
+
+  /**
+   * Encrypt data with derived key using AES-GCM
+   * @param data - Data to encrypt (as string)
+   * @param key - Derived encryption key from PBKDF2
+   * @returns Encrypted data and IV
+   */
+  async encryptWithDerivedKey(
+    data: string,
+    key: CryptoKey,
+  ): Promise<{encryptedData: string; iv: string}> {
+    // Generate random IV (12 bytes for AES-GCM)
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+
+    // Convert data to bytes
+    const dataBytes = new TextEncoder().encode(data);
+
+    // Encrypt
+    const encryptedBytes = await crypto.subtle.encrypt(
+      {
+        name: "AES-GCM",
+        iv: iv,
+      },
+      key,
+      dataBytes,
+    );
+
+    // Convert to base64
+    const encryptedData = btoa(
+      String.fromCharCode(...new Uint8Array(encryptedBytes)),
+    );
+    const ivString = btoa(String.fromCharCode(...iv));
+
+    return {encryptedData, iv: ivString};
+  }
+
+  /**
+   * Decrypt data with derived key using AES-GCM
+   * @param encryptedData - Base64-encoded encrypted data
+   * @param key - Derived encryption key from PBKDF2
+   * @param ivString - Base64-encoded IV
+   * @returns Decrypted data as string
+   */
+  async decryptWithDerivedKey(
+    encryptedData: string,
+    key: CryptoKey,
+    ivString: string,
+  ): Promise<string> {
+    try {
+      // Convert from base64
+      const encryptedBytes = Uint8Array.from(atob(encryptedData), (c) =>
+        c.charCodeAt(0),
+      );
+      const iv = Uint8Array.from(atob(ivString), (c) => c.charCodeAt(0));
+
+      // Decrypt
+      const decryptedBytes = await crypto.subtle.decrypt(
+        {
+          name: "AES-GCM",
+          iv: iv,
+        },
+        key,
+        encryptedBytes,
+      );
+
+      // Convert back to string
+      return new TextDecoder().decode(decryptedBytes);
+    } catch (error) {
+      console.error("Failed to decrypt with derived key:", error);
+      throw new Error(
+        "Decryption failed. Password/passphrase may be incorrect.",
+      );
+    }
+  }
 }

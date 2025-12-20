@@ -26,11 +26,20 @@ import {TranslateModule} from "@ngx-translate/core";
 import {MessagingRoutingModule} from "./messaging-routing.module";
 import {ChatParticipantsModalComponent} from "./components/chat-participants-modal/chat-participants-modal.component";
 import {NotificationSettingsModalComponent} from "./components/notification-settings-modal/notification-settings-modal.component";
+import {EncryptionPassphraseModalComponent} from "./components/encryption-passphrase-modal/encryption-passphrase-modal.component";
+import {KeyRestoreModalComponent} from "./components/key-restore-modal/key-restore-modal.component";
+import {EncryptionSettingsComponent} from "./components/encryption-settings/encryption-settings.component";
 
 @NgModule({
   declarations: [
     ChatParticipantsModalComponent,
     NotificationSettingsModalComponent,
+    EncryptionPassphraseModalComponent,
+    KeyRestoreModalComponent,
+    EncryptionSettingsComponent,
+  ],
+  exports: [
+    EncryptionSettingsComponent, // Export so it can be used in other modules
   ],
   imports: [
     CommonModule,

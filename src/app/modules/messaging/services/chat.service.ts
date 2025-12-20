@@ -503,6 +503,31 @@ export class ChatService {
   }
 
   /**
+   * Mark chat as read by resetting unread count for current user
+   */
+  markChatAsRead(chatId: string): Observable<void> {
+    const currentUserId = this.getCurrentUserIdSync();
+    if (!currentUserId) {
+      return of(void 0);
+    }
+
+    return from(
+      this.firestore
+        .collection(this.CHATS_COLLECTION)
+        .doc(chatId)
+        .update({
+          [`unreadCounts.${currentUserId}`]: 0,
+        }),
+    ).pipe(
+      map(() => void 0),
+      catchError((error) => {
+        console.error("Error marking chat as read:", error);
+        return throwError(() => error);
+      }),
+    );
+  }
+
+  /**
    * Leave a chat
    */
   leaveChat(chatId: string, userId: string): Observable<void> {

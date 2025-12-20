@@ -1,0 +1,13 @@
+.strength-indicator {
+  margin-top: 8px;
+  margin-bottom: 16px;
+
+  ion-progress-bar {
+    margin-bottom: 4px;
+  }
+}
+
+ion-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+}

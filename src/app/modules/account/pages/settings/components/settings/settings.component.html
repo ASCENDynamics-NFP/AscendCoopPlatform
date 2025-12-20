@@ -371,6 +371,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     </form>
   </ion-card>
 
+  <!-- Encryption Settings Section (for encrypted messaging) -->
+  <app-encryption-settings *ngIf="!privacyOnly"></app-encryption-settings>
+
   <!-- Administrative settings: membership (groups) and account status (all) -->
   <ion-card>
     <ion-card-header>

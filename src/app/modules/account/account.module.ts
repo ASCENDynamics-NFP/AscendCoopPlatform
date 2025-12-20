@@ -74,6 +74,7 @@ import {TemplatePreviewModalComponent} from "./pages/projects/components/templat
 import {DirectoryFilterComponent} from "./components/directory-filter/directory-filter.component";
 import {OrganizationsMapComponent} from "./components/organizations-map/organizations-map.component";
 import {GoogleMapsModule} from "@angular/google-maps";
+import {MessagingModule} from "../messaging/messaging.module";
 
 @NgModule({
   declarations: [
@@ -131,6 +132,7 @@ import {GoogleMapsModule} from "@angular/google-maps";
     TranslateModule,
     ReactiveFormsModule,
     GoogleMapsModule,
+    MessagingModule,
     StoreModule.forFeature("accounts", accountReducer),
     EffectsModule.forFeature([AccountEffects, ProjectsEffects]),
   ],

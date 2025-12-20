@@ -169,6 +169,11 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     // Mark notifications as read for this chat when entering
     this.notificationService.markChatNotificationsAsRead(this.chatId);
 
+    // Reset unread count for this user in the chat document
+    this.chatService.markChatAsRead(this.chatId).subscribe({
+      error: (error) => console.error("Error marking chat as read:", error),
+    });
+
     // Load chat first to validate access
     this.chat$ = this.chatService.getChat(this.chatId);
 

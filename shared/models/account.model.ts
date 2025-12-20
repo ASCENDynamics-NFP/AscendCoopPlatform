@@ -85,6 +85,29 @@ interface LegalAgreements {
   privacyPolicy: LegalAgreement;
 }
 
+/**
+ * Encryption key backup for cross-device encrypted messaging
+ * Keys are encrypted with user's password (email/password users) or passphrase (SSO users)
+ */
+export interface EncryptionKeyBackup {
+  /** Private key encrypted with PBKDF2-derived key */
+  encryptedPrivateKey: string;
+  /** Public key (unencrypted) */
+  publicKey: string;
+  /** Salt for PBKDF2 key derivation */
+  salt: string;
+  /** Initialization vector for AES-GCM */
+  iv: string;
+  /** Number of PBKDF2 iterations (typically 100,000) */
+  iterations: number;
+  /** Authentication method: 'password' (email/password) or 'sso' (Google, etc.) */
+  authMethod: "password" | "sso";
+  /** When the backup was created */
+  createdAt: Timestamp;
+  /** When the backup was last updated */
+  lastBackupAt: Timestamp;
+}
+
 export interface Email {
   name: Nullable<string>;
   email: Nullable<string>;
@@ -298,6 +321,8 @@ export interface Account extends BaseDocument, Group, User {
   settings?: Settings; // User-specific settings
   /** Granular section-level privacy on top of global privacy. */
   privacySettings?: PrivacySettings;
+  /** Encrypted backup of encryption keys for cross-device messaging */
+  encryptionKeyBackup?: EncryptionKeyBackup;
 }
 
 export interface RelatedAccount extends BaseDocument {

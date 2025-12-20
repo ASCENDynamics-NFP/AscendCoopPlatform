@@ -1,0 +1,128 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Set Encryption Passphrase</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="passphraseForm" (ngSubmit)="submit()">
+    <ion-text color="medium">
+      <p>
+        Since you log in with a social provider (like Google), you need a
+        separate passphrase to protect your encrypted messages. This passphrase
+        is different from your login credentials.
+      </p>
+      <p>
+        <strong>Important:</strong> If you lose this passphrase, you will
+        permanently lose access to your encrypted messages.
+      </p>
+    </ion-text>
+
+    <!-- Passphrase Input -->
+    <ion-item>
+      <ion-label position="stacked">Passphrase *</ion-label>
+      <ion-input
+        formControlName="passphrase"
+        [type]="showPassphrase ? 'text' : 'password'"
+        placeholder="Enter passphrase (min 8 characters)"
+        [clearInput]="true"
+      ></ion-input>
+      <ion-button
+        slot="end"
+        fill="clear"
+        (click)="togglePassphraseVisibility()"
+      >
+        <ion-icon
+          [name]="showPassphrase ? 'eye-off' : 'eye'"
+          slot="icon-only"
+        ></ion-icon>
+      </ion-button>
+    </ion-item>
+
+    <!-- Passphrase Strength Indicator -->
+    <div
+      class="strength-indicator"
+      *ngIf="passphraseForm.get('passphrase')?.value"
+    >
+      <ion-progress-bar
+        [value]="getPassphraseStrength().percentage / 100"
+        [color]="getPassphraseStrength().color"
+      ></ion-progress-bar>
+      <ion-text [color]="getPassphraseStrength().color">
+        <small>{{ getPassphraseStrength().strength }}</small>
+      </ion-text>
+    </div>
+
+    <!-- Passphrase Validation Errors -->
+    <ion-text
+      color="danger"
+      *ngIf="
+        passphraseForm.get('passphrase')?.invalid &&
+        passphraseForm.get('passphrase')?.touched
+      "
+    >
+      <small *ngIf="passphraseForm.get('passphrase')?.hasError('required')">
+        Passphrase is required
+      </small>
+      <small *ngIf="passphraseForm.get('passphrase')?.hasError('minlength')">
+        Passphrase must be at least 8 characters
+      </small>
+      <small
+        *ngIf="passphraseForm.get('passphrase')?.hasError('weakPassphrase')"
+      >
+        Passphrase must contain at least one number or special character
+      </small>
+    </ion-text>
+
+    <!-- Confirm Passphrase Input -->
+    <ion-item class="ion-margin-top">
+      <ion-label position="stacked">Confirm Passphrase *</ion-label>
+      <ion-input
+        formControlName="confirmPassphrase"
+        [type]="showConfirmPassphrase ? 'text' : 'password'"
+        placeholder="Re-enter passphrase"
+        [clearInput]="true"
+      ></ion-input>
+      <ion-button
+        slot="end"
+        fill="clear"
+        (click)="toggleConfirmPassphraseVisibility()"
+      >
+        <ion-icon
+          [name]="showConfirmPassphrase ? 'eye-off' : 'eye'"
+          slot="icon-only"
+        ></ion-icon>
+      </ion-button>
+    </ion-item>
+
+    <!-- Passphrase Mismatch Error -->
+    <ion-text
+      color="danger"
+      *ngIf="
+        passphraseForm.hasError('mismatch') &&
+        passphraseForm.get('confirmPassphrase')?.touched
+      "
+    >
+      <small>Passphrases do not match</small>
+    </ion-text>
+
+    <!-- Actions -->
+    <div class="ion-margin-top">
+      <ion-button
+        expand="block"
+        type="submit"
+        [disabled]="!passphraseForm.valid"
+      >
+        Set Passphrase
+      </ion-button>
+      <ion-button expand="block" fill="outline" (click)="dismiss()">
+        Skip for Now
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

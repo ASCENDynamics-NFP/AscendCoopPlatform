@@ -19,6 +19,7 @@
 ***********************************************************************************************/
 import {Injectable} from "@angular/core";
 import {Subject, Observable} from "rxjs";
+import {SecureKeyStorageService} from "./secure-key-storage.service";
 
 export interface KeyPair {
   publicKey: CryptoKey;
@@ -50,7 +51,7 @@ export class EncryptionService {
     action: "restored" | "cleared";
   }> = this.keysChangedSubject.asObservable();
 
-  constructor() {}
+  constructor(private secureKeyStorage: SecureKeyStorageService) {}
 
   /**
    * Generate a new AES key for encrypting messages
@@ -301,25 +302,21 @@ export class EncryptionService {
   }
 
   /**
-   * Store keys securely in browser
+   * Store keys securely in browser using IndexedDB
+   * Migrated from localStorage to IndexedDB for better XSS protection
    */
   async storeKeyPair(keyPair: KeyPair, userId: string): Promise<void> {
     try {
-      // Export keys
-      const publicKeyString = await this.exportPublicKey(keyPair.publicKey);
-      const privateKeyBytes = await crypto.subtle.exportKey(
-        "pkcs8",
+      // Store in IndexedDB with encryption
+      await this.secureKeyStorage.storeKeyPair(
+        userId,
+        keyPair.publicKey,
         keyPair.privateKey,
       );
-      const privateKeyString = btoa(
-        String.fromCharCode(...new Uint8Array(privateKeyBytes)),
+
+      console.log(
+        `[EncryptionService] Keys stored securely for user ${userId}`,
       );
-
-      // Store in localStorage (in production, consider more secure storage)
-      localStorage.setItem(`publicKey_${userId}`, publicKeyString);
-      localStorage.setItem(`privateKey_${userId}`, privateKeyString);
-
-      console.log(`[EncryptionService] Keys stored for user ${userId}`);
 
       // Notify that keys have been restored
       this.keysChangedSubject.next({userId, action: "restored"});
@@ -333,107 +330,41 @@ export class EncryptionService {
   }
 
   /**
-   * Get stored key pair for a user, with enhanced error handling and corruption detection
+   * Get stored key pair for a user from IndexedDB
+   * Automatically migrates from localStorage if keys exist there
    */
   async getStoredKeyPair(userId: string): Promise<CryptoKeyPair | null> {
     try {
-      // Check both old and new naming conventions for backward compatibility
-      let publicKeyData = localStorage.getItem(`publicKey_${userId}`);
-      let privateKeyData = localStorage.getItem(`privateKey_${userId}`);
+      // Try to get keys from IndexedDB first
+      let keyPair = await this.secureKeyStorage.getKeyPair(userId);
 
-      // Fallback to old naming convention if new one doesn't exist
-      if (!publicKeyData || !privateKeyData) {
-        publicKeyData = localStorage.getItem(`encryptionPublicKey_${userId}`);
-        privateKeyData = localStorage.getItem(`encryptionPrivateKey_${userId}`);
-
-        // If we found keys with old naming, migrate them to new naming
-        if (publicKeyData && privateKeyData) {
-          console.log(
-            `Migrating keys from old naming convention for user ${userId}`,
-          );
-          localStorage.setItem(`publicKey_${userId}`, publicKeyData);
-          localStorage.setItem(`privateKey_${userId}`, privateKeyData);
-          // Remove old keys
-          localStorage.removeItem(`encryptionPublicKey_${userId}`);
-          localStorage.removeItem(`encryptionPrivateKey_${userId}`);
-        }
+      if (keyPair) {
+        return keyPair;
       }
 
-      if (!publicKeyData || !privateKeyData) {
-        return null;
+      // If not found in IndexedDB, try migrating from localStorage
+      console.log(
+        `[EncryptionService] Attempting to migrate keys from localStorage for user ${userId}`,
+      );
+      const migrated =
+        await this.secureKeyStorage.migrateFromLocalStorage(userId);
+
+      if (migrated) {
+        console.log(
+          `[EncryptionService] Successfully migrated keys for user ${userId}`,
+        );
+        // Get the newly migrated keys
+        keyPair = await this.secureKeyStorage.getKeyPair(userId);
+        return keyPair;
       }
 
-      // Import each key separately with individual error handling
-      let publicKey: CryptoKey;
-      let privateKey: CryptoKey;
-
-      try {
-        // Import public key
-        const publicKeyBuffer = Uint8Array.from(atob(publicKeyData), (c) =>
-          c.charCodeAt(0),
-        );
-        publicKey = await window.crypto.subtle.importKey(
-          "spki",
-          publicKeyBuffer,
-          {
-            name: "RSA-OAEP",
-            hash: "SHA-256",
-          },
-          true,
-          ["encrypt"],
-        );
-      } catch (publicKeyError) {
-        console.error("Failed to import public key:", publicKeyError);
-        // Clear corrupted keys and return null
-        await this.clearStoredKeys(userId);
-        return null;
-      }
-
-      try {
-        // Import private key
-        const privateKeyBuffer = Uint8Array.from(atob(privateKeyData), (c) =>
-          c.charCodeAt(0),
-        );
-        privateKey = await window.crypto.subtle.importKey(
-          "pkcs8",
-          privateKeyBuffer,
-          {
-            name: "RSA-OAEP",
-            hash: "SHA-256",
-          },
-          true,
-          ["decrypt"],
-        );
-      } catch (privateKeyError) {
-        console.error("Failed to import private key:", privateKeyError);
-        // Clear corrupted keys and return null
-        await this.clearStoredKeys(userId);
-        return null;
-      }
-
-      return {publicKey, privateKey};
+      return null;
     } catch (error) {
       console.error("Error retrieving stored keys:", error);
       // Clear potentially corrupted keys
       await this.clearStoredKeys(userId);
       return null;
     }
-  }
-
-  /**
-   * Clear stored keys (for logout) - clears both old and new naming conventions
-   */
-  clearStoredKeys(userId: string): void {
-    // Clear new naming convention
-    localStorage.removeItem(`publicKey_${userId}`);
-    localStorage.removeItem(`privateKey_${userId}`);
-
-    // Clear old naming convention for backward compatibility
-    localStorage.removeItem(`encryptionPublicKey_${userId}`);
-    localStorage.removeItem(`encryptionPrivateKey_${userId}`);
-
-    // Notify that keys have been cleared
-    this.keysChangedSubject.next({userId, action: "cleared"});
   }
 
   /**
@@ -474,6 +405,29 @@ export class EncryptionService {
       false, // not extractable
       ["encrypt", "decrypt"],
     );
+  }
+
+  /**
+   * Clear stored keys (for logout) - clears from both IndexedDB and localStorage
+   */
+  async clearStoredKeys(userId: string): Promise<void> {
+    try {
+      // Clear from IndexedDB
+      await this.secureKeyStorage.clearKeys(userId);
+
+      // Also clear from localStorage (for backward compatibility during migration period)
+      localStorage.removeItem(`publicKey_${userId}`);
+      localStorage.removeItem(`privateKey_${userId}`);
+      localStorage.removeItem(`encryptionPublicKey_${userId}`);
+      localStorage.removeItem(`encryptionPrivateKey_${userId}`);
+
+      // Only notify that keys have been cleared after successful operation
+      this.keysChangedSubject.next({userId, action: "cleared"});
+    } catch (error) {
+      console.error("Error clearing keys:", error);
+      // Re-throw to allow caller to handle the error
+      throw error;
+    }
   }
 
   /**

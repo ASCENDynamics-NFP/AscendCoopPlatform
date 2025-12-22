@@ -1000,7 +1000,7 @@ export class EncryptedChatService {
       this.keyRegenerationInProgress = true;
 
       // Clear existing keys and cache
-      this.encryptionService.clearStoredKeys(userId);
+      await this.encryptionService.clearStoredKeys(userId);
       this.clearDecryptionCache();
 
       // Generate new key pair
@@ -1050,7 +1050,7 @@ export class EncryptedChatService {
     }
 
     // Clear local keys
-    this.encryptionService.clearStoredKeys(currentUser.uid);
+    await this.encryptionService.clearStoredKeys(currentUser.uid);
 
     // Remove public key from Firestore
     await this.firestore.collection("userKeys").doc(currentUser.uid).delete();
@@ -1422,7 +1422,7 @@ export class EncryptedChatService {
       );
 
       // Clear existing keys and cache
-      this.encryptionService.clearStoredKeys(userId);
+      await this.encryptionService.clearStoredKeys(userId);
       this.clearDecryptionCache();
 
       // Generate new key pair

@@ -519,7 +519,7 @@ export class EncryptionSettingsComponent implements OnInit {
               this.store.select(selectAuthUser),
             );
             if (authUser?.uid) {
-              this.encryptionService.clearStoredKeys(authUser.uid);
+              await this.encryptionService.clearStoredKeys(authUser.uid);
               await this.showSuccess("Local keys cleared");
               await this.checkLocalKeys();
             }

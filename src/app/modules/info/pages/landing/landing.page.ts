@@ -109,27 +109,33 @@ export class LandingPage implements AfterViewInit {
   features = [
     {
       icon: "git-branch-outline",
-      title: "Open-Source Innovation",
+      title: "Open-Source Collaboration",
       description:
-        "Our community-driven platform is transparent and scalable, allowing nonprofits and cooperatives to share tools and ideas freely.",
+        "Fully open-source platform hosted on GitHub, enabling transparent development and community contributions for nonprofits and cooperatives worldwide.",
     },
     {
       icon: "people-outline",
-      title: "Volunteer Engagement",
+      title: "Profile & Network Management",
       description:
-        "Built-in volunteer management features help recruit, track volunteer involvement, and celebrate contributions, turning compassion into measurable impact.",
+        "Create rich profiles for individuals and organizations with role-based hierarchies, relationship management, and networking across the platform.",
     },
     {
-      icon: "flash-outline",
-      title: "Real-Time Collaboration",
+      icon: "time-outline",
+      title: "Time Tracking & Analytics",
       description:
-        "From project management to communication tools, we enable teams across organizations to coordinate instantly and achieve goals faster.",
+        "Built-in time tracking for projects with comprehensive analytics, reporting, and insights to measure impact and manage volunteer contributions.",
     },
     {
-      icon: "business-outline",
-      title: "Cooperative Empowerment",
+      icon: "chatbubbles-outline",
+      title: "Secure Messaging",
       description:
-        "As an incubator for worker-owned cooperatives, we provide mentorship and resources, with a focus on uplifting entrepreneurs in underserved communities.",
+        "End-to-end encrypted messaging with group chats, read receipts, and file sharing to enable secure communication between members and organizations.",
+    },
+    {
+      icon: "briefcase-outline",
+      title: "Opportunity Marketplace",
+      description:
+        "Post and discover volunteer positions, job openings, and project opportunities with skill-based matching, category filters, and application tracking.",
     },
   ];
 

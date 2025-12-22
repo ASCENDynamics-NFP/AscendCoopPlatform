@@ -527,14 +527,25 @@ export class AuthEffects {
   );
 
   // Sign-In Success Effect: Navigate to Account Page
+  // Only navigate on actual sign-in actions, not on auth state rehydration
   signInSuccess$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(AuthActions.signInSuccess),
-        withLatestFrom(this.store.select(selectAuthUser)),
-        switchMap(([{uid}, authUser]) => {
-          if (authUser) {
-            // Use the navigation service for consistent routing logic
+        withLatestFrom(
+          this.store.select(selectAuthUser),
+          this.actions$.pipe(
+            ofType(
+              AuthActions.signIn,
+              AuthActions.signUp,
+              AuthActions.signInWithGoogle,
+            ),
+          ),
+        ),
+        switchMap(([{uid}, authUser, sourceAction]) => {
+          // Only navigate if this signInSuccess came from an actual sign-in action
+          // (not from auth state rehydration on page load)
+          if (authUser && sourceAction) {
             this.authNavigationService.navigateAfterAuth(authUser);
           }
           return of(null);

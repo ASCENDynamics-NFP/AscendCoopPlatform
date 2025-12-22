@@ -52,10 +52,30 @@ export class AuthNavigationService {
 
   /**
    * Navigate user to appropriate page after authentication
+   * Only navigates if on an unauthenticated route (login, register, etc.)
    */
   async navigateAfterAuth(authUser: AuthUser): Promise<void> {
     if (!authUser.emailVerified) {
       // Email not verified - let AuthGuard handle this
+      return;
+    }
+
+    const currentUrl = this.router.url;
+
+    // Don't navigate if user is already on an authenticated route
+    const unauthenticatedRoutes = [
+      "/auth/login",
+      "/auth/signup",
+      "/auth/register",
+      "/auth/forgot-password",
+    ];
+    const isOnUnauthenticatedRoute = unauthenticatedRoutes.some((route) =>
+      currentUrl.startsWith(route),
+    );
+
+    // If user is on an authenticated route, don't navigate away
+    if (!isOnUnauthenticatedRoute && currentUrl !== "/") {
+      this.menuCtrl.enable(true);
       return;
     }
 

@@ -17,8 +17,9 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, ChangeDetectorRef, NgZone} from "@angular/core";
 import {ModalController, AlertController} from "@ionic/angular";
+import {AngularFirestore} from "@angular/fire/compat/firestore";
 import {
   KeyBackupService,
   BackupStatus,
@@ -38,6 +39,7 @@ import {firstValueFrom} from "rxjs";
 export class EncryptionSettingsComponent implements OnInit {
   backupStatus: BackupStatus = {hasBackup: false};
   isLoading = false;
+  loadingMessage = "";
   hasLocalKeys = false;
   publicKeyFingerprint: string | null = null;
 
@@ -48,9 +50,21 @@ export class EncryptionSettingsComponent implements OnInit {
     private modalController: ModalController,
     private alertController: AlertController,
     private store: Store,
+    private firestore: AngularFirestore,
+    private changeDetectorRef: ChangeDetectorRef,
+    private ngZone: NgZone,
   ) {}
 
   async ngOnInit() {
+    await this.checkBackupStatus();
+    await this.checkLocalKeys();
+    await this.loadPublicKeyFingerprint();
+  }
+
+  /**
+   * Ionic lifecycle hook - refresh state when modal reopens
+   */
+  async ionViewWillEnter() {
     await this.checkBackupStatus();
     await this.checkLocalKeys();
     await this.loadPublicKeyFingerprint();
@@ -168,7 +182,7 @@ export class EncryptionSettingsComponent implements OnInit {
       } else {
         const alert = await this.alertController.create({
           header: "⚠️ Key Issue Detected",
-          message: `<strong>Problem:</strong> ${health.error}<br><br><strong>Recommendation:</strong> ${health.recommendation}`,
+          message: `Problem: ${health.error}\n\nRecommendation: ${health.recommendation}`,
           buttons: [
             {
               text: "OK",
@@ -371,7 +385,7 @@ export class EncryptionSettingsComponent implements OnInit {
     const alert = await this.alertController.create({
       header: "⚠️ Generate New Keys",
       message:
-        "<strong>Warning:</strong> Generating new keys will prevent you from reading previous encrypted messages. This action cannot be undone.<br><br>Only proceed if:<br>• Your current keys are corrupted<br>• You've lost access to your backup<br>• You understand old messages will be unreadable",
+        "Warning: Generating new keys will prevent you from reading previous encrypted messages. This action cannot be undone.\n\nOnly proceed if:\n• Your current keys are corrupted\n• You've lost access to your backup\n• You understand old messages will be unreadable",
       buttons: [
         {
           text: "Cancel",
@@ -380,26 +394,56 @@ export class EncryptionSettingsComponent implements OnInit {
         {
           text: "I Understand, Generate",
           role: "destructive",
-          handler: async () => {
-            try {
-              this.isLoading = true;
-              const keyPair = await this.encryptionService.generateKeyPair();
-              await this.encryptionService.storeKeyPair(keyPair, userId);
+          handler: () => {
+            // Execute key generation inside NgZone to ensure change detection works
+            this.ngZone.run(async () => {
+              try {
+                this.isLoading = true;
+                this.loadingMessage = "Generating encryption keys...";
 
-              // Offer to backup new keys immediately
-              await this.showSuccess(
-                "New keys generated successfully. You should backup these keys now.",
-              );
-              await this.checkLocalKeys();
-              await this.loadPublicKeyFingerprint(); // Refresh fingerprint
+                // Step 1: Generate keys locally
+                const keyPair = await this.encryptionService.generateKeyPair();
+                await this.encryptionService.storeKeyPair(keyPair, userId);
 
-              // Automatically prompt for backup
-              setTimeout(() => this.backupNow(), 500);
-            } catch (error) {
-              await this.showError("Failed to generate new keys");
-            } finally {
-              this.isLoading = false;
-            }
+                // Step 2: Upload public key to Firestore
+                this.loadingMessage = "Uploading public key to server...";
+                const publicKeyString =
+                  await this.encryptionService.exportPublicKey(
+                    keyPair.publicKey,
+                  );
+
+                await this.firestore.collection("userKeys").doc(userId).set({
+                  publicKey: publicKeyString,
+                  createdAt: new Date(),
+                  userId: userId,
+                });
+
+                // Step 3: Refresh UI state
+                await this.checkLocalKeys();
+                await this.loadPublicKeyFingerprint();
+
+                // Clear loading
+                this.isLoading = false;
+                this.loadingMessage = "";
+
+                // Show success
+                await this.showSuccess(
+                  "New keys generated successfully. You should backup these keys now.",
+                );
+
+                // Prompt for backup
+                setTimeout(() => this.backupNow(), 500);
+              } catch (error: any) {
+                console.error("Error during key generation:", error);
+                this.isLoading = false;
+                this.loadingMessage = "";
+                await this.showError(
+                  `Failed to generate new keys: ${error?.message || "Unknown error"}. Please check the console for details.`,
+                );
+              }
+            });
+
+            return true; // Allow alert to close
           },
         },
       ],
@@ -514,15 +558,44 @@ export class EncryptionSettingsComponent implements OnInit {
         {
           text: "Clear",
           role: "destructive",
-          handler: async () => {
-            const authUser = await firstValueFrom(
-              this.store.select(selectAuthUser),
-            );
-            if (authUser?.uid) {
-              await this.encryptionService.clearStoredKeys(authUser.uid);
-              await this.showSuccess("Local keys cleared");
-              await this.checkLocalKeys();
-            }
+          handler: () => {
+            // Execute in NgZone to ensure change detection
+            this.ngZone.run(async () => {
+              try {
+                this.isLoading = true;
+                this.loadingMessage = "Clearing local keys...";
+
+                const authUser = await firstValueFrom(
+                  this.store.select(selectAuthUser),
+                );
+
+                if (authUser?.uid) {
+                  await this.encryptionService.clearStoredKeys(authUser.uid);
+
+                  await this.checkLocalKeys();
+                  await this.loadPublicKeyFingerprint();
+
+                  this.isLoading = false;
+                  this.loadingMessage = "";
+
+                  await this.showSuccess("Local keys cleared");
+                } else {
+                  console.error("No authenticated user");
+                  this.isLoading = false;
+                  this.loadingMessage = "";
+                  await this.showError("No authenticated user found");
+                }
+              } catch (error: any) {
+                console.error("Error clearing keys:", error);
+                this.isLoading = false;
+                this.loadingMessage = "";
+                await this.showError(
+                  `Failed to clear keys: ${error?.message || "Unknown error"}`,
+                );
+              }
+            });
+
+            return true; // Allow alert to close
           },
         },
       ],

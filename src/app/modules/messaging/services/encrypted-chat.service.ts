@@ -112,25 +112,35 @@ export class EncryptedChatService {
       // Check if user already has keys
       const existingKeys =
         await this.encryptionService.getStoredKeyPair(userId);
-      if (existingKeys) {
-        return;
+      if (!existingKeys) {
+        // No keys found - user needs to generate or restore keys manually
+        throw new Error(
+          "No encryption keys found. Please generate new keys or restore from backup.",
+        );
       }
 
-      // Generate new key pair
-      const keyPair = await this.encryptionService.generateKeyPair();
-
-      // Store locally
-      await this.encryptionService.storeKeyPair(keyPair, userId);
-
-      // Store public key in Firestore for other users to access
+      // Keys exist - check if public key is in Firestore
       const publicKeyString = await this.encryptionService.exportPublicKey(
-        keyPair.publicKey,
+        existingKeys.publicKey,
       );
-      await this.firestore.collection("userKeys").doc(userId).set({
-        publicKey: publicKeyString,
-        createdAt: new Date(),
-        userId: userId,
-      });
+
+      try {
+        const userKeyDoc = await firstValueFrom(
+          this.firestore.collection("userKeys").doc(userId).get(),
+        );
+
+        if (!userKeyDoc.exists) {
+          // Upload public key to Firestore
+          await this.firestore.collection("userKeys").doc(userId).set({
+            publicKey: publicKeyString,
+            createdAt: new Date(),
+            userId: userId,
+          });
+        }
+      } catch (firestoreError) {
+        console.warn("Failed to sync public key to Firestore:", firestoreError);
+        // Continue - local encryption still works
+      }
     } catch (error) {
       console.error("Error initializing encryption:", error);
       throw error;
@@ -154,30 +164,9 @@ export class EncryptedChatService {
           return storedKeyPair.publicKey;
         }
 
-        // If no stored keys exist for us, generate new ones
-        const keyPair = await this.encryptionService.generateKeyPair();
-        await this.encryptionService.storeKeyPair(keyPair, userId);
-
-        // Store public key in Firestore for other users
-        const publicKeyString = await this.encryptionService.exportPublicKey(
-          keyPair.publicKey,
-        );
-
-        try {
-          await this.firestore.collection("userKeys").doc(userId).set({
-            publicKey: publicKeyString,
-            createdAt: new Date(),
-            userId: userId,
-          });
-        } catch (firestoreError) {
-          console.warn(
-            "Failed to store public key in Firestore:",
-            firestoreError,
-          );
-          // Continue - local key generation was successful
-        }
-
-        return keyPair.publicKey;
+        // No keys found - user needs to generate or restore keys
+        // Don't auto-generate to respect when users explicitly clear keys
+        return null;
       }
 
       // For other users, get their public key from Firestore
@@ -852,78 +841,37 @@ export class EncryptedChatService {
       // Check if key pair already exists
       const existingKeyPair =
         await this.encryptionService.getStoredKeyPair(userId);
-      if (existingKeyPair) {
-        // Check if public key is stored in Firestore
-        try {
-          const userKeyDoc = await firstValueFrom(
-            this.firestore.collection("userKeys").doc(userId).get(),
-          );
 
-          if (!userKeyDoc.exists) {
-            // Store public key in Firestore for other users to access
-            const publicKeyString =
-              await this.encryptionService.exportPublicKey(
-                existingKeyPair.publicKey,
-              );
-            await this.firestore.collection("userKeys").doc(userId).set({
-              publicKey: publicKeyString,
-              createdAt: new Date(),
-              userId: userId,
-            });
-          }
-        } catch (firestoreError) {
-          console.warn(
-            "Failed to access or store public key in Firestore:",
-            firestoreError,
-          );
-          // Continue - local encryption still works
-        }
-        return;
-      }
-
-      // Generate new key pair
-      const keyPair = await this.encryptionService.generateKeyPair();
-
-      // Store locally
-      await this.encryptionService.storeKeyPair(keyPair, userId);
-
-      // Store public key in Firestore for other users to access
-      const publicKeyString = await this.encryptionService.exportPublicKey(
-        keyPair.publicKey,
-      );
-
-      try {
-        await this.firestore.collection("userKeys").doc(userId).set({
-          publicKey: publicKeyString,
-          createdAt: new Date(),
-          userId: userId,
-        });
-      } catch (firestoreError) {
-        console.warn(
-          "Failed to store public key in Firestore, continuing with local keys only:",
-          firestoreError,
+      if (!existingKeyPair) {
+        // No keys found - user needs to generate or restore keys manually
+        throw new Error(
+          "No encryption keys found. Please generate new keys or restore from backup in Encryption Settings.",
         );
-        // Don't throw here - local encryption keys are still functional
       }
 
-      // Trigger automatic backup for first-time key generation
-      const keyBackupService = this.keyBackupService;
-      if (
-        keyBackupService &&
-        typeof keyBackupService.handleFirstEncryptedMessage === "function"
-      ) {
-        try {
-          await keyBackupService.handleFirstEncryptedMessage(keyPair);
-        } catch (backupError) {
-          console.warn(
-            "Automatic backup failed, user can backup manually later:",
-            backupError,
+      // Keys exist - ensure public key is in Firestore
+      try {
+        const userKeyDoc = await firstValueFrom(
+          this.firestore.collection("userKeys").doc(userId).get(),
+        );
+
+        if (!userKeyDoc.exists) {
+          // Store public key in Firestore for other users to access
+          const publicKeyString = await this.encryptionService.exportPublicKey(
+            existingKeyPair.publicKey,
           );
-          // Don't block encryption setup if backup fails
+          await this.firestore.collection("userKeys").doc(userId).set({
+            publicKey: publicKeyString,
+            createdAt: new Date(),
+            userId: userId,
+          });
         }
+      } catch (firestoreError) {
+        console.warn("Failed to sync public key to Firestore:", firestoreError);
+        // Continue - local encryption still works
       }
     } catch (error) {
-      console.error("Error initializing encryption:", error);
+      console.error("Error enabling encryption:", error);
       throw error;
     }
   }

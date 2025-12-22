@@ -150,9 +150,25 @@ export class SecureKeyStorageService implements OnDestroy {
   private async acquireKeyLock(userId: string): Promise<() => void> {
     const lockKey = `key_lock_${userId}`;
 
-    // Wait for existing lock to release
+    // Wait for existing lock to release with timeout
+    const maxWaitTime = 10000; // 10 seconds
+    const startTime = Date.now();
+
     while (this.keyOperationLocks.has(lockKey)) {
-      await this.keyOperationLocks.get(lockKey);
+      const elapsedTime = Date.now() - startTime;
+
+      if (elapsedTime > maxWaitTime) {
+        console.warn(
+          `Lock timeout for ${lockKey}, forcing release after ${maxWaitTime}ms`,
+        );
+        this.keyOperationLocks.delete(lockKey);
+        break;
+      }
+
+      await Promise.race([
+        this.keyOperationLocks.get(lockKey),
+        new Promise((resolve) => setTimeout(resolve, 100)),
+      ]);
     }
 
     // Create new lock
@@ -223,10 +239,6 @@ export class SecureKeyStorageService implements OnDestroy {
         const request = store.put(keyData);
 
         request.onsuccess = () => {
-          console.log(
-            `[SecureKeyStorage] Keys stored securely for user ${userId}`,
-          );
-
           // Notify other tabs about key storage
           this.broadcastToOtherTabs({
             type: "keys_stored",

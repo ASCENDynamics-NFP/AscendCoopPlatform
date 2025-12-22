@@ -19,6 +19,8 @@
 ***********************************************************************************************/
 import {Component, Input, Output, EventEmitter, OnInit} from "@angular/core";
 import {EncryptedChatService} from "../../services/encrypted-chat.service";
+import {ModalController} from "@ionic/angular";
+import {EncryptionSettingsComponent} from "../encryption-settings/encryption-settings.component";
 
 @Component({
   selector: "app-encryption-toggle",
@@ -53,17 +55,17 @@ import {EncryptedChatService} from "../../services/encrypted-chat.service";
         </ion-icon>
       </ion-button>
 
-      <!-- Enable Encryption Button (if not enabled) -->
+      <!-- Setup Encryption Button (if not enabled) -->
       <ion-button
         *ngIf="!encryptionEnabled"
         fill="outline"
         size="small"
-        (click)="enableEncryption()"
+        (click)="openEncryptionSettings()"
         color="primary"
         class="enable-encryption-btn"
       >
-        <ion-icon name="shield-outline" slot="start"></ion-icon>
-        Enable Encryption
+        <ion-icon name="settings-outline" slot="start"></ion-icon>
+        Setup Encryption
       </ion-button>
     </div>
   `,
@@ -115,7 +117,10 @@ export class EncryptionToggleComponent implements OnInit {
   encryptionEnabled: boolean = false;
   encryptionAvailable: boolean = false;
 
-  constructor(private encryptedChatService: EncryptedChatService) {}
+  constructor(
+    private encryptedChatService: EncryptedChatService,
+    private modalController: ModalController,
+  ) {}
 
   async ngOnInit() {
     await this.checkEncryptionStatus();
@@ -137,14 +142,16 @@ export class EncryptionToggleComponent implements OnInit {
     }
   }
 
-  async enableEncryption() {
-    try {
-      await this.encryptedChatService.enableEncryption();
-      this.encryptionEnabled = true;
-      await this.checkEncryptionStatus();
-    } catch (error) {
-      console.error("Error enabling encryption:", error);
-    }
+  async openEncryptionSettings() {
+    const modal = await this.modalController.create({
+      component: EncryptionSettingsComponent,
+    });
+
+    await modal.present();
+
+    // Refresh encryption status after modal closes
+    await modal.onDidDismiss();
+    await this.checkEncryptionStatus();
   }
 
   toggleEncryption() {

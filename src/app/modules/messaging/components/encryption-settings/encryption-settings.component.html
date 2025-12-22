@@ -15,7 +15,12 @@
 <ion-content>
   <ion-card>
     <ion-card-content>
-      <ion-spinner *ngIf="isLoading"></ion-spinner>
+      <div *ngIf="isLoading" class="loading-container">
+        <ion-spinner></ion-spinner>
+        <p *ngIf="loadingMessage" class="loading-message">
+          {{ loadingMessage }}
+        </p>
+      </div>
 
       <div *ngIf="!isLoading">
         <!-- Backup Status -->

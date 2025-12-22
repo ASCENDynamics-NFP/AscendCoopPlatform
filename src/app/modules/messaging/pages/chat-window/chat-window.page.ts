@@ -177,6 +177,9 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     // Mark notifications as read for this chat when entering
     this.notificationService.markChatNotificationsAsRead(this.chatId);
 
+    // Load encryption preference for this chat
+    this.loadEncryptionPreference();
+
     // Reset unread count for this user in the chat document
     this.chatService.markChatAsRead(this.chatId).subscribe({
       error: (error) => console.error("Error marking chat as read:", error),
@@ -631,6 +634,34 @@ export class ChatWindowPage implements OnInit, OnDestroy {
    */
   onEncryptionToggled(active: boolean) {
     this.isEncryptionActive = active;
+    this.saveEncryptionPreference(active);
+  }
+
+  /**
+   * Load encryption preference for this chat from localStorage
+   */
+  private loadEncryptionPreference() {
+    try {
+      const key = `encryption_pref_${this.chatId}`;
+      const saved = localStorage.getItem(key);
+      if (saved !== null) {
+        this.isEncryptionActive = saved === "true";
+      }
+    } catch (error) {
+      console.error("Error loading encryption preference:", error);
+    }
+  }
+
+  /**
+   * Save encryption preference for this chat to localStorage
+   */
+  private saveEncryptionPreference(active: boolean) {
+    try {
+      const key = `encryption_pref_${this.chatId}`;
+      localStorage.setItem(key, String(active));
+    } catch (error) {
+      console.error("Error saving encryption preference:", error);
+    }
   }
 
   /**

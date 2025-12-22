@@ -105,7 +105,7 @@ export class EncryptionService {
         name: "RSA-OAEP",
         hash: "SHA-256",
       },
-      false,
+      true, // Make extractable so it can be re-exported when storing
       ["encrypt"],
     );
   }
@@ -314,15 +314,8 @@ export class EncryptionService {
         keyPair.privateKey,
       );
 
-      console.log(
-        `[EncryptionService] Keys stored securely for user ${userId}`,
-      );
-
       // Notify that keys have been restored
       this.keysChangedSubject.next({userId, action: "restored"});
-      console.log(
-        `[EncryptionService] Emitted 'restored' event for user ${userId}`,
-      );
     } catch (error) {
       console.error("Error storing key pair:", error);
       throw error;

@@ -24,6 +24,7 @@ import {
   BackupStatus,
 } from "../../services/key-backup.service";
 import {EncryptionService} from "../../services/encryption.service";
+import {EncryptedChatService} from "../../services/encrypted-chat.service";
 import {KeyRestoreModalComponent} from "../key-restore-modal/key-restore-modal.component";
 import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
@@ -38,10 +39,12 @@ export class EncryptionSettingsComponent implements OnInit {
   backupStatus: BackupStatus = {hasBackup: false};
   isLoading = false;
   hasLocalKeys = false;
+  publicKeyFingerprint: string | null = null;
 
   constructor(
     private keyBackupService: KeyBackupService,
     private encryptionService: EncryptionService,
+    private encryptedChatService: EncryptedChatService,
     private modalController: ModalController,
     private alertController: AlertController,
     private store: Store,
@@ -50,6 +53,7 @@ export class EncryptionSettingsComponent implements OnInit {
   async ngOnInit() {
     await this.checkBackupStatus();
     await this.checkLocalKeys();
+    await this.loadPublicKeyFingerprint();
   }
 
   /**
@@ -76,6 +80,115 @@ export class EncryptionSettingsComponent implements OnInit {
         authUser.uid,
       );
       this.hasLocalKeys = keyPair !== null;
+    }
+  }
+
+  /**
+   * Load public key fingerprint for verification
+   */
+  async loadPublicKeyFingerprint(): Promise<void> {
+    try {
+      const authUser = await firstValueFrom(this.store.select(selectAuthUser));
+      if (authUser?.uid && this.hasLocalKeys) {
+        this.publicKeyFingerprint =
+          await this.encryptionService.getStoredPublicKeyFingerprint(
+            authUser.uid,
+          );
+      }
+    } catch (error) {
+      console.error("Error loading key fingerprint:", error);
+    }
+  }
+
+  /**
+   * Copy fingerprint to clipboard
+   */
+  async copyFingerprint(): Promise<void> {
+    if (!this.publicKeyFingerprint) return;
+
+    try {
+      await navigator.clipboard.writeText(this.publicKeyFingerprint);
+      await this.showSuccess("Fingerprint copied to clipboard!");
+    } catch (error) {
+      console.error("Error copying to clipboard:", error);
+      await this.showError("Failed to copy fingerprint");
+    }
+  }
+
+  /**
+   * Show fingerprint info
+   */
+  async showFingerprintInfo(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: "🔐 Public Key Fingerprint",
+      message: `Your fingerprint:\n\n${this.publicKeyFingerprint}\n\nWhat is this?\n\nYour public key fingerprint is a short code that uniquely identifies your encryption key. Share it with your contacts to verify you're communicating securely.\n\nHow to verify:\n\n1. Share your fingerprint with your contact via a different channel (phone, in person, etc.)\n\n2. Ask them to check if the fingerprint matches what they see in your chat\n\n3. If it matches, your connection is secure! 🔒`,
+      buttons: [
+        {
+          text: "Copy",
+          handler: () => {
+            this.copyFingerprint();
+          },
+        },
+        {
+          text: "Close",
+          role: "cancel",
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  /**
+   * Check key health and show diagnostics
+   */
+  async checkKeyHealth(): Promise<void> {
+    const authUser = await firstValueFrom(this.store.select(selectAuthUser));
+    if (!authUser?.uid) {
+      await this.showError("No authenticated user");
+      return;
+    }
+
+    if (!this.hasLocalKeys) {
+      await this.showInfo(
+        "No local keys found. Enable encryption or restore from backup.",
+      );
+      return;
+    }
+
+    this.isLoading = true;
+    try {
+      const health = await this.encryptedChatService.checkKeyHealth(
+        authUser.uid,
+      );
+
+      if (health.healthy) {
+        await this.showSuccess(
+          "✅ Your encryption keys are working correctly!",
+        );
+      } else {
+        const alert = await this.alertController.create({
+          header: "⚠️ Key Issue Detected",
+          message: `<strong>Problem:</strong> ${health.error}<br><br><strong>Recommendation:</strong> ${health.recommendation}`,
+          buttons: [
+            {
+              text: "OK",
+              role: "cancel",
+            },
+            {
+              text: "Restore Backup",
+              handler: () => {
+                this.restoreKeys();
+              },
+            },
+          ],
+        });
+        await alert.present();
+      }
+    } catch (error) {
+      console.error("Error checking key health:", error);
+      await this.showError("Failed to check key health");
+    } finally {
+      this.isLoading = false;
     }
   }
 
@@ -199,6 +312,7 @@ export class EncryptionSettingsComponent implements OnInit {
         await this.encryptionService.storeKeyPair(data, authUser.uid);
         await this.showSuccess("Keys restored successfully");
         await this.checkLocalKeys();
+        await this.loadPublicKeyFingerprint(); // Refresh fingerprint
       }
     } else if (role === "skip") {
       // User chose to generate new keys
@@ -216,25 +330,71 @@ export class EncryptionSettingsComponent implements OnInit {
       return;
     }
 
+    // If backup exists, offer to restore instead
+    if (this.backupStatus.hasBackup) {
+      const restoreFirst = await this.alertController.create({
+        header: "Backup Available",
+        message:
+          "You have a backup of your encryption keys. Would you like to restore them instead? This will preserve access to your old messages.",
+        buttons: [
+          {
+            text: "Restore Backup",
+            handler: async () => {
+              await this.restoreKeys();
+              return true;
+            },
+          },
+          {
+            text: "Generate New Keys",
+            role: "destructive",
+            handler: async () => {
+              await this.confirmAndGenerateNewKeys(authUser.uid);
+              return true;
+            },
+          },
+          {
+            text: "Cancel",
+            role: "cancel",
+          },
+        ],
+      });
+      await restoreFirst.present();
+    } else {
+      await this.confirmAndGenerateNewKeys(authUser.uid);
+    }
+  }
+
+  /**
+   * Confirm and proceed with new key generation
+   */
+  private async confirmAndGenerateNewKeys(userId: string): Promise<void> {
     const alert = await this.alertController.create({
-      header: "Generate New Keys",
+      header: "⚠️ Generate New Keys",
       message:
-        "Are you sure? Generating new keys will prevent you from reading previous encrypted messages.",
+        "<strong>Warning:</strong> Generating new keys will prevent you from reading previous encrypted messages. This action cannot be undone.<br><br>Only proceed if:<br>• Your current keys are corrupted<br>• You've lost access to your backup<br>• You understand old messages will be unreadable",
       buttons: [
         {
           text: "Cancel",
           role: "cancel",
         },
         {
-          text: "Generate",
+          text: "I Understand, Generate",
           role: "destructive",
           handler: async () => {
             try {
               this.isLoading = true;
               const keyPair = await this.encryptionService.generateKeyPair();
-              await this.encryptionService.storeKeyPair(keyPair, authUser.uid);
-              await this.showSuccess("New keys generated successfully");
+              await this.encryptionService.storeKeyPair(keyPair, userId);
+
+              // Offer to backup new keys immediately
+              await this.showSuccess(
+                "New keys generated successfully. You should backup these keys now.",
+              );
               await this.checkLocalKeys();
+              await this.loadPublicKeyFingerprint(); // Refresh fingerprint
+
+              // Automatically prompt for backup
+              setTimeout(() => this.backupNow(), 500);
             } catch (error) {
               await this.showError("Failed to generate new keys");
             } finally {
@@ -372,6 +532,13 @@ export class EncryptionSettingsComponent implements OnInit {
   }
 
   /**
+   * Dismiss the modal
+   */
+  dismiss(): void {
+    this.modalController.dismiss();
+  }
+
+  /**
    * Show success message
    */
   private async showSuccess(message: string): Promise<void> {
@@ -389,6 +556,18 @@ export class EncryptionSettingsComponent implements OnInit {
   private async showError(message: string): Promise<void> {
     const alert = await this.alertController.create({
       header: "Error",
+      message: message,
+      buttons: ["OK"],
+    });
+    await alert.present();
+  }
+
+  /**
+   * Show info message
+   */
+  private async showInfo(message: string): Promise<void> {
+    const alert = await this.alertController.create({
+      header: "Information",
       message: message,
       buttons: ["OK"],
     });

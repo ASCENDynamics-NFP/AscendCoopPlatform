@@ -102,6 +102,28 @@
               translate
               >messaging.you</ion-badge
             >
+            <ion-badge
+              *ngIf="getEncryptionStatus(participant.id)"
+              color="success"
+              style="margin-left: 4px"
+            >
+              <ion-icon
+                name="lock-closed"
+                style="font-size: 10px; margin-right: 2px"
+              ></ion-icon>
+              Encrypted
+            </ion-badge>
+            <ion-badge
+              *ngIf="!getEncryptionStatus(participant.id)"
+              color="medium"
+              style="margin-left: 4px"
+            >
+              <ion-icon
+                name="lock-open"
+                style="font-size: 10px; margin-right: 2px"
+              ></ion-icon>
+              Not Encrypted
+            </ion-badge>
           </div>
           <div class="participant-email">{{ participant.email }}</div>
         </div>

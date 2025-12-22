@@ -18,6 +18,7 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {Injectable} from "@angular/core";
+import {Subject, Observable} from "rxjs";
 
 export interface KeyPair {
   publicKey: CryptoKey;
@@ -38,6 +39,16 @@ export class EncryptionService {
   private readonly ALGORITHM = "AES-GCM";
   private readonly KEY_LENGTH = 256;
   private readonly IV_LENGTH = 12; // 96 bits for AES-GCM
+
+  // Observable for key changes (when keys are restored or cleared)
+  private keysChangedSubject = new Subject<{
+    userId: string;
+    action: "restored" | "cleared";
+  }>();
+  public keysChanged$: Observable<{
+    userId: string;
+    action: "restored" | "cleared";
+  }> = this.keysChangedSubject.asObservable();
 
   constructor() {}
 
@@ -246,6 +257,50 @@ export class EncryptionService {
   }
 
   /**
+   * Get public key fingerprint for display/verification
+   * Returns a human-readable fingerprint in format: XXXX XXXX XXXX XXXX
+   */
+  async getPublicKeyFingerprint(publicKey: CryptoKey): Promise<string> {
+    try {
+      // Export public key
+      const publicKeyBytes = await crypto.subtle.exportKey("spki", publicKey);
+      // Create SHA-256 hash
+      const hashBytes = await crypto.subtle.digest("SHA-256", publicKeyBytes);
+      // Convert to hex string
+      const hashArray = Array.from(new Uint8Array(hashBytes));
+      const hexString = hashArray
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+      // Take first 16 characters and format as XXXX XXXX XXXX XXXX
+      const formatted = hexString
+        .substring(0, 16)
+        .toUpperCase()
+        .match(/.{1,4}/g)
+        ?.join(" ");
+      return formatted || hexString.substring(0, 16).toUpperCase();
+    } catch (error) {
+      console.error("Error generating fingerprint:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get public key fingerprint from stored keys for current user
+   */
+  async getStoredPublicKeyFingerprint(userId: string): Promise<string | null> {
+    try {
+      const keyPair = await this.getStoredKeyPair(userId);
+      if (!keyPair) {
+        return null;
+      }
+      return await this.getPublicKeyFingerprint(keyPair.publicKey);
+    } catch (error) {
+      console.error("Error getting stored key fingerprint:", error);
+      return null;
+    }
+  }
+
+  /**
    * Store keys securely in browser
    */
   async storeKeyPair(keyPair: KeyPair, userId: string): Promise<void> {
@@ -263,6 +318,14 @@ export class EncryptionService {
       // Store in localStorage (in production, consider more secure storage)
       localStorage.setItem(`publicKey_${userId}`, publicKeyString);
       localStorage.setItem(`privateKey_${userId}`, privateKeyString);
+
+      console.log(`[EncryptionService] Keys stored for user ${userId}`);
+
+      // Notify that keys have been restored
+      this.keysChangedSubject.next({userId, action: "restored"});
+      console.log(
+        `[EncryptionService] Emitted 'restored' event for user ${userId}`,
+      );
     } catch (error) {
       console.error("Error storing key pair:", error);
       throw error;
@@ -368,6 +431,9 @@ export class EncryptionService {
     // Clear old naming convention for backward compatibility
     localStorage.removeItem(`encryptionPublicKey_${userId}`);
     localStorage.removeItem(`encryptionPrivateKey_${userId}`);
+
+    // Notify that keys have been cleared
+    this.keysChangedSubject.next({userId, action: "cleared"});
   }
 
   /**
@@ -396,7 +462,7 @@ export class EncryptionService {
     return await crypto.subtle.deriveKey(
       {
         name: "PBKDF2",
-        salt: salt,
+        salt: salt as BufferSource,
         iterations: iterations,
         hash: "SHA-256",
       },

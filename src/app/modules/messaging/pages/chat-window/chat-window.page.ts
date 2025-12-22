@@ -56,6 +56,8 @@ import {ChatService} from "../../services/chat.service";
 import {RelationshipService} from "../../services/relationship.service";
 import {NotificationService} from "../../services/notification.service";
 import {EncryptedChatService} from "../../services/encrypted-chat.service";
+import {EncryptionService} from "../../services/encryption.service";
+import {KeyBackupService} from "../../services/key-backup.service";
 import {NetworkConnectionService} from "../../../../core/services/network-connection.service";
 import {OfflineSyncService} from "../../../../core/services/offline-sync.service";
 import {Store} from "@ngrx/store";
@@ -65,6 +67,7 @@ import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {UserReportModalComponent} from "../../components/user-report-modal/user-report-modal.component";
 import {ChatParticipantsModalComponent} from "../../components/chat-participants-modal/chat-participants-modal.component";
+import {KeyRestoreModalComponent} from "../../components/key-restore-modal/key-restore-modal.component";
 
 @Component({
   selector: "app-chat-window",
@@ -75,6 +78,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   @ViewChild(IonContent, {static: false}) content!: IonContent;
   @ViewChild(IonInfiniteScroll) infiniteScroll!: IonInfiniteScroll;
   private destroy$ = new Subject<void>();
+  private messagesDestroy$ = new Subject<void>(); // For canceling message subscriptions
   @ViewChild("messageInput", {static: false}) messageInput!: ElementRef;
 
   chatId!: string;
@@ -108,6 +112,8 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   encryptionEnabled = false;
   isEncryptionActive = false;
   encryptionAvailable = false;
+  hasEncryptionBackup = false;
+  showBackupWarning = false;
 
   // Connection status properties
   isOnline$!: Observable<boolean>;
@@ -127,6 +133,8 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone,
     private encryptedChatService: EncryptedChatService,
+    private encryptionService: EncryptionService,
+    private keyBackupService: KeyBackupService,
     private networkService: NetworkConnectionService,
     private offlineSync: OfflineSyncService,
     private platform: Platform,
@@ -202,6 +210,46 @@ export class ChatWindowPage implements OnInit, OnDestroy {
 
     // Load messages with decryption support
     this.loadMessages();
+
+    // Subscribe to encryption key changes to re-decrypt messages
+    this.encryptionService.keysChanged$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
+        ({
+          userId,
+          action,
+        }: {
+          userId: string;
+          action: "restored" | "cleared";
+        }) => {
+          console.log(
+            `Key change event received: ${action} for user ${userId}`,
+          );
+          console.log(
+            `Current user: ${this.currentUserId}, Encryption enabled: ${this.encryptionEnabled}`,
+          );
+
+          // Reload if it's the current user's keys (check encryption status after restoring keys)
+          if (userId === this.currentUserId) {
+            console.log(
+              `Encryption keys ${action} for current user, reloading messages...`,
+            );
+
+            // Cancel previous message subscription
+            this.messagesDestroy$.next();
+
+            // Clear current messages to force fresh load
+            this.messages = [];
+
+            // Re-check encryption status and reload
+            this.initializeEncryption().then(() => {
+              console.log(
+                `After re-init: Encryption enabled: ${this.encryptionEnabled}`,
+              );
+            });
+          }
+        },
+      );
   }
 
   /**
@@ -231,71 +279,74 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     }
 
     // Subscribe to messages and update local array
-    messagesSource$.pipe(takeUntil(this.destroy$)).subscribe({
-      next: (messages) => {
-        // Merge server messages with local optimistic messages and historical messages
-        this.messages = this.mergeMessages(messages);
+    console.log(`Loading messages with encryption: ${this.encryptionEnabled}`);
+    messagesSource$
+      .pipe(takeUntil(this.messagesDestroy$), takeUntil(this.destroy$))
+      .subscribe({
+        next: (messages) => {
+          // Merge server messages with local optimistic messages and historical messages
+          this.messages = this.mergeMessages(messages);
 
-        // Pre-load sender accounts for avatar display
-        this.preloadSenderAccounts(messages);
+          // Pre-load sender accounts for avatar display
+          this.preloadSenderAccounts(messages);
 
-        // Determine scroll behavior
-        // 1. If it's the initial load sequence (which might include decryption updates), stick to bottom.
-        // 2. If the user was already at the bottom, stay at the bottom (new message or expansion).
-        // 3. If it's a completely new incoming message, scroll to it.
+          // Determine scroll behavior
+          // 1. If it's the initial load sequence (which might include decryption updates), stick to bottom.
+          // 2. If the user was already at the bottom, stay at the bottom (new message or expansion).
+          // 3. If it's a completely new incoming message, scroll to it.
 
-        const isAtBottom = this.isUserAtBottom();
-        const isInitialLoadSequence = !this.initialLoadComplete;
+          const isAtBottom = this.isUserAtBottom();
+          const isInitialLoadSequence = !this.initialLoadComplete;
 
-        // Mark initial load complete after first valid render (with a delay to allow for decryption/rendering)
-        // We use a property to track if we've ever successfully settled at the bottom
-        if (!this.lastMessageTimestamp && this.messages.length > 0) {
-          // First time we have messages
-          // Don't set initialLoadComplete immediately, wait for stability
-          setTimeout(() => {
-            this.initialLoadComplete = true;
-          }, 2000); // Give it 2 seconds of "stickiness" for initial load
-        }
+          // Mark initial load complete after first valid render (with a delay to allow for decryption/rendering)
+          // We use a property to track if we've ever successfully settled at the bottom
+          if (!this.lastMessageTimestamp && this.messages.length > 0) {
+            // First time we have messages
+            // Don't set initialLoadComplete immediately, wait for stability
+            setTimeout(() => {
+              this.initialLoadComplete = true;
+            }, 2000); // Give it 2 seconds of "stickiness" for initial load
+          }
 
-        const shouldScroll =
-          isInitialLoadSequence ||
-          isAtBottom ||
-          this.isNewMessageReceived(messages);
+          const shouldScroll =
+            isInitialLoadSequence ||
+            isAtBottom ||
+            this.isNewMessageReceived(messages);
 
-        // Update timestamp marker for history loading
-        if (this.messages.length > 0) {
-          // The oldest message in the current list
-          // Note: messages are sorted [oldest, ..., newest]
-          const oldestMessage = this.messages[0];
-          this.lastMessageTimestamp = oldestMessage.timestamp;
-        }
+          // Update timestamp marker for history loading
+          if (this.messages.length > 0) {
+            // The oldest message in the current list
+            // Note: messages are sorted [oldest, ..., newest]
+            const oldestMessage = this.messages[0];
+            this.lastMessageTimestamp = oldestMessage.timestamp;
+          }
 
-        // Hide loading skeleton immediately on first emission
-        // Use requestAnimationFrame to ensure DOM is ready
-        if (this.isMessagesLoading) {
-          requestAnimationFrame(() => {
-            this.isMessagesLoading = false;
-            // Trigger change detection and scroll after DOM update
+          // Hide loading skeleton immediately on first emission
+          // Use requestAnimationFrame to ensure DOM is ready
+          if (this.isMessagesLoading) {
             requestAnimationFrame(() => {
-              if (shouldScroll) {
-                this.scrollToBottom();
-                setTimeout(() => this.scrollToBottom(), 100);
-                setTimeout(() => this.scrollToBottom(), 300);
-              }
+              this.isMessagesLoading = false;
+              // Trigger change detection and scroll after DOM update
+              requestAnimationFrame(() => {
+                if (shouldScroll) {
+                  this.scrollToBottom();
+                  setTimeout(() => this.scrollToBottom(), 100);
+                  setTimeout(() => this.scrollToBottom(), 300);
+                }
+              });
             });
-          });
-        } else if (shouldScroll) {
-          // Normal scroll behavior for subsequent updates
-          this.scrollToBottom();
-          setTimeout(() => this.scrollToBottom(), 100);
-          setTimeout(() => this.scrollToBottom(), 300);
-        }
-      },
-      error: (error) => {
-        console.error("Error loading messages:", error);
-        this.showErrorToast("Error loading messages");
-      },
-    });
+          } else if (shouldScroll) {
+            // Normal scroll behavior for subsequent updates
+            this.scrollToBottom();
+            setTimeout(() => this.scrollToBottom(), 100);
+            setTimeout(() => this.scrollToBottom(), 300);
+          }
+        },
+        error: (error) => {
+          console.error("Error loading messages:", error);
+          this.showErrorToast("Error loading messages");
+        },
+      });
   }
 
   /**
@@ -478,11 +529,101 @@ export class ChatWindowPage implements OnInit, OnDestroy {
         }
       }
 
+      // Check if backup exists but local keys are missing (new device scenario)
+      if (this.encryptionEnabled) {
+        // Check backup status
+        const backupStatus = await this.keyBackupService.hasBackup();
+        this.hasEncryptionBackup = backupStatus.hasBackup;
+
+        const hasLocalKeys = await this.encryptionService.getStoredKeyPair(
+          this.currentUserId,
+        );
+
+        // Show warning if keys exist but no backup
+        this.showBackupWarning = !!hasLocalKeys && !backupStatus.hasBackup;
+
+        if (!hasLocalKeys) {
+          if (backupStatus.hasBackup) {
+            // Show restore prompt automatically
+            await this.promptKeyRestore(backupStatus.authMethod || "password");
+          }
+        }
+      }
+
       // Reload messages with encryption support if encryption status changed
       this.loadMessages();
     } catch (error) {
       console.error("Error initializing encryption:", error);
     }
+  }
+
+  /**
+   * Prompt user to restore keys from backup (new device scenario)
+   */
+  private async promptKeyRestore(
+    authMethod: "password" | "sso",
+  ): Promise<void> {
+    try {
+      const modal = await this.modalController.create({
+        component: KeyRestoreModalComponent,
+        componentProps: {
+          authMethod: authMethod,
+        },
+        backdropDismiss: false, // Require user decision
+      });
+
+      await modal.present();
+
+      const {data, role} = await modal.onDidDismiss();
+
+      if (role === "restore" && data) {
+        // Keys restored successfully via the modal
+        const authUser = await firstValueFrom(
+          this.store.select(selectAuthUser),
+        );
+        if (authUser?.uid) {
+          await this.encryptionService.storeKeyPair(data, authUser.uid);
+          await this.showSuccessToast(
+            "Keys restored successfully! Your encrypted messages are now accessible.",
+          );
+          // Messages will auto-reload due to keysChanged$ subscription
+        }
+      } else if (role === "skip") {
+        // User chose to generate new keys
+        await this.showInfoToast(
+          "New keys generated. Previous encrypted messages may not be accessible.",
+        );
+      }
+    } catch (error) {
+      console.error("Error in key restore prompt:", error);
+    }
+  }
+
+  /**
+   * Prompt user when some participants don't have encryption keys
+   */
+  private async promptPartialEncryption(
+    missingCount: number,
+  ): Promise<boolean> {
+    return new Promise(async (resolve) => {
+      const alert = await this.alertController.create({
+        header: "⚠️ Partial Encryption",
+        message: `${missingCount} ${missingCount === 1 ? "participant has" : "participants have"} not enabled encryption yet. Your message cannot be encrypted for them.`,
+        buttons: [
+          {
+            text: "Cancel",
+            role: "cancel",
+            handler: () => resolve(false),
+          },
+          {
+            text: "Send Unencrypted",
+            handler: () => resolve(true),
+          },
+        ],
+      });
+
+      await alert.present();
+    });
   }
 
   /**
@@ -576,6 +717,8 @@ export class ChatWindowPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.messagesDestroy$.next();
+    this.messagesDestroy$.complete();
     this.destroy$.next();
     this.destroy$.complete();
     // Clear caches outside Angular zone to prevent signal conflicts
@@ -647,8 +790,40 @@ export class ChatWindowPage implements OnInit, OnDestroy {
           ? {...msg, id: messageId || msg.id, status: MessageStatus.SENT}
           : msg,
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error sending message:", error);
+
+      // Handle partial encryption scenario
+      if (error.message === "PARTIAL_ENCRYPTION_AVAILABLE") {
+        // Remove optimistic message
+        this.messages = this.messages.filter(
+          (msg) => msg.id !== optimisticMessage.id,
+        );
+
+        // Prompt user for decision
+        const shouldSendUnencrypted = await this.promptPartialEncryption(
+          error.missingKeyParticipants?.length || 0,
+        );
+
+        if (shouldSendUnencrypted) {
+          // Resend as unencrypted
+          try {
+            const unencryptedRequest = {...request, isEncrypted: false};
+            const messageId = await firstValueFrom(
+              this.chatService.sendMessage(unencryptedRequest),
+            );
+            await this.showInfoToast("Message sent unencrypted");
+          } catch (retryError) {
+            console.error("Failed to send unencrypted message:", retryError);
+            this.showErrorToast("Failed to send message");
+          }
+        } else {
+          // User cancelled - restore original text to input
+          this.newMessage = messageText;
+        }
+        return;
+      }
+
       this.showErrorToast("Failed to send message");
 
       // Update optimistic message status to failed
@@ -875,6 +1050,13 @@ export class ChatWindowPage implements OnInit, OnDestroy {
         icon: "notifications-outline",
         handler: () => {
           this.showNotificationSettings();
+        },
+      },
+      {
+        text: "Encryption Settings",
+        icon: "lock-closed-outline",
+        handler: () => {
+          this.showEncryptionSettings();
         },
       },
     ];
@@ -1179,6 +1361,19 @@ export class ChatWindowPage implements OnInit, OnDestroy {
       message,
       duration: 2000,
       color: "success",
+      position: "top",
+    });
+    await toast.present();
+  }
+
+  /**
+   * Show info toast message
+   */
+  private async showInfoToast(message: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      color: "primary",
       position: "top",
     });
     await toast.present();
@@ -1788,6 +1983,27 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     } catch (error) {
       console.error("Error opening notification settings:", error);
       this.showErrorToast("Failed to open notification settings");
+    }
+  }
+
+  /**
+   * Show encryption settings modal
+   */
+  async showEncryptionSettings() {
+    try {
+      const {EncryptionSettingsComponent} = await import(
+        "../../components/encryption-settings/encryption-settings.component"
+      );
+
+      const modal = await this.modalController.create({
+        component: EncryptionSettingsComponent,
+        cssClass: "encryption-settings-modal",
+      });
+
+      await modal.present();
+    } catch (error) {
+      console.error("Error opening encryption settings:", error);
+      this.showErrorToast("Failed to open encryption settings");
     }
   }
 

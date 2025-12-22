@@ -24,6 +24,7 @@ import {Actions, createEffect, ofType} from "@ngrx/effects";
 import {
   catchError,
   debounceTime,
+  firstValueFrom,
   from,
   map,
   mergeMap,
@@ -786,7 +787,7 @@ export class ListingsEffects {
 
         // Execute all updates in parallel
         return from(
-          Promise.all(updateCalls.map((call) => call.toPromise())),
+          Promise.all(updateCalls.map((call) => firstValueFrom(call))),
         ).pipe(
           map(() => {
             this.showToast(

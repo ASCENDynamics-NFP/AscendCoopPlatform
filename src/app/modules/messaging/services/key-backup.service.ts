@@ -99,9 +99,9 @@ export class KeyBackupService {
         {
           name: "passphrase",
           type: "password",
-          placeholder: "Enter passphrase (min 8 characters)",
+          placeholder: "Enter passphrase (min 12 characters)",
           attributes: {
-            minlength: 8,
+            minlength: 12,
           },
         },
         {
@@ -118,8 +118,8 @@ export class KeyBackupService {
         {
           text: "Set Passphrase",
           handler: (data) => {
-            if (!data.passphrase || data.passphrase.length < 8) {
-              this.showError("Passphrase must be at least 8 characters");
+            if (!data.passphrase || data.passphrase.length < 12) {
+              this.showError("Passphrase must be at least 12 characters");
               return false;
             }
             if (data.passphrase !== data.confirmPassphrase) {
@@ -129,7 +129,7 @@ export class KeyBackupService {
             // Validate passphrase strength
             if (!this.validatePassphraseStrength(data.passphrase)) {
               this.showError(
-                "Passphrase must contain at least one number or special character",
+                "Passphrase must be at least 12 characters and contain a number or special character",
               );
               return false;
             }
@@ -151,10 +151,14 @@ export class KeyBackupService {
 
   /**
    * Validate passphrase strength for SSO users
+   * Requires minimum 12 characters and at least one number or special character
    */
   private validatePassphraseStrength(passphrase: string): boolean {
-    // At least one number or special character
-    return /[\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(passphrase);
+    // Minimum 12 characters AND at least one number or special character
+    return (
+      passphrase.length >= 12 &&
+      /[\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(passphrase)
+    );
   }
 
   /**
@@ -238,11 +242,9 @@ export class KeyBackupService {
 
     try {
       // Get backup from Firestore
-      const accountDoc = await this.firestore
-        .collection("accounts")
-        .doc(authUser.uid)
-        .get()
-        .toPromise();
+      const accountDoc = await firstValueFrom(
+        this.firestore.collection("accounts").doc(authUser.uid).get(),
+      );
 
       if (!accountDoc || !accountDoc.exists) {
         throw new Error("Account not found");
@@ -314,11 +316,9 @@ export class KeyBackupService {
     }
 
     try {
-      const accountDoc = await this.firestore
-        .collection("accounts")
-        .doc(authUser.uid)
-        .get()
-        .toPromise();
+      const accountDoc = await firstValueFrom(
+        this.firestore.collection("accounts").doc(authUser.uid).get(),
+      );
 
       if (!accountDoc || !accountDoc.exists) {
         return {hasBackup: false};
@@ -375,15 +375,15 @@ export class KeyBackupService {
       if (password) {
         // Automatically backup with captured password
         await this.backupKeys(password, keyPair);
-        this.showSuccess(
-          "Your messages are now encrypted and backed up securely",
+        await this.showSuccess(
+          "🔐 Encryption Enabled! Your messages are now end-to-end encrypted and backed up securely for use on other devices.",
         );
       } else {
         // Password wasn't captured, prompt user
         const alert = await this.alertController.create({
-          header: "Backup Encryption Keys",
+          header: "🔐 Encryption Enabled",
           message:
-            "Enter your account password to backup your encryption keys for use on other devices.",
+            "Your messages are now end-to-end encrypted! To access them on other devices, backup your encryption keys by entering your account password.",
           inputs: [
             {
               name: "password",
@@ -393,18 +393,27 @@ export class KeyBackupService {
           ],
           buttons: [
             {
-              text: "Skip",
+              text: "Skip for Now",
               role: "cancel",
+              handler: () => {
+                this.showInfo(
+                  "Encryption keys generated. You can backup later in Settings → Encryption.",
+                );
+              },
             },
             {
-              text: "Backup",
+              text: "Backup Now",
               handler: async (data) => {
                 if (data.password) {
                   try {
                     await this.backupKeys(data.password, keyPair);
-                    this.showSuccess("Keys backed up successfully");
+                    this.showSuccess(
+                      "Keys backed up successfully! You can now access encrypted messages on any device.",
+                    );
                   } catch (error) {
-                    this.showError("Failed to backup keys");
+                    this.showError(
+                      "Failed to backup keys. Please try again in Settings.",
+                    );
                   }
                 }
                 return true;
@@ -420,8 +429,13 @@ export class KeyBackupService {
 
       if (passphrase) {
         await this.backupKeys(passphrase, keyPair);
-        this.showSuccess(
-          "Your messages are now encrypted and backed up securely",
+        await this.showSuccess(
+          "🔐 Encryption Enabled! Your messages are now end-to-end encrypted and backed up securely for use on other devices.",
+        );
+      } else {
+        // User skipped passphrase setup
+        await this.showInfo(
+          "Encryption keys generated. Remember to set up a passphrase in Settings → Encryption to enable multi-device access.",
         );
       }
     }
@@ -433,6 +447,18 @@ export class KeyBackupService {
   private async showSuccess(message: string): Promise<void> {
     const alert = await this.alertController.create({
       header: "Success",
+      message: message,
+      buttons: ["OK"],
+    });
+    await alert.present();
+  }
+
+  /**
+   * Show info message
+   */
+  private async showInfo(message: string): Promise<void> {
+    const alert = await this.alertController.create({
+      header: "Information",
       message: message,
       buttons: ["OK"],
     });

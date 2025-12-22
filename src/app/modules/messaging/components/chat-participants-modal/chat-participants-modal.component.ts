@@ -31,6 +31,7 @@ import {take, switchMap, filter, catchError} from "rxjs/operators";
 import {Chat} from "../../models/chat.model";
 import {ChatService} from "../../services/chat.service";
 import {RelationshipService} from "../../services/relationship.service";
+import {EncryptedChatService} from "../../services/encrypted-chat.service";
 import {RelatedAccount} from "../../../../../../shared/models/account.model";
 import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
@@ -43,6 +44,7 @@ export interface ChatParticipant {
   iconImage?: string;
   isCurrentUser: boolean;
   canRemove: boolean;
+  hasEncryption?: boolean;
 }
 
 @Component({
@@ -61,12 +63,15 @@ export class ChatParticipantsModalComponent implements OnInit {
   isLoading = false;
   isEditingTitle = false;
   editTitleText = "";
+  participantEncryptionStatus = new Map<string, boolean>();
+
   constructor(
     private modalController: ModalController,
     private toastController: ToastController,
     private actionSheetController: ActionSheetController,
     private chatService: ChatService,
     private relationshipService: RelationshipService,
+    private encryptedChatService: EncryptedChatService,
     private store: Store,
     private router: Router,
   ) {}
@@ -74,6 +79,22 @@ export class ChatParticipantsModalComponent implements OnInit {
   ngOnInit() {
     this.loadParticipants();
     this.loadAvailableUsers();
+    this.loadEncryptionStatus();
+  }
+
+  /**
+   * Load encryption status for all participants
+   */
+  private async loadEncryptionStatus(): Promise<void> {
+    try {
+      for (const participantId of this.chat.participants) {
+        const publicKey =
+          await this.encryptedChatService.getUserPublicKey(participantId);
+        this.participantEncryptionStatus.set(participantId, !!publicKey);
+      }
+    } catch (error) {
+      console.error("Error loading participant encryption status:", error);
+    }
   }
 
   /**
@@ -97,11 +118,19 @@ export class ChatParticipantsModalComponent implements OnInit {
           iconImage: account?.iconImage,
           isCurrentUser: participantId === this.currentUserId,
           canRemove: this.chat.isGroup && participantId !== this.currentUserId,
+          hasEncryption: this.participantEncryptionStatus.get(participantId),
         })),
       ),
     );
 
     this.participants$ = combineLatest(participantObservables);
+  }
+
+  /**
+   * Get encryption status for a participant
+   */
+  getEncryptionStatus(participantId: string): boolean {
+    return this.participantEncryptionStatus.get(participantId) || false;
   }
 
   /**

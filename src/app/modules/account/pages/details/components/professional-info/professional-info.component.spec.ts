@@ -55,7 +55,7 @@ describe("ProfessionalInfoComponent", () => {
 
   // TODO: Fix test pollution causing StorageService injection error in full test suite
   // This test passes when run individually but fails due to global test state pollution
-  xit("should create", () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

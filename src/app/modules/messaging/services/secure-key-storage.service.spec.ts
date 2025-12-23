@@ -210,7 +210,7 @@ describe("SecureKeyStorageService", () => {
 
     // Skipped: This test is slow due to PBKDF2 310k iterations (~15s+)
     // The functionality works but times out in CI/CD environments
-    xit("should migrate keys from localStorage", async () => {
+    it("should migrate keys from localStorage", async () => {
       // Export keys to localStorage format
       const publicKeyBytes = await crypto.subtle.exportKey(
         "spki",
@@ -253,7 +253,7 @@ describe("SecureKeyStorageService", () => {
 
     // Skipped: This test is slow due to PBKDF2 310k iterations (~15s+)
     // The functionality works but times out in CI/CD environments
-    xit("should migrate old naming convention keys", async () => {
+    it("should migrate old naming convention keys", async () => {
       // Export keys
       const publicKeyBytes = await crypto.subtle.exportKey(
         "spki",
@@ -307,7 +307,7 @@ describe("SecureKeyStorageService", () => {
 
     // Skipped: This test is slow due to PBKDF2 310k iterations (~15s+)
     // The functionality works but times out in CI/CD environments
-    xit("should verify IndexedDB storage before clearing localStorage", async () => {
+    it("should verify IndexedDB storage before clearing localStorage", async () => {
       // This test ensures transaction-safe migration
       const publicKeyBytes = await crypto.subtle.exportKey(
         "spki",
@@ -376,7 +376,7 @@ describe("SecureKeyStorageService", () => {
 
     // Skipped: This test is slow due to PBKDF2 310k iterations (~20s+)
     // The functionality works but times out in CI/CD environments
-    xit("should handle concurrent migration attempts", async () => {
+    it("should handle concurrent migration attempts", async () => {
       // Export keys
       const publicKeyBytes = await crypto.subtle.exportKey(
         "spki",

@@ -418,7 +418,7 @@ describe("TimesheetPage", () => {
 
     // Temporarily disabled - complex async test that needs refactoring
     // TODO: Refactor notification service integration test
-    xit("should integrate with notification service on submission", () => {
+    it("should integrate with notification service on submission", () => {
       const mockEntries = [
         {
           id: "e1",

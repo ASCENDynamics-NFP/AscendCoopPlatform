@@ -891,14 +891,8 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
         }),
       );
 
-      // Show success feedback
-      const toast = await this.toastController.create({
-        message: `Member access level updated to ${newAccessLevel}`,
-        duration: 2000,
-        color: "success",
-        position: "bottom",
-      });
-      await toast.present();
+      // Note: Success/failure feedback is handled by the effect
+      // We don't show a toast here to avoid duplicate messages
     });
   }
 

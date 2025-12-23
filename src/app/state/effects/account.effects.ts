@@ -377,10 +377,16 @@ export class AccountEffects {
               ];
             }),
             catchError((error) => {
-              this.showToast(`Update failed: ${error.message}`, "danger");
+              // Provide specific error message for relationship not found
+              let errorMessage = error.message;
+              if (error.message?.includes("Relationship not found")) {
+                errorMessage =
+                  "Unable to update member. The relationship may need to be recreated. Please try removing and re-adding this member.";
+              }
+              this.showToast(`Update failed: ${errorMessage}`, "danger");
               return of(
                 AccountActions.updateRelatedAccountFailure({
-                  error: error.message,
+                  error: errorMessage,
                 }),
               );
             }),

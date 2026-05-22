@@ -87,6 +87,15 @@ export class DetailsPage implements OnInit, ViewWillEnter {
 
   ngOnInit(): void {
     this.authUser$ = this.store.select(selectAuthUser);
+    // Initialize account$ and error$ synchronously from the route snapshot so
+    // they are set before the first template render, preventing the "Loading
+    // account details..." flash (and stuck state) caused by these observables
+    // being undefined when ionViewWillEnter fires asynchronously.
+    const snapshotId = this.route.snapshot.paramMap.get("accountId");
+    if (snapshotId) {
+      this.account$ = this.store.select(selectAccountById(snapshotId));
+      this.error$ = this.store.select(selectAccountError);
+    }
   }
 
   ionViewWillEnter() {

@@ -257,12 +257,21 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         </div>
       </ion-content>
     } @else {
-      @if ((error$ | async); as error) {
-        @if (error !== 'Account not found') {
-          <p>This profile is private.</p>
+      <ion-header>
+        <app-header title=""></app-header>
+      </ion-header>
+      <ion-content>
+        @if ((error$ | async); as error) {
+          @if (error !== 'Account not found') {
+            <div class="ion-padding ion-text-center">
+              <p>This profile is private.</p>
+            </div>
+          }
+        } @else {
+          <div class="ion-padding ion-text-center">
+            <ion-spinner name="crescent"></ion-spinner>
+          </div>
         }
-      } @else {
-        <p>Loading account details...</p>
-      }
+      </ion-content>
     }
 

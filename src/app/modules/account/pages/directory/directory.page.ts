@@ -112,9 +112,6 @@ export class DirectoryPage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Ensure accounts are loaded
-    this.store.dispatch(AccountActions.loadAccounts());
-
     // Track relationships for status icons/filters
     this.relationships$ = this.authUserId$.pipe(
       switchMap((uid) =>
@@ -242,6 +239,11 @@ export class DirectoryPage implements OnInit, OnDestroy {
     this.allOrganizations$ = combined$.pipe(
       map((arr) => arr.filter((acc) => acc.type === "group")),
     );
+  }
+
+  ionViewWillEnter() {
+    // Re-dispatch on every visit so cached views always show fresh data
+    this.store.dispatch(AccountActions.loadAccounts());
   }
 
   search(ev: CustomEvent) {

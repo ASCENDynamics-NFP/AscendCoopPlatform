@@ -1,7 +1,7 @@
 import {Injectable, Injector, runInInjectionContext} from "@angular/core";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
 import {Observable, of} from "rxjs";
-import {catchError, map} from "rxjs/operators";
+import {catchError, first, map} from "rxjs/operators";
 import {
   ContactInformation,
   ProfessionalInformation,
@@ -41,6 +41,7 @@ export class AccountSectionsService {
           ),
         );
         return doc.valueChanges().pipe(
+          first(),
           map((v) => (v ? v : null)),
           catchError(() => of(null)),
         );
@@ -71,6 +72,7 @@ export class AccountSectionsService {
           ),
         );
         return doc.valueChanges().pipe(
+          first(),
           map((v) => (v ? v : null)),
           catchError(() => of(null)),
         );
@@ -97,6 +99,7 @@ export class AccountSectionsService {
           afs.doc<any>(`accounts/${accountId}/sections/laborRights`),
         );
         return doc.valueChanges().pipe(
+          first(),
           map((v) => (v ? v : null)),
           catchError(() => of(null)),
         );

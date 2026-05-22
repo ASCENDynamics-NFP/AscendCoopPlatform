@@ -77,20 +77,6 @@ service cloud.firestore {
         );
     }
 
-    function isAcceptedFriend(accId) {
-      return request.auth != null && 
-        exists(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.type == 'user' &&
-        get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
-    }
-
-    function isAcceptedGroup(accId) {
-      return request.auth != null && 
-        exists(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.type == 'group' &&
-        get(/databases/$(database)/documents/accounts/$(accId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted';
-    }
-
     // Generic membership helper: any accepted relatedAccount regardless of type
     function isMember(accId) {
       return request.auth != null &&
@@ -242,25 +228,6 @@ service cloud.firestore {
     }
     
     match /accounts/{accountId}/relatedAccounts/{relatedAccountId} {
-      function isAccountOwner() {
-        return request.auth != null && request.auth.uid == accountId;
-      }
-
-      function isGroupAdmin() {
-        return request.auth != null &&
-          get(/databases/$(database)/documents/accounts/$(accountId)).data.type == 'group' &&
-          (request.auth.uid == accountId || // Group owner has admin access
-           (exists(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)) &&
-            get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.status == 'accepted' &&
-            (get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.access == 'admin' ||
-             get(/databases/$(database)/documents/accounts/$(accountId)/relatedAccounts/$(request.auth.uid)).data.access == 'moderator')));
-      }
-
-      function isRelatedToAccount() {
-        return request.auth != null &&
-          (request.auth.uid == accountId || request.auth.uid == relatedAccountId);
-      }
-
       // Allow any authenticated user to read; app enforces privacy filtering.
       allow read: if request.auth != null;
       // Prevent direct client writes. All writes go through callable functions.

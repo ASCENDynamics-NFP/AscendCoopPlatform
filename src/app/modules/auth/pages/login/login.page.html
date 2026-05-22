@@ -31,7 +31,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
             alt="ASCENDynamics NFP"
             class="logo"
-          />
+            />
         </div>
       </ion-col>
       <ion-col size="12" size-md="6">
@@ -55,19 +55,20 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   inputmode="email"
                   formControlName="email"
                 ></ion-input>
-                <ion-note
-                  slot="error"
-                  *ngIf="(loginForm.controls.email.dirty || loginForm.controls.email.touched) && loginForm.controls.email.errors"
-                  translate
-                >
-                  user.login.email_error</ion-note
-                >
-              </ion-col>
-            </ion-row>
-            <ion-row>
-              <ion-col>
-                <!-- <ion-label position="stacked" translate>user.login.password_label
-              </ion-label> -->
+                @if ((loginForm.controls.email.dirty || loginForm.controls.email.touched) && loginForm.controls.email.errors) {
+                  <ion-note
+                    slot="error"
+                    translate
+                    >
+                    user.login.email_error</ion-note
+                    >
+                  }
+                </ion-col>
+              </ion-row>
+              <ion-row>
+                <ion-col>
+                  <!-- <ion-label position="stacked" translate>user.login.password_label
+                </ion-label> -->
                 <ion-input
                   label="Password"
                   label-placement="floating"
@@ -76,53 +77,54 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   inputmode="text"
                   formControlName="password"
                 ></ion-input>
-                <ion-note
-                  slot="error"
-                  *ngIf="(loginForm.controls.password.dirty || loginForm.controls.password.touched) && loginForm.controls.password.errors"
-                  translate
-                  >user.login.password_error</ion-note
+                @if ((loginForm.controls.password.dirty || loginForm.controls.password.touched) && loginForm.controls.password.errors) {
+                  <ion-note
+                    slot="error"
+                    translate
+                    >user.login.password_error</ion-note
+                    >
+                  }
+                </ion-col>
+              </ion-row>
+              <ion-button
+                class="ion-margin-top"
+                type="submit"
+                expend="block"
+                strong="true"
+                [disabled]="loginForm.invalid"
+                translate
+                style="width: 100%"
                 >
-              </ion-col>
-            </ion-row>
-            <ion-button
-              class="ion-margin-top"
-              type="submit"
-              expend="block"
-              strong="true"
-              [disabled]="loginForm.invalid"
-              translate
-              style="width: 100%"
-            >
-              user.login.submit
-            </ion-button>
-
-            <div class="ion-margin-top">
-              <ion-button
-                type="button"
-                expand="block"
-                color="primary"
-                fill="outline"
-                (click)="getEmailSignInLink()"
-                translate
-              >
-                <ion-icon name="mail-outline" slot="start"></ion-icon>
-                user.login.email_signin_link
+                user.login.submit
               </ion-button>
 
-              <ion-button
-                type="button"
-                expand="block"
-                color="danger"
-                (click)="signInWithGoogle()"
-                translate
-              >
-                <ion-icon name="logo-google" slot="start"></ion-icon>
-                user.login.google_login
-              </ion-button>
-              <!-- <ion-button type="button" expand="block" color="warning" routerLink="groups">
-            <ion-icon name="arrow-forward" slot="start"></ion-icon>
-            Start Without Account
-          </ion-button> -->
+              <div class="ion-margin-top">
+                <ion-button
+                  type="button"
+                  expand="block"
+                  color="primary"
+                  fill="outline"
+                  (click)="getEmailSignInLink()"
+                  translate
+                  >
+                  <ion-icon name="mail-outline" slot="start"></ion-icon>
+                  user.login.email_signin_link
+                </ion-button>
+
+                <ion-button
+                  type="button"
+                  expand="block"
+                  color="danger"
+                  (click)="signInWithGoogle()"
+                  translate
+                  >
+                  <ion-icon name="logo-google" slot="start"></ion-icon>
+                  user.login.google_login
+                </ion-button>
+                <!-- <ion-button type="button" expand="block" color="warning" routerLink="groups">
+                <ion-icon name="arrow-forward" slot="start"></ion-icon>
+                Start Without Account
+              </ion-button> -->
               <ion-row>
                 <ion-col class="ion-text-left">
                   <ion-text>

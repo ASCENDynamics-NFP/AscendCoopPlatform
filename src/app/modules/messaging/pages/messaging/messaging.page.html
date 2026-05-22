@@ -5,7 +5,7 @@
     menuId="chat-list"
     side="start"
     type="push"
-  >
+    >
     <ion-header>
       <app-header [title]="'messaging.title'" [hideAvatarOnDesktop]="true">
         <ion-button header-end (click)="onNewChat()" fill="clear">
@@ -21,76 +21,82 @@
       <!-- Chat List -->
       <div class="chat-list-container">
         <!-- Empty state when no chats are available -->
-        <div class="empty-state" *ngIf="!hasChats">
-          <ion-icon name="chatbubbles-outline" size="large"></ion-icon>
-          <h3>{{ 'messaging.no_conversations' | translate }}</h3>
-          <p>{{ 'messaging.start_conversation' | translate }}</p>
-          <ion-button (click)="onNewChat()" fill="outline">
-            <ion-icon name="add" slot="start"></ion-icon>
-            <span>{{ 'messaging.new_chat' | translate }}</span>
-          </ion-button>
-        </div>
+        @if (!hasChats) {
+          <div class="empty-state">
+            <ion-icon name="chatbubbles-outline" size="large"></ion-icon>
+            <h3>{{ 'messaging.no_conversations' | translate }}</h3>
+            <p>{{ 'messaging.start_conversation' | translate }}</p>
+            <ion-button (click)="onNewChat()" fill="outline">
+              <ion-icon name="add" slot="start"></ion-icon>
+              <span>{{ 'messaging.new_chat' | translate }}</span>
+            </ion-button>
+          </div>
+        }
 
         <!-- Actual Chat List when chats exist -->
-        <div *ngIf="hasChats">
-          <ion-list>
-            <ion-item
-              *ngFor="let chat of chats$ | async; trackBy: trackByFn"
-              button
-              (click)="onChatSelected(chat.id)"
-              detail="false"
-            >
-              <!-- Profile Picture -->
-              <ion-avatar slot="start">
-                <img
-                  [src]="getChatAvatarImage(chat) | async"
-                  [alt]="(getChatDisplayName(chat) | async) + ' avatar'"
-                  onerror="this.src='assets/image/logo/ASCENDynamics NFP-logos_transparent.png'"
-                />
-              </ion-avatar>
-
-              <!-- Chat Info -->
-              <ion-label>
-                <h2>{{ getChatDisplayName(chat) | async }}</h2>
-                <!-- Removed message preview - only show unread indicator -->
-              </ion-label>
-
-              <!-- Timestamp and Unread Badge -->
-              <div slot="end" class="chat-meta">
-                <p class="timestamp">
-                  {{ getFormattedTime(chat.lastMessageTimestamp) }}
-                </p>
-                <!-- Unread message badge -->
-                <ion-badge
-                  *ngIf="(getUnreadCount(chat.id) | async) && (getUnreadCount(chat.id) | async)! > 0"
-                  color="primary"
-                  class="unread-badge"
-                >
-                  {{ getUnreadCount(chat.id) | async }}
-                </ion-badge>
-              </div>
-            </ion-item>
-          </ion-list>
-        </div>
+        @if (hasChats) {
+          <div>
+            <ion-list>
+              @for (chat of chats$ | async; track trackByFn($index, chat)) {
+                <ion-item
+                  button
+                  (click)="onChatSelected(chat.id)"
+                  detail="false"
+                  >
+                  <!-- Profile Picture -->
+                  <ion-avatar slot="start">
+                    <img
+                      [src]="getChatAvatarImage(chat) | async"
+                      [alt]="(getChatDisplayName(chat) | async) + ' avatar'"
+                      onerror="this.src='assets/image/logo/ASCENDynamics NFP-logos_transparent.png'"
+                      />
+                  </ion-avatar>
+                  <!-- Chat Info -->
+                  <ion-label>
+                    <h2>{{ getChatDisplayName(chat) | async }}</h2>
+                    <!-- Removed message preview - only show unread indicator -->
+                  </ion-label>
+                  <!-- Timestamp and Unread Badge -->
+                  <div slot="end" class="chat-meta">
+                    <p class="timestamp">
+                      {{ getFormattedTime(chat.lastMessageTimestamp) }}
+                    </p>
+                    <!-- Unread message badge -->
+                    @if ((getUnreadCount(chat.id) | async) && (getUnreadCount(chat.id) | async)! > 0) {
+                      <ion-badge
+                        color="primary"
+                        class="unread-badge"
+                        >
+                        {{ getUnreadCount(chat.id) | async }}
+                      </ion-badge>
+                    }
+                  </div>
+                </ion-item>
+              }
+            </ion-list>
+          </div>
+        }
 
         <!-- Message indicating to create a real chat -->
-        <div class="info-message" *ngIf="!hasChats">
-          <ion-card>
-            <ion-card-content>
-              <h4>{{ 'messaging.getting_started' | translate }}</h4>
-              <p>{{ 'messaging.getting_started_text' | translate }}</p>
-              <ol>
-                <li>{{ 'messaging.instruction_1' | translate }}</li>
-                <li>{{ 'messaging.instruction_2' | translate }}</li>
-                <li>{{ 'messaging.instruction_3' | translate }}</li>
-              </ol>
-              <p>
-                <strong>{{ 'messaging.note' | translate }}</strong>
-                <span>{{ 'messaging.note_text' | translate }}</span>
-              </p>
-            </ion-card-content>
-          </ion-card>
-        </div>
+        @if (!hasChats) {
+          <div class="info-message">
+            <ion-card>
+              <ion-card-content>
+                <h4>{{ 'messaging.getting_started' | translate }}</h4>
+                <p>{{ 'messaging.getting_started_text' | translate }}</p>
+                <ol>
+                  <li>{{ 'messaging.instruction_1' | translate }}</li>
+                  <li>{{ 'messaging.instruction_2' | translate }}</li>
+                  <li>{{ 'messaging.instruction_3' | translate }}</li>
+                </ol>
+                <p>
+                  <strong>{{ 'messaging.note' | translate }}</strong>
+                  <span>{{ 'messaging.note_text' | translate }}</span>
+                </p>
+              </ion-card-content>
+            </ion-card>
+          </div>
+        }
       </div>
     </ion-content>
   </ion-menu>
@@ -103,11 +109,12 @@
 
 <!-- Mobile-only: Show placeholder when no chat is selected -->
 <!-- Hide this placeholder when we're in any chat-related route -->
-<div
-  class="no-chat-selected"
-  *ngIf="!selectedChatId && isDesktop && !router.url.includes('/messaging/chat') && !router.url.includes('/messaging/new-chat')"
->
-  <ion-icon name="chatbubbles-outline" size="large"></ion-icon>
-  <h2>{{ 'messaging.select_conversation' | translate }}</h2>
-  <p>{{ 'messaging.choose_chat' | translate }}</p>
-</div>
+@if (!selectedChatId && isDesktop && !router.url.includes('/messaging/chat') && !router.url.includes('/messaging/new-chat')) {
+  <div
+    class="no-chat-selected"
+    >
+    <ion-icon name="chatbubbles-outline" size="large"></ion-icon>
+    <h2>{{ 'messaging.select_conversation' | translate }}</h2>
+    <p>{{ 'messaging.choose_chat' | translate }}</p>
+  </div>
+}

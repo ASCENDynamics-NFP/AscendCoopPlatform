@@ -149,6 +149,7 @@ describe("WeekViewComponent", () => {
 
   it("should add a row when addRow is called", () => {
     component.addRow();
+    fixture.componentRef.changeDetectorRef.markForCheck();
     fixture.detectChanges();
     const rows = fixture.nativeElement.querySelectorAll("tbody tr");
     expect(rows.length).toBe(3);
@@ -255,6 +256,7 @@ describe("WeekViewComponent", () => {
     component.ngOnChanges({
       weekStart: new SimpleChange(null, nextWeek, false),
     });
+    fixture.componentRef.changeDetectorRef.markForCheck();
     fixture.detectChanges();
     const newHeader: string = fixture.nativeElement
       .querySelectorAll("thead th")[1]

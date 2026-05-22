@@ -43,48 +43,52 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
   <form [formGroup]="reportForm">
     <!-- Reporter Information (if not logged in) -->
-    <div *ngIf="!currentUser">
-      <ion-item>
-        <ion-label position="floating">{{
-          "messaging.your_name" | translate
-        }}</ion-label>
-        <ion-input type="text" formControlName="reporterName"></ion-input>
-      </ion-item>
-      <ion-note
-        *ngIf="
+    @if (!currentUser) {
+      <div>
+        <ion-item>
+          <ion-label position="floating">{{
+            "messaging.your_name" | translate
+          }}</ion-label>
+          <ion-input type="text" formControlName="reporterName"></ion-input>
+        </ion-item>
+        @if (
           reportForm.get('reporterName')?.touched &&
           reportForm.get('reporterName')?.hasError('required')
-        "
-        color="danger"
-      >
-        {{ "messaging.name_required" | translate }}
-      </ion-note>
-
-      <ion-item>
-        <ion-label position="floating">{{
-          "messaging.your_email" | translate
-        }}</ion-label>
-        <ion-input type="email" formControlName="reporterEmail"></ion-input>
-      </ion-item>
-      <ion-note
-        *ngIf="
+          ) {
+          <ion-note
+            color="danger"
+            >
+            {{ "messaging.name_required" | translate }}
+          </ion-note>
+        }
+        <ion-item>
+          <ion-label position="floating">{{
+            "messaging.your_email" | translate
+          }}</ion-label>
+          <ion-input type="email" formControlName="reporterEmail"></ion-input>
+        </ion-item>
+        @if (
           reportForm.get('reporterEmail')?.touched &&
           reportForm.get('reporterEmail')?.hasError('required')
-        "
-        color="danger"
-      >
-        {{ "messaging.email_required" | translate }}
-      </ion-note>
-      <ion-note
-        *ngIf="
+          ) {
+          <ion-note
+            color="danger"
+            >
+            {{ "messaging.email_required" | translate }}
+          </ion-note>
+        }
+        @if (
           reportForm.get('reporterEmail')?.touched &&
           reportForm.get('reporterEmail')?.hasError('email')
-        "
-        color="danger"
-      >
-        {{ "messaging.valid_email_required" | translate }}
-      </ion-note>
-    </div>
+          ) {
+          <ion-note
+            color="danger"
+            >
+            {{ "messaging.valid_email_required" | translate }}
+          </ion-note>
+        }
+      </div>
+    }
 
     <!-- Report Reason -->
     <ion-item>
@@ -92,24 +96,26 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-select
         formControlName="reason"
         [placeholder]="'common.select_reason' | translate"
-      >
-        <ion-select-option
-          *ngFor="let reason of reportReasons"
-          [value]="reason.value"
         >
-          {{ reason.label }}
-        </ion-select-option>
+        @for (reason of reportReasons; track reason) {
+          <ion-select-option
+            [value]="reason.value"
+            >
+            {{ reason.label }}
+          </ion-select-option>
+        }
       </ion-select>
     </ion-item>
-    <ion-note
-      *ngIf="
-        reportForm.get('reason')?.touched &&
-        reportForm.get('reason')?.hasError('required')
-      "
-      color="danger"
-    >
-      Please select a reason for the report.
-    </ion-note>
+    @if (
+      reportForm.get('reason')?.touched &&
+      reportForm.get('reason')?.hasError('required')
+      ) {
+      <ion-note
+        color="danger"
+        >
+        Please select a reason for the report.
+      </ion-note>
+    }
 
     <!-- Description -->
     <ion-item>
@@ -123,24 +129,26 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         maxlength="1000"
       ></ion-textarea>
     </ion-item>
-    <ion-note
-      *ngIf="
-        reportForm.get('description')?.touched &&
-        reportForm.get('description')?.hasError('required')
-      "
-      color="danger"
-    >
-      {{ "messaging.description_required" | translate }}
-    </ion-note>
-    <ion-note
-      *ngIf="
-        reportForm.get('description')?.touched &&
-        reportForm.get('description')?.hasError('minlength')
-      "
-      color="danger"
-    >
-      Please provide at least 10 characters of description.
-    </ion-note>
+    @if (
+      reportForm.get('description')?.touched &&
+      reportForm.get('description')?.hasError('required')
+      ) {
+      <ion-note
+        color="danger"
+        >
+        {{ "messaging.description_required" | translate }}
+      </ion-note>
+    }
+    @if (
+      reportForm.get('description')?.touched &&
+      reportForm.get('description')?.hasError('minlength')
+      ) {
+      <ion-note
+        color="danger"
+        >
+        Please provide at least 10 characters of description.
+      </ion-note>
+    }
 
     <!-- Character count -->
     <div class="character-count">
@@ -166,7 +174,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       color="danger"
       (click)="submitReport()"
       class="submit-button"
-    >
+      >
       {{ "common.submit" | translate }} Report
     </ion-button>
 
@@ -176,7 +184,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       fill="clear"
       (click)="closeModal()"
       class="cancel-button"
-    >
+      >
       {{ "common.cancel" | translate }}
     </ion-button>
   </form>

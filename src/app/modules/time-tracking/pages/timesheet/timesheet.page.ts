@@ -53,6 +53,7 @@ import {AppState} from "../../../../state/app.state";
 import {TimesheetNotificationService} from "../../services/timesheet-notification.service";
 
 @Component({
+  standalone: false,
   selector: "app-timesheet",
   templateUrl: "./timesheet.page.html",
   styleUrls: ["./timesheet.page.scss"],
@@ -93,7 +94,7 @@ export class TimesheetPage implements OnInit, OnDestroy {
   relatedAccounts: any[] = []; // Store related accounts for global mode
 
   constructor(
-    private store: Store<AppState>,
+    private store: Store,
     private route: ActivatedRoute,
     private notificationService: TimesheetNotificationService,
     private modalController: ModalController,

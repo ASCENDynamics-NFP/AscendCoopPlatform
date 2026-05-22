@@ -40,6 +40,7 @@ import {AccessService} from "../../../../../core/services/access.service";
 import {RelationshipService} from "../../../../../core/services/relationship.service";
 
 @Component({
+  standalone: false,
   selector: "app-list",
   templateUrl: "./list.page.html",
   styleUrls: ["./list.page.scss"],

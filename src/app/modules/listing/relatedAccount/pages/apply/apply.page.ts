@@ -39,6 +39,7 @@ import {MetaService} from "../../../../../core/services/meta.service";
 import {formatPhoneNumber} from "../../../../../core/utils/phone.util";
 
 @Component({
+  standalone: false,
   selector: "app-apply",
   templateUrl: "./apply.page.html",
   styleUrls: ["./apply.page.scss"],
@@ -60,7 +61,7 @@ export class ApplyPage implements OnInit {
   constructor(
     private metaService: MetaService,
     private fb: FormBuilder,
-    private store: Store<AppState>,
+    private store: Store,
     private route: ActivatedRoute,
     private alertController: AlertController,
   ) {

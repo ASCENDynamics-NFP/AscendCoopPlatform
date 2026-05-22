@@ -32,63 +32,64 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             }}</ion-label>
           </ion-item-divider>
           <div formArrayName="emails">
-            <div
-              *ngFor="
-                let emailControl of emailsFormArray.controls;
-                let i = index
-              "
-              [formGroupName]="i"
-            >
-              <ion-grid>
-                <ion-row>
-                  <ion-col>
-                    <ion-input
-                      label="Name"
-                      label-placement="floating"
-                      fill="outline"
-                      formControlName="name"
-                      type="text"
-                      minlength="0"
-                      maxlength="50"
-                    ></ion-input>
-                  </ion-col>
-                  <ion-col>
-                    <ion-input
-                      label="Email"
-                      label-placement="floating"
-                      fill="outline"
-                      formControlName="email"
-                      type="email"
-                      minlength="0"
-                      maxlength="50"
-                    ></ion-input>
-                    <ion-note
-                      *ngIf="
+            @for (
+              emailControl of emailsFormArray.controls; track
+              emailControl; let i = $index) {
+              <div
+                [formGroupName]="i"
+                >
+                <ion-grid>
+                  <ion-row>
+                    <ion-col>
+                      <ion-input
+                        label="Name"
+                        label-placement="floating"
+                        fill="outline"
+                        formControlName="name"
+                        type="text"
+                        minlength="0"
+                        maxlength="50"
+                      ></ion-input>
+                    </ion-col>
+                    <ion-col>
+                      <ion-input
+                        label="Email"
+                        label-placement="floating"
+                        fill="outline"
+                        formControlName="email"
+                        type="email"
+                        minlength="0"
+                        maxlength="50"
+                      ></ion-input>
+                      @if (
                         emailControl.get('email')?.invalid &&
                         emailControl.get('email')?.touched
-                      "
-                      color="danger"
-                    >
-                      {{ "messaging.valid_email" | translate }}
-                    </ion-note>
-                  </ion-col>
-                  <ion-col size="1">
-                    <ion-button fill="clear" (click)="removeEmail(i)">
-                      <ion-icon
-                        slot="icon-only"
-                        name="trash-outline"
-                        class="remove-icon"
-                      ></ion-icon>
-                    </ion-button>
-                  </ion-col>
-                </ion-row>
-              </ion-grid>
-            </div>
+                        ) {
+                        <ion-note
+                          color="danger"
+                          >
+                          {{ "messaging.valid_email" | translate }}
+                        </ion-note>
+                      }
+                    </ion-col>
+                    <ion-col size="1">
+                      <ion-button fill="clear" (click)="removeEmail(i)">
+                        <ion-icon
+                          slot="icon-only"
+                          name="trash-outline"
+                          class="remove-icon"
+                        ></ion-icon>
+                      </ion-button>
+                    </ion-col>
+                  </ion-row>
+                </ion-grid>
+              </div>
+            }
             <ion-button
               fill="clear"
               (click)="addEmail()"
               [disabled]="emailsFormArray.controls.length >= maxEmails"
-            >
+              >
               <ion-icon slot="start" name="add-circle-outline"></ion-icon>
               Add Email
             </ion-button>
@@ -104,263 +105,269 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             }}</ion-label>
           </ion-item-divider>
           <div formArrayName="phoneNumbers">
-            <div
-              *ngFor="
-                let phoneControl of phoneNumbersFormArray.controls;
-                let i = index
-              "
-              [formGroupName]="i"
-            >
-              <ion-grid>
-                <ion-row>
-                  <ion-col size="3">
-                    <ion-select
-                      label="Type"
-                      label-placement="stacked"
-                      fill="outline"
-                      formControlName="type"
-                      interface="popover"
-                      placeholder="Select One"
-                    >
-                      <ion-select-option value="Mobile"
-                        >Mobile</ion-select-option
-                      >
-                      <ion-select-option value="Home">Home</ion-select-option>
-                      <ion-select-option value="Work">Work</ion-select-option>
-                    </ion-select>
-                  </ion-col>
-                  <ion-col size="9">
-                    <ion-input
-                      [label]="'common.phone_number' | translate"
-                      label-placement="floating"
-                      fill="outline"
-                      formControlName="number"
-                      type="tel"
-                      placeholder="+1 (555) 123-4567"
-                      (ionInput)="formatPhoneNumber($event, i)"
-                    ></ion-input>
-                    <ion-note
-                      *ngIf="
-                        phoneControl.get('number')?.invalid &&
-                        phoneControl.get('number')?.touched
-                      "
-                    >
-                      {{ "messaging.valid_phone" | translate }}
-                    </ion-note>
-                  </ion-col>
-                </ion-row>
-                <ion-row>
-                  <ion-col size="11">
-                    <ion-item lines="none">
-                      <ion-label>{{
-                        "forms.emergency_contact" | translate
-                      }}</ion-label>
-                      <ion-checkbox
-                        slot="start"
-                        formControlName="isEmergencyNumber"
-                      ></ion-checkbox>
-                    </ion-item>
-                  </ion-col>
-                  <ion-col size="1">
-                    <ion-button fill="clear" (click)="removePhoneNumber(i)">
-                      <ion-icon
-                        slot="icon-only"
-                        name="trash-outline"
-                        class="remove-icon"
-                      ></ion-icon>
-                    </ion-button>
-                  </ion-col>
-                </ion-row>
-              </ion-grid>
-            </div>
-            <ion-button
-              fill="clear"
-              (click)="addPhoneNumber()"
+            @for (
+              phoneControl of phoneNumbersFormArray.controls; track
+              phoneControl; let i = $index) {
+              <div
+                [formGroupName]="i"
+                >
+                <ion-grid>
+                  <ion-row>
+                    <ion-col size="3">
+                      <ion-select
+                        label="Type"
+                        label-placement="stacked"
+                        fill="outline"
+                        formControlName="type"
+                        interface="popover"
+                        placeholder="Select One"
+                        >
+                        <ion-select-option value="Mobile"
+                          >Mobile</ion-select-option
+                          >
+                          <ion-select-option value="Home">Home</ion-select-option>
+                          <ion-select-option value="Work">Work</ion-select-option>
+                        </ion-select>
+                      </ion-col>
+                      <ion-col size="9">
+                        <ion-input
+                          [label]="'common.phone_number' | translate"
+                          label-placement="floating"
+                          fill="outline"
+                          formControlName="number"
+                          type="tel"
+                          placeholder="+1 (555) 123-4567"
+                          (ionInput)="formatPhoneNumber($event, i)"
+                        ></ion-input>
+                        @if (
+                          phoneControl.get('number')?.invalid &&
+                          phoneControl.get('number')?.touched
+                          ) {
+                          <ion-note
+                            >
+                            {{ "messaging.valid_phone" | translate }}
+                          </ion-note>
+                        }
+                      </ion-col>
+                    </ion-row>
+                    <ion-row>
+                      <ion-col size="11">
+                        <ion-item lines="none">
+                          <ion-label>{{
+                            "forms.emergency_contact" | translate
+                          }}</ion-label>
+                          <ion-checkbox
+                            slot="start"
+                            formControlName="isEmergencyNumber"
+                          ></ion-checkbox>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="1">
+                        <ion-button fill="clear" (click)="removePhoneNumber(i)">
+                          <ion-icon
+                            slot="icon-only"
+                            name="trash-outline"
+                            class="remove-icon"
+                          ></ion-icon>
+                        </ion-button>
+                      </ion-col>
+                    </ion-row>
+                  </ion-grid>
+                </div>
+              }
+              <ion-button
+                fill="clear"
+                (click)="addPhoneNumber()"
               [disabled]="
                 phoneNumbersFormArray.controls.length >= maxPhoneNumbers
               "
-            >
-              <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-              {{ "common.add_phone_number" | translate }}
-            </ion-button>
-          </div>
-        </ion-col>
-      </ion-row>
-      <!-- Address Section -->
-      <ion-row>
-        <ion-col>
-          <ion-item-divider>
-            <ion-label color="tertiary">{{
-              "forms.addresses" | translate
-            }}</ion-label>
-          </ion-item-divider>
-          <div formArrayName="addresses">
-            <div
-              *ngFor="
-                let addressControl of addressesFormArray.controls;
-                let i = index
-              "
-              [formGroupName]="i"
-            >
-              <ion-grid>
-                <ion-row>
-                  <ion-col>
-                    <ion-input
-                      label="Address Name"
-                      label-placement="floating"
-                      fill="outline"
-                      formControlName="name"
-                      type="text"
-                      minlength="0"
-                      maxlength="50"
-                    ></ion-input>
-                  </ion-col>
-                </ion-row>
-                <ion-row>
-                  <ion-col>
-                    <ion-input
-                      label="Street Address"
-                      label-placement="floating"
-                      fill="outline"
-                      formControlName="street"
-                      type="text"
-                      minlength="0"
-                      maxlength="50"
-                    ></ion-input>
-                    <ion-note
-                      *ngIf="
-                        addressControl.get('street')?.invalid &&
-                        addressControl.get('street')?.touched
-                      "
-                    >
-                      {{ "messaging.valid_address" | translate }}
-                    </ion-note>
-                  </ion-col>
-                </ion-row>
-                <ion-row>
-                  <ion-col>
-                    <ion-input
-                      label="City"
-                      label-placement="floating"
-                      fill="outline"
-                      formControlName="city"
-                      type="text"
-                      minlength="0"
-                      maxlength="50"
-                    ></ion-input>
-                    <ion-note
-                      *ngIf="
-                        addressControl.get('city')?.invalid &&
-                        addressControl.get('city')?.touched
-                      "
-                    >
-                      {{ "messaging.valid_city" | translate }}
-                    </ion-note>
-                  </ion-col>
-                </ion-row>
-                <ion-row>
-                  <ion-col>
-                    <ion-select
-                      formControlName="country"
-                      label="Country"
-                      label-placement="stacked"
-                      placeholder="Select Country"
-                      fill="outline"
-                      interface="popover"
-                    >
-                      <ion-select-option
-                        *ngFor="let code of countries"
-                        [value]="code.value"
-                        >{{ code.label }}</ion-select-option
-                      >
-                    </ion-select>
-                  </ion-col>
-                </ion-row>
-                <ion-row>
-                  <ion-col>
-                    <ion-select
-                      formControlName="state"
-                      label="State"
-                      label-placement="stacked"
-                      placeholder="Select State"
-                      fill="outline"
-                      interface="popover"
-                    >
-                      <ion-select-option
-                        *ngFor="let code of statesProvinces"
-                        [value]="code.value"
-                        >{{ code.label }}</ion-select-option
-                      >
-                    </ion-select>
-                  </ion-col>
-                </ion-row>
-                <ion-row>
-                  <ion-col>
-                    <ion-input
-                      label="Zip/Postal Code"
-                      label-placement="floating"
-                      fill="outline"
-                      formControlName="zipcode"
-                      type="text"
-                      minlength="0"
-                      maxlength="5"
-                    ></ion-input>
-                    <ion-note
-                      *ngIf="
-                        addressControl.get('zipcode')?.invalid &&
-                        addressControl.get('zipcode')?.touched
-                      "
-                    >
-                      {{ "messaging.valid_zipcode" | translate }}
-                    </ion-note>
-                  </ion-col>
-                </ion-row>
-                <ion-row>
-                  <ion-col size="11">
-                    <ion-item lines="none">
-                      <ion-label>{{
-                        "forms.primary_address" | translate
-                      }}</ion-label>
-                      <ion-checkbox
-                        slot="start"
-                        formControlName="isPrimaryAddress"
-                      ></ion-checkbox>
-                    </ion-item>
-                  </ion-col>
-                  <ion-col size="1">
-                    <ion-button fill="clear" (click)="removeAddress(i)">
-                      <ion-icon
-                        slot="icon-only"
-                        name="trash-outline"
-                        class="remove-icon"
-                      ></ion-icon>
-                    </ion-button>
-                  </ion-col>
-                </ion-row>
-              </ion-grid>
+                >
+                <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+                {{ "common.add_phone_number" | translate }}
+              </ion-button>
             </div>
-            <ion-button
-              fill="clear"
-              (click)="addAddress()"
-              [disabled]="addressesFormArray.controls.length >= maxAddresses"
-            >
-              <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-              Add Address
-            </ion-button>
-          </div>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col>
-          <ion-button
-            type="submit"
-            expand="float"
-            [disabled]="contactInfoForm.invalid"
-          >
-            Save
-          </ion-button>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-  </div>
-</form>
+          </ion-col>
+        </ion-row>
+        <!-- Address Section -->
+        <ion-row>
+          <ion-col>
+            <ion-item-divider>
+              <ion-label color="tertiary">{{
+                "forms.addresses" | translate
+              }}</ion-label>
+            </ion-item-divider>
+            <div formArrayName="addresses">
+              @for (
+                addressControl of addressesFormArray.controls; track
+                addressControl; let i = $index) {
+                <div
+                  [formGroupName]="i"
+                  >
+                  <ion-grid>
+                    <ion-row>
+                      <ion-col>
+                        <ion-input
+                          label="Address Name"
+                          label-placement="floating"
+                          fill="outline"
+                          formControlName="name"
+                          type="text"
+                          minlength="0"
+                          maxlength="50"
+                        ></ion-input>
+                      </ion-col>
+                    </ion-row>
+                    <ion-row>
+                      <ion-col>
+                        <ion-input
+                          label="Street Address"
+                          label-placement="floating"
+                          fill="outline"
+                          formControlName="street"
+                          type="text"
+                          minlength="0"
+                          maxlength="50"
+                        ></ion-input>
+                        @if (
+                          addressControl.get('street')?.invalid &&
+                          addressControl.get('street')?.touched
+                          ) {
+                          <ion-note
+                            >
+                            {{ "messaging.valid_address" | translate }}
+                          </ion-note>
+                        }
+                      </ion-col>
+                    </ion-row>
+                    <ion-row>
+                      <ion-col>
+                        <ion-input
+                          label="City"
+                          label-placement="floating"
+                          fill="outline"
+                          formControlName="city"
+                          type="text"
+                          minlength="0"
+                          maxlength="50"
+                        ></ion-input>
+                        @if (
+                          addressControl.get('city')?.invalid &&
+                          addressControl.get('city')?.touched
+                          ) {
+                          <ion-note
+                            >
+                            {{ "messaging.valid_city" | translate }}
+                          </ion-note>
+                        }
+                      </ion-col>
+                    </ion-row>
+                    <ion-row>
+                      <ion-col>
+                        <ion-select
+                          formControlName="country"
+                          label="Country"
+                          label-placement="stacked"
+                          placeholder="Select Country"
+                          fill="outline"
+                          interface="popover"
+                          >
+                          @for (code of countries; track code) {
+                            <ion-select-option
+                              [value]="code.value"
+                              >{{ code.label }}</ion-select-option
+                              >
+                            }
+                          </ion-select>
+                        </ion-col>
+                      </ion-row>
+                      <ion-row>
+                        <ion-col>
+                          <ion-select
+                            formControlName="state"
+                            label="State"
+                            label-placement="stacked"
+                            placeholder="Select State"
+                            fill="outline"
+                            interface="popover"
+                            >
+                            @for (code of statesProvinces; track code) {
+                              <ion-select-option
+                                [value]="code.value"
+                                >{{ code.label }}</ion-select-option
+                                >
+                              }
+                            </ion-select>
+                          </ion-col>
+                        </ion-row>
+                        <ion-row>
+                          <ion-col>
+                            <ion-input
+                              label="Zip/Postal Code"
+                              label-placement="floating"
+                              fill="outline"
+                              formControlName="zipcode"
+                              type="text"
+                              minlength="0"
+                              maxlength="5"
+                            ></ion-input>
+                            @if (
+                              addressControl.get('zipcode')?.invalid &&
+                              addressControl.get('zipcode')?.touched
+                              ) {
+                              <ion-note
+                                >
+                                {{ "messaging.valid_zipcode" | translate }}
+                              </ion-note>
+                            }
+                          </ion-col>
+                        </ion-row>
+                        <ion-row>
+                          <ion-col size="11">
+                            <ion-item lines="none">
+                              <ion-label>{{
+                                "forms.primary_address" | translate
+                              }}</ion-label>
+                              <ion-checkbox
+                                slot="start"
+                                formControlName="isPrimaryAddress"
+                              ></ion-checkbox>
+                            </ion-item>
+                          </ion-col>
+                          <ion-col size="1">
+                            <ion-button fill="clear" (click)="removeAddress(i)">
+                              <ion-icon
+                                slot="icon-only"
+                                name="trash-outline"
+                                class="remove-icon"
+                              ></ion-icon>
+                            </ion-button>
+                          </ion-col>
+                        </ion-row>
+                      </ion-grid>
+                    </div>
+                  }
+                  <ion-button
+                    fill="clear"
+                    (click)="addAddress()"
+                    [disabled]="addressesFormArray.controls.length >= maxAddresses"
+                    >
+                    <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+                    Add Address
+                  </ion-button>
+                </div>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <ion-button
+                  type="submit"
+                  expand="float"
+                  [disabled]="contactInfoForm.invalid"
+                  >
+                  Save
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </div>
+      </form>

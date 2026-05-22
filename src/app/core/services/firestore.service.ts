@@ -18,17 +18,37 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 // src/app/core/services/firestore.service.ts
-import {Injectable} from "@angular/core";
+import {Injectable, Injector, runInInjectionContext} from "@angular/core";
 import {Observable, of, firstValueFrom} from "rxjs";
 import {map, catchError} from "rxjs/operators";
 import {FirebaseError} from "firebase/app";
-import {AngularFirestore} from "@angular/fire/compat/firestore";
+import {
+  AngularFirestore,
+  AngularFirestoreCollection,
+  AngularFirestoreDocument,
+} from "@angular/fire/compat/firestore";
 
 @Injectable({
   providedIn: "root",
 })
 export class FirestoreService {
-  constructor(private afs: AngularFirestore) {}
+  constructor(
+    private afs: AngularFirestore,
+    private injector: Injector,
+  ) {}
+
+  private col<T>(
+    path: string,
+    queryFn?: (ref: any) => any,
+  ): AngularFirestoreCollection<T> {
+    return runInInjectionContext(this.injector, () =>
+      this.afs.collection<T>(path, queryFn),
+    );
+  }
+
+  private afDoc<T>(path: string): AngularFirestoreDocument<T> {
+    return runInInjectionContext(this.injector, () => this.afs.doc<T>(path));
+  }
 
   // Helper to ensure documents have an id property
   private populateId<T>(data: T, id: string): T {
@@ -42,7 +62,7 @@ export class FirestoreService {
    * @returns Document reference
    */
   getDocumentReference(collectionName: string, documentId: string) {
-    return this.afs.collection(collectionName).doc(documentId);
+    return this.afDoc(`${collectionName}/${documentId}`);
   }
 
   /**
@@ -58,7 +78,7 @@ export class FirestoreService {
     updatedData: any,
   ): Promise<void> {
     try {
-      const docRef = this.afs.collection(collectionName).doc(documentId);
+      const docRef = this.afDoc(`${collectionName}/${documentId}`);
 
       // Check document exists first
       const beforeSnapshot = await firstValueFrom(docRef.get());
@@ -108,9 +128,7 @@ export class FirestoreService {
     collectionName: string,
     documentId: string,
   ): Observable<T | null> {
-    return this.afs
-      .collection<T>(collectionName)
-      .doc<T>(documentId)
+    return this.afDoc<T>(`${collectionName}/${documentId}`)
       .valueChanges()
       .pipe(
         map((data) => (data ? this.populateId(data, documentId) : null)), // Populate id
@@ -133,9 +151,7 @@ export class FirestoreService {
     documentData: any,
   ): Promise<string> {
     try {
-      const documentRef = await this.afs
-        .collection(collectionName)
-        .add(documentData);
+      const documentRef = await this.col(collectionName).add(documentData);
       return documentRef.id;
     } catch (error) {
       throw new FirebaseError(
@@ -157,7 +173,7 @@ export class FirestoreService {
     options?: {merge: boolean},
   ): Promise<void> {
     try {
-      await this.afs.doc(docPath).set(documentData, options || {});
+      await this.afDoc(docPath).set(documentData, options || {});
     } catch (error) {
       console.error("Error setting document at path:", docPath, error);
       throw error; // Propagate the error
@@ -178,10 +194,9 @@ export class FirestoreService {
     updatedData: any,
   ): Promise<void> {
     try {
-      const result = await this.afs
-        .collection(collectionName)
-        .doc(documentId)
-        .update(updatedData);
+      const result = await this.afDoc(`${collectionName}/${documentId}`).update(
+        updatedData,
+      );
     } catch (error) {
       console.error("FirestoreService: Document update failed", {
         collectionName,
@@ -205,7 +220,7 @@ export class FirestoreService {
    */
   async updateDocumentAtPath(docPath: string, updatedData: any): Promise<void> {
     try {
-      await this.afs.doc(docPath).update(updatedData);
+      await this.afDoc(docPath).update(updatedData);
     } catch (error) {
       throw new FirebaseError(
         "update-document-at-path-error",
@@ -226,7 +241,7 @@ export class FirestoreService {
     documentId: string,
   ): Promise<void> {
     try {
-      await this.afs.collection(collectionName).doc(documentId).delete();
+      await this.afDoc(`${collectionName}/${documentId}`).delete();
     } catch (error) {
       throw new FirebaseError(
         "delete-document-error",
@@ -242,7 +257,7 @@ export class FirestoreService {
    */
   async deleteDocumentAtPath(fullPath: string): Promise<void> {
     try {
-      await this.afs.doc(fullPath).delete();
+      await this.afDoc(fullPath).delete();
     } catch (error) {
       console.error(`Error deleting document at path: ${fullPath}`, error);
       throw error;

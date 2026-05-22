@@ -23,6 +23,7 @@ import {Pipe, PipeTransform} from "@angular/core";
 import {FieldValue, Timestamp} from "firebase/firestore";
 
 @Pipe({
+  standalone: false,
   name: "timeAgo",
 })
 export class TimeAgoPipe implements PipeTransform {

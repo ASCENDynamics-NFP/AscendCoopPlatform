@@ -26,6 +26,7 @@ import {firstValueFrom} from "rxjs";
 import {LeadService} from "../../../../core/services/lead.service";
 
 @Component({
+  standalone: false,
   selector: "app-lead-form",
   templateUrl: "./lead-form.component.html",
   styleUrls: ["./lead-form.component.scss"],

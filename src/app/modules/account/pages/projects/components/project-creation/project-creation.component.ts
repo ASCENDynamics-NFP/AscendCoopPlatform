@@ -35,6 +35,7 @@ import {
 import {TemplatePreviewModalComponent} from "../template-preview-modal/template-preview-modal.component";
 
 @Component({
+  standalone: false,
   selector: "app-project-creation",
   templateUrl: "./project-creation.component.html",
   styleUrls: ["./project-creation.component.scss"],

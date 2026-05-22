@@ -18,8 +18,8 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 
-@import "src/styles/variables";
-@import "src/styles/mixins";
+@use "src/styles/variables" as *;
+@use "src/styles/mixins" as *;
 
 // Header styling
 ion-header {

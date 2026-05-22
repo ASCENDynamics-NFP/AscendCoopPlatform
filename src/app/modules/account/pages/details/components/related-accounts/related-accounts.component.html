@@ -17,48 +17,53 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<ion-card *ngIf="isOwnerOrAdmin || canView">
-  <ion-card-header>
-    <div class="title-with-privacy">
-      <ion-card-title>{{ title }}</ion-card-title>
-      <ion-chip
-        *ngIf="isOwnerOrAdmin"
-        [color]="privacyData.color"
-        size="small"
-        class="privacy-indicator"
-      >
-        <ion-icon
-          [name]="privacyData.visibility === 'public' ? 'globe' : 'lock-closed'"
-          size="small"
-        ></ion-icon>
-        <ion-label>{{ privacyData.label }}</ion-label>
-      </ion-chip>
-    </div>
-    <ion-card-subtitle
-      >{{ filteredRelatedAccounts.length }}
-      {{ title.toLowerCase() }}</ion-card-subtitle
-    >
-  </ion-card-header>
-  <ion-card-content>
-    <ion-list>
-      <ion-item
-        *ngFor="let account of visibleRelatedAccounts | slice: 0 : 4"
-        button
-        (click)="goToRelatedAccount(account.id)"
-      >
-        <ion-thumbnail slot="start">
-          <img
-            *ngIf="account.iconImage"
-            [alt]="account.name"
-            [src]="account.iconImage"
-          />
-        </ion-thumbnail>
-        <ion-label>
-          <h3>{{ account.name }}</h3>
-          <p>{{ account.tagline }}</p>
-        </ion-label>
-      </ion-item>
-    </ion-list>
-  </ion-card-content>
-  <ion-button fill="clear" (click)="viewAll()">View All</ion-button>
-</ion-card>
+@if (isOwnerOrAdmin || canView) {
+  <ion-card>
+    <ion-card-header>
+      <div class="title-with-privacy">
+        <ion-card-title>{{ title }}</ion-card-title>
+        @if (isOwnerOrAdmin) {
+          <ion-chip
+            [color]="privacyData.color"
+            size="small"
+            class="privacy-indicator"
+            >
+            <ion-icon
+              [name]="privacyData.visibility === 'public' ? 'globe' : 'lock-closed'"
+              size="small"
+            ></ion-icon>
+            <ion-label>{{ privacyData.label }}</ion-label>
+          </ion-chip>
+        }
+      </div>
+      <ion-card-subtitle
+        >{{ filteredRelatedAccounts.length }}
+        {{ title.toLowerCase() }}</ion-card-subtitle
+        >
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          @for (account of visibleRelatedAccounts | slice: 0 : 4; track account) {
+            <ion-item
+              button
+              (click)="goToRelatedAccount(account.id)"
+              >
+              <ion-thumbnail slot="start">
+                @if (account.iconImage) {
+                  <img
+                    [alt]="account.name"
+                    [src]="account.iconImage"
+                    />
+                }
+              </ion-thumbnail>
+              <ion-label>
+                <h3>{{ account.name }}</h3>
+                <p>{{ account.tagline }}</p>
+              </ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      </ion-card-content>
+      <ion-button fill="clear" (click)="viewAll()">View All</ion-button>
+    </ion-card>
+  }

@@ -42,6 +42,7 @@ import {MetaService} from "../../../../core/services/meta.service";
 import {AccessService} from "../../../../core/services/access.service";
 
 @Component({
+  standalone: false,
   selector: "app-listing-edit",
   templateUrl: "./listing-edit.page.html",
   styleUrls: ["./listing-edit.page.scss"],
@@ -55,7 +56,7 @@ export class ListingEditPage implements OnInit {
 
   constructor(
     private metaService: MetaService,
-    private store: Store<AppState>,
+    private store: Store,
     private route: ActivatedRoute,
     private router: Router,
     private access: AccessService,

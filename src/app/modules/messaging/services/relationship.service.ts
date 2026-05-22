@@ -17,8 +17,11 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Injectable} from "@angular/core";
-import {AngularFirestore} from "@angular/fire/compat/firestore";
+import {Injectable, Injector, runInInjectionContext} from "@angular/core";
+import {
+  AngularFirestore,
+  AngularFirestoreCollection,
+} from "@angular/fire/compat/firestore";
 import {Observable, from, throwError, combineLatest, of} from "rxjs";
 import {map, catchError} from "rxjs/operators";
 
@@ -45,8 +48,18 @@ export class RelationshipService {
 
   constructor(
     private firestore: AngularFirestore,
-    private store: Store<{auth: AuthState}>,
+    private store: Store,
+    private injector: Injector,
   ) {}
+
+  private col<T>(
+    path: string,
+    queryFn?: (ref: any) => any,
+  ): AngularFirestoreCollection<T> {
+    return runInInjectionContext(this.injector, () =>
+      this.firestore.collection<T>(path, queryFn),
+    );
+  }
 
   /**
    * Check if two users have an accepted relationship (bidirectional check)
@@ -63,28 +76,24 @@ export class RelationshipService {
         }
 
         // Check relationship from current user's perspective
-        const forwardCheck = this.firestore
-          .collection<RelatedAccount>(
-            `${this.ACCOUNTS_COLLECTION}/${currentUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
-            (ref) =>
-              ref
-                .where("targetId", "==", targetUserId)
-                .where("status", "==", "accepted")
-                .limit(1),
-          )
-          .valueChanges({idField: "id"});
+        const forwardCheck = this.col<RelatedAccount>(
+          `${this.ACCOUNTS_COLLECTION}/${currentUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
+          (ref) =>
+            ref
+              .where("targetId", "==", targetUserId)
+              .where("status", "==", "accepted")
+              .limit(1),
+        ).valueChanges({idField: "id"});
 
         // Check relationship from target user's perspective
-        const reverseCheck = this.firestore
-          .collection<RelatedAccount>(
-            `${this.ACCOUNTS_COLLECTION}/${targetUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
-            (ref) =>
-              ref
-                .where("targetId", "==", currentUserId)
-                .where("status", "==", "accepted")
-                .limit(1),
-          )
-          .valueChanges({idField: "id"});
+        const reverseCheck = this.col<RelatedAccount>(
+          `${this.ACCOUNTS_COLLECTION}/${targetUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
+          (ref) =>
+            ref
+              .where("targetId", "==", currentUserId)
+              .where("status", "==", "accepted")
+              .limit(1),
+        ).valueChanges({idField: "id"});
 
         return combineLatest([forwardCheck, reverseCheck]).pipe(
           map(([forward, reverse]) => {
@@ -137,11 +146,10 @@ export class RelationshipService {
         if (!user?.uid) {
           return of([]);
         }
-        return this.firestore
-          .collection<RelatedAccount>(
-            `${this.ACCOUNTS_COLLECTION}/${userId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
-            (ref) => ref.where("status", "==", "accepted"),
-          )
+        return this.col<RelatedAccount>(
+          `${this.ACCOUNTS_COLLECTION}/${userId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
+          (ref) => ref.where("status", "==", "accepted"),
+        )
           .valueChanges({idField: "id"})
           .pipe(
             map((relationships) => {
@@ -164,18 +172,18 @@ export class RelationshipService {
     const batch = this.firestore.firestore.batch();
 
     // Block from current user's perspective
-    const currentUserRelationshipRef = this.firestore
+    const currentUserRelationshipRef = this.firestore.firestore
       .collection(
         `${this.ACCOUNTS_COLLECTION}/${currentUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
       )
-      .doc(targetUserId).ref;
+      .doc(targetUserId);
 
     // Block from target user's perspective
-    const targetUserRelationshipRef = this.firestore
+    const targetUserRelationshipRef = this.firestore.firestore
       .collection(
         `${this.ACCOUNTS_COLLECTION}/${targetUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
       )
-      .doc(currentUserId).ref;
+      .doc(currentUserId);
 
     const updateData = {
       status: "blocked",
@@ -214,18 +222,18 @@ export class RelationshipService {
     const batch = this.firestore.firestore.batch();
 
     // Unblock from current user's perspective
-    const currentUserRelationshipRef = this.firestore
+    const currentUserRelationshipRef = this.firestore.firestore
       .collection(
         `${this.ACCOUNTS_COLLECTION}/${currentUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
       )
-      .doc(targetUserId).ref;
+      .doc(targetUserId);
 
     // Unblock from target user's perspective
-    const targetUserRelationshipRef = this.firestore
+    const targetUserRelationshipRef = this.firestore.firestore
       .collection(
         `${this.ACCOUNTS_COLLECTION}/${targetUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
       )
-      .doc(currentUserId).ref;
+      .doc(currentUserId);
 
     const updateData = {
       status: "accepted",
@@ -259,11 +267,10 @@ export class RelationshipService {
         if (!user?.uid) {
           return of([]);
         }
-        return this.firestore
-          .collection<RelatedAccount>(
-            `${this.ACCOUNTS_COLLECTION}/${userId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
-            (ref) => ref.where("status", "==", "blocked"),
-          )
+        return this.col<RelatedAccount>(
+          `${this.ACCOUNTS_COLLECTION}/${userId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
+          (ref) => ref.where("status", "==", "blocked"),
+        )
           .valueChanges({idField: "id"})
           .pipe(
             catchError((error) => {
@@ -287,15 +294,14 @@ export class RelationshipService {
         if (!user?.uid) {
           return of(false);
         }
-        return this.firestore
-          .collection<RelatedAccount>(
-            `${this.ACCOUNTS_COLLECTION}/${currentUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
-            (ref) =>
-              ref
-                .where("targetId", "==", targetUserId)
-                .where("status", "==", "blocked")
-                .limit(1),
-          )
+        return this.col<RelatedAccount>(
+          `${this.ACCOUNTS_COLLECTION}/${currentUserId}/${this.RELATED_ACCOUNTS_COLLECTION}`,
+          (ref) =>
+            ref
+              .where("targetId", "==", targetUserId)
+              .where("status", "==", "blocked")
+              .limit(1),
+        )
           .valueChanges()
           .pipe(
             map((relationships) => relationships.length > 0),

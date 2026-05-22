@@ -50,6 +50,7 @@ interface GeoPointLike {
 }
 
 @Component({
+  standalone: false,
   selector: "app-organizations-map",
   templateUrl: "./organizations-map.component.html",
   styleUrls: ["./organizations-map.component.scss"],

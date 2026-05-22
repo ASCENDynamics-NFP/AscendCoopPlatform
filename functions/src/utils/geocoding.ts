@@ -55,7 +55,7 @@ export async function geocodeAddress(
 
     try {
       apiKey = googleApiKey.value();
-    } catch (error) {
+    } catch {
       // Secret might not be accessible (e.g., in CI), try environment variable
       apiKey = process.env.GOOGLE_API_KEY;
     }

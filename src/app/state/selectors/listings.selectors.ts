@@ -56,9 +56,8 @@ export const selectAllListings = createSelector(selectListingsState, (state) =>
 
 // Select a specific listing by ID
 export const selectListingById = (listingId: string) =>
-  createSelector(
-    selectListingsState,
-    (state): Listing | undefined => selectListingEntities(state)[listingId],
+  createSelector(selectListingsState, (state): Listing | undefined =>
+    state ? selectListingEntities(state)[listingId] : undefined,
   );
 
 // Select the currently selected listing

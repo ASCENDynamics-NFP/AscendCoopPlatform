@@ -1143,7 +1143,7 @@ export class AccountService {
       ) {
         return url;
       }
-    } catch (e) {
+    } catch {
       // ignore
     }
     return null;
@@ -1203,7 +1203,7 @@ export class AccountService {
    */
   static async getAccount(
     accountId: string,
-    requesterId: string,
+    _requesterId: string,
   ): Promise<any> {
     try {
       const accountDoc = await db.collection("accounts").doc(accountId).get();

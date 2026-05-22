@@ -30,6 +30,7 @@ import {AccountsService} from "../../../../../../core/services/accounts.service"
 import {firstValueFrom} from "rxjs";
 
 @Component({
+  standalone: false,
   selector: "app-professional-info-form",
   templateUrl: "./professional-info-form.component.html",
   styleUrls: ["./professional-info-form.component.scss"],

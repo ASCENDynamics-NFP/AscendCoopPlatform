@@ -32,8 +32,8 @@ import {environment} from "../environments/environment";
 
 // LANGUAGE
 import {HttpClientModule, HttpClient} from "@angular/common/http";
-import {TranslateModule, TranslateLoader} from "@ngx-translate/core";
-import {TranslateHttpLoader} from "@ngx-translate/http-loader";
+import {TranslateModule} from "@ngx-translate/core";
+import {provideTranslateHttpLoader} from "@ngx-translate/http-loader";
 
 // NgRx
 import {localStorageSync} from "ngrx-store-localstorage";
@@ -81,10 +81,6 @@ export function localStorageSyncReducer(
 
 const metaReducers: Array<MetaReducer<any, any>> = [localStorageSyncReducer];
 
-export function createTranslateLoader(http: HttpClient) {
-  return new TranslateHttpLoader(http, "./assets/i18n/", ".json");
-}
-
 @NgModule({
   declarations: [AppComponent, MenuComponent],
   imports: [
@@ -97,11 +93,6 @@ export function createTranslateLoader(http: HttpClient) {
     HttpClientModule,
     TranslateModule.forRoot({
       defaultLanguage: "en", // Set default language
-      loader: {
-        provide: TranslateLoader,
-        useFactory: createTranslateLoader,
-        deps: [HttpClient],
-      },
     }),
     StoreModule.forRoot(reducers, {metaReducers}),
     EffectsModule.forRoot([AuthEffects, AccountEffects]),
@@ -114,6 +105,7 @@ export function createTranslateLoader(http: HttpClient) {
     FirestoreService,
     ImageUploadService,
     SuccessHandlerService,
+    provideTranslateHttpLoader({prefix: "./assets/i18n/", suffix: ".json"}),
   ],
   bootstrap: [AppComponent],
 })

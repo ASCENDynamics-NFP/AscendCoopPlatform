@@ -21,6 +21,7 @@ import {Component, OnInit} from "@angular/core";
 import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
+  standalone: false,
   selector: "app-child-safety",
   templateUrl: "./child-safety.page.html",
   styleUrls: ["./child-safety.page.scss"],

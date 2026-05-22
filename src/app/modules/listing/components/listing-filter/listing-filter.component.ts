@@ -48,6 +48,7 @@ export interface RadiusOption {
 }
 
 @Component({
+  standalone: false,
   selector: "app-listing-filter",
   templateUrl: "./listing-filter.component.html",
   styleUrls: ["./listing-filter.component.scss"],

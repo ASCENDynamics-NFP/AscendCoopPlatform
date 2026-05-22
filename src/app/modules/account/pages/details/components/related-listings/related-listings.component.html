@@ -17,131 +17,151 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<ion-card *ngIf="shouldShowListings">
-  <ion-card-header>
-    <div class="header-container">
-      <div>
-        <div class="title-with-privacy">
-          <ion-card-title>{{ title }}</ion-card-title>
-          <ion-chip
-            *ngIf="isPrivateSection && (isProfileOwner || isGroupAdmin)"
-            color="medium"
-            size="small"
-            class="privacy-indicator"
-          >
-            <ion-icon name="lock-closed" size="small"></ion-icon>
-            <ion-label>Private</ion-label>
-          </ion-chip>
-          <ion-chip
-            *ngIf="!isPrivateSection && (isProfileOwner || isGroupAdmin)"
-            color="success"
-            size="small"
-            class="privacy-indicator"
-          >
-            <ion-icon name="globe" size="small"></ion-icon>
-            <ion-label>Public</ion-label>
-          </ion-chip>
+@if (shouldShowListings) {
+  <ion-card>
+    <ion-card-header>
+      <div class="header-container">
+        <div>
+          <div class="title-with-privacy">
+            <ion-card-title>{{ title }}</ion-card-title>
+            @if (isPrivateSection && (isProfileOwner || isGroupAdmin)) {
+              <ion-chip
+                color="medium"
+                size="small"
+                class="privacy-indicator"
+                >
+                <ion-icon name="lock-closed" size="small"></ion-icon>
+                <ion-label>Private</ion-label>
+              </ion-chip>
+            }
+            @if (!isPrivateSection && (isProfileOwner || isGroupAdmin)) {
+              <ion-chip
+                color="success"
+                size="small"
+                class="privacy-indicator"
+                >
+                <ion-icon name="globe" size="small"></ion-icon>
+                <ion-label>Public</ion-label>
+              </ion-chip>
+            }
+          </div>
+          @if (activeListingsCount > 0) {
+            <ion-card-subtitle>
+              {{ activeListingsCount }} active listings
+            </ion-card-subtitle>
+          }
         </div>
-        <ion-card-subtitle *ngIf="activeListingsCount > 0">
-          {{ activeListingsCount }} active listings
-        </ion-card-subtitle>
+        @if (activeListingsCount > 0) {
+          <ion-button
+            fill="clear"
+            size="small"
+            color="primary"
+            [routerLink]="['/account', account.id, 'listings']"
+            >
+            View All
+            <ion-icon name="chevron-forward" slot="end"></ion-icon>
+          </ion-button>
+        }
       </div>
-      <ion-button
-        *ngIf="activeListingsCount > 0"
-        fill="clear"
-        size="small"
-        color="primary"
-        [routerLink]="['/account', account.id, 'listings']"
-      >
-        View All
-        <ion-icon name="chevron-forward" slot="end"></ion-icon>
-      </ion-button>
-    </div>
-  </ion-card-header>
-  <ion-card-content>
-    <!-- Show grouped by type only for active listings -->
-    <div *ngIf="activeListingsCount > 0">
-      <div
-        *ngFor="let group of groupedActiveListings; trackBy: trackByGroupType"
-        class="listing-type-group"
-      >
-        <h3 class="type-header">
-          <ion-icon [name]="getTypeIcon(group.type)"></ion-icon>
-          {{ group.type | titlecase }} ({{ group.listings.length }})
-        </h3>
-        <ion-list>
-          <ion-item
-            *ngFor="let listing of group.listings | slice: 0 : 3; trackBy: trackByListingId"
-            button
-            (click)="goToRelatedListing(listing.id)"
-          >
-            <ion-thumbnail slot="start">
-              <img
-                *ngIf="listing.iconImage"
-                [alt]="listing.title"
-                [src]="listing.iconImage"
-              />
-              <div *ngIf="!listing.iconImage" class="placeholder-thumbnail">
-                <ion-icon [name]="getTypeIcon(group.type)"></ion-icon>
-              </div>
-            </ion-thumbnail>
-            <ion-label>
-              <h4>{{ listing.title }}</h4>
-              <p>{{ listing.organization }}</p>
-              <ion-badge
-                [color]="listing.status === 'active' ? 'success' : 'warning'"
-                class="status-badge"
+    </ion-card-header>
+    <ion-card-content>
+      <!-- Show grouped by type only for active listings -->
+      @if (activeListingsCount > 0) {
+        <div>
+          @for (group of groupedActiveListings; track trackByGroupType($index, group)) {
+            <div
+              class="listing-type-group"
               >
-                {{ listing.status }}
-              </ion-badge>
-            </ion-label>
-          </ion-item>
-        </ion-list>
-        <ion-button
-          *ngIf="group.listings.length > 10"
-          fill="clear"
-          size="small"
-          (click)="viewAllByType(group.type)"
-          class="view-more-btn"
+              <h3 class="type-header">
+                <ion-icon [name]="getTypeIcon(group.type)"></ion-icon>
+                {{ group.type | titlecase }} ({{ group.listings.length }})
+              </h3>
+              <ion-list>
+                @for (listing of group.listings | slice: 0 : 3; track trackByListingId($index, listing)) {
+                  <ion-item
+                    button
+                    (click)="goToRelatedListing(listing.id)"
+                    >
+                    <ion-thumbnail slot="start">
+                      @if (listing.iconImage) {
+                        <img
+                          [alt]="listing.title"
+                          [src]="listing.iconImage"
+                          />
+                      }
+                      @if (!listing.iconImage) {
+                        <div class="placeholder-thumbnail">
+                          <ion-icon [name]="getTypeIcon(group.type)"></ion-icon>
+                        </div>
+                      }
+                    </ion-thumbnail>
+                    <ion-label>
+                      <h4>{{ listing.title }}</h4>
+                      <p>{{ listing.organization }}</p>
+                      <ion-badge
+                        [color]="listing.status === 'active' ? 'success' : 'warning'"
+                        class="status-badge"
+                        >
+                        {{ listing.status }}
+                      </ion-badge>
+                    </ion-label>
+                  </ion-item>
+                }
+              </ion-list>
+              @if (group.listings.length > 10) {
+                <ion-button
+                  fill="clear"
+                  size="small"
+                  (click)="viewAllByType(group.type)"
+                  class="view-more-btn"
+                  >
+                  View all {{ group.type }} listings ({{ group.listings.length }})
+                </ion-button>
+              }
+            </div>
+          }
+        </div>
+      }
+      <!-- Show empty state message when no listings -->
+      @if (activeListingsCount === 0) {
+        <div class="no-listings">
+          <ion-icon
+            [name]="getEmptyStateIcon()"
+            class="no-listings-icon"
+          ></ion-icon>
+          <h3>{{ getEmptyStateTitle() }}</h3>
+          <p>{{ getEmptyStateMessage() }}</p>
+          <div class="empty-state-buttons">
+            @if (relationship === 'owner' && isProfileOwner) {
+              <ion-button
+                fill="outline"
+                size="small"
+                (click)="createFirstListing()"
+                class="create-listing-btn"
+                >
+                <ion-icon name="add" slot="start"></ion-icon>
+                Create Your First Listing
+              </ion-button>
+            }
+            @if (relationship === 'owner' && isProfileOwner) {
+              <ion-button
+                fill="clear"
+                size="small"
+                [routerLink]="['/account', account.id, 'listings']"
+                class="manage-listings-btn"
+                >
+                <ion-icon name="settings" slot="start"></ion-icon>
+                Manage Listings
+              </ion-button>
+            }
+          </div>
+        </div>
+      }
+    </ion-card-content>
+    @if (activeListingsCount > 0) {
+      <ion-button fill="clear" (click)="viewAll()"
+        >View All Listings</ion-button
         >
-          View all {{ group.type }} listings ({{ group.listings.length }})
-        </ion-button>
-      </div>
-    </div>
-
-    <!-- Show empty state message when no listings -->
-    <div *ngIf="activeListingsCount === 0" class="no-listings">
-      <ion-icon
-        [name]="getEmptyStateIcon()"
-        class="no-listings-icon"
-      ></ion-icon>
-      <h3>{{ getEmptyStateTitle() }}</h3>
-      <p>{{ getEmptyStateMessage() }}</p>
-      <div class="empty-state-buttons">
-        <ion-button
-          *ngIf="relationship === 'owner' && isProfileOwner"
-          fill="outline"
-          size="small"
-          (click)="createFirstListing()"
-          class="create-listing-btn"
-        >
-          <ion-icon name="add" slot="start"></ion-icon>
-          Create Your First Listing
-        </ion-button>
-        <ion-button
-          *ngIf="relationship === 'owner' && isProfileOwner"
-          fill="clear"
-          size="small"
-          [routerLink]="['/account', account.id, 'listings']"
-          class="manage-listings-btn"
-        >
-          <ion-icon name="settings" slot="start"></ion-icon>
-          Manage Listings
-        </ion-button>
-      </div>
-    </div>
-  </ion-card-content>
-  <ion-button *ngIf="activeListingsCount > 0" fill="clear" (click)="viewAll()"
-    >View All Listings</ion-button
-  >
-</ion-card>
+      }
+    </ion-card>
+  }

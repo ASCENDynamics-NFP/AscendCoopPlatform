@@ -23,6 +23,7 @@ import {PrivacyService} from "../../../../../../core/services/privacy.service";
 import {Account, RelatedAccount} from "@shared/models/account.model";
 
 @Component({
+  standalone: false,
   selector: "app-related-accounts",
   templateUrl: "./related-accounts.component.html",
   styleUrls: ["./related-accounts.component.scss"],

@@ -54,6 +54,6 @@ export interface Listing extends BaseDocument {
   benefits: string[];
   iconImage?: string;
   heroImage?: string;
-  contactInformation: ContactInformation;
+  contactInformation?: ContactInformation;
   status: "draft" | "active" | "filled" | "expired";
 }

@@ -19,8 +19,12 @@
  *******************************************************************************/
 // src/app/core/services/analytics.service.ts
 
-import {Injectable} from "@angular/core";
-import {AngularFirestore} from "@angular/fire/compat/firestore";
+import {Injectable, Injector, runInInjectionContext} from "@angular/core";
+import {
+  AngularFirestore,
+  AngularFirestoreCollection,
+  AngularFirestoreCollectionGroup,
+} from "@angular/fire/compat/firestore";
 import {Observable, combineLatest, of} from "rxjs";
 import {map, switchMap, catchError, take} from "rxjs/operators";
 import {TimeTrackingService} from "./time-tracking.service";
@@ -192,8 +196,27 @@ export class AnalyticsService {
   constructor(
     private firestore: AngularFirestore,
     private timeTrackingService: TimeTrackingService,
-    private store: Store<{auth: AuthState}>,
+    private store: Store,
+    private injector: Injector,
   ) {}
+
+  private col<T>(
+    path: string,
+    queryFn?: (ref: any) => any,
+  ): AngularFirestoreCollection<T> {
+    return runInInjectionContext(this.injector, () =>
+      this.firestore.collection<T>(path, queryFn),
+    );
+  }
+
+  private colGroup<T>(
+    collectionId: string,
+    queryGroupFn?: (ref: any) => any,
+  ): AngularFirestoreCollectionGroup<T> {
+    return runInInjectionContext(this.injector, () =>
+      this.firestore.collectionGroup<T>(collectionId, queryGroupFn),
+    );
+  }
 
   /**
    * Get comprehensive analytics across all accounts
@@ -235,8 +258,7 @@ export class AnalyticsService {
           // Return empty/zero metrics if logged out
           return of(DEFAULT_ROLE_ANALYTICS);
         }
-        return this.firestore
-          .collectionGroup<GroupRole>("group_roles")
+        return this.colGroup<GroupRole>("group_roles")
           .valueChanges()
           .pipe(
             map((roles) => {
@@ -303,8 +325,7 @@ export class AnalyticsService {
         if (!user?.uid) {
           return of(DEFAULT_PROJECT_ANALYTICS);
         }
-        return this.firestore
-          .collectionGroup<Project>("projects")
+        return this.colGroup<Project>("projects")
           .valueChanges()
           .pipe(
             map((projects) => {
@@ -382,8 +403,7 @@ export class AnalyticsService {
             accountsByType: {},
           });
         }
-        return this.firestore
-          .collection("accounts")
+        return this.col<any>("accounts")
           .valueChanges()
           .pipe(
             map((accounts: any[]) => {
@@ -430,10 +450,9 @@ export class AnalyticsService {
             roleNames: {},
           });
         }
-        return this.firestore
-          .collectionGroup<GroupRole>("roles", (ref) =>
-            ref.where("standardCategory", "==", category),
-          )
+        return this.colGroup<GroupRole>("roles", (ref) =>
+          ref.where("standardCategory", "==", category),
+        )
           .valueChanges()
           .pipe(
             map((roles) => {
@@ -490,10 +509,9 @@ export class AnalyticsService {
             statusDistribution: {},
           });
         }
-        return this.firestore
-          .collectionGroup<Project>("projects", (ref) =>
-            ref.where("standardCategory", "==", category),
-          )
+        return this.colGroup<Project>("projects", (ref) =>
+          ref.where("standardCategory", "==", category),
+        )
           .valueChanges()
           .pipe(
             map((projects) => {
@@ -558,8 +576,7 @@ export class AnalyticsService {
             projectStandardization: {},
           });
         }
-        return this.firestore
-          .collection("accounts")
+        return this.col<any>("accounts")
           .valueChanges()
           .pipe(
             switchMap((accounts: any[]) => {
@@ -567,12 +584,8 @@ export class AnalyticsService {
               accounts.forEach((acc) => accountMap.set(acc.id, acc));
 
               return combineLatest([
-                this.firestore
-                  .collectionGroup<GroupRole>("roles")
-                  .valueChanges(),
-                this.firestore
-                  .collectionGroup<Project>("projects")
-                  .valueChanges(),
+                this.colGroup<GroupRole>("roles").valueChanges(),
+                this.colGroup<Project>("projects").valueChanges(),
               ]).pipe(
                 map(([roles, projects]) => {
                   const roleStandardization: {
@@ -669,9 +682,9 @@ export class AnalyticsService {
             startDate: filters.startDate?.toISOString(),
             endDate: filters.endDate?.toISOString(),
           }),
-          this.firestore
-            .collection(`accounts/${filters.accountId}/projects`)
-            .valueChanges(),
+          this.col<any>(
+            `accounts/${filters.accountId}/projects`,
+          ).valueChanges(),
         ]).pipe(
           map(([entries, projects]) => {
             let filteredEntries = entries;
@@ -1029,9 +1042,9 @@ export class AnalyticsService {
             startDate: filters.startDate?.toISOString(),
             endDate: filters.endDate?.toISOString(),
           }),
-          this.firestore
-            .collection(`accounts/${filters.accountId}/projects`)
-            .valueChanges({idField: "id"}),
+          this.col<any>(`accounts/${filters.accountId}/projects`).valueChanges({
+            idField: "id",
+          }),
         ]).pipe(
           map(([entries, projects]) => {
             // Create a map of project ID to project data for efficient lookup

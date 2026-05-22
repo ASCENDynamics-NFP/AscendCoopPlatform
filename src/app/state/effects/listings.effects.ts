@@ -67,7 +67,7 @@ export class ListingsEffects {
     private storageService: StorageService,
     private router: Router,
     private toastController: ToastController,
-    private store: Store<AppState>,
+    private store: Store,
     private firebaseFunctions: FirebaseFunctionsService,
   ) {}
 

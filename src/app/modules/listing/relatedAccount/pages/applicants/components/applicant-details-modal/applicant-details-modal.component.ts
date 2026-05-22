@@ -31,6 +31,7 @@ import {
 import * as ListingsActions from "../../../../../../../state/actions/listings.actions";
 
 @Component({
+  standalone: false,
   selector: "app-applicant-details-modal",
   templateUrl: "./applicant-details-modal.component.html",
   styleUrls: ["./applicant-details-modal.component.scss"],
@@ -42,7 +43,7 @@ export class ApplicantDetailsModalComponent {
   constructor(
     private modalController: ModalController,
     private router: Router,
-    private store: Store<AppState>,
+    private store: Store,
   ) {}
 
   closeModal() {

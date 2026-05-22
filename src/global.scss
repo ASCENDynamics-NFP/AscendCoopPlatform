@@ -28,8 +28,13 @@
  * https://ionicframework.com/docs/layout/global-stylesheets
  */
 
+/* Sass partials (must come before any @import per Dart Sass 3 rules) */
+@use "./styles/segment" as *;
+@use "./styles/variables" as *;
+@use "./styles/mixins" as *;
+@use "./styles/utilities" as *;
+
 /* Core CSS required for Ionic components to work properly */
-@import "swiper/css";
 @import "@ionic/angular/css/core.css";
 
 /* Basic CSS for apps built with Ionic */
@@ -44,10 +49,6 @@
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
-@import "./styles/segment";
-@import "./styles/variables";
-@import "./styles/mixins";
-@import "./styles/utilities";
 
 /* Theme variables */
 

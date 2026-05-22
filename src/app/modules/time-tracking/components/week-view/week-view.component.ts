@@ -46,6 +46,7 @@ import {
 import {NotesModalComponent} from "../notes-modal/notes-modal.component";
 
 @Component({
+  standalone: false,
   selector: "app-week-view",
   templateUrl: "./week-view.component.html",
   styleUrls: ["./week-view.component.scss"],

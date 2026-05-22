@@ -22,6 +22,7 @@ import {ProfessionalInformation} from "@shared/models/account.model";
 import {PrivacyService} from "../../../../../../core/services/privacy.service";
 
 @Component({
+  standalone: false,
   selector: "app-professional-info",
   templateUrl: "./professional-info.component.html",
   styleUrls: ["./professional-info.component.scss"],

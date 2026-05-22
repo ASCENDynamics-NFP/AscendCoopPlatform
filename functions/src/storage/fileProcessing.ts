@@ -8,7 +8,7 @@ import {initializeApp} from "firebase-admin/app";
 // Initialize Firebase Admin if not already initialized
 try {
   initializeApp();
-} catch (error) {
+} catch {
   // App already initialized
 }
 
@@ -157,9 +157,9 @@ async function generateThumbnail(
   bucket: any,
 ): Promise<string | null> {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const sharp = require("sharp");
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const path = require("path");
 
     const fileName = path.basename(filePath);

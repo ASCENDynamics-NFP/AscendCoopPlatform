@@ -11,21 +11,23 @@
 
   <div class="content-container">
     <!-- Status and Group Info -->
-    <div class="timesheet-info" *ngIf="account$ | async as account">
-      <div class="group-info">
-        <ion-icon name="business-outline"></ion-icon>
-        <span class="group-name">{{ account.name }}</span>
+    @if (account$ | async; as account) {
+      <div class="timesheet-info">
+        <div class="group-info">
+          <ion-icon name="business-outline"></ion-icon>
+          <span class="group-name">{{ account.name }}</span>
+        </div>
+        <div class="status-info">
+          <ion-badge
+            [color]="getTimesheetStatusColor()"
+            [class.badge-pending]="getCurrentWeekStatus() === 'pending'"
+            >
+            <ion-icon [name]="getTimesheetStatusIcon()" slot="start"></ion-icon>
+            {{ getTimesheetStatusText() }}
+          </ion-badge>
+        </div>
       </div>
-      <div class="status-info">
-        <ion-badge
-          [color]="getTimesheetStatusColor()"
-          [class.badge-pending]="getCurrentWeekStatus() === 'pending'"
-        >
-          <ion-icon [name]="getTimesheetStatusIcon()" slot="start"></ion-icon>
-          {{ getTimesheetStatusText() }}
-        </ion-badge>
-      </div>
-    </div>
+    }
 
     <!-- Week Navigation -->
     <div class="week-navigation">
@@ -34,7 +36,7 @@
         fill="outline"
         size="default"
         class="nav-button"
-      >
+        >
         <ion-icon name="chevron-back" slot="start"></ion-icon>
         <span class="nav-text">{{ 'time_tracking.previous' | translate }}</span>
       </ion-button>
@@ -44,17 +46,18 @@
         <p class="week-subtitle">{{ getCurrentWeekRange() }}</p>
 
         <!-- Return to Current Week Button -->
-        <ion-button
-          *ngIf="!isViewingCurrentWeek()"
-          (click)="returnToCurrentWeek()"
-          fill="outline"
-          size="small"
-          color="primary"
-          class="return-current-week-btn"
-        >
-          <ion-icon name="calendar" slot="start"></ion-icon>
-          Return to Current Week
-        </ion-button>
+        @if (!isViewingCurrentWeek()) {
+          <ion-button
+            (click)="returnToCurrentWeek()"
+            fill="outline"
+            size="small"
+            color="primary"
+            class="return-current-week-btn"
+            >
+            <ion-icon name="calendar" slot="start"></ion-icon>
+            Return to Current Week
+          </ion-button>
+        }
       </div>
 
       <ion-button
@@ -62,7 +65,7 @@
         fill="outline"
         size="default"
         class="nav-button"
-      >
+        >
         <span class="nav-text">{{ 'time_tracking.next' | translate }}</span>
         <ion-icon name="chevron-forward" slot="end"></ion-icon>
       </ion-button>
@@ -83,58 +86,63 @@
         [status]="getCurrentWeekStatus()"
         [relatedAccounts]="relatedAccounts"
         (addProjectClicked)="openAddProjectModal()"
-      >
+        >
       </app-week-view>
 
       <!-- Auto-save info -->
-      <div class="auto-save-info" *ngIf="canEditCurrentWeek()">
-        <ion-icon name="information-circle-outline"></ion-icon>
-        <span>{{ 'time_tracking.auto_save_info' | translate }}</span>
-      </div>
+      @if (canEditCurrentWeek()) {
+        <div class="auto-save-info">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <span>{{ 'time_tracking.auto_save_info' | translate }}</span>
+        </div>
+      }
 
       <!-- Status message for non-editable weeks -->
-      <div
-        class="status-message"
-        [class.status-pending]="getCurrentWeekStatus() === 'pending'"
-        [class.status-approved]="getCurrentWeekStatus() === 'approved'"
-        [class.status-rejected]="getCurrentWeekStatus() === 'rejected'"
-        *ngIf="!canEditCurrentWeek()"
-      >
-        <ion-icon [name]="getTimesheetStatusIcon()"></ion-icon>
-        <span>{{ getWeekStatusMessage() }}</span>
-      </div>
+      @if (!canEditCurrentWeek()) {
+        <div
+          class="status-message"
+          [class.status-pending]="getCurrentWeekStatus() === 'pending'"
+          [class.status-approved]="getCurrentWeekStatus() === 'approved'"
+          [class.status-rejected]="getCurrentWeekStatus() === 'rejected'"
+          >
+          <ion-icon [name]="getTimesheetStatusIcon()"></ion-icon>
+          <span>{{ getWeekStatusMessage() }}</span>
+        </div>
+      }
     </div>
 
     <!-- Action Buttons -->
     <div class="action-buttons">
-      <ion-button
-        *ngIf="canSubmitCurrentWeek()"
-        expand="block"
-        color="primary"
-        (click)="submitForApproval()"
-        [disabled]="isSubmitting"
-        [class.submitting]="isSubmitting"
-        class="submit-button"
-      >
-        <ion-icon
-          [name]="isSubmitting ? 'hourglass' : 'send'"
-          slot="start"
-        ></ion-icon>
-        {{ isSubmitting ? 'Submitting...' : getSubmitButtonText() }}
-      </ion-button>
+      @if (canSubmitCurrentWeek()) {
+        <ion-button
+          expand="block"
+          color="primary"
+          (click)="submitForApproval()"
+          [disabled]="isSubmitting"
+          [class.submitting]="isSubmitting"
+          class="submit-button"
+          >
+          <ion-icon
+            [name]="isSubmitting ? 'hourglass' : 'send'"
+            slot="start"
+          ></ion-icon>
+          {{ isSubmitting ? 'Submitting...' : getSubmitButtonText() }}
+        </ion-button>
+      }
 
       <!-- Optional: Add withdraw button for pending submissions -->
-      <ion-button
-        *ngIf="getCurrentWeekStatus() === 'pending'"
-        expand="block"
-        fill="outline"
-        color="warning"
-        (click)="withdrawSubmission()"
-        class="withdraw-button"
-      >
-        <ion-icon name="arrow-back" slot="start"></ion-icon>
-        {{ 'time_tracking.withdraw_submission' | translate }}
-      </ion-button>
+      @if (getCurrentWeekStatus() === 'pending') {
+        <ion-button
+          expand="block"
+          fill="outline"
+          color="warning"
+          (click)="withdrawSubmission()"
+          class="withdraw-button"
+          >
+          <ion-icon name="arrow-back" slot="start"></ion-icon>
+          {{ 'time_tracking.withdraw_submission' | translate }}
+        </ion-button>
+      }
     </div>
   </div>
 </ion-content>

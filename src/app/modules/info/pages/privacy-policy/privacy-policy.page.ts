@@ -2,6 +2,7 @@ import {Component} from "@angular/core";
 import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
+  standalone: false,
   selector: "app-privacy-policy",
   templateUrl: "./privacy-policy.page.html",
   styleUrls: ["./privacy-policy.page.scss"],

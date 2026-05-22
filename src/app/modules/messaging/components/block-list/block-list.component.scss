@@ -1,3 +1,6 @@
+@use "src/styles/variables" as *;
+@use "src/styles/mixins" as *;
+
 // Header styling to match other pages
 ion-header {
   ion-title {
@@ -11,10 +14,9 @@ ion-header {
   ion-back-button {
     color: var(--ion-color-primary);
   }
-} // Loading state
-@import "src/styles/variables";
-@import "src/styles/mixins";
+}
 
+// Loading state
 .block-list-container {
   display: flex;
   flex-direction: column;

@@ -41,47 +41,53 @@
           formControlName="searchTerm"
           (ionInput)="onSearchInput($event)"
         ></ion-input>
-        <ion-button
-          *ngIf="selectedAccounts.length > 0"
-          fill="clear"
-          slot="end"
-          (click)="clearAllSelections()"
-        >
-          <ion-icon name="close-circle"></ion-icon>
-        </ion-button>
+        @if (selectedAccounts.length > 0) {
+          <ion-button
+            fill="clear"
+            slot="end"
+            (click)="clearAllSelections()"
+            >
+            <ion-icon name="close-circle"></ion-icon>
+          </ion-button>
+        }
       </ion-item>
 
       <!-- Selection Counter -->
-      <div class="selection-counter" *ngIf="selectedAccounts.length > 0">
-        <ion-text color="primary">
-          <small>Selected: {{ selectionCountText }}</small>
-        </ion-text>
-      </div>
+      @if (selectedAccounts.length > 0) {
+        <div class="selection-counter">
+          <ion-text color="primary">
+            <small>Selected: {{ selectionCountText }}</small>
+          </ion-text>
+        </div>
+      }
     </div>
 
     <!-- Selected Accounts Display -->
-    <div class="selected-accounts" *ngIf="selectedAccounts.length > 0">
-      <ion-label class="section-label">Selected for Invitation</ion-label>
-      <div class="selected-accounts-list">
-        <ion-chip
-          *ngFor="let account of selectedAccounts"
-          color="primary"
-          outline="true"
-        >
-          <ion-avatar>
-            <img
-              [src]="account.iconImage || '/assets/icon/default-avatar.png'"
-              [alt]="account.name"
-            />
-          </ion-avatar>
-          <ion-label>{{ account.name }}</ion-label>
-          <ion-icon
-            name="close-circle"
-            (click)="removeSelectedAccount(account)"
-          ></ion-icon>
-        </ion-chip>
+    @if (selectedAccounts.length > 0) {
+      <div class="selected-accounts">
+        <ion-label class="section-label">Selected for Invitation</ion-label>
+        <div class="selected-accounts-list">
+          @for (account of selectedAccounts; track account) {
+            <ion-chip
+              color="primary"
+              outline="true"
+              >
+              <ion-avatar>
+                <img
+                  [src]="account.iconImage || '/assets/icon/default-avatar.svg'"
+                  [alt]="account.name"
+                  />
+              </ion-avatar>
+              <ion-label>{{ account.name }}</ion-label>
+              <ion-icon
+                name="close-circle"
+                (click)="removeSelectedAccount(account)"
+              ></ion-icon>
+            </ion-chip>
+          }
+        </div>
       </div>
-    </div>
+    }
 
     <!-- Search Results -->
     <div class="search-results">
@@ -89,66 +95,73 @@
         <ion-list-header>
           <ion-label class="results-header">
             {{ "forms.search_results" | translate }}
-            <small
-              *ngIf="selectedAccounts.length >= maxSelections"
-              style="color: var(--ion-color-warning)"
-            >
-              {{
+            @if (selectedAccounts.length >= maxSelections) {
+              <small
+                style="color: var(--ion-color-warning)"
+                >
+                {{
                 "forms.maximum_selections_reached"
-                  | translate: {count: maxSelections}
-              }}
-            </small>
+                | translate: {count: maxSelections}
+                }}
+              </small>
+            }
           </ion-label>
-          <ion-spinner *ngIf="loading" size="small"></ion-spinner>
+          @if (loading) {
+            <ion-spinner size="small"></ion-spinner>
+          }
         </ion-list-header>
-        <div
-          *ngIf="(searchResults$ | async)?.length === 0 && !loading"
-          class="no-results"
-        >
-          <ion-item>
-            <ion-label class="ion-text-center">
+        @if ((searchResults$ | async)?.length === 0 && !loading) {
+          <div
+            class="no-results"
+            >
+            <ion-item>
+              <ion-label class="ion-text-center">
+                <p>
+                  No
+                  {{ searchType === "user" ? "users" : "organizations" }} found.
+                  Try a different search term.
+                </p>
+              </ion-label>
+            </ion-item>
+          </div>
+        }
+
+        @for (account of searchResults$ | async; track account) {
+          <ion-item
+            button
+            (click)="selectAccount(account)"
+            [disabled]="selectedAccounts.length >= maxSelections"
+            >
+            <ion-avatar slot="start">
+              <img
+                [src]="account.iconImage || '/assets/icon/default-avatar.svg'"
+                [alt]="account.name"
+                />
+            </ion-avatar>
+            <ion-label>
+              <h3>{{ account.name }}</h3>
+              @if (account.tagline) {
+                <p>{{ account.tagline }}</p>
+              }
               <p>
-                No
-                {{ searchType === "user" ? "users" : "organizations" }} found.
-                Try a different search term.
+                {{
+                account.type === "user"
+                ? ("forms.individual" | translate)
+                : ("forms.organization" | translate)
+                }}
               </p>
             </ion-label>
-          </ion-item>
-        </div>
-
-        <ion-item
-          *ngFor="let account of searchResults$ | async"
-          button
-          (click)="selectAccount(account)"
-          [disabled]="selectedAccounts.length >= maxSelections"
-        >
-          <ion-avatar slot="start">
-            <img
-              [src]="account.iconImage || '/assets/icon/default-avatar.png'"
-              [alt]="account.name"
-            />
-          </ion-avatar>
-          <ion-label>
-            <h3>{{ account.name }}</h3>
-            <p *ngIf="account.tagline">{{ account.tagline }}</p>
-            <p>
-              {{
-                account.type === "user"
-                  ? ("forms.individual" | translate)
-                  : ("forms.organization" | translate)
-              }}
-            </p>
-          </ion-label>
-          <ion-icon
+            <ion-icon
             [name]="
               selectedAccounts.length >= maxSelections ? 'ban' : 'add-circle'
             "
-            slot="end"
+              slot="end"
             [color]="
               selectedAccounts.length >= maxSelections ? 'medium' : 'primary'
             "
-          ></ion-icon>
-        </ion-item>
+            ></ion-icon>
+          </ion-item>
+        }
       </ion-list>
     </div>
   </form>
@@ -163,15 +176,21 @@
         color="primary"
         [disabled]="!isFormValid || loading"
         (click)="sendInvitations()"
-      >
+        >
         <ion-icon name="mail-outline" slot="start"></ion-icon>
-        <span *ngIf="!loading">
-          Send {{ selectedAccounts.length }}
-          {{ searchType === "user" ? "Member" : "Partner" }}
-          Invitation{{ selectedAccounts.length > 1 ? "s" : "" }}
-        </span>
-        <span *ngIf="loading">{{ "forms.sending" | translate }}</span>
-        <ion-spinner *ngIf="loading" size="small"></ion-spinner>
+        @if (!loading) {
+          <span>
+            Send {{ selectedAccounts.length }}
+            {{ searchType === "user" ? "Member" : "Partner" }}
+            Invitation{{ selectedAccounts.length > 1 ? "s" : "" }}
+          </span>
+        }
+        @if (loading) {
+          <span>{{ "forms.sending" | translate }}</span>
+        }
+        @if (loading) {
+          <ion-spinner size="small"></ion-spinner>
+        }
       </ion-button>
     </div>
   </ion-toolbar>

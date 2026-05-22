@@ -28,7 +28,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             src="assets/icon/logo.png"
             alt="ASCENDynamics Logo"
             class="toolbar-logo"
-          />
+            />
           <ion-title color="primary">{{ "menu.title" | translate }}</ion-title>
         </div>
       </ion-toolbar>
@@ -37,53 +37,56 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-list>
         <ion-menu-toggle auto-hide="false">
           <!-- Iterate over menuPages -->
-          <ng-container *ngFor="let item of menuPages">
-            <ion-item
-              [routerLink]="item.url"
-              lines="none"
-              detail="false"
-              routerLinkActive="selected"
-              [routerLinkActiveOptions]="{ exact: true }"
-              *ngIf="item.title"
-            >
-              <ion-icon
-                aria-hidden="true"
-                slot="start"
-                [name]="item.icon"
-              ></ion-icon>
-              <ion-label>{{ item.title }}</ion-label>
-              <!-- If the menu item has a button -->
-              <ion-button
-                *ngIf="item.hasButton"
-                fill="outline"
-                slot="end"
-                [routerLink]="item.buttonLink"
-                (click)="$event.stopPropagation()"
-              >
-                {{ item.buttonText }}
+          @for (item of menuPages; track item) {
+            @if (item.title) {
+              <ion-item
+                [routerLink]="item.url"
+                lines="none"
+                detail="false"
+                routerLinkActive="selected"
+                [routerLinkActiveOptions]="{ exact: true }"
+                >
                 <ion-icon
                   aria-hidden="true"
                   slot="start"
-                  [name]="item.buttonIcon"
+                  [name]="item.icon"
                 ></ion-icon>
-              </ion-button>
-            </ion-item>
-          </ng-container>
+                <ion-label>{{ item.title }}</ion-label>
+                <!-- If the menu item has a button -->
+                @if (item.hasButton) {
+                  <ion-button
+                    fill="outline"
+                    slot="end"
+                    [routerLink]="item.buttonLink"
+                    (click)="$event.stopPropagation()"
+                    >
+                    {{ item.buttonText }}
+                    <ion-icon
+                      aria-hidden="true"
+                      slot="start"
+                      [name]="item.buttonIcon"
+                    ></ion-icon>
+                  </ion-button>
+                }
+              </ion-item>
+            }
+          }
           <!-- Feedback Item for Authenticated Users -->
-          <ion-item
-            *ngIf="user"
-            style="cursor: pointer"
-            lines="none"
-            detail="false"
-            (click)="showFeedbackModal()"
-          >
-            <ion-icon
-              aria-hidden="true"
-              slot="start"
-              name="ear-outline"
-            ></ion-icon>
-            <ion-label>{{ "info.give_feedback" | translate }}</ion-label>
-          </ion-item>
+          @if (user) {
+            <ion-item
+              style="cursor: pointer"
+              lines="none"
+              detail="false"
+              (click)="showFeedbackModal()"
+              >
+              <ion-icon
+                aria-hidden="true"
+                slot="start"
+                name="ear-outline"
+              ></ion-icon>
+              <ion-label>{{ "info.give_feedback" | translate }}</ion-label>
+            </ion-item>
+          }
         </ion-menu-toggle>
       </ion-list>
       <!-- Info Pages Section -->
@@ -92,21 +95,22 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <strong>{{ "info.learn_more" | translate }}</strong>
         </ion-list-header>
         <ion-menu-toggle auto-hide="false">
-          <ion-item
-            *ngFor="let info of infoPages"
-            [routerLink]="info.url"
-            lines="none"
-            detail="false"
-            routerLinkActive="selected"
-            [routerLinkActiveOptions]="{exact: info.url === '/info'}"
-          >
-            <ion-icon
-              aria-hidden="true"
-              slot="start"
-              [name]="info.icon"
-            ></ion-icon>
-            <ion-label>{{ info.title }}</ion-label>
-          </ion-item>
+          @for (info of infoPages; track info) {
+            <ion-item
+              [routerLink]="info.url"
+              lines="none"
+              detail="false"
+              routerLinkActive="selected"
+              [routerLinkActiveOptions]="{exact: info.url === '/info'}"
+              >
+              <ion-icon
+                aria-hidden="true"
+                slot="start"
+                [name]="info.icon"
+              ></ion-icon>
+              <ion-label>{{ info.title }}</ion-label>
+            </ion-item>
+          }
         </ion-menu-toggle>
       </ion-list>
       <!-- Project Links Section -->
@@ -114,16 +118,17 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <ion-list-header>
           <strong>{{ "info.links" | translate }}</strong>
         </ion-list-header>
-        <ion-item
-          *ngFor="let p of project"
-          lines="none"
-          [href]="p.url"
-          target="_blank"
-          class="project-item"
-        >
-          <ion-icon aria-hidden="true" slot="start" [name]="p.icon"></ion-icon>
-          <ion-label>{{ p.title }}</ion-label>
-        </ion-item>
+        @for (p of project; track p) {
+          <ion-item
+            lines="none"
+            [href]="p.url"
+            target="_blank"
+            class="project-item"
+            >
+            <ion-icon aria-hidden="true" slot="start" [name]="p.icon"></ion-icon>
+            <ion-label>{{ p.title }}</ion-label>
+          </ion-item>
+        }
       </ion-list>
     </ion-content>
   </ion-menu>

@@ -18,8 +18,8 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 // src/app/modules/listing/pages/listing-detail/components/hero/hero.component.scss
-@import "src/styles/variables";
-@import "src/styles/mixins";
+@use "src/styles/variables" as *;
+@use "src/styles/mixins" as *;
 
 /* Header Image Styling */
 .header-image {

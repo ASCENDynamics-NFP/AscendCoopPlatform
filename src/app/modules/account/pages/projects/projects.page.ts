@@ -48,6 +48,7 @@ import {
 } from "./interfaces/project-creation.interface";
 
 @Component({
+  standalone: false,
   selector: "app-projects",
   templateUrl: "./projects.page.html",
   styleUrls: ["./projects.page.scss"],

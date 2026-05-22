@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Injectable} from "@angular/core";
+import {Injectable, Injector, runInInjectionContext} from "@angular/core";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
 import {firstValueFrom} from "rxjs";
 import firebase from "firebase/compat/app";
@@ -35,7 +35,10 @@ export class FirestoreOfflineService {
   private isInitialized = false;
   private persistenceEnabled = false;
 
-  constructor(private firestore: AngularFirestore) {}
+  constructor(
+    private firestore: AngularFirestore,
+    private injector: Injector,
+  ) {}
 
   /**
    * Initialize Firestore offline persistence
@@ -58,7 +61,7 @@ export class FirestoreOfflineService {
     try {
       if (config.enabled) {
         // Enable persistence with configuration
-        await firebase.firestore().enablePersistence({
+        await this.firestore.firestore.enablePersistence({
           synchronizeTabs: config.synchronizeTabs,
         });
 
@@ -97,7 +100,7 @@ export class FirestoreOfflineService {
    */
   private async configureCacheSettings(cacheSizeBytes: number): Promise<void> {
     try {
-      const firestore = firebase.firestore();
+      const firestore = this.firestore.firestore;
 
       // Note: Cache size configuration is done during initialization
       // This is mainly for documentation and potential future use
@@ -147,7 +150,7 @@ export class FirestoreOfflineService {
    */
   async clearOfflineCache(): Promise<void> {
     try {
-      await firebase.firestore().clearPersistence();
+      await this.firestore.firestore.clearPersistence();
       console.log("✅ Firestore offline cache cleared");
     } catch (error) {
       console.error("Error clearing offline cache:", error);
@@ -160,7 +163,7 @@ export class FirestoreOfflineService {
    */
   async enableNetwork(): Promise<void> {
     try {
-      await firebase.firestore().enableNetwork();
+      await this.firestore.firestore.enableNetwork();
       console.log("✅ Firestore network enabled");
     } catch (error) {
       console.error("Error enabling Firestore network:", error);
@@ -173,7 +176,7 @@ export class FirestoreOfflineService {
    */
   async disableNetwork(): Promise<void> {
     try {
-      await firebase.firestore().disableNetwork();
+      await this.firestore.firestore.disableNetwork();
       console.log("📴 Firestore network disabled");
     } catch (error) {
       console.error("Error disabling Firestore network:", error);
@@ -290,11 +293,13 @@ export class FirestoreOfflineService {
       console.log("🔄 Pre-caching collections for offline use...");
 
       // Pre-cache user's chats
-      const chatsQuery = this.firestore.collection("chats", (ref) =>
-        ref
-          .where("participants", "array-contains", userId)
-          .orderBy("lastMessageTimestamp", "desc")
-          .limit(20),
+      const chatsQuery = runInInjectionContext(this.injector, () =>
+        this.firestore.collection("chats", (ref) =>
+          ref
+            .where("participants", "array-contains", userId)
+            .orderBy("lastMessageTimestamp", "desc")
+            .limit(20),
+        ),
       );
 
       await firstValueFrom(chatsQuery.get());

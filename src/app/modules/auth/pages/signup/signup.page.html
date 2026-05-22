@@ -33,7 +33,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             src="assets/image/logo/ASCENDynamics NFP-logos_transparent.png"
             alt="ASCENDynamics NFP"
             class="logo"
-          />
+            />
         </div>
       </ion-col>
       <ion-col size="12" size-md="6">
@@ -66,7 +66,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                     formControlName="accountType"
                     mode="md"
                     class="profile-type-segment"
-                  >
+                    >
                     <ion-segment-button value="user">
                       <ion-icon name="person-circle"></ion-icon>
                       <ion-label>Individual</ion-label>
@@ -76,12 +76,16 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                       <ion-label>Organization</ion-label>
                     </ion-segment-button>
                   </ion-segment>
-                  <p class="profile-type-helper" *ngIf="signupForm.get('accountType')?.value === 'user'">
-                    Create listings, message others, submit time entries, manage relationships, and participate in organizations.
-                  </p>
-                  <p class="profile-type-helper" *ngIf="signupForm.get('accountType')?.value === 'group'">
-                    Everything an individual can do, plus manage and review time entries for your organization.
-                  </p>
+                  @if (signupForm.get('accountType')?.value === 'user') {
+                    <p class="profile-type-helper">
+                      Create listings, message others, submit time entries, manage relationships, and participate in organizations.
+                    </p>
+                  }
+                  @if (signupForm.get('accountType')?.value === 'group') {
+                    <p class="profile-type-helper">
+                      Everything an individual can do, plus manage and review time entries for your organization.
+                    </p>
+                  }
                 </div>
               </ion-col>
             </ion-row>
@@ -99,21 +103,26 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   maxlength="100"
                   autocomplete="name"
                 ></ion-input>
-                <ion-note
-                  color="danger"
-                  *ngIf="
-                    (signupForm.get('name')?.dirty ||
-                      signupForm.get('name')?.touched) &&
-                    signupForm.get('name')?.errors
-                  "
-                >
-                  <span *ngIf="signupForm.get('name')?.errors?.['required']">
-                    Name is required.
-                  </span>
-                  <span *ngIf="signupForm.get('name')?.errors?.['maxlength']">
-                    Name must be 100 characters or fewer.
-                  </span>
-                </ion-note>
+                @if (
+                  (signupForm.get('name')?.dirty ||
+                  signupForm.get('name')?.touched) &&
+                  signupForm.get('name')?.errors
+                  ) {
+                  <ion-note
+                    color="danger"
+                    >
+                    @if (signupForm.get('name')?.errors?.['required']) {
+                      <span>
+                        Name is required.
+                      </span>
+                    }
+                    @if (signupForm.get('name')?.errors?.['maxlength']) {
+                      <span>
+                        Name must be 100 characters or fewer.
+                      </span>
+                    }
+                  </ion-note>
+                }
               </ion-col>
             </ion-row>
 
@@ -129,21 +138,26 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   formControlName="email"
                   placeholder="email@domain.com"
                 ></ion-input>
-                <ion-note
-                  color="danger"
-                  *ngIf="
-                    (signupForm.get('email')?.dirty ||
-                      signupForm.get('email')?.touched) &&
-                    signupForm.get('email')?.errors
-                  "
-                >
-                  <span *ngIf="signupForm.get('email')?.errors?.['required']">
-                    Email is required.
-                  </span>
-                  <span *ngIf="signupForm.get('email')?.errors?.['email']">
-                    Please enter a valid email address.
-                  </span>
-                </ion-note>
+                @if (
+                  (signupForm.get('email')?.dirty ||
+                  signupForm.get('email')?.touched) &&
+                  signupForm.get('email')?.errors
+                  ) {
+                  <ion-note
+                    color="danger"
+                    >
+                    @if (signupForm.get('email')?.errors?.['required']) {
+                      <span>
+                        Email is required.
+                      </span>
+                    }
+                    @if (signupForm.get('email')?.errors?.['email']) {
+                      <span>
+                        Please enter a valid email address.
+                      </span>
+                    }
+                  </ion-note>
+                }
               </ion-col>
             </ion-row>
 
@@ -159,19 +173,20 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   placeholder="Password"
                   minlength="8"
                 ></ion-input>
-                <ion-note
-                  color="danger"
-                  *ngIf="
-                    (signupForm.get('password')?.hasError('passwordStrength') ||
-                      signupForm.get('password')?.errors) &&
-                    (signupForm.get('password')?.dirty ||
-                      signupForm.get('password')?.touched)
-                  "
-                >
-                  Password must include at least one uppercase letter, one
-                  lowercase letter, one numeric digit, and one special
-                  character.
-                </ion-note>
+                @if (
+                  (signupForm.get('password')?.hasError('passwordStrength') ||
+                  signupForm.get('password')?.errors) &&
+                  (signupForm.get('password')?.dirty ||
+                  signupForm.get('password')?.touched)
+                  ) {
+                  <ion-note
+                    color="danger"
+                    >
+                    Password must include at least one uppercase letter, one
+                    lowercase letter, one numeric digit, and one special
+                    character.
+                  </ion-note>
+                }
               </ion-col>
             </ion-row>
 
@@ -187,15 +202,16 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   placeholder="Confirm Password"
                   minlength="8"
                 ></ion-input>
-                <ion-note
-                  color="danger"
-                  *ngIf="
-                    signupForm.errors?.['passwordMismatch'] &&
-                    signupForm.get('confirmPassword')?.touched
-                  "
-                >
-                  Passwords do not match.
-                </ion-note>
+                @if (
+                  signupForm.errors?.['passwordMismatch'] &&
+                  signupForm.get('confirmPassword')?.touched
+                  ) {
+                  <ion-note
+                    color="danger"
+                    >
+                    Passwords do not match.
+                  </ion-note>
+                }
               </ion-col>
             </ion-row>
 
@@ -205,53 +221,54 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 <ion-checkbox
                   labelPlacement="end"
                   formControlName="agreedToTerms"
-                >
+                  >
                 </ion-checkbox>
                 <ion-text class="ion-padding">
                   I have read and agree to the
                   <a (click)="openLegalModal('privacyPolicy')"
                     >Privacy Policy</a
-                  >
-                  and
-                  <a (click)="openLegalModal('termsOfUse')">Terms of Use</a>.
-                </ion-text>
-                <ion-note
-                  color="danger"
-                  *ngIf="
+                    >
+                    and
+                    <a (click)="openLegalModal('termsOfUse')">Terms of Use</a>.
+                  </ion-text>
+                  @if (
                     signupForm.get('agreedToTerms')?.invalid &&
                     (signupForm.get('agreedToTerms')?.dirty ||
-                      signupForm.get('agreedToTerms')?.touched)
-                  "
-                >
-                  You must agree to the terms and conditions.
-                </ion-note>
-              </ion-col>
-            </ion-row>
+                    signupForm.get('agreedToTerms')?.touched)
+                    ) {
+                    <ion-note
+                      color="danger"
+                      >
+                      You must agree to the terms and conditions.
+                    </ion-note>
+                  }
+                </ion-col>
+              </ion-row>
 
-            <!-- Submit Button and Navigation Link -->
-            <ion-row>
-              <ion-col>
-                <ion-button
-                  class="ion-margin-top"
-                  type="submit"
-                  expand="block"
-                  strong="true"
-                  [disabled]="signupForm.invalid"
-                  style="width: 100%"
-                  translate
-                >
-                  user.signup.submit
-                </ion-button>
-                <ion-text>
-                  Already have an account?
-                  <a (click)="goToLogin()" translate> user.signup.login </a>
-                </ion-text>
-              </ion-col>
-            </ion-row>
-          </form>
-        </div>
-      </ion-col>
-    </ion-row>
-  </ion-card-content>
-  <app-info-footer></app-info-footer>
-</ion-content>
+              <!-- Submit Button and Navigation Link -->
+              <ion-row>
+                <ion-col>
+                  <ion-button
+                    class="ion-margin-top"
+                    type="submit"
+                    expand="block"
+                    strong="true"
+                    [disabled]="signupForm.invalid"
+                    style="width: 100%"
+                    translate
+                    >
+                    user.signup.submit
+                  </ion-button>
+                  <ion-text>
+                    Already have an account?
+                    <a (click)="goToLogin()" translate> user.signup.login </a>
+                  </ion-text>
+                </ion-col>
+              </ion-row>
+            </form>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-card-content>
+    <app-info-footer></app-info-footer>
+  </ion-content>

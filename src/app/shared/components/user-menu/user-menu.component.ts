@@ -28,6 +28,7 @@ import {firstValueFrom, Observable} from "rxjs";
 import {AuthUser} from "@shared/models/auth-user.model";
 
 @Component({
+  standalone: false,
   selector: "app-user-menu",
   templateUrl: "./user-menu.component.html",
   styleUrls: ["./user-menu.component.scss"],

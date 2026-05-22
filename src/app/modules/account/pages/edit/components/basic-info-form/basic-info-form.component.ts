@@ -25,6 +25,7 @@ import {Store} from "@ngrx/store";
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 
 @Component({
+  standalone: false,
   selector: "app-basic-info-form",
   templateUrl: "./basic-info-form.component.html",
   styleUrls: ["./basic-info-form.component.scss"],

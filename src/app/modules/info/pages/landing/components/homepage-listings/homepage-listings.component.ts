@@ -24,6 +24,7 @@ import {ListingsService} from "../../../../../../core/services/listings.service"
 import {Listing} from "@shared/models/listing.model";
 
 @Component({
+  standalone: false,
   selector: "app-homepage-listings",
   templateUrl: "./homepage-listings.component.html",
   styleUrls: ["./homepage-listings.component.scss"],

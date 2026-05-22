@@ -32,6 +32,7 @@ import {
 import * as AccountActions from "../../../../../../state/actions/account.actions";
 
 @Component({
+  standalone: false,
   selector: "app-mutual-aid-community-engagement-form",
   templateUrl: "./mutual-aid-community-engagement-form.component.html",
   styleUrls: ["./mutual-aid-community-engagement-form.component.scss"],

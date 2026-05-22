@@ -58,6 +58,7 @@ import {ListingFilterValues} from "../../components/listing-filter/listing-filte
 import {environment} from "../../../../../environments/environment";
 
 @Component({
+  standalone: false,
   selector: "app-listings",
   templateUrl: "./listings.page.html",
   styleUrls: ["./listings.page.scss"],
@@ -78,6 +79,7 @@ export class ListingsPage implements OnInit, OnDestroy {
   // View mode: list or map
   viewMode: "list" | "map" = "list";
   mapsLoaded = false;
+  mapsApiReady = false;
   userLocation: {latitude: number; longitude: number} | null = null;
 
   // Filter panel state
@@ -117,7 +119,7 @@ export class ListingsPage implements OnInit, OnDestroy {
   constructor(
     private metaService: MetaService,
     private navCtrl: NavController,
-    private store: Store<AppState>,
+    private store: Store,
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef,
   ) {
@@ -339,6 +341,7 @@ export class ListingsPage implements OnInit, OnDestroy {
   private loadGoogleMaps() {
     // Check if already loaded
     if (typeof google !== "undefined" && google.maps) {
+      this.mapsApiReady = true;
       this.mapsLoaded = true;
       this.cdr.detectChanges();
       return;
@@ -347,7 +350,7 @@ export class ListingsPage implements OnInit, OnDestroy {
     const apiKey = environment.googleMapsApiKey;
     if (!apiKey || apiKey === "YOUR_GOOGLE_MAPS_API_KEY_HERE") {
       console.warn("Google Maps API key not configured");
-      this.mapsLoaded = true; // Still show map component (will show error state)
+      this.mapsLoaded = true; // mapsApiReady stays false -> show error state
       this.cdr.detectChanges();
       return;
     }
@@ -359,6 +362,7 @@ export class ListingsPage implements OnInit, OnDestroy {
     script.defer = true;
     script.onload = () => {
       this.ngZone.run(() => {
+        this.mapsApiReady = true;
         this.mapsLoaded = true;
         this.cdr.detectChanges();
       });
@@ -366,7 +370,7 @@ export class ListingsPage implements OnInit, OnDestroy {
     script.onerror = () => {
       console.error("Failed to load Google Maps");
       this.ngZone.run(() => {
-        this.mapsLoaded = true; // Show error state
+        this.mapsLoaded = true; // mapsApiReady stays false -> show error state
         this.cdr.detectChanges();
       });
     };

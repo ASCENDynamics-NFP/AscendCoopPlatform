@@ -60,6 +60,7 @@ function fileSizeValidator(control: AbstractControl): ValidationErrors | null {
 }
 
 @Component({
+  standalone: false,
   selector: "app-feedback-modal",
   templateUrl: "./feedback-modal.component.html",
   styleUrls: ["./feedback-modal.component.scss"],

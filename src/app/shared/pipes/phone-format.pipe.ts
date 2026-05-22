@@ -21,6 +21,7 @@ import {Pipe, PipeTransform} from "@angular/core";
 import {formatPhoneNumber} from "../../core/utils/phone.util";
 
 @Pipe({
+  standalone: false,
   name: "phoneFormat",
 })
 export class PhoneFormatPipe implements PipeTransform {

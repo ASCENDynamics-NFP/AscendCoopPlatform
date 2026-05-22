@@ -29,7 +29,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  </ion-header>
+</ion-header>
 
 <ion-content class="ion-padding">
   <div class="feedback-container">
@@ -43,24 +43,34 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
     <form [formGroup]="feedbackForm" (ngSubmit)="submitFeedback()">
       <!-- Name / Email for guests -->
-      <ion-item *ngIf="!user" lines="full">
-        <ion-label position="stacked">{{ 'feedback.name' | translate }}</ion-label>
-        <ion-input type="text" formControlName="name" autocomplete="name"></ion-input>
-        <ion-note color="danger" *ngIf="feedbackForm.get('name')?.hasError('required')">
-          {{ 'feedback.name_required' | translate }}
-        </ion-note>
-      </ion-item>
+      @if (!user) {
+        <ion-item lines="full">
+          <ion-label position="stacked">{{ 'feedback.name' | translate }}</ion-label>
+          <ion-input type="text" formControlName="name" autocomplete="name"></ion-input>
+          @if (feedbackForm.get('name')?.hasError('required')) {
+            <ion-note color="danger">
+              {{ 'feedback.name_required' | translate }}
+            </ion-note>
+          }
+        </ion-item>
+      }
 
-      <ion-item *ngIf="!user" lines="full">
-        <ion-label position="stacked">Email</ion-label>
-        <ion-input type="email" formControlName="email" autocomplete="email"></ion-input>
-        <ion-note color="danger" *ngIf="feedbackForm.get('email')?.hasError('required')">
-          Email is required.
-        </ion-note>
-        <ion-note color="danger" *ngIf="feedbackForm.get('email')?.hasError('email')">
-          Please enter a valid email address.
-        </ion-note>
-      </ion-item>
+      @if (!user) {
+        <ion-item lines="full">
+          <ion-label position="stacked">Email</ion-label>
+          <ion-input type="email" formControlName="email" autocomplete="email"></ion-input>
+          @if (feedbackForm.get('email')?.hasError('required')) {
+            <ion-note color="danger">
+              Email is required.
+            </ion-note>
+          }
+          @if (feedbackForm.get('email')?.hasError('email')) {
+            <ion-note color="danger">
+              Please enter a valid email address.
+            </ion-note>
+          }
+        </ion-item>
+      }
 
       <!-- Category -->
       <ion-item lines="full">
@@ -76,9 +86,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-item lines="full">
         <ion-label position="stacked">Feedback</ion-label>
         <ion-textarea formControlName="feedback" auto-grow="true" rows="5" placeholder="Share your thoughts..."></ion-textarea>
-        <ion-note color="danger" *ngIf="feedbackForm.get('feedback')?.hasError('required')">
-          Feedback is required.
-        </ion-note>
+        @if (feedbackForm.get('feedback')?.hasError('required')) {
+          <ion-note color="danger">
+            Feedback is required.
+          </ion-note>
+        }
       </ion-item>
 
       <!-- Attachment -->
@@ -93,17 +105,23 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             Choose File
           </ion-button>
           <input #fileInput type="file" accept="image/*" (change)="onFileChange($event)" hidden />
-          <ion-chip *ngIf="feedbackForm.get('attachment')?.value as file">
-            <ion-icon name="image-outline"></ion-icon>
-            <ion-label>{{ file?.name }}</ion-label>
-          </ion-chip>
+          @if (feedbackForm.get('attachment')?.value; as file) {
+            <ion-chip>
+              <ion-icon name="image-outline"></ion-icon>
+              <ion-label>{{ file?.name }}</ion-label>
+            </ion-chip>
+          }
         </div>
-        <ion-note color="danger" *ngIf="feedbackForm.get('attachment')?.hasError('invalidImageType')">
-          Please select a valid image file (JPEG, PNG, GIF).
-        </ion-note>
-        <ion-note color="danger" *ngIf="feedbackForm.get('attachment')?.hasError('invalidFileSize')">
-          The file size should be less than 5MB.
-        </ion-note>
+        @if (feedbackForm.get('attachment')?.hasError('invalidImageType')) {
+          <ion-note color="danger">
+            Please select a valid image file (JPEG, PNG, GIF).
+          </ion-note>
+        }
+        @if (feedbackForm.get('attachment')?.hasError('invalidFileSize')) {
+          <ion-note color="danger">
+            The file size should be less than 5MB.
+          </ion-note>
+        }
       </div>
 
       <!-- Rating -->
@@ -116,10 +134,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-item>
 
       <!-- Upload progress -->
-      <div class="progress" *ngIf="isUploading">
-        <ion-progress-bar type="indeterminate"></ion-progress-bar>
-        <ion-text color="medium">Uploading attachment...</ion-text>
-      </div>
+      @if (isUploading) {
+        <div class="progress">
+          <ion-progress-bar type="indeterminate"></ion-progress-bar>
+          <ion-text color="medium">Uploading attachment...</ion-text>
+        </div>
+      }
 
       <!-- Footer actions -->
       <div class="footer-actions">

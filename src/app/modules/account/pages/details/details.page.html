@@ -19,11 +19,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <!-- src/app/modules/account/pages/details/details.page.html -->
 
-<ng-container *ngIf="account$ | async as account; else loadingOrPrivate">
+@if (account$ | async; as account) {
   <ion-header>
     <app-header [title]="account.name"></app-header>
   </ion-header>
-
   <ion-content [fullscreen]="true">
     <app-hero
       id="profile"
@@ -35,230 +34,244 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       [relationshipStatus]="(relationshipStatus$ | async)"
       [hasRelationship]="(hasRelationship$ | async) ?? false"
     ></app-hero>
-
     <!-- Segment Control -->
     <ion-segment
-      [value]="selectedSegment"
-      (ionChange)="onSegmentChange($event)"
+      [(ngModel)]="selectedSegment"
       scrollable="true"
       class="profile-segments"
-    >
+      >
       <ion-segment-button value="profile">
         <ion-icon name="person-outline"></ion-icon>
         <ion-label
           >{{ account.type === 'user' ? 'Profile' : 'About' }}</ion-label
-        >
-      </ion-segment-button>
+          >
+        </ion-segment-button>
+        @if (account.type === 'user' && (canViewProfessional$ | async)) {
+          <ion-segment-button
+            value="professional"
+            >
+            <ion-icon name="briefcase-outline"></ion-icon>
+            <ion-label>Professional</ion-label>
+          </ion-segment-button>
+        }
+        @if (account.type === 'user' && (canViewLabor$ | async)) {
+          <ion-segment-button
+            value="labor"
+            >
+            <ion-icon name="hammer-outline"></ion-icon>
+            <ion-label>Labor Rights</ion-label>
+          </ion-segment-button>
+        }
+        @if (canViewConnections$ | async) {
+          <ion-segment-button value="connections">
+            <ion-icon name="people-outline"></ion-icon>
+            <ion-label
+              >{{ account.type === 'user' ? 'Friends' : 'Members' }}</ion-label
+              >
+            </ion-segment-button>
+          }
+          @if (canViewOrganizations$ | async) {
+            <ion-segment-button value="organizations">
+              <ion-icon name="business-outline"></ion-icon>
+              <ion-label>Organizations</ion-label>
+            </ion-segment-button>
+          }
+          @if (account.type === 'user') {
+            <ion-segment-button value="volunteer">
+              <ion-icon name="heart-outline"></ion-icon>
+              <ion-label>Volunteer</ion-label>
+            </ion-segment-button>
+          }
+          @if (account.type === 'user' && account.mutualAidCommunityEngagement) {
+            <ion-segment-button
+              value="mutual-aid"
+              >
+              <ion-icon name="hand-left-outline"></ion-icon>
+              <ion-label>Mutual Aid</ion-label>
+            </ion-segment-button>
+          }
+          @if (account.type === 'group') {
+            <ion-segment-button value="faq">
+              <ion-icon name="help-circle-outline"></ion-icon>
+              <ion-label>FAQ</ion-label>
+            </ion-segment-button>
+          }
+          <ion-segment-button value="listings">
+            <ion-icon name="list-outline"></ion-icon>
+            <ion-label>Listings</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+        <!-- Segment Content -->
+        <div class="segment-content">
+          <!-- Profile/About Section -->
+          @if (selectedSegment === 'profile') {
+            <div class="segment-section">
+              <app-profile
+                [account]="account"
+                [isOwnerOrAdmin]="!!((isProfileOwner$ | async) || (isGroupAdmin$ | async))"
+              ></app-profile>
+              <app-contact-information
+                [account]="account"
+                [isProfileOwner]="(isProfileOwner$ | async) ?? false"
+                [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+                [privacySettings]="account.privacySettings"
+              ></app-contact-information>
+              @if (account.type === 'group') {
+                <app-group-calendar
+                  [account]="account"
+                  [isOwnerOrAdmin]="!!((isProfileOwner$ | async) || (isGroupAdmin$ | async))"
+                ></app-group-calendar>
+              }
+            </div>
+          }
+          <!-- Professional Section -->
+          @if (selectedSegment === 'professional' && account.type === 'user') {
+            <div
+              class="segment-section"
+              >
+              <app-professional-info
+                [professionalInfo]="professionalInfo$ | async"
+                [privacySettings]="account.privacySettings"
+                [isOwnerOrAdmin]="(isOwnerOrAdmin$ | async) || false"
+              ></app-professional-info>
+            </div>
+          }
+          <!-- Labor Rights Section -->
+          @if (selectedSegment === 'labor' && account.type === 'user') {
+            <div
+              class="segment-section"
+              >
+              <app-labor-rights-info
+                [laborRights]="laborRights$ | async"
+                [privacySettings]="account.privacySettings"
+                [isOwnerOrAdmin]="(isOwnerOrAdmin$ | async) || false"
+              ></app-labor-rights-info>
+            </div>
+          }
+          <!-- Connections Section -->
+          @if (selectedSegment === 'connections') {
+            <div class="segment-section">
+              <app-related-accounts
+                [account]="account"
+                [relatedAccounts]="(relatedAccounts$ | async) ?? []"
+                type="user"
+                [isProfileOwner]="(isProfileOwner$ | async) ?? false"
+                [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+                [isRelatedViewer]="(hasRelationship$ | async) ?? false"
+                [viewerId]="(authUser$ | async)?.uid ?? null"
+                [privacySettings]="account.privacySettings"
+              ></app-related-accounts>
+            </div>
+          }
+          <!-- Organizations Section -->
+          @if (selectedSegment === 'organizations') {
+            <div class="segment-section">
+              <app-related-accounts
+                [account]="account"
+                [relatedAccounts]="(relatedAccounts$ | async) ?? []"
+                type="group"
+                [isProfileOwner]="(isProfileOwner$ | async) ?? false"
+                [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+                [isRelatedViewer]="(hasRelationship$ | async) ?? false"
+                [viewerId]="(authUser$ | async)?.uid ?? null"
+                [privacySettings]="account.privacySettings"
+              ></app-related-accounts>
+            </div>
+          }
+          <!-- Volunteer Section -->
+          @if (selectedSegment === 'volunteer' && account.type === 'user') {
+            <div
+              class="segment-section"
+              >
+              <app-volunteer-preference-info
+                [volunteerPreferences]="account.volunteerPreferences"
+                [isOwnerOrAdmin]="(isOwnerOrAdmin$ | async) || false"
+              ></app-volunteer-preference-info>
+            </div>
+          }
+          <!-- Mutual Aid Section -->
+          @if (selectedSegment === 'mutual-aid' && account.type === 'user' && account.mutualAidCommunityEngagement) {
+            <div
+              class="segment-section"
+              >
+              <app-mutual-aid-community-info
+                [mutualAidCommunityEngagement]="account.mutualAidCommunityEngagement"
+              ></app-mutual-aid-community-info>
+            </div>
+          }
+          <!-- FAQ Section -->
+          <!-- FAQ Section -->
+          @if (selectedSegment === 'faq' && account.type === 'group') {
+            <div
+              class="segment-section"
+              >
+              <app-faq-section
+                [faqs]="account.groupDetails?.faqs || []"
+                [canEdit]="(isGroupAdmin$ | async) || false"
+                [accountId]="account.id"
+                [accountType]="account.type"
+              ></app-faq-section>
+            </div>
+          }
+          <!-- Listings Section -->
+          @if (selectedSegment === 'listings') {
+            <div class="segment-section">
+              <!-- Owner Listings -->
+              <app-related-listings
+                [account]="account"
+                [relatedListings]="(relatedListings$ | async) ?? []"
+                relationship="owner"
+                [isProfileOwner]="(isProfileOwner$ | async) ?? false"
+                [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+              ></app-related-listings>
+              <!-- Participating Listings -->
+              <app-related-listings
+                [account]="account"
+                [relatedListings]="(relatedListings$ | async) ?? []"
+                relationship="participant"
+                [isProfileOwner]="(isProfileOwner$ | async) ?? false"
+                [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+              ></app-related-listings>
+              <!-- Saved Listings -->
+              @if ((isProfileOwner$ | async) || (isGroupAdmin$ | async)) {
+                <app-related-listings
+                  [account]="account"
+                  [relatedListings]="(relatedListings$ | async) ?? []"
+                  relationship="saved"
+                  [isProfileOwner]="(isProfileOwner$ | async) ?? false"
+                  [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+                ></app-related-listings>
+              }
+              <!-- Applicant Listings (Owner/Admin Only) -->
+              @if ((isProfileOwner$ | async) || (isGroupAdmin$ | async)) {
+                <app-related-listings
+                  [account]="account"
+                  [relatedListings]="(relatedListings$ | async) ?? []"
+                  relationship="applicant"
+                  [isProfileOwner]="(isProfileOwner$ | async) ?? false"
+                  [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
+                ></app-related-listings>
+              }
+            </div>
+          }
+        </div>
+      </ion-content>
+    } @else {
+      <ion-header>
+        <app-header title=""></app-header>
+      </ion-header>
+      <ion-content>
+        @if ((error$ | async); as error) {
+          @if (error !== 'Account not found') {
+            <div class="ion-padding ion-text-center">
+              <p>This profile is private.</p>
+            </div>
+          }
+        } @else {
+          <div class="ion-padding ion-text-center">
+            <ion-spinner name="crescent"></ion-spinner>
+          </div>
+        }
+      </ion-content>
+    }
 
-      <ion-segment-button
-        *ngIf="account.type === 'user' && (canViewProfessional$ | async)"
-        value="professional"
-      >
-        <ion-icon name="briefcase-outline"></ion-icon>
-        <ion-label>Professional</ion-label>
-      </ion-segment-button>
-
-      <ion-segment-button
-        *ngIf="account.type === 'user' && (canViewLabor$ | async)"
-        value="labor"
-      >
-        <ion-icon name="hammer-outline"></ion-icon>
-        <ion-label>Labor Rights</ion-label>
-      </ion-segment-button>
-
-      <ion-segment-button *ngIf="canViewConnections$ | async" value="connections">
-        <ion-icon name="people-outline"></ion-icon>
-        <ion-label
-          >{{ account.type === 'user' ? 'Friends' : 'Members' }}</ion-label
-        >
-      </ion-segment-button>
-
-      <ion-segment-button *ngIf="canViewOrganizations$ | async" value="organizations">
-        <ion-icon name="business-outline"></ion-icon>
-        <ion-label>Organizations</ion-label>
-      </ion-segment-button>
-
-      <ion-segment-button *ngIf="account.type === 'user'" value="volunteer">
-        <ion-icon name="heart-outline"></ion-icon>
-        <ion-label>Volunteer</ion-label>
-      </ion-segment-button>
-
-      <ion-segment-button
-        *ngIf="account.type === 'user' && account.mutualAidCommunityEngagement"
-        value="mutual-aid"
-      >
-        <ion-icon name="hand-left-outline"></ion-icon>
-        <ion-label>Mutual Aid</ion-label>
-      </ion-segment-button>
-
-      <ion-segment-button *ngIf="account.type === 'group'" value="faq">
-        <ion-icon name="help-circle-outline"></ion-icon>
-        <ion-label>FAQ</ion-label>
-      </ion-segment-button>
-
-      <ion-segment-button value="listings">
-        <ion-icon name="list-outline"></ion-icon>
-        <ion-label>Listings</ion-label>
-      </ion-segment-button>
-    </ion-segment>
-
-    <!-- Segment Content -->
-    <div class="segment-content">
-      <!-- Profile/About Section -->
-      <div *ngIf="selectedSegment === 'profile'" class="segment-section">
-        <app-profile
-          [account]="account"
-          [isOwnerOrAdmin]="!!((isProfileOwner$ | async) || (isGroupAdmin$ | async))"
-        ></app-profile>
-        <app-contact-information
-          [account]="account"
-          [isProfileOwner]="(isProfileOwner$ | async) ?? false"
-          [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
-          [privacySettings]="account.privacySettings"
-        ></app-contact-information>
-        <app-group-calendar
-          *ngIf="account.type === 'group'"
-          [account]="account"
-          [isOwnerOrAdmin]="!!((isProfileOwner$ | async) || (isGroupAdmin$ | async))"
-        ></app-group-calendar>
-      </div>
-
-      <!-- Professional Section -->
-      <div
-        *ngIf="selectedSegment === 'professional' && account.type === 'user'"
-        class="segment-section"
-      >
-        <app-professional-info
-          [professionalInfo]="professionalInfo$ | async"
-          [privacySettings]="account.privacySettings"
-          [isOwnerOrAdmin]="(isOwnerOrAdmin$ | async) || false"
-        ></app-professional-info>
-      </div>
-
-      <!-- Labor Rights Section -->
-      <div
-        *ngIf="selectedSegment === 'labor' && account.type === 'user'"
-        class="segment-section"
-      >
-        <app-labor-rights-info
-          [laborRights]="laborRights$ | async"
-          [privacySettings]="account.privacySettings"
-          [isOwnerOrAdmin]="(isOwnerOrAdmin$ | async) || false"
-        ></app-labor-rights-info>
-      </div>
-
-      <!-- Connections Section -->
-      <div *ngIf="selectedSegment === 'connections'" class="segment-section">
-        <app-related-accounts
-          [account]="account"
-          [relatedAccounts]="(relatedAccounts$ | async) ?? []"
-          type="user"
-          [isProfileOwner]="(isProfileOwner$ | async) ?? false"
-          [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
-          [isRelatedViewer]="(hasRelationship$ | async) ?? false"
-          [viewerId]="(authUser$ | async)?.uid ?? null"
-          [privacySettings]="account.privacySettings"
-        ></app-related-accounts>
-      </div>
-
-      <!-- Organizations Section -->
-      <div *ngIf="selectedSegment === 'organizations'" class="segment-section">
-        <app-related-accounts
-          [account]="account"
-          [relatedAccounts]="(relatedAccounts$ | async) ?? []"
-          type="group"
-          [isProfileOwner]="(isProfileOwner$ | async) ?? false"
-          [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
-          [isRelatedViewer]="(hasRelationship$ | async) ?? false"
-          [viewerId]="(authUser$ | async)?.uid ?? null"
-          [privacySettings]="account.privacySettings"
-        ></app-related-accounts>
-      </div>
-
-      <!-- Volunteer Section -->
-      <div
-        *ngIf="selectedSegment === 'volunteer' && account.type === 'user'"
-        class="segment-section"
-      >
-        <app-volunteer-preference-info
-          [volunteerPreferences]="account.volunteerPreferences"
-          [isOwnerOrAdmin]="(isOwnerOrAdmin$ | async) || false"
-        ></app-volunteer-preference-info>
-      </div>
-
-      <!-- Mutual Aid Section -->
-      <div
-        *ngIf="selectedSegment === 'mutual-aid' && account.type === 'user' && account.mutualAidCommunityEngagement"
-        class="segment-section"
-      >
-        <app-mutual-aid-community-info
-          [mutualAidCommunityEngagement]="account.mutualAidCommunityEngagement"
-        ></app-mutual-aid-community-info>
-      </div>
-
-      <!-- FAQ Section -->
-      <!-- FAQ Section -->
-      <div
-        *ngIf="selectedSegment === 'faq' && account.type === 'group'"
-        class="segment-section"
-      >
-        <app-faq-section
-          [faqs]="account.groupDetails?.faqs || []"
-          [canEdit]="(isGroupAdmin$ | async) || false"
-          [accountId]="account.id"
-          [accountType]="account.type"
-        ></app-faq-section>
-      </div>
-
-      <!-- Listings Section -->
-      <div *ngIf="selectedSegment === 'listings'" class="segment-section">
-        <!-- Owner Listings -->
-        <app-related-listings
-          [account]="account"
-          [relatedListings]="(relatedListings$ | async) ?? []"
-          relationship="owner"
-          [isProfileOwner]="(isProfileOwner$ | async) ?? false"
-          [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
-        ></app-related-listings>
-
-        <!-- Participating Listings -->
-        <app-related-listings
-          [account]="account"
-          [relatedListings]="(relatedListings$ | async) ?? []"
-          relationship="participant"
-          [isProfileOwner]="(isProfileOwner$ | async) ?? false"
-          [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
-        ></app-related-listings>
-
-        <!-- Saved Listings -->
-        <app-related-listings
-          *ngIf="(isProfileOwner$ | async) || (isGroupAdmin$ | async)"
-          [account]="account"
-          [relatedListings]="(relatedListings$ | async) ?? []"
-          relationship="saved"
-          [isProfileOwner]="(isProfileOwner$ | async) ?? false"
-          [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
-        ></app-related-listings>
-
-        <!-- Applicant Listings (Owner/Admin Only) -->
-        <app-related-listings
-          *ngIf="(isProfileOwner$ | async) || (isGroupAdmin$ | async)"
-          [account]="account"
-          [relatedListings]="(relatedListings$ | async) ?? []"
-          relationship="applicant"
-          [isProfileOwner]="(isProfileOwner$ | async) ?? false"
-          [isGroupAdmin]="(isGroupAdmin$ | async) ?? false"
-        ></app-related-listings>
-      </div>
-    </div>
-  </ion-content>
-</ng-container>
-
-<ng-template #loadingOrPrivate>
-  <ng-container *ngIf="(error$ | async) as error; else loading">
-    <p *ngIf="error !== 'Account not found'">This profile is private.</p>
-  </ng-container>
-  <ng-template #loading>
-    <p>Loading account details...</p>
-  </ng-template>
-</ng-template>

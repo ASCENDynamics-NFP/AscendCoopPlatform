@@ -22,7 +22,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   class="listing-card"
   [ngClass]="getTypeClass()"
   [routerLink]="['/listings', listing.id]"
->
+  >
   <!-- Type Color Bar -->
   <div class="type-bar"></div>
 
@@ -50,15 +50,16 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </div>
 
       <!-- Skill Match Badge -->
-      <div
-        *ngIf="showMatchBadge && skillMatch && userSkills.length > 0"
-        class="match-badge-wrapper"
-        [title]="tooltipText"
-      >
-        <ion-badge [color]="skillMatch.color" class="match-badge">
-          {{ skillMatch.percentage }}% match
-        </ion-badge>
-      </div>
+      @if (showMatchBadge && skillMatch && userSkills.length > 0) {
+        <div
+          class="match-badge-wrapper"
+          [title]="tooltipText"
+          >
+          <ion-badge [color]="skillMatch.color" class="match-badge">
+            {{ skillMatch.percentage }}% match
+          </ion-badge>
+        </div>
+      }
     </div>
   </ion-card-header>
 
@@ -78,10 +79,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-chip>
 
       <!-- Remote Badge -->
-      <ion-chip *ngIf="listing.remote" class="remote-chip" color="success">
-        <ion-icon name="globe-outline"></ion-icon>
-        <ion-label>{{ "listings.remote" | translate }}</ion-label>
-      </ion-chip>
+      @if (listing.remote) {
+        <ion-chip class="remote-chip" color="success">
+          <ion-icon name="globe-outline"></ion-icon>
+          <ion-label>{{ "listings.remote" | translate }}</ion-label>
+        </ion-chip>
+      }
 
       <!-- Time Commitment -->
       <ion-chip class="time-chip">
@@ -93,19 +96,25 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <!-- Footer Row -->
     <div class="footer-row">
       <!-- Location -->
-      <div class="location" *ngIf="!listing.remote">
-        <ion-icon name="location-outline"></ion-icon>
-        <span>{{ getLocation() }}</span>
-      </div>
+      @if (!listing.remote) {
+        <div class="location">
+          <ion-icon name="location-outline"></ion-icon>
+          <span>{{ getLocation() }}</span>
+        </div>
+      }
 
       <!-- Posted Time -->
       <div class="posted-time">
         <ion-icon name="calendar-outline"></ion-icon>
-        <span *ngIf="listing.createdAt"
-          >Posted {{ listing.createdAt | timeAgo }}</span
-        >
-        <span *ngIf="!listing.createdAt">Recently posted</span>
+        @if (listing.createdAt) {
+          <span
+            >Posted {{ listing.createdAt | timeAgo }}</span
+            >
+          }
+          @if (!listing.createdAt) {
+            <span>Recently posted</span>
+          }
+        </div>
       </div>
-    </div>
-  </ion-card-content>
-</ion-card>
+    </ion-card-content>
+  </ion-card>

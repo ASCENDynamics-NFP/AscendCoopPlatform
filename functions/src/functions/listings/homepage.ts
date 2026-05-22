@@ -207,7 +207,7 @@ export const getHomepageListings = onRequest(
             listing.contactInformation.addresses.length > 0,
         )
         .map((listing: Listing) => {
-          const addresses = (listing.contactInformation.addresses || [])
+          const addresses = (listing.contactInformation?.addresses || [])
             .filter((addr): addr is NonNullable<typeof addr> => addr !== null)
             .map((addr) => ({
               remote: addr.remote ?? undefined,

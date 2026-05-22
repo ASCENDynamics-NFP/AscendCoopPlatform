@@ -165,6 +165,7 @@
     "no_results": "No results. Try a different search.",
     "loading_more": "Loading more...",
     "loading_map": "Loading map...",
+    "map_unavailable": "Map unavailable. Please check your connection.",
     "no_locations": "No organizations have location data available.",
     "no_locations_hint": "Organizations need geocoded addresses to appear on the map.",
     "no_organizations_map": "No organizations to display on the map."

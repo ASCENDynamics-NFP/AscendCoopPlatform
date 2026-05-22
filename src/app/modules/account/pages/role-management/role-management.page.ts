@@ -49,6 +49,7 @@ interface CategorizedRoles {
 }
 
 @Component({
+  standalone: false,
   selector: "app-role-management",
   templateUrl: "./role-management.page.html",
   styleUrls: ["./role-management.page.scss"],

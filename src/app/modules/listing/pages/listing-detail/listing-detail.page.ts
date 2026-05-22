@@ -54,6 +54,7 @@ import {RelatedListing} from "@shared/models/related-listing.model";
 import {AccessService} from "../../../../core/services/access.service";
 
 @Component({
+  standalone: false,
   selector: "app-listing-detail",
   templateUrl: "./listing-detail.page.html",
   styleUrls: ["./listing-detail.page.scss"],
@@ -68,7 +69,7 @@ export class ListingDetailPage implements OnInit {
 
   constructor(
     private metaService: MetaService,
-    private store: Store<AppState>,
+    private store: Store,
     private route: ActivatedRoute,
     private access: AccessService,
   ) {

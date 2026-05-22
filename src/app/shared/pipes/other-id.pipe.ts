@@ -23,6 +23,7 @@ import {Pipe, PipeTransform} from "@angular/core";
 import {RelatedAccount} from "@shared/models/account.model";
 
 @Pipe({
+  standalone: false,
   name: "otherId",
 })
 export class OtherIdPipe implements PipeTransform {

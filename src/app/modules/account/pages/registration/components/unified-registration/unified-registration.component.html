@@ -1,4 +1,4 @@
-<!-- 
+<!--
 Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
 Copyright (C) 2023  ASCENDynamics NFP
 
@@ -26,9 +26,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </h3>
       <p class="section-description">
         {{
-          isGroupRegistration
-            ? "Tell us about your organization to get started"
-            : "Complete your profile to join the community"
+        isGroupRegistration
+        ? "Tell us about your organization to get started"
+        : "Complete your profile to join the community"
         }}
       </p>
 
@@ -52,15 +52,16 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               "
               class="required-field"
             ></ion-input>
-            <ion-note
-              *ngIf="
-                registrationForm.get('name')?.invalid &&
-                registrationForm.get('name')?.touched
-              "
-              color="danger"
-            >
-              {{ nameLabel }} is required
-            </ion-note>
+            @if (
+              registrationForm.get('name')?.invalid &&
+              registrationForm.get('name')?.touched
+              ) {
+              <ion-note
+                color="danger"
+                >
+                {{ nameLabel }} is required
+              </ion-note>
+            }
           </ion-col>
         </ion-row>
 
@@ -81,227 +82,234 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               "
               class="required-field"
             ></ion-input>
-            <ion-note
-              *ngIf="
-                registrationForm.get('tagline')?.invalid &&
-                registrationForm.get('tagline')?.touched
-              "
-              color="danger"
-            >
-              Tagline is required
-            </ion-note>
+            @if (
+              registrationForm.get('tagline')?.invalid &&
+              registrationForm.get('tagline')?.touched
+              ) {
+              <ion-note
+                color="danger"
+                >
+                Tagline is required
+              </ion-note>
+            }
           </ion-col>
         </ion-row>
 
         <!-- Group Type (Groups Only) -->
-        <ion-row *ngIf="isGroupRegistration">
-          <ion-col size="12">
-            <ion-select
-              label="Organization Type"
-              label-placement="floating"
-              formControlName="groupType"
-              interface="popover"
-              placeholder="Select type"
-              fill="outline"
-              class="required-field"
-            >
-              <ion-select-option value="Business">Business</ion-select-option>
-              <ion-select-option value="Community"
-                >Community Group</ion-select-option
-              >
-              <ion-select-option value="Cooperative"
-                >Cooperative</ion-select-option
-              >
-              <ion-select-option value="Government"
-                >Government</ion-select-option
-              >
-              <ion-select-option value="Nonprofit">Nonprofit</ion-select-option>
-              <ion-select-option value="Initiative"
-                >Social Initiative</ion-select-option
-              >
-              <ion-select-option value="Other">Other</ion-select-option>
-            </ion-select>
-            <ion-note
-              *ngIf="
-                registrationForm.get('groupType')?.invalid &&
-                registrationForm.get('groupType')?.touched
-              "
-              color="danger"
-            >
-              Organization type is required
-            </ion-note>
-          </ion-col>
-        </ion-row>
+        @if (isGroupRegistration) {
+          <ion-row>
+            <ion-col size="12">
+              <ion-select
+                label="Organization Type"
+                label-placement="floating"
+                formControlName="groupType"
+                interface="popover"
+                placeholder="Select type"
+                fill="outline"
+                class="required-field"
+                >
+                <ion-select-option value="Business">Business</ion-select-option>
+                <ion-select-option value="Community"
+                  >Community Group</ion-select-option
+                  >
+                  <ion-select-option value="Cooperative"
+                    >Cooperative</ion-select-option
+                    >
+                    <ion-select-option value="Government"
+                      >Government</ion-select-option
+                      >
+                      <ion-select-option value="Nonprofit">Nonprofit</ion-select-option>
+                      <ion-select-option value="Initiative"
+                        >Social Initiative</ion-select-option
+                        >
+                        <ion-select-option value="Other">Other</ion-select-option>
+                      </ion-select>
+                      @if (
+                        registrationForm.get('groupType')?.invalid &&
+                        registrationForm.get('groupType')?.touched
+                        ) {
+                        <ion-note
+                          color="danger"
+                          >
+                          Organization type is required
+                        </ion-note>
+                      }
+                    </ion-col>
+                  </ion-row>
+                }
 
-        <!-- Optional Description -->
-        <ion-row>
-          <ion-col size="12">
-            <ion-textarea
-              label="Brief Description (Optional)"
-              label-placement="floating"
-              fill="outline"
-              formControlName="description"
-              maxlength="300"
-              [counter]="true"
+                <!-- Optional Description -->
+                <ion-row>
+                  <ion-col size="12">
+                    <ion-textarea
+                      label="Brief Description (Optional)"
+                      label-placement="floating"
+                      fill="outline"
+                      formControlName="description"
+                      maxlength="300"
+                      [counter]="true"
               [placeholder]="
                 isGroupRegistration
                   ? 'Briefly describe your organization\'s mission and goals...'
                   : 'Tell us about your interests and what you hope to achieve...'
               "
-              [autoGrow]="true"
-              rows="3"
-            ></ion-textarea>
-            <ion-note color="medium">
-              Help others understand
-              {{ isGroupRegistration ? "your organization" : "who you are" }}
-            </ion-note>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-    </div>
-
-    <!-- Expandable Additional Information -->
-    <div class="optional-fields">
-      <ion-accordion-group [multiple]="false">
-        <ion-accordion value="additional" [disabled]="false">
-          <ion-item slot="header" class="accordion-header">
-            <ion-label>
-              <h4>Additional Information (Optional)</h4>
-              <p>Add contact details and links to enhance your profile</p>
-            </ion-label>
-          </ion-item>
-
-          <div slot="content" class="optional-content">
-            <!-- Contact Information -->
-            <div class="contact-section" formGroupName="contactInformation">
-              <h5>Contact Information</h5>
-
-              <!-- Primary Email -->
-              <ion-row>
-                <ion-col size="12">
-                  <ion-input
-                    label="Contact Email (Optional)"
-                    label-placement="floating"
-                    fill="outline"
-                    type="email"
-                    formControlName="primaryEmail"
-                    placeholder="contact@example.com"
-                  ></ion-input>
-                  <ion-note
-                    *ngIf="
-                      registrationForm.get('contactInformation.primaryEmail')
-                        ?.invalid &&
-                      registrationForm.get('contactInformation.primaryEmail')
-                        ?.touched &&
-                      registrationForm.get('contactInformation.primaryEmail')
-                        ?.errors?.['email']
-                    "
-                    color="danger"
-                  >
-                    Please enter a valid email address
-                  </ion-note>
-                </ion-col>
-              </ion-row>
-
-              <!-- Phone -->
-              <ion-row>
-                <ion-col size="12">
-                  <ion-input
-                    label="Phone Number (Optional)"
-                    label-placement="floating"
-                    fill="outline"
-                    type="tel"
-                    inputmode="tel"
-                    formControlName="primaryPhone"
-                    placeholder="+1 (555) 123-4567"
-                    maxlength="19"
-                    (ionInput)="formatPhoneNumber($event)"
-                  ></ion-input>
-                </ion-col>
-              </ion-row>
+                      [autoGrow]="true"
+                      rows="3"
+                    ></ion-textarea>
+                    <ion-note color="medium">
+                      Help others understand
+                      {{ isGroupRegistration ? "your organization" : "who you are" }}
+                    </ion-note>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
             </div>
 
-            <!-- Web Links -->
-            <div class="links-section">
-              <h5>Online Presence</h5>
+            <!-- Expandable Additional Information -->
+            <div class="optional-fields">
+              <ion-accordion-group [multiple]="false">
+                <ion-accordion value="additional" [disabled]="false">
+                  <ion-item slot="header" class="accordion-header">
+                    <ion-label>
+                      <h4>Additional Information (Optional)</h4>
+                      <p>Add contact details and links to enhance your profile</p>
+                    </ion-label>
+                  </ion-item>
 
-              <ion-row>
-                <ion-col size="12">
-                  <ion-input
-                    label="Website (Optional)"
-                    label-placement="floating"
-                    fill="outline"
-                    type="url"
-                    formControlName="website"
-                    placeholder="https://yourwebsite.com"
-                  ></ion-input>
-                  <ion-note
-                    *ngIf="
-                      registrationForm.get('website')?.invalid &&
-                      registrationForm.get('website')?.touched &&
-                      registrationForm.get('website')?.errors?.['invalidUrl']
-                    "
-                    color="danger"
-                  >
-                    {{
-                      registrationForm.get("website")?.errors?.["invalidUrl"]
-                        ?.message
-                    }}
-                  </ion-note>
-                </ion-col>
-              </ion-row>
+                  <div slot="content" class="optional-content">
+                    <!-- Contact Information -->
+                    <div class="contact-section" formGroupName="contactInformation">
+                      <h5>Contact Information</h5>
 
-              <ion-row>
-                <ion-col size="12">
-                  <ion-input
-                    label="Social Media (Optional)"
-                    label-placement="floating"
-                    fill="outline"
-                    type="url"
-                    formControlName="socialMedia"
-                    placeholder="https://facebook.com/yourpage"
-                  ></ion-input>
-                  <ion-note
-                    *ngIf="
-                      registrationForm.get('socialMedia')?.invalid &&
-                      registrationForm.get('socialMedia')?.touched &&
-                      registrationForm.get('socialMedia')?.errors?.[
-                        'invalidUrl'
-                      ]
-                    "
-                    color="danger"
-                  >
-                    {{
-                      registrationForm.get("socialMedia")?.errors?.[
-                        "invalidUrl"
-                      ]?.message
-                    }}
-                  </ion-note>
-                </ion-col>
-              </ion-row>
+                      <!-- Primary Email -->
+                      <ion-row>
+                        <ion-col size="12">
+                          <ion-input
+                            label="Contact Email (Optional)"
+                            label-placement="floating"
+                            fill="outline"
+                            type="email"
+                            formControlName="primaryEmail"
+                            placeholder="contact@example.com"
+                          ></ion-input>
+                          @if (
+                            registrationForm.get('contactInformation.primaryEmail')
+                            ?.invalid &&
+                            registrationForm.get('contactInformation.primaryEmail')
+                            ?.touched &&
+                            registrationForm.get('contactInformation.primaryEmail')
+                            ?.errors?.['email']
+                            ) {
+                            <ion-note
+                              color="danger"
+                              >
+                              Please enter a valid email address
+                            </ion-note>
+                          }
+                        </ion-col>
+                      </ion-row>
+
+                      <!-- Phone -->
+                      <ion-row>
+                        <ion-col size="12">
+                          <ion-input
+                            label="Phone Number (Optional)"
+                            label-placement="floating"
+                            fill="outline"
+                            type="tel"
+                            inputmode="tel"
+                            formControlName="primaryPhone"
+                            placeholder="+1 (555) 123-4567"
+                            maxlength="19"
+                            (ionInput)="formatPhoneNumber($event)"
+                          ></ion-input>
+                        </ion-col>
+                      </ion-row>
+                    </div>
+
+                    <!-- Web Links -->
+                    <div class="links-section">
+                      <h5>Online Presence</h5>
+
+                      <ion-row>
+                        <ion-col size="12">
+                          <ion-input
+                            label="Website (Optional)"
+                            label-placement="floating"
+                            fill="outline"
+                            type="url"
+                            formControlName="website"
+                            placeholder="https://yourwebsite.com"
+                          ></ion-input>
+                          @if (
+                            registrationForm.get('website')?.invalid &&
+                            registrationForm.get('website')?.touched &&
+                            registrationForm.get('website')?.errors?.['invalidUrl']
+                            ) {
+                            <ion-note
+                              color="danger"
+                              >
+                              {{
+                              registrationForm.get("website")?.errors?.["invalidUrl"]
+                              ?.message
+                              }}
+                            </ion-note>
+                          }
+                        </ion-col>
+                      </ion-row>
+
+                      <ion-row>
+                        <ion-col size="12">
+                          <ion-input
+                            label="Social Media (Optional)"
+                            label-placement="floating"
+                            fill="outline"
+                            type="url"
+                            formControlName="socialMedia"
+                            placeholder="https://facebook.com/yourpage"
+                          ></ion-input>
+                          @if (
+                            registrationForm.get('socialMedia')?.invalid &&
+                            registrationForm.get('socialMedia')?.touched &&
+                            registrationForm.get('socialMedia')?.errors?.[
+                            'invalidUrl'
+                            ]
+                            ) {
+                            <ion-note
+                              color="danger"
+                              >
+                              {{
+                              registrationForm.get("socialMedia")?.errors?.[
+                              "invalidUrl"
+                              ]?.message
+                              }}
+                            </ion-note>
+                          }
+                        </ion-col>
+                      </ion-row>
+                    </div>
+                  </div>
+                </ion-accordion>
+              </ion-accordion-group>
+            </div>
+
+            <!-- Submit Section -->
+            <div class="submit-section">
+              <ion-button
+                type="submit"
+                expand="block"
+                size="large"
+                class="submit-button"
+                [disabled]="registrationForm.invalid"
+                >
+                <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+                Create {{ isGroupRegistration ? "Organization" : "Profile" }}
+              </ion-button>
+
+              <p class="submit-help">
+                You can always update your
+                {{ isGroupRegistration ? "organization" : "profile" }} information later
+              </p>
             </div>
           </div>
-        </ion-accordion>
-      </ion-accordion-group>
-    </div>
-
-    <!-- Submit Section -->
-    <div class="submit-section">
-      <ion-button
-        type="submit"
-        expand="block"
-        size="large"
-        class="submit-button"
-        [disabled]="registrationForm.invalid"
-      >
-        <ion-icon name="checkmark-circle" slot="start"></ion-icon>
-        Create {{ isGroupRegistration ? "Organization" : "Profile" }}
-      </ion-button>
-
-      <p class="submit-help">
-        You can always update your
-        {{ isGroupRegistration ? "organization" : "profile" }} information later
-      </p>
-    </div>
-  </div>
-</form>
+        </form>

@@ -23,6 +23,7 @@ import {Account} from "../../../../../../../../shared/models/account.model";
 import {ImageUploadModalComponent} from "../../../../../../shared/components/image-upload-modal/image-upload-modal.component";
 
 @Component({
+  standalone: false,
   selector: "app-edit-menu",
   templateUrl: "./edit-menu.component.html",
   styleUrls: ["./edit-menu.component.scss"],

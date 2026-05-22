@@ -24,6 +24,7 @@ import {
 } from "../../../../state/selectors/account.selectors";
 
 @Component({
+  standalone: false,
   selector: "app-invite-member-modal",
   templateUrl: "./invite-member-modal.component.html",
   styleUrls: ["./invite-member-modal.component.scss"],

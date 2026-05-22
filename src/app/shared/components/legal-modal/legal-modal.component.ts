@@ -26,7 +26,7 @@ import {IonicModule, ModalController} from "@ionic/angular";
   templateUrl: "./legal-modal.component.html",
   styleUrls: ["./legal-modal.component.scss"],
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [IonicModule],
 })
 export class LegalModalComponent {
   @Input() content?: "termsOfUse" | "privacyPolicy";

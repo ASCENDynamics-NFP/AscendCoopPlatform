@@ -40,6 +40,7 @@ export interface ListingMarker {
 }
 
 @Component({
+  standalone: false,
   selector: "app-listings-map",
   templateUrl: "./listings-map.component.html",
   styleUrls: ["./listings-map.component.scss"],

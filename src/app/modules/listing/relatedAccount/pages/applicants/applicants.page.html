@@ -25,132 +25,144 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 </ion-header>
 
 <ion-content>
-  <app-hero
-    *ngIf="listing$ | async as listing"
-    [listing]="listing"
-    [isOwner]="(isOwner$ | async) ?? false"
-    [showButtons]="false"
-  ></app-hero>
+  @if (listing$ | async; as listing) {
+    <app-hero
+      [listing]="listing"
+      [isOwner]="(isOwner$ | async) ?? false"
+      [showButtons]="false"
+    ></app-hero>
+  }
 
   <!-- View Mode Toggle & Actions Toolbar -->
-  <ion-toolbar *ngIf="isOwner$ | async" class="actions-toolbar">
-    <ion-segment [(ngModel)]="viewMode" (ionChange)="toggleViewMode(viewMode)">
-      <ion-segment-button value="list">
-        <ion-icon name="list-outline"></ion-icon>
-        <ion-label>List</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="pipeline">
-        <ion-icon name="git-branch-outline"></ion-icon>
-        <ion-label>Pipeline</ion-label>
-      </ion-segment-button>
-    </ion-segment>
-
-    <ion-buttons slot="end">
-      <ion-button (click)="exportToCsv()" title="Export to CSV">
-        <ion-icon slot="icon-only" name="download-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
+  @if (isOwner$ | async) {
+    <ion-toolbar class="actions-toolbar">
+      <ion-segment [(ngModel)]="viewMode" (ionChange)="toggleViewMode(viewMode)">
+        <ion-segment-button value="list">
+          <ion-icon name="list-outline"></ion-icon>
+          <ion-label>List</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="pipeline">
+          <ion-icon name="git-branch-outline"></ion-icon>
+          <ion-label>Pipeline</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+      <ion-buttons slot="end">
+        <ion-button (click)="exportToCsv()" title="Export to CSV">
+          <ion-icon slot="icon-only" name="download-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  }
 
   <!-- Bulk Actions Bar (visible when items are selected) -->
-  <ion-toolbar
-    *ngIf="(isOwner$ | async) && (selectedCount$ | async) as count"
-    class="bulk-actions-bar"
-    [class.visible]="count > 0"
-  >
-    <ion-label slot="start" class="selection-count">
-      {{ count }} selected
-    </ion-label>
+  @if ((isOwner$ | async) && (selectedCount$ | async); as count) {
+    <ion-toolbar
+      class="bulk-actions-bar"
+      [class.visible]="count > 0"
+      >
+      <ion-label slot="start" class="selection-count">
+        {{ count }} selected
+      </ion-label>
+      <ion-buttons slot="start">
+        <ion-button size="small" (click)="selectAll()"> Select All </ion-button>
+        <ion-button size="small" (click)="deselectAll()">
+          Deselect All
+        </ion-button>
+      </ion-buttons>
+      <ion-buttons slot="end">
+        <ion-button
+          color="secondary"
+          fill="solid"
+          size="small"
+          (click)="bulkUpdateStatus('reviewing')"
+          >
+          <ion-icon slot="start" name="eye-outline"></ion-icon>
+          Reviewing
+        </ion-button>
+        <ion-button
+          color="tertiary"
+          fill="solid"
+          size="small"
+          (click)="bulkUpdateStatus('interviewed')"
+          >
+          <ion-icon slot="start" name="chatbubbles-outline"></ion-icon>
+          Interviewed
+        </ion-button>
+        <ion-button
+          color="success"
+          fill="solid"
+          size="small"
+          (click)="bulkUpdateStatus('accepted')"
+          >
+          <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+          Accept
+        </ion-button>
+        <ion-button
+          color="danger"
+          fill="solid"
+          size="small"
+          (click)="bulkUpdateStatus('declined')"
+          >
+          <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+          Decline
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  }
 
-    <ion-buttons slot="start">
-      <ion-button size="small" (click)="selectAll()"> Select All </ion-button>
-      <ion-button size="small" (click)="deselectAll()">
-        Deselect All
-      </ion-button>
-    </ion-buttons>
-
-    <ion-buttons slot="end">
-      <ion-button
-        color="secondary"
-        fill="solid"
-        size="small"
-        (click)="bulkUpdateStatus('reviewing')"
-      >
-        <ion-icon slot="start" name="eye-outline"></ion-icon>
-        Reviewing
-      </ion-button>
-      <ion-button
-        color="tertiary"
-        fill="solid"
-        size="small"
-        (click)="bulkUpdateStatus('interviewed')"
-      >
-        <ion-icon slot="start" name="chatbubbles-outline"></ion-icon>
-        Interviewed
-      </ion-button>
-      <ion-button
-        color="success"
-        fill="solid"
-        size="small"
-        (click)="bulkUpdateStatus('accepted')"
-      >
-        <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
-        Accept
-      </ion-button>
-      <ion-button
-        color="danger"
-        fill="solid"
-        size="small"
-        (click)="bulkUpdateStatus('declined')"
-      >
-        <ion-icon slot="start" name="close-circle-outline"></ion-icon>
-        Decline
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-
-  <ion-loading
-    *ngIf="loading$ | async"
-    message="Loading applicants..."
-  ></ion-loading>
+  @if (loading$ | async) {
+    <ion-loading
+      message="Loading applicants..."
+    ></ion-loading>
+  }
 
   <!-- List View -->
-  <ng-container *ngIf="viewMode === 'list'">
-    <ion-list *ngIf="!(loading$ | async)">
-      <ion-item
-        *ngFor="let account of paginatedAccounts$ | async"
-        (click)="openApplicantDetailsModal(account)"
-      >
-        <!-- Checkbox for bulk selection -->
-        <ion-checkbox
-          *ngIf="isOwner$ | async"
-          slot="start"
-          [checked]="isSelected(account.id) | async"
-          (ionChange)="toggleSelection(account.id)"
-          (click)="$event.stopPropagation()"
-        ></ion-checkbox>
-
-        <ion-avatar slot="start">
-          <img *ngIf="account.iconImage" [src]="account.iconImage" />
-          <ion-icon
-            *ngIf="!account.iconImage"
-            name="person-circle-outline"
-            style="font-size: 40px"
-          ></ion-icon>
-        </ion-avatar>
-        <ion-label>
-          <h2>{{ account.firstName }} {{ account.lastName }}</h2>
-          <h3 *ngIf="isOwner$ | async">{{ account.email }}</h3>
-          <p *ngIf="account.phone && (isOwner$ | async)">
-            {{ account.phone | phoneFormat }}
-          </p>
-          <p *ngIf="isOwner$ | async">
-            Applied: {{ account.applicationDate | timestamp }}
-          </p>
-        </ion-label>
-        <ion-badge
-          *ngIf="isOwner$ | async"
-          slot="end"
+  @if (viewMode === 'list') {
+    @if (!(loading$ | async)) {
+      <ion-list>
+        @for (account of paginatedAccounts$ | async; track account) {
+          <ion-item
+            (click)="openApplicantDetailsModal(account)"
+            >
+            <!-- Checkbox for bulk selection -->
+            @if (isOwner$ | async) {
+              <ion-checkbox
+                slot="start"
+                [checked]="isSelected(account.id) | async"
+                (ionChange)="toggleSelection(account.id)"
+                (click)="$event.stopPropagation()"
+              ></ion-checkbox>
+            }
+            <ion-avatar slot="start">
+              @if (account.iconImage) {
+                <img [src]="account.iconImage" />
+              }
+              @if (!account.iconImage) {
+                <ion-icon
+                  name="person-circle-outline"
+                  style="font-size: 40px"
+                ></ion-icon>
+              }
+            </ion-avatar>
+            <ion-label>
+              <h2>{{ account.firstName }} {{ account.lastName }}</h2>
+              @if (isOwner$ | async) {
+                <h3>{{ account.email }}</h3>
+              }
+              @if (account.phone && (isOwner$ | async)) {
+                <p>
+                  {{ account.phone | phoneFormat }}
+                </p>
+              }
+              @if (isOwner$ | async) {
+                <p>
+                  Applied: {{ account.applicationDate | timestamp }}
+                </p>
+              }
+            </ion-label>
+            @if (isOwner$ | async) {
+              <ion-badge
+                slot="end"
           [color]="
             account.status === 'accepted' ? 'success' :
             account.status === 'declined' ? 'danger' :
@@ -158,44 +170,53 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             account.status === 'interviewed' ? 'tertiary' :
             account.status === 'withdrawn' ? 'medium' : 'primary'
           "
-        >
-          {{ account.status }}
-        </ion-badge>
-      </ion-item>
-    </ion-list>
-  </ng-container>
+                >
+                {{ account.status }}
+              </ion-badge>
+            }
+          </ion-item>
+        }
+      </ion-list>
+    }
+  }
 
   <!-- Pipeline View -->
-  <ng-container *ngIf="viewMode === 'pipeline' && (isOwner$ | async)">
-    <app-applicant-pipeline
-      *ngIf="accountsByStatus$ | async as accountsByStatus"
-      [accountsByStatus]="accountsByStatus"
-      (statusChange)="onStatusChange($event)"
-      (applicantClick)="openApplicantDetailsModal($event)"
-    ></app-applicant-pipeline>
-  </ng-container>
+  @if (viewMode === 'pipeline' && (isOwner$ | async)) {
+    @if (accountsByStatus$ | async; as accountsByStatus) {
+      <app-applicant-pipeline
+        [accountsByStatus]="accountsByStatus"
+        (statusChange)="onStatusChange($event)"
+        (applicantClick)="openApplicantDetailsModal($event)"
+      ></app-applicant-pipeline>
+    }
+  }
 
-  <ion-text
-    class="ion-padding"
-    *ngIf="
-      (relatedAccounts$ | async)?.length === 0 &&
-      !(loading$ | async) &&
-      !(error$ | async)
-    "
-  >
-    No applicants found.
-  </ion-text>
+  @if (
+    (relatedAccounts$ | async)?.length === 0 &&
+    !(loading$ | async) &&
+    !(error$ | async)
+    ) {
+    <ion-text
+      class="ion-padding"
+      >
+      No applicants found.
+    </ion-text>
+  }
 
-  <ion-text color="danger" *ngIf="error$ | async as error">
-    {{ error }}
-  </ion-text>
+  @if (error$ | async; as error) {
+    <ion-text color="danger">
+      {{ error }}
+    </ion-text>
+  }
 </ion-content>
 
 <!-- Pagination Controls (only for list view) -->
-<ion-footer *ngIf="viewMode === 'list'">
-  <app-pagination
-    [totalItems]="(relatedAccounts$ | async)?.length || 0"
-    [pageSize]="pageSize"
-    (pageChange)="goToPage($event)"
-  ></app-pagination>
-</ion-footer>
+@if (viewMode === 'list') {
+  <ion-footer>
+    <app-pagination
+      [totalItems]="(relatedAccounts$ | async)?.length || 0"
+      [pageSize]="pageSize"
+      (pageChange)="goToPage($event)"
+    ></app-pagination>
+  </ion-footer>
+}

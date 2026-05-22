@@ -34,7 +34,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               fill="outline"
               (click)="addFAQ()"
               class="add-faq-btn"
-            >
+              >
               <ion-icon name="add-circle-outline" slot="start"></ion-icon>
               {{ "common.add_faq" | translate }}
             </ion-button>
@@ -44,120 +44,123 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
       <!-- FAQ Items -->
       <div formArrayName="faqs">
-        <div
-          *ngFor="let faqControl of faqsFormArray.controls; let i = index"
-          [formGroupName]="i"
-          class="faq-item"
-        >
-          <ion-card class="faq-card">
-            <ion-card-header>
-              <ion-card-title class="faq-item-title">
-                FAQ {{ i + 1 }}
-                <div class="faq-actions">
-                  <ion-button
-                    type="button"
-                    fill="clear"
-                    size="small"
-                    [disabled]="i === 0"
-                    (click)="moveFAQUp(i)"
-                    title="Move up"
-                  >
-                    <ion-icon name="arrow-up" slot="icon-only"></ion-icon>
-                  </ion-button>
-                  <ion-button
-                    type="button"
-                    fill="clear"
-                    size="small"
-                    [disabled]="i === faqsFormArray.length - 1"
-                    (click)="moveFAQDown(i)"
-                    title="Move down"
-                  >
-                    <ion-icon name="arrow-down" slot="icon-only"></ion-icon>
-                  </ion-button>
-                  <ion-button
-                    type="button"
-                    fill="clear"
-                    size="small"
-                    color="danger"
-                    (click)="removeFAQ(i)"
-                    [title]="'common.delete_faq' | translate"
-                  >
-                    <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-                  </ion-button>
-                </div>
-              </ion-card-title>
-            </ion-card-header>
-
-            <ion-card-content>
-              <ion-grid>
-                <!-- Question -->
-                <ion-row>
-                  <ion-col>
-                    <ion-input
-                      formControlName="question"
-                      label="Question"
-                      label-placement="floating"
-                      fill="outline"
-                      placeholder="Enter the question"
-                      maxlength="500"
-                      [counter]="true"
-                    ></ion-input>
-                    <ion-note
-                      *ngIf="
+        @for (faqControl of faqsFormArray.controls; track faqControl; let i = $index) {
+          <div
+            [formGroupName]="i"
+            class="faq-item"
+            >
+            <ion-card class="faq-card">
+              <ion-card-header>
+                <ion-card-title class="faq-item-title">
+                  FAQ {{ i + 1 }}
+                  <div class="faq-actions">
+                    <ion-button
+                      type="button"
+                      fill="clear"
+                      size="small"
+                      [disabled]="i === 0"
+                      (click)="moveFAQUp(i)"
+                      title="Move up"
+                      >
+                      <ion-icon name="arrow-up" slot="icon-only"></ion-icon>
+                    </ion-button>
+                    <ion-button
+                      type="button"
+                      fill="clear"
+                      size="small"
+                      [disabled]="i === faqsFormArray.length - 1"
+                      (click)="moveFAQDown(i)"
+                      title="Move down"
+                      >
+                      <ion-icon name="arrow-down" slot="icon-only"></ion-icon>
+                    </ion-button>
+                    <ion-button
+                      type="button"
+                      fill="clear"
+                      size="small"
+                      color="danger"
+                      (click)="removeFAQ(i)"
+                      [title]="'common.delete_faq' | translate"
+                      >
+                      <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                  </div>
+                </ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <ion-grid>
+                  <!-- Question -->
+                  <ion-row>
+                    <ion-col>
+                      <ion-input
+                        formControlName="question"
+                        label="Question"
+                        label-placement="floating"
+                        fill="outline"
+                        placeholder="Enter the question"
+                        maxlength="500"
+                        [counter]="true"
+                      ></ion-input>
+                      @if (
                         faqControl.get('question')?.invalid &&
                         faqControl.get('question')?.touched
-                      "
-                      color="danger"
-                    >
-                      {{ "messaging.question_validation" | translate }}
-                    </ion-note>
-                  </ion-col>
-                </ion-row>
-
-                <!-- Answer -->
-                <ion-row>
-                  <ion-col>
-                    <ion-textarea
-                      formControlName="answer"
-                      label="Answer"
-                      label-placement="floating"
-                      fill="outline"
-                      placeholder="Enter the answer"
-                      rows="6"
-                      maxlength="2000"
-                      [counter]="true"
-                    ></ion-textarea>
-                    <ion-note
-                      *ngIf="
+                        ) {
+                        <ion-note
+                          color="danger"
+                          >
+                          {{ "messaging.question_validation" | translate }}
+                        </ion-note>
+                      }
+                    </ion-col>
+                  </ion-row>
+                  <!-- Answer -->
+                  <ion-row>
+                    <ion-col>
+                      <ion-textarea
+                        formControlName="answer"
+                        label="Answer"
+                        label-placement="floating"
+                        fill="outline"
+                        placeholder="Enter the answer"
+                        rows="6"
+                        maxlength="2000"
+                        [counter]="true"
+                      ></ion-textarea>
+                      @if (
                         faqControl.get('answer')?.invalid &&
                         faqControl.get('answer')?.touched
-                      "
-                      color="danger"
-                    >
-                      {{ "messaging.answer_validation" | translate }}
-                    </ion-note>
-                  </ion-col>
-                </ion-row>
-              </ion-grid>
-            </ion-card-content>
-          </ion-card>
-        </div>
+                        ) {
+                        <ion-note
+                          color="danger"
+                          >
+                          {{ "messaging.answer_validation" | translate }}
+                        </ion-note>
+                      }
+                    </ion-col>
+                  </ion-row>
+                </ion-grid>
+              </ion-card-content>
+            </ion-card>
+          </div>
+        }
       </div>
 
       <!-- Empty State -->
-      <ion-row *ngIf="faqsFormArray.length === 0">
-        <ion-col>
-          <div class="empty-state">
-            <ion-icon name="help-circle-outline" class="empty-icon"></ion-icon>
-            <h4>{{ "common.no_faqs_yet" | translate }}</h4>
-            <p>{{ "common.add_first_faq_help" | translate }}</p>
-            <ion-button fill="outline" (click)="addFAQ()">
-              <ion-icon name="add" slot="start"></ion-icon>
-              {{ "common.add_first_faq" | translate }}
-            </ion-button>
-          </div>
-        </ion-col>
-      </ion-row>
+      @if (faqsFormArray.length === 0) {
+        <ion-row>
+          <ion-col>
+            <div class="empty-state">
+              <ion-icon name="help-circle-outline" class="empty-icon"></ion-icon>
+              <h4>{{ "common.no_faqs_yet" | translate }}</h4>
+              <p>{{ "common.add_first_faq_help" | translate }}</p>
+              <ion-button fill="outline" (click)="addFAQ()">
+                <ion-icon name="add" slot="start"></ion-icon>
+                {{ "common.add_first_faq" | translate }}
+              </ion-button>
+            </div>
+          </ion-col>
+        </ion-row>
+      }
 
       <!-- Save Button -->
       <ion-row>
@@ -167,7 +170,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             expand="block"
             [disabled]="faqForm.invalid"
             class="save-btn"
-          >
+            >
             <ion-icon name="save-outline" slot="start"></ion-icon>
             Save FAQs
           </ion-button>

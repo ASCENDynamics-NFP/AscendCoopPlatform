@@ -26,6 +26,7 @@ import {map, Observable} from "rxjs";
 import {AuthUser} from "@shared/models/auth-user.model";
 
 @Component({
+  standalone: false,
   selector: "app-header",
   templateUrl: "./app-header.component.html",
   styleUrls: ["./app-header.component.scss"],

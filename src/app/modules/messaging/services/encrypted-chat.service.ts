@@ -17,8 +17,11 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Injectable, Injector} from "@angular/core";
-import {AngularFirestore} from "@angular/fire/compat/firestore";
+import {Injectable, Injector, runInInjectionContext} from "@angular/core";
+import {
+  AngularFirestore,
+  AngularFirestoreDocument,
+} from "@angular/fire/compat/firestore";
 import {
   Observable,
   from,
@@ -72,7 +75,7 @@ export class EncryptedChatService {
 
   constructor(
     private firestore: AngularFirestore,
-    private store: Store<{auth: AuthState}>,
+    private store: Store,
     private encryptionService: EncryptionService,
     private chatService: ChatService,
     private injector: Injector, // Use Injector to lazily get KeyBackupService
@@ -95,6 +98,12 @@ export class EncryptedChatService {
   // Lazy getter for KeyBackupService to avoid circular dependency
   private get keyBackupService(): any {
     return this.injector.get("KeyBackupService" as any, null);
+  }
+
+  private afDoc<T>(path: string): AngularFirestoreDocument<T> {
+    return runInInjectionContext(this.injector, () =>
+      this.firestore.doc<T>(path),
+    );
   }
 
   private getCurrentUserId(): Observable<string> {
@@ -126,12 +135,12 @@ export class EncryptedChatService {
 
       try {
         const userKeyDoc = await firstValueFrom(
-          this.firestore.collection("userKeys").doc(userId).get(),
+          this.afDoc(`userKeys/${userId}`).get(),
         );
 
         if (!userKeyDoc.exists) {
           // Upload public key to Firestore
-          await this.firestore.collection("userKeys").doc(userId).set({
+          await this.afDoc(`userKeys/${userId}`).set({
             publicKey: publicKeyString,
             createdAt: new Date(),
             userId: userId,
@@ -172,7 +181,7 @@ export class EncryptedChatService {
       // For other users, get their public key from Firestore
       try {
         const userKeyDoc = await firstValueFrom(
-          this.firestore.collection("userKeys").doc(userId).get(),
+          this.afDoc(`userKeys/${userId}`).get(),
         );
 
         if (!userKeyDoc.exists) {
@@ -852,7 +861,7 @@ export class EncryptedChatService {
       // Keys exist - ensure public key is in Firestore
       try {
         const userKeyDoc = await firstValueFrom(
-          this.firestore.collection("userKeys").doc(userId).get(),
+          this.afDoc(`userKeys/${userId}`).get(),
         );
 
         if (!userKeyDoc.exists) {
@@ -860,7 +869,7 @@ export class EncryptedChatService {
           const publicKeyString = await this.encryptionService.exportPublicKey(
             existingKeyPair.publicKey,
           );
-          await this.firestore.collection("userKeys").doc(userId).set({
+          await this.afDoc(`userKeys/${userId}`).set({
             publicKey: publicKeyString,
             createdAt: new Date(),
             userId: userId,
@@ -963,7 +972,7 @@ export class EncryptedChatService {
       );
 
       try {
-        await this.firestore.collection("userKeys").doc(userId).set({
+        await this.afDoc(`userKeys/${userId}`).set({
           publicKey: publicKeyString,
           createdAt: new Date(),
           userId: userId,
@@ -1001,7 +1010,7 @@ export class EncryptedChatService {
     await this.encryptionService.clearStoredKeys(currentUser.uid);
 
     // Remove public key from Firestore
-    await this.firestore.collection("userKeys").doc(currentUser.uid).delete();
+    await this.afDoc(`userKeys/${currentUser.uid}`).delete();
   }
 
   /**
@@ -1239,7 +1248,7 @@ export class EncryptedChatService {
 
       // Update Firestore with the public key
       try {
-        await this.firestore.collection("userKeys").doc(userId).set({
+        await this.afDoc(`userKeys/${userId}`).set({
           publicKey: keys.publicKey,
           createdAt: new Date(),
           userId: userId,
@@ -1294,7 +1303,7 @@ export class EncryptedChatService {
       // Check Firestore key
       try {
         const userKeyDoc = await firstValueFrom(
-          this.firestore.collection("userKeys").doc(userId).get(),
+          this.afDoc(`userKeys/${userId}`).get(),
         );
         const userData = userKeyDoc.data() as any;
         hasFirestoreKey = userKeyDoc.exists && !!userData?.publicKey;
@@ -1314,7 +1323,7 @@ export class EncryptedChatService {
       if (hasLocalKeys && hasFirestoreKey) {
         try {
           const userKeyDoc = await firstValueFrom(
-            this.firestore.collection("userKeys").doc(userId).get(),
+            this.afDoc(`userKeys/${userId}`).get(),
           );
           const userData = userKeyDoc.data() as any;
           const firestorePublicKey = userData?.publicKey;
@@ -1385,7 +1394,7 @@ export class EncryptedChatService {
       );
 
       try {
-        await this.firestore.collection("userKeys").doc(userId).set({
+        await this.afDoc(`userKeys/${userId}`).set({
           publicKey: publicKeyString,
           createdAt: new Date(),
           userId: userId,

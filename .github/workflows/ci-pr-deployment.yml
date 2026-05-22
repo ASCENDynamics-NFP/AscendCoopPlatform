@@ -35,7 +35,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '22'
 
       # Step 3: Install dependencies
       - name: Install dependencies
@@ -58,7 +58,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '22'
 
       # Step 2.5: Set up Java for Firebase emulators
       - name: Set up Java
@@ -75,9 +75,9 @@ jobs:
             ~/.npm                    # NPM cache directory
             node_modules              # Root node_modules
             functions/node_modules    # Functions node_modules
-          key: ${{ runner.os }}-node-20-${{ hashFiles('package-lock.json', 'functions/package-lock.json') }}
+          key: ${{ runner.os }}-node-22-${{ hashFiles('package-lock.json', 'functions/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-20-
+            ${{ runner.os }}-node-22-
 
       # Step 4: Install dependencies
       - name: Install dependencies

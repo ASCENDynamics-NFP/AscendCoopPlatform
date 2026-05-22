@@ -66,7 +66,7 @@ export class AccountEffects {
     private listingsService: ListingsService,
     private relationshipService: RelationshipService,
     private storageService: StorageService,
-    private store: Store<AppState>,
+    private store: Store,
     private router: Router,
     private toastController: ToastController,
   ) {}

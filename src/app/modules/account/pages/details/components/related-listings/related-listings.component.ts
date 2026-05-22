@@ -29,6 +29,7 @@ interface ListingGroup {
 }
 
 @Component({
+  standalone: false,
   selector: "app-related-listings",
   templateUrl: "./related-listings.component.html",
   styleUrls: ["./related-listings.component.scss"],

@@ -34,7 +34,13 @@ import {FirestoreService} from "./firestore.service";
   providedIn: "root",
 })
 export class ImageUploadService {
-  private storage = getStorage();
+  private _storage: ReturnType<typeof getStorage> | null = null;
+  private get storage() {
+    if (!this._storage) {
+      this._storage = getStorage();
+    }
+    return this._storage;
+  }
 
   constructor(
     private loadingController: LoadingController,

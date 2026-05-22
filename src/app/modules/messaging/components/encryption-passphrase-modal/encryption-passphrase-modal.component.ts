@@ -28,6 +28,7 @@ import {
 } from "@angular/forms";
 
 @Component({
+  standalone: false,
   selector: "app-encryption-passphrase-modal",
   templateUrl: "./encryption-passphrase-modal.component.html",
   styleUrls: ["./encryption-passphrase-modal.component.scss"],

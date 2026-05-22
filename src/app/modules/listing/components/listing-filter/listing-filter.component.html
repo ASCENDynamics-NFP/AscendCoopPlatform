@@ -19,27 +19,29 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 
 <!-- Filter Toggle Button -->
-<ion-button
-  *ngIf="showToggleButton"
-  fill="clear"
-  size="small"
-  (click)="toggleExpanded()"
-  class="filter-toggle-btn"
->
-  <ion-icon slot="start" name="options-outline"></ion-icon>
-  Filters
-  <ion-badge
-    *ngIf="getActiveFilterCount() > 0"
-    color="primary"
-    class="filter-badge"
-  >
-    {{ getActiveFilterCount() }}
-  </ion-badge>
-  <ion-icon
-    slot="end"
-    [name]="isExpanded ? 'chevron-up-outline' : 'chevron-down-outline'"
-  ></ion-icon>
-</ion-button>
+@if (showToggleButton) {
+  <ion-button
+    fill="clear"
+    size="small"
+    (click)="toggleExpanded()"
+    class="filter-toggle-btn"
+    >
+    <ion-icon slot="start" name="options-outline"></ion-icon>
+    Filters
+    @if (getActiveFilterCount() > 0) {
+      <ion-badge
+        color="primary"
+        class="filter-badge"
+        >
+        {{ getActiveFilterCount() }}
+      </ion-badge>
+    }
+    <ion-icon
+      slot="end"
+      [name]="isExpanded ? 'chevron-up-outline' : 'chevron-down-outline'"
+    ></ion-icon>
+  </ion-button>
+}
 
 <!-- Collapsible Filter Panel -->
 <div class="filter-panel" [class.expanded]="isExpanded">
@@ -52,40 +54,49 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       </ion-label>
 
       <div class="location-controls">
-        <ion-button
-          *ngIf="locationStatus !== 'success'"
-          fill="outline"
-          size="small"
-          (click)="detectLocation()"
-          [disabled]="locationStatus === 'loading'"
-        >
-          <ion-icon slot="start" name="navigate-outline"></ion-icon>
-          <ion-spinner
-            *ngIf="locationStatus === 'loading'"
-            name="crescent"
-          ></ion-spinner>
-          <span *ngIf="locationStatus !== 'loading'">Use My Location</span>
-        </ion-button>
+        @if (locationStatus !== 'success') {
+          <ion-button
+            fill="outline"
+            size="small"
+            (click)="detectLocation()"
+            [disabled]="locationStatus === 'loading'"
+            >
+            <ion-icon slot="start" name="navigate-outline"></ion-icon>
+            @if (locationStatus === 'loading') {
+              <ion-spinner
+                name="crescent"
+              ></ion-spinner>
+            }
+            @if (locationStatus !== 'loading') {
+              <span>Use My Location</span>
+            }
+          </ion-button>
+        }
 
-        <ion-chip *ngIf="locationStatus === 'success'" color="success">
-          <ion-icon name="checkmark-circle"></ion-icon>
-          <ion-label>Location detected</ion-label>
-          <ion-icon name="close-circle" (click)="clearLocation()"></ion-icon>
-        </ion-chip>
+        @if (locationStatus === 'success') {
+          <ion-chip color="success">
+            <ion-icon name="checkmark-circle"></ion-icon>
+            <ion-label>Location detected</ion-label>
+            <ion-icon name="close-circle" (click)="clearLocation()"></ion-icon>
+          </ion-chip>
+        }
 
-        <ion-text
-          *ngIf="locationStatus === 'error'"
-          color="danger"
-          class="location-error"
-        >
-          <ion-icon name="alert-circle-outline"></ion-icon>
-          {{ locationError }}
-        </ion-text>
+        @if (locationStatus === 'error') {
+          <ion-text
+            color="danger"
+            class="location-error"
+            >
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            {{ locationError }}
+          </ion-text>
+        }
       </div>
 
-      <ion-text *ngIf="locationNote" color="medium" class="location-note">
-        <small>{{ locationNote }}</small>
-      </ion-text>
+      @if (locationNote) {
+        <ion-text color="medium" class="location-note">
+          <small>{{ locationNote }}</small>
+        </ion-text>
+      }
 
       <ion-select
         formControlName="radiusKm"
@@ -93,13 +104,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         interface="popover"
         [disabled]="!currentLocation"
         class="radius-select"
-      >
-        <ion-select-option
-          *ngFor="let option of radiusOptions"
-          [value]="option.value"
         >
-          {{ option.label }}
-        </ion-select-option>
+        @for (option of radiusOptions; track option) {
+          <ion-select-option
+            [value]="option.value"
+            >
+            {{ option.label }}
+          </ion-select-option>
+        }
       </ion-select>
     </div>
 
@@ -117,40 +129,43 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     </div>
 
     <!-- Skills Section -->
-    <div class="filter-section" *ngIf="availableSkills.length > 0">
-      <ion-label class="section-label">
-        <ion-icon name="construct-outline"></ion-icon>
-        Skills
-      </ion-label>
-
-      <ion-select
-        formControlName="skills"
-        placeholder="Select skills"
-        [multiple]="true"
-        interface="popover"
-        (ionChange)="onSkillsChange($event)"
-      >
-        <ion-select-option
-          *ngFor="let skill of availableSkills"
-          [value]="skill"
-        >
-          {{ skill }}
-        </ion-select-option>
-      </ion-select>
-
-      <div
-        class="selected-skills"
-        *ngIf="filterForm.get('skills')?.value?.length > 0"
-      >
-        <ion-chip
-          *ngFor="let skill of filterForm.get('skills')?.value"
-          color="primary"
-          outline
-        >
-          {{ skill }}
-        </ion-chip>
+    @if (availableSkills.length > 0) {
+      <div class="filter-section">
+        <ion-label class="section-label">
+          <ion-icon name="construct-outline"></ion-icon>
+          Skills
+        </ion-label>
+        <ion-select
+          formControlName="skills"
+          placeholder="Select skills"
+          [multiple]="true"
+          interface="popover"
+          (ionChange)="onSkillsChange($event)"
+          >
+          @for (skill of availableSkills; track skill) {
+            <ion-select-option
+              [value]="skill"
+              >
+              {{ skill }}
+            </ion-select-option>
+          }
+        </ion-select>
+        @if (filterForm.get('skills')?.value?.length > 0) {
+          <div
+            class="selected-skills"
+            >
+            @for (skill of filterForm.get('skills')?.value; track skill) {
+              <ion-chip
+                color="primary"
+                outline
+                >
+                {{ skill }}
+              </ion-chip>
+            }
+          </div>
+        }
       </div>
-    </div>
+    }
 
     <!-- Hours Per Week Section -->
     <div class="filter-section">
@@ -172,29 +187,31 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         [ticks]="true"
         [snaps]="true"
         step="5"
-      >
+        >
         <ion-label slot="start">{{ hoursRange.min }}</ion-label>
         <ion-label slot="end">{{ hoursRange.max }}+</ion-label>
       </ion-range>
 
       <ion-text color="medium" class="hours-display">
-        <span
-          *ngIf="
-            filterForm.get('hoursPerWeekMin')?.value ||
-            filterForm.get('hoursPerWeekMax')?.value
-          "
-        >
-          {{ filterForm.get("hoursPerWeekMin")?.value || 0 }} -
-          {{ filterForm.get("hoursPerWeekMax")?.value || 40 }}+ hrs/week
-        </span>
-        <span
-          *ngIf="
-            !filterForm.get('hoursPerWeekMin')?.value &&
-            !filterForm.get('hoursPerWeekMax')?.value
-          "
-        >
-          Any hours
-        </span>
+        @if (
+          filterForm.get('hoursPerWeekMin')?.value ||
+          filterForm.get('hoursPerWeekMax')?.value
+          ) {
+          <span
+            >
+            {{ filterForm.get("hoursPerWeekMin")?.value || 0 }} -
+            {{ filterForm.get("hoursPerWeekMax")?.value || 40 }}+ hrs/week
+          </span>
+        }
+        @if (
+          !filterForm.get('hoursPerWeekMin')?.value &&
+          !filterForm.get('hoursPerWeekMax')?.value
+          ) {
+          <span
+            >
+            Any hours
+          </span>
+        }
       </ion-text>
     </div>
 
@@ -206,7 +223,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         size="small"
         (click)="clearAllFilters()"
         [disabled]="!hasActiveFilters()"
-      >
+        >
         <ion-icon slot="start" name="refresh-outline"></ion-icon>
         Clear All Filters
       </ion-button>

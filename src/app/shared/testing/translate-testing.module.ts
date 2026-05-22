@@ -61,6 +61,7 @@ export class MockTranslateService {
   onTranslationChange = of();
   onLangChange = of();
   onDefaultLangChange = of();
+  onFallbackLangChange = of();
 }
 
 /**

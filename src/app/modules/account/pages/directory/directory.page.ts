@@ -51,6 +51,7 @@ import {environment} from "../../../../../environments/environment";
 type DirectoryType = "all" | "user" | "group";
 
 @Component({
+  standalone: false,
   selector: "app-directory",
   templateUrl: "./directory.page.html",
   styleUrls: ["./directory.page.scss"],
@@ -65,6 +66,7 @@ export class DirectoryPage implements OnInit, OnDestroy {
   searchTerms = new Subject<string>();
   searchedValue = "";
   type$ = new BehaviorSubject<DirectoryType>("all");
+  selectedType: DirectoryType = "all";
   includePrivateGroups$ = new BehaviorSubject<boolean>(true); // show groups I'm a member of
   onlyMyGroups$ = new BehaviorSubject<boolean>(false);
   onlyMyConnections$ = new BehaviorSubject<boolean>(false);
@@ -77,6 +79,7 @@ export class DirectoryPage implements OnInit, OnDestroy {
   // View mode: list or map
   viewMode: "list" | "map" = "list";
   mapsLoaded = false;
+  mapsApiReady = false;
   userLocation: {latitude: number; longitude: number} | null = null;
 
   // Infinite scroll
@@ -109,9 +112,6 @@ export class DirectoryPage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Ensure accounts are loaded
-    this.store.dispatch(AccountActions.loadAccounts());
-
     // Track relationships for status icons/filters
     this.relationships$ = this.authUserId$.pipe(
       switchMap((uid) =>
@@ -241,6 +241,11 @@ export class DirectoryPage implements OnInit, OnDestroy {
     );
   }
 
+  ionViewWillEnter() {
+    // Re-dispatch on every visit so cached views always show fresh data
+    this.store.dispatch(AccountActions.loadAccounts());
+  }
+
   search(ev: CustomEvent) {
     // @ts-ignore - target typed as any from ionic event
     const value = (ev?.detail?.value || ev?.target?.value || "").toString();
@@ -353,6 +358,7 @@ export class DirectoryPage implements OnInit, OnDestroy {
   private loadGoogleMaps() {
     // Check if already loaded
     if (typeof google !== "undefined" && google.maps) {
+      this.mapsApiReady = true;
       this.mapsLoaded = true;
       this.cdr.detectChanges();
       return;
@@ -368,6 +374,7 @@ export class DirectoryPage implements OnInit, OnDestroy {
             this.mapsCheckInterval = null;
           }
           this.ngZone.run(() => {
+            this.mapsApiReady = true;
             this.mapsLoaded = true;
             this.cdr.detectChanges();
           });
@@ -379,7 +386,7 @@ export class DirectoryPage implements OnInit, OnDestroy {
     const apiKey = environment.googleMapsApiKey;
     if (!apiKey || apiKey === "YOUR_GOOGLE_MAPS_API_KEY_HERE") {
       console.warn("Google Maps API key not configured");
-      this.mapsLoaded = true; // Still show map component (will show error state)
+      this.mapsLoaded = true; // mapsApiReady stays false -> show error state
       this.cdr.detectChanges();
       return;
     }
@@ -391,6 +398,7 @@ export class DirectoryPage implements OnInit, OnDestroy {
     script.defer = true;
     script.onload = () => {
       this.ngZone.run(() => {
+        this.mapsApiReady = true;
         this.mapsLoaded = true;
         this.cdr.detectChanges();
       });
@@ -398,7 +406,7 @@ export class DirectoryPage implements OnInit, OnDestroy {
     script.onerror = () => {
       console.error("Failed to load Google Maps");
       this.ngZone.run(() => {
-        this.mapsLoaded = true; // Show error state
+        this.mapsLoaded = true; // mapsApiReady stays false -> show error state
         this.cdr.detectChanges();
       });
     };

@@ -37,6 +37,7 @@ import {
 import {GroupRole} from "../../../../../../shared/models/group-role.model";
 
 @Component({
+  standalone: false,
   selector: "app-standard-role-selector",
   templateUrl: "./standard-role-selector.component.html",
   styleUrls: ["./standard-role-selector.component.scss"],

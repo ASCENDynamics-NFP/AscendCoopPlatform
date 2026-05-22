@@ -21,15 +21,17 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <img
     [src]="listing.heroImage || 'assets/image/orghero.png'"
     alt="Header Background"
-  />
+    />
 </div>
 
 <div class="listing-header">
   <div class="listing-info">
     <div class="title-section">
-      <div class="hero-image-small" *ngIf="listing.iconImage">
-        <img [src]="listing.iconImage" alt="Listing Hero" />
-      </div>
+      @if (listing.iconImage) {
+        <div class="hero-image-small">
+          <img [src]="listing.iconImage" alt="Listing Hero" />
+        </div>
+      }
       <div class="title-content">
         <h2>{{ listing.title }}</h2>
         <h3>{{ listing.organization }}</h3>
@@ -48,8 +50,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         ></ion-icon>
         <span>{{
           listing.remote
-            ? ("listings.remote" | translate)
-            : ("listings.on_site" | translate)
+          ? ("listings.remote" | translate)
+          : ("listings.on_site" | translate)
         }}</span>
       </div>
       <div class="detail-item">
@@ -67,43 +69,50 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     </div>
   </div>
 
-  <div class="listing-actions" *ngIf="showButtons">
-    <ion-button
-      *ngIf="!isOwner"
-      fill="outline"
-      [disabled]="listing.status !== 'active'"
-      [routerLink]="['/listings', listing.id, 'apply']"
-    >
-      {{ "listings.apply_now" | translate }}
-    </ion-button>
-    <!-- Save/Unsave buttons are provided by parent page to know auth user's saved state -->
-    <ng-content select="[listing-secondary-actions]"></ng-content>
-    <ion-button
-      *ngIf="isOwner"
-      fill="outline"
-      size="small"
-      [routerLink]="['/listings', listing.id, 'applicants']"
-    >
-      <ion-icon name="people-outline"></ion-icon> View Applicants
-    </ion-button>
-    <ion-button *ngIf="isOwner" (click)="togglePublishStatus()" color="primary">
-      <ion-icon
+  @if (showButtons) {
+    <div class="listing-actions">
+      @if (!isOwner) {
+        <ion-button
+          fill="outline"
+          [disabled]="listing.status !== 'active'"
+          [routerLink]="['/listings', listing.id, 'apply']"
+          >
+          {{ "listings.apply_now" | translate }}
+        </ion-button>
+      }
+      <!-- Save/Unsave buttons are provided by parent page to know auth user's saved state -->
+      <ng-content select="[listing-secondary-actions]"></ng-content>
+      @if (isOwner) {
+        <ion-button
+          fill="outline"
+          size="small"
+          [routerLink]="['/listings', listing.id, 'applicants']"
+          >
+          <ion-icon name="people-outline"></ion-icon> View Applicants
+        </ion-button>
+      }
+      @if (isOwner) {
+        <ion-button (click)="togglePublishStatus()" color="primary">
+          <ion-icon
         [name]="
           listing.status === 'active'
             ? 'pencil-outline'
             : 'cloud-upload-outline'
         "
-        slot="start"
-      ></ion-icon>
-      {{ listing.status === "active" ? "Unpublish" : "Publish" }} Listing
-    </ion-button>
-    <ion-button
-      *ngIf="isOwner"
-      fill="outline"
-      size="small"
-      [routerLink]="['/listings', listing.id, 'edit']"
-    >
-      <ion-icon name="pencil-outline"></ion-icon> Edit
-    </ion-button>
-  </div>
+            slot="start"
+          ></ion-icon>
+          {{ listing.status === "active" ? "Unpublish" : "Publish" }} Listing
+        </ion-button>
+      }
+      @if (isOwner) {
+        <ion-button
+          fill="outline"
+          size="small"
+          [routerLink]="['/listings', listing.id, 'edit']"
+          >
+          <ion-icon name="pencil-outline"></ion-icon> Edit
+        </ion-button>
+      }
+    </div>
+  }
 </div>

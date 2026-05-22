@@ -27,6 +27,7 @@ import * as AccountActions from "../../../../../../state/actions/account.actions
 import {areasOfInterestOptions} from "../../../../../../core/data/options";
 
 @Component({
+  standalone: false,
   selector: "app-volunteer-preference-info-form",
   templateUrl: "./volunteer-preference-info-form.component.html",
   styleUrls: ["./volunteer-preference-info-form.component.scss"],

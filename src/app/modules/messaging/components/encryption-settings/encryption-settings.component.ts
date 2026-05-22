@@ -17,9 +17,19 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Component, OnInit, ChangeDetectorRef, NgZone} from "@angular/core";
+import {
+  Component,
+  OnInit,
+  ChangeDetectorRef,
+  NgZone,
+  Injector,
+  runInInjectionContext,
+} from "@angular/core";
 import {ModalController, AlertController} from "@ionic/angular";
-import {AngularFirestore} from "@angular/fire/compat/firestore";
+import {
+  AngularFirestore,
+  AngularFirestoreDocument,
+} from "@angular/fire/compat/firestore";
 import {
   KeyBackupService,
   BackupStatus,
@@ -32,6 +42,7 @@ import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import {firstValueFrom} from "rxjs";
 
 @Component({
+  standalone: false,
   selector: "app-encryption-settings",
   templateUrl: "./encryption-settings.component.html",
   styleUrls: ["./encryption-settings.component.scss"],
@@ -53,7 +64,14 @@ export class EncryptionSettingsComponent implements OnInit {
     private firestore: AngularFirestore,
     private changeDetectorRef: ChangeDetectorRef,
     private ngZone: NgZone,
+    private injector: Injector,
   ) {}
+
+  private afDoc<T>(path: string): AngularFirestoreDocument<T> {
+    return runInInjectionContext(this.injector, () =>
+      this.firestore.doc<T>(path),
+    );
+  }
 
   async ngOnInit() {
     await this.checkBackupStatus();
@@ -412,7 +430,7 @@ export class EncryptionSettingsComponent implements OnInit {
                     keyPair.publicKey,
                   );
 
-                await this.firestore.collection("userKeys").doc(userId).set({
+                await this.afDoc(`userKeys/${userId}`).set({
                   publicKey: publicKeyString,
                   createdAt: new Date(),
                   userId: userId,

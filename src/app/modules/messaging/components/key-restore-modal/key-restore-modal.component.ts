@@ -23,6 +23,7 @@ import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {KeyBackupService} from "../../services/key-backup.service";
 
 @Component({
+  standalone: false,
   selector: "app-key-restore-modal",
   templateUrl: "./key-restore-modal.component.html",
   styleUrls: ["./key-restore-modal.component.scss"],

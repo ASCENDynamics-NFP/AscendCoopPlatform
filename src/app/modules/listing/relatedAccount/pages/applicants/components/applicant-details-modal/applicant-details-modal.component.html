@@ -28,48 +28,54 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </ion-toolbar>
 </ion-header>
 
-<ion-content *ngIf="isOwner">
-  <!-- Applicant Information -->
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Applicant Information</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <p><strong>First Name:</strong> {{ relatedAccount.firstName }}</p>
-      <p><strong>Last Name:</strong> {{ relatedAccount.lastName }}</p>
-      <p><strong>Email Address:</strong> {{ relatedAccount.email }}</p>
-      <p *ngIf="relatedAccount.phone">
-        <strong>Phone Number:</strong> {{ relatedAccount.phone }}
-      </p>
-      <p *ngIf="relatedAccount.notes">
-        <strong>Notes:</strong> {{ relatedAccount.notes }}
-      </p>
-    </ion-card-content>
-  </ion-card>
-
-  <!-- Resume -->
-  <ion-card *ngIf="relatedAccount?.resumeFile">
-    <!-- <ion-card-header>
-      <ion-card-title>Resume</ion-card-title>
-    </ion-card-header> -->
-    <ion-card-content>
-      <ion-item>
-        <ion-icon name="document-outline" slot="start"></ion-icon>
-        <ion-label>Resume</ion-label>
-        <ion-button
-          fill="clear"
-          href="{{ relatedAccount.resumeFile }}"
-          target="_blank"
-        >
-          Download
-        </ion-button>
-      </ion-item>
-    </ion-card-content>
-  </ion-card>
-
+@if (isOwner) {
+  <ion-content>
+    <!-- Applicant Information -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Applicant Information</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p><strong>First Name:</strong> {{ relatedAccount.firstName }}</p>
+        <p><strong>Last Name:</strong> {{ relatedAccount.lastName }}</p>
+        <p><strong>Email Address:</strong> {{ relatedAccount.email }}</p>
+        @if (relatedAccount.phone) {
+          <p>
+            <strong>Phone Number:</strong> {{ relatedAccount.phone }}
+          </p>
+        }
+        @if (relatedAccount.notes) {
+          <p>
+            <strong>Notes:</strong> {{ relatedAccount.notes }}
+          </p>
+        }
+      </ion-card-content>
+    </ion-card>
+    <!-- Resume -->
+    @if (relatedAccount.resumeFile) {
+      <ion-card>
+        <!-- <ion-card-header>
+        <ion-card-title>Resume</ion-card-title>
+      </ion-card-header> -->
+      <ion-card-content>
+        <ion-item>
+          <ion-icon name="document-outline" slot="start"></ion-icon>
+          <ion-label>Resume</ion-label>
+          <ion-button
+            fill="clear"
+            href="{{ relatedAccount.resumeFile }}"
+            target="_blank"
+            >
+            Download
+          </ion-button>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+  }
   <!-- Cover Letter -->
-  <ion-card *ngIf="relatedAccount?.coverLetterFile">
-    <!-- <ion-card-header>
+  @if (relatedAccount.coverLetterFile) {
+    <ion-card>
+      <!-- <ion-card-header>
       <ion-card-title>Cover Letter</ion-card-title>
     </ion-card-header> -->
     <ion-card-content>
@@ -80,13 +86,15 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           fill="clear"
           href="{{ relatedAccount.coverLetterFile }}"
           target="_blank"
-        >
+          >
           Download
         </ion-button>
       </ion-item>
     </ion-card-content>
   </ion-card>
+}
 </ion-content>
+}
 
 <ion-footer>
   <!-- Action Buttons -->
@@ -107,7 +115,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           expand="block"
           color="tertiary"
           (click)="messageApplicant()"
-        >
+          >
           Message
         </ion-button>
       </ion-col>
@@ -118,7 +126,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           expand="block"
           color="secondary"
           (click)="markAsReviewing()"
-        >
+          >
           <ion-icon slot="start" name="eye-outline"></ion-icon>
           Reviewing
         </ion-button>
@@ -128,7 +136,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           expand="block"
           color="warning"
           (click)="markAsInterviewed()"
-        >
+          >
           <ion-icon slot="start" name="chatbubbles-outline"></ion-icon>
           Interviewed
         </ion-button>
@@ -140,7 +148,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           expand="block"
           color="success"
           (click)="acceptApplication()"
-        >
+          >
           Accept
         </ion-button>
       </ion-col>

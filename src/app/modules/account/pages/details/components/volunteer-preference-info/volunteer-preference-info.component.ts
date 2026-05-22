@@ -21,6 +21,7 @@ import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
 import {VolunteerPreferences} from "@shared/models/account.model";
 
 @Component({
+  standalone: false,
   selector: "app-volunteer-preference-info",
   templateUrl: "./volunteer-preference-info.component.html",
   styleUrls: ["./volunteer-preference-info.component.scss"],

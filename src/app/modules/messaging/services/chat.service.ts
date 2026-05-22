@@ -17,8 +17,12 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Injectable} from "@angular/core";
-import {AngularFirestore} from "@angular/fire/compat/firestore";
+import {Injectable, Injector, runInInjectionContext} from "@angular/core";
+import {
+  AngularFirestore,
+  AngularFirestoreCollection,
+  AngularFirestoreDocument,
+} from "@angular/fire/compat/firestore";
 import {AngularFireStorage} from "@angular/fire/compat/storage";
 import {Observable, from, throwError, of} from "rxjs";
 import {map, switchMap, catchError, take} from "rxjs/operators";
@@ -49,12 +53,28 @@ export class ChatService {
   constructor(
     private firestore: AngularFirestore,
     private storage: AngularFireStorage,
-    private store: Store<{auth: AuthState}>,
+    private store: Store,
     private networkService: NetworkConnectionService,
     private offlineSync: OfflineSyncService,
     private firestoreOffline: FirestoreOfflineService,
+    private injector: Injector,
   ) {
     this.initializeOfflineCapabilities();
+  }
+
+  private col<T>(
+    path: string,
+    queryFn?: (ref: any) => any,
+  ): AngularFirestoreCollection<T> {
+    return runInInjectionContext(this.injector, () =>
+      this.firestore.collection<T>(path, queryFn),
+    );
+  }
+
+  private afDoc<T>(path: string): AngularFirestoreDocument<T> {
+    return runInInjectionContext(this.injector, () =>
+      this.firestore.doc<T>(path),
+    );
   }
 
   /**
@@ -119,13 +139,12 @@ export class ChatService {
         // Optimize query based on connection status
         const limit = isOnline ? 50 : 20; // Load fewer chats when offline
 
-        return this.firestore
-          .collection<any>(this.CHATS_COLLECTION, (ref) =>
-            ref
-              .where("participants", "array-contains", userId)
-              .orderBy("lastMessageTimestamp", "desc")
-              .limit(limit),
-          )
+        return this.col<any>(this.CHATS_COLLECTION, (ref) =>
+          ref
+            .where("participants", "array-contains", userId)
+            .orderBy("lastMessageTimestamp", "desc")
+            .limit(limit),
+        )
           .valueChanges({idField: "id"})
           .pipe(
             map((chats: any[]) => chats as Chat[]),
@@ -148,9 +167,7 @@ export class ChatService {
           return of(null);
         }
 
-        return this.firestore
-          .collection<any>(this.CHATS_COLLECTION)
-          .doc(chatId)
+        return this.afDoc<any>(`${this.CHATS_COLLECTION}/${chatId}`)
           .valueChanges({idField: "id"})
           .pipe(
             map((chat: any) => (chat as Chat) || null),
@@ -181,11 +198,10 @@ export class ChatService {
         // Adjust limit based on connection status
         const optimizedLimit = isOnline ? limitCount : Math.min(limitCount, 20);
 
-        return this.firestore
-          .collection<Message>(
-            `${this.CHATS_COLLECTION}/${chatId}/${this.MESSAGES_COLLECTION}`,
-            (ref) => ref.orderBy("timestamp", "desc").limit(optimizedLimit),
-          )
+        return this.col<Message>(
+          `${this.CHATS_COLLECTION}/${chatId}/${this.MESSAGES_COLLECTION}`,
+          (ref) => ref.orderBy("timestamp", "desc").limit(optimizedLimit),
+        )
           .valueChanges({idField: "id"})
           .pipe(
             map(
@@ -220,15 +236,14 @@ export class ChatService {
     // Adjust limit based on connection status
     const optimizedLimit = isOnline ? limitCount : Math.min(limitCount, 20);
 
-    return this.firestore
-      .collection<Message>(
-        `${this.CHATS_COLLECTION}/${chatId}/${this.MESSAGES_COLLECTION}`,
-        (ref) =>
-          ref
-            .orderBy("timestamp", "desc")
-            .startAfter(startAfter)
-            .limit(optimizedLimit),
-      )
+    return this.col<Message>(
+      `${this.CHATS_COLLECTION}/${chatId}/${this.MESSAGES_COLLECTION}`,
+      (ref) =>
+        ref
+          .orderBy("timestamp", "desc")
+          .startAfter(startAfter)
+          .limit(optimizedLimit),
+    )
       .get()
       .pipe(
         map((snapshot) => {
@@ -277,7 +292,7 @@ export class ChatService {
     }
 
     try {
-      const docRef = await this.firestore.collection("chats").add(chatData);
+      const docRef = await this.col("chats").add(chatData);
       if (docRef?.id) {
         return docRef.id;
       } else {
@@ -342,7 +357,7 @@ export class ChatService {
       messageData.encryptedKeys = request.encryptedKeys;
     }
 
-    const messagesRef = this.firestore.collection(
+    const messagesRef = this.col(
       `${this.CHATS_COLLECTION}/${request.chatId}/${this.MESSAGES_COLLECTION}`,
     );
 
@@ -372,10 +387,9 @@ export class ChatService {
         };
 
         return from(
-          this.firestore
-            .collection(this.CHATS_COLLECTION)
-            .doc(request.chatId)
-            .update(chatUpdateData),
+          this.afDoc(`${this.CHATS_COLLECTION}/${request.chatId}`).update(
+            chatUpdateData,
+          ),
         ).pipe(map(() => docRef.id));
       }),
       catchError((error) => {
@@ -414,12 +428,12 @@ export class ChatService {
    */
   markMessagesAsRead(chatId: string, messageIds: string[]): Observable<void> {
     const batch = this.firestore.firestore.batch();
-    const messagesRef = this.firestore.collection(
+    const nativeMessagesRef = this.firestore.firestore.collection(
       `${this.CHATS_COLLECTION}/${chatId}/${this.MESSAGES_COLLECTION}`,
     );
 
     messageIds.forEach((messageId) => {
-      const messageRef = messagesRef.doc(messageId).ref;
+      const messageRef = nativeMessagesRef.doc(messageId);
       batch.update(messageRef, {
         status: MessageStatus.READ,
         readAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -470,12 +484,9 @@ export class ChatService {
    */
   deleteMessage(chatId: string, messageId: string): Observable<void> {
     return from(
-      this.firestore
-        .collection(
-          `${this.CHATS_COLLECTION}/${chatId}/${this.MESSAGES_COLLECTION}`,
-        )
-        .doc(messageId)
-        .delete(),
+      this.afDoc(
+        `${this.CHATS_COLLECTION}/${chatId}/${this.MESSAGES_COLLECTION}/${messageId}`,
+      ).delete(),
     ).pipe(
       map(() => void 0),
       catchError((error) => {
@@ -491,9 +502,7 @@ export class ChatService {
    * Messages can be cleaned up separately if needed
    */
   deleteChat(chatId: string): Observable<void> {
-    return from(
-      this.firestore.collection(this.CHATS_COLLECTION).doc(chatId).delete(),
-    ).pipe(
+    return from(this.afDoc(`${this.CHATS_COLLECTION}/${chatId}`).delete()).pipe(
       map(() => void 0),
       catchError((error) => {
         console.error("Error deleting chat:", error);
@@ -512,12 +521,9 @@ export class ChatService {
     }
 
     return from(
-      this.firestore
-        .collection(this.CHATS_COLLECTION)
-        .doc(chatId)
-        .update({
-          [`unreadCounts.${currentUserId}`]: 0,
-        }),
+      this.afDoc(`${this.CHATS_COLLECTION}/${chatId}`).update({
+        [`unreadCounts.${currentUserId}`]: 0,
+      }),
     ).pipe(
       map(() => void 0),
       catchError((error) => {
@@ -532,13 +538,10 @@ export class ChatService {
    */
   leaveChat(chatId: string, userId: string): Observable<void> {
     return from(
-      this.firestore
-        .collection(this.CHATS_COLLECTION)
-        .doc(chatId)
-        .update({
-          participants: firebase.firestore.FieldValue.arrayRemove(userId),
-          lastModifiedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        }),
+      this.afDoc(`${this.CHATS_COLLECTION}/${chatId}`).update({
+        participants: firebase.firestore.FieldValue.arrayRemove(userId),
+        lastModifiedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      }),
     ).pipe(
       map(() => void 0),
       catchError((error) => {
@@ -553,15 +556,12 @@ export class ChatService {
    */
   addParticipants(chatId: string, participantIds: string[]): Observable<void> {
     return from(
-      this.firestore
-        .collection(this.CHATS_COLLECTION)
-        .doc(chatId)
-        .update({
-          participants: firebase.firestore.FieldValue.arrayUnion(
-            ...participantIds,
-          ),
-          lastModifiedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        }),
+      this.afDoc(`${this.CHATS_COLLECTION}/${chatId}`).update({
+        participants: firebase.firestore.FieldValue.arrayUnion(
+          ...participantIds,
+        ),
+        lastModifiedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      }),
     ).pipe(
       map(() => void 0),
       catchError((error) => {
@@ -579,15 +579,12 @@ export class ChatService {
     participantIds: string[],
   ): Observable<void> {
     return from(
-      this.firestore
-        .collection(this.CHATS_COLLECTION)
-        .doc(chatId)
-        .update({
-          participants: firebase.firestore.FieldValue.arrayRemove(
-            ...participantIds,
-          ),
-          lastModifiedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        }),
+      this.afDoc(`${this.CHATS_COLLECTION}/${chatId}`).update({
+        participants: firebase.firestore.FieldValue.arrayRemove(
+          ...participantIds,
+        ),
+        lastModifiedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      }),
     ).pipe(
       map(() => void 0),
       catchError((error) => {
@@ -602,7 +599,7 @@ export class ChatService {
    */
   updateChatTitle(chatId: string, newTitle: string): Observable<void> {
     return from(
-      this.firestore.collection(this.CHATS_COLLECTION).doc(chatId).update({
+      this.afDoc(`${this.CHATS_COLLECTION}/${chatId}`).update({
         name: newTitle,
         groupName: newTitle, // Update both fields for compatibility
         lastModifiedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -631,12 +628,9 @@ export class ChatService {
     };
 
     return from(
-      this.firestore
-        .collection(
-          `${this.CHATS_COLLECTION}/${chatId}/${this.MESSAGES_COLLECTION}`,
-        )
-        .doc(messageId)
-        .update(updateData),
+      this.afDoc(
+        `${this.CHATS_COLLECTION}/${chatId}/${this.MESSAGES_COLLECTION}/${messageId}`,
+      ).update(updateData),
     ).pipe(
       map(() => void 0),
       catchError((error) => {
@@ -653,10 +647,9 @@ export class ChatService {
     // Sort participant IDs to ensure consistent comparison
     const sortedParticipantIds = [...participantIds].sort();
 
-    return this.firestore
-      .collection<any>(this.CHATS_COLLECTION, (ref) =>
-        ref.where("participants", "array-contains", participantIds[0]),
-      )
+    return this.col<any>(this.CHATS_COLLECTION, (ref) =>
+      ref.where("participants", "array-contains", participantIds[0]),
+    )
       .valueChanges({idField: "id"})
       .pipe(
         map((chats: any[]) => {
@@ -689,13 +682,12 @@ export class ChatService {
       );
     }
 
-    return this.firestore
-      .collection<any>(this.CHATS_COLLECTION, (ref) =>
-        ref
-          .where("participants", "==", participantIds)
-          .where("isGroup", "==", false)
-          .limit(1),
-      )
+    return this.col<any>(this.CHATS_COLLECTION, (ref) =>
+      ref
+        .where("participants", "==", participantIds)
+        .where("isGroup", "==", false)
+        .limit(1),
+    )
       .valueChanges({idField: "id"})
       .pipe(
         map((chats: any[]) => (chats.length > 0 ? (chats[0] as Chat) : null)),

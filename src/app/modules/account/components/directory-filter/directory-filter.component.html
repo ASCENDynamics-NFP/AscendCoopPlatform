@@ -20,83 +20,84 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
 <div class="filter-panel" [class.expanded]="isExpanded">
   <!-- Toggle Button (optional) -->
-  <ion-button
-    *ngIf="showToggleButton"
-    fill="clear"
-    size="small"
-    (click)="toggleExpanded()"
-    class="filter-toggle"
-  >
-    <ion-icon slot="start" name="options-outline"></ion-icon>
-    <span>{{ "directory.filters" | translate }}</span>
-    <ion-icon
-      slot="end"
-      [name]="isExpanded ? 'chevron-up-outline' : 'chevron-down-outline'"
-    ></ion-icon>
-  </ion-button>
-
-  <!-- Filter Content -->
-  <div class="filter-content" *ngIf="isExpanded">
-    <div class="filter-grid">
-      <!-- Relationship Filters -->
-      <div class="filter-section">
-        <div class="filter-label">{{ "directory.show" | translate }}</div>
-        <div class="toggle-group">
-          <ion-item lines="none" class="toggle-item">
-            <ion-toggle
-              [checked]="includePrivateGroups"
-              (ionChange)="onIncludePrivateGroupsChange($event)"
-            >
-              {{ "directory.include_private_groups" | translate }}
-            </ion-toggle>
-          </ion-item>
-          <ion-item lines="none" class="toggle-item">
-            <ion-toggle
-              [checked]="onlyMyGroups"
-              (ionChange)="onOnlyMyGroupsChange($event)"
-            >
-              {{ "directory.my_groups_only" | translate }}
-            </ion-toggle>
-          </ion-item>
-          <ion-item lines="none" class="toggle-item">
-            <ion-toggle
-              [checked]="onlyMyConnections"
-              (ionChange)="onOnlyMyConnectionsChange($event)"
-            >
-              {{ "directory.my_connections_only" | translate }}
-            </ion-toggle>
-          </ion-item>
-        </div>
-      </div>
-
-      <!-- Sort -->
-      <div class="filter-section">
-        <div class="filter-label">{{ "directory.sort_by" | translate }}</div>
-        <ion-select
-          [value]="sort"
-          interface="popover"
-          (ionChange)="onSortChange($event)"
-          class="sort-select"
-        >
-          <ion-select-option value="name-asc">{{
-            "directory.name_asc" | translate
-          }}</ion-select-option>
-          <ion-select-option value="name-desc">{{
-            "directory.name_desc" | translate
-          }}</ion-select-option>
-        </ion-select>
-      </div>
-    </div>
-
-    <!-- Clear Filters Button -->
+  @if (showToggleButton) {
     <ion-button
       fill="clear"
       size="small"
-      (click)="clearFilters()"
-      class="clear-filters-btn"
-    >
-      <ion-icon slot="start" name="close-circle-outline"></ion-icon>
-      {{ "directory.clear_filters" | translate }}
+      (click)="toggleExpanded()"
+      class="filter-toggle"
+      >
+      <ion-icon slot="start" name="options-outline"></ion-icon>
+      <span>{{ "directory.filters" | translate }}</span>
+      <ion-icon
+        slot="end"
+        [name]="isExpanded ? 'chevron-up-outline' : 'chevron-down-outline'"
+      ></ion-icon>
     </ion-button>
-  </div>
+  }
+
+  <!-- Filter Content -->
+  @if (isExpanded) {
+    <div class="filter-content">
+      <div class="filter-grid">
+        <!-- Relationship Filters -->
+        <div class="filter-section">
+          <div class="filter-label">{{ "directory.show" | translate }}</div>
+          <div class="toggle-group">
+            <ion-item lines="none" class="toggle-item">
+              <ion-toggle
+                [checked]="includePrivateGroups"
+                (ionChange)="onIncludePrivateGroupsChange($event)"
+                >
+                {{ "directory.include_private_groups" | translate }}
+              </ion-toggle>
+            </ion-item>
+            <ion-item lines="none" class="toggle-item">
+              <ion-toggle
+                [checked]="onlyMyGroups"
+                (ionChange)="onOnlyMyGroupsChange($event)"
+                >
+                {{ "directory.my_groups_only" | translate }}
+              </ion-toggle>
+            </ion-item>
+            <ion-item lines="none" class="toggle-item">
+              <ion-toggle
+                [checked]="onlyMyConnections"
+                (ionChange)="onOnlyMyConnectionsChange($event)"
+                >
+                {{ "directory.my_connections_only" | translate }}
+              </ion-toggle>
+            </ion-item>
+          </div>
+        </div>
+        <!-- Sort -->
+        <div class="filter-section">
+          <div class="filter-label">{{ "directory.sort_by" | translate }}</div>
+          <ion-select
+            [value]="sort"
+            interface="popover"
+            (ionChange)="onSortChange($event)"
+            class="sort-select"
+            >
+            <ion-select-option value="name-asc">{{
+              "directory.name_asc" | translate
+            }}</ion-select-option>
+            <ion-select-option value="name-desc">{{
+              "directory.name_desc" | translate
+            }}</ion-select-option>
+          </ion-select>
+        </div>
+      </div>
+      <!-- Clear Filters Button -->
+      <ion-button
+        fill="clear"
+        size="small"
+        (click)="clearFilters()"
+        class="clear-filters-btn"
+        >
+        <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+        {{ "directory.clear_filters" | translate }}
+      </ion-button>
+    </div>
+  }
 </div>

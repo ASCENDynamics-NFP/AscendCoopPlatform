@@ -29,6 +29,7 @@ import {
 import {BehaviorSubject, Observable, combineLatest, map} from "rxjs";
 
 @Component({
+  standalone: false,
   selector: "app-pagination",
   templateUrl: "./pagination.component.html",
   styleUrls: ["./pagination.component.scss"],

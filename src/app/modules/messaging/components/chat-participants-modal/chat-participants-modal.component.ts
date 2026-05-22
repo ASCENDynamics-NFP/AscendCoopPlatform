@@ -48,6 +48,7 @@ export interface ChatParticipant {
 }
 
 @Component({
+  standalone: false,
   selector: "app-chat-participants-modal",
   templateUrl: "./chat-participants-modal.component.html",
   styleUrls: ["./chat-participants-modal.component.scss"],

@@ -13,6 +13,7 @@ interface CategoryOption {
 }
 
 @Component({
+  standalone: false,
   selector: "app-category-selector",
   templateUrl: "./category-selector.component.html",
   styleUrls: ["./category-selector.component.scss"],

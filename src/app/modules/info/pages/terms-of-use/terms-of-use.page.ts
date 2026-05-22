@@ -2,6 +2,7 @@ import {Component} from "@angular/core";
 import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
+  standalone: false,
   selector: "app-terms-of-use",
   templateUrl: "./terms-of-use.page.html",
   styleUrls: ["./terms-of-use.page.scss"],

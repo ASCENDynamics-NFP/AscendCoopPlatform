@@ -70,6 +70,7 @@ import {ChatParticipantsModalComponent} from "../../components/chat-participants
 import {KeyRestoreModalComponent} from "../../components/key-restore-modal/key-restore-modal.component";
 
 @Component({
+  standalone: false,
   selector: "app-chat-window",
   templateUrl: "./chat-window.page.html",
   styleUrls: ["./chat-window.page.scss"],
@@ -129,7 +130,7 @@ export class ChatWindowPage implements OnInit, OnDestroy {
     private actionSheetController: ActionSheetController,
     private modalController: ModalController,
     private alertController: AlertController,
-    private store: Store<{auth: AuthState}>,
+    private store: Store,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone,
     private encryptedChatService: EncryptedChatService,

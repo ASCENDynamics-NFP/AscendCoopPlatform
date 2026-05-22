@@ -44,6 +44,7 @@ import {ProfessionalInformation} from "@shared/models/account.model";
 import {PrivacyService} from "../../../../core/services/privacy.service";
 
 @Component({
+  standalone: false,
   selector: "app-details",
   templateUrl: "./details.page.html",
   styleUrls: ["./details.page.scss"],

@@ -19,22 +19,23 @@
  ***********************************************************************************************/
 // src/app/modules/info/pages/landing/landing.page.ts
 
-import {Component, ElementRef, ViewChild, AfterViewInit} from "@angular/core";
+import {Component, ElementRef, ViewChild} from "@angular/core";
+import {ViewDidEnter} from "@ionic/angular";
 import {SwiperOptions} from "swiper/types";
 import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
+  standalone: false,
   selector: "app-landing",
   templateUrl: "./landing.page.html",
   styleUrls: ["./landing.page.scss"],
 })
-export class LandingPage implements AfterViewInit {
+export class LandingPage implements ViewDidEnter {
   @ViewChild("swiperElement") swiperElement: ElementRef | undefined;
 
   swiperConfig: SwiperOptions = {
-    init: true,
     slidesPerView: 1,
-    autoplay: true,
+    autoplay: {delay: 3000, disableOnInteraction: false},
     spaceBetween: 10,
     breakpoints: {
       480: {
@@ -188,7 +189,7 @@ export class LandingPage implements AfterViewInit {
     loop: true,
   };
 
-  ngAfterViewInit(): void {
+  ionViewDidEnter(): void {
     this.initSwiper();
 
     // Add custom passive event listener for the 'wheel' event

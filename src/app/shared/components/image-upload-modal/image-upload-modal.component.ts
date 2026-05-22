@@ -32,6 +32,7 @@ interface ImageTypeConfig {
 }
 
 @Component({
+  standalone: false,
   selector: "app-image-upload-modal",
   templateUrl: "./image-upload-modal.component.html",
   styleUrls: ["./image-upload-modal.component.scss"],

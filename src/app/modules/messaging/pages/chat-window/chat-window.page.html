@@ -2,7 +2,7 @@
   <app-header
     [plainTitle]="getChatDisplayName(chat$ | async)"
     [defaultHref]="'/messaging/chats'"
-  >
+    >
     <!-- Connection Status -->
     <app-connection-status
       header-end
@@ -21,417 +21,444 @@
     position="top"
     (ionInfinite)="loadMoreMessages($event)"
     [disabled]="isEverythingLoaded"
-  >
+    >
     <ion-infinite-scroll-content
       loadingSpinner="bubbles"
       loadingText="Loading history..."
-    >
+      >
     </ion-infinite-scroll-content>
   </ion-infinite-scroll>
 
   <!-- Loading Skeleton for Initial Messages Load -->
-  <div *ngIf="isMessagesLoading" class="messages-loading">
-    <div class="loading-skeleton">
-      <ion-skeleton-text
-        animated
+  @if (isMessagesLoading) {
+    <div class="messages-loading">
+      <div class="loading-skeleton">
+        <ion-skeleton-text
+          animated
         style="
           width: 70%;
           height: 60px;
           border-radius: 16px;
           margin: 8px 0 8px auto;
         "
-      ></ion-skeleton-text>
-      <ion-skeleton-text
-        animated
+        ></ion-skeleton-text>
+        <ion-skeleton-text
+          animated
         style="
           width: 60%;
           height: 50px;
           border-radius: 16px;
           margin: 8px auto 8px 0;
         "
-      ></ion-skeleton-text>
-      <ion-skeleton-text
-        animated
+        ></ion-skeleton-text>
+        <ion-skeleton-text
+          animated
         style="
           width: 75%;
           height: 65px;
           border-radius: 16px;
           margin: 8px 0 8px auto;
         "
-      ></ion-skeleton-text>
-      <ion-skeleton-text
-        animated
+        ></ion-skeleton-text>
+        <ion-skeleton-text
+          animated
         style="
           width: 55%;
           height: 45px;
           border-radius: 16px;
           margin: 8px auto 8px 0;
         "
-      ></ion-skeleton-text>
-      <ion-skeleton-text
-        animated
+        ></ion-skeleton-text>
+        <ion-skeleton-text
+          animated
         style="
           width: 65%;
           height: 55px;
           border-radius: 16px;
           margin: 8px 0 8px auto;
         "
-      ></ion-skeleton-text>
+        ></ion-skeleton-text>
+      </div>
     </div>
-  </div>
+  }
 
   <!-- Messages List -->
-  <div *ngIf="!isMessagesLoading" class="messages-container">
-    <ng-container
-      *ngFor="let message of messages; let i = index; trackBy: trackByMessageId"
-    >
-      <!-- Date Separator -->
-      <div *ngIf="shouldShowDateSeparator(i)" class="date-separator">
-        <span class="date-label">{{ getDateLabel(message) }}</span>
-      </div>
-
-      <!-- Message -->
-      <div
-        class="message-wrapper"
-        [class.own-message]="isOwnMessage(message)"
-        [class.other-message]="!isOwnMessage(message)"
-      >
-        <!-- User Avatar (for incoming messages) -->
+  @if (!isMessagesLoading) {
+    <div class="messages-container">
+      @for (message of messages; track trackByMessageId(i, message); let i = $index) {
+        <!-- Date Separator -->
+        @if (shouldShowDateSeparator(i)) {
+          <div class="date-separator">
+            <span class="date-label">{{ getDateLabel(message) }}</span>
+          </div>
+        }
+        <!-- Message -->
         <div
-          *ngIf="!isOwnMessage(message) && message?.senderId"
-          class="message-avatar"
-        >
-          <ion-avatar
-            (click)="showMessageOptions(message)"
-            class="clickable-avatar"
+          class="message-wrapper"
+          [class.own-message]="isOwnMessage(message)"
+          [class.other-message]="!isOwnMessage(message)"
           >
-            <img
-              [src]="getSenderAvatarUrl(message)"
-              [alt]="(getSenderName(message) || 'User') + ' avatar'"
-              (error)="setDefaultAvatar($event)"
-              loading="lazy"
-            />
-          </ion-avatar>
-        </div>
-
-        <!-- Message Bubble -->
-        <div
-          class="message-bubble"
-          (press)="showMessageOptions(message)"
-          (contextmenu)="showMessageOptions(message); $event.preventDefault()"
-        >
-          <!-- Sender name (for group chats and incoming messages) -->
-          <div *ngIf="!isOwnMessage(message)" class="sender-name">
-            {{ getSenderName(message) }}
-          </div>
-
-          <!-- Encryption indicator -->
-          <div *ngIf="message.isEncrypted" class="encryption-indicator">
-            <ion-icon
-              name="lock-closed"
-              color="success"
-              size="small"
-            ></ion-icon>
-            <span class="encryption-text">Encrypted</span>
-          </div>
-
-          <!-- Message Content -->
-          <div class="message-content">
-            <!-- Text Message -->
-            <div *ngIf="message.type === 'text'" class="text-message">
-              {{ message.text }}
-              <div *ngIf="message.editedAt" class="edited-indicator">
-                <ion-icon name="create-outline"></ion-icon>
-                {{ 'messaging.edited' | translate }}
-              </div>
-            </div>
-
-            <!-- Image Message -->
-            <div *ngIf="message.type === 'image'" class="image-message">
-              <img
-                [src]="message.fileUrl"
-                [alt]="message.fileName"
-                (click)="openImagePreview(message.fileUrl!)"
-                loading="lazy"
-              />
-              <!-- <div class="image-overlay">
-              <ion-button
-                fill="clear"
-                size="small"
-                (click)="downloadFile(message.fileUrl!, message.fileName!)"
-                class="download-overlay-btn"
-              >
-                <ion-icon name="download-outline" slot="icon-only"></ion-icon>
-              </ion-button>
-            </div> -->
-            </div>
-
-            <!-- Video Message -->
-            <div *ngIf="message.type === 'video'" class="video-message">
-              <video [src]="message.fileUrl" controls preload="metadata">
-                Your browser does not support the video tag.
-              </video>
-              <div class="media-info">
-                <span class="file-name">{{ message.fileName }}</span>
-                <span class="file-size"
-                  >{{ formatFileSize(message.fileSize) }}</span
-                >
-              </div>
-            </div>
-
-            <!-- Audio Message -->
-            <div *ngIf="message.type === 'audio'" class="audio-message">
-              <div class="audio-player">
-                <ion-icon
-                  name="musical-notes-outline"
-                  class="audio-icon"
-                ></ion-icon>
-                <div class="audio-info">
-                  <div class="file-name">{{ message.fileName }}</div>
-                  <div class="file-size">
-                    {{ formatFileSize(message.fileSize) }}
-                  </div>
-                </div>
-              </div>
-              <audio [src]="message.fileUrl" controls preload="metadata">
-                Your browser does not support the audio tag.
-              </audio>
-            </div>
-
-            <!-- File Message -->
+          <!-- User Avatar (for incoming messages) -->
+          @if (!isOwnMessage(message) && message?.senderId) {
             <div
-              *ngIf="message.type === 'file'"
-              class="file-message-enhanced clickable-file-block"
-              (click)="openFileInNewWindow(message.fileUrl!, message.fileName!)"
-              title="Click to open file in new window"
-            >
-              <div class="file-icon-container">
-                <ion-icon
-                  [name]="getFileIcon(message.fileType || '')"
-                  class="file-type-icon"
-                ></ion-icon>
-              </div>
-              <div class="file-info">
-                <div class="file-header">
-                  <div class="file-name">{{ message.fileName }}</div>
-                  <!-- <ion-button
-                  fill="clear"
-                  size="small"
-                  (click)="downloadFile(message.fileUrl!, message.fileName!); $event.stopPropagation()"
-                  title="Download file"
-                  class="download-btn"
+              class="message-avatar"
+              >
+              <ion-avatar
+                (click)="showMessageOptions(message)"
+                class="clickable-avatar"
                 >
-                  <ion-icon name="download-outline" slot="icon-only"></ion-icon>
-                </ion-button> -->
+                <img
+                  [src]="getSenderAvatarUrl(message)"
+                  [alt]="(getSenderName(message) || 'User') + ' avatar'"
+                  (error)="setDefaultAvatar($event)"
+                  loading="lazy"
+                  />
+              </ion-avatar>
+            </div>
+          }
+          <!-- Message Bubble -->
+          <div
+            class="message-bubble"
+            (press)="showMessageOptions(message)"
+            (contextmenu)="showMessageOptions(message); $event.preventDefault()"
+            >
+            <!-- Sender name (for group chats and incoming messages) -->
+            @if (!isOwnMessage(message)) {
+              <div class="sender-name">
+                {{ getSenderName(message) }}
+              </div>
+            }
+            <!-- Encryption indicator -->
+            @if (message.isEncrypted) {
+              <div class="encryption-indicator">
+                <ion-icon
+                  name="lock-closed"
+                  color="success"
+                  size="small"
+                ></ion-icon>
+                <span class="encryption-text">Encrypted</span>
+              </div>
+            }
+            <!-- Message Content -->
+            <div class="message-content">
+              <!-- Text Message -->
+              @if (message.type === 'text') {
+                <div class="text-message">
+                  {{ message.text }}
+                  @if (message.editedAt) {
+                    <div class="edited-indicator">
+                      <ion-icon name="create-outline"></ion-icon>
+                      {{ 'messaging.edited' | translate }}
+                    </div>
+                  }
                 </div>
-                <div class="file-metadata">
+              }
+              <!-- Image Message -->
+              @if (message.type === 'image') {
+                <div class="image-message">
+                  <img
+                    [src]="message.fileUrl"
+                    [alt]="message.fileName"
+                    (click)="openImagePreview(message.fileUrl!)"
+                    loading="lazy"
+                    />
+                  <!-- <div class="image-overlay">
+                  <ion-button
+                    fill="clear"
+                    size="small"
+                    (click)="downloadFile(message.fileUrl!, message.fileName!)"
+                    class="download-overlay-btn"
+                    >
+                    <ion-icon name="download-outline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                </div> -->
+              </div>
+            }
+            <!-- Video Message -->
+            @if (message.type === 'video') {
+              <div class="video-message">
+                <video [src]="message.fileUrl" controls preload="metadata">
+                  Your browser does not support the video tag.
+                </video>
+                <div class="media-info">
+                  <span class="file-name">{{ message.fileName }}</span>
                   <span class="file-size"
                     >{{ formatFileSize(message.fileSize) }}</span
-                  >
-                  <span class="file-type">{{ message.fileType }}</span>
+                    >
+                  </div>
                 </div>
-              </div>
+              }
+              <!-- Audio Message -->
+              @if (message.type === 'audio') {
+                <div class="audio-message">
+                  <div class="audio-player">
+                    <ion-icon
+                      name="musical-notes-outline"
+                      class="audio-icon"
+                    ></ion-icon>
+                    <div class="audio-info">
+                      <div class="file-name">{{ message.fileName }}</div>
+                      <div class="file-size">
+                        {{ formatFileSize(message.fileSize) }}
+                      </div>
+                    </div>
+                  </div>
+                  <audio [src]="message.fileUrl" controls preload="metadata">
+                    Your browser does not support the audio tag.
+                  </audio>
+                </div>
+              }
+              <!-- File Message -->
+              @if (message.type === 'file') {
+                <div
+                  class="file-message-enhanced clickable-file-block"
+                  (click)="openFileInNewWindow(message.fileUrl!, message.fileName!)"
+                  title="Click to open file in new window"
+                  >
+                  <div class="file-icon-container">
+                    <ion-icon
+                      [name]="getFileIcon(message.fileType || '')"
+                      class="file-type-icon"
+                    ></ion-icon>
+                  </div>
+                  <div class="file-info">
+                    <div class="file-header">
+                      <div class="file-name">{{ message.fileName }}</div>
+                      <!-- <ion-button
+                      fill="clear"
+                      size="small"
+                      (click)="downloadFile(message.fileUrl!, message.fileName!); $event.stopPropagation()"
+                      title="Download file"
+                      class="download-btn"
+                      >
+                      <ion-icon name="download-outline" slot="icon-only"></ion-icon>
+                    </ion-button> -->
+                  </div>
+                  <div class="file-metadata">
+                    <span class="file-size"
+                      >{{ formatFileSize(message.fileSize) }}</span
+                      >
+                      <span class="file-type">{{ message.fileType }}</span>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+            <!-- Message Timestamp and Status -->
+            <div class="message-time">
+              {{ formatMessageTime(message.timestamp) }}
+              <!-- Message Status (for own messages) -->
+              @if (isOwnMessage(message)) {
+                <span class="message-status">
+                  @if (message.status === 'sending') {
+                    <ion-icon
+                      name="time-outline"
+                      class="status-sending"
+                      >
+                    </ion-icon>
+                  }
+                  @if (message.status === 'sent') {
+                    <ion-icon
+                      name="checkmark-outline"
+                      class="status-sent"
+                      >
+                    </ion-icon>
+                  }
+                  @if (message.status === 'delivered') {
+                    <ion-icon
+                      name="checkmark-done-outline"
+                      class="status-delivered"
+                      >
+                    </ion-icon>
+                  }
+                  @if (message.status === 'read') {
+                    <ion-icon
+                      name="checkmark-done-outline"
+                      class="status-read"
+                      >
+                    </ion-icon>
+                  }
+                  @if (message.status === 'failed') {
+                    <ion-icon
+                      name="warning-outline"
+                      class="status-failed"
+                      >
+                    </ion-icon>
+                  }
+                </span>
+              }
             </div>
           </div>
-
-          <!-- Message Timestamp and Status -->
-          <div class="message-time">
-            {{ formatMessageTime(message.timestamp) }}
-
-            <!-- Message Status (for own messages) -->
-            <span *ngIf="isOwnMessage(message)" class="message-status">
-              <ion-icon
-                *ngIf="message.status === 'sending'"
-                name="time-outline"
-                class="status-sending"
-              >
-              </ion-icon>
-              <ion-icon
-                *ngIf="message.status === 'sent'"
-                name="checkmark-outline"
-                class="status-sent"
-              >
-              </ion-icon>
-              <ion-icon
-                *ngIf="message.status === 'delivered'"
-                name="checkmark-done-outline"
-                class="status-delivered"
-              >
-              </ion-icon>
-              <ion-icon
-                *ngIf="message.status === 'read'"
-                name="checkmark-done-outline"
-                class="status-read"
-              >
-              </ion-icon>
-              <ion-icon
-                *ngIf="message.status === 'failed'"
-                name="warning-outline"
-                class="status-failed"
-              >
-              </ion-icon>
-            </span>
-          </div>
         </div>
-      </div>
-    </ng-container>
-  </div>
+      }
+    </div>
+  }
 
   <!-- Loading indicator -->
-  <div *ngIf="isLoading" class="loading-message">
-    <ion-spinner name="dots"></ion-spinner>
-    <span>Sending...</span>
-  </div>
+  @if (isLoading) {
+    <div class="loading-message">
+      <ion-spinner name="dots"></ion-spinner>
+      <span>Sending...</span>
+    </div>
+  }
 </ion-content>
 
 <!-- Blocked Contact Notice -->
-<div *ngIf="isContactBlocked" class="blocked-notice">
-  <ion-icon name="ban-outline"></ion-icon>
-  <span>You have blocked this contact. Messages are disabled.</span>
-</div>
+@if (isContactBlocked) {
+  <div class="blocked-notice">
+    <ion-icon name="ban-outline"></ion-icon>
+    <span>You have blocked this contact. Messages are disabled.</span>
+  </div>
+}
 
 <!-- Can't Send Messages Notice -->
-<div *ngIf="!canSendMessages && !isContactBlocked" class="blocked-notice">
-  <ion-icon name="information-circle-outline"></ion-icon>
-  <span>You need to have an accepted friend connection to send messages.</span>
-</div>
+@if (!canSendMessages && !isContactBlocked) {
+  <div class="blocked-notice">
+    <ion-icon name="information-circle-outline"></ion-icon>
+    <span>You need to have an accepted friend connection to send messages.</span>
+  </div>
+}
 
 <!-- File Preview Section -->
-<div *ngIf="selectedFile" class="file-preview-container">
-  <ion-card class="file-preview-card">
-    <ion-card-header>
-      <ion-card-title class="file-preview-title">
-        <ion-icon name="attach-outline"></ion-icon>
-        File Preview
+@if (selectedFile) {
+  <div class="file-preview-container">
+    <ion-card class="file-preview-card">
+      <ion-card-header>
+        <ion-card-title class="file-preview-title">
+          <ion-icon name="attach-outline"></ion-icon>
+          File Preview
+          <ion-button
+            fill="clear"
+            size="small"
+            (click)="clearFilePreview()"
+            class="cancel-preview-btn"
+            >
+            <ion-icon name="close" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="file-preview-content">
+        <!-- Image Preview -->
+        @if (filePreviewType === 'image') {
+          <div class="image-preview">
+            <img [src]="filePreviewUrl" [alt]="selectedFile.name" />
+          </div>
+        }
+        <!-- Video Preview -->
+        @if (filePreviewType === 'video') {
+          <div class="video-preview">
+            <video [src]="filePreviewUrl" controls></video>
+          </div>
+        }
+        <!-- Audio Preview -->
+        @if (filePreviewType === 'audio') {
+          <div class="audio-preview">
+            <ion-icon name="musical-notes-outline" class="audio-icon"></ion-icon>
+            <audio [src]="filePreviewUrl" controls></audio>
+          </div>
+        }
+        <!-- Document Preview -->
+        @if (filePreviewType === 'document') {
+          <div class="document-preview">
+            <ion-icon
+              [name]="getFileIcon(selectedFile.type)"
+              class="file-type-icon"
+            ></ion-icon>
+            <div class="file-details">
+              <div class="file-name">{{ selectedFile.name }}</div>
+              <div class="file-type">{{ selectedFile.type || 'Unknown type' }}</div>
+            </div>
+          </div>
+        }
+        <!-- File Info -->
+        <div class="file-info-preview">
+          <div class="file-size">{{ formatFileSize(selectedFile.size) }}</div>
+          <div class="file-actions">
+            <ion-button
+              expand="block"
+              (click)="sendSelectedFile()"
+              [disabled]="isUploadingFile"
+              class="send-file-btn"
+              >
+              <ion-icon name="send" slot="start"></ion-icon>
+              {{ (isUploadingFile ? 'messaging.sending' : 'messaging.send_file') |
+              translate }}
+            </ion-button>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+}
+
+<!-- Message Input Footer -->
+@if (canSendMessages) {
+  <ion-footer class="message-input-footer">
+    <!-- Backup Warning Banner -->
+    @if (showBackupWarning && encryptionEnabled) {
+      <ion-item
+        lines="none"
+        color="warning"
+        class="backup-warning"
+        >
+        <ion-icon name="warning-outline" slot="start"></ion-icon>
+        <ion-label class="ion-text-wrap">
+          <p>
+            <strong>Encryption keys not backed up!</strong> Backup now to access
+            messages on other devices.
+          </p>
+        </ion-label>
         <ion-button
+          slot="end"
           fill="clear"
           size="small"
-          (click)="clearFilePreview()"
-          class="cancel-preview-btn"
-        >
-          <ion-icon name="close" slot="icon-only"></ion-icon>
-        </ion-button>
-      </ion-card-title>
-    </ion-card-header>
-
-    <ion-card-content class="file-preview-content">
-      <!-- Image Preview -->
-      <div *ngIf="filePreviewType === 'image'" class="image-preview">
-        <img [src]="filePreviewUrl" [alt]="selectedFile.name" />
-      </div>
-
-      <!-- Video Preview -->
-      <div *ngIf="filePreviewType === 'video'" class="video-preview">
-        <video [src]="filePreviewUrl" controls></video>
-      </div>
-
-      <!-- Audio Preview -->
-      <div *ngIf="filePreviewType === 'audio'" class="audio-preview">
-        <ion-icon name="musical-notes-outline" class="audio-icon"></ion-icon>
-        <audio [src]="filePreviewUrl" controls></audio>
-      </div>
-
-      <!-- Document Preview -->
-      <div *ngIf="filePreviewType === 'document'" class="document-preview">
-        <ion-icon
-          [name]="getFileIcon(selectedFile.type)"
-          class="file-type-icon"
-        ></ion-icon>
-        <div class="file-details">
-          <div class="file-name">{{ selectedFile.name }}</div>
-          <div class="file-type">{{ selectedFile.type || 'Unknown type' }}</div>
-        </div>
-      </div>
-
-      <!-- File Info -->
-      <div class="file-info-preview">
-        <div class="file-size">{{ formatFileSize(selectedFile.size) }}</div>
-        <div class="file-actions">
-          <ion-button
-            expand="block"
-            (click)="sendSelectedFile()"
-            [disabled]="isUploadingFile"
-            class="send-file-btn"
+          (click)="showEncryptionSettings()"
           >
-            <ion-icon name="send" slot="start"></ion-icon>
-            {{ (isUploadingFile ? 'messaging.sending' : 'messaging.send_file') |
-            translate }}
+          <ion-label>Backup</ion-label>
+        </ion-button>
+      </ion-item>
+    }
+    <!-- Encryption Toggle -->
+    <app-encryption-toggle
+      [chatId]="chatId"
+      [encryptionActive]="isEncryptionActive"
+      (encryptionToggled)="onEncryptionToggled($event)"
+      >
+    </app-encryption-toggle>
+    <ion-toolbar>
+      <div style="display: flex; align-items: flex-end; gap: 8px">
+        <ion-item fill="outline" class="message-input-item" style="flex: 1">
+          <ion-textarea
+            #messageInput
+            [(ngModel)]="newMessage"
+            placeholder="Type a message..."
+            rows="1"
+            autoGrow="true"
+            maxlength="1000"
+            (keypress)="onKeyPress($event)"
+            [disabled]="isLoading || !canSendMessages"
+            >
+          </ion-textarea>
+        </ion-item>
+        <div class="message-input-buttons">
+          <ion-button
+            class="attach-button"
+            fill="clear"
+            (click)="showAttachmentOptions()"
+            [disabled]="isLoading || !canSendMessages"
+            >
+            <ion-icon name="attach" slot="icon-only"></ion-icon>
+          </ion-button>
+          <ion-button
+            class="send-button"
+            fill="solid"
+            (click)="sendMessage()"
+            [disabled]="!newMessage.trim() || isLoading || !canSendMessages"
+            >
+            <ion-icon name="send" slot="icon-only"></ion-icon>
           </ion-button>
         </div>
       </div>
-    </ion-card-content>
-  </ion-card>
-</div>
-
-<!-- Message Input Footer -->
-<ion-footer class="message-input-footer" *ngIf="canSendMessages">
-  <!-- Backup Warning Banner -->
-  <ion-item
-    *ngIf="showBackupWarning && encryptionEnabled"
-    lines="none"
-    color="warning"
-    class="backup-warning"
-  >
-    <ion-icon name="warning-outline" slot="start"></ion-icon>
-    <ion-label class="ion-text-wrap">
-      <p>
-        <strong>Encryption keys not backed up!</strong> Backup now to access
-        messages on other devices.
-      </p>
-    </ion-label>
-    <ion-button
-      slot="end"
-      fill="clear"
-      size="small"
-      (click)="showEncryptionSettings()"
-    >
-      <ion-label>Backup</ion-label>
-    </ion-button>
-  </ion-item>
-
-  <!-- Encryption Toggle -->
-  <app-encryption-toggle
-    [chatId]="chatId"
-    [encryptionActive]="isEncryptionActive"
-    (encryptionToggled)="onEncryptionToggled($event)"
-  >
-  </app-encryption-toggle>
-
-  <ion-toolbar>
-    <div style="display: flex; align-items: flex-end; gap: 8px">
-      <ion-item fill="outline" class="message-input-item" style="flex: 1">
-        <ion-textarea
-          #messageInput
-          [(ngModel)]="newMessage"
-          placeholder="Type a message..."
-          rows="1"
-          autoGrow="true"
-          maxlength="1000"
-          (keypress)="onKeyPress($event)"
-          [disabled]="isLoading || !canSendMessages"
-        >
-        </ion-textarea>
-      </ion-item>
-
-      <div class="message-input-buttons">
-        <ion-button
-          class="attach-button"
-          fill="clear"
-          (click)="showAttachmentOptions()"
-          [disabled]="isLoading || !canSendMessages"
-        >
-          <ion-icon name="attach" slot="icon-only"></ion-icon>
-        </ion-button>
-
-        <ion-button
-          class="send-button"
-          fill="solid"
-          (click)="sendMessage()"
-          [disabled]="!newMessage.trim() || isLoading || !canSendMessages"
-        >
-          <ion-icon name="send" slot="icon-only"></ion-icon>
-        </ion-button>
-      </div>
-    </div>
-  </ion-toolbar>
-</ion-footer>
+    </ion-toolbar>
+  </ion-footer>
+}

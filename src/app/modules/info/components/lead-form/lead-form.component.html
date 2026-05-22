@@ -32,10 +32,12 @@
       formControlName="inquiry"
       label-placement="stacked"
       required
-    >
-      <ion-select-option *ngFor="let opt of inquiries" [value]="opt.value">{{
-        opt.label
-      }}</ion-select-option>
+      >
+      @for (opt of inquiries; track opt) {
+        <ion-select-option [value]="opt.value">{{
+          opt.label
+        }}</ion-select-option>
+      }
     </ion-select>
   </ion-item>
   <ion-item>
@@ -49,5 +51,5 @@
   </ion-item>
   <ion-button type="submit" expand="block" [disabled]="form.invalid"
     >Submit</ion-button
-  >
-</form>
+    >
+  </form>

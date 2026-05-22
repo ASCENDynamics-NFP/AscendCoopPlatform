@@ -49,6 +49,7 @@ import {
 } from "../../../../core/constants/languages";
 
 @Component({
+  standalone: false,
   selector: "app-admin-dashboard",
   templateUrl: "./admin-dashboard.page.html",
   styleUrls: ["./admin-dashboard.page.scss"],

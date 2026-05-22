@@ -18,75 +18,87 @@
   </ion-header>
 
   <!-- Loading State -->
-  <div *ngIf="loading" class="loading-container">
-    <ion-spinner name="crescent"></ion-spinner>
-    <p>{{ "messaging.loading_blocked_users" | translate }}</p>
-  </div>
+  @if (loading) {
+    <div class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>{{ "messaging.loading_blocked_users" | translate }}</p>
+    </div>
+  }
 
   <!-- Empty State -->
-  <div *ngIf="!loading && blockedUsers.length === 0" class="empty-state">
-    <ion-icon name="people-outline" size="large"></ion-icon>
-    <h2>{{ "messaging.no_blocked_users" | translate }}</h2>
-    <p>{{ "messaging.no_blocked_users_yet" | translate }}</p>
-  </div>
+  @if (!loading && blockedUsers.length === 0) {
+    <div class="empty-state">
+      <ion-icon name="people-outline" size="large"></ion-icon>
+      <h2>{{ "messaging.no_blocked_users" | translate }}</h2>
+      <p>{{ "messaging.no_blocked_users_yet" | translate }}</p>
+    </div>
+  }
 
   <!-- Blocked Users List -->
-  <ion-list *ngIf="!loading && blockedUsers.length > 0" lines="full">
-    <ion-item-sliding *ngFor="let user of blockedUsers" #slidingItem>
-      <ion-item>
-        <!-- User Avatar -->
-        <ion-avatar slot="start">
-          <img
-            *ngIf="user.iconImage"
-            [src]="user.iconImage"
-            [alt]="user.name"
-          />
-          <div *ngIf="!user.iconImage" class="avatar-placeholder">
-            {{ getInitials(user.name) }}
-          </div>
-        </ion-avatar>
-
-        <!-- User Info -->
-        <ion-label>
-          <h2>{{ user.name }}</h2>
-          <p *ngIf="user.tagline">{{ user.tagline }}</p>
-          <p class="blocked-status">
-            <ion-icon name="ban-outline" class="blocked-icon"></ion-icon>
-            {{ "messaging.blocked" | translate }}
-          </p>
-        </ion-label>
-
-        <!-- Unblock Button -->
-        <ion-button
-          slot="end"
-          fill="outline"
-          color="medium"
-          (click)="unblockUser(user)"
-        >
-          <ion-icon name="remove-circle-outline" slot="start"></ion-icon>
-          {{ "messaging.unblock" | translate }}
-        </ion-button>
-      </ion-item>
-
-      <!-- Sliding Options -->
-      <ion-item-options side="end">
-        <ion-item-option
-          color="medium"
-          (click)="unblockUser(user); slidingItem.close()"
-        >
-          <ion-icon name="remove-circle-outline" slot="icon-only"></ion-icon>
-        </ion-item-option>
-      </ion-item-options>
-    </ion-item-sliding>
-  </ion-list>
+  @if (!loading && blockedUsers.length > 0) {
+    <ion-list lines="full">
+      @for (user of blockedUsers; track user) {
+        <ion-item-sliding #slidingItem>
+          <ion-item>
+            <!-- User Avatar -->
+            <ion-avatar slot="start">
+              @if (user.iconImage) {
+                <img
+                  [src]="user.iconImage"
+                  [alt]="user.name"
+                  />
+              }
+              @if (!user.iconImage) {
+                <div class="avatar-placeholder">
+                  {{ getInitials(user.name) }}
+                </div>
+              }
+            </ion-avatar>
+            <!-- User Info -->
+            <ion-label>
+              <h2>{{ user.name }}</h2>
+              @if (user.tagline) {
+                <p>{{ user.tagline }}</p>
+              }
+              <p class="blocked-status">
+                <ion-icon name="ban-outline" class="blocked-icon"></ion-icon>
+                {{ "messaging.blocked" | translate }}
+              </p>
+            </ion-label>
+            <!-- Unblock Button -->
+            <ion-button
+              slot="end"
+              fill="outline"
+              color="medium"
+              (click)="unblockUser(user)"
+              >
+              <ion-icon name="remove-circle-outline" slot="start"></ion-icon>
+              {{ "messaging.unblock" | translate }}
+            </ion-button>
+          </ion-item>
+          <!-- Sliding Options -->
+          <ion-item-options side="end">
+            <ion-item-option
+              color="medium"
+              (click)="unblockUser(user); slidingItem.close()"
+              >
+              <ion-icon name="remove-circle-outline" slot="icon-only"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+      }
+    </ion-list>
+  }
 
   <!-- Footer Info -->
-  <div class="footer-info" *ngIf="!loading && blockedUsers.length > 0">
-    <ion-text color="medium">
-      <p>
-        <ion-icon name="information-circle-outline"></ion-icon>
-        {{ "messaging.unblock_info" | translate }}
-      </p>
-    </ion-text>
-  </div>
+  @if (!loading && blockedUsers.length > 0) {
+    <div class="footer-info">
+      <ion-text color="medium">
+        <p>
+          <ion-icon name="information-circle-outline"></ion-icon>
+          {{ "messaging.unblock_info" | translate }}
+        </p>
+      </ion-text>
+    </div>
+  }
 </ion-content>

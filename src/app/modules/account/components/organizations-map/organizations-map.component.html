@@ -26,89 +26,98 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     width="100%"
     [height]="height"
     (idle)="onMapIdle()"
-  >
+    >
     <!-- User location marker -->
-    <map-marker
-      *ngIf="userLocation"
-      [position]="{lat: userLocation.latitude, lng: userLocation.longitude}"
-      [options]="userMarkerOptions"
-    ></map-marker>
+    @if (userLocation) {
+      <map-marker
+        [position]="{lat: userLocation.latitude, lng: userLocation.longitude}"
+        [options]="userMarkerOptions"
+      ></map-marker>
+    }
 
     <!-- Info Window for selected organization -->
     <map-info-window #infoWindow>
-      <div class="info-window" *ngIf="selectedOrganization">
-        <div class="info-header">
-          <img
-            *ngIf="selectedOrganization.iconImage"
-            [src]="selectedOrganization.iconImage"
-            alt="Organization logo"
-            class="info-logo"
-          />
-          <ion-icon
-            *ngIf="!selectedOrganization.iconImage"
-            name="business"
-            class="info-icon"
-          ></ion-icon>
-          <div class="info-titles">
-            <h3 class="info-title">{{ selectedOrganization.name }}</h3>
-            <p class="info-tagline" *ngIf="selectedOrganization.tagline">
-              {{ selectedOrganization.tagline }}
-            </p>
+      @if (selectedOrganization) {
+        <div class="info-window">
+          <div class="info-header">
+            @if (selectedOrganization.iconImage) {
+              <img
+                [src]="selectedOrganization.iconImage"
+                alt="Organization logo"
+                class="info-logo"
+                />
+            }
+            @if (!selectedOrganization.iconImage) {
+              <ion-icon
+                name="business"
+                class="info-icon"
+              ></ion-icon>
+            }
+            <div class="info-titles">
+              <h3 class="info-title">{{ selectedOrganization.name }}</h3>
+              @if (selectedOrganization.tagline) {
+                <p class="info-tagline">
+                  {{ selectedOrganization.tagline }}
+                </p>
+              }
+            </div>
           </div>
+          <div class="info-badges">
+            <ion-badge color="tertiary">
+              {{ "directory.groups" | translate }}
+            </ion-badge>
+          </div>
+          @if (selectedOrganization.description) {
+            <p class="info-description">
+              {{ selectedOrganization.description | slice: 0 : 100
+              }}{{ selectedOrganization.description.length > 100 ? "..." : "" }}
+            </p>
+          }
+          @if (getOrganizationLocation(selectedOrganization)) {
+            <div
+              class="info-meta"
+              >
+              <ion-icon name="location-outline"></ion-icon>
+              <span>{{ getOrganizationLocation(selectedOrganization) }}</span>
+            </div>
+          }
+          <ion-button
+            fill="solid"
+            size="small"
+            expand="block"
+            (click)="onViewDetails()"
+            >
+            {{ "common.view_details" | translate }}
+          </ion-button>
         </div>
-
-        <div class="info-badges">
-          <ion-badge color="tertiary">
-            {{ "directory.groups" | translate }}
-          </ion-badge>
-        </div>
-
-        <p class="info-description" *ngIf="selectedOrganization.description">
-          {{ selectedOrganization.description | slice: 0 : 100
-          }}{{ selectedOrganization.description.length > 100 ? "..." : "" }}
-        </p>
-
-        <div
-          class="info-meta"
-          *ngIf="getOrganizationLocation(selectedOrganization)"
-        >
-          <ion-icon name="location-outline"></ion-icon>
-          <span>{{ getOrganizationLocation(selectedOrganization) }}</span>
-        </div>
-
-        <ion-button
-          fill="solid"
-          size="small"
-          expand="block"
-          (click)="onViewDetails()"
-        >
-          {{ "common.view_details" | translate }}
-        </ion-button>
-      </div>
+      }
     </map-info-window>
   </google-map>
 
   <!-- No organizations with location message -->
-  <div
-    class="no-locations-overlay"
-    *ngIf="organizations.length > 0 && organizationMarkers.length === 0"
-  >
-    <ion-card>
-      <ion-card-content>
-        <ion-icon name="location-outline" color="medium"></ion-icon>
-        <p>{{ "directory.no_locations" | translate }}</p>
-        <p class="hint">{{ "directory.no_locations_hint" | translate }}</p>
-      </ion-card-content>
-    </ion-card>
-  </div>
+  @if (organizations.length > 0 && organizationMarkers.length === 0) {
+    <div
+      class="no-locations-overlay"
+      >
+      <ion-card>
+        <ion-card-content>
+          <ion-icon name="location-outline" color="medium"></ion-icon>
+          <p>{{ "directory.no_locations" | translate }}</p>
+          <p class="hint">{{ "directory.no_locations_hint" | translate }}</p>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  }
 
   <!-- Empty state -->
-  <div class="empty-overlay" *ngIf="organizations.length === 0">
-    <ion-card>
-      <ion-card-content>
-        <ion-icon name="map-outline" color="medium"></ion-icon>
-        <p>{{ "directory.no_organizations_map" | translate }}</p>
-      </ion-card-content>
-    </ion-card>
-  </div>
+  @if (organizations.length === 0) {
+    <div class="empty-overlay">
+      <ion-card>
+        <ion-card-content>
+          <ion-icon name="map-outline" color="medium"></ion-icon>
+          <p>{{ "directory.no_organizations_map" | translate }}</p>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  }
 </div>

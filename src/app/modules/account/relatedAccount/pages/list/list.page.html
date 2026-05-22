@@ -20,296 +20,315 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <!-- list.page.html -->
 
 <ion-header>
-  <app-header
-    *ngIf="(account$ | async) as account"
-    [defaultHref]="'account/'+ account.id"
-    [title]="account.name"
-  ></app-header>
+  @if ((account$ | async); as account) {
+    <app-header
+      [defaultHref]="'account/'+ account.id"
+      [title]="account.name"
+    ></app-header>
+  }
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <!-- Segmented View Switcher -->
   <ion-segment
     class="ion-padding-start ion-padding-end ion-padding-top"
-    [value]="activeView"
-    (ionChange)="onViewChange($event)"
-  >
+    [(ngModel)]="activeView"
+    >
     <ion-segment-button value="list">
       <ion-icon name="list-outline"></ion-icon>
       <ion-label>List</ion-label>
     </ion-segment-button>
-    <ion-segment-button value="roles" *ngIf="canManageRoles$ | async">
-      <ion-icon name="ribbon-outline"></ion-icon>
-      <ion-label>Roles</ion-label>
-    </ion-segment-button>
+    @if (canManageRoles$ | async) {
+      <ion-segment-button value="roles">
+        <ion-icon name="ribbon-outline"></ion-icon>
+        <ion-label>Roles</ion-label>
+      </ion-segment-button>
+    }
     <ion-segment-button value="hierarchy">
       <ion-icon name="git-network-outline"></ion-icon>
       <ion-label>Hierarchy</ion-label>
     </ion-segment-button>
   </ion-segment>
   <!-- List View -->
-  <ion-grid *ngIf="activeView === 'list'">
-    <ion-row>
-      <ion-col>
-        <!-- Current Related Accounts -->
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>{{ title$ | async }}</ion-card-title>
-            <ion-card-subtitle>
-              {{ (currentRelatedAccountsList$ | async)?.length }} {{ (title$ |
-              async)?.toLowerCase() }}
-            </ion-card-subtitle>
-            <!-- Segment tabs handle navigation between views -->
-          </ion-card-header>
-
-          <!-- Visibility badge for owner -->
-          <div
-            *ngIf="(isOwner$ | async) && (ownerListBadge$ | async) as badge"
-            class="ion-padding-start ion-padding-end ion-padding-top"
-          >
-            <ion-chip [color]="badge.color" outline>
-              <ion-icon name="eye-outline"></ion-icon>
-              <ion-label>
-                {{ badge.sectionLabel }} visible to: {{ badge.text }}
-              </ion-label>
-            </ion-chip>
-            <ion-badge
-              color="success"
-              *ngIf="badge.allowCount > 0"
-              class="ion-margin-start"
-            >
-              Allow {{ badge.allowCount }}
-            </ion-badge>
-            <ion-badge
-              color="danger"
-              *ngIf="badge.blockCount > 0"
-              class="ion-margin-start"
-            >
-              Block {{ badge.blockCount }}
-            </ion-badge>
-          </div>
-
-          <!-- Unwrap currentRelatedAccountsList$ and gate by canViewList$ -->
-          <ng-container *ngIf="(canViewList$ | async)">
-            <ng-container
-              *ngIf="(currentRelatedAccountsList$ | async) as currentList"
-            >
-              <ion-list>
-                <ion-item
-                  *ngFor="let relatedAccount of currentList; trackBy: trackById"
-                  button
-                  (click)="goToRelatedAccount(getOtherId(relatedAccount))"
+  @if (activeView === 'list') {
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <!-- Current Related Accounts -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>{{ title$ | async }}</ion-card-title>
+              <ion-card-subtitle>
+                {{ (currentRelatedAccountsList$ | async)?.length }} {{ (title$ |
+                async)?.toLowerCase() }}
+              </ion-card-subtitle>
+              <!-- Segment tabs handle navigation between views -->
+            </ion-card-header>
+            <!-- Visibility badge for owner -->
+            @if ((isOwner$ | async) && (ownerListBadge$ | async); as badge) {
+              <div
+                class="ion-padding-start ion-padding-end ion-padding-top"
                 >
-                  <ion-thumbnail slot="start">
-                    <img
-                      *ngIf="relatedAccount.iconImage"
-                      [alt]="relatedAccount.name"
-                      [src]="relatedAccount.iconImage"
-                    />
-                  </ion-thumbnail>
+                <ion-chip [color]="badge.color" outline>
+                  <ion-icon name="eye-outline"></ion-icon>
                   <ion-label>
-                    <h3>{{ relatedAccount.name }}</h3>
-                    <p>{{ relatedAccount.tagline }}</p>
+                    {{ badge.sectionLabel }} visible to: {{ badge.text }}
                   </ion-label>
-                  <ng-container *ngIf="showAccessControls$ | async">
-                    <ion-select
-                      [value]="relatedAccount.access"
-                      interface="popover"
-                      placeholder="Access"
-                      (click)="$event.stopPropagation()"
-                      (ionChange)="updateAccess(relatedAccount, $event.detail.value)"
-                      style="max-width: 110px; margin-right: 8px"
+                </ion-chip>
+                @if (badge.allowCount > 0) {
+                  <ion-badge
+                    color="success"
+                    class="ion-margin-start"
                     >
-                      <ion-select-option
-                        *ngFor="let role of accessOptions"
-                        [value]="role"
-                      >
-                        {{ role }}
-                      </ion-select-option>
-                    </ion-select>
-                  </ng-container>
-                  <ng-container *ngIf="showAccessControls$ | async">
-                    <ion-select
-                      [value]="getCurrentRoleIds(relatedAccount)"
-                      interface="popover"
-                      placeholder="Roles (max 1 per category)"
-                      multiple="true"
-                      (click)="$event.stopPropagation()"
-                      (ionChange)="updateRoles(relatedAccount, $event.detail.value)"
-                      style="max-width: 140px; margin-right: 8px"
+                    Allow {{ badge.allowCount }}
+                  </ion-badge>
+                }
+                @if (badge.blockCount > 0) {
+                  <ion-badge
+                    color="danger"
+                    class="ion-margin-start"
                     >
-                      <ion-select-option
-                        *ngFor="let role of getRolesForAccount(relatedAccount) | async"
-                        [value]="role.id"
+                    Block {{ badge.blockCount }}
+                  </ion-badge>
+                }
+              </div>
+            }
+            <!-- Unwrap currentRelatedAccountsList$ and gate by canViewList$ -->
+            @if ((canViewList$ | async)) {
+              @if ((currentRelatedAccountsList$ | async); as currentList) {
+                <ion-list>
+                  @for (relatedAccount of currentList; track trackById($index, relatedAccount)) {
+                    <ion-item
+                      button
+                      (click)="goToRelatedAccount(getOtherId(relatedAccount))"
                       >
-                        {{ role.name }}
-                        <span
-                          *ngIf="role.standardCategory"
+                      <ion-thumbnail slot="start">
+                        @if (relatedAccount.iconImage) {
+                          <img
+                            [alt]="relatedAccount.name"
+                            [src]="relatedAccount.iconImage"
+                            />
+                        }
+                      </ion-thumbnail>
+                      <ion-label>
+                        <h3>{{ relatedAccount.name }}</h3>
+                        <p>{{ relatedAccount.tagline }}</p>
+                      </ion-label>
+                      @if (showAccessControls$ | async) {
+                        <ion-select
+                          [value]="relatedAccount.access"
+                          interface="popover"
+                          placeholder="Access"
+                          (click)="$event.stopPropagation()"
+                          (ionChange)="updateAccess(relatedAccount, $event.detail.value)"
+                          style="max-width: 110px; margin-right: 8px"
+                          >
+                          @for (role of accessOptions; track role) {
+                            <ion-select-option
+                              [value]="role"
+                              >
+                              {{ role }}
+                            </ion-select-option>
+                          }
+                        </ion-select>
+                      }
+                      @if (showAccessControls$ | async) {
+                        <ion-select
+                          [value]="getCurrentRoleIds(relatedAccount)"
+                          interface="popover"
+                          placeholder="Roles (max 1 per category)"
+                          multiple="true"
+                          (click)="$event.stopPropagation()"
+                          (ionChange)="updateRoles(relatedAccount, $event.detail.value)"
+                          style="max-width: 140px; margin-right: 8px"
+                          >
+                          @for (role of getRolesForAccount(relatedAccount) | async; track role) {
+                            <ion-select-option
+                              [value]="role.id"
+                              >
+                              {{ role.name }}
+                              @if (role.standardCategory) {
+                                <span
                           style="
                             font-size: 0.8em;
                             color: var(--ion-color-medium);
                           "
-                        >
-                          ({{ role.standardCategory }})
-                        </span>
-                      </ion-select-option>
-                    </ion-select>
-                  </ng-container>
-
-                  <ion-button
-                    slot="end"
-                    expand="block"
-                    color="secondary"
-                    *ngIf="(showRemoveButton(relatedAccount) | async)"
+                                  >
+                                  ({{ role.standardCategory }})
+                                </span>
+                              }
+                            </ion-select-option>
+                          }
+                        </ion-select>
+                      }
+                      @if ((showRemoveButton(relatedAccount) | async)) {
+                        <ion-button
+                          slot="end"
+                          expand="block"
+                          color="secondary"
                     (click)="
                     $event.stopPropagation();
                     $event.preventDefault();
                     removeRequest(relatedAccount)
                   "
-                  >
-                    Remove
-                  </ion-button>
-                </ion-item>
-              </ion-list>
-            </ng-container>
-          </ng-container>
-          <ion-text
-            color="medium"
-            *ngIf="(showPrivateNotice$ | async)"
-            class="ion-padding"
-          >
-            {{ 'privacy.private_list_notice' | translate }}
-          </ion-text>
-        </ion-card>
-
-        <!-- Pending Related Accounts (owner or group admin only) -->
-        <ng-container *ngIf="(isOwner$ | async) || (isGroupAdmin$ | async)">
-          <ng-container
-            *ngIf="(pendingRelatedAccountsList$ | async) as pendingList"
-          >
-            <ion-card *ngIf="pendingList.length > 0">
-              <ion-card-header>
-                <ion-card-title>Pending {{ title$ | async }}</ion-card-title>
-                <ion-card-subtitle>
-                  {{ pendingList.length }} pending {{ (title$ |
-                  async)?.toLowerCase() }}
-                </ion-card-subtitle>
-              </ion-card-header>
-              <ion-list>
-                <ion-item
-                  *ngFor="let relatedAccount of pendingList; trackBy: trackById"
-                  button
-                  (click)="goToRelatedAccount(getOtherId(relatedAccount))"
+                          >
+                          Remove
+                        </ion-button>
+                      }
+                    </ion-item>
+                  }
+                </ion-list>
+              }
+            }
+            @if ((showPrivateNotice$ | async)) {
+              <ion-text
+                color="medium"
+                class="ion-padding"
                 >
-                  <ion-thumbnail slot="start">
-                    <img
-                      *ngIf="relatedAccount.iconImage"
-                      [alt]="relatedAccount.name"
-                      [src]="relatedAccount.iconImage"
-                    />
-                  </ion-thumbnail>
-                  <ion-label>
-                    <h3>{{ relatedAccount.name }}</h3>
-                    <p>{{ relatedAccount.tagline }}</p>
-                  </ion-label>
-                  <ng-container *ngIf="showAccessControls$ | async">
-                    <ion-select
-                      [value]="relatedAccount.access"
-                      interface="popover"
-                      placeholder="Access"
-                      (click)="$event.stopPropagation()"
-                      (ionChange)="updateAccess(relatedAccount, $event.detail.value)"
-                      style="max-width: 110px; margin-right: 8px"
-                    >
-                      <ion-select-option
-                        *ngFor="let role of accessOptions"
-                        [value]="role"
-                        >{{ role }}</ion-select-option
-                      >
-                    </ion-select>
-                  </ng-container>
-                  <ng-container *ngIf="showRoleControls$ | async">
-                    <ion-select
-                      [value]="getCurrentRoleIds(relatedAccount)"
-                      interface="popover"
-                      placeholder="Roles (max 1 per category)"
-                      multiple="true"
-                      (click)="$event.stopPropagation()"
-                      (ionChange)="updateRoles(relatedAccount, $event.detail.value)"
-                      style="max-width: 140px; margin-right: 8px"
-                    >
-                      <ion-select-option
-                        *ngFor="let role of getRolesForAccount(relatedAccount) | async"
-                        [value]="role.id"
-                        >{{ role.name }}
-                        <span
-                          *ngIf="role.standardCategory"
+                {{ 'privacy.private_list_notice' | translate }}
+              </ion-text>
+            }
+          </ion-card>
+          <!-- Pending Related Accounts (owner or group admin only) -->
+          @if ((isOwner$ | async) || (isGroupAdmin$ | async)) {
+            @if ((pendingRelatedAccountsList$ | async); as pendingList) {
+              @if (pendingList.length > 0) {
+                <ion-card>
+                  <ion-card-header>
+                    <ion-card-title>Pending {{ title$ | async }}</ion-card-title>
+                    <ion-card-subtitle>
+                      {{ pendingList.length }} pending {{ (title$ |
+                      async)?.toLowerCase() }}
+                    </ion-card-subtitle>
+                  </ion-card-header>
+                  <ion-list>
+                    @for (relatedAccount of pendingList; track trackById($index, relatedAccount)) {
+                      <ion-item
+                        button
+                        (click)="goToRelatedAccount(getOtherId(relatedAccount))"
+                        >
+                        <ion-thumbnail slot="start">
+                          @if (relatedAccount.iconImage) {
+                            <img
+                              [alt]="relatedAccount.name"
+                              [src]="relatedAccount.iconImage"
+                              />
+                          }
+                        </ion-thumbnail>
+                        <ion-label>
+                          <h3>{{ relatedAccount.name }}</h3>
+                          <p>{{ relatedAccount.tagline }}</p>
+                        </ion-label>
+                        @if (showAccessControls$ | async) {
+                          <ion-select
+                            [value]="relatedAccount.access"
+                            interface="popover"
+                            placeholder="Access"
+                            (click)="$event.stopPropagation()"
+                            (ionChange)="updateAccess(relatedAccount, $event.detail.value)"
+                            style="max-width: 110px; margin-right: 8px"
+                            >
+                            @for (role of accessOptions; track role) {
+                              <ion-select-option
+                                [value]="role"
+                                >{{ role }}</ion-select-option
+                                >
+                              }
+                            </ion-select>
+                          }
+                          @if (showRoleControls$ | async) {
+                            <ion-select
+                              [value]="getCurrentRoleIds(relatedAccount)"
+                              interface="popover"
+                              placeholder="Roles (max 1 per category)"
+                              multiple="true"
+                              (click)="$event.stopPropagation()"
+                              (ionChange)="updateRoles(relatedAccount, $event.detail.value)"
+                              style="max-width: 140px; margin-right: 8px"
+                              >
+                              @for (role of getRolesForAccount(relatedAccount) | async; track role) {
+                                <ion-select-option
+                                  [value]="role.id"
+                                  >{{ role.name }}
+                                  @if (role.standardCategory) {
+                                    <span
                           style="
                             font-size: 0.8em;
                             color: var(--ion-color-medium);
                           "
-                        >
-                          ({{ role.standardCategory }})
-                        </span></ion-select-option
-                      >
-                    </ion-select>
-                  </ng-container>
-                  <ion-button
-                    slot="end"
-                    expand="block"
-                    *ngIf="(showAcceptRejectButtons(relatedAccount) | async)"
+                                      >
+                                      ({{ role.standardCategory }})
+                                    </span>
+                                    }</ion-select-option
+                                    >
+                                  }
+                                </ion-select>
+                              }
+                              @if ((showAcceptRejectButtons(relatedAccount) | async)) {
+                                <ion-button
+                                  slot="end"
+                                  expand="block"
                     (click)="
                       $event.stopPropagation();
                       $event.preventDefault();
                       acceptRequest(relatedAccount)
                     "
-                  >
-                    Accept
-                  </ion-button>
-                  <ion-button
-                    slot="end"
-                    expand="block"
-                    color="secondary"
-                    *ngIf="(showAcceptRejectButtons(relatedAccount) | async)"
+                                  >
+                                  Accept
+                                </ion-button>
+                              }
+                              @if ((showAcceptRejectButtons(relatedAccount) | async)) {
+                                <ion-button
+                                  slot="end"
+                                  expand="block"
+                                  color="secondary"
                     (click)="
                       $event.stopPropagation();
                       $event.preventDefault();
                       rejectRequest(relatedAccount)
                     "
-                  >
-                    Reject
-                  </ion-button>
-                  <ion-button
-                    slot="end"
-                    expand="block"
-                    color="secondary"
-                    *ngIf="(showRemoveButton(relatedAccount) | async)"
+                                  >
+                                  Reject
+                                </ion-button>
+                              }
+                              @if ((showRemoveButton(relatedAccount) | async)) {
+                                <ion-button
+                                  slot="end"
+                                  expand="block"
+                                  color="secondary"
                     (click)="
                       $event.stopPropagation();
                       $event.preventDefault();
                       removeRequest(relatedAccount)
                     "
-                  >
-                    Remove
-                  </ion-button>
-                </ion-item>
-              </ion-list>
-            </ion-card>
-          </ng-container>
-        </ng-container>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
-  <!-- Roles Management View (embedded, owner/admin only) -->
-  <div
-    *ngIf="(canManageRoles$ | async) && activeView === 'roles'"
-    class="ion-padding"
-  >
-    <app-role-management [embedded]="true"></app-role-management>
-  </div>
+                                  >
+                                  Remove
+                                </ion-button>
+                              }
+                            </ion-item>
+                          }
+                        </ion-list>
+                      </ion-card>
+                    }
+                  }
+                }
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        }
+        <!-- Roles Management View (embedded, owner/admin only) -->
+        @if ((canManageRoles$ | async) && activeView === 'roles') {
+          <div
+            class="ion-padding"
+            >
+            <app-role-management [embedded]="true"></app-role-management>
+          </div>
+        }
 
-  <!-- Role Hierarchy View (embedded) -->
-  <div *ngIf="activeView === 'hierarchy'" class="ion-padding">
-    <app-role-hierarchy [embedded]="true"></app-role-hierarchy>
-  </div>
-</ion-content>
+        <!-- Role Hierarchy View (embedded) -->
+        @if (activeView === 'hierarchy') {
+          <div class="ion-padding">
+            <app-role-hierarchy [embedded]="true"></app-role-hierarchy>
+          </div>
+        }
+      </ion-content>

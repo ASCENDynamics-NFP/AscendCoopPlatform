@@ -5,13 +5,12 @@ module.exports = function (config) {
   const isCI = !!process.env.CI;
   config.set({
     basePath: "",
-    frameworks: ["jasmine", "@angular-devkit/build-angular"],
+    frameworks: ["jasmine"],
     plugins: [
       require("karma-jasmine"),
       require("karma-chrome-launcher"),
       require("karma-jasmine-html-reporter"),
       require("karma-coverage"),
-      require("@angular-devkit/build-angular/plugins/karma"),
     ],
     client: {
       jasmine: {
@@ -45,8 +44,8 @@ module.exports = function (config) {
     singleRun: true,
     restartOnFileChange: true,
     // Increase robustness in CI environments
-    browserNoActivityTimeout: 60000,
-    browserDisconnectTimeout: 20000,
+    browserNoActivityTimeout: 300000,
+    browserDisconnectTimeout: 60000,
     browserDisconnectTolerance: 3,
     captureTimeout: 120000,
   });

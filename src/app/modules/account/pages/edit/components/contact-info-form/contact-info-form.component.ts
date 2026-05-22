@@ -35,6 +35,7 @@ import {AccountsService} from "../../../../../../core/services/accounts.service"
 import {firstValueFrom} from "rxjs";
 
 @Component({
+  standalone: false,
   selector: "app-contact-info-form",
   templateUrl: "./contact-info-form.component.html",
   styleUrls: ["./contact-info-form.component.scss"],

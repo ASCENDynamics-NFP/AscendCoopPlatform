@@ -42,6 +42,7 @@ import {MetaService} from "../../../../../core/services/meta.service";
 import {AccessService} from "../../../../../core/services/access.service";
 
 @Component({
+  standalone: false,
   selector: "app-listings-list",
   templateUrl: "./listings-list.page.html",
   styleUrls: ["./listings-list.page.scss"],

@@ -36,7 +36,7 @@
         slot="end"
         fill="clear"
         (click)="togglePassphraseVisibility()"
-      >
+        >
         <ion-icon
           [name]="showPassphrase ? 'eye-off' : 'eye'"
           slot="icon-only"
@@ -45,39 +45,46 @@
     </ion-item>
 
     <!-- Passphrase Strength Indicator -->
-    <div
-      class="strength-indicator"
-      *ngIf="passphraseForm.get('passphrase')?.value"
-    >
-      <ion-progress-bar
-        [value]="getPassphraseStrength().percentage / 100"
-        [color]="getPassphraseStrength().color"
-      ></ion-progress-bar>
-      <ion-text [color]="getPassphraseStrength().color">
-        <small>{{ getPassphraseStrength().strength }}</small>
-      </ion-text>
-    </div>
+    @if (passphraseForm.get('passphrase')?.value) {
+      <div
+        class="strength-indicator"
+        >
+        <ion-progress-bar
+          [value]="getPassphraseStrength().percentage / 100"
+          [color]="getPassphraseStrength().color"
+        ></ion-progress-bar>
+        <ion-text [color]="getPassphraseStrength().color">
+          <small>{{ getPassphraseStrength().strength }}</small>
+        </ion-text>
+      </div>
+    }
 
     <!-- Passphrase Validation Errors -->
-    <ion-text
-      color="danger"
-      *ngIf="
-        passphraseForm.get('passphrase')?.invalid &&
-        passphraseForm.get('passphrase')?.touched
-      "
-    >
-      <small *ngIf="passphraseForm.get('passphrase')?.hasError('required')">
-        Passphrase is required
-      </small>
-      <small *ngIf="passphraseForm.get('passphrase')?.hasError('minlength')">
-        Passphrase must be at least 8 characters
-      </small>
-      <small
-        *ngIf="passphraseForm.get('passphrase')?.hasError('weakPassphrase')"
-      >
-        Passphrase must contain at least one number or special character
-      </small>
-    </ion-text>
+    @if (
+      passphraseForm.get('passphrase')?.invalid &&
+      passphraseForm.get('passphrase')?.touched
+      ) {
+      <ion-text
+        color="danger"
+        >
+        @if (passphraseForm.get('passphrase')?.hasError('required')) {
+          <small>
+            Passphrase is required
+          </small>
+        }
+        @if (passphraseForm.get('passphrase')?.hasError('minlength')) {
+          <small>
+            Passphrase must be at least 8 characters
+          </small>
+        }
+        @if (passphraseForm.get('passphrase')?.hasError('weakPassphrase')) {
+          <small
+            >
+            Passphrase must contain at least one number or special character
+          </small>
+        }
+      </ion-text>
+    }
 
     <!-- Confirm Passphrase Input -->
     <ion-item class="ion-margin-top">
@@ -92,7 +99,7 @@
         slot="end"
         fill="clear"
         (click)="toggleConfirmPassphraseVisibility()"
-      >
+        >
         <ion-icon
           [name]="showConfirmPassphrase ? 'eye-off' : 'eye'"
           slot="icon-only"
@@ -101,15 +108,16 @@
     </ion-item>
 
     <!-- Passphrase Mismatch Error -->
-    <ion-text
-      color="danger"
-      *ngIf="
-        passphraseForm.hasError('mismatch') &&
-        passphraseForm.get('confirmPassphrase')?.touched
-      "
-    >
-      <small>Passphrases do not match</small>
-    </ion-text>
+    @if (
+      passphraseForm.hasError('mismatch') &&
+      passphraseForm.get('confirmPassphrase')?.touched
+      ) {
+      <ion-text
+        color="danger"
+        >
+        <small>Passphrases do not match</small>
+      </ion-text>
+    }
 
     <!-- Actions -->
     <div class="ion-margin-top">
@@ -117,7 +125,7 @@
         expand="block"
         type="submit"
         [disabled]="!passphraseForm.valid"
-      >
+        >
         Set Passphrase
       </ion-button>
       <ion-button expand="block" fill="outline" (click)="dismiss()">

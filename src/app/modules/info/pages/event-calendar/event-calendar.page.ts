@@ -23,6 +23,7 @@ import {Component, OnInit} from "@angular/core";
 import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
+  standalone: false,
   selector: "app-event-calendar",
   templateUrl: "./event-calendar.page.html",
   styleUrls: ["./event-calendar.page.scss"],

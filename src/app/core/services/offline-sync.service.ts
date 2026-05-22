@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Injectable, Injector} from "@angular/core";
+import {Injectable, Injector, runInInjectionContext} from "@angular/core";
 import {Observable, BehaviorSubject, from, of, throwError} from "rxjs";
 import {
   switchMap,
@@ -356,8 +356,8 @@ export class OfflineSyncService {
       };
 
       // Send to Firestore using AngularFirestore
-      const messagesRef = firestore.collection(
-        `chats/${queuedMessage.request.chatId}/messages`,
+      const messagesRef = runInInjectionContext(this.injector, () =>
+        firestore.collection(`chats/${queuedMessage.request.chatId}/messages`),
       );
       const docRef = await messagesRef.add(messageData);
 
@@ -374,10 +374,12 @@ export class OfflineSyncService {
         lastModifiedAt: firebase.firestore.FieldValue.serverTimestamp(),
       };
 
-      await firestore
-        .collection("chats")
-        .doc(queuedMessage.request.chatId)
-        .update(chatUpdateData);
+      await runInInjectionContext(this.injector, () =>
+        firestore
+          .collection("chats")
+          .doc(queuedMessage.request.chatId)
+          .update(chatUpdateData),
+      );
 
       console.log("✅ Chat metadata updated successfully");
       console.log("✅ Queued message sent successfully:", docRef.id);

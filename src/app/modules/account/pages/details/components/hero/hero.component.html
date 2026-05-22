@@ -23,16 +23,17 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   <img
     [src]="account.heroImage || 'assets/image/userhero.png'"
     alt="Header Background"
-  />
-  <ion-button
-    *ngIf="shouldShowEditButton"
-    fill="outline"
-    class="edit-button"
-    size="small"
-    (click)="openImageUploadModal()"
-  >
-    <ion-icon name="pencil-outline"></ion-icon> Edit
-  </ion-button>
+    />
+  @if (shouldShowEditButton) {
+    <ion-button
+      fill="outline"
+      class="edit-button"
+      size="small"
+      (click)="openImageUploadModal()"
+      >
+      <ion-icon name="pencil-outline"></ion-icon> Edit
+    </ion-button>
+  }
 </div>
 
 <div class="profile-header">
@@ -41,163 +42,181 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       [src]="account.iconImage || 'assets/default-profile.png'"
       class="profile-img"
       alt="Profile Photo"
-    />
+      />
     <div class="profile-details">
       <h2>{{ account.name }}</h2>
 
       <!-- Compact location and date info -->
       <div class="meta-info">
-        <span *ngIf="getLocation" class="location">
-          <ion-icon name="location-outline"></ion-icon>
-          {{ getLocation }}
-        </span>
-        <span *ngIf="account.type === 'group'" class="founded-date">
-          <ion-icon name="calendar-outline"></ion-icon>
-          {{ getFoundedDate || "Organization" }}
-        </span>
+        @if (getLocation) {
+          <span class="location">
+            <ion-icon name="location-outline"></ion-icon>
+            {{ getLocation }}
+          </span>
+        }
+        @if (account.type === 'group') {
+          <span class="founded-date">
+            <ion-icon name="calendar-outline"></ion-icon>
+            {{ getFoundedDate || "Organization" }}
+          </span>
+        }
       </div>
 
       <p class="tagline">{{ account.tagline }}</p>
 
       <!-- Compact engagement hours -->
-      <div
-        class="hours-compact"
-        *ngIf="
-          account.type === 'group' &&
-          (getAccountTotalHours > 0 || (totalHours$ | async))
-        "
-      >
-        <span class="hours-item" *ngIf="getAccountTotalHours > 0">
-          <ion-icon name="time-outline"></ion-icon>
-          {{ getAccountTotalHours | number: "1.0-0" }} total engagement hours
-        </span>
-        <span class="hours-item" *ngIf="totalHours$ | async as trackedHours">
-          <ion-icon name="analytics-outline"></ion-icon>
-          {{ trackedHours | number: "1.0-0" }} tracked hours
-        </span>
-      </div>
+      @if (
+        account.type === 'group' &&
+        (getAccountTotalHours > 0 || (totalHours$ | async))
+        ) {
+        <div
+          class="hours-compact"
+          >
+          @if (getAccountTotalHours > 0) {
+            <span class="hours-item">
+              <ion-icon name="time-outline"></ion-icon>
+              {{ getAccountTotalHours | number: "1.0-0" }} total engagement hours
+            </span>
+          }
+          @if (totalHours$ | async; as trackedHours) {
+            <span class="hours-item">
+              <ion-icon name="analytics-outline"></ion-icon>
+              {{ trackedHours | number: "1.0-0" }} tracked hours
+            </span>
+          }
+        </div>
+      }
 
       <!-- User volunteer hours -->
-      <div
-        class="hours-compact volunteer-hours"
-        *ngIf="account.type === 'user'"
-      >
-        <!-- Show totalHours from Account if available, otherwise show calculated hours -->
-        <span
-          class="hours-item"
-          *ngIf="getAccountTotalHours > 0; else showCalculatedHours"
-        >
-          <ion-icon name="heart-outline"></ion-icon>
-          {{ getAccountTotalHours | number: "1.0-0" }} volunteer hours
-        </span>
-        <ng-template #showCalculatedHours>
-          <span
-            class="hours-item"
-            *ngIf="totalHours$ | async as trackedHours; else showZeroHours"
+      @if (account.type === 'user') {
+        <div
+          class="hours-compact volunteer-hours"
           >
-            <ion-icon name="heart-outline"></ion-icon>
-            {{ trackedHours | number: "1.0-0" }} volunteer hours
-          </span>
-        </ng-template>
-        <ng-template #showZeroHours>
-          <span class="hours-item">
-            <ion-icon name="heart-outline"></ion-icon>
-            0 volunteer hours
-          </span>
-        </ng-template>
-      </div>
+          <!-- Show totalHours from Account if available, otherwise show calculated hours -->
+          @if (getAccountTotalHours > 0) {
+            <span
+              class="hours-item"
+              >
+              <ion-icon name="heart-outline"></ion-icon>
+              {{ getAccountTotalHours | number: "1.0-0" }} volunteer hours
+            </span>
+          } @else {
+            @if (totalHours$ | async; as trackedHours) {
+              <span
+                class="hours-item"
+                >
+                <ion-icon name="heart-outline"></ion-icon>
+                {{ trackedHours | number: "1.0-0" }} volunteer hours
+              </span>
+            } @else {
+              <span class="hours-item">
+                <ion-icon name="heart-outline"></ion-icon>
+                0 volunteer hours
+              </span>
+            }
+          }
+        </div>
+      }
     </div>
   </div>
   <div class="profile-actions">
     <ion-buttons>
       <!-- <ion-button>Follow</ion-button>
       <ion-button>Message</ion-button> -->
-      <ion-button
-        *ngIf="hasDonationURL"
-        color="primary"
-        fill="outline"
-        (click)="onLink('donation')"
-      >
-        Donate</ion-button
-      >
-      <!-- Message Button: Show for other users/groups (not yourself) -->
-      <ion-button
-        *ngIf="!isProfileOwner"
-        color="secondary"
-        fill="outline"
-        size="small"
-        (click)="onMessage()"
-      >
-        <ion-icon name="chatbubble"></ion-icon> Message
-      </ion-button>
-      <!-- Connect Button: Show when no relationship exists or when pending -->
-      <ion-button
-        *ngIf="!isProfileOwner && !hasRelationship"
-        color="primary"
-        fill="outline"
-        size="small"
-        (click)="onConnect()"
-      >
-        <ion-icon name="person-add"></ion-icon> Connect
-      </ion-button>
-      <!-- Connection Status: Show when relationship exists -->
-      <ion-button
-        *ngIf="
+      @if (hasDonationURL) {
+        <ion-button
+          color="primary"
+          fill="outline"
+          (click)="onLink('donation')"
+          >
+          Donate</ion-button
+          >
+        }
+        <!-- Message Button: Show for other users/groups (not yourself) -->
+        @if (!isProfileOwner) {
+          <ion-button
+            color="secondary"
+            fill="outline"
+            size="small"
+            (click)="onMessage()"
+            >
+            <ion-icon name="chatbubble"></ion-icon> Message
+          </ion-button>
+        }
+        <!-- Connect Button: Show when no relationship exists or when pending -->
+        @if (!isProfileOwner && !hasRelationship) {
+          <ion-button
+            color="primary"
+            fill="outline"
+            size="small"
+            (click)="onConnect()"
+            >
+            <ion-icon name="person-add"></ion-icon> Connect
+          </ion-button>
+        }
+        <!-- Connection Status: Show when relationship exists -->
+        @if (
           !isProfileOwner && hasRelationship && relationshipStatus === 'pending'
-        "
-        color="warning"
-        fill="outline"
-        size="small"
-        disabled
-      >
-        <ion-icon name="hourglass"></ion-icon>
-      </ion-button>
-      <ion-button
-        *ngIf="
+          ) {
+          <ion-button
+            color="warning"
+            fill="outline"
+            size="small"
+            disabled
+            >
+            <ion-icon name="hourglass"></ion-icon>
+          </ion-button>
+        }
+        @if (
           !isProfileOwner &&
           hasRelationship &&
           relationshipStatus === 'accepted'
-        "
-        color="success"
-        fill="outline"
-        size="small"
-        disabled
-      >
-        <ion-icon name="checkmark-circle"></ion-icon>
-      </ion-button>
-      <!-- Time Tracking: Only users (type 'user') can enter time for group accounts they're members of -->
-      <ion-button
-        *ngIf="
+          ) {
+          <ion-button
+            color="success"
+            fill="outline"
+            size="small"
+            disabled
+            >
+            <ion-icon name="checkmark-circle"></ion-icon>
+          </ion-button>
+        }
+        <!-- Time Tracking: Only users (type 'user') can enter time for group accounts they're members of -->
+        @if (
           account.type === 'group' &&
           currentUserType === 'user' &&
           isGroupMember
-        "
-        color="secondary"
-        fill="outline"
-        size="small"
-        [routerLink]="'/time-entry'"
-      >
-        <ion-icon name="time"></ion-icon> Enter Time
-      </ion-button>
-      <ion-button
-        *ngIf="shouldShowEditButton"
-        color="primary"
-        fill="outline"
-        size="small"
-        [routerLink]="'/account/' + account.id + '/edit'"
-      >
-        <ion-icon name="pencil-outline"></ion-icon> Edit
-      </ion-button>
-      <!-- Admin Dashboard: Only group admins/owners can access admin dashboard for group accounts -->
-      <ion-button
-        *ngIf="account.type === 'group' && isGroupAdmin"
-        color="primary"
-        fill="solid"
-        size="small"
-        [routerLink]="'/account/' + account.id + '/admin'"
-      >
-        <ion-icon name="settings"></ion-icon> Admin
-      </ion-button>
-    </ion-buttons>
+          ) {
+          <ion-button
+            color="secondary"
+            fill="outline"
+            size="small"
+            [routerLink]="'/time-entry'"
+            >
+            <ion-icon name="time"></ion-icon> Enter Time
+          </ion-button>
+        }
+        @if (shouldShowEditButton) {
+          <ion-button
+            color="primary"
+            fill="outline"
+            size="small"
+            [routerLink]="'/account/' + account.id + '/edit'"
+            >
+            <ion-icon name="pencil-outline"></ion-icon> Edit
+          </ion-button>
+        }
+        <!-- Admin Dashboard: Only group admins/owners can access admin dashboard for group accounts -->
+        @if (account.type === 'group' && isGroupAdmin) {
+          <ion-button
+            color="primary"
+            fill="solid"
+            size="small"
+            [routerLink]="'/account/' + account.id + '/admin'"
+            >
+            <ion-icon name="settings"></ion-icon> Admin
+          </ion-button>
+        }
+      </ion-buttons>
+    </div>
   </div>
-</div>

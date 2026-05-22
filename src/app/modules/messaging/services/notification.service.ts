@@ -17,11 +17,14 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Injectable} from "@angular/core";
+import {Injectable, Injector, runInInjectionContext} from "@angular/core";
 import {ToastController} from "@ionic/angular";
 import {BehaviorSubject, Observable, firstValueFrom} from "rxjs";
 import {Message, Chat} from "../models/chat.model";
-import {AngularFirestore} from "@angular/fire/compat/firestore";
+import {
+  AngularFirestore,
+  AngularFirestoreDocument,
+} from "@angular/fire/compat/firestore";
 import {Router} from "@angular/router";
 import {Platform} from "@ionic/angular";
 
@@ -77,8 +80,15 @@ export class NotificationService {
     private firestore: AngularFirestore,
     private router: Router,
     private platform: Platform,
+    private injector: Injector,
   ) {
     this.initializePushNotifications();
+  }
+
+  private afDoc<T>(path: string): AngularFirestoreDocument<T> {
+    return runInInjectionContext(this.injector, () =>
+      this.firestore.doc<T>(path),
+    );
   }
 
   /**
@@ -161,9 +171,7 @@ export class NotificationService {
 
     // Save to Firestore if user is logged in
     if (this.currentUserId) {
-      this.firestore
-        .collection("accounts")
-        .doc(this.currentUserId)
+      this.afDoc(`accounts/${this.currentUserId}`)
         .update({notificationSettings: newSettings})
         .catch((error) =>
           console.error("Error saving notification settings:", error),
@@ -200,9 +208,7 @@ export class NotificationService {
 
     // Save to Firestore if user is logged in
     if (this.currentUserId) {
-      this.firestore
-        .collection("accounts")
-        .doc(this.currentUserId)
+      this.afDoc(`accounts/${this.currentUserId}`)
         .update({chatNotificationSettings: newSettings})
         .catch((error) =>
           console.error("Error saving chat notification settings:", error),
@@ -516,7 +522,7 @@ export class NotificationService {
 
       // Then load from Firestore for authoritative data
       const userDoc = await firstValueFrom(
-        this.firestore.collection("accounts").doc(userId).get(),
+        this.afDoc(`accounts/${userId}`).get(),
       );
 
       if (userDoc && userDoc.exists) {
@@ -676,7 +682,7 @@ export class NotificationService {
   ): Promise<boolean> {
     try {
       const accountDoc = await firstValueFrom(
-        this.firestore.collection("accounts").doc(groupId).get(),
+        this.afDoc(`accounts/${groupId}`).get(),
       );
 
       if (!accountDoc || !accountDoc.exists) {

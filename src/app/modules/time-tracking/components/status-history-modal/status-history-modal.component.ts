@@ -42,6 +42,7 @@ interface GroupedEntry {
 }
 
 @Component({
+  standalone: false,
   selector: "app-status-history-modal",
   templateUrl: "./status-history-modal.component.html",
   styleUrls: ["./status-history-modal.component.scss"],

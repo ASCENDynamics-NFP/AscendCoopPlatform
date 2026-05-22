@@ -21,6 +21,7 @@ import {Component, Input} from "@angular/core";
 import {Account} from "@shared/models/account.model";
 
 @Component({
+  standalone: false,
   selector: "app-group-calendar",
   templateUrl: "./group-calendar.component.html",
   styleUrls: ["./group-calendar.component.scss"],

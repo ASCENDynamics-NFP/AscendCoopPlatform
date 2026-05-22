@@ -25,6 +25,7 @@ import {AppState} from "../../../../../../state/app.state";
 import {Store} from "@ngrx/store";
 
 @Component({
+  standalone: false,
   selector: "app-hero",
   templateUrl: "./hero.component.html",
   styleUrls: ["./hero.component.scss"],
@@ -34,7 +35,7 @@ export class HeroComponent {
   @Input() isOwner: boolean = false;
   @Input() showButtons: boolean = true;
 
-  constructor(private store: Store<AppState>) {}
+  constructor(private store: Store) {}
 
   getCities(): string {
     if (this.listing.remote) {

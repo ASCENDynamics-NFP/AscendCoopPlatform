@@ -30,6 +30,7 @@ import {Subscription} from "rxjs";
 import {PrivacyService} from "../../../../../../core/services/privacy.service";
 
 @Component({
+  standalone: false,
   selector: "app-contact-information",
   templateUrl: "./contact-information.component.html",
   styleUrls: ["./contact-information.component.scss"],

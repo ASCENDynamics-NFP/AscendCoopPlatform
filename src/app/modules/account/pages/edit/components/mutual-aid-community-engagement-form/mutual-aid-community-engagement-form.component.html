@@ -34,13 +34,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             interface="popover"
             multiple="true"
             [placeholder]="'common.select_services_offered' | translate"
-          >
-            <ion-select-option
-              *ngFor="let service of servicesOptions"
-              [value]="service"
             >
-              {{ service }}
-            </ion-select-option>
+            @for (service of servicesOptions; track service) {
+              <ion-select-option
+                [value]="service"
+                >
+                {{ service }}
+              </ion-select-option>
+            }
           </ion-select>
         </ion-col>
       </ion-row>
@@ -56,13 +57,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             interface="popover"
             multiple="true"
             [placeholder]="'common.select_services_needed' | translate"
-          >
-            <ion-select-option
-              *ngFor="let service of servicesOptions"
-              [value]="service"
             >
-              {{ service }}
-            </ion-select-option>
+            @for (service of servicesOptions; track service) {
+              <ion-select-option
+                [value]="service"
+                >
+                {{ service }}
+              </ion-select-option>
+            }
           </ion-select>
         </ion-col>
       </ion-row>
@@ -78,13 +80,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             interface="popover"
             multiple="true"
             [placeholder]="'common.select_community_affiliations' | translate"
-          >
-            <ion-select-option
-              *ngFor="let affiliation of communityAffiliationsOptions"
-              [value]="affiliation"
             >
-              {{ affiliation }}
-            </ion-select-option>
+            @for (affiliation of communityAffiliationsOptions; track affiliation) {
+              <ion-select-option
+                [value]="affiliation"
+                >
+                {{ affiliation }}
+              </ion-select-option>
+            }
           </ion-select>
         </ion-col>
       </ion-row>
@@ -126,13 +129,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             interface="popover"
             multiple="true"
             [placeholder]="'common.select_groups_forums' | translate"
-          >
-            <ion-select-option
-              *ngFor="let group of groupsOrForumsOptions"
-              [value]="group"
             >
-              {{ group }}
-            </ion-select-option>
+            @for (group of groupsOrForumsOptions; track group) {
+              <ion-select-option
+                [value]="group"
+                >
+                {{ group }}
+              </ion-select-option>
+            }
           </ion-select>
         </ion-col>
       </ion-row>
@@ -144,7 +148,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             type="submit"
             expand="float"
             [disabled]="mutualAidForm.invalid"
-          >
+            >
             Save
           </ion-button>
         </ion-col>

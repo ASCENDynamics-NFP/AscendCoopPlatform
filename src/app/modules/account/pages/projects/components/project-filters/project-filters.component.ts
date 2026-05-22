@@ -19,7 +19,7 @@
 ***********************************************************************************************/
 
 import {Component, EventEmitter, Input, Output} from "@angular/core";
-import {CommonModule} from "@angular/common";
+
 import {FormsModule} from "@angular/forms";
 import {IonicModule} from "@ionic/angular";
 import {
@@ -32,6 +32,7 @@ import {
 } from "../../interfaces/project-filter.interface";
 
 @Component({
+  standalone: false,
   selector: "app-project-filters",
   templateUrl: "./project-filters.component.html",
   styleUrls: ["./project-filters.component.scss"],

@@ -32,6 +32,7 @@ import {FeedbackModalComponent} from "../feedback-modal/feedback-modal.component
 import {MenuItem} from "../../../shared/interfaces/menu-item.interface";
 
 @Component({
+  standalone: false,
   selector: "app-menu",
   templateUrl: "./menu.component.html",
   styleUrls: ["./menu.component.scss"],
@@ -61,24 +62,28 @@ export class MenuComponent implements OnInit, OnDestroy {
 
     // Handle auth user changes
     const authSubscription = authUser$.subscribe((authUser) => {
-      this.user = authUser;
-      if (authUser) {
-        this.setUserMenuItems();
-      } else {
-        this.setGuestMenuItems();
-      }
+      Promise.resolve().then(() => {
+        this.user = authUser;
+        if (authUser) {
+          this.setUserMenuItems();
+        } else {
+          this.setGuestMenuItems();
+        }
+      });
     });
 
     // Handle language changes separately
     const langSubscription = langChange$.subscribe(() => {
-      this.updateProjectLinks();
-      this.updateInfoPages();
-      // Refresh menu items with new translations
-      if (this.user) {
-        this.setUserMenuItems();
-      } else {
-        this.setGuestMenuItems();
-      }
+      Promise.resolve().then(() => {
+        this.updateProjectLinks();
+        this.updateInfoPages();
+        // Refresh menu items with new translations
+        if (this.user) {
+          this.setUserMenuItems();
+        } else {
+          this.setGuestMenuItems();
+        }
+      });
     });
 
     this.subscriptions.add(authSubscription);

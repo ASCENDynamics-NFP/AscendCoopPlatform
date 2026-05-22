@@ -26,85 +26,92 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     width="100%"
     [height]="height"
     (idle)="onMapIdle()"
-  >
+    >
     <!-- User location marker -->
-    <map-marker
-      *ngIf="userLocation"
-      [position]="{lat: userLocation.latitude, lng: userLocation.longitude}"
-      [options]="userMarkerOptions"
-    ></map-marker>
+    @if (userLocation) {
+      <map-marker
+        [position]="{lat: userLocation.latitude, lng: userLocation.longitude}"
+        [options]="userMarkerOptions"
+      ></map-marker>
+    }
 
     <!-- Info Window for selected listing -->
     <map-info-window #infoWindow>
-      <div class="info-window" *ngIf="selectedListing">
-        <div class="info-header">
-          <img
-            *ngIf="selectedListing.iconImage"
-            [src]="selectedListing.iconImage"
-            alt="Organization logo"
-            class="info-logo"
-          />
-          <div class="info-titles">
-            <h3 class="info-title">{{ selectedListing.title }}</h3>
-            <p class="info-org">{{ selectedListing.organization }}</p>
+      @if (selectedListing) {
+        <div class="info-window">
+          <div class="info-header">
+            @if (selectedListing.iconImage) {
+              <img
+                [src]="selectedListing.iconImage"
+                alt="Organization logo"
+                class="info-logo"
+                />
+            }
+            <div class="info-titles">
+              <h3 class="info-title">{{ selectedListing.title }}</h3>
+              <p class="info-org">{{ selectedListing.organization }}</p>
+            </div>
           </div>
-        </div>
+          <div class="info-badges">
+            <ion-badge [color]="getListingTypeColor(selectedListing.type)">
+              {{ selectedListing.type | titlecase }}
+            </ion-badge>
+            @if (selectedListing.remote) {
+              <ion-badge color="success">
+                Remote
+              </ion-badge>
+            }
+          </div>
+          <p class="info-description">
+            {{ selectedListing.description | slice: 0 : 100 }}...
+          </p>
+          @if (selectedListing.timeCommitment) {
+            <div class="info-meta">
+              <ion-icon name="time-outline"></ion-icon>
+              <span
+                >{{ selectedListing.timeCommitment.hoursPerWeek }} hrs/week</span
+                >
+              </div>
+            }
+            <ion-button
+              fill="solid"
+              size="small"
+              expand="block"
+              (click)="onViewDetails()"
+              >
+              View Details
+            </ion-button>
+          </div>
+        }
+      </map-info-window>
+    </google-map>
 
-        <div class="info-badges">
-          <ion-badge [color]="getListingTypeColor(selectedListing.type)">
-            {{ selectedListing.type | titlecase }}
-          </ion-badge>
-          <ion-badge *ngIf="selectedListing.remote" color="success">
-            Remote
-          </ion-badge>
-        </div>
-
-        <p class="info-description">
-          {{ selectedListing.description | slice: 0 : 100 }}...
-        </p>
-
-        <div class="info-meta" *ngIf="selectedListing.timeCommitment">
-          <ion-icon name="time-outline"></ion-icon>
-          <span
-            >{{ selectedListing.timeCommitment.hoursPerWeek }} hrs/week</span
-          >
-        </div>
-
-        <ion-button
-          fill="solid"
-          size="small"
-          expand="block"
-          (click)="onViewDetails()"
+    <!-- No listings with location message -->
+    @if (listings.length > 0 && listingMarkers.length === 0) {
+      <div
+        class="no-locations-overlay"
         >
-          View Details
-        </ion-button>
+        <ion-card>
+          <ion-card-content>
+            <ion-icon name="location-outline" color="medium"></ion-icon>
+            <p>No listings have location data available.</p>
+            <p class="hint">
+              Listings need geocoded addresses to appear on the map.
+            </p>
+          </ion-card-content>
+        </ion-card>
       </div>
-    </map-info-window>
-  </google-map>
+    }
 
-  <!-- No listings with location message -->
-  <div
-    class="no-locations-overlay"
-    *ngIf="listings.length > 0 && listingMarkers.length === 0"
-  >
-    <ion-card>
-      <ion-card-content>
-        <ion-icon name="location-outline" color="medium"></ion-icon>
-        <p>No listings have location data available.</p>
-        <p class="hint">
-          Listings need geocoded addresses to appear on the map.
-        </p>
-      </ion-card-content>
-    </ion-card>
+    <!-- Empty state -->
+    @if (listings.length === 0) {
+      <div class="empty-overlay">
+        <ion-card>
+          <ion-card-content>
+            <ion-icon name="map-outline" color="medium"></ion-icon>
+            <p>No listings to display.</p>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    }
   </div>
-
-  <!-- Empty state -->
-  <div class="empty-overlay" *ngIf="listings.length === 0">
-    <ion-card>
-      <ion-card-content>
-        <ion-icon name="map-outline" color="medium"></ion-icon>
-        <p>No listings to display.</p>
-      </ion-card-content>
-    </ion-card>
-  </div>
-</div>

@@ -36,6 +36,7 @@ import * as AccountActions from "../../../../../../state/actions/account.actions
 import {formatPhoneNumber} from "../../../../../../core/utils/phone.util";
 
 @Component({
+  standalone: false,
   selector: "app-admin-group-profile-form",
   templateUrl: "./admin-group-profile-form.component.html",
   styleUrls: ["./admin-group-profile-form.component.scss"],

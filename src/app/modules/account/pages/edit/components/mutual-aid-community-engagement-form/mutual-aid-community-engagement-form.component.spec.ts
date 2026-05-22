@@ -20,7 +20,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MutualAidCommunityEngagementFormComponent} from "./mutual-aid-community-engagement-form.component";
 import {ReactiveFormsModule, FormsModule} from "@angular/forms";
-import {IonicModule, IonSelect, IonSelectOption} from "@ionic/angular";
+import {IonicModule} from "@ionic/angular";
 import {provideMockStore} from "@ngrx/store/testing";
 import {Account} from "@shared/models/account.model";
 import {CommonModule} from "@angular/common";
@@ -33,11 +33,7 @@ describe("MutualAidCommunityEngagementComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [
-        MutualAidCommunityEngagementFormComponent,
-        IonSelect,
-        IonSelectOption,
-      ],
+      declarations: [MutualAidCommunityEngagementFormComponent],
       imports: [
         CommonModule,
         ReactiveFormsModule,

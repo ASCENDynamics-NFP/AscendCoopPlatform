@@ -23,6 +23,7 @@ interface BlockedUser {
 }
 
 @Component({
+  standalone: false,
   selector: "app-block-list",
   templateUrl: "./block-list.component.html",
   styleUrls: ["./block-list.component.scss"],
@@ -35,7 +36,7 @@ export class BlockListComponent implements OnInit, OnDestroy {
 
   constructor(
     private relationshipService: RelationshipService,
-    private store: Store<AuthState>,
+    private store: Store,
     private firestoreService: FirestoreService,
     private loadingController: LoadingController,
     private toastController: ToastController,

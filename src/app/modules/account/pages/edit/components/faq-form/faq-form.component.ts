@@ -41,6 +41,7 @@ export interface FAQ {
 }
 
 @Component({
+  standalone: false,
   selector: "app-faq-form",
   templateUrl: "./faq-form.component.html",
   styleUrls: ["./faq-form.component.scss"],

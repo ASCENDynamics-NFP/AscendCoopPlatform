@@ -53,27 +53,27 @@ describe("FaqSectionComponent", () => {
   });
 
   it("should display FAQs when provided", () => {
-    component.faqs = [
+    fixture.componentRef.setInput("faqs", [
       {
         id: "1",
         question: "Test Question",
         answer: "Test Answer",
       },
-    ];
+    ]);
     fixture.detectChanges();
     const compiled = fixture.nativeElement;
     expect(compiled.querySelector(".faq-accordion")).toBeTruthy();
   });
 
   it("should show edit buttons when canEdit is true", () => {
-    component.canEdit = true;
-    component.faqs = [
+    fixture.componentRef.setInput("canEdit", true);
+    fixture.componentRef.setInput("faqs", [
       {
         id: "1",
         question: "Test Question",
         answer: "Test Answer",
       },
-    ];
+    ]);
     fixture.detectChanges();
     const compiled = fixture.nativeElement;
     expect(compiled.querySelector(".manage-faq-btn")).toBeTruthy();

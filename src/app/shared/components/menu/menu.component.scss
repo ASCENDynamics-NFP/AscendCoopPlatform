@@ -20,8 +20,8 @@
 
 // src/app/shared/components/menu/menu.component.scss
 
-@import "src/styles/variables";
-@import "src/styles/mixins";
+@use "src/styles/variables" as *;
+@use "src/styles/mixins" as *;
 
 .menu-toolbar {
   // --background: linear-gradient(

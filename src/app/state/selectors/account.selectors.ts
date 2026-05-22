@@ -46,12 +46,11 @@ const {
 
 export const selectAccountEntities = createSelector(
   selectAccountState,
-  selectAccountEntityMap,
+  (state) => (state ? selectAccountEntityMap(state) : {}),
 );
 
-export const selectAllAccounts = createSelector(
-  selectAccountState,
-  selectAllAccountsArray,
+export const selectAllAccounts = createSelector(selectAccountState, (state) =>
+  state ? selectAllAccountsArray(state) : [],
 );
 
 export const selectAccountById = (accountId?: string | null) =>

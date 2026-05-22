@@ -48,6 +48,7 @@ import {debounceTime, map} from "rxjs/operators";
 import {selectRelatedAccountsByAccountId} from "../../../../../../state/selectors/account.selectors";
 
 @Component({
+  standalone: false,
   selector: "app-settings-form",
   templateUrl: "./settings.component.html",
   styleUrls: ["./settings.component.scss"],

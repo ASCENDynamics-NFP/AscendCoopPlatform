@@ -18,7 +18,7 @@
  * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
  *******************************************************************************/
 import {Component, Input} from "@angular/core";
-import {CommonModule} from "@angular/common";
+
 import {IonicModule} from "@ionic/angular";
 import {TranslateModule} from "@ngx-translate/core";
 
@@ -27,7 +27,7 @@ export type LoadingMode = "overlay" | "inline" | "skeleton";
 @Component({
   selector: "app-time-tracking-loading",
   standalone: true,
-  imports: [CommonModule, IonicModule, TranslateModule],
+  imports: [IonicModule, TranslateModule],
   templateUrl: "./time-tracking-loading.component.html",
   styleUrls: ["./time-tracking-loading.component.scss"],
 })

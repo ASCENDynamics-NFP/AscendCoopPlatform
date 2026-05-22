@@ -23,6 +23,7 @@ import {ModalController} from "@ionic/angular";
 import {StandardProjectTemplate} from "../../../../../../../../shared/models/standard-project-template.model";
 
 @Component({
+  standalone: false,
   selector: "app-template-preview-modal",
   templateUrl: "./template-preview-modal.component.html",
   styleUrls: ["./template-preview-modal.component.scss"],

@@ -6,18 +6,19 @@ Copyright (C) 2023  ASCENDynamics NFP
   <ion-card-header>
     <div class="title-with-privacy">
       <ion-card-title>Labor Rights</ion-card-title>
-      <ion-chip
-        *ngIf="isOwnerOrAdmin"
-        [color]="privacyData.color"
-        size="small"
-        class="privacy-indicator"
-      >
-        <ion-icon
-          [name]="privacyData.visibility === 'public' ? 'globe' : 'lock-closed'"
+      @if (isOwnerOrAdmin) {
+        <ion-chip
+          [color]="privacyData.color"
           size="small"
-        ></ion-icon>
-        <ion-label>{{ privacyData.label }}</ion-label>
-      </ion-chip>
+          class="privacy-indicator"
+          >
+          <ion-icon
+            [name]="privacyData.visibility === 'public' ? 'globe' : 'lock-closed'"
+            size="small"
+          ></ion-icon>
+          <ion-label>{{ privacyData.label }}</ion-label>
+        </ion-chip>
+      }
     </div>
   </ion-card-header>
   <ion-card-content>
@@ -46,8 +47,10 @@ Copyright (C) 2023  ASCENDynamics NFP
       </ion-row>
     </ion-grid>
   </ion-card-content>
-  <ion-item *ngIf="!laborRights">
-    <ion-label>No labor rights information available.</ion-label>
-  </ion-item>
+  @if (!laborRights) {
+    <ion-item>
+      <ion-label>No labor rights information available.</ion-label>
+    </ion-item>
+  }
 </ion-card>
 

@@ -20,6 +20,7 @@
 import {Component} from "@angular/core";
 
 @Component({
+  standalone: false,
   selector: "app-info-footer",
   templateUrl: "./info-footer.component.html",
   styleUrls: ["./info-footer.component.scss"],

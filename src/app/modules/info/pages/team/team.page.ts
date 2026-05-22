@@ -23,6 +23,7 @@ import {Component, OnInit} from "@angular/core";
 import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
+  standalone: false,
   selector: "app-team",
   templateUrl: "./team.page.html",
   styleUrls: ["./team.page.scss"],

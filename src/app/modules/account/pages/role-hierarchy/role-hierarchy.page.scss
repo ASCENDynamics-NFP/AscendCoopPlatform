@@ -1,6 +1,6 @@
 /* role-hierarchy.page.scss */
-@import "src/styles/variables";
-@import "src/styles/mixins";
+@use "src/styles/variables" as *;
+@use "src/styles/mixins" as *;
 
 // Controls Section
 .controls-section {

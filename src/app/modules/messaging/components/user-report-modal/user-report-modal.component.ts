@@ -37,6 +37,7 @@ import {FirestoreService} from "../../../../core/services/firestore.service";
 import {ErrorHandlerService} from "../../../../core/services/error-handler.service";
 
 @Component({
+  standalone: false,
   selector: "app-user-report-modal",
   templateUrl: "./user-report-modal.component.html",
   styleUrls: ["./user-report-modal.component.scss"],

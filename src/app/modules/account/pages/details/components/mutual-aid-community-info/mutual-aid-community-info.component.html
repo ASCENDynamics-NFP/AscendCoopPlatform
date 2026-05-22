@@ -17,82 +17,86 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<ion-card class="mutual-aid-info-card" *ngIf="mutualAidCommunityEngagement">
-  <ion-card-header>
-    <ion-card-title>Mutual Aid Community Engagement</ion-card-title>
-  </ion-card-header>
-  <ion-card-content>
-    <ion-grid>
-      <ion-row>
-        <ion-col size="6">
-          <div class="info-block">
-            <h2>Services Offered</h2>
-            <p>
-              {{
+@if (mutualAidCommunityEngagement) {
+  <ion-card class="mutual-aid-info-card">
+    <ion-card-header>
+      <ion-card-title>Mutual Aid Community Engagement</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="6">
+            <div class="info-block">
+              <h2>Services Offered</h2>
+              <p>
+                {{
                 mutualAidCommunityEngagement.servicesOffered.join(", ") ||
-                  "None"
-              }}
-            </p>
-          </div>
-          <div
-            class="info-block"
-            *ngIf="
+                "None"
+                }}
+              </p>
+            </div>
+            @if (
               mutualAidCommunityEngagement.servicesNeeded &&
               mutualAidCommunityEngagement.servicesNeeded.length
-            "
-          >
-            <h2>Services Needed</h2>
-            <p>{{ mutualAidCommunityEngagement.servicesNeeded.join(", ") }}</p>
-          </div>
-          <div class="info-block">
-            <h2>Community Affiliations</h2>
-            <p>
-              {{
+              ) {
+              <div
+                class="info-block"
+                >
+                <h2>Services Needed</h2>
+                <p>{{ mutualAidCommunityEngagement.servicesNeeded.join(", ") }}</p>
+              </div>
+            }
+            <div class="info-block">
+              <h2>Community Affiliations</h2>
+              <p>
+                {{
                 mutualAidCommunityEngagement.communityAffiliations.join(", ") ||
-                  "None"
-              }}
-            </p>
-          </div>
-        </ion-col>
-        <ion-col size="6">
-          <div class="info-block">
-            <h2>Willingness to Provide Mentorship</h2>
-            <p>
-              {{
+                "None"
+                }}
+              </p>
+            </div>
+          </ion-col>
+          <ion-col size="6">
+            <div class="info-block">
+              <h2>Willingness to Provide Mentorship</h2>
+              <p>
+                {{
                 mutualAidCommunityEngagement.willingnessToProvideMentorship
-                  ? "Yes"
-                  : "No"
-              }}
-            </p>
-          </div>
-          <div class="info-block">
-            <h2>Interest in Receiving Mentorship</h2>
-            <p>
-              {{
+                ? "Yes"
+                : "No"
+                }}
+              </p>
+            </div>
+            <div class="info-block">
+              <h2>Interest in Receiving Mentorship</h2>
+              <p>
+                {{
                 mutualAidCommunityEngagement.interestInReceivingMentorship
-                  ? "Yes"
-                  : "No"
-              }}
-            </p>
-          </div>
-          <div
-            class="info-block"
-            *ngIf="
+                ? "Yes"
+                : "No"
+                }}
+              </p>
+            </div>
+            @if (
               mutualAidCommunityEngagement.groupsOrForumsParticipation &&
               mutualAidCommunityEngagement.groupsOrForumsParticipation.length
-            "
-          >
-            <h2>Groups or Forums Participation</h2>
-            <p>
-              {{
-                mutualAidCommunityEngagement.groupsOrForumsParticipation.join(
+              ) {
+              <div
+                class="info-block"
+                >
+                <h2>Groups or Forums Participation</h2>
+                <p>
+                  {{
+                  mutualAidCommunityEngagement.groupsOrForumsParticipation.join(
                   ", "
-                )
-              }}
-            </p>
-          </div>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-  </ion-card-content>
-</ion-card>
+                  )
+                  }}
+                </p>
+              </div>
+            }
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+}

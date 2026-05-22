@@ -34,6 +34,7 @@ import {
 } from "../../../../core/services/skill-match.service";
 
 @Component({
+  standalone: false,
   selector: "app-listing-card",
   templateUrl: "./listing-card.component.html",
   styleUrls: ["./listing-card.component.scss"],

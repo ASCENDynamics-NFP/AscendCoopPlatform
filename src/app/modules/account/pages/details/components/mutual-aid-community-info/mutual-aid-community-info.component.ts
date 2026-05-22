@@ -21,6 +21,7 @@ import {Component, Input} from "@angular/core";
 import {MutualAidCommunityEngagement} from "@shared/models/account.model";
 
 @Component({
+  standalone: false,
   selector: "app-mutual-aid-community-info",
   templateUrl: "./mutual-aid-community-info.component.html",
   styleUrls: ["./mutual-aid-community-info.component.scss"],

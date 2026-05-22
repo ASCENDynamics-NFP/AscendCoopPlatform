@@ -42,7 +42,7 @@ export class ChatAccessGuard implements CanActivate {
     private chatService: ChatService,
     private relationshipService: RelationshipService,
     private router: Router,
-    private store: Store<{auth: AuthState}>,
+    private store: Store,
     private toastController: ToastController,
   ) {}
 

@@ -3,138 +3,152 @@
   <div class="week-header">
     <h2>Week of {{ weekStart | date: "MMM d" }}</h2>
     <div class="header-actions">
-      <ion-button
-        *ngIf="!readonly"
-        (click)="addProjectClicked.emit()"
-        fill="outline"
-        size="small"
-      >
-        <ion-icon name="add" slot="start"></ion-icon>
-        {{ "common.add_project" | translate }}
-      </ion-button>
+      @if (!readonly) {
+        <ion-button
+          (click)="addProjectClicked.emit()"
+          fill="outline"
+          size="small"
+          >
+          <ion-icon name="add" slot="start"></ion-icon>
+          {{ "common.add_project" | translate }}
+        </ion-button>
+      }
     </div>
 
     <!-- Status badges based on actual status -->
-    <ion-badge
-      *ngIf="status === 'approved'"
-      color="success"
-      class="status-badge"
-    >
-      <ion-icon name="checkmark-circle" slot="start"></ion-icon>
-      {{ "common.approved_week" | translate }}
-    </ion-badge>
+    @if (status === 'approved') {
+      <ion-badge
+        color="success"
+        class="status-badge"
+        >
+        <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+        {{ "common.approved_week" | translate }}
+      </ion-badge>
+    }
 
-    <ion-badge
-      *ngIf="status === 'pending'"
-      color="warning"
-      class="status-badge"
-    >
-      <ion-icon name="time" slot="start"></ion-icon>
-      {{ "common.pending_week" | translate }}
-    </ion-badge>
+    @if (status === 'pending') {
+      <ion-badge
+        color="warning"
+        class="status-badge"
+        >
+        <ion-icon name="time" slot="start"></ion-icon>
+        {{ "common.pending_week" | translate }}
+      </ion-badge>
+    }
 
-    <ion-badge
-      *ngIf="status === 'rejected'"
-      color="danger"
-      class="status-badge"
-    >
-      <ion-icon name="close-circle" slot="start"></ion-icon>
-      {{ "common.rejected_week" | translate }}
-    </ion-badge>
+    @if (status === 'rejected') {
+      <ion-badge
+        color="danger"
+        class="status-badge"
+        >
+        <ion-icon name="close-circle" slot="start"></ion-icon>
+        {{ "common.rejected_week" | translate }}
+      </ion-badge>
+    }
 
-    <ion-badge *ngIf="status === 'mixed'" color="medium" class="status-badge">
-      <ion-icon name="ellipsis-horizontal" slot="start"></ion-icon>
-      {{ "common.mixed_status" | translate }}
-    </ion-badge>
+    @if (status === 'mixed') {
+      <ion-badge color="medium" class="status-badge">
+        <ion-icon name="ellipsis-horizontal" slot="start"></ion-icon>
+        {{ "common.mixed_status" | translate }}
+      </ion-badge>
+    }
   </div>
 
   <!-- No Projects Available Message (Only if no projects AND no rows) -->
-  <div *ngIf="availableProjects.length === 0 && rows.length === 0" class="no-projects-message">
-    <ion-card color="light">
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="information-circle" slot="start"></ion-icon>
-          No Projects Added
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <p>
-          You haven't added any projects to your timesheet for this week yet.
-        </p>
-        <p>
-          Click <strong>Add Project</strong> to select a project and start tracking time.
-        </p>
-      </ion-card-content>
-    </ion-card>
-  </div>
+  @if (availableProjects.length === 0 && rows.length === 0) {
+    <div class="no-projects-message">
+      <ion-card color="light">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="information-circle" slot="start"></ion-icon>
+            No Projects Added
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p>
+            You haven't added any projects to your timesheet for this week yet.
+          </p>
+          <p>
+            Click <strong>Add Project</strong> to select a project and start tracking time.
+          </p>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  }
 
   <!-- Regular Week View (show if projects exist OR rows exist) -->
-  <div *ngIf="availableProjects.length > 0 || rows.length > 0">
-
-    <!-- Desktop/Tablet View -->
-    <div class="desktop-view">
-      <table class="week-grid">
-        <thead>
-          <tr>
-            <th class="project-column">
-              {{ "time_tracking.project" | translate }}
-            </th>
-            <th *ngFor="let day of days" class="day-column">
-              {{ day | date: "EEE MM/dd" }}
-            </th>
-            <th class="total-column">
-              {{ "time_tracking.total" | translate }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let row of rows; let i = index">
-            <td class="project-cell">
-              <!-- Show archived project name with indicator if it has time entries -->
-              <div
-                *ngIf="row.projectId && isProjectArchived(row.projectId)"
-                class="archived-project-display"
-              >
-                <ion-icon
-                  name="archive"
-                  color="medium"
-                  class="archived-icon"
-                ></ion-icon>
-                <span class="archived-project-name">{{
-                  getProjectDetails(row.projectId)?.name || "Archived Project"
-                }}</span>
-                <ion-badge color="medium" size="small">Archived</ion-badge>
-              </div>
-              <!-- Regular project selection for active projects -->
-              <ng-container
-                *ngIf="!row.projectId || !isProjectArchived(row.projectId)"
-              >
-                <div class="project-name-display">
-                  <div class="project-text">{{ row.projectId ? getProjectDisplayName(getProjectDetails(row.projectId)!) : 'Unknown Project' }}</div>
-                  <div class="client-text" *ngIf="row.projectId && getClientName(row.projectId)">{{ getClientName(row.projectId) }}</div>
-                </div>
-              </ng-container>
-              <ion-button
-                *ngIf="!readonly"
-                (click)="removeRow(i)"
-                fill="clear"
-                size="small"
-                color="danger"
-                class="remove-btn"
-              >
-                <ion-icon name="close" slot="icon-only"></ion-icon>
-              </ion-button>
-            </td>
-            <td *ngFor="let day of days" class="hours-cell">
-              <div class="hours-input-container">
-                <ion-input
-                  type="number"
+  @if (availableProjects.length > 0 || rows.length > 0) {
+    <div>
+      <!-- Desktop/Tablet View -->
+      <div class="desktop-view">
+        <table class="week-grid">
+          <thead>
+            <tr>
+              <th class="project-column">
+                {{ "time_tracking.project" | translate }}
+              </th>
+              @for (day of days; track day) {
+                <th class="day-column">
+                  {{ day | date: "EEE MM/dd" }}
+                </th>
+              }
+              <th class="total-column">
+                {{ "time_tracking.total" | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows; track row; let i = $index) {
+              <tr>
+                <td class="project-cell">
+                  <!-- Show archived project name with indicator if it has time entries -->
+                  @if (row.projectId && isProjectArchived(row.projectId)) {
+                    <div
+                      class="archived-project-display"
+                      >
+                      <ion-icon
+                        name="archive"
+                        color="medium"
+                        class="archived-icon"
+                      ></ion-icon>
+                      <span class="archived-project-name">{{
+                        getProjectDetails(row.projectId)?.name || "Archived Project"
+                      }}</span>
+                      <ion-badge color="medium" size="small">Archived</ion-badge>
+                    </div>
+                  }
+                  <!-- Regular project selection for active projects -->
+                  @if (!row.projectId || !isProjectArchived(row.projectId)) {
+                    <div class="project-name-display">
+                      <div class="project-text">{{ row.projectId ? getProjectDisplayName(getProjectDetails(row.projectId)!) : 'Unknown Project' }}</div>
+                      @if (row.projectId && getClientName(row.projectId)) {
+                        <div class="client-text">{{ getClientName(row.projectId) }}</div>
+                      }
+                    </div>
+                  }
+                  @if (!readonly) {
+                    <ion-button
+                      (click)="removeRow(i)"
+                      fill="clear"
+                      size="small"
+                      color="danger"
+                      class="remove-btn"
+                      >
+                      <ion-icon name="close" slot="icon-only"></ion-icon>
+                    </ion-button>
+                  }
+                </td>
+                @for (day of days; track day) {
+                  <td class="hours-cell">
+                    <div class="hours-input-container">
+                      <ion-input
+                        type="number"
                   [value]="
                     row.projectId
                       ? getEntry(row.projectId, day)?.hours
                       : ''
                   "
-                  (ionChange)="onHoursChange(i, day, $event)"
+                        (ionChange)="onHoursChange(i, day, $event)"
                   [disabled]="
                     !row.projectId ||
                     readonly ||
@@ -147,119 +161,125 @@
                     (row.projectId && isProjectArchived(row.projectId)) ||
                     (row.projectId && isEntryApproved(row.projectId, day))
                   "
-                  placeholder="0"
-                  min="0"
-                  max="24"
-                  step="0.25"
-                  class="hours-input no-spinners"
-                ></ion-input>
-                <ion-button
-                  *ngIf="
-                    row.projectId &&
-                    !readonly &&
-                    !isEntryApproved(row.projectId!, day)
-                  "
-                  fill="clear"
-                  size="small"
-                  (click)="openNotesModal(row.projectId!, day)"
-                  class="notes-button"
+                        placeholder="0"
+                        min="0"
+                        max="24"
+                        step="0.25"
+                        class="hours-input no-spinners"
+                      ></ion-input>
+                      @if (
+                        row.projectId &&
+                        !readonly &&
+                        !isEntryApproved(row.projectId!, day)
+                        ) {
+                        <ion-button
+                          fill="clear"
+                          size="small"
+                          (click)="openNotesModal(row.projectId!, day)"
+                          class="notes-button"
                   [color]="
                     hasNotes(row.projectId!, day) ? 'primary' : undefined
                   "
-                >
-                  <ion-icon
+                          >
+                          <ion-icon
                     [name]="
                       hasNotes(row.projectId!, day)
                         ? 'document-text'
                         : 'document-text-outline'
                     "
-                    slot="icon-only"
-                  ></ion-icon>
-                </ion-button>
-              </div>
-            </td>
-            <td class="total-cell">{{ rowTotals[i] || 0 }}</td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr class="totals-row">
-            <td class="project-cell">
-              <strong>{{ "time_tracking.total" | translate }}</strong>
-            </td>
-            <td *ngFor="let total of columnTotals" class="total-cell">
-              <strong>{{ total }}</strong>
-            </td>
-            <td class="total-cell">
-              <strong>{{ totalHours }}</strong>
-            </td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-
-    <!-- Mobile View -->
-    <div class="mobile-view">
-      <ion-card *ngFor="let row of rows; let i = index" class="project-card">
-        <ion-card-header>
-          <div class="project-header">
-            <div class="project-selector">
-              <!-- Show archived project name with indicator if it has time entries -->
-              <div
-                *ngIf="row.projectId && isProjectArchived(row.projectId)"
-                class="archived-project-display"
-              >
-                <ion-icon
-                  name="archive"
-                  color="medium"
-                  class="archived-icon"
-                ></ion-icon>
-                <span class="archived-project-name">{{
-                  getProjectDetails(row.projectId)?.name || "Archived Project"
-                }}</span>
-                <ion-badge color="medium" size="small">Archived</ion-badge>
-              </div>
-              <!-- Regular project selection for active projects -->
-              <ng-container
-                *ngIf="!row.projectId || !isProjectArchived(row.projectId)"
-              >
-                <div class="project-name-display mobile">
-                  <div class="project-text">{{ row.projectId ? getProjectDisplayName(getProjectDetails(row.projectId)!) : 'Unknown Project' }}</div>
-                  <div class="client-text" *ngIf="row.projectId && getClientName(row.projectId)">{{ getClientName(row.projectId) }}</div>
+                            slot="icon-only"
+                          ></ion-icon>
+                        </ion-button>
+                      }
+                    </div>
+                  </td>
+                }
+                <td class="total-cell">{{ rowTotals[i] || 0 }}</td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr class="totals-row">
+              <td class="project-cell">
+                <strong>{{ "time_tracking.total" | translate }}</strong>
+              </td>
+              @for (total of columnTotals; track total) {
+                <td class="total-cell">
+                  <strong>{{ total }}</strong>
+                </td>
+              }
+              <td class="total-cell">
+                <strong>{{ totalHours }}</strong>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <!-- Mobile View -->
+      <div class="mobile-view">
+        @for (row of rows; track row; let i = $index) {
+          <ion-card class="project-card">
+            <ion-card-header>
+              <div class="project-header">
+                <div class="project-selector">
+                  <!-- Show archived project name with indicator if it has time entries -->
+                  @if (row.projectId && isProjectArchived(row.projectId)) {
+                    <div
+                      class="archived-project-display"
+                      >
+                      <ion-icon
+                        name="archive"
+                        color="medium"
+                        class="archived-icon"
+                      ></ion-icon>
+                      <span class="archived-project-name">{{
+                        getProjectDetails(row.projectId)?.name || "Archived Project"
+                      }}</span>
+                      <ion-badge color="medium" size="small">Archived</ion-badge>
+                    </div>
+                  }
+                  <!-- Regular project selection for active projects -->
+                  @if (!row.projectId || !isProjectArchived(row.projectId)) {
+                    <div class="project-name-display mobile">
+                      <div class="project-text">{{ row.projectId ? getProjectDisplayName(getProjectDetails(row.projectId)!) : 'Unknown Project' }}</div>
+                      @if (row.projectId && getClientName(row.projectId)) {
+                        <div class="client-text">{{ getClientName(row.projectId) }}</div>
+                      }
+                    </div>
+                  }
                 </div>
-              </ng-container>
-            </div>
-            <ion-button
-              *ngIf="!readonly"
-              (click)="removeRow(i)"
-              fill="clear"
-              size="small"
-              color="danger"
-            >
-              <ion-icon name="close" slot="icon-only"></ion-icon>
-            </ion-button>
-          </div>
-          <div class="row-total">
-            Total: <strong>{{ rowTotals[i] || 0 }} hours</strong>
-          </div>
-        </ion-card-header>
-
-        <ion-card-content>
-          <ion-grid class="hours-grid">
-            <ion-row
-              *ngFor="let day of days; let dayIndex = index"
-              class="day-row"
-            >
-              <ion-col size="6">
-                <ion-label>{{ day | date: "EEE MM/dd" }}</ion-label>
-              </ion-col>
-              <ion-col size="6">
-                <div class="mobile-hours-input-container">
-                  <ion-input
-                    type="number"
+                @if (!readonly) {
+                  <ion-button
+                    (click)="removeRow(i)"
+                    fill="clear"
+                    size="small"
+                    color="danger"
+                    >
+                    <ion-icon name="close" slot="icon-only"></ion-icon>
+                  </ion-button>
+                }
+              </div>
+              <div class="row-total">
+                Total: <strong>{{ rowTotals[i] || 0 }} hours</strong>
+              </div>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-grid class="hours-grid">
+                @for (day of days; track day; let dayIndex = $index) {
+                  <ion-row
+                    class="day-row"
+                    >
+                    <ion-col size="6">
+                      <ion-label>{{ day | date: "EEE MM/dd" }}</ion-label>
+                    </ion-col>
+                    <ion-col size="6">
+                      <div class="mobile-hours-input-container">
+                        <ion-input
+                          type="number"
                     [value]="
                       row.projectId ? getEntry(row.projectId, day)?.hours : ''
                     "
-                    (ionChange)="onHoursChange(i, day, $event)"
+                          (ionChange)="onHoursChange(i, day, $event)"
                     [disabled]="
                       !row.projectId ||
                       readonly ||
@@ -271,19 +291,19 @@
                       (row.projectId && isProjectArchived(row.projectId)) ||
                       (row.projectId && isEntryApproved(row.projectId, day))
                     "
-                    placeholder="0"
-                    min="0"
-                    max="24"
-                    step="0.25"
-                    fill="outline"
-                    class="mobile-hours-input no-spinners"
-                  ></ion-input>
-                  <ion-button
-                    *ngIf="row.projectId"
-                    (click)="openNotesModal(row.projectId, day)"
-                    fill="clear"
-                    size="small"
-                    class="notes-button"
+                          placeholder="0"
+                          min="0"
+                          max="24"
+                          step="0.25"
+                          fill="outline"
+                          class="mobile-hours-input no-spinners"
+                        ></ion-input>
+                        @if (row.projectId) {
+                          <ion-button
+                            (click)="openNotesModal(row.projectId, day)"
+                            fill="clear"
+                            size="small"
+                            class="notes-button"
                     [disabled]="
                       readonly ||
                       (row.projectId && isEntryApproved(row.projectId, day))
@@ -291,58 +311,62 @@
                     [color]="
                       hasNotes(row.projectId, day) ? 'primary' : undefined
                     "
-                  >
-                    <ion-icon
+                            >
+                            <ion-icon
                       [name]="
                         hasNotes(row.projectId, day)
                           ? 'document-text'
                           : 'document-text-outline'
                       "
-                    ></ion-icon>
-                  </ion-button>
-                </div>
-              </ion-col>
-            </ion-row>
-          </ion-grid>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- Mobile Totals Card -->
-      <ion-card class="totals-card">
-        <ion-card-header>
-          <ion-card-title>{{
-            "time_tracking.daily_totals" | translate
-          }}</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-grid>
-            <ion-row
-              *ngFor="let day of days; let dayIndex = index"
-              class="total-row"
-            >
-              <ion-col size="6">
-                <ion-label>{{ day | date: "EEE MM/dd" }}</ion-label>
-              </ion-col>
-              <ion-col size="6">
-                <strong>{{ columnTotals[dayIndex] || 0 }} hours</strong>
-              </ion-col>
-            </ion-row>
-            <ion-row class="grand-total">
-              <ion-col size="6">
-                <ion-label
-                  ><strong>{{
+                            ></ion-icon>
+                          </ion-button>
+                        }
+                      </div>
+                    </ion-col>
+                  </ion-row>
+                }
+              </ion-grid>
+            </ion-card-content>
+          </ion-card>
+        }
+        <!-- Mobile Totals Card -->
+        <ion-card class="totals-card">
+          <ion-card-header>
+            <ion-card-title>{{
+              "time_tracking.daily_totals" | translate
+            }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-grid>
+              @for (day of days; track day; let dayIndex = $index) {
+                <ion-row
+                  class="total-row"
+                  >
+                  <ion-col size="6">
+                    <ion-label>{{ day | date: "EEE MM/dd" }}</ion-label>
+                  </ion-col>
+                  <ion-col size="6">
+                    <strong>{{ columnTotals[dayIndex] || 0 }} hours</strong>
+                  </ion-col>
+                </ion-row>
+              }
+              <ion-row class="grand-total">
+                <ion-col size="6">
+                  <ion-label
+                    ><strong>{{
                     "time_tracking.week_total" | translate
                   }}</strong></ion-label
-                >
-              </ion-col>
-              <ion-col size="6">
-                <strong>{{ totalHours }} hours</strong>
-              </ion-col>
-            </ion-row>
-          </ion-grid>
-        </ion-card-content>
-      </ion-card>
+                  >
+                </ion-col>
+                <ion-col size="6">
+                  <strong>{{ totalHours }} hours</strong>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-card-content>
+        </ion-card>
+      </div>
     </div>
-  </div>
+  }
   <!-- End conditional projects check -->
 </div>

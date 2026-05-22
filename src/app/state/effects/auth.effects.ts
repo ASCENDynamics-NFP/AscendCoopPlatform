@@ -106,7 +106,7 @@ export class AuthEffects {
     private router: Router,
     private alertController: AlertController,
     private loadingController: LoadingController,
-    private store: Store<{auth: AuthState}>,
+    private store: Store,
     private menuCtrl: MenuController,
     private authNavigationService: AuthNavigationService,
     private translate: TranslateService,

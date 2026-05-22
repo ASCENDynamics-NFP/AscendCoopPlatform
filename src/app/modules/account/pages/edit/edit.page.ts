@@ -32,6 +32,7 @@ import * as AccountActions from "../../../../state/actions/account.actions";
 import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
+  standalone: false,
   selector: "app-edit",
   templateUrl: "./edit.page.html",
   styleUrls: ["./edit.page.scss"],

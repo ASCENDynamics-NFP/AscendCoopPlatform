@@ -43,6 +43,8 @@ import {
   selectRelatedAccountsByStatus,
   selectSelectedApplicantIds,
   selectSelectedApplicantsCount,
+  selectLoading,
+  selectError,
 } from "../../../../../state/selectors/listings.selectors";
 import {ActivatedRoute, Router} from "@angular/router";
 import {selectAuthUser} from "../../../../../state/selectors/auth.selectors";
@@ -55,6 +57,7 @@ import {AccessService} from "../../../../../core/services/access.service";
 import {filter} from "rxjs/operators";
 
 @Component({
+  standalone: false,
   selector: "app-applicants",
   templateUrl: "./applicants.page.html",
   styleUrls: ["./applicants.page.scss"],
@@ -103,7 +106,7 @@ export class ApplicantsPage implements OnInit {
 
   constructor(
     private metaService: MetaService,
-    private store: Store<AppState>,
+    private store: Store,
     private route: ActivatedRoute,
     private modalController: ModalController,
     private toastController: ToastController,
@@ -142,8 +145,8 @@ export class ApplicantsPage implements OnInit {
       );
       this.selectedCount$ = this.store.select(selectSelectedApplicantsCount);
 
-      this.loading$ = this.store.select((state) => state.listings.loading);
-      this.error$ = this.store.select((state) => state.listings.error);
+      this.loading$ = this.store.select(selectLoading);
+      this.error$ = this.store.select(selectError);
 
       this.listing$ = this.store
         .select(selectListingById(this.listingId))

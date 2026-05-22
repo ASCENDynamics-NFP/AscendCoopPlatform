@@ -21,6 +21,7 @@ import {Component, Input} from "@angular/core";
 import {Account, WebLink} from "@shared/models/account.model";
 
 @Component({
+  standalone: false,
   selector: "app-profile",
   templateUrl: "./profile.component.html",
   styleUrls: ["./profile.component.scss"],

@@ -24,6 +24,7 @@ import {ListingsService} from "../../../../core/services/listings.service";
 import {Listing} from "../../../../../../shared/models/listing.model";
 
 @Component({
+  standalone: false,
   selector: "app-homepage-listings",
   templateUrl: "./homepage-listings.component.html",
   styleUrls: ["./homepage-listings.component.scss"],
@@ -37,28 +38,55 @@ export class HomepageListingsComponent implements OnInit {
     this.fetchListingsBasedOnLocation();
   }
 
-  // Get user's browser location
+  // Get user's browser location, with immediate fallback if unavailable
   fetchListingsBasedOnLocation() {
+    if (!navigator.geolocation) {
+      this.fetchListingsFallback();
+      return;
+    }
+
+    // Fall back after 5 s if the permission prompt is ignored or slow
+    const timeoutId = setTimeout(() => this.fetchListingsFallback(), 5000);
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        clearTimeout(timeoutId);
         const location = {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         };
-
-        // Call the service with location
-        this.listingsService.getHomepageListings(location).subscribe(
-          (listings: Listing[]) => {
+        this.listingsService.getHomepageListings(location).subscribe({
+          next: (listings) => {
             this.listings = listings;
           },
-          (error: any) => {
+          error: (error) => {
             console.error("Error fetching homepage listings:", error);
+            this.fetchListingsFallback();
           },
+        });
+      },
+      (error) => {
+        clearTimeout(timeoutId);
+        console.warn(
+          "Geolocation unavailable, loading listings without location:",
+          error,
         );
+        this.fetchListingsFallback();
       },
-      (error: any) => {
-        console.error("Error getting location:", error);
-      },
+      {timeout: 5000, maximumAge: 60000},
     );
+  }
+
+  private fetchListingsFallback() {
+    if (this.listings.length > 0) return;
+    // No location available — call without coordinates so the server returns
+    // any active listings rather than sorting from an arbitrary (0,0) point.
+    this.listingsService.getHomepageListings().subscribe({
+      next: (listings) => {
+        this.listings = listings;
+      },
+      error: (error) =>
+        console.error("Error fetching homepage listings:", error),
+    });
   }
 }

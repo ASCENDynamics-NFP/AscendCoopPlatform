@@ -26,6 +26,7 @@ import {AccountsService} from "../../../../../../core/services/accounts.service"
 import {firstValueFrom} from "rxjs";
 
 @Component({
+  standalone: false,
   selector: "app-labor-rights-info-form",
   templateUrl: "./labor-rights-info-form.component.html",
   styleUrls: ["./labor-rights-info-form.component.scss"],

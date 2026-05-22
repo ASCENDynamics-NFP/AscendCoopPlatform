@@ -26,6 +26,7 @@ import {
 import {CategorySuggestion} from "../../../../../../core/constants/category-keywords.constant";
 
 @Component({
+  standalone: false,
   selector: "app-smart-category-suggestions",
   templateUrl: "./smart-category-suggestions.component.html",
   styleUrls: ["./smart-category-suggestions.component.scss"],

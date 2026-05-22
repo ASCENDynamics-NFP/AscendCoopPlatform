@@ -42,7 +42,7 @@ export class AuthService {
   loading$: Observable<boolean>;
   error$: Observable<string | null>;
 
-  constructor(private store: Store<AuthState>) {
+  constructor(private store: Store) {
     this.authUser$ = this.store.select(selectAuthUser);
     this.isLoggedIn$ = this.store.select(selectIsLoggedIn);
     this.loading$ = this.store.select(selectAuthLoading);

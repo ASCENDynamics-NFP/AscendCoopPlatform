@@ -19,8 +19,11 @@
  *******************************************************************************/
 // src/app/core/services/accounts.service.ts
 
-import {Injectable} from "@angular/core";
-import {AngularFirestore} from "@angular/fire/compat/firestore";
+import {Injectable, Injector, runInInjectionContext} from "@angular/core";
+import {
+  AngularFirestore,
+  AngularFirestoreCollection,
+} from "@angular/fire/compat/firestore";
 import {combineLatest, Observable, of} from "rxjs";
 import {catchError, map} from "rxjs/operators";
 import {Account, RelatedAccount} from "../../../../shared/models/account.model";
@@ -46,8 +49,18 @@ export class AccountsService {
     private afs: AngularFirestore,
     private firestore: FirestoreService,
     private firebaseFunctions: FirebaseFunctionsService,
-    private store: Store<{auth: AuthState}>,
+    private store: Store,
+    private injector: Injector,
   ) {}
+
+  private col<T>(
+    path: string,
+    queryFn?: (ref: any) => any,
+  ): AngularFirestoreCollection<T> {
+    return runInInjectionContext(this.injector, () =>
+      this.afs.collection<T>(path, queryFn),
+    );
+  }
 
   // ===== CALLABLE FUNCTION METHODS =====
 
@@ -155,7 +168,7 @@ export class AccountsService {
           return of([]);
         }
 
-        const relatedAccountsRef = this.afs.collection<RelatedAccount>(
+        const relatedAccountsRef = this.col<RelatedAccount>(
           `accounts/${accountId}/relatedAccounts`,
         );
 
@@ -197,8 +210,7 @@ export class AccountsService {
     return combineLatest([
       this.getAccount(accountId), // Using callable function
       this.getRelatedAccounts(accountId), // Legacy Firestore access
-      this.afs
-        .collection<RelatedListing>(`accounts/${accountId}/relatedListings`)
+      this.col<RelatedListing>(`accounts/${accountId}/relatedListings`)
         .snapshotChanges()
         .pipe(
           map((actions) =>

@@ -27,6 +27,7 @@ import {
 } from "../../services/notification.service";
 
 @Component({
+  standalone: false,
   selector: "app-notification-settings-modal",
   templateUrl: "./notification-settings-modal.component.html",
   styleUrls: ["./notification-settings-modal.component.scss"],

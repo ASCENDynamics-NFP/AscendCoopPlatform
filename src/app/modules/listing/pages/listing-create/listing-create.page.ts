@@ -28,6 +28,7 @@ import {selectListingById} from "../../../../state/selectors/listings.selectors"
 import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
+  standalone: false,
   selector: "app-listing-create",
   templateUrl: "./listing-create.page.html",
   styleUrls: ["./listing-create.page.scss"],

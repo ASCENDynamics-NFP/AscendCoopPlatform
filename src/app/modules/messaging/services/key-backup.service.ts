@@ -17,9 +17,12 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
-import {Injectable} from "@angular/core";
+import {Injectable, Injector, runInInjectionContext} from "@angular/core";
 import {Store} from "@ngrx/store";
-import {AngularFirestore} from "@angular/fire/compat/firestore";
+import {
+  AngularFirestore,
+  AngularFirestoreDocument,
+} from "@angular/fire/compat/firestore";
 import firebase from "firebase/compat/app";
 import {EncryptionService, KeyPair} from "./encryption.service";
 import {EncryptionKeyBackup} from "../../../../../shared/models/account.model";
@@ -46,7 +49,14 @@ export class KeyBackupService {
     private encryptionService: EncryptionService,
     private modalController: ModalController,
     private alertController: AlertController,
+    private injector: Injector,
   ) {}
+
+  private afDoc<T>(path: string): AngularFirestoreDocument<T> {
+    return runInInjectionContext(this.injector, () =>
+      this.firestore.doc<T>(path),
+    );
+  }
 
   /**
    * Temporarily capture password during login for email/password users
@@ -222,7 +232,7 @@ export class KeyBackupService {
       };
 
       // Save to Firestore
-      await this.firestore.collection("accounts").doc(authUser.uid).update({
+      await this.afDoc(`accounts/${authUser.uid}`).update({
         encryptionKeyBackup: backup,
       });
     } catch (error) {
@@ -243,7 +253,7 @@ export class KeyBackupService {
     try {
       // Get backup from Firestore
       const accountDoc = await firstValueFrom(
-        this.firestore.collection("accounts").doc(authUser.uid).get(),
+        this.afDoc(`accounts/${authUser.uid}`).get(),
       );
 
       if (!accountDoc || !accountDoc.exists) {
@@ -317,7 +327,7 @@ export class KeyBackupService {
 
     try {
       const accountDoc = await firstValueFrom(
-        this.firestore.collection("accounts").doc(authUser.uid).get(),
+        this.afDoc(`accounts/${authUser.uid}`).get(),
       );
 
       if (!accountDoc || !accountDoc.exists) {

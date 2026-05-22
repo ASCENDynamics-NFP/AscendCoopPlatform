@@ -21,9 +21,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
 <ion-card>
   <!-- <ion-card-header>
-    <ion-card-title>Add Role</ion-card-title>
-    <ion-card-subtitle
-      >{{ 'forms.choose_standard_roles' | translate }}</ion-card-subtitle
+  <ion-card-title>Add Role</ion-card-title>
+  <ion-card-subtitle
+    >{{ 'forms.choose_standard_roles' | translate }}</ion-card-subtitle
     >
   </ion-card-header> -->
 
@@ -32,151 +32,160 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <div class="category-selector">
       <h4>Role Categories</h4>
       <div class="category-grid">
-        <ion-chip
-          *ngFor="let category of categorizedTemplates | keyvalue"
-          [color]="getCategoryColor(category.key)"
-          [outline]="selectedCategory !== category.key"
-          (click)="selectCategory(category.key)"
-          class="category-chip"
-        >
-          <ion-icon [name]="getCategoryIcon(category.key)"></ion-icon>
-          <ion-label>{{ category.key }}</ion-label>
-          <ion-badge color="light">{{ category.value?.length || 0 }}</ion-badge>
-        </ion-chip>
+        @for (category of categorizedTemplates | keyvalue; track category) {
+          <ion-chip
+            [color]="getCategoryColor(category.key)"
+            [outline]="selectedCategory !== category.key"
+            (click)="selectCategory(category.key)"
+            class="category-chip"
+            >
+            <ion-icon [name]="getCategoryIcon(category.key)"></ion-icon>
+            <ion-label>{{ category.key }}</ion-label>
+            <ion-badge color="light">{{ category.value?.length || 0 }}</ion-badge>
+          </ion-chip>
+        }
       </div>
     </div>
 
     <!-- Selected Category Description -->
-    <div *ngIf="selectedCategory" class="category-description">
-      <ion-note>{{ getCategoryDescription(selectedCategory) }}</ion-note>
-    </div>
+    @if (selectedCategory) {
+      <div class="category-description">
+        <ion-note>{{ getCategoryDescription(selectedCategory) }}</ion-note>
+      </div>
+    }
 
     <!-- Role Templates for Selected Category -->
-    <div *ngIf="selectedCategory" class="role-templates">
-      <h5>Available {{ selectedCategory }} Roles</h5>
-      <ion-list>
-        <ion-item
-          *ngFor="
-            let template of getTemplatesForCategory(selectedCategory);
-            trackBy: trackTemplate
-          "
-          button
-          [disabled]="isTemplateUsed(template)"
-          (click)="selectTemplate(template)"
-        >
+    @if (selectedCategory) {
+      <div class="role-templates">
+        <h5>Available {{ selectedCategory }} Roles</h5>
+        <ion-list>
+          @for (
+            template of getTemplatesForCategory(selectedCategory); track trackTemplate($index,
+            template)) {
+            <ion-item
+              button
+              [disabled]="isTemplateUsed(template)"
+              (click)="selectTemplate(template)"
+              >
+              <ion-icon
+                [name]="template.icon || 'person'"
+                slot="start"
+                [color]="getCategoryColor(selectedCategory)"
+              ></ion-icon>
+              <ion-label>
+                <h3>{{ template.name }}</h3>
+                <p>{{ template.description }}</p>
+                @if (template.suggestedChildRoles?.length) {
+                  <ion-note>
+                    Suggested sub-roles:
+                    {{ template.suggestedChildRoles?.join(", ") }}
+                  </ion-note>
+                }
+              </ion-label>
+              <ion-chip color="light" slot="end">
+                <ion-label
+                  >{{
+                  template.defaultPermissions?.length || 0
+                  }}
+                  permissions</ion-label
+                  >
+                </ion-chip>
+              </ion-item>
+            }
+          </ion-list>
+        </div>
+      }
+
+      <!-- Custom Role Form -->
+      <div class="custom-role-section">
+        <ion-button
+          fill="outline"
+          expand="block"
+          (click)="toggleCustomRoleForm()"
+          [color]="showCustomRoleForm ? 'danger' : 'medium'"
+          >
           <ion-icon
-            [name]="template.icon || 'person'"
+            [name]="showCustomRoleForm ? 'close' : 'add'"
             slot="start"
-            [color]="getCategoryColor(selectedCategory)"
           ></ion-icon>
-          <ion-label>
-            <h3>{{ template.name }}</h3>
-            <p>{{ template.description }}</p>
-            <ion-note *ngIf="template.suggestedChildRoles?.length">
-              Suggested sub-roles:
-              {{ template.suggestedChildRoles?.join(", ") }}
-            </ion-note>
-          </ion-label>
-          <ion-chip color="light" slot="end">
-            <ion-label
-              >{{
-                template.defaultPermissions?.length || 0
-              }}
-              permissions</ion-label
-            >
-          </ion-chip>
-        </ion-item>
-      </ion-list>
-    </div>
-
-    <!-- Custom Role Form -->
-    <div class="custom-role-section">
-      <ion-button
-        fill="outline"
-        expand="block"
-        (click)="toggleCustomRoleForm()"
-        [color]="showCustomRoleForm ? 'danger' : 'medium'"
-      >
-        <ion-icon
-          [name]="showCustomRoleForm ? 'close' : 'add'"
-          slot="start"
-        ></ion-icon>
-        {{
+          {{
           showCustomRoleForm
-            ? ("forms.cancel_custom_role" | translate)
-            : ("forms.create_custom_role" | translate)
-        }}
-      </ion-button>
+          ? ("forms.cancel_custom_role" | translate)
+          : ("forms.create_custom_role" | translate)
+          }}
+        </ion-button>
 
-      <div *ngIf="showCustomRoleForm" class="custom-role-form">
-        <ion-item>
-          <ion-label position="stacked">{{
-            "forms.role_name" | translate
-          }}</ion-label>
-          <ion-input
-            [(ngModel)]="customRoleName"
-            [placeholder]="'forms.custom_role_name_placeholder' | translate"
-            maxlength="50"
-          ></ion-input>
-        </ion-item>
-
-        <ion-item>
-          <ion-label position="stacked">{{
-            "forms.description_optional" | translate
-          }}</ion-label>
-          <ion-textarea
-            [(ngModel)]="customRoleDescription"
+        @if (showCustomRoleForm) {
+          <div class="custom-role-form">
+            <ion-item>
+              <ion-label position="stacked">{{
+                "forms.role_name" | translate
+              }}</ion-label>
+              <ion-input
+                [(ngModel)]="customRoleName"
+                [placeholder]="'forms.custom_role_name_placeholder' | translate"
+                maxlength="50"
+              ></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">{{
+                "forms.description_optional" | translate
+              }}</ion-label>
+              <ion-textarea
+                [(ngModel)]="customRoleDescription"
             [placeholder]="
               'forms.custom_role_description_placeholder' | translate
             "
-            maxlength="200"
-            rows="3"
-          ></ion-textarea>
-        </ion-item>
-
-        <ion-item>
-          <ion-label position="stacked">Category</ion-label>
-          <ion-select
-            [(ngModel)]="selectedCategory"
-            [placeholder]="'forms.select_category' | translate"
-          >
-            <ion-select-option
-              *ngFor="let category of categorizedTemplates | keyvalue"
-              [value]="category.key"
-            >
-              {{ category.key }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
-
-        <ion-item *ngIf="getAvailableParentRoles().length > 0">
-          <ion-label position="stacked">Parent Role (Optional)</ion-label>
-          <ion-select
-            [(ngModel)]="selectedParentRole"
-            placeholder="Select parent role"
-          >
-            <ion-select-option [value]="undefined"
-              >None (Top Level)</ion-select-option
-            >
-            <ion-select-option
-              *ngFor="let role of getAvailableParentRoles()"
-              [value]="role"
-            >
-              {{ role.name }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
-
-        <ion-button
-          expand="block"
-          color="primary"
-          [disabled]="!customRoleName.trim() || !selectedCategory"
-          (click)="createCustomRole()"
-        >
-          <ion-icon name="add" slot="start"></ion-icon>
-          {{ "forms.create_custom_role" | translate }}
-        </ion-button>
-      </div>
-    </div>
-  </ion-card-content>
-</ion-card>
+                maxlength="200"
+                rows="3"
+              ></ion-textarea>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Category</ion-label>
+              <ion-select
+                [(ngModel)]="selectedCategory"
+                [placeholder]="'forms.select_category' | translate"
+                >
+                @for (category of categorizedTemplates | keyvalue; track category) {
+                  <ion-select-option
+                    [value]="category.key"
+                    >
+                    {{ category.key }}
+                  </ion-select-option>
+                }
+              </ion-select>
+            </ion-item>
+            @if (getAvailableParentRoles().length > 0) {
+              <ion-item>
+                <ion-label position="stacked">Parent Role (Optional)</ion-label>
+                <ion-select
+                  [(ngModel)]="selectedParentRole"
+                  placeholder="Select parent role"
+                  >
+                  <ion-select-option [value]="undefined"
+                    >None (Top Level)</ion-select-option
+                    >
+                    @for (role of getAvailableParentRoles(); track role) {
+                      <ion-select-option
+                        [value]="role"
+                        >
+                        {{ role.name }}
+                      </ion-select-option>
+                    }
+                  </ion-select>
+                </ion-item>
+              }
+              <ion-button
+                expand="block"
+                color="primary"
+                [disabled]="!customRoleName.trim() || !selectedCategory"
+                (click)="createCustomRole()"
+                >
+                <ion-icon name="add" slot="start"></ion-icon>
+                {{ "forms.create_custom_role" | translate }}
+              </ion-button>
+            </div>
+          }
+        </div>
+      </ion-card-content>
+    </ion-card>

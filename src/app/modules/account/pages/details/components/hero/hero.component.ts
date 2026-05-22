@@ -46,6 +46,7 @@ import {Subscription} from "rxjs";
 import {ContactInformation} from "@shared/models/account.model";
 
 @Component({
+  standalone: false,
   selector: "app-hero",
   templateUrl: "./hero.component.html",
   styleUrls: ["./hero.component.scss"],
@@ -68,7 +69,7 @@ export class HeroComponent implements OnInit, OnChanges, OnDestroy {
     private modalController: ModalController,
     private router: Router,
     private chatService: ChatService,
-    private store: Store<{auth: AuthState}>,
+    private store: Store,
     private toastController: ToastController,
     private relationshipService: RelationshipService,
     private sections: AccountSectionsService,

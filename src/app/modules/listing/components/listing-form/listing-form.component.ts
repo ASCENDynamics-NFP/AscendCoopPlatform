@@ -19,6 +19,7 @@
 ***********************************************************************************************/
 import {
   Component,
+  DestroyRef,
   Input,
   Output,
   EventEmitter,
@@ -26,12 +27,12 @@ import {
   OnChanges,
   SimpleChanges,
 } from "@angular/core";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {FormBuilder, FormGroup, Validators, FormArray} from "@angular/forms";
 import {
   Listing,
   SkillRequirement,
 } from "../../../../../../shared/models/listing.model";
-import {Timestamp} from "firebase/firestore";
 import {Store} from "@ngrx/store";
 import {
   combineLatest,
@@ -39,10 +40,8 @@ import {
   first,
   switchMap,
   take,
-  tap,
   map,
   of,
-  catchError,
   shareReplay,
 } from "rxjs";
 import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
@@ -63,6 +62,7 @@ import {AuthUser} from "../../../../../../shared/models/auth-user.model";
 import {AccountsService} from "../../../../core/services/accounts.service";
 
 @Component({
+  standalone: false,
   selector: "app-listing-form",
   templateUrl: "./listing-form.component.html",
   styleUrls: ["./listing-form.component.scss"],
@@ -70,7 +70,8 @@ import {AccountsService} from "../../../../core/services/accounts.service";
 export class ListingFormComponent implements OnInit, OnChanges {
   @Input() listing: Listing | null = null;
   @Output() formSubmit = new EventEmitter<any>();
-  currentStep = 1; // Start at the first step
+  currentStep = 1;
+  private readonly totalSteps = 2;
   authUser: AuthUser | null = null;
   useAccountContactInfo = false;
   private backupContactInfo: ContactInformation | null = null;
@@ -89,6 +90,7 @@ export class ListingFormComponent implements OnInit, OnChanges {
     private store: Store,
     private sections: AccountSectionsService,
     private accountsService: AccountsService,
+    private destroyRef: DestroyRef,
   ) {
     this.initForm();
   }
@@ -171,10 +173,10 @@ export class ListingFormComponent implements OnInit, OnChanges {
       this.store
         .select(selectAuthUser)
         .pipe(
+          filter((user): user is AuthUser => user !== null),
           first(),
-          tap(() => {}),
-          switchMap((user) => this.store.select(selectAccountById(user!.uid))),
-          filter((account): account is Account => account !== null),
+          switchMap((user) => this.store.select(selectAccountById(user.uid))),
+          filter((account): account is Account => account != null),
           take(1),
         )
         .subscribe((account) => {
@@ -211,7 +213,9 @@ export class ListingFormComponent implements OnInit, OnChanges {
     );
 
     // Keep a live cache for use in event handlers (can't use pipes there)
-    this.ownerAccounts$.subscribe((accs) => (this.ownerAccountsCache = accs));
+    this.ownerAccounts$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((accs) => (this.ownerAccountsCache = accs));
   }
 
   onOwnerAccountChange(event: CustomEvent) {
@@ -260,7 +264,11 @@ export class ListingFormComponent implements OnInit, OnChanges {
           take(1),
         )
         .subscribe((account) => {
-          const patchData: any = {};
+          const patchData: Partial<{
+            ownerAccountId: string;
+            ownerAccountType: string;
+            organization: string;
+          }> = {};
           if (!hasOwner) {
             patchData.ownerAccountId = account.id;
             patchData.ownerAccountType = account.type;
@@ -283,16 +291,6 @@ export class ListingFormComponent implements OnInit, OnChanges {
     this.listingInitialized = true;
   }
 
-  private initializeFormFromAccount(
-    account: Account,
-    contactInfo?: ContactInformation | null,
-  ) {
-    this.listingForm.patchValue({organization: account.name});
-    if (this.useAccountContactInfo) {
-      this.setContactInfoFromSource(contactInfo || null);
-    }
-  }
-
   private setContactInfoFromSource(source?: ContactInformation | null) {
     // Clear current arrays
     (this.listingForm.get("contactInformation.emails") as FormArray).clear();
@@ -306,7 +304,7 @@ export class ListingFormComponent implements OnInit, OnChanges {
     source.emails?.forEach((email) => {
       const emailForm = this.fb.group({
         name: [email.name],
-        email: [email.email],
+        email: [email.email, [Validators.required, Validators.email]],
       });
       (this.listingForm.get("contactInformation.emails") as FormArray).push(
         emailForm,
@@ -316,7 +314,10 @@ export class ListingFormComponent implements OnInit, OnChanges {
     source.phoneNumbers?.forEach((phone) => {
       const phoneForm = this.fb.group({
         type: [phone.type],
-        number: [phone.number],
+        number: [
+          phone.number,
+          [Validators.required, Validators.pattern("^[+]?[0-9()\\s-]{10,25}$")],
+        ],
       });
       (
         this.listingForm.get("contactInformation.phoneNumbers") as FormArray
@@ -511,7 +512,7 @@ export class ListingFormComponent implements OnInit, OnChanges {
     const skillForm = this.fb.group({
       name: [skill?.name || "", Validators.required],
       level: [skill?.level || "beginner"],
-      required: [skill?.required || true],
+      required: [skill?.required ?? true],
     });
     (this.listingForm.get("skills") as FormArray).push(skillForm);
   }
@@ -534,7 +535,10 @@ export class ListingFormComponent implements OnInit, OnChanges {
   addPhoneNumber() {
     const phoneForm = this.fb.group({
       type: ["Mobile"],
-      number: ["", Validators.required],
+      number: [
+        "",
+        [Validators.required, Validators.pattern("^[+]?[0-9()\\s-]{10,25}$")],
+      ],
     });
     (this.listingForm.get("contactInformation.phoneNumbers") as FormArray).push(
       phoneForm,
@@ -557,6 +561,9 @@ export class ListingFormComponent implements OnInit, OnChanges {
         .subscribe((user) => {
           // Use getRawValue() to include disabled fields like ownerAccountId
           const formValue = this.listingForm.getRawValue();
+          const ownerAccount = this.ownerAccountsCache.find(
+            (a) => a.id === formValue.ownerAccountId,
+          );
           const listing = {
             ...formValue,
             id: this.listing?.id || null,
@@ -564,8 +571,8 @@ export class ListingFormComponent implements OnInit, OnChanges {
               ...formValue.timeCommitment,
             },
             status,
-            iconImage: user?.iconImage || "",
-            heroImage: user?.heroImage || "",
+            iconImage: ownerAccount?.iconImage || user?.iconImage || "",
+            heroImage: ownerAccount?.heroImage || user?.heroImage || "",
             lastModifiedBy: user?.uid,
           };
           this.formSubmit.emit(listing);
@@ -580,13 +587,8 @@ export class ListingFormComponent implements OnInit, OnChanges {
       this.listingForm.markAllAsTouched();
       return;
     }
-    if (this.listingForm.valid) {
-      // If listing exists, keep current status, otherwise set as draft
-      const status = this.listing?.id ? this.listing.status : "draft";
-      this.submitForm(status as "draft" | "active" | "filled" | "expired");
-    } else {
-      this.markFormGroupTouched(this.listingForm);
-    }
+    const status = this.listing?.id ? this.listing.status : "draft";
+    this.submitForm(status as "draft" | "active" | "filled" | "expired");
   }
 
   addAddress() {
@@ -622,44 +624,6 @@ export class ListingFormComponent implements OnInit, OnChanges {
   }
 
   getProgress() {
-    return this.currentStep / 2; // Progress value for the progress bar
-  }
-
-  /**
-   * Safely converts various date formats to ISO string
-   * @param date The date to convert (Timestamp, Date, string, or undefined)
-   * @returns ISO string or empty string if invalid
-   */
-  private convertToISOString(date: any): string {
-    if (!date) return "";
-
-    try {
-      // If it's a Firestore Timestamp
-      if (date && typeof date.toDate === "function") {
-        return date.toDate().toISOString();
-      }
-
-      // If it's already a Date object
-      if (date instanceof Date) {
-        return date.toISOString();
-      }
-
-      // If it's a string, try to parse it
-      if (typeof date === "string") {
-        const parsedDate = new Date(date);
-        if (!isNaN(parsedDate.getTime())) {
-          return parsedDate.toISOString();
-        }
-      }
-
-      // If it has seconds and nanoseconds (Timestamp-like object)
-      if (date.seconds !== undefined) {
-        return new Date(date.seconds * 1000).toISOString();
-      }
-    } catch (error) {
-      console.warn("Error converting date:", error);
-    }
-
-    return "";
+    return this.currentStep / this.totalSteps;
   }
 }

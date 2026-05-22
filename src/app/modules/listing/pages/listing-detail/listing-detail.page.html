@@ -22,38 +22,39 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 </ion-header>
 
 <ion-content>
-  <ng-container *ngIf="loading$ | async">
+  @if (loading$ | async) {
     <ion-spinner name="crescent"></ion-spinner>
-  </ng-container>
-  <ng-container *ngIf="listing$ | async as listing">
+  }
+  @if (listing$ | async; as listing) {
     <app-hero
       [listing]="listing"
       [isOwner]="(isOwner$ | async) ?? false"
-    >
+      >
       <div listing-secondary-actions>
-        <ion-button
-          fill="clear"
-          color="medium"
-          size="small"
-          *ngIf="(isSaved$ | async) === false"
-          (click)="saveListing(listing.id)"
-        >
-          <ion-icon name="bookmark-outline" slot="start"></ion-icon>
-          Save
-        </ion-button>
-        <ion-button
-          fill="clear"
-          color="warning"
-          size="small"
-          *ngIf="(isSaved$ | async) === true"
-          (click)="unsaveListing(listing.id)"
-        >
-          <ion-icon name="bookmark" slot="start"></ion-icon>
-          Saved
-        </ion-button>
+        @if ((isSaved$ | async) === false) {
+          <ion-button
+            fill="clear"
+            color="medium"
+            size="small"
+            (click)="saveListing(listing.id)"
+            >
+            <ion-icon name="bookmark-outline" slot="start"></ion-icon>
+            Save
+          </ion-button>
+        }
+        @if ((isSaved$ | async) === true) {
+          <ion-button
+            fill="clear"
+            color="warning"
+            size="small"
+            (click)="unsaveListing(listing.id)"
+            >
+            <ion-icon name="bookmark" slot="start"></ion-icon>
+            Saved
+          </ion-button>
+        }
       </div>
     </app-hero>
-
     <ion-grid>
       <!-- Full-Width Sections -->
       <ion-row>
@@ -76,188 +77,213 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         </ion-col>
         <ion-col size="12">
           <!-- Responsibilities Card -->
-          <ion-card *ngIf="listing.responsibilities?.length">
-            <ion-card-header>
-              <ion-icon name="list-outline" slot="start"></ion-icon>
-              <ion-card-title>Responsibilities</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="info-block">
-                <div
-                  *ngFor="let responsibility of listing.responsibilities"
-                  class="list-item"
-                >
-                  <ion-icon name="arrow-forward-circle-outline"></ion-icon>
-                  <span>{{ responsibility }}</span>
+          @if (listing.responsibilities.length) {
+            <ion-card>
+              <ion-card-header>
+                <ion-icon name="list-outline" slot="start"></ion-icon>
+                <ion-card-title>Responsibilities</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <div class="info-block">
+                  @for (responsibility of listing.responsibilities; track responsibility) {
+                    <div
+                      class="list-item"
+                      >
+                      <ion-icon name="arrow-forward-circle-outline"></ion-icon>
+                      <span>{{ responsibility }}</span>
+                    </div>
+                  }
                 </div>
-              </div>
-            </ion-card-content>
-          </ion-card>
+              </ion-card-content>
+            </ion-card>
+          }
         </ion-col>
         <ion-col size="12">
           <!-- Requirements Card -->
-          <ion-card *ngIf="listing.requirements?.length">
-            <ion-card-header>
-              <ion-icon name="warning-outline" slot="start"></ion-icon>
-              <ion-card-title>Requirements</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="info-block">
-                <div
-                  *ngFor="let requirement of listing.requirements"
-                  class="list-item"
-                >
-                  <ion-icon name="checkmark-circle-outline"></ion-icon>
-                  <span>{{ requirement }}</span>
+          @if (listing.requirements.length) {
+            <ion-card>
+              <ion-card-header>
+                <ion-icon name="warning-outline" slot="start"></ion-icon>
+                <ion-card-title>Requirements</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <div class="info-block">
+                  @for (requirement of listing.requirements; track requirement) {
+                    <div
+                      class="list-item"
+                      >
+                      <ion-icon name="checkmark-circle-outline"></ion-icon>
+                      <span>{{ requirement }}</span>
+                    </div>
+                  }
                 </div>
-              </div>
-            </ion-card-content>
-          </ion-card>
+              </ion-card-content>
+            </ion-card>
+          }
         </ion-col>
         <ion-col size="12">
           <!-- Benefits Card -->
-          <ion-card *ngIf="listing.benefits?.length">
-            <ion-card-header>
-              <ion-icon name="gift-outline" slot="start"></ion-icon>
-              <ion-card-title>Benefits</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="info-block">
-                <div *ngFor="let benefit of listing.benefits" class="list-item">
-                  <ion-icon name="star-outline"></ion-icon>
-                  <span>{{ benefit }}</span>
+          @if (listing.benefits.length) {
+            <ion-card>
+              <ion-card-header>
+                <ion-icon name="gift-outline" slot="start"></ion-icon>
+                <ion-card-title>Benefits</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <div class="info-block">
+                  @for (benefit of listing.benefits; track benefit) {
+                    <div class="list-item">
+                      <ion-icon name="star-outline"></ion-icon>
+                      <span>{{ benefit }}</span>
+                    </div>
+                  }
                 </div>
-              </div>
-            </ion-card-content>
-          </ion-card>
+              </ion-card-content>
+            </ion-card>
+          }
         </ion-col>
       </ion-row>
-
       <!-- Half-Width Sections -->
       <ion-row>
         <ion-col size="12" size-md="6">
           <!-- Skills Card -->
-          <ion-card *ngIf="listing.skills?.length">
-            <ion-card-header>
-              <ion-icon name="ribbon-outline" slot="start"></ion-icon>
-              <ion-card-title>Skills</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="info-block">
-                <div *ngFor="let skill of listing.skills" class="skill-item">
-                  <span class="skill-name">{{ skill.name }}</span>
-                  <ion-badge color="tertiary"
-                    >{{ skill.level | titlecase }}</ion-badge
-                  >
-                  <ion-badge *ngIf="skill.required" color="primary"
-                    >Required</ion-badge
-                  >
-                </div>
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-        <ion-col size="12" size-md="6">
-          <!-- Time Commitment Card -->
-          <ion-card>
-            <ion-card-header>
-              <ion-icon name="time-outline" slot="start"></ion-icon>
-              <ion-card-title>Time Commitment</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="info-block">
-                <div class="time-item">
-                  <ion-icon name="hourglass-outline"></ion-icon>
-                  <span
-                    >{{ listing.timeCommitment.hoursPerWeek }} hours/week</span
-                  >
-                </div>
-                <div class="time-item">
-                  <ion-icon name="calendar-outline"></ion-icon>
-                  <span>Duration: {{ listing.timeCommitment.duration }}</span>
-                </div>
-                <div class="time-item">
-                  <ion-icon name="alarm-outline"></ion-icon>
-                  <span>Schedule: {{ listing.timeCommitment.schedule }}</span>
-                </div>
-                <div
-                  class="time-item"
-                  *ngIf="listing.timeCommitment.isFlexible"
-                >
-                  <ion-icon name="calendar-clear-outline"></ion-icon>
-                  <span>Flexible Schedule Available</span>
-                  <ion-badge color="success"
-                    >{{ 'listings.flexible' | translate }}</ion-badge
-                  >
-                </div>
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-        <ion-col size="12" size-md="6">
-          <!-- Location Card -->
-          <ion-card
-            *ngIf="listing.contactInformation?.addresses?.length || listing.remote"
-          >
-            <ion-card-header>
-              <ion-icon name="location-outline" slot="start"></ion-icon>
-              <ion-card-title>Location</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="info-block">
-                <div
-                  *ngFor="let address of listing.contactInformation?.addresses"
-                  class="location-item"
-                >
-                  <p>{{ address?.name }}</p>
-                  <p>{{ address?.street }}</p>
-                  <p>{{ address?.city }}, {{ address?.state }}</p>
-                  <p>{{ address?.country }} {{ address?.zipcode }}</p>
-                  <ion-badge *ngIf="address?.isPrimaryAddress" color="primary"
-                    >Primary Location</ion-badge
-                  >
-                </div>
-                <ion-badge *ngIf="listing.remote" color="success"
-                  >{{ 'listings.remote_available' | translate }}</ion-badge
-                >
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-        <ion-col size="12" size-md="6">
-          <!-- Contact Information Card -->
-          <ion-card
-            *ngIf="listing.contactInformation?.emails?.length || listing.contactInformation?.phoneNumbers?.length"
-          >
-            <ion-card-header>
-              <ion-icon name="call-outline" slot="start"></ion-icon>
-              <ion-card-title>Contact Information</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="info-block">
-                <div
-                  *ngFor="let email of listing.contactInformation?.emails"
-                  class="contact-item"
-                >
-                  <ion-icon name="mail-outline"></ion-icon>
-                  <span>{{ email.email }}</span>
-                </div>
-                <div
-                  *ngFor="let phone of listing.contactInformation?.phoneNumbers"
-                  class="contact-item"
-                >
-                  <ion-icon name="call-outline"></ion-icon>
-                  <span
-                    >{{ phone.number ? (phone.number | phoneFormat) : 'No phone
-                    number' }}</span
-                  >
-                  <ion-badge color="medium">{{ phone.type }}</ion-badge>
-                </div>
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-  </ng-container>
-</ion-content>
+          @if (listing.skills.length) {
+            <ion-card>
+              <ion-card-header>
+                <ion-icon name="ribbon-outline" slot="start"></ion-icon>
+                <ion-card-title>Skills</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <div class="info-block">
+                  @for (skill of listing.skills; track skill) {
+                    <div class="skill-item">
+                      <span class="skill-name">{{ skill.name }}</span>
+                      <ion-badge color="tertiary"
+                        >{{ skill.level | titlecase }}</ion-badge
+                        >
+                        @if (skill.required) {
+                          <ion-badge color="primary"
+                            >Required</ion-badge
+                            >
+                          }
+                        </div>
+                      }
+                    </div>
+                  </ion-card-content>
+                </ion-card>
+              }
+            </ion-col>
+            <ion-col size="12" size-md="6">
+              <!-- Time Commitment Card -->
+              <ion-card>
+                <ion-card-header>
+                  <ion-icon name="time-outline" slot="start"></ion-icon>
+                  <ion-card-title>Time Commitment</ion-card-title>
+                </ion-card-header>
+                <ion-card-content>
+                  <div class="info-block">
+                    <div class="time-item">
+                      <ion-icon name="hourglass-outline"></ion-icon>
+                      <span
+                        >{{ listing.timeCommitment.hoursPerWeek }} hours/week</span
+                        >
+                      </div>
+                      <div class="time-item">
+                        <ion-icon name="calendar-outline"></ion-icon>
+                        <span>Duration: {{ listing.timeCommitment.duration }}</span>
+                      </div>
+                      <div class="time-item">
+                        <ion-icon name="alarm-outline"></ion-icon>
+                        <span>Schedule: {{ listing.timeCommitment.schedule }}</span>
+                      </div>
+                      @if (listing.timeCommitment.isFlexible) {
+                        <div
+                          class="time-item"
+                          >
+                          <ion-icon name="calendar-clear-outline"></ion-icon>
+                          <span>Flexible Schedule Available</span>
+                          <ion-badge color="success"
+                            >{{ 'listings.flexible' | translate }}</ion-badge
+                            >
+                          </div>
+                        }
+                      </div>
+                    </ion-card-content>
+                  </ion-card>
+                </ion-col>
+                <ion-col size="12" size-md="6">
+                  <!-- Location Card -->
+                  @if (listing.contactInformation?.addresses?.length || listing.remote) {
+                    <ion-card
+                      >
+                      <ion-card-header>
+                        <ion-icon name="location-outline" slot="start"></ion-icon>
+                        <ion-card-title>Location</ion-card-title>
+                      </ion-card-header>
+                      <ion-card-content>
+                        <div class="info-block">
+                          @for (address of listing.contactInformation?.addresses; track address) {
+                            <div
+                              class="location-item"
+                              >
+                              <p>{{ address?.name }}</p>
+                              <p>{{ address?.street }}</p>
+                              <p>{{ address?.city }}, {{ address?.state }}</p>
+                              <p>{{ address?.country }} {{ address?.zipcode }}</p>
+                              @if (address?.isPrimaryAddress) {
+                                <ion-badge color="primary"
+                                  >Primary Location</ion-badge
+                                  >
+                                }
+                              </div>
+                            }
+                            @if (listing.remote) {
+                              <ion-badge color="success"
+                                >{{ 'listings.remote_available' | translate }}</ion-badge
+                                >
+                              }
+                            </div>
+                          </ion-card-content>
+                        </ion-card>
+                      }
+                    </ion-col>
+                    <ion-col size="12" size-md="6">
+                      <!-- Contact Information Card -->
+                      @if (listing.contactInformation?.emails?.length || listing.contactInformation?.phoneNumbers?.length) {
+                        <ion-card
+                          >
+                          <ion-card-header>
+                            <ion-icon name="call-outline" slot="start"></ion-icon>
+                            <ion-card-title>Contact Information</ion-card-title>
+                          </ion-card-header>
+                          <ion-card-content>
+                            <div class="info-block">
+                              @for (email of listing.contactInformation?.emails; track email) {
+                                <div
+                                  class="contact-item"
+                                  >
+                                  <ion-icon name="mail-outline"></ion-icon>
+                                  <span>{{ email.email }}</span>
+                                </div>
+                              }
+                              @for (phone of listing.contactInformation?.phoneNumbers; track phone) {
+                                <div
+                                  class="contact-item"
+                                  >
+                                  <ion-icon name="call-outline"></ion-icon>
+                                  <span
+                                    >{{ phone.number ? (phone.number | phoneFormat) : 'No phone
+                                    number' }}</span
+                                    >
+                                    <ion-badge color="medium">{{ phone.type }}</ion-badge>
+                                  </div>
+                                }
+                              </div>
+                            </ion-card-content>
+                          </ion-card>
+                        }
+                      </ion-col>
+                    </ion-row>
+                  </ion-grid>
+                }
+              </ion-content>

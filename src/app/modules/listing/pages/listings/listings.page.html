@@ -33,15 +33,16 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         size="small"
         (click)="toggleFilter()"
         class="filter-toggle-btn"
-      >
-        <ion-icon slot="start" name="options-outline"></ion-icon>
-        <ion-badge
-          *ngIf="activeFilterCount > 0"
-          color="primary"
-          class="filter-badge"
         >
-          {{ activeFilterCount }}
-        </ion-badge>
+        <ion-icon slot="start" name="options-outline"></ion-icon>
+        @if (activeFilterCount > 0) {
+          <ion-badge
+            color="primary"
+            class="filter-badge"
+            >
+            {{ activeFilterCount }}
+          </ion-badge>
+        }
         <ion-icon
           slot="end"
           [name]="isFilterExpanded ? 'chevron-up-outline' : 'chevron-down-outline'"
@@ -53,7 +54,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         size="small"
         (click)="toggleViewMode()"
         class="view-toggle-btn"
-      >
+        >
         <ion-icon
           [name]="viewMode === 'list' ? 'map-outline' : 'list-outline'"
         ></ion-icon>
@@ -62,17 +63,19 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </ion-toolbar>
 
   <!-- Filter Panel (expands below search bar) -->
-  <ion-toolbar *ngIf="isFilterExpanded" class="filter-panel-toolbar">
-    <app-listing-filter
-      [availableSkills]="availableSkills"
-      [isExpanded]="isFilterExpanded"
-      [showToggleButton]="false"
-      [initialFilterValues]="currentFilterValues"
-      (filterChange)="onFilterChange($event)"
-      (expandedChange)="onFilterExpandedChange($event)"
-      (activeFilterCountChange)="onActiveFilterCountChange($event)"
-    ></app-listing-filter>
-  </ion-toolbar>
+  @if (isFilterExpanded) {
+    <ion-toolbar class="filter-panel-toolbar">
+      <app-listing-filter
+        [availableSkills]="availableSkills"
+        [isExpanded]="isFilterExpanded"
+        [showToggleButton]="false"
+        [initialFilterValues]="currentFilterValues"
+        (filterChange)="onFilterChange($event)"
+        (expandedChange)="onFilterExpandedChange($event)"
+        (activeFilterCountChange)="onActiveFilterCountChange($event)"
+      ></app-listing-filter>
+    </ion-toolbar>
+  }
 
   <ion-toolbar>
     <ion-segment
@@ -80,15 +83,16 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       value="all"
       (ionChange)="filterListings($event)"
       class="listing-type-segment"
-    >
-      <ion-segment-button
-        *ngFor="let type of listingTypes"
-        [value]="type"
-        [class]="'segment-' + type"
       >
-        <ion-icon [name]="getIconForType(type)"></ion-icon>
-        <ion-label>{{type | titlecase}}</ion-label>
-      </ion-segment-button>
+      @for (type of listingTypes; track type) {
+        <ion-segment-button
+          [value]="type"
+          [class]="'segment-' + type"
+          >
+          <ion-icon [name]="getIconForType(type)"></ion-icon>
+          <ion-label>{{type | titlecase}}</ion-label>
+        </ion-segment-button>
+      }
     </ion-segment>
   </ion-toolbar>
 </ion-header>
@@ -101,142 +105,153 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </ion-refresher>
 
   <!-- Map View -->
-  <ng-container *ngIf="viewMode === 'map'">
-    <app-listings-map
-      *ngIf="mapsLoaded"
-      [listings]="(listings$ | async) || []"
-      [userLocation]="userLocation"
-      [height]="'calc(100vh - 200px)'"
-      (listingSelected)="viewListing($event)"
-    ></app-listings-map>
-    <div *ngIf="!mapsLoaded" class="map-loading">
-      <ion-spinner name="crescent"></ion-spinner>
-      <p>Loading map...</p>
-    </div>
-  </ng-container>
+  @if (viewMode === 'map') {
+    @if (mapsApiReady) {
+      <app-listings-map
+        [listings]="(listings$ | async) || []"
+        [userLocation]="userLocation"
+        [height]="'calc(100vh - 200px)'"
+        (listingSelected)="viewListing($event)"
+      ></app-listings-map>
+    }
+    @if (!mapsLoaded) {
+      <div class="map-loading">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Loading map...</p>
+      </div>
+    }
+    @if (mapsLoaded && !mapsApiReady) {
+      <div class="map-loading">
+        <ion-icon name="map-outline" size="large"></ion-icon>
+        <p>Map unavailable. Please check your connection or API key.</p>
+      </div>
+    }
+  }
 
   <!-- List View -->
-  <ng-container *ngIf="viewMode === 'list'">
-    <ng-container
-      *ngIf="(loading$ | async) && !(displayedListings$ | async)?.length; else content"
-    >
+  @if (viewMode === 'list') {
+    @if ((loading$ | async) && !(displayedListings$ | async)?.length) {
       <!-- Skeleton Loading Cards -->
       <div class="listings-grid">
-        <ion-card *ngFor="let i of [1,2,3,4,5,6]" class="listing-card-skeleton">
-          <ion-skeleton-text
-            animated
-            style="height: 4px; width: 100%"
-          ></ion-skeleton-text>
-          <ion-card-header>
-            <div style="display: flex; gap: 12px; align-items: flex-start">
-              <ion-skeleton-text
-                animated
-                style="width: 48px; height: 48px; border-radius: 8px"
-              ></ion-skeleton-text>
-              <div style="flex: 1">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <ion-card class="listing-card-skeleton">
+            <ion-skeleton-text
+              animated
+              style="height: 4px; width: 100%"
+            ></ion-skeleton-text>
+            <ion-card-header>
+              <div style="display: flex; gap: 12px; align-items: flex-start">
                 <ion-skeleton-text
                   animated
-                  style="width: 80%; height: 18px"
+                  style="width: 48px; height: 48px; border-radius: 8px"
+                ></ion-skeleton-text>
+                <div style="flex: 1">
+                  <ion-skeleton-text
+                    animated
+                    style="width: 80%; height: 18px"
+                  ></ion-skeleton-text>
+                  <ion-skeleton-text
+                    animated
+                    style="width: 50%; height: 14px; margin-top: 4px"
+                  ></ion-skeleton-text>
+                </div>
+              </div>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-skeleton-text
+                animated
+                style="width: 100%; height: 14px"
+              ></ion-skeleton-text>
+              <ion-skeleton-text
+                animated
+                style="width: 90%; height: 14px; margin-top: 4px"
+              ></ion-skeleton-text>
+              <ion-skeleton-text
+                animated
+                style="width: 70%; height: 14px; margin-top: 4px"
+              ></ion-skeleton-text>
+              <div style="display: flex; gap: 8px; margin-top: 12px">
+                <ion-skeleton-text
+                  animated
+                  style="width: 80px; height: 28px; border-radius: 14px"
                 ></ion-skeleton-text>
                 <ion-skeleton-text
                   animated
-                  style="width: 50%; height: 14px; margin-top: 4px"
+                  style="width: 60px; height: 28px; border-radius: 14px"
                 ></ion-skeleton-text>
               </div>
-            </div>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-skeleton-text
-              animated
-              style="width: 100%; height: 14px"
-            ></ion-skeleton-text>
-            <ion-skeleton-text
-              animated
-              style="width: 90%; height: 14px; margin-top: 4px"
-            ></ion-skeleton-text>
-            <ion-skeleton-text
-              animated
-              style="width: 70%; height: 14px; margin-top: 4px"
-            ></ion-skeleton-text>
-            <div style="display: flex; gap: 8px; margin-top: 12px">
-              <ion-skeleton-text
-                animated
-                style="width: 80px; height: 28px; border-radius: 14px"
-              ></ion-skeleton-text>
-              <ion-skeleton-text
-                animated
-                style="width: 60px; height: 28px; border-radius: 14px"
-              ></ion-skeleton-text>
-            </div>
-          </ion-card-content>
-        </ion-card>
+            </ion-card-content>
+          </ion-card>
+        }
       </div>
-    </ng-container>
-
-    <ng-template #content>
-      <ng-container *ngIf="error$ | async as error">
+    } @else {
+      @if (error$ | async; as error) {
         <ion-text color="danger">
           <p>{{ error }}</p>
         </ion-text>
-      </ng-container>
-
+      }
       <!-- Listings Card Grid -->
       <div class="listings-grid">
-        <app-listing-card
-          *ngFor="let listing of displayedListings$ | async"
-          [listing]="listing"
-          [userSkills]="(userSkills$ | async) || []"
-          [showMatchBadge]="!!(authUser$ | async)"
-        ></app-listing-card>
+        @for (listing of displayedListings$ | async; track listing) {
+          <app-listing-card
+            [listing]="listing"
+            [userSkills]="(userSkills$ | async) || []"
+            [showMatchBadge]="!!(authUser$ | async)"
+          ></app-listing-card>
+        }
       </div>
-
-      <ion-text
-        class="ion-padding no-listings-text"
-        *ngIf="
+      @if (
         (displayedListings$ | async)?.length === 0 &&
         !(loading$ | async) &&
         !(error$ | async)
-      "
-      >
-        {{ 'listings.no_listings' | translate }}
-      </ion-text>
-
+        ) {
+        <ion-text
+          class="ion-padding no-listings-text"
+          >
+          {{ 'listings.no_listings' | translate }}
+        </ion-text>
+      }
       <!-- Infinite Scroll -->
       <ion-infinite-scroll
         threshold="100px"
         (ionInfinite)="loadMore($event)"
         [disabled]="!(hasMoreListings$ | async)"
-      >
+        >
         <ion-infinite-scroll-content
           loadingSpinner="crescent"
           [loadingText]="'listings.loading_more' | translate"
-        >
+          >
         </ion-infinite-scroll-content>
       </ion-infinite-scroll>
-
       <!-- Load More Button for Server-Side Pagination (Advanced Search) -->
-      <ion-button
-        *ngIf="(isAdvancedSearchActive$ | async) && (hasMoreResults$ | async)"
-        expand="block"
-        fill="outline"
-        (click)="loadMoreResults()"
-        [disabled]="loading$ | async"
-        class="load-more-btn"
-      >
-        <ion-spinner *ngIf="loading$ | async" name="crescent"></ion-spinner>
-        <span *ngIf="!(loading$ | async)">Load More Results</span>
-      </ion-button>
-    </ng-template>
-  </ng-container>
+      @if ((isAdvancedSearchActive$ | async) && (hasMoreResults$ | async)) {
+        <ion-button
+          expand="block"
+          fill="outline"
+          (click)="loadMoreResults()"
+          [disabled]="loading$ | async"
+          class="load-more-btn"
+          >
+          @if (loading$ | async) {
+            <ion-spinner name="crescent"></ion-spinner>
+          }
+          @if (!(loading$ | async)) {
+            <span>Load More Results</span>
+          }
+        </ion-button>
+      }
+    }
+  }
 
-  <ion-fab
-    vertical="bottom"
-    horizontal="end"
-    slot="fixed"
-    *ngIf="authUser$ | async"
-  >
-    <ion-fab-button routerLink="/listings/create">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+  @if (authUser$ | async) {
+    <ion-fab
+      vertical="bottom"
+      horizontal="end"
+      slot="fixed"
+      >
+      <ion-fab-button routerLink="/listings/create">
+        <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+  }
 </ion-content>

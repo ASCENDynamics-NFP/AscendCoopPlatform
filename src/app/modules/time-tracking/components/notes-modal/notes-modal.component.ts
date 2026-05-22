@@ -41,6 +41,7 @@ interface NoteItem {
 }
 
 @Component({
+  standalone: false,
   selector: "app-notes-modal",
   templateUrl: "./notes-modal.component.html",
   styleUrls: ["./notes-modal.component.scss"],

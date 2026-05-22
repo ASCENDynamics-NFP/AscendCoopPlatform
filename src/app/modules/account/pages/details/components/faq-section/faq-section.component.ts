@@ -29,6 +29,7 @@ export interface FAQ {
 }
 
 @Component({
+  standalone: false,
   selector: "app-faq-section",
   templateUrl: "./faq-section.component.html",
   styleUrls: ["./faq-section.component.scss"],

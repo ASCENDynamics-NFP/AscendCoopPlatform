@@ -25,12 +25,14 @@
     </ion-text>
 
     <!-- Lockout Warning -->
-    <ion-card *ngIf="isLocked" color="danger">
-      <ion-card-content>
-        <ion-icon name="lock-closed" size="large"></ion-icon>
-        <p>Too many failed attempts. Please try again in 5 minutes.</p>
-      </ion-card-content>
-    </ion-card>
+    @if (isLocked) {
+      <ion-card color="danger">
+        <ion-card-content>
+          <ion-icon name="lock-closed" size="large"></ion-icon>
+          <p>Too many failed attempts. Please try again in 5 minutes.</p>
+        </ion-card-content>
+      </ion-card>
+    }
 
     <!-- Password/Passphrase Input -->
     <ion-item [disabled]="isLocked">
@@ -46,7 +48,7 @@
         fill="clear"
         (click)="togglePasswordVisibility()"
         [disabled]="isLocked"
-      >
+        >
         <ion-icon
           [name]="showPassword ? 'eye-off' : 'eye'"
           slot="icon-only"
@@ -55,24 +57,29 @@
     </ion-item>
 
     <!-- Validation Errors -->
-    <ion-text
-      color="danger"
-      *ngIf="
-        restoreForm.get('password')?.invalid &&
-        restoreForm.get('password')?.touched
-      "
-    >
-      <small *ngIf="restoreForm.get('password')?.hasError('required')">
-        {{ passwordLabel }} is required
-      </small>
-    </ion-text>
+    @if (
+      restoreForm.get('password')?.invalid &&
+      restoreForm.get('password')?.touched
+      ) {
+      <ion-text
+        color="danger"
+        >
+        @if (restoreForm.get('password')?.hasError('required')) {
+          <small>
+            {{ passwordLabel }} is required
+          </small>
+        }
+      </ion-text>
+    }
 
     <!-- Attempt Counter -->
-    <ion-text color="warning" *ngIf="attemptCount > 0 && !isLocked">
-      <small>
-        {{ maxAttempts - attemptCount }} attempt(s) remaining before lockout
-      </small>
-    </ion-text>
+    @if (attemptCount > 0 && !isLocked) {
+      <ion-text color="warning">
+        <small>
+          {{ maxAttempts - attemptCount }} attempt(s) remaining before lockout
+        </small>
+      </ion-text>
+    }
 
     <!-- Actions -->
     <div class="ion-margin-top">
@@ -80,8 +87,10 @@
         expand="block"
         type="submit"
         [disabled]="!restoreForm.valid || isLoading || isLocked"
-      >
-        <ion-spinner *ngIf="isLoading" slot="start"></ion-spinner>
+        >
+        @if (isLoading) {
+          <ion-spinner slot="start"></ion-spinner>
+        }
         {{ isLoading ? "Restoring..." : "Restore Keys" }}
       </ion-button>
 
@@ -91,7 +100,7 @@
         color="medium"
         (click)="generateNewKeys()"
         [disabled]="isLoading || isLocked"
-      >
+        >
         Generate New Keys
       </ion-button>
 
@@ -114,15 +123,19 @@
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <p *ngIf="authMethod === 'password'">
-          If you've forgotten your account password, you can reset it through
-          the login page. After resetting, you'll need to update your key
-          backup.
-        </p>
-        <p *ngIf="authMethod === 'sso'">
-          If you've forgotten your encryption passphrase, unfortunately there is
-          no way to recover it. You'll need to generate new keys.
-        </p>
+        @if (authMethod === 'password') {
+          <p>
+            If you've forgotten your account password, you can reset it through
+            the login page. After resetting, you'll need to update your key
+            backup.
+          </p>
+        }
+        @if (authMethod === 'sso') {
+          <p>
+            If you've forgotten your encryption passphrase, unfortunately there is
+            no way to recover it. You'll need to generate new keys.
+          </p>
+        }
       </ion-card-content>
     </ion-card>
   </form>

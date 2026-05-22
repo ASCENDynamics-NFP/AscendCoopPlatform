@@ -36,6 +36,7 @@ import {
 } from "../../../core/services/offline-sync.service";
 
 @Component({
+  standalone: false,
   selector: "app-connection-status",
   templateUrl: "./connection-status.component.html",
   styleUrls: ["./connection-status.component.scss"],

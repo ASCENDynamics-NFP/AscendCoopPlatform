@@ -20,7 +20,7 @@
 // src/app/core/services/listings.service.ts
 
 import {HttpClient, HttpParams} from "@angular/common/http";
-import {Injectable} from "@angular/core";
+import {Injectable, Injector, runInInjectionContext} from "@angular/core";
 import {Observable, of} from "rxjs";
 import {catchError, map} from "rxjs/operators";
 import {AngularFirestore, Query} from "@angular/fire/compat/firestore";
@@ -53,7 +53,8 @@ export class ListingsService {
     private http: HttpClient,
     private afs: AngularFirestore,
     private firebaseFunctions: FirebaseFunctionsService,
-    private store: Store<{auth: AuthState}>,
+    private store: Store,
+    private injector: Injector,
   ) {}
 
   // ===== CALLABLE FUNCTION METHODS =====
@@ -174,39 +175,51 @@ export class ListingsService {
    * @param category Optional category filter
    */
   getHomepageListings(
-    location: {latitude: number; longitude: number},
+    location?: {latitude: number; longitude: number},
     limit: number = 4,
     status: string = "active",
     category?: string,
   ): Observable<Listing[]> {
-    // Use searchListings callable function for enhanced functionality
+    // When no location is available, skip the callable (which requires a real coordinate
+    // to be useful) and go directly to the public HTTP endpoint.
+    const httpOnly$ = (): Observable<Listing[]> => {
+      let params = new HttpParams().set("limit", limit).set("status", status);
+      if (location) {
+        params = params
+          .set("latitude", location.latitude)
+          .set("longitude", location.longitude);
+      }
+      if (category) {
+        params = params.set("category", category);
+      }
+      return this.http
+        .get<Listing[]>(this.endpoint, {params})
+        .pipe(catchError(() => of([])));
+    };
+
+    if (!location) {
+      return httpOnly$();
+    }
+
+    // With a real location: try the callable first (works for authenticated users),
+    // fall back to HTTP when the callable returns [] (unauthenticated) or errors.
     const searchParams: SearchListingsRequest = {
-      location: {
-        latitude: location.latitude,
-        longitude: location.longitude,
-      },
-      radiusKm: 50, // Default 50km radius for homepage
+      location: {latitude: location.latitude, longitude: location.longitude},
+      radiusKm: 50,
       limit,
       ...(category && {category}),
     };
 
     return this.searchListings(searchParams).pipe(
+      take(1),
+      switchMap((listings) =>
+        listings.length > 0 ? of(listings) : httpOnly$(),
+      ),
       catchError(() => {
-        // Fallback to legacy HTTP endpoint if callable function fails
         console.warn(
           "Callable function failed, falling back to legacy endpoint",
         );
-        let params = new HttpParams()
-          .set("limit", limit)
-          .set("status", status)
-          .set("latitude", location.latitude)
-          .set("longitude", location.longitude);
-
-        if (category) {
-          params = params.set("category", category);
-        }
-
-        return this.http.get<Listing[]>(this.endpoint, {params});
+        return httpOnly$();
       }),
     );
   }
@@ -222,8 +235,10 @@ export class ListingsService {
     condition: any,
     value: any,
   ): Observable<T[]> {
-    const collectionRef = this.afs.collection<T>(collectionName, (ref) =>
-      ref.where(field, condition, value),
+    const collectionRef = runInInjectionContext(this.injector, () =>
+      this.afs.collection<T>(collectionName, (ref) =>
+        ref.where(field, condition, value),
+      ),
     );
     return collectionRef.snapshotChanges().pipe(
       map((actions) =>
@@ -254,19 +269,21 @@ export class ListingsService {
           return of([]);
         }
 
-        const collectionRef = this.afs.collection<T>(fullPath, (ref) => {
-          let query: Query<DocumentData> = ref;
-          if (conditions) {
-            conditions.forEach((condition) => {
-              query = query.where(
-                condition.field,
-                condition.operator,
-                condition.value,
-              );
-            });
-          }
-          return query;
-        });
+        const collectionRef = runInInjectionContext(this.injector, () =>
+          this.afs.collection<T>(fullPath, (ref) => {
+            let query: Query<DocumentData> = ref;
+            if (conditions) {
+              conditions.forEach((condition) => {
+                query = query.where(
+                  condition.field,
+                  condition.operator,
+                  condition.value,
+                );
+              });
+            }
+            return query;
+          }),
+        );
 
         return collectionRef.snapshotChanges().pipe(
           map((actions) =>

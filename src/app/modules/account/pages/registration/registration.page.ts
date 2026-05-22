@@ -41,6 +41,7 @@ import {MetaService} from "../../../../core/services/meta.service";
 import {MenuController} from "@ionic/angular";
 
 @Component({
+  standalone: false,
   selector: "app-registration",
   templateUrl: "./registration.page.html",
   styleUrls: ["./registration.page.scss"],

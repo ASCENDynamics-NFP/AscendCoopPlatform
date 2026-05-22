@@ -19,11 +19,15 @@
  ********************************************************************************/
 // src/app/modules/time-tracking/services/timesheet-notification.service.ts
 
-import {Injectable} from "@angular/core";
+import {Injectable, Injector, runInInjectionContext} from "@angular/core";
 import {ToastController} from "@ionic/angular";
 import {Store} from "@ngrx/store";
 import {AuthState} from "../../../state/reducers/auth.reducer";
-import {AngularFirestore} from "@angular/fire/compat/firestore";
+import {
+  AngularFirestore,
+  AngularFirestoreCollection,
+  AngularFirestoreDocument,
+} from "@angular/fire/compat/firestore";
 import {Timestamp} from "firebase/firestore";
 import {TimeEntry} from "../../../../../shared/models/time-entry.model";
 import {selectAuthUser} from "../../../state/selectors/auth.selectors";
@@ -52,9 +56,25 @@ interface TimesheetNotification {
 export class TimesheetNotificationService {
   constructor(
     private toastController: ToastController,
-    private store: Store<{auth: AuthState}>,
+    private store: Store,
     private firestore: AngularFirestore,
+    private injector: Injector,
   ) {}
+
+  private col<T>(
+    path: string,
+    queryFn?: (ref: any) => any,
+  ): AngularFirestoreCollection<T> {
+    return runInInjectionContext(this.injector, () =>
+      this.firestore.collection<T>(path, queryFn),
+    );
+  }
+
+  private afDoc<T>(path: string): AngularFirestoreDocument<T> {
+    return runInInjectionContext(this.injector, () =>
+      this.firestore.doc<T>(path),
+    );
+  }
 
   /**
    * Send notification when timesheet is submitted for approval
@@ -209,10 +229,9 @@ export class TimesheetNotificationService {
 
   private async saveNotification(notification: TimesheetNotification) {
     try {
-      await this.firestore
-        .collection("notifications")
-        .doc(notification.id)
-        .set(notification);
+      await this.afDoc<TimesheetNotification>(
+        `notifications/${notification.id}`,
+      ).set(notification);
     } catch (error) {
       console.error("Error saving notification:", error);
     }
@@ -266,14 +285,12 @@ export class TimesheetNotificationService {
         if (!user?.uid) {
           return of([]);
         }
-        return this.firestore
-          .collection<TimesheetNotification>("notifications", (ref) =>
-            ref
-              .where("userId", "==", userId)
-              .orderBy("createdAt", "desc")
-              .limit(50),
-          )
-          .valueChanges();
+        return this.col<TimesheetNotification>("notifications", (ref) =>
+          ref
+            .where("userId", "==", userId)
+            .orderBy("createdAt", "desc")
+            .limit(50),
+        ).valueChanges();
       }),
     );
   }
@@ -283,10 +300,7 @@ export class TimesheetNotificationService {
    */
   async markAsRead(notificationId: string) {
     try {
-      await this.firestore
-        .collection("notifications")
-        .doc(notificationId)
-        .update({read: true});
+      await this.afDoc(`notifications/${notificationId}`).update({read: true});
     } catch (error) {
       console.error("Error marking notification as read:", error);
     }

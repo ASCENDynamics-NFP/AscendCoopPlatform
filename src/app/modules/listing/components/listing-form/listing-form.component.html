@@ -19,8 +19,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 -->
 <form [formGroup]="listingForm" (ngSubmit)="onSubmit()">
   <!-- Step 1: Basic Information & Time Commitment -->
-  <ng-container *ngIf="currentStep === 1"
-    ><!-- Basic Information -->
+  @if (currentStep === 1) {
+    <!-- Basic Information -->
     <ion-card>
       <ion-card-header>
         <ion-card-title>Basic Information</ion-card-title>
@@ -42,25 +42,31 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 "
                 [class.ion-valid]="listingForm.get('title')?.valid"
               ></ion-input>
-              <ion-note
-                color="danger"
-                *ngIf="
-                  listingForm.get('title')?.invalid &&
-                  listingForm.get('title')?.touched
-                "
-              >
-                <span *ngIf="listingForm.get('title')?.errors?.['required']">
-                  Title is required.
-                </span>
-                <span *ngIf="listingForm.get('title')?.errors?.['minlength']">
-                  Title must be at least 3 characters.
-                </span>
-                <span *ngIf="listingForm.get('title')?.errors?.['maxlength']">
-                  Title cannot exceed 100 characters.
-                </span>
-              </ion-note>
+              @if (
+                listingForm.get('title')?.invalid &&
+                listingForm.get('title')?.touched
+                ) {
+                <ion-note
+                  color="danger"
+                  >
+                  @if (listingForm.get('title')?.errors?.['required']) {
+                    <span>
+                      Title is required.
+                    </span>
+                  }
+                  @if (listingForm.get('title')?.errors?.['minlength']) {
+                    <span>
+                      Title must be at least 3 characters.
+                    </span>
+                  }
+                  @if (listingForm.get('title')?.errors?.['maxlength']) {
+                    <span>
+                      Title cannot exceed 100 characters.
+                    </span>
+                  }
+                </ion-note>
+              }
             </ion-col>
-
             <!-- Organization Field -->
             <ion-col size="12" size-md="6">
               <ion-input
@@ -75,32 +81,35 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 "
                 [class.ion-valid]="listingForm.get('organization')?.valid"
               ></ion-input>
-              <ion-note
-                color="danger"
-                *ngIf="
-                  listingForm.get('organization')?.invalid &&
-                  listingForm.get('organization')?.touched
-                "
-              >
-                <span
-                  *ngIf="listingForm.get('organization')?.errors?.['required']"
-                >
-                  Organization is required.
-                </span>
-                <span
-                  *ngIf="listingForm.get('organization')?.errors?.['minlength']"
-                >
-                  Organization must be at least 2 characters.
-                </span>
-                <span
-                  *ngIf="listingForm.get('organization')?.errors?.['maxlength']"
-                >
-                  Organization cannot exceed 100 characters.
-                </span>
-              </ion-note>
+              @if (
+                listingForm.get('organization')?.invalid &&
+                listingForm.get('organization')?.touched
+                ) {
+                <ion-note
+                  color="danger"
+                  >
+                  @if (listingForm.get('organization')?.errors?.['required']) {
+                    <span
+                      >
+                      Organization is required.
+                    </span>
+                  }
+                  @if (listingForm.get('organization')?.errors?.['minlength']) {
+                    <span
+                      >
+                      Organization must be at least 2 characters.
+                    </span>
+                  }
+                  @if (listingForm.get('organization')?.errors?.['maxlength']) {
+                    <span
+                      >
+                      Organization cannot exceed 100 characters.
+                    </span>
+                  }
+                </ion-note>
+              }
             </ion-col>
           </ion-row>
-
           <ion-row>
             <!-- Listing Type Field -->
             <ion-col size="12" size-md="6">
@@ -113,25 +122,26 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   listingForm.get('type')?.invalid &&
                   listingForm.get('type')?.touched
                 "
-              >
-                <ion-select-option
-                  *ngFor="let type of listingTypes"
-                  [value]="type"
                 >
-                  {{ type | titlecase }}
-                </ion-select-option>
+                @for (type of listingTypes; track type) {
+                  <ion-select-option
+                    [value]="type"
+                    >
+                    {{ type | titlecase }}
+                  </ion-select-option>
+                }
               </ion-select>
-              <ion-note
-                color="danger"
-                *ngIf="
-                  listingForm.get('type')?.invalid &&
-                  listingForm.get('type')?.touched
-                "
-              >
-                Listing type is required.
-              </ion-note>
+              @if (
+                listingForm.get('type')?.invalid &&
+                listingForm.get('type')?.touched
+                ) {
+                <ion-note
+                  color="danger"
+                  >
+                  Listing type is required.
+                </ion-note>
+              }
             </ion-col>
-
             <!-- Remote Position Toggle -->
             <ion-col size="12" size-md="6">
               <ion-item lines="none">
@@ -142,42 +152,40 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               </ion-item>
             </ion-col>
           </ion-row>
-
           <!-- Post As (Owner Account) -->
           <ion-row>
             <ion-col size="12" size-md="6">
-              <ng-container *ngIf="!isEditMode; else staticOwner">
+              @if (!isEditMode) {
                 <ion-select
                   label="Post As"
                   label-placement="stacked"
                   formControlName="ownerAccountId"
                   fill="outline"
                   (ionChange)="onOwnerAccountChange($event)"
-                >
-                  <ion-select-option
-                    *ngFor="let acc of ownerAccounts$ | async"
-                    [value]="acc.id"
                   >
-                    {{ acc.name }} ({{ acc.type | titlecase }})
-                  </ion-select-option>
+                  @for (acc of ownerAccounts$ | async; track acc) {
+                    <ion-select-option
+                      [value]="acc.id"
+                      >
+                      {{ acc.name }} ({{ acc.type | titlecase }})
+                    </ion-select-option>
+                  }
                 </ion-select>
-              </ng-container>
-              <ng-template #staticOwner>
+              } @else {
                 <ion-item lines="none">
                   <ion-label>
                     <strong>Post As</strong>
                     <p>
                       {{ listingForm.get("organization")?.value }}
                       ({{
-                        listingForm.get("ownerAccountType")?.value | titlecase
+                      listingForm.get("ownerAccountType")?.value | titlecase
                       }})
                     </p>
                   </ion-label>
                 </ion-item>
-              </ng-template>
+              }
             </ion-col>
           </ion-row>
-
           <!-- Description Field -->
           <ion-row>
             <ion-col size="12">
@@ -193,35 +201,38 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   listingForm.get('description')?.touched
                 "
               ></ion-textarea>
-              <ion-note
-                color="danger"
-                *ngIf="
-                  listingForm.get('description')?.invalid &&
-                  listingForm.get('description')?.touched
-                "
-              >
-                <span
-                  *ngIf="listingForm.get('description')?.errors?.['required']"
-                >
-                  Description is required.
-                </span>
-                <span
-                  *ngIf="listingForm.get('description')?.errors?.['minlength']"
-                >
-                  Description must be at least 10 characters.
-                </span>
-                <span
-                  *ngIf="listingForm.get('description')?.errors?.['maxlength']"
-                >
-                  Description cannot exceed 1000 characters.
-                </span>
-              </ion-note>
+              @if (
+                listingForm.get('description')?.invalid &&
+                listingForm.get('description')?.touched
+                ) {
+                <ion-note
+                  color="danger"
+                  >
+                  @if (listingForm.get('description')?.errors?.['required']) {
+                    <span
+                      >
+                      Description is required.
+                    </span>
+                  }
+                  @if (listingForm.get('description')?.errors?.['minlength']) {
+                    <span
+                      >
+                      Description must be at least 10 characters.
+                    </span>
+                  }
+                  @if (listingForm.get('description')?.errors?.['maxlength']) {
+                    <span
+                      >
+                      Description cannot exceed 1000 characters.
+                    </span>
+                  }
+                </ion-note>
+              }
             </ion-col>
           </ion-row>
         </ion-grid>
       </ion-card-content>
     </ion-card>
-
     <!-- Time Commitment -->
     <ion-card>
       <ion-card-header>
@@ -244,43 +255,46 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   listingForm.get('timeCommitment.hoursPerWeek')?.touched
                 "
               ></ion-input>
-              <ion-note
-                color="danger"
-                *ngIf="
-                  listingForm.get('timeCommitment.hoursPerWeek')?.invalid &&
-                  listingForm.get('timeCommitment.hoursPerWeek')?.touched
-                "
-              >
-                <span
-                  *ngIf="
+              @if (
+                listingForm.get('timeCommitment.hoursPerWeek')?.invalid &&
+                listingForm.get('timeCommitment.hoursPerWeek')?.touched
+                ) {
+                <ion-note
+                  color="danger"
+                  >
+                  @if (
                     listingForm.get('timeCommitment.hoursPerWeek')?.errors?.[
-                      'required'
+                    'required'
                     ]
-                  "
-                >
-                  Hours per week is required.
-                </span>
-                <span
-                  *ngIf="
+                    ) {
+                    <span
+                      >
+                      Hours per week is required.
+                    </span>
+                  }
+                  @if (
                     listingForm.get('timeCommitment.hoursPerWeek')?.errors?.[
-                      'min'
+                    'min'
                     ]
-                  "
-                >
-                  Minimum is 1 hour.
-                </span>
-                <span
-                  *ngIf="
+                    ) {
+                    <span
+                      >
+                      Minimum is 1 hour.
+                    </span>
+                  }
+                  @if (
                     listingForm.get('timeCommitment.hoursPerWeek')?.errors?.[
-                      'max'
+                    'max'
                     ]
-                  "
-                >
-                  Maximum is 168 hours.
-                </span>
-              </ion-note>
+                    ) {
+                    <span
+                      >
+                      Maximum is 168 hours.
+                    </span>
+                  }
+                </ion-note>
+              }
             </ion-col>
-
             <!-- Duration Field -->
             <ion-col size="12" size-md="6">
               <ion-input
@@ -294,18 +308,18 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   listingForm.get('timeCommitment.duration')?.touched
                 "
               ></ion-input>
-              <ion-note
-                color="danger"
-                *ngIf="
-                  listingForm.get('timeCommitment.duration')?.invalid &&
-                  listingForm.get('timeCommitment.duration')?.touched
-                "
-              >
-                Duration is required.
-              </ion-note>
+              @if (
+                listingForm.get('timeCommitment.duration')?.invalid &&
+                listingForm.get('timeCommitment.duration')?.touched
+                ) {
+                <ion-note
+                  color="danger"
+                  >
+                  Duration is required.
+                </ion-note>
+              }
             </ion-col>
           </ion-row>
-
           <!-- Schedule Field -->
           <ion-row>
             <ion-col>
@@ -320,18 +334,18 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                   listingForm.get('timeCommitment.schedule')?.touched
                 "
               ></ion-input>
-              <ion-note
-                color="danger"
-                *ngIf="
-                  listingForm.get('timeCommitment.schedule')?.invalid &&
-                  listingForm.get('timeCommitment.schedule')?.touched
-                "
-              >
-                Schedule is required.
-              </ion-note>
+              @if (
+                listingForm.get('timeCommitment.schedule')?.invalid &&
+                listingForm.get('timeCommitment.schedule')?.touched
+                ) {
+                <ion-note
+                  color="danger"
+                  >
+                  Schedule is required.
+                </ion-note>
+              }
             </ion-col>
           </ion-row>
-
           <!-- Flexible Schedule Toggle -->
           <ion-row>
             <ion-col>
@@ -344,180 +358,178 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         </ion-grid>
       </ion-card-content>
     </ion-card>
-  </ng-container>
+  }
 
   <!-- Step 2: Skills, Requirements, Responsibilities, Benefits, Contact Information -->
-  <ng-container *ngIf="currentStep === 2">
+  @if (currentStep === 2) {
     <!-- Skills -->
     <ion-card>
       <ion-card-header>
         <ion-card-title>Skills</ion-card-title>
       </ion-card-header>
       <ion-card-content formArrayName="skills">
-        <div
-          *ngFor="let skill of getFormArray('skills').controls; let i = index"
-          [formGroupName]="i"
-        >
-          <ion-row>
-            <ion-col size="6">
-              <ion-input
-                formControlName="name"
-                label="Skill Name"
-                label-placement="floating"
-                fill="outline"
-                placeholder="Enter skill"
-              ></ion-input>
-            </ion-col>
-            <ion-col size="3">
-              <ion-select
-                formControlName="level"
-                label="Skill Level"
-                label-placement="stacked"
-                fill="outline"
-              >
-                <ion-select-option
-                  *ngFor="let level of skillLevels"
-                  [value]="level"
-                >
-                  {{ level | titlecase }}
-                </ion-select-option>
-              </ion-select>
-            </ion-col>
-            <ion-col size="2">
-              <ion-item lines="none">
-                <ion-checkbox formControlName="required"></ion-checkbox>
-                <ion-label>Required</ion-label>
-              </ion-item>
-            </ion-col>
-            <ion-col size="1">
-              <ion-button fill="clear" (click)="removeArrayItem('skills', i)">
-                <ion-icon name="trash-outline"></ion-icon>
-              </ion-button>
-            </ion-col>
-          </ion-row>
-        </div>
+        @for (skill of getFormArray('skills').controls; track skill; let i = $index) {
+          <div
+            [formGroupName]="i"
+            >
+            <ion-row>
+              <ion-col size="6">
+                <ion-input
+                  formControlName="name"
+                  label="Skill Name"
+                  label-placement="floating"
+                  fill="outline"
+                  placeholder="Enter skill"
+                ></ion-input>
+              </ion-col>
+              <ion-col size="3">
+                <ion-select
+                  formControlName="level"
+                  label="Skill Level"
+                  label-placement="stacked"
+                  fill="outline"
+                  >
+                  @for (level of skillLevels; track level) {
+                    <ion-select-option
+                      [value]="level"
+                      >
+                      {{ level | titlecase }}
+                    </ion-select-option>
+                  }
+                </ion-select>
+              </ion-col>
+              <ion-col size="2">
+                <ion-item lines="none">
+                  <ion-checkbox formControlName="required"></ion-checkbox>
+                  <ion-label>Required</ion-label>
+                </ion-item>
+              </ion-col>
+              <ion-col size="1">
+                <ion-button fill="clear" (click)="removeArrayItem('skills', i)">
+                  <ion-icon name="trash-outline"></ion-icon>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </div>
+        }
         <ion-button fill="clear" (click)="addSkill()">
           <ion-icon slot="start" name="add-circle-outline"></ion-icon>
           Add Skill
         </ion-button>
       </ion-card-content>
     </ion-card>
-
     <!-- Requirements -->
     <ion-card>
       <ion-card-header>
         <ion-card-title>Requirements</ion-card-title>
       </ion-card-header>
       <ion-card-content formArrayName="requirements">
-        <div
-          *ngFor="
-            let req of getFormArray('requirements').controls;
-            let i = index
-          "
-        >
-          <ion-row>
-            <ion-col size="10">
-              <ion-input
-                [formControlName]="i"
-                label="Requirement"
-                label-placement="floating"
-                fill="outline"
-                type="text"
-                placeholder="Enter requirement"
-              ></ion-input>
-            </ion-col>
-            <ion-col size="2">
-              <ion-button
-                fill="clear"
-                (click)="removeArrayItem('requirements', i)"
-              >
-                <ion-icon name="trash-outline"></ion-icon>
-              </ion-button>
-            </ion-col>
-          </ion-row>
-        </div>
+        @for (
+          req of getFormArray('requirements').controls; track
+          req; let i = $index) {
+          <div
+            >
+            <ion-row>
+              <ion-col size="10">
+                <ion-input
+                  [formControlName]="i"
+                  label="Requirement"
+                  label-placement="floating"
+                  fill="outline"
+                  type="text"
+                  placeholder="Enter requirement"
+                ></ion-input>
+              </ion-col>
+              <ion-col size="2">
+                <ion-button
+                  fill="clear"
+                  (click)="removeArrayItem('requirements', i)"
+                  >
+                  <ion-icon name="trash-outline"></ion-icon>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </div>
+        }
         <ion-button fill="clear" (click)="addArrayItem('requirements')">
           <ion-icon slot="start" name="add-circle-outline"></ion-icon>
           Add Requirement
         </ion-button>
       </ion-card-content>
     </ion-card>
-
     <!-- Responsibilities -->
     <ion-card>
       <ion-card-header>
         <ion-card-title>Responsibilities</ion-card-title>
       </ion-card-header>
       <ion-card-content formArrayName="responsibilities">
-        <div
-          *ngFor="
-            let responsibility of getFormArray('responsibilities').controls;
-            let i = index
-          "
-        >
-          <ion-row>
-            <ion-col size="10">
-              <ion-input
-                [formControlName]="i"
-                label="Responsibility"
-                label-placement="floating"
-                fill="outline"
-                placeholder="Enter responsibility"
-              ></ion-input>
-            </ion-col>
-            <ion-col size="2">
-              <ion-button
-                fill="clear"
-                (click)="removeArrayItem('responsibilities', i)"
-              >
-                <ion-icon name="trash-outline"></ion-icon>
-              </ion-button>
-            </ion-col>
-          </ion-row>
-        </div>
+        @for (
+          responsibility of getFormArray('responsibilities').controls; track
+          responsibility; let i = $index) {
+          <div
+            >
+            <ion-row>
+              <ion-col size="10">
+                <ion-input
+                  [formControlName]="i"
+                  label="Responsibility"
+                  label-placement="floating"
+                  fill="outline"
+                  placeholder="Enter responsibility"
+                ></ion-input>
+              </ion-col>
+              <ion-col size="2">
+                <ion-button
+                  fill="clear"
+                  (click)="removeArrayItem('responsibilities', i)"
+                  >
+                  <ion-icon name="trash-outline"></ion-icon>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </div>
+        }
         <ion-button fill="clear" (click)="addArrayItem('responsibilities')">
           <ion-icon slot="start" name="add-circle-outline"></ion-icon>
           Add Responsibility
         </ion-button>
       </ion-card-content>
     </ion-card>
-
     <!-- Benefits -->
     <ion-card>
       <ion-card-header>
         <ion-card-title>Benefits</ion-card-title>
       </ion-card-header>
       <ion-card-content formArrayName="benefits">
-        <div
-          *ngFor="
-            let benefit of getFormArray('benefits').controls;
-            let i = index
-          "
-        >
-          <ion-row>
-            <ion-col size="10">
-              <ion-input
-                [formControlName]="i"
-                label="Benefit"
-                label-placement="floating"
-                fill="outline"
-                placeholder="Enter benefit"
-              ></ion-input>
-            </ion-col>
-            <ion-col size="2">
-              <ion-button fill="clear" (click)="removeArrayItem('benefits', i)">
-                <ion-icon name="trash-outline"></ion-icon>
-              </ion-button>
-            </ion-col>
-          </ion-row>
-        </div>
+        @for (
+          benefit of getFormArray('benefits').controls; track
+          benefit; let i = $index) {
+          <div
+            >
+            <ion-row>
+              <ion-col size="10">
+                <ion-input
+                  [formControlName]="i"
+                  label="Benefit"
+                  label-placement="floating"
+                  fill="outline"
+                  placeholder="Enter benefit"
+                ></ion-input>
+              </ion-col>
+              <ion-col size="2">
+                <ion-button fill="clear" (click)="removeArrayItem('benefits', i)">
+                  <ion-icon name="trash-outline"></ion-icon>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </div>
+        }
         <ion-button fill="clear" (click)="addArrayItem('benefits')">
           <ion-icon slot="start" name="add-circle-outline"></ion-icon>
           Add Benefit
         </ion-button>
       </ion-card-content>
     </ion-card>
-
     <!-- Contact Information -->
     <ion-card>
       <ion-card-header>
@@ -537,310 +549,322 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             <ion-item-divider>
               <ion-label color="tertiary">Emails</ion-label>
             </ion-item-divider>
-            <div
-              *ngFor="
-                let email of getFormArray('contactInformation.emails').controls;
-                let i = index
-              "
-              [formGroupName]="i"
-            >
-              <ion-row>
-                <ion-col size="5">
-                  <ion-input
-                    formControlName="name"
-                    label="Name"
-                    label-placement="floating"
-                    fill="outline"
-                    placeholder="Enter name"
-                  ></ion-input>
-                </ion-col>
-                <ion-col size="5">
-                  <ion-input
-                    formControlName="email"
-                    label="Email"
-                    label-placement="floating"
-                    fill="outline"
-                    placeholder="Enter email"
-                  ></ion-input>
-                  <ion-note
-                    color="danger"
-                    *ngIf="
+            @for (
+              email of getFormArray('contactInformation.emails').controls; track
+              email; let i = $index) {
+              <div
+                [formGroupName]="i"
+                >
+                <ion-row>
+                  <ion-col size="5">
+                    <ion-input
+                      formControlName="name"
+                      label="Name"
+                      label-placement="floating"
+                      fill="outline"
+                      placeholder="Enter name"
+                    ></ion-input>
+                  </ion-col>
+                  <ion-col size="5">
+                    <ion-input
+                      formControlName="email"
+                      label="Email"
+                      label-placement="floating"
+                      fill="outline"
+                      placeholder="Enter email"
+                    ></ion-input>
+                    @if (
                       email.get('email')?.invalid && email.get('email')?.touched
-                    "
-                  >
-                    <span *ngIf="email.get('email')?.errors?.['required']"
-                      >Email is required.</span
+                      ) {
+                      <ion-note
+                        color="danger"
+                        >
+                        @if (email.get('email')?.errors?.['required']) {
+                          <span
+                            >Email is required.</span
+                            >
+                          }
+                          @if (email.get('email')?.errors?.['email']) {
+                            <span
+                              >Enter a valid email.</span
+                              >
+                            }
+                          </ion-note>
+                        }
+                      </ion-col>
+                      <ion-col size="2">
+                        <ion-button
+                          fill="clear"
+                          (click)="removeArrayItem('contactInformation.emails', i)"
+                          >
+                          <ion-icon name="trash-outline"></ion-icon>
+                        </ion-button>
+                      </ion-col>
+                    </ion-row>
+                  </div>
+                }
+                <ion-button fill="clear" (click)="addEmail()">
+                  <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+                  Add Email
+                </ion-button>
+              </ion-col>
+            </ion-row>
+            <!-- Addresses -->
+            <ion-row formArrayName="addresses">
+              <ion-col>
+                <ion-item-divider>
+                  <ion-label color="tertiary">Addresses</ion-label>
+                </ion-item-divider>
+                @for (
+                  address of getFormArray('contactInformation.addresses')
+                  .controls; track
+                  address; let i = $index) {
+                  <div
+                    [formGroupName]="i"
                     >
-                    <span *ngIf="email.get('email')?.errors?.['email']"
-                      >Enter a valid email.</span
+                    <ion-row>
+                      <ion-col>
+                        <ion-input
+                          label="Building Name"
+                          label-placement="floating"
+                          fill="outline"
+                          formControlName="name"
+                          type="text"
+                          placeholder="Enter building name"
+                        ></ion-input>
+                      </ion-col>
+                    </ion-row>
+                    <ion-row>
+                      <ion-col>
+                        <ion-input
+                          label="Street Address"
+                          label-placement="floating"
+                          fill="outline"
+                          formControlName="street"
+                          type="text"
+                          placeholder="Enter street address"
+                        ></ion-input>
+                        @if (
+                          address.get('street')?.invalid &&
+                          address.get('street')?.touched
+                          ) {
+                          <ion-note
+                            color="danger"
+                            >
+                            Street is required.
+                          </ion-note>
+                        }
+                      </ion-col>
+                    </ion-row>
+                    <ion-row>
+                      <ion-col size="6">
+                        <ion-input
+                          label="City"
+                          label-placement="floating"
+                          fill="outline"
+                          formControlName="city"
+                          type="text"
+                          placeholder="Enter city"
+                        ></ion-input>
+                        @if (
+                          address.get('city')?.invalid &&
+                          address.get('city')?.touched
+                          ) {
+                          <ion-note
+                            color="danger"
+                            >
+                            City is required.
+                          </ion-note>
+                        }
+                      </ion-col>
+                      <ion-col size="6">
+                        <ion-input
+                          label="State"
+                          label-placement="floating"
+                          fill="outline"
+                          formControlName="state"
+                          type="text"
+                          placeholder="Enter state"
+                        ></ion-input>
+                        @if (
+                          address.get('state')?.invalid &&
+                          address.get('state')?.touched
+                          ) {
+                          <ion-note
+                            color="danger"
+                            >
+                            State is required.
+                          </ion-note>
+                        }
+                      </ion-col>
+                    </ion-row>
+                    <ion-row>
+                      <ion-col size="6">
+                        <ion-input
+                          label="Country"
+                          label-placement="floating"
+                          fill="outline"
+                          formControlName="country"
+                          type="text"
+                          placeholder="Enter country"
+                        ></ion-input>
+                        @if (
+                          address.get('country')?.invalid &&
+                          address.get('country')?.touched
+                          ) {
+                          <ion-note
+                            color="danger"
+                            >
+                            Country is required.
+                          </ion-note>
+                        }
+                      </ion-col>
+                      <ion-col size="6">
+                        <ion-input
+                          label="Postal Code"
+                          label-placement="floating"
+                          fill="outline"
+                          formControlName="zipcode"
+                          type="text"
+                          placeholder="Enter postal code"
+                        ></ion-input>
+                        @if (
+                          address.get('zipcode')?.invalid &&
+                          address.get('zipcode')?.touched
+                          ) {
+                          <ion-note
+                            color="danger"
+                            >
+                            Postal code is required and must be valid.
+                          </ion-note>
+                        }
+                      </ion-col>
+                    </ion-row>
+                    <ion-row>
+                      <ion-col>
+                        <ion-item lines="none">
+                          <ion-label>Primary Address</ion-label>
+                          <ion-checkbox
+                            formControlName="isPrimaryAddress"
+                          ></ion-checkbox>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="auto">
+                        <ion-button
+                          fill="clear"
+                          (click)="removeArrayItem('contactInformation.addresses', i)"
+                          >
+                          <ion-icon name="trash-outline"></ion-icon>
+                        </ion-button>
+                      </ion-col>
+                    </ion-row>
+                  </div>
+                }
+                <ion-button fill="clear" (click)="addAddress()">
+                  <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+                  Add Address
+                </ion-button>
+              </ion-col>
+            </ion-row>
+            <!-- Phone Numbers -->
+            <ion-row formArrayName="phoneNumbers">
+              <ion-col>
+                <ion-item-divider>
+                  <ion-label color="tertiary">Phone Numbers</ion-label>
+                </ion-item-divider>
+                @for (
+                  phone of getFormArray('contactInformation.phoneNumbers')
+                  .controls; track
+                  phone; let i = $index) {
+                  <div
+                    [formGroupName]="i"
                     >
-                  </ion-note>
-                </ion-col>
-                <ion-col size="2">
-                  <ion-button
-                    fill="clear"
-                    (click)="removeArrayItem('contactInformation.emails', i)"
-                  >
-                    <ion-icon name="trash-outline"></ion-icon>
-                  </ion-button>
-                </ion-col>
-              </ion-row>
-            </div>
-            <ion-button fill="clear" (click)="addEmail()">
-              <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-              Add Email
-            </ion-button>
-          </ion-col>
-        </ion-row>
-
-        <!-- Addresses -->
-        <ion-row formArrayName="addresses">
-          <ion-col>
-            <ion-item-divider>
-              <ion-label color="tertiary">Addresses</ion-label>
-            </ion-item-divider>
-            <div
-              *ngFor="
-                let address of getFormArray('contactInformation.addresses')
-                  .controls;
-                let i = index
-              "
-              [formGroupName]="i"
-            >
-              <ion-row>
-                <ion-col>
-                  <ion-input
-                    label="Building Name"
-                    label-placement="floating"
-                    fill="outline"
-                    formControlName="name"
-                    type="text"
-                    placeholder="Enter building name"
-                  ></ion-input>
-                </ion-col>
-              </ion-row>
-              <ion-row>
-                <ion-col>
-                  <ion-input
-                    label="Street Address"
-                    label-placement="floating"
-                    fill="outline"
-                    formControlName="street"
-                    type="text"
-                    placeholder="Enter street address"
-                  ></ion-input>
-                  <ion-note
-                    color="danger"
-                    *ngIf="
-                      address.get('street')?.invalid &&
-                      address.get('street')?.touched
-                    "
-                  >
-                    Street is required.
-                  </ion-note>
-                </ion-col>
-              </ion-row>
-              <ion-row>
-                <ion-col size="6">
-                  <ion-input
-                    label="City"
-                    label-placement="floating"
-                    fill="outline"
-                    formControlName="city"
-                    type="text"
-                    placeholder="Enter city"
-                  ></ion-input>
-                  <ion-note
-                    color="danger"
-                    *ngIf="
-                      address.get('city')?.invalid &&
-                      address.get('city')?.touched
-                    "
-                  >
-                    City is required.
-                  </ion-note>
-                </ion-col>
-                <ion-col size="6">
-                  <ion-input
-                    label="State"
-                    label-placement="floating"
-                    fill="outline"
-                    formControlName="state"
-                    type="text"
-                    placeholder="Enter state"
-                  ></ion-input>
-                  <ion-note
-                    color="danger"
-                    *ngIf="
-                      address.get('state')?.invalid &&
-                      address.get('state')?.touched
-                    "
-                  >
-                    State is required.
-                  </ion-note>
-                </ion-col>
-              </ion-row>
-              <ion-row>
-                <ion-col size="6">
-                  <ion-input
-                    label="Country"
-                    label-placement="floating"
-                    fill="outline"
-                    formControlName="country"
-                    type="text"
-                    placeholder="Enter country"
-                  ></ion-input>
-                  <ion-note
-                    color="danger"
-                    *ngIf="
-                      address.get('country')?.invalid &&
-                      address.get('country')?.touched
-                    "
-                  >
-                    Country is required.
-                  </ion-note>
-                </ion-col>
-                <ion-col size="6">
-                  <ion-input
-                    label="Postal Code"
-                    label-placement="floating"
-                    fill="outline"
-                    formControlName="zipcode"
-                    type="text"
-                    placeholder="Enter postal code"
-                  ></ion-input>
-                  <ion-note
-                    color="danger"
-                    *ngIf="
-                      address.get('zipcode')?.invalid &&
-                      address.get('zipcode')?.touched
-                    "
-                  >
-                    Postal code is required and must be valid.
-                  </ion-note>
-                </ion-col>
-              </ion-row>
-              <ion-row>
-                <ion-col>
-                  <ion-item lines="none">
-                    <ion-label>Primary Address</ion-label>
-                    <ion-checkbox
-                      formControlName="isPrimaryAddress"
-                    ></ion-checkbox>
-                  </ion-item>
-                </ion-col>
-                <ion-col size="auto">
-                  <ion-button
-                    fill="clear"
-                    (click)="removeArrayItem('contactInformation.addresses', i)"
-                  >
-                    <ion-icon name="trash-outline"></ion-icon>
-                  </ion-button>
-                </ion-col>
-              </ion-row>
-            </div>
-            <ion-button fill="clear" (click)="addAddress()">
-              <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-              Add Address
-            </ion-button>
-          </ion-col>
-        </ion-row>
-
-        <!-- Phone Numbers -->
-        <ion-row formArrayName="phoneNumbers">
-          <ion-col>
-            <ion-item-divider>
-              <ion-label color="tertiary">Phone Numbers</ion-label>
-            </ion-item-divider>
-            <div
-              *ngFor="
-                let phone of getFormArray('contactInformation.phoneNumbers')
-                  .controls;
-                let i = index
-              "
-              [formGroupName]="i"
-            >
-              <ion-row>
-                <ion-col size="2">
-                  <ion-select
-                    label="Type"
-                    label-placement="stacked"
-                    formControlName="type"
-                    fill="outline"
-                  >
-                    <ion-select-option value="Mobile">Mobile</ion-select-option>
-                    <ion-select-option value="Work">Work</ion-select-option>
-                    <ion-select-option value="Home">Home</ion-select-option>
-                  </ion-select>
-                </ion-col>
-                <ion-col size="8">
-                  <ion-input
-                    label="Phone Number"
-                    label-placement="floating"
-                    fill="outline"
-                    formControlName="number"
-                    type="tel"
-                    placeholder="+1 (555) 123-4567"
-                  ></ion-input>
-                  <ion-note
-                    color="danger"
-                    *ngIf="
-                      phone.get('number')?.invalid &&
-                      phone.get('number')?.touched
-                    "
-                  >
-                    Phone number is required.
-                  </ion-note>
-                </ion-col>
-                <ion-col size="2">
-                  <ion-button
-                    fill="clear"
+                    <ion-row>
+                      <ion-col size="2">
+                        <ion-select
+                          label="Type"
+                          label-placement="stacked"
+                          formControlName="type"
+                          fill="outline"
+                          >
+                          <ion-select-option value="Mobile">Mobile</ion-select-option>
+                          <ion-select-option value="Work">Work</ion-select-option>
+                          <ion-select-option value="Home">Home</ion-select-option>
+                        </ion-select>
+                      </ion-col>
+                      <ion-col size="8">
+                        <ion-input
+                          label="Phone Number"
+                          label-placement="floating"
+                          fill="outline"
+                          formControlName="number"
+                          type="tel"
+                          placeholder="+1 (555) 123-4567"
+                        ></ion-input>
+                        @if (
+                          phone.get('number')?.invalid &&
+                          phone.get('number')?.touched
+                          ) {
+                          <ion-note
+                            color="danger"
+                            >
+                            Phone number is required.
+                          </ion-note>
+                        }
+                      </ion-col>
+                      <ion-col size="2">
+                        <ion-button
+                          fill="clear"
                     (click)="
                       removeArrayItem('contactInformation.phoneNumbers', i)
                     "
-                  >
-                    <ion-icon name="trash-outline"></ion-icon>
-                  </ion-button>
-                </ion-col>
-              </ion-row>
-            </div>
-            <ion-button fill="clear" (click)="addPhoneNumber()">
-              <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-              Add Phone Number
-            </ion-button>
-          </ion-col>
-        </ion-row>
-      </ion-card-content>
-    </ion-card>
-  </ng-container>
+                          >
+                          <ion-icon name="trash-outline"></ion-icon>
+                        </ion-button>
+                      </ion-col>
+                    </ion-row>
+                  </div>
+                }
+                <ion-button fill="clear" (click)="addPhoneNumber()">
+                  <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+                  Add Phone Number
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-card-content>
+        </ion-card>
+      }
 
-  <!-- Navigation Buttons -->
-  <ion-row>
-    <ion-col>
-      <ion-button
-        expand="block"
-        *ngIf="currentStep > 1"
-        (click)="goToPreviousStep()"
-      >
-        Back
-      </ion-button>
-    </ion-col>
-    <ion-col>
-      <ion-button
-        expand="block"
-        *ngIf="currentStep < 2"
-        (click)="goToNextStep()"
-      >
-        Next
-      </ion-button>
-      <ion-button
-        expand="block"
-        color="primary"
-        *ngIf="currentStep === 2"
-        type="submit"
-      >
-        {{ listing?.id ? "Save Changes" : "Save as Draft" }}
-      </ion-button>
-    </ion-col>
-  </ion-row>
-</form>
+      <!-- Navigation Buttons -->
+      <ion-row>
+        <ion-col>
+          @if (currentStep > 1) {
+            <ion-button
+              expand="block"
+              (click)="goToPreviousStep()"
+              >
+              Back
+            </ion-button>
+          }
+        </ion-col>
+        <ion-col>
+          @if (currentStep < 2) {
+            <ion-button
+              expand="block"
+              (click)="goToNextStep()"
+              >
+              Next
+            </ion-button>
+          }
+          @if (currentStep === 2) {
+            <ion-button
+              expand="block"
+              color="primary"
+              type="submit"
+              >
+              {{ listing?.id ? "Save Changes" : "Save as Draft" }}
+            </ion-button>
+          }
+        </ion-col>
+      </ion-row>
+    </form>

@@ -57,6 +57,7 @@ describe("AdminDashboardPage", () => {
     const notificationServiceSpy = jasmine.createSpyObj("NotificationService", [
       "showMemberJoinRequestNotification",
       "showListingApplicationNotification",
+      "setCurrentUserId",
     ]);
 
     await TestBed.configureTestingModule({

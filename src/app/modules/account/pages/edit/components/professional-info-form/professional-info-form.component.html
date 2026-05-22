@@ -85,76 +85,79 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             fill="outline"
             interface="popover"
             multiple="true"
-          >
-            <ion-select-option
-              *ngFor="let skill of skillsOptions"
-              [value]="skill"
-              >{{ skill }}</ion-select-option
             >
-          </ion-select>
-        </ion-col>
-      </ion-row>
-      <!-- LinkedIn Profile -->
-      <ion-row>
-        <ion-col>
-          <ion-input
-            formControlName="linkedInProfile"
-            label="LinkedIn Profile"
-            label-placement="floating"
-            fill="outline"
-            placeholder="Enter your LinkedIn profile URL"
-          ></ion-input>
-        </ion-col>
-      </ion-row>
-      <!-- Educational Background -->
-      <ion-row>
-        <ion-col>
-          <ion-textarea
-            formControlName="educationalBackground"
-            label="Educational Background"
-            label-placement="floating"
-            fill="outline"
-            placeholder="Describe your educational background"
-            rows="6"
-            minlength="0"
-            maxlength="1000"
-            [counter]="true"
-          ></ion-textarea>
-        </ion-col>
-      </ion-row>
-      <!-- Resume Upload -->
-      <ion-row>
-        <ion-col>
-          <ion-item lines="none">
-            <ion-label>Upload Resume</ion-label>
-            <ion-button fill="outline" (click)="resumeInput.click()">
-              Choose File
+            @for (skill of skillsOptions; track skill) {
+              <ion-select-option
+                [value]="skill"
+                >{{ skill }}</ion-select-option
+                >
+              }
+            </ion-select>
+          </ion-col>
+        </ion-row>
+        <!-- LinkedIn Profile -->
+        <ion-row>
+          <ion-col>
+            <ion-input
+              formControlName="linkedInProfile"
+              label="LinkedIn Profile"
+              label-placement="floating"
+              fill="outline"
+              placeholder="Enter your LinkedIn profile URL"
+            ></ion-input>
+          </ion-col>
+        </ion-row>
+        <!-- Educational Background -->
+        <ion-row>
+          <ion-col>
+            <ion-textarea
+              formControlName="educationalBackground"
+              label="Educational Background"
+              label-placement="floating"
+              fill="outline"
+              placeholder="Describe your educational background"
+              rows="6"
+              minlength="0"
+              maxlength="1000"
+              [counter]="true"
+            ></ion-textarea>
+          </ion-col>
+        </ion-row>
+        <!-- Resume Upload -->
+        <ion-row>
+          <ion-col>
+            <ion-item lines="none">
+              <ion-label>Upload Resume</ion-label>
+              <ion-button fill="outline" (click)="resumeInput.click()">
+                Choose File
+              </ion-button>
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx"
+                (change)="onFileSelect($event)"
+                #resumeInput
+                hidden
+                />
+            </ion-item>
+            @if (resumeFileName) {
+              <ion-text>
+                Selected File: {{ resumeFileName }}
+              </ion-text>
+            }
+          </ion-col>
+        </ion-row>
+        <!-- Save Button -->
+        <ion-row>
+          <ion-col>
+            <ion-button
+              type="submit"
+              expand="float"
+              [disabled]="professionalInformationForm.invalid"
+              >
+              Save
             </ion-button>
-            <input
-              type="file"
-              accept=".pdf,.doc,.docx"
-              (change)="onFileSelect($event)"
-              #resumeInput
-              hidden
-            />
-          </ion-item>
-          <ion-text *ngIf="resumeFileName">
-            Selected File: {{ resumeFileName }}
-          </ion-text>
-        </ion-col>
-      </ion-row>
-      <!-- Save Button -->
-      <ion-row>
-        <ion-col>
-          <ion-button
-            type="submit"
-            expand="float"
-            [disabled]="professionalInformationForm.invalid"
-          >
-            Save
-          </ion-button>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-  </div>
-</form>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+  </form>

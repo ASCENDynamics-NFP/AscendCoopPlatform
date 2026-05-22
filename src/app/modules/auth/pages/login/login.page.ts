@@ -34,6 +34,7 @@ import * as AuthActions from "../../../../state/actions/auth.actions";
 import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
+  standalone: false,
   selector: "app-login",
   templateUrl: "./login.page.html",
   styleUrls: ["./login.page.scss"],

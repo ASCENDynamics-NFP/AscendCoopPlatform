@@ -23,50 +23,55 @@ import {ModalController} from "@ionic/angular";
 import {EncryptionSettingsComponent} from "../encryption-settings/encryption-settings.component";
 
 @Component({
+  standalone: false,
   selector: "app-encryption-toggle",
   template: `
     <div class="encryption-controls">
       <!-- Encryption Status Indicator -->
-      <div class="encryption-status" *ngIf="encryptionEnabled">
-        <ion-icon
-          [name]="encryptionActive ? 'lock-closed' : 'lock-open'"
-          [color]="encryptionActive ? 'success' : 'warning'"
-          class="encryption-icon"
-        >
-        </ion-icon>
-        <span class="encryption-text">
-          {{ encryptionActive ? "Encrypted" : "Not Encrypted" }}
-        </span>
-      </div>
+      @if (encryptionEnabled) {
+        <div class="encryption-status">
+          <ion-icon
+            [name]="encryptionActive ? 'lock-closed' : 'lock-open'"
+            [color]="encryptionActive ? 'success' : 'warning'"
+            class="encryption-icon"
+          >
+          </ion-icon>
+          <span class="encryption-text">
+            {{ encryptionActive ? "Encrypted" : "Not Encrypted" }}
+          </span>
+        </div>
+      }
 
       <!-- Encryption Toggle Button -->
-      <ion-button
-        *ngIf="encryptionEnabled"
-        fill="clear"
-        size="small"
-        (click)="toggleEncryption()"
-        [color]="encryptionActive ? 'success' : 'medium'"
-        class="encryption-toggle-btn"
-      >
-        <ion-icon
-          [name]="encryptionActive ? 'lock-closed' : 'lock-open'"
-          slot="icon-only"
+      @if (encryptionEnabled) {
+        <ion-button
+          fill="clear"
+          size="small"
+          (click)="toggleEncryption()"
+          [color]="encryptionActive ? 'success' : 'medium'"
+          class="encryption-toggle-btn"
         >
-        </ion-icon>
-      </ion-button>
+          <ion-icon
+            [name]="encryptionActive ? 'lock-closed' : 'lock-open'"
+            slot="icon-only"
+          >
+          </ion-icon>
+        </ion-button>
+      }
 
       <!-- Setup Encryption Button (if not enabled) -->
-      <ion-button
-        *ngIf="!encryptionEnabled"
-        fill="outline"
-        size="small"
-        (click)="openEncryptionSettings()"
-        color="primary"
-        class="enable-encryption-btn"
-      >
-        <ion-icon name="settings-outline" slot="start"></ion-icon>
-        Setup Encryption
-      </ion-button>
+      @if (!encryptionEnabled) {
+        <ion-button
+          fill="outline"
+          size="small"
+          (click)="openEncryptionSettings()"
+          color="primary"
+          class="enable-encryption-btn"
+        >
+          <ion-icon name="settings-outline" slot="start"></ion-icon>
+          Setup Encryption
+        </ion-button>
+      }
     </div>
   `,
   styles: [

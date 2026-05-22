@@ -93,6 +93,7 @@ function getWeekStartDate(date: Date = new Date()): Date {
 }
 
 @Component({
+  standalone: false,
   selector: "app-approvals",
   templateUrl: "./approvals.page.html",
   styleUrls: ["./approvals.page.scss"],
@@ -196,7 +197,7 @@ export class ApprovalsPage implements OnInit, OnDestroy {
   private refreshSubscription: Subscription | null = null;
 
   constructor(
-    private store: Store<AppState>,
+    private store: Store,
     private route: ActivatedRoute,
     private alertController: AlertController,
     private toastController: ToastController,

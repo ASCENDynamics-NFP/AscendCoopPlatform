@@ -70,13 +70,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             interface="popover"
             multiple="true"
             [placeholder]="'common.select_advocacy_areas' | translate"
-          >
-            <ion-select-option
-              *ngFor="let area of advocacyAreasOptions"
-              [value]="area"
             >
-              {{ area }}
-            </ion-select-option>
+            @for (area of advocacyAreasOptions; track area) {
+              <ion-select-option
+                [value]="area"
+                >
+                {{ area }}
+              </ion-select-option>
+            }
           </ion-select>
         </ion-col>
       </ion-row>
@@ -91,13 +92,14 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             fill="outline"
             interface="popover"
             [placeholder]="'common.select_experience_level' | translate"
-          >
-            <ion-select-option
-              *ngFor="let experience of laborRightsExperienceOptions"
-              [value]="experience"
             >
-              {{ experience }}
-            </ion-select-option>
+            @for (experience of laborRightsExperienceOptions; track experience) {
+              <ion-select-option
+                [value]="experience"
+                >
+                {{ experience }}
+              </ion-select-option>
+            }
           </ion-select>
         </ion-col>
       </ion-row>
@@ -109,7 +111,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             type="submit"
             expand="float"
             [disabled]="laborRightsInfoForm.invalid"
-          >
+            >
             Save
           </ion-button>
         </ion-col>

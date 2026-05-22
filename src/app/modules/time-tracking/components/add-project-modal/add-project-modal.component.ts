@@ -9,6 +9,7 @@ import * as ProjectsActions from "../../../../state/actions/projects.actions";
 import {selectActiveProjectsByAccount} from "../../../../state/selectors/projects.selectors";
 
 @Component({
+  standalone: false,
   selector: "app-add-project-modal",
   template: `
     <ion-header class="ion-no-border">
@@ -40,12 +41,11 @@ import {selectActiveProjectsByAccount} from "../../../../state/selectors/project
                 interface="popover"
                 class="custom-select"
               >
-                <ion-select-option
-                  *ngFor="let account of relatedAccounts"
-                  [value]="account.id"
-                >
-                  {{ account.name }}
-                </ion-select-option>
+                @for (account of relatedAccounts; track account) {
+                  <ion-select-option [value]="account.id">
+                    {{ account.name }}
+                  </ion-select-option>
+                }
               </ion-select>
               <ion-icon
                 name="chevron-down-outline"
@@ -66,24 +66,22 @@ import {selectActiveProjectsByAccount} from "../../../../state/selectors/project
                 interface="popover"
                 class="custom-select"
               >
-                <ion-select-option
-                  *ngFor="let project of projects$ | async"
-                  [value]="project.id"
-                >
-                  {{ project.name }}
-                </ion-select-option>
+                @for (project of projects$ | async; track project) {
+                  <ion-select-option [value]="project.id">
+                    {{ project.name }}
+                  </ion-select-option>
+                }
               </ion-select>
               <ion-icon
                 name="chevron-down-outline"
                 class="select-icon"
               ></ion-icon>
             </div>
-            <div
-              *ngIf="selectedAccountId && (projects$ | async)?.length === 0"
-              class="helper-text error"
-            >
-              No active projects found for this group.
-            </div>
+            @if (selectedAccountId && (projects$ | async)?.length === 0) {
+              <div class="helper-text error">
+                No active projects found for this group.
+              </div>
+            }
           </div>
         </div>
 

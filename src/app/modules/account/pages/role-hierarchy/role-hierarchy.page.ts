@@ -34,6 +34,7 @@ interface TreeNode {
 }
 
 @Component({
+  standalone: false,
   selector: "app-role-hierarchy",
   templateUrl: "./role-hierarchy.page.html",
   styleUrls: ["./role-hierarchy.page.scss"],

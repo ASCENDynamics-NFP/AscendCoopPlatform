@@ -6,6 +6,7 @@ import {Component, Input} from "@angular/core";
 import {PrivacyService} from "../../../../../../core/services/privacy.service";
 
 @Component({
+  standalone: false,
   selector: "app-labor-rights-info",
   templateUrl: "./labor-rights-info.component.html",
   styleUrls: ["./labor-rights-info.component.scss"],

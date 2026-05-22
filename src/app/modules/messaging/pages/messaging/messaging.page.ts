@@ -44,6 +44,7 @@ import {selectAccountById} from "../../../../state/selectors/account.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 
 @Component({
+  standalone: false,
   selector: "app-messaging",
   templateUrl: "./messaging.page.html",
   styleUrls: ["./messaging.page.scss"],
@@ -66,7 +67,7 @@ export class MessagingPage implements OnInit, OnDestroy {
     private platform: Platform,
     private chatService: ChatService,
     private notificationService: NotificationService,
-    private store: Store<{auth: AuthState}>,
+    private store: Store,
     private actionSheetController: ActionSheetController,
     private cdr: ChangeDetectorRef,
   ) {

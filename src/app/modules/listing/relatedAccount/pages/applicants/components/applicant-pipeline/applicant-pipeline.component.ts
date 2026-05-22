@@ -38,6 +38,7 @@ export interface PipelineColumn {
 }
 
 @Component({
+  standalone: false,
   selector: "app-applicant-pipeline",
   templateUrl: "./applicant-pipeline.component.html",
   styleUrls: ["./applicant-pipeline.component.scss"],

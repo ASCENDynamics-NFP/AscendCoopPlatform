@@ -36,15 +36,16 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             maxlength="255"
             placeholder="Enter Name"
           ></ion-input>
-          <ion-note
-            *ngIf="
-              basicInfoForm.get('name')?.invalid &&
-              basicInfoForm.get('name')?.touched
-            "
-            color="danger"
-          >
-            {{ "messaging.field_required" | translate }}
-          </ion-note>
+          @if (
+            basicInfoForm.get('name')?.invalid &&
+            basicInfoForm.get('name')?.touched
+            ) {
+            <ion-note
+              color="danger"
+              >
+              {{ "messaging.field_required" | translate }}
+            </ion-note>
+          }
         </ion-col>
       </ion-row>
       <ion-row>
@@ -59,15 +60,16 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             fill="outline"
             placeholder="Enter Tagline"
           ></ion-input>
-          <ion-note
-            *ngIf="
-              basicInfoForm.get('tagline')?.invalid &&
-              basicInfoForm.get('tagline')?.touched
-            "
-            color="danger"
-          >
-            {{ "messaging.field_required" | translate }}
-          </ion-note>
+          @if (
+            basicInfoForm.get('tagline')?.invalid &&
+            basicInfoForm.get('tagline')?.touched
+            ) {
+            <ion-note
+              color="danger"
+              >
+              {{ "messaging.field_required" | translate }}
+            </ion-note>
+          }
         </ion-col>
       </ion-row>
       <ion-row>
@@ -93,98 +95,100 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       }}</ion-label>
     </ion-item-divider>
     <div formArrayName="webLinks">
-      <ion-grid
-        *ngFor="let linkControl of webLinksFormArray.controls; let i = index"
-        [formGroupName]="i"
-      >
+      @for (linkControl of webLinksFormArray.controls; track linkControl; let i = $index) {
+        <ion-grid
+          [formGroupName]="i"
+          >
+          <ion-row>
+            <ion-col>
+              <!-- <ion-label position="stacked">Category</ion-label> -->
+              <ion-select
+                label="Category"
+                label-placement="stacked"
+                fill="outline"
+                formControlName="category"
+                interface="popover"
+                [placeholder]="'common.select_one' | translate"
+                >
+                <ion-select-option value="Social Media"
+                  >Social Media</ion-select-option
+                  >
+                  <ion-select-option value="Donation">Donation</ion-select-option>
+                  <ion-select-option value="Hobbies">Hobbies</ion-select-option>
+                  <ion-select-option value="Publications"
+                    >Publications</ion-select-option
+                    >
+                    <ion-select-option value="Portfolio">Portfolio</ion-select-option>
+                    <ion-select-option value="Website">Website</ion-select-option>
+                    <ion-select-option value="External Resources"
+                      >External Resources</ion-select-option
+                      >
+                      <ion-select-option value="Other">Other</ion-select-option>
+                    </ion-select>
+                  </ion-col>
+                  <ion-col>
+                    <!-- <ion-label position="stacked" minlength="0" maxlength="50">Name</ion-label> -->
+                    <ion-input
+                      label="Name"
+                      label-placement="floating"
+                      fill="outline"
+                      formControlName="name"
+                      type="text"
+                    ></ion-input>
+                  </ion-col>
+                  <ion-col>
+                    <!-- <ion-label position="stacked">URL</ion-label> -->
+                    <ion-input
+                      label="URL"
+                      label-placement="floating"
+                      fill="outline"
+                      formControlName="url"
+                      type="text"
+                      minlength="0"
+                      maxlength="100"
+                    ></ion-input>
+                    @if (
+                      linkControl.get('url')?.invalid &&
+                      linkControl.get('url')?.touched
+                      ) {
+                      <ion-note
+                        >
+                        {{ "messaging.valid_url_required" | translate }}
+                      </ion-note>
+                    }
+                  </ion-col>
+                  <ion-col size="1">
+                    <ion-button fill="clear" (click)="removeWebLink(i)">
+                      <ion-icon
+                        slot="icon-only"
+                        name="trash-outline"
+                        class="remove-icon"
+                      ></ion-icon>
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            }
+            <ion-button
+              fill="clear"
+              (click)="addWebLink()"
+              [disabled]="webLinksFormArray.controls.length >= maxLinks"
+              >
+              <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+              {{ "common.add_link" | translate }}
+            </ion-button>
+          </div>
+        </div>
         <ion-row>
           <ion-col>
-            <!-- <ion-label position="stacked">Category</ion-label> -->
-            <ion-select
-              label="Category"
-              label-placement="stacked"
-              fill="outline"
-              formControlName="category"
-              interface="popover"
-              [placeholder]="'common.select_one' | translate"
-            >
-              <ion-select-option value="Social Media"
-                >Social Media</ion-select-option
+            <ion-button
+              class="custom-ion-button"
+              type="submit"
+              expand="float"
+              [disabled]="basicInfoForm.invalid"
               >
-              <ion-select-option value="Donation">Donation</ion-select-option>
-              <ion-select-option value="Hobbies">Hobbies</ion-select-option>
-              <ion-select-option value="Publications"
-                >Publications</ion-select-option
-              >
-              <ion-select-option value="Portfolio">Portfolio</ion-select-option>
-              <ion-select-option value="Website">Website</ion-select-option>
-              <ion-select-option value="External Resources"
-                >External Resources</ion-select-option
-              >
-              <ion-select-option value="Other">Other</ion-select-option>
-            </ion-select>
-          </ion-col>
-          <ion-col>
-            <!-- <ion-label position="stacked" minlength="0" maxlength="50">Name</ion-label> -->
-            <ion-input
-              label="Name"
-              label-placement="floating"
-              fill="outline"
-              formControlName="name"
-              type="text"
-            ></ion-input>
-          </ion-col>
-          <ion-col>
-            <!-- <ion-label position="stacked">URL</ion-label> -->
-            <ion-input
-              label="URL"
-              label-placement="floating"
-              fill="outline"
-              formControlName="url"
-              type="text"
-              minlength="0"
-              maxlength="100"
-            ></ion-input>
-            <ion-note
-              *ngIf="
-                linkControl.get('url')?.invalid &&
-                linkControl.get('url')?.touched
-              "
-            >
-              {{ "messaging.valid_url_required" | translate }}
-            </ion-note>
-          </ion-col>
-          <ion-col size="1">
-            <ion-button fill="clear" (click)="removeWebLink(i)">
-              <ion-icon
-                slot="icon-only"
-                name="trash-outline"
-                class="remove-icon"
-              ></ion-icon>
+              Save
             </ion-button>
           </ion-col>
         </ion-row>
-      </ion-grid>
-      <ion-button
-        fill="clear"
-        (click)="addWebLink()"
-        [disabled]="webLinksFormArray.controls.length >= maxLinks"
-      >
-        <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-        {{ "common.add_link" | translate }}
-      </ion-button>
-    </div>
-  </div>
-  <ion-row>
-    <ion-col>
-      <ion-button
-        class="custom-ion-button"
-        type="submit"
-        expand="float"
-        [disabled]="basicInfoForm.invalid"
-      >
-        Save
-      </ion-button>
-    </ion-col>
-  </ion-row>
-</form>
+      </form>

@@ -32,6 +32,7 @@ import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 
 @Component({
+  standalone: false,
   selector: "app-chat-list",
   templateUrl: "./chat-list.page.html",
   styleUrls: ["./chat-list.page.scss"],
@@ -50,7 +51,7 @@ export class ChatListPage implements OnInit, OnDestroy {
     private chatService: ChatService,
     private notificationService: NotificationService,
     private router: Router,
-    private store: Store<{auth: AuthState}>,
+    private store: Store,
     private encryptedChatService: EncryptedChatService,
   ) {
     this.chats$ = this.chatService.getUserChats();

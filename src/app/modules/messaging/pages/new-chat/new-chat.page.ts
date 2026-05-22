@@ -55,6 +55,7 @@ interface Contact {
 }
 
 @Component({
+  standalone: false,
   selector: "app-new-chat",
   templateUrl: "./new-chat.page.html",
   styleUrls: ["./new-chat.page.scss"],
@@ -73,7 +74,7 @@ export class NewChatPage implements OnInit, OnDestroy {
     private chatService: ChatService,
     private relationshipService: RelationshipService,
     private toastController: ToastController,
-    private store: Store<{auth: AuthState}>,
+    private store: Store,
     private cdr: ChangeDetectorRef,
   ) {}
 

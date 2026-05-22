@@ -23,6 +23,7 @@ import {Component, OnInit} from "@angular/core";
 import {MetaService} from "../../../../core/services/meta.service";
 
 @Component({
+  standalone: false,
   selector: "app-think-tank",
   templateUrl: "./think-tank.page.html",
   styleUrls: ["./think-tank.page.scss"],

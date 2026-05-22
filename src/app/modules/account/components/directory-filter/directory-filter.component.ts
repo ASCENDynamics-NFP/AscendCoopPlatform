@@ -36,6 +36,7 @@ export interface DirectoryFilterValues {
 }
 
 @Component({
+  standalone: false,
   selector: "app-directory-filter",
   templateUrl: "./directory-filter.component.html",
   styleUrls: ["./directory-filter.component.scss"],

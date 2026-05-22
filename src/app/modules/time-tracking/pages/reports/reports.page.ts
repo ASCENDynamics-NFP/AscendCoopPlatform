@@ -236,6 +236,7 @@ function calculateDateRange(preset: DateRangePreset): DateRange | null {
 }
 
 @Component({
+  standalone: false,
   selector: "app-reports",
   templateUrl: "./reports.page.html",
   styleUrls: ["./reports.page.scss"],

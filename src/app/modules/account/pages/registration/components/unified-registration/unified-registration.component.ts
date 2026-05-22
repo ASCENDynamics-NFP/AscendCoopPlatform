@@ -46,6 +46,7 @@ import {take} from "rxjs/operators";
 import {ToastController} from "@ionic/angular";
 
 @Component({
+  standalone: false,
   selector: "app-unified-registration",
   templateUrl: "./unified-registration.component.html",
   styleUrls: ["./unified-registration.component.scss"],

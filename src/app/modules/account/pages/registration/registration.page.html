@@ -1,4 +1,4 @@
-<!-- 
+<!--
 Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
 Copyright (C) 2023  ASCENDynamics NFP
 
@@ -35,7 +35,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         class="step"
         [class.active]="selectedType !== ''"
         [class.completed]="false"
-      >
+        >
         <div class="step-number">2</div>
         <div class="step-label">Complete Profile</div>
       </div>
@@ -44,33 +44,39 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
   <div class="registration-container">
     <!-- Welcome Section -->
-    <div class="welcome-section" *ngIf="selectedType === ''">
-      <div class="welcome-content">
-        <ion-icon name="sparkles" class="welcome-icon"></ion-icon>
-        <h1>Welcome to ASCENDynamics NFP!</h1>
-        <p class="welcome-description">
-          Join our community of changemakers. Choose how you'd like to
-          participate:
-        </p>
+    @if (selectedType === '') {
+      <div class="welcome-section">
+        <div class="welcome-content">
+          <ion-icon name="sparkles" class="welcome-icon"></ion-icon>
+          <h1>Welcome to ASCENDynamics NFP!</h1>
+          <p class="welcome-description">
+            Join our community of changemakers. Choose how you'd like to
+            participate:
+          </p>
+        </div>
       </div>
-    </div>
+    }
 
     <!-- Account Type Selection -->
     <div class="type-selection" [class.compact]="selectedType !== ''">
-      <h2 *ngIf="selectedType === ''" class="section-title">
-        Choose Your Account Type
-      </h2>
-      <h3 *ngIf="selectedType !== ''" class="section-title-small">
-        Creating {{ selectedType === 'user' ? 'User' : 'Organization' }} Account
-        <ion-button
-          fill="clear"
-          size="small"
-          (click)="resetSelection()"
-          class="change-type-btn"
-        >
-          <ion-icon name="pencil" slot="icon-only"></ion-icon>
-        </ion-button>
-      </h3>
+      @if (selectedType === '') {
+        <h2 class="section-title">
+          Choose Your Account Type
+        </h2>
+      }
+      @if (selectedType !== '') {
+        <h3 class="section-title-small">
+          Creating {{ selectedType === 'user' ? 'User' : 'Organization' }} Account
+          <ion-button
+            fill="clear"
+            size="small"
+            (click)="resetSelection()"
+            class="change-type-btn"
+            >
+            <ion-icon name="pencil" slot="icon-only"></ion-icon>
+          </ion-button>
+        </h3>
+      }
 
       <ion-grid class="type-grid">
         <ion-row>
@@ -80,7 +86,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               [class.selected]="selectedType === 'user'"
               [class.compact]="selectedType !== '' && selectedType !== 'user'"
               (click)="selectType('user')"
-            >
+              >
               <div class="card-content">
                 <div class="card-icon">
                   <ion-icon name="person"></ion-icon>
@@ -88,18 +94,21 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 <div class="card-info">
                   <h3>Individual User</h3>
                   <p>For volunteers, advocates, and changemakers</p>
-                  <ul
-                    class="feature-list"
-                    *ngIf="selectedType === '' || selectedType === 'user'"
-                  >
-                    <li>Connect with organizations</li>
-                    <li>Find volunteer opportunities</li>
-                    <li>Track your impact</li>
-                  </ul>
+                  @if (selectedType === '' || selectedType === 'user') {
+                    <ul
+                      class="feature-list"
+                      >
+                      <li>Connect with organizations</li>
+                      <li>Find volunteer opportunities</li>
+                      <li>Track your impact</li>
+                    </ul>
+                  }
                 </div>
-                <div class="card-action" *ngIf="selectedType === 'user'">
-                  <ion-icon name="checkmark-circle" color="success"></ion-icon>
-                </div>
+                @if (selectedType === 'user') {
+                  <div class="card-action">
+                    <ion-icon name="checkmark-circle" color="success"></ion-icon>
+                  </div>
+                }
               </div>
             </div>
           </ion-col>
@@ -110,7 +119,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               [class.selected]="selectedType === 'group'"
               [class.compact]="selectedType !== '' && selectedType !== 'group'"
               (click)="selectType('group')"
-            >
+              >
               <div class="card-content">
                 <div class="card-icon">
                   <ion-icon name="business"></ion-icon>
@@ -118,18 +127,21 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 <div class="card-info">
                   <h3>Organization</h3>
                   <p>For nonprofits, community groups, and initiatives</p>
-                  <ul
-                    class="feature-list"
-                    *ngIf="selectedType === '' || selectedType === 'group'"
-                  >
-                    <li>Recruit volunteers</li>
-                    <li>Manage projects</li>
-                    <li>Build community</li>
-                  </ul>
+                  @if (selectedType === '' || selectedType === 'group') {
+                    <ul
+                      class="feature-list"
+                      >
+                      <li>Recruit volunteers</li>
+                      <li>Manage projects</li>
+                      <li>Build community</li>
+                    </ul>
+                  }
                 </div>
-                <div class="card-action" *ngIf="selectedType === 'group'">
-                  <ion-icon name="checkmark-circle" color="success"></ion-icon>
-                </div>
+                @if (selectedType === 'group') {
+                  <div class="card-action">
+                    <ion-icon name="checkmark-circle" color="success"></ion-icon>
+                  </div>
+                }
               </div>
             </div>
           </ion-col>
@@ -138,22 +150,23 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     </div>
 
     <!-- Registration Form -->
-    <div class="form-section" *ngIf="selectedType">
-      <div class="form-header">
-        <h2>
-          Complete Your {{ selectedType === 'user' ? 'Profile' : 'Organization
-          Profile' }}
-        </h2>
-        <p>Tell us about yourself to get started</p>
+    @if (selectedType) {
+      <div class="form-section">
+        <div class="form-header">
+          <h2>
+            Complete Your {{ selectedType === 'user' ? 'Profile' : 'Organization
+            Profile' }}
+          </h2>
+          <p>Tell us about yourself to get started</p>
+        </div>
+        <app-unified-registration
+          [account]="(account$ | async) || undefined"
+          [accountType]="selectedType"
+          [redirectSubmit]="true"
+          class="registration-form"
+          >
+        </app-unified-registration>
       </div>
-
-      <app-unified-registration
-        [account]="(account$ | async) || undefined"
-        [accountType]="selectedType"
-        [redirectSubmit]="true"
-        class="registration-form"
-      >
-      </app-unified-registration>
-    </div>
+    }
   </div>
 </ion-content>

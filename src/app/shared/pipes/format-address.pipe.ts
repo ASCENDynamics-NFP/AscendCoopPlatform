@@ -2,6 +2,7 @@ import {Pipe, PipeTransform} from "@angular/core";
 import {Address} from "@shared/models/account.model";
 
 @Pipe({
+  standalone: false,
   name: "formatAddress",
 })
 export class FormatAddressPipe implements PipeTransform {

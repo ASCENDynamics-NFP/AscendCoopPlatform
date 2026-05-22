@@ -89,7 +89,7 @@ export const notifyAdminsOnMemberRequest = onDocumentCreated(
             );
             return;
           }
-        } catch (error) {
+        } catch {
           logger.warn(
             "Error parsing notification preferences, proceeding with notification",
           );

@@ -8,7 +8,7 @@ describe("NotificationService Input Validation", () => {
       // We're testing that the method exists and is callable
       try {
         await NotificationService.sendNotification({} as any);
-      } catch (error) {
+      } catch {
         // Expected to fail in real environment, passes in mock
       }
       // Test passes if no unexpected errors occur

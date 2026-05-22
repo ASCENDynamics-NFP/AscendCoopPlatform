@@ -175,7 +175,7 @@ export class TimeTrackingService {
               requireAdmin: true,
             },
           );
-        } catch (permissionError) {
+        } catch {
           throw new HttpsError(
             "permission-denied",
             "Cannot update this time entry",

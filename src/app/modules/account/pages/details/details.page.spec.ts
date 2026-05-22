@@ -110,6 +110,11 @@ describe("DetailsPage", () => {
             paramMap: of({
               get: () => mockAccountId,
             }),
+            snapshot: {
+              paramMap: {
+                get: (_key: string) => mockAccountId,
+              },
+            },
           },
         },
         {provide: Router, useValue: routerSpy},

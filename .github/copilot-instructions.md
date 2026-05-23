@@ -386,6 +386,59 @@ npm run format
 - **Colors**: Prefer Ionic CSS custom properties (`--ion-color-primary`, etc.).
 - **Responsive**: Ionic grid (`ion-grid`, `ion-row`, `ion-col`) plus CSS media queries. Dark mode via Ionic's `prefers-color-scheme` integration.
 
+## Styling & Design System
+
+The app uses a token-driven design system so that every page picks up consistent surfaces, spacing, radius, shadows, and dark/light theming "for free". **Prefer the tokens and global classes over per-component SCSS.** The live reference page is `src/app/modules/info/pages/theme-showcase/` — run the app and open `/info/theme-showcase` to see every primitive rendered in both themes.
+
+### Design tokens — `src/theme/variables.scss`
+
+Custom properties are prefixed `--app-*` to avoid colliding with Ionic's `--ion-*` namespace. Light defaults live in `:root`. Dark overrides are duplicated in two places intentionally:
+
+- `.dark { ... }` — applied via the manual `<body class="dark">` toggle.
+- `@media (prefers-color-scheme: dark) :root { ... }` — applied when the OS is in dark mode without the toggle.
+
+Token groups:
+
+| Group       | Tokens                                                                 |
+| ----------- | ---------------------------------------------------------------------- |
+| Surfaces    | `--app-surface`, `--app-surface-elevated`, `--app-surface-sunken`, `--app-surface-rgb` |
+| Borders     | `--app-border-color`, `--app-border-color-strong`, `--app-divider-color` |
+| Shadows     | `--app-shadow-sm`, `--app-shadow-md`, `--app-shadow-lg`                |
+| Radii       | `--app-radius-sm` (6px), `--app-radius-md` (12px), `--app-radius-lg` (16px), `--app-radius-pill` |
+| Spacing     | `--app-spacing-xs` (4), `--app-spacing-sm` (8), `--app-spacing-md` (16), `--app-spacing-lg` (24), `--app-spacing-xl` (32) |
+| Text/Motion | `--app-text-muted`, `--app-text-shadow-etched`, `--app-transition-base`, `--app-transition-slow` |
+
+When you need a new token (e.g. a new surface level), **extend the token set in `variables.scss`** in all three locations (`:root`, `.dark`, and the `@media` mirror). Don't invent one-off CSS custom properties scoped to a single component.
+
+### Global primitives — `src/global.scss`
+
+Reusable classes consume the tokens and are available app-wide:
+
+| Class                       | Purpose                                                 |
+| --------------------------- | ------------------------------------------------------- |
+| `.app-section`              | Page section wrapper (padding + bottom margin)          |
+| `.app-section-header`       | Flex row with leading icon + `<h2>`, primary underline  |
+| `.button-group`             | Flex-wrap row of buttons                                |
+| `.chip-group`               | Flex-wrap row of chips                                  |
+| `.badge-group`              | Flex-wrap row of badges                                 |
+| `.spinner-group` / `.spinner-item` | Spinner grid + labeled cell                      |
+| `.color-swatch` + `.swatch-{primary\|secondary\|tertiary\|success\|warning\|danger\|medium\|dark\|light}` | Color palette tile using `--ion-color-*-contrast` tokens |
+| `.app-native-form`          | Wrapper for plain HTML form elements (`<input>`, `<select>`, `<textarea>`, `<fieldset>`) — tokens-driven, theme-aware |
+| `.app-field-row`            | Flex row for side-by-side fields inside `.app-native-form` |
+| `.app-native-button`        | Token-styled `<button>` variant (use with `type="button"`) |
+| `.text-muted`               | Small muted helper paragraph                            |
+
+Global element styling also lives in `global.scss`: `ion-card` gets `border-radius: var(--app-radius-md)`, `box-shadow: var(--app-shadow-md)`, a token-driven border, and a hover lift on `ion-card[button]`. `ion-item` uses `--app-divider-color`. New pages should rely on these defaults instead of redeclaring card/item styling locally.
+
+### Rules for new pages
+
+- Build layouts from `.app-section` + `.app-section-header` + `<ion-card>`.
+- Use `--app-spacing-*` instead of hard-coded pixel margins/paddings.
+- Use `--app-radius-*` and `--app-shadow-*` instead of arbitrary literals.
+- Use `--app-text-muted` instead of `var(--ion-color-medium)` for secondary text.
+- Component SCSS files should stay minimal — layout-only adjustments that can't be expressed via globals or tokens. The showcase page's `.scss` is intentionally empty as the model to follow.
+- When the toggle/OS sets dark mode, the tokens flip automatically — do not write manual dark overrides unless the global token system genuinely doesn't cover the case. If you must, use `html.dark .my-class { ... }` (Ionic 8 puts `md`/`ios`/`dark` classes on `<html>`, not `<body>`). Never use `:root.dark` or `body.dark` as the sole selector.
+
 ## Common Pitfalls
 
 1. **Don't introduce standalone components, Signal Store, or replace IonicModule** as a side-effect — these are large cross-cutting changes for this codebase. Match the surrounding style. Components currently carry explicit `standalone: false` because Angular 19+ flipped the default; keep that flag when adding components to an existing feature module.
@@ -399,6 +452,7 @@ npm run format
 9. **Don't bump Angular / NgRx / Ionic / Capacitor majors silently** — these are coordinated upgrades.
 10. **Don't change Prettier or ESLint config** to make a file pass — fix the file.
 11. **In tests, don't mutate inputs or state and call `detectChanges()` alone** — with `enableProdMode()` active you must use `componentRef.setInput()` or `markForCheck()` first (see Testing section).
+12. **Don't hard-code spacing, radius, or shadow values** in component SCSS — use the `--app-*` tokens from `src/theme/variables.scss`. If a value isn't covered, extend the token set rather than inventing a one-off. See the **Styling & Design System** section.
 
 ## Future Direction / Migration Targets
 

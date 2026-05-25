@@ -86,44 +86,339 @@ h6 {
   color: var(--ion-text-color);
 }
 
-// Ensure consistent theming for common elements
+// ============================================================
+// App Design System \u2014 Global Component Styling
+// ------------------------------------------------------------
+// Drives the look of every page via the `--app-*` design tokens
+// defined in `src/theme/variables.scss`. The live reference is the
+// theme showcase at `/info/theme-showcase`.
+// ============================================================
+
 ion-content {
   --background: var(--ion-background-color);
   --color: var(--ion-text-color);
 }
 
 ion-card {
-  --background: var(--ion-card-background, var(--ion-background-color));
+  --background: var(--app-surface);
   --color: var(--ion-text-color);
+  border-radius: var(--app-radius-md);
+  box-shadow: var(--app-shadow-md);
+  border: 1px solid var(--app-border-color);
+  transition:
+    background var(--app-transition-base),
+    box-shadow var(--app-transition-base),
+    border-color var(--app-transition-base);
+}
+
+ion-card[button]:hover {
+  box-shadow: var(--app-shadow-lg);
 }
 
 ion-item {
-  --background: var(--ion-item-background, transparent);
+  --background: transparent;
   --color: var(--ion-text-color);
+  --border-color: var(--app-divider-color);
 }
 
-ion-input {
-  --color: var(--ion-text-color);
-}
-
-ion-textarea {
-  --color: var(--ion-text-color);
-}
-
+ion-input,
+ion-textarea,
 ion-select {
   --color: var(--ion-text-color);
 }
 
-// Dark mode specific improvements
-.dark {
-  ion-card {
-    --background: var(--ion-color-step-100);
+// Native form controls — pick up the same surfaces, borders, radius and
+// text colors as Ionic components so plain <form>/<input>/<select>/<textarea>
+// look native to the design system in both light and dark themes.
+.app-native-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-spacing-md);
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: var(--app-spacing-xs);
+    font-size: 0.9rem;
+    color: var(--app-text-muted);
   }
 
-  ion-item {
-    --background: transparent;
-    --border-color: var(--ion-color-step-150);
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  input[type="url"],
+  input[type="tel"],
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  input[type="color"],
+  input[type="file"],
+  select,
+  textarea {
+    width: 100%;
+    padding: var(--app-spacing-sm) var(--app-spacing-md);
+    background: var(--app-surface);
+    color: var(--ion-text-color);
+    border: 1px solid var(--app-border-color);
+    border-radius: var(--app-radius-sm);
+    font: inherit;
+    transition:
+      border-color var(--app-transition-base),
+      box-shadow var(--app-transition-base),
+      background var(--app-transition-base);
+
+    &:hover {
+      border-color: var(--app-border-color-strong);
+    }
+
+    &:focus,
+    &:focus-visible {
+      outline: none;
+      border-color: var(--ion-color-primary);
+      box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.25);
+    }
+
+    &:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
   }
+
+  input[type="color"] {
+    padding: 2px;
+    height: 40px;
+    cursor: pointer;
+  }
+
+  textarea {
+    min-height: 96px;
+    resize: vertical;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: var(--ion-color-primary);
+    width: 1rem;
+    height: 1rem;
+    margin-right: var(--app-spacing-xs);
+  }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--ion-color-primary);
+  }
+
+  .app-field-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--app-spacing-sm);
+  }
+
+  fieldset {
+    border: 1px solid var(--app-border-color);
+    border-radius: var(--app-radius-md);
+    padding: var(--app-spacing-md);
+    margin: 0;
+
+    legend {
+      padding: 0 var(--app-spacing-xs);
+      color: var(--app-text-muted);
+      font-size: 0.85rem;
+    }
+
+    // Inline checkbox/radio labels inside a fieldset: row layout with
+    // legible text color. Previously these were inline `style=` attrs.
+    label {
+      flex-direction: row;
+      align-items: center;
+      color: var(--ion-text-color);
+    }
+  }
+
+  button[type="submit"],
+  button[type="reset"],
+  button.app-native-button {
+    appearance: none;
+    border: 1px solid var(--app-border-color-strong);
+    background: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+    padding: var(--app-spacing-sm) var(--app-spacing-lg);
+    border-radius: var(--app-radius-pill);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 500;
+    transition:
+      filter var(--app-transition-base),
+      box-shadow var(--app-transition-base);
+    box-shadow: var(--app-shadow-sm);
+
+    &:hover {
+      filter: brightness(1.05);
+      box-shadow: var(--app-shadow-md);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+  }
+
+  button[type="reset"] {
+    background: var(--app-surface-elevated);
+    color: var(--ion-text-color);
+  }
+}
+
+// ============================================================
+// Reusable Page Primitives
+// Use these on every page so layout stays consistent.
+// ============================================================
+
+.app-section {
+  padding: 0 var(--app-spacing-md);
+  margin-bottom: var(--app-spacing-xl);
+}
+
+.app-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--app-spacing-sm);
+  padding: var(--app-spacing-md) 0 var(--app-spacing-sm);
+  margin-bottom: var(--app-spacing-sm);
+  border-bottom: 2px solid var(--ion-color-primary);
+
+  ion-icon {
+    font-size: 26px;
+    color: var(--ion-color-primary);
+    flex-shrink: 0;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--ion-text-color);
+  }
+}
+
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--app-spacing-sm);
+  align-items: center;
+}
+
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.badge-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.spinner-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--app-spacing-lg);
+  justify-content: space-around;
+  padding: var(--app-spacing-sm) 0;
+}
+
+.spinner-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--app-spacing-sm);
+
+  span {
+    font-size: 0.75rem;
+    color: var(--app-text-muted);
+  }
+}
+
+.color-swatch {
+  border-radius: var(--app-radius-sm);
+  padding: 28px var(--app-spacing-sm) 10px;
+  text-align: center;
+  margin-bottom: var(--app-spacing-sm);
+  box-shadow: var(--app-shadow-sm);
+
+  span {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    // Each swatch overrides color via its own `*-contrast` token; no default needed.
+  }
+
+  &.swatch-primary {
+    background: var(--ion-color-primary);
+    span {
+      color: var(--ion-color-primary-contrast);
+    }
+  }
+  &.swatch-secondary {
+    background: var(--ion-color-secondary);
+    span {
+      color: var(--ion-color-secondary-contrast);
+    }
+  }
+  &.swatch-tertiary {
+    background: var(--ion-color-tertiary);
+    span {
+      color: var(--ion-color-tertiary-contrast);
+    }
+  }
+  &.swatch-success {
+    background: var(--ion-color-success);
+    span {
+      color: var(--ion-color-success-contrast);
+    }
+  }
+  &.swatch-warning {
+    background: var(--ion-color-warning);
+    span {
+      color: var(--ion-color-warning-contrast);
+    }
+  }
+  &.swatch-danger {
+    background: var(--ion-color-danger);
+    span {
+      color: var(--ion-color-danger-contrast);
+    }
+  }
+  &.swatch-medium {
+    background: var(--ion-color-medium);
+    span {
+      color: var(--ion-color-medium-contrast);
+    }
+  }
+  &.swatch-dark {
+    background: var(--ion-color-dark);
+    span {
+      color: var(--ion-color-dark-contrast);
+    }
+  }
+  &.swatch-light {
+    background: var(--ion-color-light);
+    span {
+      color: var(--ion-color-light-contrast);
+    }
+  }
+}
+
+.text-muted {
+  color: var(--app-text-muted);
+  font-size: 0.8rem;
+  margin: var(--app-spacing-sm) 0 0;
 }
 
 // Notes Modal Styling

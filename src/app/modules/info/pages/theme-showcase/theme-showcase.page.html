@@ -1,0 +1,1387 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/info"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Theme Showcase</ion-title>
+    <ion-buttons slot="end">
+      <ion-icon
+        name="sunny-outline"
+        class="ion-padding-horizontal"
+        aria-hidden="true"
+      ></ion-icon>
+      <ion-toggle
+        [checked]="isDark"
+        (ionChange)="onThemeToggle($event)"
+        aria-label="Toggle dark mode"
+      ></ion-toggle>
+      <ion-icon
+        name="moon-outline"
+        class="ion-padding-horizontal"
+        aria-hidden="true"
+      ></ion-icon>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment
+      [value]="activeSegment"
+      (ionChange)="onSegmentChange($event.detail.value)"
+    >
+      <ion-segment-button value="editor">
+        <ion-label>Editor</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="preview">
+        <ion-label>Preview</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Pull to refresh"
+      refreshingSpinner="crescent"
+      refreshingText="Refreshing…"
+    ></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Branding (Remote Config) -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="sparkles-outline"></ion-icon>
+      <h2>Branding</h2>
+    </div>
+
+    <ion-card>
+      <ion-card-content>
+        <p>
+          Branding values come from Firebase Remote Config with an optional
+          per-device localStorage override. Open
+          <a routerLink="/admin/branding">/admin/branding</a> to edit the draft
+          and generate JSON for upload via the Firebase console.
+        </p>
+        <ion-list>
+          <ion-item>
+            <ion-label>
+              <h3>App name</h3>
+              <p>{{ branding.appName }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <h3>Tagline</h3>
+              <p>{{ branding.tagline }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <h3>Primary / Secondary</h3>
+              <p>
+                {{ branding.primaryColor }} &nbsp;/&nbsp; {{
+                branding.secondaryColor }}
+              </p>
+            </ion-label>
+            <ion-note slot="end">
+              <span
+                class="brand-color-dot"
+                [style.background]="branding.primaryColor"
+              ></span>
+              <span
+                class="brand-color-dot"
+                [style.background]="branding.secondaryColor"
+              ></span>
+            </ion-note>
+          </ion-item>
+          <ion-item>
+            <ion-toggle
+              [checked]="brandingDisabled"
+              (ionChange)="onBrandingDisableToggle($event)"
+              labelPlacement="start"
+              >Disable branding on this device</ion-toggle
+            >
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <!-- Color Palette -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="color-palette-outline"></ion-icon>
+      <h2>Color Palette</h2>
+    </div>
+
+    <ion-grid>
+      <ion-row>
+        @for (swatch of [ { label: 'Primary', color: 'primary' }, { label:
+        'Secondary', color: 'secondary' }, { label: 'Tertiary', color:
+        'tertiary' }, { label: 'Success', color: 'success' }, { label:
+        'Warning', color: 'warning' }, { label: 'Danger', color: 'danger' }, {
+        label: 'Medium', color: 'medium' }, { label: 'Dark', color: 'dark' }, {
+        label: 'Light', color: 'light' } ]; track swatch.color) {
+        <ion-col size="4">
+          <div class="color-swatch swatch-{{ swatch.color }}">
+            <span>{{ swatch.label }}</span>
+          </div>
+        </ion-col>
+        }
+      </ion-row>
+    </ion-grid>
+  </section>
+
+  <!-- Typography -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="text-outline"></ion-icon>
+      <h2>Typography</h2>
+    </div>
+    <ion-card>
+      <ion-card-content>
+        <h1>Heading 1</h1>
+        <h2>Heading 2</h2>
+        <h3>Heading 3</h3>
+        <h4>Heading 4</h4>
+        <h5>Heading 5</h5>
+        <h6>Heading 6</h6>
+        <p>Body text — the quick brown fox jumps over the lazy dog.</p>
+        <p><strong>Bold</strong> · <em>Italic</em> · <a href="#">Link</a></p>
+        <ion-text color="primary"><p>Primary colored text</p></ion-text>
+        <ion-text color="secondary"><p>Secondary colored text</p></ion-text>
+        <ion-text color="success"><p>Success colored text</p></ion-text>
+        <ion-text color="warning"><p>Warning colored text</p></ion-text>
+        <ion-text color="danger"><p>Danger colored text</p></ion-text>
+        <ion-text color="medium"><p>Medium colored text</p></ion-text>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <!-- Buttons -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="radio-button-on-outline"></ion-icon>
+      <h2>Buttons</h2>
+    </div>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Colors</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="button-group">
+          <ion-button>Default</ion-button>
+          <ion-button color="secondary">Secondary</ion-button>
+          <ion-button color="tertiary">Tertiary</ion-button>
+          <ion-button color="success">Success</ion-button>
+          <ion-button color="warning">Warning</ion-button>
+          <ion-button color="danger">Danger</ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Fill Styles</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="button-group">
+          <ion-button fill="solid">Solid</ion-button>
+          <ion-button fill="outline">Outline</ion-button>
+          <ion-button fill="clear">Clear</ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Sizes & Expand</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="button-group">
+          <ion-button size="small">Small</ion-button>
+          <ion-button size="default">Default</ion-button>
+          <ion-button size="large">Large</ion-button>
+        </div>
+        <ion-button expand="block" class="ion-margin-top">Block</ion-button>
+        <ion-button expand="full" class="ion-margin-top">Full</ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>With Icons</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="button-group">
+          <ion-button>
+            <ion-icon slot="start" name="add-outline"></ion-icon>
+            Create
+          </ion-button>
+          <ion-button fill="outline">
+            <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
+            Next
+          </ion-button>
+          <ion-button fill="clear">
+            <ion-icon slot="icon-only" name="heart-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <!-- Cards -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="card-outline"></ion-icon>
+      <h2>Cards</h2>
+    </div>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Basic Card</ion-card-title>
+        <ion-card-subtitle>With subtitle</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        Standard card using <code>--ion-card-background</code> and
+        <code>--ion-text-color</code>.
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <img alt="Sample" src="https://picsum.photos/seed/ascend/400/180" />
+      <ion-card-header>
+        <ion-card-title>Card with Image</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        Images sit naturally inside cards in both themes.
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card button>
+      <ion-card-header>
+        <ion-card-title>Interactive Card</ion-card-title>
+        <ion-card-subtitle>Tap to interact</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        Cards with <code>button</code> show ripple feedback.
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <!-- Lists & Items -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="list-outline"></ion-icon>
+      <h2>Lists &amp; Items</h2>
+    </div>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Basic List</ion-card-title>
+      </ion-card-header>
+      <ion-list>
+        <ion-item>
+          <ion-label>Simple Item</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>Item with Note</ion-label>
+          <ion-note slot="end">Note</ion-note>
+        </ion-item>
+        <ion-item button detail>
+          <ion-label>Clickable Detail Item</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Items with Icons</ion-card-title>
+      </ion-card-header>
+      <ion-list>
+        <ion-item>
+          <ion-icon name="person-outline" slot="start"></ion-icon>
+          <ion-label>Profile</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="settings-outline" slot="start"></ion-icon>
+          <ion-label>Settings</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="notifications-outline" slot="start"></ion-icon>
+          <ion-label>Notifications</ion-label>
+          <ion-badge slot="end" color="danger">3</ion-badge>
+        </ion-item>
+      </ion-list>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Items with Controls</ion-card-title>
+      </ion-card-header>
+      <ion-list>
+        <ion-item>
+          <ion-icon name="moon-outline" slot="start"></ion-icon>
+          <ion-label>Dark Mode</ion-label>
+          <ion-toggle slot="end" [(ngModel)]="toggleValue"></ion-toggle>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="notifications-outline" slot="start"></ion-icon>
+          <ion-label>Notifications</ion-label>
+          <ion-checkbox slot="end" [(ngModel)]="checkboxValue"></ion-checkbox>
+        </ion-item>
+      </ion-list>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>List Headers &amp; Dividers</ion-card-title>
+      </ion-card-header>
+      <ion-list>
+        <ion-list-header>
+          <ion-label>Section A</ion-label>
+        </ion-list-header>
+        <ion-item>
+          <ion-label>First item</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>Second item</ion-label>
+        </ion-item>
+        <ion-item-divider>
+          <ion-label>Section B</ion-label>
+        </ion-item-divider>
+        <ion-item>
+          <ion-label>Third item</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>
+            Item with inline note
+            <ion-note>Helpful hint below the label</ion-note>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card>
+  </section>
+
+  <!-- Swipe Actions -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="swap-horizontal-outline"></ion-icon>
+      <h2>Swipe Actions</h2>
+    </div>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>ion-item-sliding</ion-card-title>
+      </ion-card-header>
+      <ion-list>
+        <ion-item-sliding>
+          <ion-item>
+            <ion-icon name="mail-outline" slot="start"></ion-icon>
+            <ion-label>Swipe left → delete</ion-label>
+          </ion-item>
+          <ion-item-options side="end">
+            <ion-item-option color="danger" expandable>
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+
+        <ion-item-sliding>
+          <ion-item-options side="start">
+            <ion-item-option color="success" expandable>
+              <ion-icon slot="icon-only" name="archive-outline"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+          <ion-item>
+            <ion-icon name="person-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Swipe either direction</h3>
+              <p>Archive left · Edit &amp; Delete right</p>
+            </ion-label>
+          </ion-item>
+          <ion-item-options side="end">
+            <ion-item-option color="warning">
+              <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+            </ion-item-option>
+            <ion-item-option color="danger">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+
+        <ion-item-sliding>
+          <ion-item>
+            <ion-icon name="star-outline" slot="start"></ion-icon>
+            <ion-label>Swipe left → multi-option</ion-label>
+          </ion-item>
+          <ion-item-options side="end">
+            <ion-item-option color="primary">
+              <ion-icon slot="icon-only" name="share-outline"></ion-icon>
+            </ion-item-option>
+            <ion-item-option color="secondary">
+              <ion-icon slot="icon-only" name="bookmark-outline"></ion-icon>
+            </ion-item-option>
+            <ion-item-option color="danger">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+      </ion-list>
+    </ion-card>
+  </section>
+
+  <!-- Chips & Badges -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="pricetag-outline"></ion-icon>
+      <h2>Chips &amp; Badges</h2>
+    </div>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Chips</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="chip-group">
+          <ion-chip>Default</ion-chip>
+          <ion-chip color="primary">Primary</ion-chip>
+          <ion-chip color="secondary">Secondary</ion-chip>
+          <ion-chip color="tertiary">Tertiary</ion-chip>
+          <ion-chip color="success">Success</ion-chip>
+          <ion-chip color="warning">Warning</ion-chip>
+          <ion-chip color="danger">Danger</ion-chip>
+          <ion-chip>
+            <ion-icon name="person-outline"></ion-icon>
+            <ion-label>With Icon</ion-label>
+          </ion-chip>
+          <ion-chip [disabled]="true">Disabled</ion-chip>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Badges</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="badge-group">
+          <ion-badge>Default</ion-badge>
+          <ion-badge color="primary">Primary</ion-badge>
+          <ion-badge color="secondary">Secondary</ion-badge>
+          <ion-badge color="success">Success</ion-badge>
+          <ion-badge color="warning">Warning</ion-badge>
+          <ion-badge color="danger">Danger</ion-badge>
+          <ion-badge color="medium">Medium</ion-badge>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <!-- Segments -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="apps-outline"></ion-icon>
+      <h2>Segments</h2>
+    </div>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Segment Control</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-segment [(ngModel)]="segmentValue">
+          <ion-segment-button value="all">
+            <ion-label>All</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="active">
+            <ion-label>Active</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="archived">
+            <ion-label>Archived</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+        <p class="text-muted">Selected: {{ segmentValue }}</p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Segment with Icons</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-segment value="grid">
+          <ion-segment-button value="list">
+            <ion-icon name="list-outline"></ion-icon>
+          </ion-segment-button>
+          <ion-segment-button value="grid">
+            <ion-icon name="grid-outline"></ion-icon>
+          </ion-segment-button>
+          <ion-segment-button value="map">
+            <ion-icon name="map-outline"></ion-icon>
+          </ion-segment-button>
+        </ion-segment>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <!-- Form Inputs -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="create-outline"></ion-icon>
+      <h2>Form Inputs</h2>
+    </div>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Text Inputs</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-input
+            label="Standard Input"
+            labelPlacement="stacked"
+            placeholder="Enter text"
+            [(ngModel)]="inputValue"
+          ></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-input
+            label="Floating Label"
+            labelPlacement="floating"
+            placeholder="Type something"
+          ></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-input
+            label="With Icon"
+            labelPlacement="stacked"
+            placeholder="Email address"
+          >
+            <ion-icon slot="start" name="mail-outline"></ion-icon>
+          </ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-input
+            label="Disabled"
+            labelPlacement="stacked"
+            placeholder="Cannot edit"
+            [disabled]="true"
+          ></ion-input>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Textarea</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-textarea
+            label="Notes"
+            labelPlacement="stacked"
+            placeholder="Write something..."
+            [rows]="4"
+            [(ngModel)]="textareaValue"
+          ></ion-textarea>
+        </ion-item>
+        <ion-item>
+          <ion-textarea
+            label="Auto-grow"
+            labelPlacement="stacked"
+            placeholder="Expands as you type…"
+            [autoGrow]="true"
+            [rows]="2"
+          ></ion-textarea>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Select &amp; Search</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-select
+            label="Role"
+            labelPlacement="stacked"
+            [(ngModel)]="selectValue"
+          >
+            <ion-select-option value="option1">Member</ion-select-option>
+            <ion-select-option value="option2">Coordinator</ion-select-option>
+            <ion-select-option value="option3">Admin</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-select
+            label="Multiple roles"
+            labelPlacement="stacked"
+            [multiple]="true"
+            placeholder="Choose one or more"
+          >
+            <ion-select-option value="member">Member</ion-select-option>
+            <ion-select-option value="coordinator"
+              >Coordinator</ion-select-option
+            >
+            <ion-select-option value="admin">Admin</ion-select-option>
+            <ion-select-option value="treasurer">Treasurer</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-searchbar
+          placeholder="Search..."
+          [(ngModel)]="searchValue"
+          animated="true"
+          class="ion-margin-top"
+        ></ion-searchbar>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Radio Group</ion-card-title>
+      </ion-card-header>
+      <ion-list>
+        <ion-radio-group [(ngModel)]="radioValue">
+          <ion-item>
+            <ion-label>Cooperative</ion-label>
+            <ion-radio slot="end" value="option1"></ion-radio>
+          </ion-item>
+          <ion-item>
+            <ion-label>Nonprofit</ion-label>
+            <ion-radio slot="end" value="option2"></ion-radio>
+          </ion-item>
+          <ion-item>
+            <ion-label>Mutual Aid</ion-label>
+            <ion-radio slot="end" value="option3"></ion-radio>
+          </ion-item>
+        </ion-radio-group>
+      </ion-list>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Range Slider</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-range
+          [(ngModel)]="rangeValue"
+          [pin]="true"
+          [ticks]="true"
+          [snaps]="true"
+          min="0"
+          max="100"
+          step="10"
+        >
+          <ion-icon name="remove-outline" slot="start"></ion-icon>
+          <ion-icon name="add-outline" slot="end"></ion-icon>
+        </ion-range>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Validation States</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-input
+            label="With helper text"
+            labelPlacement="stacked"
+            placeholder="Enter username"
+            helperText="Letters and numbers only, 3–20 characters"
+          ></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-input
+            label="With error text"
+            labelPlacement="stacked"
+            placeholder="Email address"
+            errorText="Please enter a valid email address"
+            class="ion-invalid ion-touched"
+          ></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-input
+            label="With character counter"
+            labelPlacement="stacked"
+            placeholder="Max 50 characters"
+            [counter]="true"
+            [maxlength]="50"
+          ></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-input
+            label="Clear on input"
+            labelPlacement="stacked"
+            placeholder="Type something"
+            [clearInput]="true"
+          ></ion-input>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Toggle &amp; Checkbox Colors</ion-card-title>
+      </ion-card-header>
+      <ion-list>
+        <ion-item>
+          <ion-label>Default</ion-label>
+          <ion-toggle slot="end" [checked]="true"></ion-toggle>
+        </ion-item>
+        <ion-item>
+          <ion-label>Primary</ion-label>
+          <ion-toggle slot="end" color="primary" [checked]="true"></ion-toggle>
+        </ion-item>
+        <ion-item>
+          <ion-label>Secondary</ion-label>
+          <ion-toggle
+            slot="end"
+            color="secondary"
+            [checked]="true"
+          ></ion-toggle>
+        </ion-item>
+        <ion-item>
+          <ion-label>Success</ion-label>
+          <ion-toggle slot="end" color="success" [checked]="true"></ion-toggle>
+        </ion-item>
+        <ion-item>
+          <ion-label>Warning</ion-label>
+          <ion-toggle slot="end" color="warning" [checked]="true"></ion-toggle>
+        </ion-item>
+        <ion-item>
+          <ion-label>Danger</ion-label>
+          <ion-toggle slot="end" color="danger" [checked]="true"></ion-toggle>
+        </ion-item>
+      </ion-list>
+      <ion-list>
+        <ion-item>
+          <ion-label>Default checkbox</ion-label>
+          <ion-checkbox slot="end" [checked]="true"></ion-checkbox>
+        </ion-item>
+        <ion-item>
+          <ion-label>Success</ion-label>
+          <ion-checkbox
+            slot="end"
+            color="success"
+            [checked]="true"
+          ></ion-checkbox>
+        </ion-item>
+        <ion-item>
+          <ion-label>Danger</ion-label>
+          <ion-checkbox
+            slot="end"
+            color="danger"
+            [checked]="true"
+          ></ion-checkbox>
+        </ion-item>
+        <ion-item>
+          <ion-label>Indeterminate</ion-label>
+          <ion-checkbox slot="end" [indeterminate]="true"></ion-checkbox>
+        </ion-item>
+      </ion-list>
+    </ion-card>
+  </section>
+
+  <!-- Native Form Elements -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="document-text-outline"></ion-icon>
+      <h2>Native Form Elements</h2>
+    </div>
+    <ion-card>
+      <ion-card-content>
+        <p class="text-muted">
+          Plain HTML <code>&lt;form&gt;</code>, <code>&lt;input&gt;</code>,
+          <code>&lt;select&gt;</code> and <code>&lt;textarea&gt;</code> elements
+          styled via <code>.app-native-form</code>. They consume the same design
+          tokens as Ionic components and flip with the theme.
+        </p>
+        <form
+          class="app-native-form"
+          (submit)="$event.preventDefault(); presentToast('top')"
+        >
+          <label>
+            Text
+            <input type="text" name="text" placeholder="Type something" />
+          </label>
+
+          <label>
+            Email
+            <input type="email" name="email" placeholder="you@example.com" />
+          </label>
+
+          <label>
+            Password
+            <input type="password" name="password" placeholder="••••••••" />
+          </label>
+
+          <label>
+            Number
+            <input type="number" name="number" min="0" max="100" value="42" />
+          </label>
+
+          <label>
+            Search
+            <input type="search" name="search" placeholder="Search…" />
+          </label>
+
+          <label>
+            URL
+            <input
+              type="url"
+              name="url"
+              placeholder="https://ascendynamics.org"
+            />
+          </label>
+
+          <label>
+            Telephone
+            <input type="tel" name="tel" placeholder="+1 (555) 555-5555" />
+          </label>
+
+          <div class="app-field-row">
+            <label style="flex: 1">
+              Date
+              <input type="date" name="date" />
+            </label>
+            <label style="flex: 1">
+              Time
+              <input type="time" name="time" />
+            </label>
+          </div>
+
+          <label>
+            Date &amp; Time
+            <input type="datetime-local" name="datetime" />
+          </label>
+
+          <div class="app-field-row">
+            <label>
+              Color
+              <input type="color" name="color" value="#e87121" />
+            </label>
+            <label style="flex: 1">
+              File
+              <input type="file" name="file" />
+            </label>
+          </div>
+
+          <label>
+            Select
+            <select name="select">
+              <option value="option1">Option 1</option>
+              <option value="option2">Option 2</option>
+              <option value="option3">Option 3</option>
+            </select>
+          </label>
+
+          <label>
+            Textarea
+            <textarea
+              name="textarea"
+              placeholder="Multi-line input…"
+            ></textarea>
+          </label>
+
+          <fieldset>
+            <legend>Checkboxes</legend>
+            <div class="app-field-row">
+              <label>
+                <input type="checkbox" name="news" checked />
+                Newsletter
+              </label>
+              <label>
+                <input type="checkbox" name="terms" />
+                Accept terms
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Radio</legend>
+            <div class="app-field-row">
+              <label>
+                <input type="radio" name="plan" value="free" checked />
+                Free
+              </label>
+              <label>
+                <input type="radio" name="plan" value="pro" />
+                Pro
+              </label>
+              <label>
+                <input type="radio" name="plan" value="enterprise" />
+                Enterprise
+              </label>
+            </div>
+          </fieldset>
+
+          <label>
+            Range
+            <input type="range" name="range" min="0" max="100" value="50" />
+          </label>
+
+          <label>
+            Disabled
+            <input type="text" name="disabled" value="Not editable" disabled />
+          </label>
+
+          <div class="app-field-row">
+            <button type="submit">Submit</button>
+            <button type="reset">Reset</button>
+            <button type="button" class="app-native-button">
+              Custom button
+            </button>
+          </div>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <!-- Loading & Progress -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="hourglass-outline"></ion-icon>
+      <h2>Loading &amp; Progress</h2>
+    </div>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Spinners</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="spinner-group">
+          @for (s of [ { name: 'circles', label: 'Circles' }, { name: 'dots',
+          label: 'Dots' }, { name: 'crescent', label: 'Crescent' }, { name:
+          'lines', label: 'Lines' } ]; track s.name) {
+          <div class="spinner-item">
+            <ion-spinner [name]="s.name"></ion-spinner>
+            <span>{{ s.label }}</span>
+          </div>
+          }
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Progress Bar</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="text-muted">Determinate (50%)</p>
+        <ion-progress-bar value="0.5"></ion-progress-bar>
+        <p class="text-muted ion-margin-top">Indeterminate</p>
+        <ion-progress-bar type="indeterminate"></ion-progress-bar>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <!-- Avatars & Thumbnails -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="person-circle-outline"></ion-icon>
+      <h2>Avatars &amp; Thumbnails</h2>
+    </div>
+    <ion-card>
+      <ion-list>
+        <ion-item>
+          <ion-avatar slot="start">
+            <img alt="avatar" src="https://i.pravatar.cc/120?img=12" />
+          </ion-avatar>
+          <ion-label>
+            <h3>Avatar</h3>
+            <p>Circular profile image</p>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-thumbnail slot="start">
+            <img
+              alt="thumbnail"
+              src="https://picsum.photos/seed/thumb/120/120"
+            />
+          </ion-thumbnail>
+          <ion-label>
+            <h3>Thumbnail</h3>
+            <p>Square preview image</p>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-img
+            slot="start"
+            alt="ion-img lazy"
+            src="https://picsum.photos/seed/ionimg/80/80"
+            style="
+              width: 56px;
+              height: 56px;
+              border-radius: var(--app-radius-sm);
+            "
+          ></ion-img>
+          <ion-label>
+            <h3>ion-img</h3>
+            <p>Lazy-loads via IntersectionObserver</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card>
+  </section>
+
+  <!-- Skeleton Text -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="hourglass-outline"></ion-icon>
+      <h2>Skeleton Text</h2>
+    </div>
+    <ion-card>
+      <ion-card-content>
+        <div class="button-group">
+          <ion-button size="small" (click)="toggleSkeleton()">
+            {{ showSkeleton ? 'Show content' : 'Show skeleton' }}
+          </ion-button>
+        </div>
+        @if (showSkeleton) {
+        <ion-list>
+          <ion-item>
+            <ion-avatar slot="start">
+              <ion-skeleton-text [animated]="true"></ion-skeleton-text>
+            </ion-avatar>
+            <ion-label>
+              <h3>
+                <ion-skeleton-text
+                  [animated]="true"
+                  style="width: 60%"
+                ></ion-skeleton-text>
+              </h3>
+              <p>
+                <ion-skeleton-text
+                  [animated]="true"
+                  style="width: 90%"
+                ></ion-skeleton-text>
+              </p>
+              <p>
+                <ion-skeleton-text
+                  [animated]="true"
+                  style="width: 80%"
+                ></ion-skeleton-text>
+              </p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+        } @else {
+        <ion-list>
+          <ion-item>
+            <ion-avatar slot="start">
+              <img alt="avatar" src="https://i.pravatar.cc/120?img=5" />
+            </ion-avatar>
+            <ion-label>
+              <h3>Loaded content</h3>
+              <p>This replaces the placeholder once data arrives.</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+        }
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <!-- Accordion -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="list-outline"></ion-icon>
+      <h2>Accordion</h2>
+    </div>
+    <ion-card>
+      <ion-accordion-group>
+        <ion-accordion value="first">
+          <ion-item slot="header">
+            <ion-label>What is the design system?</ion-label>
+          </ion-item>
+          <div slot="content" class="ion-padding">
+            A set of design tokens and global primitives that every page
+            consumes for consistent theming.
+          </div>
+        </ion-accordion>
+        <ion-accordion value="second">
+          <ion-item slot="header">
+            <ion-label>How do I theme my page?</ion-label>
+          </ion-item>
+          <div slot="content" class="ion-padding">
+            Use <code>.app-section</code>, <code>.app-section-header</code>, and
+            <code>--app-*</code> CSS variables instead of hard-coded values.
+          </div>
+        </ion-accordion>
+        <ion-accordion value="third">
+          <ion-item slot="header">
+            <ion-label>Does dark mode work automatically?</ion-label>
+          </ion-item>
+          <div slot="content" class="ion-padding">
+            Yes — both the OS preference and the manual toggle swap the
+            <code>--app-*</code> tokens for you.
+          </div>
+        </ion-accordion>
+      </ion-accordion-group>
+    </ion-card>
+  </section>
+
+  <!-- Breadcrumbs -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="git-branch-outline"></ion-icon>
+      <h2>Breadcrumbs</h2>
+    </div>
+    <ion-card>
+      <ion-card-content>
+        <ion-breadcrumbs>
+          <ion-breadcrumb>
+            <ion-icon slot="start" name="home-outline"></ion-icon>
+            Home
+          </ion-breadcrumb>
+          <ion-breadcrumb>Info</ion-breadcrumb>
+          <ion-breadcrumb>Theme</ion-breadcrumb>
+          <ion-breadcrumb [active]="true">Showcase</ion-breadcrumb>
+        </ion-breadcrumbs>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <!-- Datetime -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <h2>Date &amp; Time</h2>
+    </div>
+    <ion-card>
+      <ion-card-content>
+        <ion-item lines="none">
+          <ion-label>Selected</ion-label>
+          <ion-datetime-button
+            datetime="showcase-datetime"
+          ></ion-datetime-button>
+        </ion-item>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime
+              id="showcase-datetime"
+              [(ngModel)]="datetimeValue"
+              presentation="date-time"
+            ></ion-datetime>
+          </ng-template>
+        </ion-modal>
+        <p class="text-muted">Inline picker:</p>
+        <ion-datetime
+          presentation="date"
+          [(ngModel)]="datetimeValue"
+        ></ion-datetime>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <!-- Overlays -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="layers-outline"></ion-icon>
+      <h2>Overlays</h2>
+    </div>
+    <ion-card>
+      <ion-card-content>
+        <div class="button-group">
+          <ion-button (click)="presentAlert()">Alert</ion-button>
+          <ion-button color="secondary" (click)="presentActionSheet()">
+            Action Sheet
+          </ion-button>
+          <ion-button color="tertiary" (click)="presentToast('top')"
+            >Toast Top</ion-button
+          >
+          <ion-button
+            color="tertiary"
+            fill="outline"
+            (click)="presentToast('middle')"
+            >Toast Mid</ion-button
+          >
+          <ion-button
+            color="tertiary"
+            fill="clear"
+            (click)="presentToast('bottom')"
+            >Toast Bot</ion-button
+          >
+          <ion-button color="success" (click)="presentLoading()">
+            Loading
+          </ion-button>
+          <ion-button id="open-demo-modal" color="warning">Modal</ion-button>
+          <ion-button id="open-demo-popover" color="medium">Popover</ion-button>
+        </div>
+
+        <ion-modal #demoModal trigger="open-demo-modal">
+          <ng-template>
+            <ion-header>
+              <ion-toolbar>
+                <ion-title>Demo Modal</ion-title>
+                <ion-buttons slot="end">
+                  <ion-button (click)="demoModal.dismiss()"> Close </ion-button>
+                </ion-buttons>
+              </ion-toolbar>
+            </ion-header>
+            <ion-content class="ion-padding">
+              <p>
+                Modals inherit page surfaces and shadows from the design tokens.
+              </p>
+              <ion-button expand="block" (click)="demoModal.dismiss()">
+                Dismiss
+              </ion-button>
+            </ion-content>
+          </ng-template>
+        </ion-modal>
+
+        <ion-popover trigger="open-demo-popover" [dismissOnSelect]="true">
+          <ng-template>
+            <ion-content class="ion-padding">
+              <ion-list>
+                <ion-item button>
+                  <ion-icon slot="start" name="create-outline"></ion-icon>
+                  Edit
+                </ion-item>
+                <ion-item button>
+                  <ion-icon slot="start" name="share-outline"></ion-icon>
+                  Share
+                </ion-item>
+                <ion-item button lines="none">
+                  <ion-icon slot="start" name="trash-outline"></ion-icon>
+                  Delete
+                </ion-item>
+              </ion-list>
+            </ion-content>
+          </ng-template>
+        </ion-popover>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <!-- Reorder -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="swap-vertical-outline"></ion-icon>
+      <h2>Reorder</h2>
+    </div>
+    <ion-card>
+      <ion-list>
+        <ion-reorder-group
+          [disabled]="false"
+          (ionItemReorder)="onReorder($event)"
+        >
+          @for (item of reorderItems; track item.id) {
+          <ion-item>
+            <ion-label>{{ item.label }}</ion-label>
+            <ion-reorder slot="end"></ion-reorder>
+          </ion-item>
+          }
+        </ion-reorder-group>
+      </ion-list>
+    </ion-card>
+  </section>
+
+  <!-- Ripple -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="radio-outline"></ion-icon>
+      <h2>Ripple Effect</h2>
+    </div>
+    <ion-card>
+      <ion-card-content>
+        <p class="text-muted">Tap the surface below for a ripple.</p>
+        <div
+          class="ion-activatable ripple-parent"
+          style="
+            position: relative;
+            overflow: hidden;
+            padding: var(--app-spacing-lg);
+            border-radius: var(--app-radius-md);
+            background: var(--app-surface-sunken);
+            text-align: center;
+            cursor: pointer;
+          "
+        >
+          Click me
+          <ion-ripple-effect></ion-ripple-effect>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <!-- Tab Bar (visual demo) -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="apps-outline"></ion-icon>
+      <h2>Tab Bar</h2>
+    </div>
+    <ion-card>
+      <ion-tab-bar [selectedTab]="selectedTab">
+        <ion-tab-button tab="home" (click)="selectedTab = 'home'">
+          <ion-icon name="home-outline"></ion-icon>
+          <ion-label>Home</ion-label>
+        </ion-tab-button>
+        <ion-tab-button tab="search" (click)="selectedTab = 'search'">
+          <ion-icon name="search-outline"></ion-icon>
+          <ion-label>Search</ion-label>
+        </ion-tab-button>
+        <ion-tab-button
+          tab="notifications"
+          (click)="selectedTab = 'notifications'"
+        >
+          <ion-icon name="notifications-outline"></ion-icon>
+          <ion-label>Alerts</ion-label>
+          <ion-badge>3</ion-badge>
+        </ion-tab-button>
+        <ion-tab-button tab="profile" (click)="selectedTab = 'profile'">
+          <ion-icon name="person-outline"></ion-icon>
+          <ion-label>Profile</ion-label>
+        </ion-tab-button>
+      </ion-tab-bar>
+    </ion-card>
+  </section>
+
+  <!-- Infinite list -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="infinite-outline"></ion-icon>
+      <h2>Infinite Scroll</h2>
+    </div>
+    <ion-card>
+      <ion-list>
+        @for (n of infiniteItems; track n) {
+        <ion-item>
+          <ion-label>Item #{{ n }}</ion-label>
+        </ion-item>
+        }
+      </ion-list>
+    </ion-card>
+  </section>
+
+  <ion-infinite-scroll (ionInfinite)="onInfinite($event)">
+    <ion-infinite-scroll-content
+      loadingSpinner="bubbles"
+      loadingText="Loading more…"
+    ></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+
+  <!-- Floating Action Button -->
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button>
+      <ion-icon name="add-outline"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-list side="top">
+      <ion-fab-button color="secondary">
+        <ion-icon name="create-outline"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button color="tertiary">
+        <ion-icon name="share-outline"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button color="success">
+        <ion-icon name="checkmark-outline"></ion-icon>
+      </ion-fab-button>
+    </ion-fab-list>
+  </ion-fab>
+
+  <div class="ion-padding-bottom"></div>
+</ion-content>

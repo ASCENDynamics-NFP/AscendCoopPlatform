@@ -30,6 +30,11 @@ import {selectAuthUser} from "../../../state/selectors/auth.selectors";
 import {FeedbackModalComponent} from "../feedback-modal/feedback-modal.component";
 
 import {MenuItem} from "../../../shared/interfaces/menu-item.interface";
+import {
+  BrandingConfig,
+  BrandingService,
+  BRANDING_DEFAULTS,
+} from "../../../core/services/branding.service";
 
 @Component({
   standalone: false,
@@ -43,12 +48,14 @@ export class MenuComponent implements OnInit, OnDestroy {
   menuPages: MenuItem[] = [];
   project: MenuItem[] = [];
   infoPages: MenuItem[] = [];
+  brandingConfig: BrandingConfig = {...BRANDING_DEFAULTS};
 
   constructor(
     private store: Store,
     private translate: TranslateService,
     private modalCtrl: ModalController,
     private router: Router,
+    private brandingService: BrandingService,
   ) {}
 
   ngOnInit() {
@@ -88,6 +95,15 @@ export class MenuComponent implements OnInit, OnDestroy {
 
     this.subscriptions.add(authSubscription);
     this.subscriptions.add(langSubscription);
+
+    // Rebuild menu sections when branding config changes.
+    // BehaviorSubject fires immediately, so this also covers the initial build.
+    const brandingSub = this.brandingService.config$.subscribe((cfg) => {
+      this.brandingConfig = cfg;
+      this.updateInfoPages();
+      this.updateProjectLinks();
+    });
+    this.subscriptions.add(brandingSub);
   }
 
   ngOnDestroy(): void {
@@ -96,11 +112,15 @@ export class MenuComponent implements OnInit, OnDestroy {
 
   private updateProjectLinks() {
     this.project = [
-      {
-        title: this.translate.instant("info.donate"),
-        url: "https://buy.stripe.com/bIY5mC9sY1ob4TufYY",
-        icon: "heart-sharp",
-      },
+      ...(this.brandingConfig.showDonate
+        ? [
+            {
+              title: this.translate.instant("info.donate"),
+              url: "https://buy.stripe.com/bIY5mC9sY1ob4TufYY",
+              icon: "heart-sharp",
+            },
+          ]
+        : []),
       {
         title: this.translate.instant("info.project_repository"),
         url: "https://github.com/ASCENDynamics-NFP/AscendCoopPlatform",
@@ -136,36 +156,60 @@ export class MenuComponent implements OnInit, OnDestroy {
         url: "/info",
         icon: "globe-outline",
       },
-      {
-        title: this.translate.instant("info.about_us"),
-        url: "/info/about-us",
-        icon: "information-circle",
-      },
-      {
-        title: this.translate.instant("info.services"),
-        url: "/info/services",
-        icon: "construct",
-      },
-      {
-        title: this.translate.instant("info.startups"),
-        url: "/info/startups",
-        icon: "rocket",
-      },
-      {
-        title: this.translate.instant("info.event_calendar"),
-        url: "/info/event-calendar",
-        icon: "calendar",
-      },
-      {
-        title: this.translate.instant("info.our_team"),
-        url: "/info/team",
-        icon: "people",
-      },
-      {
-        title: this.translate.instant("info.think_tank"),
-        url: "/info/think-tank",
-        icon: "bulb",
-      },
+      ...(this.brandingConfig.showAbout
+        ? [
+            {
+              title: this.translate.instant("info.about_us"),
+              url: "/info/about-us",
+              icon: "information-circle",
+            },
+          ]
+        : []),
+      ...(this.brandingConfig.showServices
+        ? [
+            {
+              title: this.translate.instant("info.services"),
+              url: "/info/services",
+              icon: "construct",
+            },
+          ]
+        : []),
+      ...(this.brandingConfig.showStartups
+        ? [
+            {
+              title: this.translate.instant("info.startups"),
+              url: "/info/startups",
+              icon: "rocket",
+            },
+          ]
+        : []),
+      ...(this.brandingConfig.showEventCalendar
+        ? [
+            {
+              title: this.translate.instant("info.event_calendar"),
+              url: "/info/event-calendar",
+              icon: "calendar",
+            },
+          ]
+        : []),
+      ...(this.brandingConfig.showTeam
+        ? [
+            {
+              title: this.translate.instant("info.our_team"),
+              url: "/info/team",
+              icon: "people",
+            },
+          ]
+        : []),
+      ...(this.brandingConfig.showThinkTank
+        ? [
+            {
+              title: this.translate.instant("info.think_tank"),
+              url: "/info/think-tank",
+              icon: "bulb",
+            },
+          ]
+        : []),
     ];
   }
 

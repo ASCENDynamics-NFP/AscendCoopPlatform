@@ -1,1 +1,77 @@
-{}
+{
+  "parameters": {
+    "branding_enabled": {
+      "defaultValue": {"value": "false"},
+      "description": "Master switch for branding overrides. When false, the app uses built-in defaults from src/theme/variables.scss and src/app/core/services/branding.defaults.ts.",
+      "valueType": "BOOLEAN"
+    },
+    "branding_app_name": {
+      "defaultValue": {"value": "ASCENDynamics NFP"},
+      "description": "Display name shown in toolbars, menus, and the landing page hero.",
+      "valueType": "STRING"
+    },
+    "branding_tagline": {
+      "defaultValue": {
+        "value": "ASCENDynamics NFP is an open-source collaboration platform connecting individuals, nonprofits, mutual aid groups, and cooperative startups. We bring together these communities with volunteers, donors, and independent contributors to innovate and drive social impact through technology. By empowering everyone to collaborate in real time, we help build stronger, more connected networks dedicated to positive change."
+      },
+      "description": "Short tagline shown beneath the app name in marketing surfaces.",
+      "valueType": "STRING"
+    },
+    "branding_logo_url": {
+      "defaultValue": {
+        "value": ""
+      },
+      "description": "Optional absolute URL to a logo image. When empty the app uses the bundled text/logo treatment.",
+      "valueType": "STRING"
+    },
+    "branding_primary_color": {
+      "defaultValue": {"value": "#cb00e6"},
+      "description": "Primary brand color. Overrides --ion-color-primary and --app-brand-primary at runtime. Must be a valid CSS color (hex).",
+      "valueType": "STRING"
+    },
+    "branding_secondary_color": {
+      "defaultValue": {"value": "#4cbd92"},
+      "description": "Secondary brand color. Overrides --ion-color-secondary and --app-brand-secondary at runtime.",
+      "valueType": "STRING"
+    },
+    "branding_show_about": {
+      "defaultValue": {"value": "true"},
+      "description": "Show the About section on marketing surfaces (landing, menu).",
+      "valueType": "BOOLEAN"
+    },
+    "branding_show_team": {
+      "defaultValue": {"value": "true"},
+      "description": "Show the Team section on marketing surfaces.",
+      "valueType": "BOOLEAN"
+    },
+    "branding_show_donate": {
+      "defaultValue": {"value": "true"},
+      "description": "Show the Donate/Support call-to-action on marketing surfaces.",
+      "valueType": "BOOLEAN"
+    },
+    "branding_show_event_calendar": {
+      "defaultValue": {"value": "true"},
+      "description": "Show the Event Calendar entry in menus and marketing surfaces.",
+      "valueType": "BOOLEAN"
+    },
+    "branding_show_think_tank": {
+      "defaultValue": {"value": "true"},
+      "description": "Show the Think Tank entry in menus and marketing surfaces.",
+      "valueType": "BOOLEAN"
+    },
+    "branding_show_services": {
+      "defaultValue": {"value": "true"},
+      "description": "Show the Services page in menus and marketing surfaces.",
+      "valueType": "BOOLEAN"
+    },
+    "branding_show_startups": {
+      "defaultValue": {"value": "true"},
+      "description": "Show the Startups page in menus and marketing surfaces.",
+      "valueType": "BOOLEAN"
+    }
+  },
+  "version": {
+    "versionNumber": "1",
+    "description": "Initial branding parameter set"
+  }
+}

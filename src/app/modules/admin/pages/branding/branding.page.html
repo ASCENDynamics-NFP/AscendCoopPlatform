@@ -1,0 +1,253 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/info"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Branding</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment
+      [value]="activeSegment"
+      (ionChange)="onSegmentChange($event.detail.value)"
+    >
+      <ion-segment-button value="editor">
+        <ion-label>Editor</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="preview">
+        <ion-label>Preview</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-label><h2>How branding works</h2></ion-label>
+    </div>
+    <ion-card>
+      <ion-card-content>
+        <p>
+          Branding values flow from
+          <strong
+            >defaults &rarr; Firebase Remote Config &rarr; per-device
+            override</strong
+          >
+          (highest wins). Use this page to preview a brand on this device, then
+          copy the generated JSON and upload it to the
+          <a
+            href="https://console.firebase.google.com/project/_/config"
+            target="_blank"
+            rel="noopener"
+            >Firebase Remote Config console</a
+          >
+          to apply it for everyone.
+        </p>
+        <p class="text-muted">
+          The AGPL footer and license attribution are <strong>not</strong>
+          configurable — the project license requires them to remain visible.
+        </p>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-label><h2>Editor</h2></ion-label>
+    </div>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Identity</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item>
+            <ion-toggle [(ngModel)]="draft.enabled" labelPlacement="start"
+              >Branding enabled</ion-toggle
+            >
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="App name"
+              labelPlacement="stacked"
+              [(ngModel)]="draft.appName"
+            ></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-textarea
+              label="Tagline"
+              labelPlacement="stacked"
+              autoGrow="true"
+              [(ngModel)]="draft.tagline"
+            ></ion-textarea>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Logo URL"
+              labelPlacement="stacked"
+              placeholder="https://…"
+              [(ngModel)]="draft.logoUrl"
+            ></ion-input>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Colors</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item>
+            <ion-input
+              label="Primary color"
+              labelPlacement="stacked"
+              type="text"
+              [(ngModel)]="draft.primaryColor"
+              (ionChange)="previewDraft()"
+            ></ion-input>
+            <div slot="end" class="color-picker-wrap">
+              <input
+                type="color"
+                class="color-picker-swatch"
+                [value]="draft.primaryColor"
+                (input)="onColorInput('primaryColor', $event)"
+                aria-label="Pick primary color"
+                title="Pick primary color"
+              />
+            </div>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Secondary color"
+              labelPlacement="stacked"
+              type="text"
+              [(ngModel)]="draft.secondaryColor"
+              (ionChange)="previewDraft()"
+            ></ion-input>
+            <div slot="end" class="color-picker-wrap">
+              <input
+                type="color"
+                class="color-picker-swatch"
+                [value]="draft.secondaryColor"
+                (input)="onColorInput('secondaryColor', $event)"
+                aria-label="Pick secondary color"
+                title="Pick secondary color"
+              />
+            </div>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Sections</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item>
+            <ion-toggle [(ngModel)]="draft.showAbout" labelPlacement="start"
+              >Show About</ion-toggle
+            >
+          </ion-item>
+          <ion-item>
+            <ion-toggle [(ngModel)]="draft.showTeam" labelPlacement="start"
+              >Show Team</ion-toggle
+            >
+          </ion-item>
+          <ion-item>
+            <ion-toggle [(ngModel)]="draft.showDonate" labelPlacement="start"
+              >Show Donate</ion-toggle
+            >
+          </ion-item>
+          <ion-item>
+            <ion-toggle
+              [(ngModel)]="draft.showEventCalendar"
+              labelPlacement="start"
+              >Show Event Calendar</ion-toggle
+            >
+          </ion-item>
+          <ion-item>
+            <ion-toggle [(ngModel)]="draft.showThinkTank" labelPlacement="start"
+              >Show Think Tank</ion-toggle
+            >
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <div class="button-group">
+      <ion-button (click)="applyLocalOverride()">
+        Apply on this device
+      </ion-button>
+      <ion-button fill="outline" color="medium" (click)="resetDraftToActive()">
+        Reset draft to active
+      </ion-button>
+      <ion-button
+        fill="outline"
+        color="medium"
+        (click)="resetDraftToDefaults()"
+      >
+        Reset draft to defaults
+      </ion-button>
+      <ion-button
+        fill="outline"
+        color="danger"
+        (click)="clearLocalOverride()"
+        [disabled]="!hasLocalOverride"
+      >
+        Clear local override
+      </ion-button>
+    </div>
+  </section>
+
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-label><h2>Publish</h2></ion-label>
+    </div>
+    <ion-card>
+      <ion-card-content>
+        <p>
+          When you're happy with the draft, generate the Remote Config JSON and
+          upload it via the Firebase console:
+        </p>
+        <ol>
+          <li>Click <em>Copy Remote Config JSON</em> below.</li>
+          <li>
+            Open the
+            <a
+              href="https://console.firebase.google.com/project/_/config"
+              target="_blank"
+              rel="noopener"
+              >Remote Config console</a
+            >
+            and pick your project.
+          </li>
+          <li>
+            Use <em>Publish from JSON</em> (or paste each parameter
+            individually) and confirm publish.
+          </li>
+        </ol>
+        <div class="button-group">
+          <ion-button (click)="copyRemoteConfigTemplate()">
+            Copy Remote Config JSON
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-label><h2>Active config</h2></ion-label>
+    </div>
+    <ion-card>
+      <ion-card-content>
+        <pre class="branding-active">{{ active | json }}</pre>
+      </ion-card-content>
+    </ion-card>
+  </section>
+</ion-content>

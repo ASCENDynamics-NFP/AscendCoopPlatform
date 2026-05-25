@@ -93,17 +93,105 @@
   --ion-color-light-contrast-rgb: 0, 0, 0;
   --ion-color-light-shade: #d7d8da;
   --ion-color-light-tint: #f5f6f9;
+
+  /*
+   * App Design Tokens — Light Theme (defaults)
+   * -------------------------------------------------------------
+   * Reusable surface, elevation, radius, spacing, and motion tokens
+   * consumed by global component styling. See `src/global.scss` for
+   * the primitives (`.app-section`, `.color-swatch`, etc.) and
+   * `src/app/modules/info/pages/theme-showcase/` for the live demo.
+   * Override values in `.dark` and the prefers-color-scheme block
+   * below for the dark theme.
+   */
+  --app-surface: #ffffff;
+  --app-surface-elevated: #ffffff;
+  --app-surface-sunken: #f4f5f8;
+  --app-surface-rgb: 255, 255, 255;
+
+  --app-border-color: rgba(0, 0, 0, 0.08);
+  --app-border-color-strong: rgba(0, 0, 0, 0.16);
+  --app-divider-color: rgba(0, 0, 0, 0.06);
+
+  --app-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --app-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --app-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  --app-radius-sm: 6px;
+  --app-radius-md: 12px;
+  --app-radius-lg: 16px;
+  --app-radius-pill: 999px;
+
+  --app-spacing-xs: 4px;
+  --app-spacing-sm: 8px;
+  --app-spacing-md: 16px;
+  --app-spacing-lg: 24px;
+  --app-spacing-xl: 32px;
+
+  --app-text-muted: rgba(0, 0, 0, 0.6);
+  --app-text-shadow-etched: 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  --app-transition-base: 0.2s ease;
+  --app-transition-slow: 0.35s ease;
+
+  /*
+   * Branding tokens
+   * ---------------------------------------------------------------
+   * Defaults below match the bundled ASCENDynamics NFP brand. The
+   * `BrandingService` overwrites these at runtime on the <html>
+   * element using values from Firebase Remote Config (with an
+   * optional per-device localStorage override). See
+   * `src/app/core/services/branding.service.ts` and
+   * `docs/BRANDING.md`.
+   */
+  --app-brand-primary: #e87121;
+  --app-brand-secondary: #4a90e2;
+  --app-brand-app-name: "ASCENDynamics NFP";
+  --app-brand-logo-url: none;
+}
+
+/*
+ * App Design Tokens — Dark Theme overrides (manual body toggle)
+/*
+ * App Design Tokens — Dark Theme overrides (manual toggle)
+ * ---------------------------------------------------------------
+ * Applied when `<html class="dark">` is set by the in-app theme toggle.
+ * Ionic 8 puts the platform mode classes (`md`/`ios`) on the <html>
+ * element, so we target `html.dark` (and `:root.dark`) here — selectors
+ * scoped to `body.dark` will not match in Ionic 8. The @media block
+ * below mirrors these values so OS preference works without the toggle.
+ */
+.dark,
+html.dark,
+:root.dark {
+  --app-surface: #1e1e1e;
+  --app-surface-elevated: #2a2a2a;
+  --app-surface-sunken: #121212;
+  --app-surface-rgb: 30, 30, 30;
+
+  --app-border-color: rgba(255, 255, 255, 0.08);
+  --app-border-color-strong: rgba(255, 255, 255, 0.16);
+  --app-divider-color: rgba(255, 255, 255, 0.06);
+
+  --app-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --app-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --app-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
+
+  --app-text-muted: rgba(255, 255, 255, 0.65);
+  --app-text-shadow-etched: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
 @media (prefers-color-scheme: dark) {
   /*
-   * Dark Colors
+   * Dark Colors (OS preference)
    * -------------------------------------------
+   * The `:not(.light)` qualifier on the root lets the in-app theme
+   * toggle force light mode by setting `<html class="light">`, which
+   * disables every rule in this @media block.
    */
 
-  body {
-    --ion-color-primary: #e87121; /* Orange */
-    --ion-color-primary-rgb: 232, 113, 33;
+  html:not(.light) body {
+    --ion-color-primary: #e87121;
     --ion-color-primary-contrast: #ffffff;
     --ion-color-primary-contrast-rgb: 255, 255, 255;
     --ion-color-primary-shade: shade(#e87121, 10%);
@@ -171,7 +259,7 @@
    * -------------------------------------------
    */
 
-  .ios body {
+  html:not(.light).ios body {
     --ion-background-color: #000000;
     --ion-background-color-rgb: 0, 0, 0;
 
@@ -203,7 +291,7 @@
     // --ion-card-background: #1c1c1d;
   }
 
-  .ios ion-modal {
+  html:not(.light).ios ion-modal {
     --ion-background-color: var(--ion-color-step-100);
     --ion-toolbar-background: var(--ion-color-step-150);
     --ion-toolbar-border-color: var(--ion-color-step-250);
@@ -214,7 +302,7 @@
    * -------------------------------------------
    */
 
-  .md body {
+  html:not(.light).md body {
     --ion-background-color: #121212;
     --ion-background-color-rgb: 18, 18, 18;
 
@@ -251,4 +339,171 @@
 
     // --ion-card-background: #1e1e1e;
   }
+
+  /*
+   * App Design Tokens — Dark Theme (system preference)
+   * Mirrors the `.dark` class block above so OS preference applies
+   * the same tokens without requiring the manual toggle.
+   */
+  :root:not(.light) {
+    --app-surface: #1e1e1e;
+    --app-surface-elevated: #2a2a2a;
+    --app-surface-sunken: #121212;
+    --app-surface-rgb: 30, 30, 30;
+
+    --app-border-color: rgba(255, 255, 255, 0.08);
+    --app-border-color-strong: rgba(255, 255, 255, 0.16);
+    --app-divider-color: rgba(255, 255, 255, 0.06);
+
+    --app-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --app-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --app-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
+
+    --app-text-muted: rgba(255, 255, 255, 0.65);
+    --app-text-shadow-etched: 0 1px 2px rgba(0, 0, 0, 0.6);
+  }
+}
+
+/*
+ * Ionic Dark Theme — Manual Toggle (`<html class="dark">`)
+ * ---------------------------------------------------------------
+ * Mirrors the Ionic palette inside the `@media (prefers-color-scheme: dark)`
+ * block above so the in-app theme toggle flips Ionic colors as well as
+ * the `--app-*` tokens. Keep these in sync with the @media block.
+ *
+ * Note: Ionic 8 sets the `md`/`ios` mode class on <html>, not <body>,
+ * so platform-specific overrides target `html.md.dark` / `html.ios.dark`.
+ */
+html.dark {
+  --ion-color-primary: #e87121;
+  --ion-color-primary-rgb: 232, 113, 33;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: shade(#e87121, 10%);
+  --ion-color-primary-tint: tint(#e87121, 10%);
+
+  --ion-color-secondary: #4a90e2;
+  --ion-color-secondary-rgb: 229, 229, 229;
+  --ion-color-secondary-contrast: #000000;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: shade(#4a90e2, 10%);
+  --ion-color-secondary-tint: tint(#4a90e2, 10%);
+
+  --ion-color-tertiary: #7abd91;
+  --ion-color-tertiary-rgb: 48, 191, 191;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade: shade(#7abd91, 10%);
+  --ion-color-tertiary-tint: tint(#7abd91, 10%);
+
+  --ion-color-success: #2fdf75;
+  --ion-color-success-rgb: 47, 223, 117;
+  --ion-color-success-contrast: #000000;
+  --ion-color-success-contrast-rgb: 0, 0, 0;
+  --ion-color-success-shade: #29c467;
+  --ion-color-success-tint: #44e283;
+
+  --ion-color-warning: #ffd534;
+  --ion-color-warning-rgb: 255, 213, 52;
+  --ion-color-warning-contrast: #000000;
+  --ion-color-warning-contrast-rgb: 0, 0, 0;
+  --ion-color-warning-shade: #e0bb2e;
+  --ion-color-warning-tint: #ffd948;
+
+  --ion-color-danger: #ff4961;
+  --ion-color-danger-rgb: 255, 73, 97;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #e04055;
+  --ion-color-danger-tint: #ff5b71;
+
+  --ion-color-dark: #f4f5f8;
+  --ion-color-dark-rgb: 244, 245, 248;
+  --ion-color-dark-contrast: #000000;
+  --ion-color-dark-contrast-rgb: 0, 0, 0;
+  --ion-color-dark-shade: #d7d8da;
+  --ion-color-dark-tint: #f5f6f9;
+
+  --ion-color-medium: #989aa2;
+  --ion-color-medium-rgb: 152, 154, 162;
+  --ion-color-medium-contrast: #000000;
+  --ion-color-medium-contrast-rgb: 0, 0, 0;
+  --ion-color-medium-shade: #86888f;
+  --ion-color-medium-tint: #a2a4ab;
+
+  --ion-color-light: #222428;
+  --ion-color-light-rgb: 34, 36, 40;
+  --ion-color-light-contrast: #ffffff;
+  --ion-color-light-contrast-rgb: 255, 255, 255;
+  --ion-color-light-shade: #1e2023;
+  --ion-color-light-tint: #383a3e;
+}
+
+html.ios.dark {
+  --ion-background-color: #000000;
+  --ion-background-color-rgb: 0, 0, 0;
+
+  --ion-text-color: #ffffff;
+  --ion-text-color-rgb: 255, 255, 255;
+
+  --ion-color-step-50: #0d0d0d;
+  --ion-color-step-100: #1a1a1a;
+  --ion-color-step-150: #262626;
+  --ion-color-step-200: #333333;
+  --ion-color-step-250: #404040;
+  --ion-color-step-300: #4d4d4d;
+  --ion-color-step-350: #595959;
+  --ion-color-step-400: #666666;
+  --ion-color-step-450: #737373;
+  --ion-color-step-500: #808080;
+  --ion-color-step-550: #8c8c8c;
+  --ion-color-step-600: #999999;
+  --ion-color-step-650: #a6a6a6;
+  --ion-color-step-700: #b3b3b3;
+  --ion-color-step-750: #bfbfbf;
+  --ion-color-step-800: #cccccc;
+  --ion-color-step-850: #d9d9d9;
+  --ion-color-step-900: #e6e6e6;
+  --ion-color-step-950: #f2f2f2;
+
+  --ion-item-background: #000000;
+}
+
+html.ios.dark ion-modal {
+  --ion-background-color: var(--ion-color-step-100);
+  --ion-toolbar-background: var(--ion-color-step-150);
+  --ion-toolbar-border-color: var(--ion-color-step-250);
+}
+
+html.md.dark {
+  --ion-background-color: #121212;
+  --ion-background-color-rgb: 18, 18, 18;
+
+  --ion-text-color: #ffffff;
+  --ion-text-color-rgb: 255, 255, 255;
+
+  --ion-border-color: #222222;
+
+  --ion-color-step-50: #1e1e1e;
+  --ion-color-step-100: #2a2a2a;
+  --ion-color-step-150: #363636;
+  --ion-color-step-200: #414141;
+  --ion-color-step-250: #4d4d4d;
+  --ion-color-step-300: #595959;
+  --ion-color-step-350: #656565;
+  --ion-color-step-400: #717171;
+  --ion-color-step-450: #7d7d7d;
+  --ion-color-step-500: #898989;
+  --ion-color-step-550: #949494;
+  --ion-color-step-600: #a0a0a0;
+  --ion-color-step-650: #acacac;
+  --ion-color-step-700: #b8b8b8;
+  --ion-color-step-750: #c4c4c4;
+  --ion-color-step-800: #d0d0d0;
+  --ion-color-step-850: #dbdbdb;
+  --ion-color-step-900: #e7e7e7;
+  --ion-color-step-950: #f3f3f3;
+
+  --ion-toolbar-background: #1f1f1f;
+  --ion-tab-bar-background: #1f1f1f;
 }

@@ -43,6 +43,13 @@ const routes: Routes = [
   {path: "privacy-policy", component: PrivacyPolicyPage},
   {path: "terms-of-use", component: TermsOfUsePage},
   {path: "child-safety", component: ChildSafetyPage},
+  {
+    path: "theme-showcase",
+    loadComponent: () =>
+      import("./pages/theme-showcase/theme-showcase.page").then(
+        (m) => m.ThemeShowcasePage,
+      ),
+  },
 ];
 
 @NgModule({

@@ -25,11 +25,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-toolbar class="menu-toolbar">
         <div class="toolbar-content">
           <img
-            src="assets/icon/logo.png"
+            [src]="brandingConfig.logoUrl || 'assets/icon/logo.png'"
             alt="ASCENDynamics Logo"
             class="toolbar-logo"
-            />
-          <ion-title color="primary">{{ "menu.title" | translate }}</ion-title>
+          />
+          <ion-title color="primary">{{ brandingConfig.appName }}</ion-title>
         </div>
       </ion-toolbar>
     </ion-header>
@@ -44,8 +44,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 lines="none"
                 detail="false"
                 routerLinkActive="selected"
-                [routerLinkActiveOptions]="{ exact: true }"
-                >
+                [routerLinkActiveOptions]="{exact: true}"
+              >
                 <ion-icon
                   aria-hidden="true"
                   slot="start"
@@ -59,7 +59,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                     slot="end"
                     [routerLink]="item.buttonLink"
                     (click)="$event.stopPropagation()"
-                    >
+                  >
                     {{ item.buttonText }}
                     <ion-icon
                       aria-hidden="true"
@@ -78,7 +78,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               lines="none"
               detail="false"
               (click)="showFeedbackModal()"
-              >
+            >
               <ion-icon
                 aria-hidden="true"
                 slot="start"
@@ -102,7 +102,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               detail="false"
               routerLinkActive="selected"
               [routerLinkActiveOptions]="{exact: info.url === '/info'}"
-              >
+            >
               <ion-icon
                 aria-hidden="true"
                 slot="start"
@@ -124,8 +124,12 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             [href]="p.url"
             target="_blank"
             class="project-item"
-            >
-            <ion-icon aria-hidden="true" slot="start" [name]="p.icon"></ion-icon>
+          >
+            <ion-icon
+              aria-hidden="true"
+              slot="start"
+              [name]="p.icon"
+            ></ion-icon>
             <ion-label>{{ p.title }}</ion-label>
           </ion-item>
         }

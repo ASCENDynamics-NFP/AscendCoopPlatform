@@ -48,6 +48,8 @@ export interface BrandingConfig {
   showDonate: boolean;
   showEventCalendar: boolean;
   showThinkTank: boolean;
+  showServices: boolean;
+  showStartups: boolean;
 }
 
 /**
@@ -60,7 +62,7 @@ export const BRANDING_DEFAULTS: BrandingConfig = {
   enabled: true,
   appName: "ASCENDynamics NFP",
   tagline:
-    "Collaborative platform for worker-owned cooperatives, nonprofits, and community organizations.",
+    "ASCENDynamics NFP is an open-source collaboration platform connecting individuals, nonprofits, mutual aid groups, and cooperative startups. We bring together these communities with volunteers, donors, and independent contributors to innovate and drive social impact through technology. By empowering everyone to collaborate in real time, we help build stronger, more connected networks dedicated to positive change.",
   logoUrl: "",
   primaryColor: "#e87121",
   secondaryColor: "#4a90e2",
@@ -69,6 +71,8 @@ export const BRANDING_DEFAULTS: BrandingConfig = {
   showDonate: true,
   showEventCalendar: true,
   showThinkTank: true,
+  showServices: true,
+  showStartups: true,
 };
 
 const LOCAL_OVERRIDE_KEY = "branding.localOverride.v1";
@@ -232,6 +236,14 @@ export class BrandingService {
         "branding_show_think_tank",
         BRANDING_DEFAULTS.showThinkTank,
       ),
+      showServices: bool(
+        "branding_show_services",
+        BRANDING_DEFAULTS.showServices,
+      ),
+      showStartups: bool(
+        "branding_show_startups",
+        BRANDING_DEFAULTS.showStartups,
+      ),
     };
   }
 
@@ -329,6 +341,8 @@ export class BrandingService {
       branding_show_donate: config.showDonate,
       branding_show_event_calendar: config.showEventCalendar,
       branding_show_think_tank: config.showThinkTank,
+      branding_show_services: config.showServices,
+      branding_show_startups: config.showStartups,
     };
   }
 }

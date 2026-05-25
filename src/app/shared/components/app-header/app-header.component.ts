@@ -24,6 +24,7 @@ import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../../state/selectors/auth.selectors";
 import {map, Observable} from "rxjs";
 import {AuthUser} from "@shared/models/auth-user.model";
+import {BrandingService} from "../../../core/services/branding.service";
 
 @Component({
   standalone: false,
@@ -46,14 +47,19 @@ export class AppHeaderComponent {
   }
 
   authUser$: Observable<AuthUser | null>; // Declare type for clarity
+  logoUrl$: Observable<string>;
   public popoverEvent: any;
 
   constructor(
     private popoverController: PopoverController,
     private store: Store,
+    private brandingService: BrandingService,
   ) {
     // Initialize authUser$ after store is available
     this.authUser$ = this.store.select(selectAuthUser);
+    this.logoUrl$ = this.brandingService.config$.pipe(
+      map((cfg) => cfg.logoUrl || "assets/icon/logo.png"),
+    );
   }
 
   get image() {

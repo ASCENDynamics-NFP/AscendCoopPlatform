@@ -19,10 +19,22 @@
  ***********************************************************************************************/
 // src/app/modules/info/pages/landing/landing.page.ts
 
-import {Component, ElementRef, ViewChild} from "@angular/core";
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from "@angular/core";
 import {ViewDidEnter} from "@ionic/angular";
 import {SwiperOptions} from "swiper/types";
+import {Subscription} from "rxjs";
 import {MetaService} from "../../../../core/services/meta.service";
+import {
+  BrandingConfig,
+  BrandingService,
+  BRANDING_DEFAULTS,
+} from "../../../../core/services/branding.service";
 
 @Component({
   standalone: false,
@@ -30,8 +42,28 @@ import {MetaService} from "../../../../core/services/meta.service";
   templateUrl: "./landing.page.html",
   styleUrls: ["./landing.page.scss"],
 })
-export class LandingPage implements ViewDidEnter {
+export class LandingPage implements ViewDidEnter, OnInit, OnDestroy {
   @ViewChild("swiperElement") swiperElement: ElementRef | undefined;
+
+  branding: BrandingConfig = {...BRANDING_DEFAULTS};
+  private brandingSub?: Subscription;
+
+  currentYear: number = new Date().getFullYear();
+
+  constructor(
+    private metaService: MetaService,
+    private brandingService: BrandingService,
+  ) {}
+
+  ngOnInit(): void {
+    this.brandingSub = this.brandingService.config$.subscribe(
+      (cfg) => (this.branding = cfg),
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.brandingSub?.unsubscribe();
+  }
 
   swiperConfig: SwiperOptions = {
     slidesPerView: 1,
@@ -55,10 +87,6 @@ export class LandingPage implements ViewDidEnter {
       },
     },
   };
-
-  currentYear: number = new Date().getFullYear();
-
-  constructor(private metaService: MetaService) {}
 
   // Runs when the page is about to enter the view
   ionViewWillEnter() {

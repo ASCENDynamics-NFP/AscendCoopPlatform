@@ -19,8 +19,22 @@
  ********************************************************************************/
 // src/app/modules/info/pages/theme-showcase/theme-showcase.page.ts
 
-import {Component, OnDestroy, OnInit} from "@angular/core";
+import {
+  Component,
+  ChangeDetectorRef,
+  OnDestroy,
+  OnInit,
+  inject,
+} from "@angular/core";
+import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
+import {RouterLink, Router} from "@angular/router";
+import {Subscription} from "rxjs";
+import {
+  BRANDING_DEFAULTS,
+  BrandingConfig,
+  BrandingService,
+} from "../../../../core/services/branding.service";
 import {
   ActionSheetController,
   AlertController,
@@ -92,6 +106,7 @@ import {
   IonToolbar,
   LoadingController,
   ToastController,
+  ViewWillEnter,
 } from "@ionic/angular/standalone";
 import type {ItemReorderEventDetail} from "@ionic/angular";
 
@@ -106,7 +121,9 @@ interface ReorderItem {
   templateUrl: "./theme-showcase.page.html",
   styleUrls: ["./theme-showcase.page.scss"],
   imports: [
+    CommonModule,
     FormsModule,
+    RouterLink,
     IonAccordion,
     IonAccordionGroup,
     IonAvatar,
@@ -175,7 +192,16 @@ interface ReorderItem {
     IonToolbar,
   ],
 })
-export class ThemeShowcasePage implements OnInit, OnDestroy {
+export class ThemeShowcasePage implements OnInit, OnDestroy, ViewWillEnter {
+  private readonly brandingService = inject(BrandingService);
+  private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private brandingSub?: Subscription;
+
+  branding: BrandingConfig = {...BRANDING_DEFAULTS};
+  brandingDisabled = false;
+  activeSegment = "preview";
+
   isDark = false;
 
   // Form demo values
@@ -219,6 +245,11 @@ export class ThemeShowcasePage implements OnInit, OnDestroy {
     private loadingCtrl: LoadingController,
   ) {}
 
+  ionViewWillEnter(): void {
+    this.activeSegment = "preview";
+    this.cdr.detectChanges();
+  }
+
   ngOnInit() {
     this.previousBodyClass = document.body.className;
     this.previousHtmlClass = document.documentElement.className;
@@ -232,11 +263,37 @@ export class ThemeShowcasePage implements OnInit, OnDestroy {
     } else {
       this.isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     }
+
+    // Mirror live branding state into the template.
+    this.brandingSub = this.brandingService.config$.subscribe((cfg) => {
+      this.branding = cfg;
+    });
+    this.brandingDisabled =
+      (this.brandingService.getLocalOverride()?.enabled ?? true) === false;
   }
 
   ngOnDestroy() {
     document.body.className = this.previousBodyClass;
     document.documentElement.className = this.previousHtmlClass;
+    this.brandingSub?.unsubscribe();
+  }
+
+  onBrandingDisableToggle(event: CustomEvent): void {
+    const disabled = (event.detail as {checked: boolean}).checked;
+    this.brandingDisabled = disabled;
+    if (disabled) {
+      this.brandingService.setLocalOverride({enabled: false});
+    } else {
+      this.brandingService.clearLocalOverride();
+    }
+  }
+
+  /** Switch between the Editor and Preview pages via segment buttons. */
+  onSegmentChange(value: string | number | undefined): void {
+    if (value === "editor") {
+      this.activeSegment = "editor";
+      void this.router.navigateByUrl("/admin/branding");
+    }
   }
 
   onThemeToggle(event: any) {

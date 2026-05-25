@@ -133,6 +133,21 @@
 
   --app-transition-base: 0.2s ease;
   --app-transition-slow: 0.35s ease;
+
+  /*
+   * Branding tokens
+   * ---------------------------------------------------------------
+   * Defaults below match the bundled ASCENDynamics NFP brand. The
+   * `BrandingService` overwrites these at runtime on the <html>
+   * element using values from Firebase Remote Config (with an
+   * optional per-device localStorage override). See
+   * `src/app/core/services/branding.service.ts` and
+   * `docs/BRANDING.md`.
+   */
+  --app-brand-primary: #e87121;
+  --app-brand-secondary: #4a90e2;
+  --app-brand-app-name: "ASCENDynamics NFP";
+  --app-brand-logo-url: none;
 }
 
 /*

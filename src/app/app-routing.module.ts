@@ -21,6 +21,7 @@
 
 import {NgModule} from "@angular/core";
 import {RouterModule, Routes, ExtraOptions} from "@angular/router";
+import {authGuard} from "./core/guards/auth.guard";
 
 export const routes: Routes = [
   {
@@ -67,6 +68,16 @@ export const routes: Routes = [
     loadChildren: () =>
       import("./modules/time-tracking/time-tracking.module").then(
         (m) => m.TimeTrackingModule,
+      ),
+  },
+  {
+    // Admin-only surfaces. Currently auth-gated; tighten to an admin
+    // role/claim check once that contract exists on AuthUser.
+    path: "admin/branding",
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import("./modules/admin/pages/branding/branding.page").then(
+        (m) => m.AdminBrandingPage,
       ),
   },
 ];

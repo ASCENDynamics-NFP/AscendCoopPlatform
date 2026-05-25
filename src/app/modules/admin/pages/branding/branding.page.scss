@@ -1,0 +1,38 @@
+.color-picker-wrap {
+  display: flex;
+  align-items: center;
+  padding-inline-end: 4px;
+}
+
+.color-picker-swatch {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--app-border-color-strong);
+  border-radius: var(--app-radius-sm);
+  padding: 2px;
+  cursor: pointer;
+  background: none;
+  /* Remove default browser chrome */
+  -webkit-appearance: none;
+  appearance: none;
+  &::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+  &::-webkit-color-swatch {
+    border: none;
+    border-radius: calc(var(--app-radius-sm) - 3px);
+  }
+  &::-moz-color-swatch {
+    border: none;
+    border-radius: calc(var(--app-radius-sm) - 3px);
+  }
+}
+
+.branding-active {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--app-text-muted);
+}

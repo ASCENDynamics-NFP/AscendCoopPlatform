@@ -124,6 +124,7 @@ Top-level routes live in `src/app/app-routing.module.ts`. Each feature module sh
 - Use `FirestoreService` (in `src/app/core/services/`) as the primary boundary for Firestore reads/writes. It wraps AngularFire compat APIs.
 - The project keeps `AngularFireModule`, `AngularFirestoreModule`, and `AngularFireStorageModule` from `@angular/fire/compat` (v20) registered in `AppModule`. The modular `firebase` SDK (v12) is also installed and used for things like `initializeApp` and `getStorage` in `app.module.ts`.
 - `ImageUploadService` resolves `getStorage()` lazily (via a private getter) to avoid a "No Firebase App" race during unit-test injection. Follow the same pattern for any new modular-SDK service.
+- `BrandingService` (in `src/app/core/services/branding.service.ts`) reads Firebase **Remote Config** at startup, applies brand tokens to `<html>`, and supports a per-device localStorage override. The Remote Config template lives in `remoteconfig.template.json`. `firebase deploy --only remoteconfig` is **not** used — operators publish through the Firebase console UI (or use the `/admin/branding` page to generate JSON). See [docs/BRANDING.md](../docs/BRANDING.md).
 - Do not remove or replace AngularFire compat without an explicit migration request.
 
 ### 9. Service Organization
@@ -407,6 +408,7 @@ Token groups:
 | Radii       | `--app-radius-sm` (6px), `--app-radius-md` (12px), `--app-radius-lg` (16px), `--app-radius-pill` |
 | Spacing     | `--app-spacing-xs` (4), `--app-spacing-sm` (8), `--app-spacing-md` (16), `--app-spacing-lg` (24), `--app-spacing-xl` (32) |
 | Text/Motion | `--app-text-muted`, `--app-text-shadow-etched`, `--app-transition-base`, `--app-transition-slow` |
+| Branding    | `--app-brand-primary`, `--app-brand-secondary`, `--app-brand-app-name`, `--app-brand-logo-url` — overwritten at runtime by `BrandingService` from Firebase Remote Config. See [docs/BRANDING.md](../docs/BRANDING.md). |
 
 When you need a new token (e.g. a new surface level), **extend the token set in `variables.scss`** in all three locations (`:root`, `.dark`, and the `@media` mirror). Don't invent one-off CSS custom properties scoped to a single component.
 

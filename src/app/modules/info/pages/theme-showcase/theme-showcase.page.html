@@ -22,6 +22,19 @@
       ></ion-icon>
     </ion-buttons>
   </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment
+      [value]="activeSegment"
+      (ionChange)="onSegmentChange($event.detail.value)"
+    >
+      <ion-segment-button value="editor">
+        <ion-label>Editor</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="preview">
+        <ion-label>Preview</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
@@ -34,6 +47,66 @@
     ></ion-refresher-content>
   </ion-refresher>
 
+  <!-- Branding (Remote Config) -->
+  <section class="app-section">
+    <div class="app-section-header">
+      <ion-icon name="sparkles-outline"></ion-icon>
+      <h2>Branding</h2>
+    </div>
+
+    <ion-card>
+      <ion-card-content>
+        <p>
+          Branding values come from Firebase Remote Config with an optional
+          per-device localStorage override. Open
+          <a routerLink="/admin/branding">/admin/branding</a> to edit the draft
+          and generate JSON for upload via the Firebase console.
+        </p>
+        <ion-list>
+          <ion-item>
+            <ion-label>
+              <h3>App name</h3>
+              <p>{{ branding.appName }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <h3>Tagline</h3>
+              <p>{{ branding.tagline }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <h3>Primary / Secondary</h3>
+              <p>
+                {{ branding.primaryColor }} &nbsp;/&nbsp; {{
+                branding.secondaryColor }}
+              </p>
+            </ion-label>
+            <ion-note slot="end">
+              <span
+                class="brand-color-dot"
+                [style.background]="branding.primaryColor"
+              ></span>
+              <span
+                class="brand-color-dot"
+                [style.background]="branding.secondaryColor"
+              ></span>
+            </ion-note>
+          </ion-item>
+          <ion-item>
+            <ion-toggle
+              [checked]="brandingDisabled"
+              (ionChange)="onBrandingDisableToggle($event)"
+              labelPlacement="start"
+              >Disable branding on this device</ion-toggle
+            >
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
   <!-- Color Palette -->
   <section class="app-section">
     <div class="app-section-header">
@@ -43,22 +116,17 @@
 
     <ion-grid>
       <ion-row>
-        @for (swatch of [
-          { label: 'Primary', color: 'primary' },
-          { label: 'Secondary', color: 'secondary' },
-          { label: 'Tertiary', color: 'tertiary' },
-          { label: 'Success', color: 'success' },
-          { label: 'Warning', color: 'warning' },
-          { label: 'Danger', color: 'danger' },
-          { label: 'Medium', color: 'medium' },
-          { label: 'Dark', color: 'dark' },
-          { label: 'Light', color: 'light' }
-        ]; track swatch.color) {
-          <ion-col size="4">
-            <div class="color-swatch swatch-{{ swatch.color }}">
-              <span>{{ swatch.label }}</span>
-            </div>
-          </ion-col>
+        @for (swatch of [ { label: 'Primary', color: 'primary' }, { label:
+        'Secondary', color: 'secondary' }, { label: 'Tertiary', color:
+        'tertiary' }, { label: 'Success', color: 'success' }, { label:
+        'Warning', color: 'warning' }, { label: 'Danger', color: 'danger' }, {
+        label: 'Medium', color: 'medium' }, { label: 'Dark', color: 'dark' }, {
+        label: 'Light', color: 'light' } ]; track swatch.color) {
+        <ion-col size="4">
+          <div class="color-swatch swatch-{{ swatch.color }}">
+            <span>{{ swatch.label }}</span>
+          </div>
+        </ion-col>
         }
       </ion-row>
     </ion-grid>
@@ -555,7 +623,9 @@
             placeholder="Choose one or more"
           >
             <ion-select-option value="member">Member</ion-select-option>
-            <ion-select-option value="coordinator">Coordinator</ion-select-option>
+            <ion-select-option value="coordinator"
+              >Coordinator</ion-select-option
+            >
             <ion-select-option value="admin">Admin</ion-select-option>
             <ion-select-option value="treasurer">Treasurer</ion-select-option>
           </ion-select>
@@ -668,7 +738,11 @@
         </ion-item>
         <ion-item>
           <ion-label>Secondary</ion-label>
-          <ion-toggle slot="end" color="secondary" [checked]="true"></ion-toggle>
+          <ion-toggle
+            slot="end"
+            color="secondary"
+            [checked]="true"
+          ></ion-toggle>
         </ion-item>
         <ion-item>
           <ion-label>Success</ion-label>
@@ -690,11 +764,19 @@
         </ion-item>
         <ion-item>
           <ion-label>Success</ion-label>
-          <ion-checkbox slot="end" color="success" [checked]="true"></ion-checkbox>
+          <ion-checkbox
+            slot="end"
+            color="success"
+            [checked]="true"
+          ></ion-checkbox>
         </ion-item>
         <ion-item>
           <ion-label>Danger</ion-label>
-          <ion-checkbox slot="end" color="danger" [checked]="true"></ion-checkbox>
+          <ion-checkbox
+            slot="end"
+            color="danger"
+            [checked]="true"
+          ></ion-checkbox>
         </ion-item>
         <ion-item>
           <ion-label>Indeterminate</ion-label>
@@ -715,8 +797,8 @@
         <p class="text-muted">
           Plain HTML <code>&lt;form&gt;</code>, <code>&lt;input&gt;</code>,
           <code>&lt;select&gt;</code> and <code>&lt;textarea&gt;</code> elements
-          styled via <code>.app-native-form</code>. They consume the same
-          design tokens as Ionic components and flip with the theme.
+          styled via <code>.app-native-form</code>. They consume the same design
+          tokens as Ionic components and flip with the theme.
         </p>
         <form
           class="app-native-form"
@@ -844,12 +926,7 @@
 
           <label>
             Disabled
-            <input
-              type="text"
-              name="disabled"
-              value="Not editable"
-              disabled
-            />
+            <input type="text" name="disabled" value="Not editable" disabled />
           </label>
 
           <div class="app-field-row">
@@ -877,16 +954,13 @@
       </ion-card-header>
       <ion-card-content>
         <div class="spinner-group">
-          @for (s of [
-            { name: 'circles', label: 'Circles' },
-            { name: 'dots', label: 'Dots' },
-            { name: 'crescent', label: 'Crescent' },
-            { name: 'lines', label: 'Lines' }
-          ]; track s.name) {
-            <div class="spinner-item">
-              <ion-spinner [name]="s.name"></ion-spinner>
-              <span>{{ s.label }}</span>
-            </div>
+          @for (s of [ { name: 'circles', label: 'Circles' }, { name: 'dots',
+          label: 'Dots' }, { name: 'crescent', label: 'Crescent' }, { name:
+          'lines', label: 'Lines' } ]; track s.name) {
+          <div class="spinner-item">
+            <ion-spinner [name]="s.name"></ion-spinner>
+            <span>{{ s.label }}</span>
+          </div>
           }
         </div>
       </ion-card-content>
@@ -915,10 +989,7 @@
       <ion-list>
         <ion-item>
           <ion-avatar slot="start">
-            <img
-              alt="avatar"
-              src="https://i.pravatar.cc/120?img=12"
-            />
+            <img alt="avatar" src="https://i.pravatar.cc/120?img=12" />
           </ion-avatar>
           <ion-label>
             <h3>Avatar</h3>
@@ -942,7 +1013,11 @@
             slot="start"
             alt="ion-img lazy"
             src="https://picsum.photos/seed/ionimg/80/80"
-            style="width: 56px; height: 56px; border-radius: var(--app-radius-sm)"
+            style="
+              width: 56px;
+              height: 56px;
+              border-radius: var(--app-radius-sm);
+            "
           ></ion-img>
           <ion-label>
             <h3>ion-img</h3>
@@ -967,45 +1042,45 @@
           </ion-button>
         </div>
         @if (showSkeleton) {
-          <ion-list>
-            <ion-item>
-              <ion-avatar slot="start">
-                <ion-skeleton-text [animated]="true"></ion-skeleton-text>
-              </ion-avatar>
-              <ion-label>
-                <h3>
-                  <ion-skeleton-text
-                    [animated]="true"
-                    style="width: 60%"
-                  ></ion-skeleton-text>
-                </h3>
-                <p>
-                  <ion-skeleton-text
-                    [animated]="true"
-                    style="width: 90%"
-                  ></ion-skeleton-text>
-                </p>
-                <p>
-                  <ion-skeleton-text
-                    [animated]="true"
-                    style="width: 80%"
-                  ></ion-skeleton-text>
-                </p>
-              </ion-label>
-            </ion-item>
-          </ion-list>
+        <ion-list>
+          <ion-item>
+            <ion-avatar slot="start">
+              <ion-skeleton-text [animated]="true"></ion-skeleton-text>
+            </ion-avatar>
+            <ion-label>
+              <h3>
+                <ion-skeleton-text
+                  [animated]="true"
+                  style="width: 60%"
+                ></ion-skeleton-text>
+              </h3>
+              <p>
+                <ion-skeleton-text
+                  [animated]="true"
+                  style="width: 90%"
+                ></ion-skeleton-text>
+              </p>
+              <p>
+                <ion-skeleton-text
+                  [animated]="true"
+                  style="width: 80%"
+                ></ion-skeleton-text>
+              </p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
         } @else {
-          <ion-list>
-            <ion-item>
-              <ion-avatar slot="start">
-                <img alt="avatar" src="https://i.pravatar.cc/120?img=5" />
-              </ion-avatar>
-              <ion-label>
-                <h3>Loaded content</h3>
-                <p>This replaces the placeholder once data arrives.</p>
-              </ion-label>
-            </ion-item>
-          </ion-list>
+        <ion-list>
+          <ion-item>
+            <ion-avatar slot="start">
+              <img alt="avatar" src="https://i.pravatar.cc/120?img=5" />
+            </ion-avatar>
+            <ion-label>
+              <h3>Loaded content</h3>
+              <p>This replaces the placeholder once data arrives.</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
         }
       </ion-card-content>
     </ion-card>
@@ -1033,9 +1108,8 @@
             <ion-label>How do I theme my page?</ion-label>
           </ion-item>
           <div slot="content" class="ion-padding">
-            Use <code>.app-section</code>, <code>.app-section-header</code>,
-            and <code>--app-*</code> CSS variables instead of hard-coded
-            values.
+            Use <code>.app-section</code>, <code>.app-section-header</code>, and
+            <code>--app-*</code> CSS variables instead of hard-coded values.
           </div>
         </ion-accordion>
         <ion-accordion value="third">
@@ -1082,7 +1156,9 @@
       <ion-card-content>
         <ion-item lines="none">
           <ion-label>Selected</ion-label>
-          <ion-datetime-button datetime="showcase-datetime"></ion-datetime-button>
+          <ion-datetime-button
+            datetime="showcase-datetime"
+          ></ion-datetime-button>
         </ion-item>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
@@ -1115,9 +1191,21 @@
           <ion-button color="secondary" (click)="presentActionSheet()">
             Action Sheet
           </ion-button>
-          <ion-button color="tertiary" (click)="presentToast('top')">Toast Top</ion-button>
-          <ion-button color="tertiary" fill="outline" (click)="presentToast('middle')">Toast Mid</ion-button>
-          <ion-button color="tertiary" fill="clear" (click)="presentToast('bottom')">Toast Bot</ion-button>
+          <ion-button color="tertiary" (click)="presentToast('top')"
+            >Toast Top</ion-button
+          >
+          <ion-button
+            color="tertiary"
+            fill="outline"
+            (click)="presentToast('middle')"
+            >Toast Mid</ion-button
+          >
+          <ion-button
+            color="tertiary"
+            fill="clear"
+            (click)="presentToast('bottom')"
+            >Toast Bot</ion-button
+          >
           <ion-button color="success" (click)="presentLoading()">
             Loading
           </ion-button>
@@ -1131,21 +1219,15 @@
               <ion-toolbar>
                 <ion-title>Demo Modal</ion-title>
                 <ion-buttons slot="end">
-                  <ion-button (click)="demoModal.dismiss()">
-                    Close
-                  </ion-button>
+                  <ion-button (click)="demoModal.dismiss()"> Close </ion-button>
                 </ion-buttons>
               </ion-toolbar>
             </ion-header>
             <ion-content class="ion-padding">
               <p>
-                Modals inherit page surfaces and shadows from the design
-                tokens.
+                Modals inherit page surfaces and shadows from the design tokens.
               </p>
-              <ion-button
-                expand="block"
-                (click)="demoModal.dismiss()"
-              >
+              <ion-button expand="block" (click)="demoModal.dismiss()">
                 Dismiss
               </ion-button>
             </ion-content>
@@ -1189,10 +1271,10 @@
           (ionItemReorder)="onReorder($event)"
         >
           @for (item of reorderItems; track item.id) {
-            <ion-item>
-              <ion-label>{{ item.label }}</ion-label>
-              <ion-reorder slot="end"></ion-reorder>
-            </ion-item>
+          <ion-item>
+            <ion-label>{{ item.label }}</ion-label>
+            <ion-reorder slot="end"></ion-reorder>
+          </ion-item>
           }
         </ion-reorder-group>
       </ion-list>
@@ -1243,7 +1325,10 @@
           <ion-icon name="search-outline"></ion-icon>
           <ion-label>Search</ion-label>
         </ion-tab-button>
-        <ion-tab-button tab="notifications" (click)="selectedTab = 'notifications'">
+        <ion-tab-button
+          tab="notifications"
+          (click)="selectedTab = 'notifications'"
+        >
           <ion-icon name="notifications-outline"></ion-icon>
           <ion-label>Alerts</ion-label>
           <ion-badge>3</ion-badge>
@@ -1265,9 +1350,9 @@
     <ion-card>
       <ion-list>
         @for (n of infiniteItems; track n) {
-          <ion-item>
-            <ion-label>Item #{{ n }}</ion-label>
-          </ion-item>
+        <ion-item>
+          <ion-label>Item #{{ n }}</ion-label>
+        </ion-item>
         }
       </ion-list>
     </ion-card>

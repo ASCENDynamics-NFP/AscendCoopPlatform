@@ -17,3 +17,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
  ********************************************************************************/
+
+.brand-color-dot {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--app-radius-pill);
+  border: 1px solid var(--app-border-color-strong);
+  margin-left: var(--app-spacing-xs);
+  vertical-align: middle;
+}

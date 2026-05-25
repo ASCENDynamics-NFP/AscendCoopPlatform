@@ -41,6 +41,7 @@ import {
 register();
 
 import {AuthSyncService} from "./core/services/auth-sync.service";
+import {BrandingService} from "./core/services/branding.service";
 
 @Component({
   standalone: false,
@@ -57,8 +58,12 @@ export class AppComponent implements OnInit {
     private store: Store,
     private platform: Platform,
     private authSyncService: AuthSyncService, // Injected to activate the service
+    private brandingService: BrandingService,
   ) {
     this.translate.addLangs([...SUPPORTED_LANGUAGE_CODES]);
+    // Apply branding defaults synchronously, then fetch Remote Config
+    // in the background. See src/app/core/services/branding.service.ts.
+    this.brandingService.init();
     this.initializeApp();
 
     // Initialize the observable

@@ -41,6 +41,7 @@ import {CategorySuggestion} from "../../../../core/constants/category-keywords.c
 import {AccessService} from "../../../../core/services/access.service";
 import {BulkActionEvent} from "./interfaces/bulk-actions.interface";
 import {BulkActionsService} from "./services/bulk-actions.service";
+import {environment} from "../../../../../environments/environment";
 import {
   ProjectCreationEvent,
   ProjectCreationState,
@@ -201,16 +202,14 @@ export class ProjectsPage implements OnInit {
       {
         title: "Projects | ASCENDynamics NFP",
         description: "Manage projects for your account on ASCENDynamics NFP.",
-        url: `https://ascendynamics.org/account/${this.accountId}/projects`,
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        url: `${environment.appBaseUrl}/account/${this.accountId}/projects`,
+        image: "/assets/image/icon-512x512.png",
       },
       {
         card: "summary",
         title: "Projects | ASCENDynamics NFP",
         description: "Manage projects for your account on ASCENDynamics NFP.",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        image: "/assets/image/icon-512x512.png",
       },
     );
   }

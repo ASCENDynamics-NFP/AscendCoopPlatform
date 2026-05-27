@@ -3,12 +3,12 @@
   "entity": {
     "type": "organisation",
     "role": "maintainer",
-    "name": "ASCENDynamics NFP",
-    "email": "support@ascendynamics.org",
+    "name": "__APP_NAME__",
+    "email": "__SUPPORT_EMAIL__",
     "phone": "",
     "description": "ASCENDynamics NFP is building an open-source collaboration platform for worker-owned cooperatives, nonprofits, and private organisations. Our mission is to empower organisations with data-driven decision-making tools, fostering sustainable growth and addressing societal challenges.",
     "webpageUrl": {
-      "url": "https://ascendynamics.org/"
+      "url": "__APP_BASE_URL__/"
     }
   },
   "projects": [
@@ -17,7 +17,7 @@
       "name": "ASCENDynamics Collaboration Platform",
       "description": "An open-source platform designed for NGOs, worker cooperatives, and nonprofit organisations to streamline collaboration, manage resources, and track volunteer contributions in real-time.",
       "webpageUrl": {
-        "url": "https://ascendynamics.org/"
+        "url": "__APP_BASE_URL__/"
       },
       "repositoryUrl": {
         "url": "https://github.com/ASCENDynamics-NFP/AscendCoopPlatform",

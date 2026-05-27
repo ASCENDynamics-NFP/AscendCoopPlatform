@@ -22,6 +22,7 @@
 import {Component, OnInit} from "@angular/core";
 import {MetaService} from "../../../../core/services/meta.service";
 
+import {environment} from "../../../../../environments/environment";
 @Component({
   standalone: false,
   selector: "app-team",
@@ -62,16 +63,14 @@ export class TeamPage implements OnInit {
         title: "Our Team | ASCENDynamics NFP",
         description:
           "Learn about the passionate team working to grow cooperatives and enhance SEO outreach.",
-        url: "https://ascendynamics.org/info/team",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+        url: `${environment.appBaseUrl}/info/team`,
+        image: "/assets/image/icon-512x512.png",
       },
       {
         card: "summary",
         title: "ASCENDynamics Team",
         description: "Volunteers and SEO specialists supporting our mission.",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+        image: "/assets/image/icon-512x512.png",
       },
     );
 
@@ -82,11 +81,11 @@ export class TeamPage implements OnInit {
       name: "Our Team | ASCENDynamics NFP",
       description:
         "Meet the volunteers, developers, and SEO experts behind ASCENDynamics NFP.",
-      url: "https://ascendynamics.org/info/team",
+      url: `${environment.appBaseUrl}/info/team`,
       mainEntity: {
         "@type": "Organization",
         name: "ASCENDynamics NFP",
-        url: "https://ascendynamics.org",
+        url: environment.appBaseUrl,
         description:
           "Team of volunteers and SEO specialists supporting cooperative development",
       },

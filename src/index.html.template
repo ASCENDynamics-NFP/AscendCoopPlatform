@@ -21,10 +21,10 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>ASCENDynamics NFP Collaborative Platform</title>
+    <title>__APP_NAME__</title>
     <meta
       name="description"
-      content="An open-source collaboration platform connecting volunteers and nonprofits to foster community growth and address fundamental human needs. Join our community today!"
+      content="__APP_DESCRIPTION__"
     />
     <meta
       name="keywords"
@@ -35,36 +35,30 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <!-- Open Graph tags for social sharing -->
     <meta
       property="og:title"
-      content="ASCENDynamics NFP Collaborative Platform"
+      content="__APP_NAME__"
     />
     <meta
       property="og:description"
-      content="Find volunteer opportunities, join nonprofits, and track your impact with ASCENDynamics NFP. Connect with like-minded individuals and organizations to create positive change."
+      content="__APP_DESCRIPTION__"
     />
-    <meta property="og:url" content="https://ascendynamics.org/" />
+    <meta property="og:url" content="__APP_BASE_URL__/" />
     <meta property="og:type" content="website" />
-    <meta
-      property="og:image"
-      content="https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media"
-    />
+    <meta property="og:image" content="/assets/image/icon-512x512.png" />
 
     <!-- Twitter Card metadata -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
-      content="ASCENDynamics NFP Collaborative Platform"
+      content="__APP_NAME__"
     />
     <meta
       name="twitter:description"
-      content="Connect with nonprofits, volunteer opportunities, and community impact metrics. Build meaningful connections and create positive change."
+      content="__APP_DESCRIPTION__"
     />
-    <meta
-      name="twitter:image"
-      content="https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media"
-    />
+    <meta name="twitter:image" content="/assets/image/icon-512x512.png" />
 
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://ascendynamics.org/" />
+    <link rel="canonical" href="__APP_BASE_URL__/" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <base href="/" />
@@ -76,7 +70,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
     <meta
       name="google-signin-client_id"
-      content="1031671694911-3ejesivnlk5fhr8l29ne74fhp0smdltn.apps.googleusercontent.com"
+      content="__GOOGLE_AUTH_WEB_CLIENT_ID__"
     />
     <meta name="google-signin-scope" content="profile email" />
   </head>

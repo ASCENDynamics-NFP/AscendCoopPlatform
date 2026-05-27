@@ -6,6 +6,7 @@
   "scripts": {
     "generate-env:dev": "NODE_ENV=development node generate-env.js",
     "generate-env:prod": "NODE_ENV=production node generate-env.js",
+    "set-bundle-id": "node configure-app.js",
     "build": "npm run build:dev",
     "build:dev": "npm run generate-env:dev && ng build --configuration development",
     "build:prod": "npm run generate-env:prod && ng build --configuration production",
@@ -33,6 +34,7 @@
     "@angular/platform-browser": "^21.2.14",
     "@angular/platform-browser-dynamic": "^21.2.14",
     "@angular/router": "^21.2.14",
+    "@capacitor-community/apple-sign-in": "^7.1.0",
     "@capacitor/android": "^8.3.4",
     "@capacitor/app": "^8.0.1",
     "@capacitor/core": "^8.3.4",

@@ -53,6 +53,7 @@ import * as AccountActions from "../../../../state/actions/account.actions";
 import {RelatedListing} from "@shared/models/related-listing.model";
 import {AccessService} from "../../../../core/services/access.service";
 
+import {environment} from "../../../../../environments/environment";
 @Component({
   standalone: false,
   selector: "app-listing-detail",
@@ -162,11 +163,11 @@ export class ListingDetailPage implements OnInit {
             {
               title: `${listing.title} | ASCENDynamics NFP`,
               description: `Explore the ${listing.type} opportunity at ${listing.organization}. ${listing.description}`,
-              url: `https://ascendynamics.org/listing/${listing.id}`,
+              url: `${environment.appBaseUrl}/listing/${listing.id}`,
               image:
                 listing.heroImage ||
                 listing.iconImage ||
-                "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+                "/assets/image/icon-512x512.png",
             },
             {
               card: "summary_large_image",
@@ -175,7 +176,7 @@ export class ListingDetailPage implements OnInit {
               image:
                 listing.heroImage ||
                 listing.iconImage ||
-                "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+                "/assets/image/icon-512x512.png",
             },
           );
         }
@@ -190,17 +191,15 @@ export class ListingDetailPage implements OnInit {
             title: "Discover Opportunities | ASCENDynamics NFP",
             description:
               "Explore a variety of opportunities to contribute and grow your skills. Join our community today!",
-            url: `https://ascendynamics.org/listing/${listingId}`,
-            image:
-              "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+            url: `${environment.appBaseUrl}/listing/${listingId}`,
+            image: "/assets/image/icon-512x512.png",
           },
           {
             card: "summary_large_image",
             title: "Discover Opportunities",
             description:
               "Explore a variety of opportunities to contribute and grow your skills. Join our community today!",
-            image:
-              "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+            image: "/assets/image/icon-512x512.png",
           },
         );
       },

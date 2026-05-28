@@ -20,7 +20,8 @@
 // src/app/core/services/branding.service.ts
 
 import {Injectable} from "@angular/core";
-import {BehaviorSubject, Observable} from "rxjs";
+import {BehaviorSubject, Observable, ReplaySubject, race, timer} from "rxjs";
+import {filter, map, take} from "rxjs/operators";
 import {RemoteConfigService} from "./remote-config.service";
 
 /**
@@ -99,6 +100,17 @@ export class BrandingService {
   /** Observable view of the active branding config. */
   readonly config$: Observable<BrandingConfig> = this.subject.asObservable();
 
+  private readonly readySubject = new ReplaySubject<void>(1);
+  /**
+   * Emits once when branding is confirmed from Remote Config, or after a
+   * 2.5 s fallback timeout (offline / slow network). Replay(1) means late
+   * subscribers — e.g. AppComponent — always receive the resolved value
+   * even if they subscribe after init() has already completed.
+   *
+   * Use this to drive a splash screen that hides once the brand is stable.
+   */
+  readonly ready$: Observable<void> = this.readySubject.asObservable();
+
   private remoteSnapshot: BrandingConfig = {...BRANDING_DEFAULTS};
   private initialized = false;
 
@@ -132,6 +144,18 @@ export class BrandingService {
     // Apply defaults + any local override immediately so first paint
     // is correct without waiting on the network.
     this.recompute();
+
+    // Resolve ready$ when Remote Config activates OR after 2.5 s, whichever
+    // comes first. This lets consumers (e.g. AppComponent's splash screen)
+    // unblock without hanging indefinitely on a slow/offline connection.
+    const rcActivated$ = this.remoteConfigService.activated$.pipe(
+      filter((tick) => tick > 0),
+      take(1),
+      map(() => undefined as void),
+    );
+    race(rcActivated$, timer(2500).pipe(map(() => undefined as void)))
+      .pipe(take(1))
+      .subscribe(() => this.readySubject.next());
 
     // When Remote Config activates a fresh snapshot, re-read our keys
     // and recompute. The initial seed emission (0) is ignored because

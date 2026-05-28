@@ -26,7 +26,7 @@ import {Store} from "@ngrx/store";
 import {selectIsLoggedIn} from "./state/selectors/auth.selectors";
 import * as AuthActions from "./state/actions/auth.actions";
 import {Observable} from "rxjs";
-import {tap} from "rxjs/operators";
+import {take, tap} from "rxjs/operators";
 import {register} from "swiper/element/bundle";
 import {GoogleAuth} from "@southdevs/capacitor-google-auth";
 import {Capacitor} from "@capacitor/core";
@@ -69,6 +69,18 @@ export class AppComponent implements OnInit {
     this.brandingService.init();
     this.authFeatureFlags.init();
     this.initializeApp();
+
+    // Dismiss the branding splash (defined in index.html, outside Angular)
+    // once Remote Config has resolved or the 2.5 s fallback timeout fires.
+    // Direct DOM manipulation is intentional — the splash lives outside the
+    // Angular tree to avoid interfering with Ionic's root-level DOM.
+    this.brandingService.ready$.pipe(take(1)).subscribe(() => {
+      const splash = document.getElementById("branding-splash");
+      if (!splash) return;
+      splash.classList.add("splash-hidden");
+      // Remove from DOM after fade-out so it can't trap pointer events.
+      window.setTimeout(() => splash.remove(), 400);
+    });
 
     // Initialize the observable
     this.isLoggedIn$ = this.store.select(selectIsLoggedIn).pipe(

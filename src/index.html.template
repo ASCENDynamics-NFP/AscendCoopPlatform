@@ -76,6 +76,48 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
   </head>
 
   <body>
+    <!--
+      Branding splash — rendered before the Angular bundle loads. Hides
+      the default-brand → operator-brand swap that would otherwise flash
+      while Firebase Remote Config is being fetched. Neutral colors
+      intentionally (we don't know the brand yet).
+      Removed from the DOM by BrandingService once ready$ resolves
+      (Remote Config activated, or 2.5 s fallback timeout).
+    -->
+    <style>
+      #branding-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 2147483647;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        opacity: 1;
+        transition: opacity 0.35s ease;
+      }
+      #branding-splash.splash-hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #branding-splash > .branding-splash__spinner {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 4px solid #e0e0e0;
+        border-top-color: #9e9e9e;
+        animation: branding-spin 0.8s linear infinite;
+      }
+      @keyframes branding-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+    <div id="branding-splash" aria-hidden="true">
+      <div class="branding-splash__spinner"></div>
+    </div>
+
     <app-root></app-root>
   </body>
 </html>

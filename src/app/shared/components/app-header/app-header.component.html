@@ -53,9 +53,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     <ng-content select="[header-end]"></ng-content>
 
     <div class="auth-area">
-      @if (image && authUser$ | async; as authUser) {
+      @if (authUser$ | async; as authUser) {
         <ion-avatar class="padded-avatar" (click)="presentPopover($event)">
-          <img [src]="image | async" alt="User Avatar" />
+          <img [src]="image$ | async" alt="User Avatar" />
         </ion-avatar>
       } @else {
         <ion-button

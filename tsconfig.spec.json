@@ -6,9 +6,9 @@
     "types": ["jasmine", "google.maps"],
     "paths": {
       "@southdevs/capacitor-google-auth": [
-        "src/testing/capacitor-google-auth.mock.ts"
+        "./src/testing/capacitor-google-auth.mock.ts"
       ],
-      "@shared/*": ["shared/*"]
+      "@shared/*": ["./shared/*"]
     }
   },
   "files": ["src/test.ts", "src/polyfills.ts"],

@@ -7,19 +7,10 @@
     [disabled]="disabled"
     interface="popover"
     [class.required]="required"
-    >
-    @for (option of categoryOptions; track option) {
-      <ion-select-option
-        [value]="option.value"
-        >
-        <div class="category-option">
-          <ion-icon
-            [name]="option.icon"
-            [style.color]="option.color"
-            class="category-icon"
-          ></ion-icon>
-          <span class="category-label">{{ option.label }}</span>
-        </div>
+  >
+    @for (option of categoryOptions; track option.value) {
+      <ion-select-option [value]="option.value">
+        {{ option.label }}
       </ion-select-option>
     }
   </ion-select>
@@ -31,7 +22,7 @@
     <ion-chip
       [style.background-color]="getCategoryInfo(selectedCategory).color"
       class="category-chip"
-      >
+    >
       <ion-icon [name]="getCategoryInfo(selectedCategory).icon"></ion-icon>
       <ion-label>{{ selectedCategory }}</ion-label>
     </ion-chip>

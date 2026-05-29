@@ -5,6 +5,10 @@
       label="Name"
       formControlName="name"
       label-placement="stacked"
+      spellcheck="false"
+      data-gramm="false"
+      data-gramm_editor="false"
+      data-enable-grammarly="false"
       required
     ></ion-input>
   </ion-item>
@@ -32,8 +36,8 @@
       formControlName="inquiry"
       label-placement="stacked"
       required
-      >
-      @for (opt of inquiries; track opt) {
+    >
+      @for (opt of inquiries; track opt.value) {
         <ion-select-option [value]="opt.value">{{
           opt.label
         }}</ion-select-option>
@@ -45,11 +49,15 @@
       label="Message"
       formControlName="message"
       label-placement="stacked"
+      spellcheck="false"
+      data-gramm="false"
+      data-gramm_editor="false"
+      data-enable-grammarly="false"
       minlength="10"
       rows="6"
     ></ion-textarea>
   </ion-item>
   <ion-button type="submit" expand="block" [disabled]="form.invalid"
     >Submit</ion-button
-    >
-  </form>
+  >
+</form>

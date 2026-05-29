@@ -21,12 +21,13 @@
 
 import {Component, OnInit} from "@angular/core";
 import {MenuController, Platform} from "@ionic/angular";
+import {NavigationError, Router} from "@angular/router";
 import {TranslateService} from "@ngx-translate/core";
 import {Store} from "@ngrx/store";
 import {selectIsLoggedIn} from "./state/selectors/auth.selectors";
 import * as AuthActions from "./state/actions/auth.actions";
 import {Observable} from "rxjs";
-import {take, tap} from "rxjs/operators";
+import {filter, take, tap} from "rxjs/operators";
 import {register} from "swiper/element/bundle";
 import {GoogleAuth} from "@southdevs/capacitor-google-auth";
 import {Capacitor} from "@capacitor/core";
@@ -52,6 +53,7 @@ import {AuthFeatureFlagsService} from "./core/services/auth-feature-flags.servic
 })
 export class AppComponent implements OnInit {
   isLoggedIn$: Observable<boolean>;
+  private chunkRetryCount = 0;
 
   constructor(
     private menuCtrl: MenuController,
@@ -61,6 +63,7 @@ export class AppComponent implements OnInit {
     private authSyncService: AuthSyncService, // Injected to activate the service
     private brandingService: BrandingService,
     private authFeatureFlags: AuthFeatureFlagsService,
+    private router: Router,
   ) {
     this.translate.addLangs([...SUPPORTED_LANGUAGE_CODES]);
     // Initialize Remote Config-backed services. Each registers its own
@@ -88,6 +91,36 @@ export class AppComponent implements OnInit {
         await this.updateMenu(isLoggedIn);
       }),
     );
+
+    // Recover from lazy chunk load failures (typical on flaky networks /
+    // after a redeploy invalidates old chunk hashes). One silent retry,
+    // then surface the index.html offline splash if still failing.
+    this.router.events
+      .pipe(
+        filter(
+          (event): event is NavigationError => event instanceof NavigationError,
+        ),
+      )
+      .subscribe((event) => {
+        const isChunkError =
+          /ChunkLoadError|Loading chunk|Failed to fetch dynamically imported module/i.test(
+            String(event.error?.message ?? event.error ?? ""),
+          );
+        if (!isChunkError) return;
+
+        if (this.chunkRetryCount < 1 && navigator.onLine) {
+          this.chunkRetryCount++;
+          this.router.navigateByUrl(event.url, {replaceUrl: true});
+          return;
+        }
+
+        const splash = document.getElementById("branding-splash");
+        if (splash) {
+          splash.classList.remove("splash-hidden");
+          splash.classList.add("splash-offline");
+          splash.setAttribute("aria-hidden", "false");
+        }
+      });
   }
 
   initializeApp() {

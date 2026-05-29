@@ -22,6 +22,7 @@
 import {Injectable} from "@angular/core";
 import {BehaviorSubject, Observable, ReplaySubject, race, timer} from "rxjs";
 import {filter, map, take} from "rxjs/operators";
+import {environment} from "../../../environments/environment";
 import {RemoteConfigService} from "./remote-config.service";
 
 /**
@@ -50,12 +51,15 @@ export interface BrandingConfig {
 }
 
 /**
- * Built-in defaults. These match the bundled ASCENDynamics NFP brand and
- * are also seeded into Remote Config via {@link getRemoteConfig().defaultConfig}
- * so the very first paint (before the network fetch resolves) uses the
- * same values that ship in the SCSS/HTML.
+ * Upstream ASCENDynamics NFP defaults. These are the values shipped by the
+ * canonical repo; forks override them at build time via `BRAND_*` env vars
+ * (see {@link BRANDING_DEFAULTS} and `.env.example`).
+ *
+ * Kept as a separate constant so the upstream identity is auditable and
+ * so the merge logic below has an unambiguous fallback when an operator's
+ * `.env` leaves a field blank.
  */
-export const BRANDING_DEFAULTS: BrandingConfig = {
+const ASCEND_DEFAULTS: BrandingConfig = {
   enabled: true,
   appName: "ASCENDynamics NFP",
   tagline:
@@ -70,6 +74,43 @@ export const BRANDING_DEFAULTS: BrandingConfig = {
   showThinkTank: true,
   showServices: true,
   showStartups: true,
+};
+
+/**
+ * Build-time brand defaults sourced from `environment.brand` (populated by
+ * `generate-env.js` from `BRAND_*` env vars). A blank/missing value inherits
+ * the corresponding upstream value from {@link ASCEND_DEFAULTS}.
+ *
+ * This is what an offline first-paint sees, and the seed for
+ * `RemoteConfig.defaultConfig`. Runtime layers (Remote Config + per-device
+ * localStorage override) still take precedence at runtime.
+ */
+const buildBrand =
+  (environment as {brand?: Partial<Record<string, string>>}).brand ?? {};
+function buildBrandStr(
+  key: "appName" | "tagline" | "logoUrl" | "primaryColor" | "secondaryColor",
+): string {
+  const v = buildBrand[key];
+  // logoUrl is allowed to be intentionally empty (text-only brands), so an
+  // empty string in env *should* override the upstream default only for that
+  // field. Every other field falls back when blank.
+  if (typeof v === "string" && (v.length > 0 || key === "logoUrl")) return v;
+  return ASCEND_DEFAULTS[key];
+}
+
+/**
+ * Effective build-time defaults: per-fork brand overrides merged on top of
+ * {@link ASCEND_DEFAULTS}. Referenced across the codebase (menu, landing,
+ * theme-showcase, admin branding page, app-header spec) as the synchronous
+ * "shape + seed" for branding state.
+ */
+export const BRANDING_DEFAULTS: BrandingConfig = {
+  ...ASCEND_DEFAULTS,
+  appName: buildBrandStr("appName"),
+  tagline: buildBrandStr("tagline"),
+  logoUrl: buildBrandStr("logoUrl"),
+  primaryColor: buildBrandStr("primaryColor"),
+  secondaryColor: buildBrandStr("secondaryColor"),
 };
 
 const LOCAL_OVERRIDE_KEY = "branding.localOverride.v1";

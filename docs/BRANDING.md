@@ -26,7 +26,42 @@ Defaults live in three places — keep them in sync if you change them:
 
 - `remoteconfig.template.json` — `parameters[*].defaultValue.value`
 - `src/theme/variables.scss` — `--app-brand-*` token defaults
-- `src/app/core/services/branding.service.ts` — `BRANDING_DEFAULTS`
+- `src/app/core/services/branding.service.ts` — `ASCEND_DEFAULTS` (upstream
+  identity). `BRANDING_DEFAULTS` is then derived from `ASCEND_DEFAULTS` plus
+  per-fork build-time overrides supplied via `BRAND_*` env vars (see below).
+
+## Build-time brand overrides (offline / first-paint identity)
+
+Firebase Remote Config is fetched asynchronously and cached in IndexedDB. That
+means a brand-new visitor who lands on the site **offline before any
+successful fetch** would otherwise see the upstream ASCENDynamics defaults.
+
+To ship a fully white-labeled offline-first build, forks can bake their brand
+into the JS bundle by setting these in `.env.production` (and
+`.env.development`):
+
+```env
+BRAND_APP_NAME=Your Co-op
+BRAND_TAGLINE=Short hero subtitle for your platform.
+BRAND_LOGO_URL=https://yourdomain.example/logo.png
+BRAND_PRIMARY_COLOR=#1565c0
+BRAND_SECONDARY_COLOR=#9c27b0
+```
+
+Leave any value blank to inherit the upstream ASCENDynamics default for that
+field. `BRAND_LOGO_URL` accepts a blank value to mean "text-only brand".
+
+These values flow through `generate-env.js` → `environment.brand` →
+`BRANDING_DEFAULTS`, and become both the synchronous first-paint identity and
+the seed for `RemoteConfig.defaultConfig`. They do **not** replace Firebase
+Remote Config — runtime RC + per-device `localStorage` overrides still take
+precedence.
+
+You also need to replace the bundled image assets in your fork:
+
+- `src/assets/icon/logo.png` — favicon
+- `src/assets/image/icon-512x512.png` — Open Graph / Twitter card image
+- The PWA / native app icons under `src/assets/icon/` and `resources/`
 
 ## What is **not** brandable (license requirement)
 
@@ -78,7 +113,7 @@ There are two ways to push changes to Remote Config:
 ### Option A — `/admin/branding` (recommended)
 
 1. Sign in with an authorized account.
-2. Visit [`/admin/branding`](http://localhost:4200/admin/branding) and edit the
+2. Visit [`/admin/branding`](http://localhost:8100/admin/branding) and edit the
    draft.
 3. Click **Apply on this device** to preview the change locally (writes the
    localStorage override; affects no one else).

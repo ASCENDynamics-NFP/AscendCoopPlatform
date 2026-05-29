@@ -58,4 +58,16 @@ export const environment = {
     jurisdiction: "State of Example, Country",
     legalEffectiveDate: "January 1, 2025",
   },
+  // Build-time brand defaults baked into the JS bundle. Empty strings mean
+  // "fall back to the upstream ASCENDynamics defaults defined in
+  // BrandingService.BRANDING_DEFAULTS". Set these per-fork so that the first
+  // offline visit shows YOUR brand, not the upstream one. Runtime overrides
+  // (Firebase Remote Config + per-device localStorage) still win at runtime.
+  brand: {
+    appName: "",
+    tagline: "",
+    logoUrl: "",
+    primaryColor: "",
+    secondaryColor: "",
+  },
 };

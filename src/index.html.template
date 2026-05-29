@@ -113,10 +113,95 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           transform: rotate(360deg);
         }
       }
+      #branding-splash > .branding-splash__offline {
+        display: none;
+        max-width: 320px;
+        margin: 0 16px;
+        text-align: center;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: #424242;
+      }
+      #branding-splash.splash-offline > .branding-splash__spinner {
+        display: none;
+      }
+      #branding-splash.splash-offline > .branding-splash__offline {
+        display: block;
+      }
+      #branding-splash .branding-splash__offline h1 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 8px;
+      }
+      #branding-splash .branding-splash__offline p {
+        font-size: 14px;
+        line-height: 1.4;
+        margin: 0 0 20px;
+        color: #757575;
+      }
+      #branding-splash .branding-splash__retry {
+        appearance: none;
+        border: 0;
+        border-radius: 8px;
+        background: #424242;
+        color: #fff;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        padding: 10px 24px;
+        cursor: pointer;
+      }
+      #branding-splash .branding-splash__retry:hover {
+        background: #212121;
+      }
     </style>
     <div id="branding-splash" aria-hidden="true">
       <div class="branding-splash__spinner"></div>
+      <div class="branding-splash__offline" role="alert">
+        <h1>Can&rsquo;t reach the network</h1>
+        <p>
+          You appear to be offline or on a slow connection. Check your
+          connection and try again.
+        </p>
+        <button
+          type="button"
+          class="branding-splash__retry"
+          onclick="location.reload()"
+        >
+          Retry
+        </button>
+      </div>
     </div>
+    <script>
+      // Offline boot fallback. If the Angular bundle fails to mount within
+      // 8s (typical cause: no network, broken cache, failing CDN), swap the
+      // splash spinner for a friendly "offline" UI with a Retry button.
+      // Also auto-reload when the browser regains connectivity.
+      (function () {
+        var BOOT_TIMEOUT_MS = 8000;
+        var splash = document.getElementById("branding-splash");
+        if (!splash) return;
+        var shown = false;
+        function showOffline() {
+          if (shown) return;
+          shown = true;
+          splash.classList.add("splash-offline");
+          splash.setAttribute("aria-hidden", "false");
+        }
+        function appBooted() {
+          // <app-root> is upgraded by Angular; it gets child nodes once the
+          // app shell renders. Until then it's an empty custom element.
+          var root = document.querySelector("app-root");
+          return !!(root && root.children && root.children.length > 0);
+        }
+        window.setTimeout(function () {
+          if (!appBooted()) showOffline();
+        }, BOOT_TIMEOUT_MS);
+        window.addEventListener("online", function () {
+          if (shown) location.reload();
+        });
+      })();
+    </script>
 
     <app-root></app-root>
   </body>

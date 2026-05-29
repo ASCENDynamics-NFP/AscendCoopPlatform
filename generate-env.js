@@ -106,6 +106,16 @@ export const environment = {
     jurisdiction: '${tsEscape(process.env.ORG_JURISDICTION)}',
     legalEffectiveDate: '${tsEscape(process.env.LEGAL_EFFECTIVE_DATE)}',
   },
+  // Build-time brand defaults — consumed by BrandingService as the offline /
+  // first-paint identity. Empty strings mean "inherit upstream defaults".
+  // Runtime Remote Config + localStorage overrides still take precedence.
+  brand: {
+    appName: '${tsEscape(process.env.BRAND_APP_NAME)}',
+    tagline: '${tsEscape(process.env.BRAND_TAGLINE)}',
+    logoUrl: '${tsEscape(process.env.BRAND_LOGO_URL)}',
+    primaryColor: '${tsEscape(process.env.BRAND_PRIMARY_COLOR)}',
+    secondaryColor: '${tsEscape(process.env.BRAND_SECONDARY_COLOR)}',
+  },
 };
 `;
 

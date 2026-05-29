@@ -126,7 +126,8 @@
       "forgot_password": "Forgot password?",
       "create_account": "Create Account",
       "email_signin_link": "Get Email Signin Link",
-      "google_login": "Login with Google"
+      "google_login": "Login with Google",
+      "apple_login": "Login with Apple"
     },
     "signup": {
       "title": "Sign Up",
@@ -135,7 +136,9 @@
       "password_label": "Password:",
       "password_error": "Please insert valid password",
       "submit": "Sign Up",
-      "login": "Login"
+      "login": "Login",
+      "google_signup": "Sign up with Google",
+      "apple_signup": "Sign up with Apple"
     }
   },
   "groups": {

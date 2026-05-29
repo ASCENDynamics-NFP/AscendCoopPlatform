@@ -43,6 +43,7 @@ export const authReducer = createReducer(
     AuthActions.signUp,
     AuthActions.signIn,
     AuthActions.signInWithGoogle,
+    AuthActions.signInWithApple,
     AuthActions.signOut,
     AuthActions.sendPasswordResetEmail,
     AuthActions.sendSignInLinkToEmail,
@@ -61,6 +62,7 @@ export const authReducer = createReducer(
   on(
     AuthActions.signUpSuccess,
     AuthActions.signInWithGoogleSuccess,
+    AuthActions.signInWithAppleSuccess,
     AuthActions.confirmSignInWithEmailLinkSuccess,
     AuthActions.processSignInLinkSuccess,
     AuthActions.updateAuthUserSuccess,
@@ -98,6 +100,7 @@ export const authReducer = createReducer(
     AuthActions.signUpFailure,
     AuthActions.signInFailure,
     AuthActions.signInWithGoogleFailure,
+    AuthActions.signInWithAppleFailure,
     AuthActions.signOutFailure,
     AuthActions.sendPasswordResetEmailFailure,
     AuthActions.sendSignInLinkToEmailFailure,

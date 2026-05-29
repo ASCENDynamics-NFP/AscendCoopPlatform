@@ -6,11 +6,12 @@
   "scripts": {
     "generate-env:dev": "NODE_ENV=development node generate-env.js",
     "generate-env:prod": "NODE_ENV=production node generate-env.js",
+    "set-bundle-id": "node configure-app.js",
     "build": "npm run build:dev",
     "build:dev": "npm run generate-env:dev && ng build --configuration development",
     "build:prod": "npm run generate-env:prod && ng build --configuration production",
-    "start": "npm run generate-env:dev && ng serve",
-    "start:prod": "npm run generate-env:prod && ng serve --configuration production",
+    "start": "npm run generate-env:dev && ng serve --port 8100",
+    "start:prod": "npm run generate-env:prod && ng serve --configuration production --port 8100",
     "format": "prettier --write .",
     "prepare": "husky",
     "ng": "ng",
@@ -33,6 +34,7 @@
     "@angular/platform-browser": "^21.2.14",
     "@angular/platform-browser-dynamic": "^21.2.14",
     "@angular/router": "^21.2.14",
+    "@capacitor-community/apple-sign-in": "^7.1.0",
     "@capacitor/android": "^8.3.4",
     "@capacitor/app": "^8.0.1",
     "@capacitor/core": "^8.3.4",
@@ -55,7 +57,7 @@
     "firebase": "^12.13.0",
     "html2canvas": "^1.4.1",
     "ionicons": "^7.2.1",
-    "jspdf": "^3.0.4",
+    "jspdf": "^4.2.1",
     "ng2-charts": "^10.0.0",
     "ngrx-store-localstorage": "^20.1.0",
     "rxfire": "^6.0.5",
@@ -101,7 +103,7 @@
     "lint-staged": "^15.2.2",
     "prettier": "3.3.3",
     "ts-node": "^10.9.2",
-    "typescript": "~6.0.3"
+    "typescript": "~5.9.0"
   },
   "overrides": {
     "superagent": "npm:superagent@latest"

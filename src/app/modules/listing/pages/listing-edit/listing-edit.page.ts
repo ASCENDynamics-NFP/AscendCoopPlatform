@@ -41,6 +41,7 @@ import {AuthUser} from "@shared/models/auth-user.model";
 import {MetaService} from "../../../../core/services/meta.service";
 import {AccessService} from "../../../../core/services/access.service";
 
+import {environment} from "../../../../../environments/environment";
 @Component({
   standalone: false,
   selector: "app-listing-edit",
@@ -118,17 +119,15 @@ export class ListingEditPage implements OnInit {
         title: "Edit Listing | ASCENDynamics NFP",
         description:
           "Make updates to your listing to enhance visibility and engagement.",
-        url: "https://ascendynamics.org/listings",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        url: `${environment.appBaseUrl}/listings`,
+        image: "/assets/image/icon-512x512.png",
       },
       {
         card: "summary_large_image",
         title: "Edit Listing",
         description:
           "Update your listing on ASCENDynamics NFP to reach a wider audience.",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        image: "/assets/image/icon-512x512.png",
       },
     );
   }

@@ -26,6 +26,8 @@ By participating in this project, you are expected to uphold our [Code of Conduc
 
 4. **Set up the development environment**: Follow the instructions in the [README.md](README.md) file to set up your local development environment. Installing dependencies (`npm install`) automatically sets up Git hooks. If you don't see them, run `npm run prepare`.
 
+   > If you intend to deploy your fork as a separately-branded instance (different Firebase project, different bundle ID, different name), see the **Forking and deploying your own instance** section of the [README](README.md#forking-and-deploying-your-own-instance) and use `npm run set-bundle-id -- com.yourorg.yourapp` to retarget all native identifiers in one step.
+
 ## Contributing Code
 
 1. **Create a new branch**: Before making any changes, create a new branch for your feature or bugfix:

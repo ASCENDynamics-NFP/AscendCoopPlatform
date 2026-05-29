@@ -22,6 +22,7 @@
 import {Component, OnInit} from "@angular/core";
 import {MetaService} from "../../../../core/services/meta.service";
 
+import {environment} from "../../../../../environments/environment";
 @Component({
   standalone: false,
   selector: "app-startups",
@@ -42,17 +43,15 @@ export class StartupsPage implements OnInit {
         title: "Startup Resources | ASCENDynamics NFP",
         description:
           "Find tools and SEO advice for your worker-owned startup at ASCENDynamics NFP.",
-        url: "https://ascendynamics.org/info/startups",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+        url: `${environment.appBaseUrl}/info/startups`,
+        image: "/assets/image/icon-512x512.png",
       },
       {
         card: "summary",
         title: "Startups",
         description:
           "ASCENDynamics NFP helps cooperatives grow with funding, networking, and SEO training.",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+        image: "/assets/image/icon-512x512.png",
       },
     );
 
@@ -63,7 +62,7 @@ export class StartupsPage implements OnInit {
       name: "Startup Resources | ASCENDynamics NFP",
       description:
         "Launch your cooperative with ASCENDynamics NFP and learn SEO fundamentals.",
-      url: "https://ascendynamics.org/info/startups",
+      url: `${environment.appBaseUrl}/info/startups`,
       mainEntity: {
         "@type": "Service",
         name: "Cooperative Startup Support",

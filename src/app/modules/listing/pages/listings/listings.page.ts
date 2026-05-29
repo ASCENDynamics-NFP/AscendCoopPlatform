@@ -156,17 +156,15 @@ export class ListingsPage implements OnInit, OnDestroy {
         title: "Volunteer Listings | ASCENDynamics NFP",
         description:
           "Browse and apply for volunteer roles on ASCENDynamics NFP.",
-        url: "https://ascendynamics.org/listings",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        url: `${environment.appBaseUrl}/listings`,
+        image: "/assets/image/icon-512x512.png",
       },
       {
         card: "summary",
         title: "Volunteer Listings | ASCENDynamics NFP",
         description:
           "Find opportunities to contribute and grow your skills with ASCENDynamics NFP.",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        image: "/assets/image/icon-512x512.png",
       },
     );
 
@@ -177,11 +175,11 @@ export class ListingsPage implements OnInit, OnDestroy {
       name: "Volunteer Listings | ASCENDynamics NFP",
       description:
         "Explore volunteering opportunities available on ASCENDynamics NFP to make an impact in your community.",
-      url: "https://ascendynamics.org/listings",
+      url: `${environment.appBaseUrl}/listings`,
       isPartOf: {
         "@type": "WebSite",
         name: "ASCENDynamics NFP",
-        url: "https://ascendynamics.org",
+        url: environment.appBaseUrl,
       },
       mainEntity: {
         "@type": "ItemList",

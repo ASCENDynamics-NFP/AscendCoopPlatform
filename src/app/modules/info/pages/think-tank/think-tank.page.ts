@@ -22,6 +22,7 @@
 import {Component, OnInit} from "@angular/core";
 import {MetaService} from "../../../../core/services/meta.service";
 
+import {environment} from "../../../../../environments/environment";
 @Component({
   standalone: false,
   selector: "app-think-tank",
@@ -42,17 +43,15 @@ export class ThinkTankPage implements OnInit {
         title: "Think Tank | ASCENDynamics NFP",
         description:
           "Join our think tank to collaborate on cooperative research and SEO outreach.",
-        url: "https://ascendynamics.org/info/think-tank",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+        url: `${environment.appBaseUrl}/info/think-tank`,
+        image: "/assets/image/icon-512x512.png",
       },
       {
         card: "summary",
         title: "ASCENDynamics Think Tank",
         description:
           "Researching better futures and effective SEO for community projects.",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+        image: "/assets/image/icon-512x512.png",
       },
     );
 
@@ -63,7 +62,7 @@ export class ThinkTankPage implements OnInit {
       name: "ASCENDynamics NFP Think Tank",
       description:
         "Research and SEO strategies for cooperative development and community projects.",
-      url: "https://ascendynamics.org/info/think-tank",
+      url: `${environment.appBaseUrl}/info/think-tank`,
       fundedItem: {
         "@type": "Organization",
         name: "ASCENDynamics NFP",

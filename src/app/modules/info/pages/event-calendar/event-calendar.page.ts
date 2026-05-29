@@ -22,6 +22,7 @@
 import {Component, OnInit} from "@angular/core";
 import {MetaService} from "../../../../core/services/meta.service";
 
+import {environment} from "../../../../../environments/environment";
 @Component({
   standalone: false,
   selector: "app-event-calendar",
@@ -42,17 +43,15 @@ export class EventCalendarPage implements OnInit {
         title: "Upcoming Events | ASCENDynamics NFP",
         description:
           "Join ASCENDynamics NFP for community events and SEO training sessions.",
-        url: "https://ascendynamics.org/info/event-calendar",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+        url: `${environment.appBaseUrl}/info/event-calendar`,
+        image: "/assets/image/icon-512x512.png",
       },
       {
         card: "summary",
         title: "ASCENDynamics Events",
         description:
           "Learn and collaborate with us at upcoming events and SEO workshops.",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+        image: "/assets/image/icon-512x512.png",
       },
     );
 
@@ -63,15 +62,15 @@ export class EventCalendarPage implements OnInit {
       name: "ASCENDynamics NFP Community Events",
       description:
         "Community events and SEO workshops hosted by ASCENDynamics NFP",
-      url: "https://ascendynamics.org/info/event-calendar",
+      url: `${environment.appBaseUrl}/info/event-calendar`,
       organizer: {
         "@type": "Organization",
         name: "ASCENDynamics NFP",
-        url: "https://ascendynamics.org",
+        url: environment.appBaseUrl,
       },
       location: {
         "@type": "VirtualLocation",
-        url: "https://ascendynamics.org",
+        url: environment.appBaseUrl,
       },
     });
   }

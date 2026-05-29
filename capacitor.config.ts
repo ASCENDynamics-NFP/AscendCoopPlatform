@@ -20,7 +20,7 @@
 import {CapacitorConfig} from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "org.ascendcoopplatform.app",
+  appId: "org.ascendynamics.coopplatform",
   appName: "ASCENDynamics NFP Platform",
   webDir: "public",
   server: {
@@ -34,6 +34,9 @@ const config: CapacitorConfig = {
       androidClientId:
         // "1031671694911-9ml87v9ceqrhucjd0filu3c7hifd08ne.apps.googleusercontent.com", // Debug Android client ID
         "1031671694911-77h9m1a9qrm1a5ud0gb6odu5if2678ki.apps.googleusercontent.com", // Prod Android client ID
+      // iosClientId: "<CLIENT_ID from ios/App/App/GoogleService-Info.plist>",
+      serverClientId:
+        "1031671694911-3ejesivnlk5fhr8l29ne74fhp0smdltn.apps.googleusercontent.com",
       forceCodeForRefreshToken: true,
     },
   },

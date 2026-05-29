@@ -43,6 +43,7 @@ import {AccountSectionsService} from "../../services/account-sections.service";
 import {ProfessionalInformation} from "@shared/models/account.model";
 import {PrivacyService} from "../../../../core/services/privacy.service";
 
+import {environment} from "../../../../../environments/environment";
 @Component({
   standalone: false,
   selector: "app-details",
@@ -416,18 +417,14 @@ export class DetailsPage implements OnInit, ViewWillEnter {
       {
         title: `${account.name} | ASCENDynamics NFP`,
         description: descriptionPrefix,
-        url: `https://ascendynamics.org/account/${account.id}`,
-        image:
-          account.iconImage ||
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        url: `${environment.appBaseUrl}/account/${account.id}`,
+        image: account.iconImage || "/assets/image/icon-512x512.png",
       },
       {
         card: "summary_large_image",
         title: `${account.name}`,
         description: descriptionPrefix,
-        image:
-          account.iconImage ||
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        image: account.iconImage || "/assets/image/icon-512x512.png",
       },
     );
 
@@ -440,10 +437,8 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         description:
           account.description ||
           `${account.name}'s profile on ASCENDynamics NFP`,
-        url: `https://ascendynamics.org/account/${account.id}`,
-        image:
-          account.iconImage ||
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        url: `${environment.appBaseUrl}/account/${account.id}`,
+        image: account.iconImage || "/assets/image/icon-512x512.png",
         memberOf: {
           "@type": "Organization",
           name: "ASCENDynamics NFP",
@@ -458,10 +453,8 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         description:
           account.description ||
           `${account.name} organization on ASCENDynamics NFP`,
-        url: `https://ascendynamics.org/account/${account.id}`,
-        logo:
-          account.iconImage ||
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        url: `${environment.appBaseUrl}/account/${account.id}`,
+        logo: account.iconImage || "/assets/image/icon-512x512.png",
         parentOrganization: {
           "@type": "Organization",
           name: "ASCENDynamics NFP",
@@ -481,17 +474,15 @@ export class DetailsPage implements OnInit, ViewWillEnter {
         title: "Profile | ASCENDynamics NFP",
         description:
           "Manage your profile and connect with volunteering opportunities on ASCENDynamics NFP.",
-        url: "https://ascendynamics.org/",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        url: environment.appBaseUrl,
+        image: "/assets/image/icon-512x512.png",
       },
       {
         card: "summary",
         title: "Profile | ASCENDynamics NFP",
         description:
           "Customize your profile and stay connected with your community.",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        image: "/assets/image/icon-512x512.png",
       },
     );
 
@@ -502,15 +493,15 @@ export class DetailsPage implements OnInit, ViewWillEnter {
       name: "Profile | ASCENDynamics NFP",
       description:
         "View and manage your profile details, volunteering history, and preferences on ASCENDynamics NFP.",
-      url: "https://ascendynamics.org/profile",
+      url: `${environment.appBaseUrl}/profile`,
       isPartOf: {
         "@type": "WebSite",
         name: "ASCENDynamics NFP",
-        url: "https://ascendynamics.org",
+        url: environment.appBaseUrl,
       },
       potentialAction: {
         "@type": "ViewAction",
-        target: "https://ascendynamics.org/profile",
+        target: `${environment.appBaseUrl}/profile`,
       },
     });
   }

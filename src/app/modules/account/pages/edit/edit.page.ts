@@ -31,6 +31,7 @@ import {selectAuthUser} from "../../../../state/selectors/auth.selectors";
 import * as AccountActions from "../../../../state/actions/account.actions";
 import {MetaService} from "../../../../core/services/meta.service";
 
+import {environment} from "../../../../../environments/environment";
 @Component({
   standalone: false,
   selector: "app-edit",
@@ -59,17 +60,15 @@ export class EditPage implements OnInit {
         title: "Account | ASCENDynamics NFP",
         description:
           "Access and manage your account details on ASCENDynamics NFP.",
-        url: "https://ascendynamics.org/account",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        url: `${environment.appBaseUrl}/account`,
+        image: "/assets/image/icon-512x512.png",
       },
       {
         card: "summary",
         title: "Account | ASCENDynamics NFP",
         description:
           "Update your account details and settings on ASCENDynamics NFP.",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        image: "/assets/image/icon-512x512.png",
       },
     );
   }

@@ -56,6 +56,7 @@ import {selectAccountById} from "../../../../../state/selectors/account.selector
 import {AccessService} from "../../../../../core/services/access.service";
 import {filter} from "rxjs/operators";
 
+import {environment} from "../../../../../../environments/environment";
 @Component({
   standalone: false,
   selector: "app-applicants",
@@ -183,16 +184,14 @@ export class ApplicantsPage implements OnInit {
         title: "Listing Applicants | ASCENDynamics NFP",
         description:
           "Review and manage all applicants for your listing to find the right candidates.",
-        url: "https://ascendynamics.org/listing/applicants",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        url: `${environment.appBaseUrl}/listing/applicants`,
+        image: "/assets/image/icon-512x512.png",
       },
       {
         card: "summary_large_image",
         title: "Listing Applicants",
         description: "Manage applicants for your listing on ASCENDynamics NFP.",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        image: "/assets/image/icon-512x512.png",
       },
     );
 

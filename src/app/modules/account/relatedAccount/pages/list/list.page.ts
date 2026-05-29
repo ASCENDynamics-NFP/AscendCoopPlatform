@@ -39,6 +39,7 @@ import {MetaService} from "../../../../../core/services/meta.service";
 import {AccessService} from "../../../../../core/services/access.service";
 import {RelationshipService} from "../../../../../core/services/relationship.service";
 
+import {environment} from "../../../../../../environments/environment";
 @Component({
   standalone: false,
   selector: "app-list",
@@ -484,16 +485,14 @@ export class ListPage implements OnInit {
       {
         title: title,
         description: description,
-        url: `https://ascendynamics.org/account/${this.accountId}/related/${this.listType}`,
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        url: `${environment.appBaseUrl}/account/${this.accountId}/related/${this.listType}`,
+        image: "/assets/image/icon-512x512.png",
       },
       {
         card: "summary_large_image",
         title: title,
         description: description,
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        image: "/assets/image/icon-512x512.png",
       },
     );
   }

@@ -85,6 +85,18 @@ export const signInWithGoogleFailure = createAction(
   props<{error: any}>(),
 );
 
+export const signInWithApple = createAction("[Auth] Sign In With Apple");
+
+export const signInWithAppleSuccess = createAction(
+  "[Auth] Sign In With Apple Success",
+  props<{user: AuthUser}>(),
+);
+
+export const signInWithAppleFailure = createAction(
+  "[Auth] Sign In With Apple Failure",
+  props<{error: any}>(),
+);
+
 export const signOut = createAction("[Auth] Sign Out");
 
 export const signOutSuccess = createAction("[Auth] Sign Out Success");

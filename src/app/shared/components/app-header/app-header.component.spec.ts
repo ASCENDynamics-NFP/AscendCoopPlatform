@@ -21,17 +21,26 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {AppHeaderComponent} from "./app-header.component";
 import {PopoverController} from "@ionic/angular";
 import {Store, StoreModule} from "@ngrx/store";
-import {of} from "rxjs";
+import {BehaviorSubject, of} from "rxjs";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {UserMenuComponent} from "../user-menu/user-menu.component";
 import {TranslateTestingModule} from "../../../shared/testing/translate-testing.module";
+import {
+  BrandingService,
+  BRANDING_DEFAULTS,
+} from "../../../core/services/branding.service";
 
 describe("AppHeaderComponent", () => {
   let component: AppHeaderComponent;
   let fixture: ComponentFixture<AppHeaderComponent>;
   let mockPopoverController: any;
   let mockStore: any;
+  let authUserSubject: BehaviorSubject<AuthUser | null>;
+
+  const mockBrandingService = {
+    config$: of(BRANDING_DEFAULTS),
+  };
 
   const mockAuthUser: AuthUser = {
     uid: "12345",
@@ -53,6 +62,11 @@ describe("AppHeaderComponent", () => {
   };
 
   beforeEach(async () => {
+    // BehaviorSubject lets us push values into the component's image$ pipeline
+    // after construction (image$ is derived from the store selector observable,
+    // so we can't simply reassign component.authUser$ after creation).
+    authUserSubject = new BehaviorSubject<AuthUser | null>(null);
+
     mockPopoverController = {
       create: jasmine.createSpy().and.returnValue(
         Promise.resolve({
@@ -62,7 +76,9 @@ describe("AppHeaderComponent", () => {
     };
 
     mockStore = {
-      select: jasmine.createSpy(),
+      select: jasmine
+        .createSpy()
+        .and.returnValue(authUserSubject.asObservable()),
     };
 
     await TestBed.configureTestingModule({
@@ -71,6 +87,7 @@ describe("AppHeaderComponent", () => {
       providers: [
         {provide: PopoverController, useValue: mockPopoverController},
         {provide: Store, useValue: mockStore},
+        {provide: BrandingService, useValue: mockBrandingService},
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -79,10 +96,6 @@ describe("AppHeaderComponent", () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(AppHeaderComponent);
     component = fixture.componentInstance;
-
-    // Initialize authUser$ before tests
-    component.authUser$ = of(null);
-
     fixture.detectChanges();
   });
 
@@ -91,10 +104,11 @@ describe("AppHeaderComponent", () => {
   });
 
   it("should return authUser iconImage if it exists", (done) => {
-    component.authUser$ = of(mockAuthUser);
-    fixture.detectChanges();
+    // Push a user into the subject — image$ is derived from the same
+    // observable so it will emit the new value.
+    authUserSubject.next(mockAuthUser);
 
-    component.image.subscribe((imagePath) => {
+    component.image$.subscribe((imagePath: string | null | undefined) => {
       expect(imagePath).toBe(mockAuthUser.iconImage);
       done();
     });

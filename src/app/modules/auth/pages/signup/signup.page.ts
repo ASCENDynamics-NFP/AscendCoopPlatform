@@ -29,15 +29,17 @@ import {
 import {ModalController} from "@ionic/angular";
 import {Router} from "@angular/router";
 import {Store} from "@ngrx/store";
+import {Observable} from "rxjs";
 import {LegalModalComponent} from "../../../../shared/components/legal-modal/legal-modal.component";
 import * as AuthActions from "../../../../state/actions/auth.actions";
 import {
   selectAuthError,
   selectAuthLoading,
 } from "../../../../state/selectors/auth.selectors";
-import {Observable} from "rxjs";
 import {MetaService} from "../../../../core/services/meta.service";
+import {AuthFeatureFlagsService} from "../../../../core/services/auth-feature-flags.service";
 
+import {environment} from "../../../../../environments/environment";
 @Component({
   standalone: false,
   selector: "app-signup",
@@ -48,8 +50,11 @@ export class SignupPage implements OnInit {
   public signupForm: any;
   public loading$: Observable<boolean>;
   public error$!: Observable<any>;
+  public showGoogleSignIn$!: Observable<boolean>;
+  public showAppleSignIn$!: Observable<boolean>;
 
   constructor(
+    private authFeatureFlags: AuthFeatureFlagsService,
     private fb: FormBuilder,
     private router: Router,
     private metaService: MetaService,
@@ -58,6 +63,8 @@ export class SignupPage implements OnInit {
   ) {
     this.error$ = this.store.select(selectAuthError);
     this.loading$ = this.store.select(selectAuthLoading);
+    this.showGoogleSignIn$ = this.authFeatureFlags.showGoogleSignIn$;
+    this.showAppleSignIn$ = this.authFeatureFlags.showAppleSignIn$;
   }
 
   // Runs when the page is about to enter the view
@@ -70,17 +77,15 @@ export class SignupPage implements OnInit {
         title: "Sign Up for ASCENDynamics NFP",
         description:
           "Join ASCENDynamics NFP to start making an impact in your community today.",
-        url: "https://ascendynamics.org/signup",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        url: `${environment.appBaseUrl}/signup`,
+        image: "/assets/image/icon-512x512.png",
       },
       {
         card: "summary",
         title: "Sign Up | ASCENDynamics NFP",
         description:
           "Become part of ASCENDynamics NFP and start your volunteering journey.",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        image: "/assets/image/icon-512x512.png",
       },
     );
 
@@ -91,15 +96,15 @@ export class SignupPage implements OnInit {
       name: "Sign Up | ASCENDynamics NFP",
       description:
         "Create an account on ASCENDynamics NFP to find volunteer opportunities and connect with nonprofits.",
-      url: "https://ascendynamics.org/signup",
+      url: `${environment.appBaseUrl}/signup`,
       isPartOf: {
         "@type": "WebSite",
         name: "ASCENDynamics NFP",
-        url: "https://ascendynamics.org",
+        url: environment.appBaseUrl,
       },
       potentialAction: {
         "@type": "RegisterAction",
-        target: "https://ascendynamics.org/signup",
+        target: `${environment.appBaseUrl}/signup`,
       },
     });
   }
@@ -145,6 +150,14 @@ export class SignupPage implements OnInit {
   // Navigate to the login page
   goToLogin() {
     this.router.navigateByUrl("/auth/login");
+  }
+
+  signInWithGoogle() {
+    this.store.dispatch(AuthActions.signInWithGoogle());
+  }
+
+  signInWithApple() {
+    this.store.dispatch(AuthActions.signInWithApple());
   }
 
   // Open the legal modal (Privacy Policy or Terms of Use)

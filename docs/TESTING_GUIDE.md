@@ -26,7 +26,7 @@ This document provides a comprehensive testing framework for the ASCENDynamics N
 
 ### Platform Architecture
 
-- **Frontend:** Ionic/Angular 17+
+- **Frontend:** Angular 21 + Ionic 8.8 (Capacitor 8 for iOS/Android)
 - **Backend:** Firebase Functions (TypeScript)
 - **Database:** Cloud Firestore
 - **Authentication:** Firebase Auth with Google OAuth

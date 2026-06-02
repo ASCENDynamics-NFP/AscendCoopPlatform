@@ -81,14 +81,14 @@ We look forward to your contributions and engaging discussions!
 ### Prerequisites
 
 - Node.js and npm
-- Ionic CLI
-- Firebase CLI (for deployment)
+- Angular CLI (`npm install -g @angular/cli`)
+- Firebase CLI (for deployment only — `npm install -g firebase-tools`)
 
-1. Install Node.js, npm, Ionic CLI, and Angular CLI on your development machine.
+1. Install Node.js, npm, and Angular CLI on your development machine.
 2. Clone this repository: `git clone https://github.com/ASCENDynamics-NFP/AscendCoopPlatform.git`
 3. Change to the project directory: `cd AscendCoopPlatform`
 4. Install dependencies: `npm install` (Git hooks are installed automatically). If you don't see them, run `npm run prepare`.
-5. Run the development server: `npm start` (or `ionic serve`). The `start` script chains `generate-env:dev`, which reads the tracked `.env.development` file and writes `src/environments/environment.ts`, `src/index.html`, and `src/funding.json`.
+5. Run the development server: `npm start`. The `start` script chains `generate-env:dev`, which reads the tracked `.env.development` file and writes `src/environments/environment.ts`, `src/index.html`, and `src/funding.json`.
 6. Open your browser and navigate to `http://localhost:8100/` to view the app.
 
 ### Local environment variables

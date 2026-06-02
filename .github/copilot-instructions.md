@@ -79,6 +79,24 @@ export class ExampleService {
 
 This project imports the monolithic `IonicModule` from `@ionic/angular` in feature modules. Do **not** convert pages to standalone or to individual `Ion*` imports unless that work is explicitly requested.
 
+### 4a. Ionicons Registration — `addIcons()` in `AppModule`
+
+`IonicModule` (compat) does **not** auto-register icon SVGs. On a cold dev-server start, Stencil renders `ion-icon` elements before their SVGs are fetched, producing:
+
+```
+InvalidCharacterError: Failed to execute 'createElementNS' on 'Document':
+The qualified name provided ('[object Object]') contains the invalid name-start character '['
+```
+
+**Fix already applied**: `src/app/app.module.ts` imports all used icons from `ionicons/icons` and calls `addIcons({...})` at module load time (before `initializeApp`), pre-registering every SVG synchronously.
+
+Rules when working with icons:
+
+- **Adding a new `ion-icon`**: look up the camelCase export in `node_modules/ionicons/icons/index.d.ts`, then add it to **both** the `import { ... } from "ionicons/icons"` block and the `addIcons({ ... })` call in `app.module.ts`.
+- **Icon naming**: templates use kebab-case (`name="add-circle-outline"`); imports use camelCase (`addCircleOutline`). `addIcons()` maps both automatically.
+- **Never import `ionicons/icons` wholesale** (`import * as icons`) — that bundles ~800 KB of SVG data. Import only the specific icons you need.
+- **Verify names first**: `node_modules/ionicons/icons/index.d.ts` is the source of truth. Some kebab-case names that look valid have no matching export in v7 (e.g. `target-outline` / `targetOutline` does not exist); those will silently show no icon rather than crash, but you'll see an `[Ionicons Warning]` in the console.
+
 ### 5. Template Control Flow — built-in `@if` / `@for` / `@switch`
 
 The codebase has been migrated to Angular's built-in control flow (`@if`, `@for` with `track`, `@switch`). Prefer it in new templates. Some legacy templates may still use `*ngIf` / `*ngFor` / `*ngSwitch`; that's fine — convert opportunistically when you're already editing the template, but don't mix both styles within a single file.
@@ -354,8 +372,7 @@ npm run generate-env:dev
 npm run generate-env:prod
 
 # Development
-npm start                                        # ng serve (uses dev env)
-ionic serve                                      # Ionic dev server
+npm start                                        # generate-env:dev + ng serve (preferred)
 
 # Production build (writes to public/ — Firebase Hosting "public" dir)
 npm run build:prod                               # generate-env:prod + ng build --configuration production
@@ -461,6 +478,7 @@ Global element styling also lives in `global.scss`: `ion-card` gets `border-radi
 10. **Don't change Prettier or ESLint config** to make a file pass — fix the file.
 11. **In tests, don't mutate inputs or state and call `detectChanges()` alone** — with `enableProdMode()` active you must use `componentRef.setInput()` or `markForCheck()` first (see Testing section).
 12. **Don't hard-code spacing, radius, or shadow values** in component SCSS — use the `--app-*` tokens from `src/theme/variables.scss`. If a value isn't covered, extend the token set rather than inventing a one-off. See the **Styling & Design System** section.
+13. **Don't add a new `ion-icon` without registering it in `addIcons()`** — the `IonicModule` compat layer does not auto-register icon SVGs. Any unregistered icon causes `InvalidCharacterError: createElementNS '[object Object]'` on cold dev-server start. Add the camelCase import from `ionicons/icons` and the corresponding entry in `addIcons({...})` in `app.module.ts`. See **Architecture Patterns § 4a** for details.
 
 ## Future Direction / Migration Targets
 

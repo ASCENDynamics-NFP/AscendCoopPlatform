@@ -19,4 +19,3 @@ The Ascend Co-op Platform project aims to create an open-source platform that em
 The project will not focus on the following:
 
 1. **Monetization**: As a non-profit initiative, the project will not engage in monetization strategies.
-2. **Platform-Specific Development**: The project aims to be platform-agnostic, accessible from any modern web browser, and will not develop platform-specific applications (iOS, Android, Windows, etc.) at the current stage.

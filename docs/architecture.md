@@ -7,8 +7,11 @@ This document provides a high level overview of how the Ionic/Angular applicatio
 The application is split into feature modules under `src/app/modules`.
 
 - **Auth Module** – pages for login, signup and a landing page.
-- **Account Module** – pages for managing user and organization accounts along with related account listings.
+- **Account Module** – user and organization accounts, related accounts, related listings, projects, role management, and time tracking.
 - **Listing Module** – pages to create, edit and view listings as well as related account functionality.
+- **Messaging Module** – real-time conversations and notification UI.
+- **Time-Tracking Module** – timesheet entry, approvals workflow, and analytics/reports.
+- **Info Module** – informational/static pages (about, FAQ, theme showcase, legal, branding admin).
 
 Common code is placed in two main shared areas:
 

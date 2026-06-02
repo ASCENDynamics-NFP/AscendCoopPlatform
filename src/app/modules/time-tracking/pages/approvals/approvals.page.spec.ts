@@ -204,9 +204,11 @@ describe("ApprovalsPage", () => {
   });
 
   describe("week navigation", () => {
-    beforeEach(() => {
-      fixture.detectChanges();
-    });
+    // No fixture.detectChanges() needed — nextWeek / previousWeek /
+    // jumpToThisWeek / isCurrentWeek only read/write the `currentWeekStart`
+    // class field which is initialised before ngOnInit.  Rendering the full
+    // template here triggers Stencil's async ion-button initialisation, which
+    // throws an uncaught "onAriaChanged" TypeError in the test environment.
 
     it("should navigate to next week", () => {
       const initialWeek = new Date(component.currentWeekStart);

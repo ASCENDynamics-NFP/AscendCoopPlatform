@@ -88,256 +88,64 @@ export class DetailsPage implements OnInit, ViewWillEnter {
 
   ngOnInit(): void {
     this.authUser$ = this.store.select(selectAuthUser);
-    // Initialize account$ and error$ synchronously from the route snapshot so
-    // they are set before the first template render, preventing the "Loading
-    // account details..." flash (and stuck state) caused by these observables
-    // being undefined when ionViewWillEnter fires asynchronously.
+    // Wire up all observables from the route snapshot so the first template
+    // render has every permission stream ready — segment tabs appear immediately
+    // rather than waiting for ionViewWillEnter to fire asynchronously.
     const snapshotId = this.route.snapshot.paramMap.get("accountId");
     if (snapshotId) {
-      this.account$ = this.store.select(selectAccountById(snapshotId));
-      this.error$ = this.store.select(selectAccountError);
+      this.accountId = snapshotId;
+      this.initObservables(snapshotId);
     }
   }
 
   ionViewWillEnter() {
-    // Initialize authUser$ observable
     this.authUser$ = this.store.select(selectAuthUser);
 
-    // Subscribe to route paramMap to detect changes in accountId
+    // Subscribe to route paramMap to detect in-place navigation to a different
+    // account (e.g. clicking a related account link without leaving the page).
     this.route.paramMap.subscribe((params) => {
-      this.accountId = params.get("accountId");
+      const newId = params.get("accountId");
+      if (!newId) return;
 
-      if (this.accountId) {
-        // Dispatch loadAccount action to fetch account data
-        this.store.dispatch(
-          AccountActions.loadAccount({accountId: this.accountId}),
-        );
-        this.store.dispatch(
-          AccountActions.loadRelatedAccounts({accountId: this.accountId}),
-        );
-        this.store.dispatch(
-          AccountActions.loadRelatedListings({accountId: this.accountId}),
-        );
+      const idChanged = newId !== this.accountId;
+      this.accountId = newId;
 
-        // Select account and related accounts from the store
-        this.account$ = this.store.select(selectAccountById(this.accountId));
-        // Read professional info from gated sections
-        this.professionalInfo$ = this.sections.professionalInfo$(
-          this.accountId,
-        );
-        // Read labor rights from gated sections
-        this.laborRights$ = this.sections.laborRights$(this.accountId);
+      // Always dispatch to refresh data from Firestore.
+      this.store.dispatch(AccountActions.loadAccount({accountId: newId}));
+      this.store.dispatch(
+        AccountActions.loadRelatedAccounts({accountId: newId}),
+      );
+      this.store.dispatch(
+        AccountActions.loadRelatedListings({accountId: newId}),
+      );
 
-        // Defer computing segment visibility until permissions streams are set
-        this.relatedAccounts$ = this.store.select(
-          selectRelatedAccountsByAccountId(this.accountId),
-        );
-
-        this.error$ = this.store.select(selectAccountError);
-
-        // Handle account load errors
-        if (this.errorSubscription) {
-          this.errorSubscription.unsubscribe();
-        }
-        this.errorSubscription = combineLatest([
-          this.error$,
-          this.authUser$,
-        ]).subscribe(([err, authUser]) => {
-          if (
-            err &&
-            err === "Account not found" &&
-            authUser &&
-            authUser.uid &&
-            this.accountId !== authUser.uid
-          ) {
-            this.presentToast("Account not found", true);
-          } else if (err) {
-            // Only show "private profile" message if viewing someone else's profile
-            this.presentToast("This profile is private.");
-          }
-          // If it's their own profile with an error, let the AuthGuard handle the redirect
-        });
-
-        // Determine if the current user is the profile owner
-        this.isProfileOwner$ = combineLatest([
-          this.authUser$,
-          this.account$,
-        ]).pipe(
-          map(([authUser, account]) =>
-            this.access.isOwner(account as any, authUser),
-          ),
-        );
-
-        // Determine if current user is group admin/moderator/owner using denormalized fields
-        this.isGroupAdmin$ = combineLatest([
-          this.authUser$,
-          this.account$,
-        ]).pipe(
-          map(([currentUser, account]) =>
-            this.access.isGroupAdmin(account as any, currentUser),
-          ),
-        );
-
-        this.isGroupMember$ = combineLatest([
-          this.authUser$,
-          this.relatedAccounts$,
-          this.account$,
-        ]).pipe(
-          map(([currentUser, relatedAccounts, account]) => {
-            if (!currentUser) return false;
-            const owner = this.access.isOwner(account as any, currentUser);
-            const member = this.access.isAcceptedMember(
-              relatedAccounts,
-              currentUser.uid,
-            );
-            return owner || member;
-          }),
-        );
-
-        // Check current user's relationship status with this account
-        this.relationshipStatus$ = combineLatest([
-          this.authUser$,
-          this.relatedAccounts$,
-        ]).pipe(
-          map(([currentUser, relatedAccounts]) => {
-            if (!currentUser) return null;
-            const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
-            return rel?.status || null;
-          }),
-        );
-
-        // Check if current user has any relationship with this account
-        this.hasRelationship$ = combineLatest([
-          this.authUser$,
-          this.relatedAccounts$,
-        ]).pipe(
-          map(([currentUser, relatedAccounts]) => {
-            if (!currentUser) return false;
-            const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
-            return rel !== undefined;
-          }),
-        );
-
-        // Define relatedListings$ with privacy filtering after permission observables are set
-        this.relatedListings$ = combineLatest([
-          this.store.select(selectRelatedListingsByAccountId(this.accountId)),
-          this.isProfileOwner$,
-          this.isGroupAdmin$,
-        ]).pipe(
-          map(([listings, isOwner, isAdmin]) => {
-            // Filter out applicant listings for non-authorized users
-            const filteredListings = listings.filter((listing) => {
-              // Keep active listings; allow saved items regardless of status
-              const isSaved = (listing as any).isSaved === true;
-              if (!isSaved && listing.status !== "active") return false;
-
-              // For applicant listings, only show to owners/admins
-              if (
-                listing.relationship === "applicant" &&
-                !isOwner &&
-                !isAdmin
-              ) {
-                return false;
-              }
-
-              return true;
-            });
-
-            return filteredListings;
-          }),
-        );
-
-        // Owner or admin convenience observable
-        this.isOwnerOrAdmin$ = combineLatest([
-          this.isProfileOwner$,
-          this.isGroupAdmin$,
-        ]).pipe(map(([own, admin]) => own || admin));
-
-        // Now compute segment visibility permissions
-        this.canViewProfessional$ = combineLatest([
-          this.account$,
-          this.isOwnerOrAdmin$,
-          this.hasRelationship$,
-          this.authUser$,
-        ]).pipe(
-          map(([acc, ownOrAdmin, related, user]) =>
-            acc
-              ? this.privacy.canViewSection(
-                  acc.privacySettings,
-                  "professionalInformation",
-                  {
-                    isOwnerOrAdmin: ownOrAdmin,
-                    isAuthenticated: !!user?.uid,
-                    isRelated: related,
-                    viewerId: user?.uid ?? null,
-                  },
-                )
-              : false,
-          ),
-        );
-
-        this.canViewLabor$ = combineLatest([
-          this.account$,
-          this.isOwnerOrAdmin$,
-          this.hasRelationship$,
-          this.authUser$,
-        ]).pipe(
-          map(([acc, ownOrAdmin, related, user]) =>
-            acc
-              ? this.privacy.canViewSection(
-                  acc.privacySettings,
-                  "laborRights",
-                  {
-                    isOwnerOrAdmin: ownOrAdmin,
-                    isAuthenticated: !!user?.uid,
-                    isRelated: related,
-                    viewerId: user?.uid ?? null,
-                  },
-                )
-              : false,
-          ),
-        );
-
-        this.canViewConnections$ = combineLatest([
-          this.account$,
-          this.isOwnerOrAdmin$,
-          this.hasRelationship$,
-          this.authUser$,
-        ]).pipe(
-          map(([acc, ownOrAdmin, related, user]) => {
-            if (!acc) return false;
-            const key = "userList";
-            return this.privacy.canViewSection(acc.privacySettings, key, {
-              isOwnerOrAdmin: ownOrAdmin,
-              isAuthenticated: !!user?.uid,
-              isRelated: related,
-              viewerId: user?.uid ?? null,
-            });
-          }),
-        );
-
-        this.canViewOrganizations$ = combineLatest([
-          this.account$,
-          this.isOwnerOrAdmin$,
-          this.hasRelationship$,
-          this.authUser$,
-        ]).pipe(
-          map(([acc, ownOrAdmin, related, user]) =>
-            acc
-              ? this.privacy.canViewSection(
-                  acc.privacySettings,
-                  "organizationList",
-                  {
-                    isOwnerOrAdmin: ownOrAdmin,
-                    isAuthenticated: !!user?.uid,
-                    isRelated: related,
-                    viewerId: user?.uid ?? null,
-                  },
-                )
-              : false,
-          ),
-        );
+      // Only re-wire observables when the account ID actually changes.
+      // On back-navigation to the same profile the ID is unchanged, so skipping
+      // this avoids NG0100 caused by async-pipe re-subscription mid-CD cycle.
+      if (idChanged) {
+        this.initObservables(newId);
       }
+
+      // Handle account load errors
+      if (this.errorSubscription) {
+        this.errorSubscription.unsubscribe();
+      }
+      this.errorSubscription = combineLatest([
+        this.error$,
+        this.authUser$,
+      ]).subscribe(([err, authUser]) => {
+        if (
+          err &&
+          err === "Account not found" &&
+          authUser &&
+          authUser.uid &&
+          this.accountId !== authUser.uid
+        ) {
+          this.presentToast("Account not found", true);
+        } else if (err) {
+          this.presentToast("This profile is private.");
+        }
+      });
     });
 
     this.subscription = this.account$.subscribe({
@@ -359,6 +167,115 @@ export class DetailsPage implements OnInit, ViewWillEnter {
 
   hasBlocklists(badges: any[]): boolean {
     return badges?.some((x) => x.blockCount > 0) ?? false;
+  }
+
+  /** Wire up all derived observables for a given accountId.
+   *  Called from ngOnInit (snapshot) so segment tabs are ready on first render,
+   *  and from ionViewWillEnter only when the account ID actually changes. */
+  private initObservables(accountId: string): void {
+    this.account$ = this.store.select(selectAccountById(accountId));
+    this.error$ = this.store.select(selectAccountError);
+    this.relatedAccounts$ = this.store.select(
+      selectRelatedAccountsByAccountId(accountId),
+    );
+    this.professionalInfo$ = this.sections.professionalInfo$(accountId);
+    this.laborRights$ = this.sections.laborRights$(accountId);
+
+    this.isProfileOwner$ = combineLatest([this.authUser$, this.account$]).pipe(
+      map(([authUser, account]) =>
+        this.access.isOwner(account as any, authUser),
+      ),
+    );
+
+    this.isGroupAdmin$ = combineLatest([this.authUser$, this.account$]).pipe(
+      map(([currentUser, account]) =>
+        this.access.isGroupAdmin(account as any, currentUser),
+      ),
+    );
+
+    this.isGroupMember$ = combineLatest([
+      this.authUser$,
+      this.relatedAccounts$,
+      this.account$,
+    ]).pipe(
+      map(([currentUser, relatedAccounts, account]) => {
+        if (!currentUser) return false;
+        const owner = this.access.isOwner(account as any, currentUser);
+        const member = this.access.isAcceptedMember(
+          relatedAccounts,
+          currentUser.uid,
+        );
+        return owner || member;
+      }),
+    );
+
+    this.relationshipStatus$ = combineLatest([
+      this.authUser$,
+      this.relatedAccounts$,
+    ]).pipe(
+      map(([currentUser, relatedAccounts]) => {
+        if (!currentUser) return null;
+        const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
+        return rel?.status || null;
+      }),
+    );
+
+    this.hasRelationship$ = combineLatest([
+      this.authUser$,
+      this.relatedAccounts$,
+    ]).pipe(
+      map(([currentUser, relatedAccounts]) => {
+        if (!currentUser) return false;
+        const rel = relatedAccounts.find((ra) => ra.id === currentUser.uid);
+        return rel !== undefined;
+      }),
+    );
+
+    this.isOwnerOrAdmin$ = combineLatest([
+      this.isProfileOwner$,
+      this.isGroupAdmin$,
+    ]).pipe(map(([own, admin]) => own || admin));
+
+    this.relatedListings$ = combineLatest([
+      this.store.select(selectRelatedListingsByAccountId(accountId)),
+      this.isProfileOwner$,
+      this.isGroupAdmin$,
+    ]).pipe(
+      map(([listings, isOwner, isAdmin]) =>
+        listings.filter((listing) => {
+          const isSaved = (listing as any).isSaved === true;
+          if (!isSaved && listing.status !== "active") return false;
+          if (listing.relationship === "applicant" && !isOwner && !isAdmin) {
+            return false;
+          }
+          return true;
+        }),
+      ),
+    );
+
+    const privacyStream = (section: string) =>
+      combineLatest([
+        this.account$,
+        this.isOwnerOrAdmin$,
+        this.hasRelationship$,
+        this.authUser$,
+      ]).pipe(
+        map(([acc, ownOrAdmin, related, user]) =>
+          acc
+            ? this.privacy.canViewSection(acc.privacySettings, section, {
+                isOwnerOrAdmin: ownOrAdmin,
+                isAuthenticated: !!user?.uid,
+                isRelated: related,
+                viewerId: user?.uid ?? null,
+              })
+            : false,
+        ),
+      );
+
+    this.canViewProfessional$ = privacyStream("professionalInformation");
+    this.canViewLabor$ = privacyStream("laborRights");
+    this.canViewConnections$ = privacyStream("userList");
+    this.canViewOrganizations$ = privacyStream("organizationList");
   }
 
   ionViewWillLeave() {

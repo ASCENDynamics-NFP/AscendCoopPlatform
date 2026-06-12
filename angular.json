@@ -92,6 +92,11 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "prebundle": {
+              "exclude": ["@ionic/core", "ionicons"]
+            }
+          },
           "configurations": {
             "production": {
               "buildTarget": "app:build:production"

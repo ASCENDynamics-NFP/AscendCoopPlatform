@@ -72,7 +72,7 @@ export const submitLead = onRequest(
 
     // Only accept POST requests
     if (req.method !== "POST") {
-      res.status(405).send("Method Not Allowed");
+      res.status(405).json({error: "Method Not Allowed"});
       return;
     }
 
@@ -83,7 +83,7 @@ export const submitLead = onRequest(
     if (!name || !email || !inquiry || !from) {
       res
         .status(400)
-        .send("Missing required fields: name, email, inquiry, from");
+        .json({error: "Missing required fields: name, email, inquiry, from"});
       return;
     }
 
@@ -140,12 +140,13 @@ Additional Information: ${message || "No message provided"}
       // Save the lead data to Firestore
       await admin.firestore().collection("leads").add(leadData);
 
-      res
-        .status(200)
-        .send("Lead submitted, email sent, and data saved successfully");
+      res.status(200).json({
+        success: true,
+        message: "Lead submitted, email sent, and data saved successfully",
+      });
     } catch (error) {
       logger.error("Error processing submission:", error);
-      res.status(500).send("Error processing submission");
+      res.status(500).json({error: "Error processing submission"});
     }
   },
 );

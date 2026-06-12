@@ -38,6 +38,7 @@ import {AlertController} from "@ionic/angular";
 import {MetaService} from "../../../../../core/services/meta.service";
 import {formatPhoneNumber} from "../../../../../core/utils/phone.util";
 
+import {environment} from "../../../../../../environments/environment";
 @Component({
   standalone: false,
   selector: "app-apply",
@@ -143,17 +144,15 @@ export class ApplyPage implements OnInit {
         title: "Apply to Listing | ASCENDynamics NFP",
         description:
           "Fill out your application and connect with organizations to make a difference.",
-        url: "https://ascendynamics.org/listings",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        url: `${environment.appBaseUrl}/listings`,
+        image: "/assets/image/icon-512x512.png",
       },
       {
         card: "summary_large_image",
         title: "Apply to Listing",
         description:
           "Submit your application to this listing and start making an impact today.",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        image: "/assets/image/icon-512x512.png",
       },
     );
   }

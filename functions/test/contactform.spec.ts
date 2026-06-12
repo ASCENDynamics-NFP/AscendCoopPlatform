@@ -23,13 +23,13 @@ import {expect} from "chai";
 import * as sinon from "sinon";
 import proxyquire from "proxyquire";
 
-const mockDefineString = sinon.stub().returns({
+const mockDefineSecret = sinon.stub().returns({
   value: () => "test@example.com",
 });
 
 const {submitLead} = proxyquire("../src/functions/contactform", {
   "firebase-functions/params": {
-    defineString: mockDefineString,
+    defineSecret: mockDefineSecret,
   },
   "firebase-functions/logger": {
     info: sinon.stub(),
@@ -37,14 +37,18 @@ const {submitLead} = proxyquire("../src/functions/contactform", {
   },
   "../utils/firebase": {
     admin: {
-      firestore: () => ({
-        collection: () => ({
-          add: sinon.stub().resolves(),
+      firestore: Object.assign(
+        () => ({
+          collection: () => ({
+            add: sinon.stub().resolves(),
+          }),
         }),
-        FieldValue: {
-          serverTimestamp: sinon.stub(),
+        {
+          FieldValue: {
+            serverTimestamp: sinon.stub(),
+          },
         },
-      }),
+      ),
     },
   },
   nodemailer: {
@@ -79,7 +83,7 @@ describe("submitLead", () => {
     const res = createRes();
     await submitLead(req, res);
     expect(((res as any).status as sinon.SinonStub).calledWith(405)).to.be.true;
-    expect(((res as any).send as sinon.SinonStub).called).to.be.true;
+    expect(((res as any).json as sinon.SinonStub).calledOnce).to.be.true;
   });
 
   it("returns 400 when required fields are missing", async () => {
@@ -91,6 +95,32 @@ describe("submitLead", () => {
     const res = createRes();
     await submitLead(req, res);
     expect(((res as any).status as sinon.SinonStub).calledWith(400)).to.be.true;
-    expect(((res as any).send as sinon.SinonStub).called).to.be.true;
+    expect(((res as any).json as sinon.SinonStub).calledOnce).to.be.true;
+  });
+
+  it("returns a JSON success payload for valid submissions", async () => {
+    const req = {
+      method: "POST",
+      headers: {origin: "http://localhost:4200"},
+      body: {
+        name: "Test User",
+        email: "test@example.com",
+        phone: "",
+        inquiry: "question",
+        message: "Testing the lead form submission.",
+        from: "ASCENDynamics NFP",
+      },
+    } as unknown as Request;
+    const res = createRes();
+
+    await submitLead(req, res);
+
+    expect(((res as any).status as sinon.SinonStub).calledWith(200)).to.be.true;
+    expect(
+      ((res as any).json as sinon.SinonStub).calledWith({
+        success: true,
+        message: "Lead submitted, email sent, and data saved successfully",
+      }),
+    ).to.be.true;
   });
 });

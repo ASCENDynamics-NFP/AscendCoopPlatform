@@ -1,6 +1,7 @@
 import {Component} from "@angular/core";
 import {MetaService} from "../../../../core/services/meta.service";
 
+import {environment} from "../../../../../environments/environment";
 @Component({
   standalone: false,
   selector: "app-privacy-policy",
@@ -21,7 +22,7 @@ export class PrivacyPolicyPage {
         title: "Privacy Policy | ASCENDynamics NFP",
         description:
           "ASCENDynamics NFP's privacy policy outlines how we protect and handle your personal information on our platform.",
-        url: "https://ascendynamics.org/info/privacy-policy",
+        url: `${environment.appBaseUrl}/info/privacy-policy`,
       },
       {
         card: "summary",

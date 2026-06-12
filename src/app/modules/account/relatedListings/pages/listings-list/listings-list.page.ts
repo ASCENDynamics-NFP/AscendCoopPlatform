@@ -41,6 +41,7 @@ import * as ListingsActions from "../../../../../state/actions/listings.actions"
 import {MetaService} from "../../../../../core/services/meta.service";
 import {AccessService} from "../../../../../core/services/access.service";
 
+import {environment} from "../../../../../../environments/environment";
 @Component({
   standalone: false,
   selector: "app-listings-list",
@@ -290,17 +291,15 @@ export class ListingsListPage implements OnInit {
         title: "Volunteer Listings | ASCENDynamics NFP",
         description:
           "Browse and apply for volunteer roles on ASCENDynamics NFP.",
-        url: "https://ascendynamics.org/listings",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        url: `${environment.appBaseUrl}/listings`,
+        image: "/assets/image/icon-512x512.png",
       },
       {
         card: "summary",
         title: "Volunteer Listings | ASCENDynamics NFP",
         description:
           "Find opportunities to contribute and grow your skills with ASCENDynamics NFP.",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        image: "/assets/image/icon-512x512.png",
       },
     );
   }

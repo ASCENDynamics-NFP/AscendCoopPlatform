@@ -25,6 +25,7 @@ import {ModalController} from "@ionic/angular";
 import {AuthUser} from "@shared/models/auth-user.model";
 import {TranslateService} from "@ngx-translate/core";
 import {Subscription, combineLatest} from "rxjs";
+import {distinctUntilChanged} from "rxjs/operators";
 import {Store} from "@ngrx/store";
 import {selectAuthUser} from "../../../state/selectors/auth.selectors";
 import {FeedbackModalComponent} from "../feedback-modal/feedback-modal.component";
@@ -98,11 +99,30 @@ export class MenuComponent implements OnInit, OnDestroy {
 
     // Rebuild menu sections when branding config changes.
     // BehaviorSubject fires immediately, so this also covers the initial build.
-    const brandingSub = this.brandingService.config$.subscribe((cfg) => {
-      this.brandingConfig = cfg;
-      this.updateInfoPages();
-      this.updateProjectLinks();
-    });
+    // distinctUntilChanged prevents redundant rebuilds — without it, every
+    // BrandingService emission (defaults, then Remote Config activation)
+    // would rebuild fresh MenuItem[] arrays. Even with stable `track item.url`
+    // in the template, fewer rebuilds = fewer mid-async ion-icon teardowns.
+    const brandingSub = this.brandingService.config$
+      .pipe(
+        distinctUntilChanged(
+          (a, b) =>
+            a.showAbout === b.showAbout &&
+            a.showTeam === b.showTeam &&
+            a.showDonate === b.showDonate &&
+            a.showEventCalendar === b.showEventCalendar &&
+            a.showThinkTank === b.showThinkTank &&
+            a.showServices === b.showServices &&
+            a.showStartups === b.showStartups &&
+            a.appName === b.appName &&
+            a.logoUrl === b.logoUrl,
+        ),
+      )
+      .subscribe((cfg) => {
+        this.brandingConfig = cfg;
+        this.updateInfoPages();
+        this.updateProjectLinks();
+      });
     this.subscriptions.add(brandingSub);
   }
 

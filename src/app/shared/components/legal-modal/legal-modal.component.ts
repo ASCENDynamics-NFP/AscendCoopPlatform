@@ -20,6 +20,7 @@
 import {CommonModule} from "@angular/common";
 import {Component, Input} from "@angular/core";
 import {IonicModule, ModalController} from "@ionic/angular";
+import {environment} from "../../../../environments/environment";
 
 @Component({
   selector: "app-legal-modal",
@@ -148,9 +149,9 @@ export class LegalModalComponent {
   <h4>Queries and Complaints</h4>
   <p><strong>Direct Contact:</strong> If you have any questions, concerns, or complaints about this Privacy Policy or our handling of your personal data, you can contact us through the following means:</p>
   <ul>
-    <li><strong>Email:</strong> support@ascendynamics.org - for direct communication with our privacy team.</li>
-    <li><strong>Mailing Address:</strong> 7649 W Irving Park Rd #N1, Chicago, IL, United States 60634 - for formal written inquiries or complaints.</li>
-    <li><strong>Phone:</strong> ###-###-#### - for immediate concerns or queries.</li>
+    <li><strong>Email:</strong> ${environment.privacyEmail} - for direct communication with our privacy team.</li>
+    <li><strong>Mailing Address:</strong> ${environment.org.mailingAddress} - for formal written inquiries or complaints.</li>
+    ${environment.org.phone ? `<li><strong>Phone:</strong> ${environment.org.phone} - for immediate concerns or queries.</li>` : ""}
   </ul>
   <p><strong>Response Commitment:</strong> Our team is dedicated to addressing your concerns as promptly and thoroughly as possible. We aim to respond to all inquiries within one week of receipt.</p>
   <p><strong>Feedback Process:</strong> We value your feedback and are committed to improving our policies and practices based on your input.</p>
@@ -158,7 +159,7 @@ export class LegalModalComponent {
   <h3>11. Effective Date</h3>
 
   <h4>Policy Effective Date</h4>
-  <p><strong>Date of Effectiveness:</strong> This Privacy Policy is effective as of January 1, 2024.</p>
+  <p><strong>Date of Effectiveness:</strong> This Privacy Policy is effective as of ${environment.org.legalEffectiveDate}.</p>
   <p><strong>Previous Versions:</strong> If applicable, note that previous versions of the Privacy Policy can be obtained by contacting us.</p>
   <p><strong>Acknowledgement of Updates:</strong> By continuing to use the ASCENDynamics platform on or after this date, you agree to the terms of this Privacy Policy.</p>`;
 
@@ -301,8 +302,8 @@ export class LegalModalComponent {
 
   <h4>Jurisdiction</h4>
   <ul>
-    <li><strong>Applicable Law:</strong> These Terms of Use and any separate agreements whereby we provide you services shall be governed by and construed in accordance with the laws of the State of Illinois, United States.</li>
-    <li><strong>Jurisdiction for Disputes:</strong> Any disputes arising out of or in connection with these Terms or the use of the ASCENDynamics platform shall be subject to the exclusive jurisdiction of the state and federal courts located in the State of Illinois, United States.</li>
+    <li><strong>Applicable Law:</strong> These Terms of Use and any separate agreements whereby we provide you services shall be governed by and construed in accordance with the laws of the ${environment.org.jurisdiction}.</li>
+    <li><strong>Jurisdiction for Disputes:</strong> Any disputes arising out of or in connection with these Terms or the use of the ASCENDynamics platform shall be subject to the exclusive jurisdiction of the state and federal courts located in the ${environment.org.jurisdiction}.</li>
   </ul>
 
   <h4>Dispute Resolution</h4>
@@ -338,13 +339,13 @@ export class LegalModalComponent {
   <ul>
     <li><strong>General Inquiries:</strong> For any questions or concerns regarding these Terms of Use or any other aspects of your experience with the ASCENDynamics platform, please contact us at:</li>
     <ul>
-      <li><strong>Email:</strong> support@ascendynamics.org</li>
-      <li><strong>Mailing Address:</strong> ASCENDynamics NFP, 7649 W Irving Park Rd #N1, Illinois, USA 60706</li>
-      <li><strong>Phone:</strong></li>
+      <li><strong>Email:</strong> ${environment.supportEmail}</li>
+      <li><strong>Mailing Address:</strong> ${environment.org.mailingAddress}</li>
+      ${environment.org.phone ? `<li><strong>Phone:</strong> ${environment.org.phone}</li>` : ""}
     </ul>
     <li><strong>Support Hours:</strong> Our support team is available Monday, Wednesday, Friday, 9 AM to 5 PM CST.</li>
     <li><strong>Response Time:</strong> We aim to respond to all inquiries within one week during our regular business hours.</li>
-    <li><strong>Additional Support:</strong> For more immediate assistance, please visit our <a href="https://join.slack.com/t/ascendynamicsnfp/shared_invite/zt-1yqcw1hqa-slT2gWkBEkLOTRnN8zEqdQ">Slack</a> community.</li>
+    <li><strong>Additional Support:</strong> ${environment.org.communityUrl ? `For more immediate assistance, please visit our <a href="${environment.org.communityUrl}">community</a>.` : ""}</li>
   </ul>
 
   <h3>15. Acknowledgement and Acceptance of Terms</h3>

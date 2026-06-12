@@ -38,6 +38,7 @@ import {PrivacyService} from "../../../../../../core/services/privacy.service";
 export class ContactInformationComponent implements OnDestroy {
   _account!: Partial<Account>;
   private contactInfoSub?: Subscription;
+  private subscribedAccountId?: string;
   contactInfo: ContactInformation | null = null;
   contactInfoLoadTried = false;
   showMore = {
@@ -64,11 +65,12 @@ export class ContactInformationComponent implements OnDestroy {
       return;
     }
     this._account = account;
-    // Attempt to load gated contact info from sections with graceful fallback
-    if (this.contactInfoSub) {
-      this.contactInfoSub.unsubscribe();
-    }
-    if (account.id) {
+    // Only re-subscribe if the account id actually changed
+    if (account.id && account.id !== this.subscribedAccountId) {
+      this.subscribedAccountId = account.id;
+      if (this.contactInfoSub) {
+        this.contactInfoSub.unsubscribe();
+      }
       this.contactInfoLoadTried = true;
       this.contactInfoSub = this.sections
         .contactInfo$(account.id)

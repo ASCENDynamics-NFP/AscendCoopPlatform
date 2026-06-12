@@ -32,7 +32,9 @@ import {
 } from "../../../../state/selectors/auth.selectors";
 import * as AuthActions from "../../../../state/actions/auth.actions";
 import {MetaService} from "../../../../core/services/meta.service";
+import {AuthFeatureFlagsService} from "../../../../core/services/auth-feature-flags.service";
 
+import {environment} from "../../../../../environments/environment";
 @Component({
   standalone: false,
   selector: "app-login",
@@ -43,9 +45,12 @@ export class LoginPage implements OnInit {
   public loginForm: any;
   public loading$!: Observable<boolean>;
   public error$!: Observable<any>;
+  public showGoogleSignIn$!: Observable<boolean>;
+  public showAppleSignIn$!: Observable<boolean>;
 
   constructor(
     private alertController: AlertController,
+    private authFeatureFlags: AuthFeatureFlagsService,
     private fb: FormBuilder,
     private metaService: MetaService,
     private router: Router,
@@ -63,16 +68,14 @@ export class LoginPage implements OnInit {
         title: "Login to ASCENDynamics NFP",
         description:
           "Access your ASCENDynamics NFP account to stay connected with the community.",
-        url: "https://ascendynamics.org/login",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        url: `${environment.appBaseUrl}/login`,
+        image: "/assets/image/icon-512x512.png",
       },
       {
         card: "summary",
         title: "Login | ASCENDynamics NFP",
         description: "Stay connected with your volunteering community.",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        image: "/assets/image/icon-512x512.png",
       },
     );
 
@@ -83,15 +86,15 @@ export class LoginPage implements OnInit {
       name: "Login | ASCENDynamics NFP",
       description:
         "Log in to your ASCENDynamics NFP account to track volunteer hours, find opportunities, and connect with nonprofits.",
-      url: "https://ascendynamics.org/login",
+      url: `${environment.appBaseUrl}/login`,
       isPartOf: {
         "@type": "WebSite",
         name: "ASCENDynamics NFP",
-        url: "https://ascendynamics.org",
+        url: environment.appBaseUrl,
       },
       potentialAction: {
         "@type": "LoginAction",
-        target: "https://ascendynamics.org/login",
+        target: `${environment.appBaseUrl}/login`,
       },
     });
   }
@@ -107,6 +110,8 @@ export class LoginPage implements OnInit {
     // Initialize observables after store is defined
     this.loading$ = this.store.select(selectAuthLoading);
     this.error$ = this.store.select(selectAuthError);
+    this.showGoogleSignIn$ = this.authFeatureFlags.showGoogleSignIn$;
+    this.showAppleSignIn$ = this.authFeatureFlags.showAppleSignIn$;
 
     this.loadFormData();
   }
@@ -185,6 +190,10 @@ export class LoginPage implements OnInit {
 
   signInWithGoogle() {
     this.store.dispatch(AuthActions.signInWithGoogle());
+  }
+
+  signInWithApple() {
+    this.store.dispatch(AuthActions.signInWithApple());
   }
 
   goToSignUp() {

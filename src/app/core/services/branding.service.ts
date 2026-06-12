@@ -20,21 +20,19 @@
 // src/app/core/services/branding.service.ts
 
 import {Injectable} from "@angular/core";
-import {BehaviorSubject, Observable} from "rxjs";
-import {getApp} from "firebase/app";
-import {
-  fetchAndActivate,
-  getRemoteConfig,
-  getValue,
-  type RemoteConfig,
-} from "firebase/remote-config";
+import {BehaviorSubject, Observable, ReplaySubject, race, timer} from "rxjs";
+import {filter, map, take} from "rxjs/operators";
 import {environment} from "../../../environments/environment";
+import {RemoteConfigService} from "./remote-config.service";
 
 /**
  * Shape of the branding settings consumed by the application.
  *
  * Keys mirror the Firebase Remote Config parameter names declared in
  * `remoteconfig.template.json` (without the `branding_` prefix).
+ *
+ * Non-branding feature flags (e.g. auth provider visibility) live in
+ * their own domain service and are **not** part of this interface.
  */
 export interface BrandingConfig {
   enabled: boolean;
@@ -53,12 +51,15 @@ export interface BrandingConfig {
 }
 
 /**
- * Built-in defaults. These match the bundled ASCENDynamics NFP brand and
- * are also seeded into Remote Config via {@link getRemoteConfig().defaultConfig}
- * so the very first paint (before the network fetch resolves) uses the
- * same values that ship in the SCSS/HTML.
+ * Upstream ASCENDynamics NFP defaults. These are the values shipped by the
+ * canonical repo; forks override them at build time via `BRAND_*` env vars
+ * (see {@link BRANDING_DEFAULTS} and `.env.example`).
+ *
+ * Kept as a separate constant so the upstream identity is auditable and
+ * so the merge logic below has an unambiguous fallback when an operator's
+ * `.env` leaves a field blank.
  */
-export const BRANDING_DEFAULTS: BrandingConfig = {
+const ASCEND_DEFAULTS: BrandingConfig = {
   enabled: true,
   appName: "ASCENDynamics NFP",
   tagline:
@@ -75,9 +76,44 @@ export const BRANDING_DEFAULTS: BrandingConfig = {
   showStartups: true,
 };
 
+/**
+ * Build-time brand defaults sourced from `environment.brand` (populated by
+ * `generate-env.js` from `BRAND_*` env vars). A blank/missing value inherits
+ * the corresponding upstream value from {@link ASCEND_DEFAULTS}.
+ *
+ * This is what an offline first-paint sees, and the seed for
+ * `RemoteConfig.defaultConfig`. Runtime layers (Remote Config + per-device
+ * localStorage override) still take precedence at runtime.
+ */
+const buildBrand =
+  (environment as {brand?: Partial<Record<string, string>>}).brand ?? {};
+function buildBrandStr(
+  key: "appName" | "tagline" | "logoUrl" | "primaryColor" | "secondaryColor",
+): string {
+  const v = buildBrand[key];
+  // logoUrl is allowed to be intentionally empty (text-only brands), so an
+  // empty string in env *should* override the upstream default only for that
+  // field. Every other field falls back when blank.
+  if (typeof v === "string" && (v.length > 0 || key === "logoUrl")) return v;
+  return ASCEND_DEFAULTS[key];
+}
+
+/**
+ * Effective build-time defaults: per-fork brand overrides merged on top of
+ * {@link ASCEND_DEFAULTS}. Referenced across the codebase (menu, landing,
+ * theme-showcase, admin branding page, app-header spec) as the synchronous
+ * "shape + seed" for branding state.
+ */
+export const BRANDING_DEFAULTS: BrandingConfig = {
+  ...ASCEND_DEFAULTS,
+  appName: buildBrandStr("appName"),
+  tagline: buildBrandStr("tagline"),
+  logoUrl: buildBrandStr("logoUrl"),
+  primaryColor: buildBrandStr("primaryColor"),
+  secondaryColor: buildBrandStr("secondaryColor"),
+};
+
 const LOCAL_OVERRIDE_KEY = "branding.localOverride.v1";
-const FETCH_INTERVAL_MS_PROD = 12 * 60 * 60 * 1000; // 12h
-const FETCH_INTERVAL_MS_DEV = 60 * 1000; // 1 minute
 
 /**
  * Reads the current branding configuration from Firebase Remote Config,
@@ -105,9 +141,21 @@ export class BrandingService {
   /** Observable view of the active branding config. */
   readonly config$: Observable<BrandingConfig> = this.subject.asObservable();
 
-  private remoteConfig?: RemoteConfig;
+  private readonly readySubject = new ReplaySubject<void>(1);
+  /**
+   * Emits once when branding is confirmed from Remote Config, or after a
+   * 2.5 s fallback timeout (offline / slow network). Replay(1) means late
+   * subscribers — e.g. AppComponent — always receive the resolved value
+   * even if they subscribe after init() has already completed.
+   *
+   * Use this to drive a splash screen that hides once the brand is stable.
+   */
+  readonly ready$: Observable<void> = this.readySubject.asObservable();
+
   private remoteSnapshot: BrandingConfig = {...BRANDING_DEFAULTS};
   private initialized = false;
+
+  constructor(private remoteConfigService: RemoteConfigService) {}
 
   /**
    * Snapshot of the currently active branding config (after local
@@ -120,38 +168,44 @@ export class BrandingService {
   /**
    * Initialize the service. Safe to call multiple times — subsequent
    * calls are no-ops. Applies defaults + local override synchronously,
-   * then kicks off a background Remote Config fetch.
+   * then kicks off (via {@link RemoteConfigService}) a background
+   * Remote Config fetch.
    */
   init(): void {
     if (this.initialized) return;
     this.initialized = true;
 
-    // 1. Apply defaults + any local override immediately so first paint
-    //    is correct without waiting on the network.
+    // Register branding defaults with the shared Remote Config service
+    // so they feed the getters before the first activation lands.
+    this.remoteConfigService.registerDefaults(
+      this.toDefaultConfigPayload(BRANDING_DEFAULTS),
+    );
+    this.remoteConfigService.init();
+
+    // Apply defaults + any local override immediately so first paint
+    // is correct without waiting on the network.
     this.recompute();
 
-    // 2. Try Remote Config in the background. If the Firebase app has
-    //    not been initialized yet (e.g. during SSR/tests) skip silently.
-    try {
-      const app = getApp();
-      this.remoteConfig = getRemoteConfig(app);
-      this.remoteConfig.settings.minimumFetchIntervalMillis =
-        environment.production ? FETCH_INTERVAL_MS_PROD : FETCH_INTERVAL_MS_DEV;
-      this.remoteConfig.defaultConfig =
-        this.toDefaultConfigPayload(BRANDING_DEFAULTS);
+    // Resolve ready$ when Remote Config activates OR after 2.5 s, whichever
+    // comes first. This lets consumers (e.g. AppComponent's splash screen)
+    // unblock without hanging indefinitely on a slow/offline connection.
+    const rcActivated$ = this.remoteConfigService.activated$.pipe(
+      filter((tick) => tick > 0),
+      take(1),
+      map(() => undefined as void),
+    );
+    race(rcActivated$, timer(2500).pipe(map(() => undefined as void)))
+      .pipe(take(1))
+      .subscribe(() => this.readySubject.next());
 
-      void fetchAndActivate(this.remoteConfig)
-        .then(() => {
-          this.remoteSnapshot = this.readRemoteSnapshot();
-          this.recompute();
-        })
-        .catch(() => {
-          // Network failure / no Remote Config availability: keep
-          // defaults + local override.
-        });
-    } catch {
-      // Firebase not initialized yet — defaults + local override stand.
-    }
+    // When Remote Config activates a fresh snapshot, re-read our keys
+    // and recompute. The initial seed emission (0) is ignored because
+    // we already recomputed above with defaults.
+    this.remoteConfigService.activated$.subscribe((tick) => {
+      if (tick === 0) return;
+      this.remoteSnapshot = this.readRemoteSnapshot();
+      this.recompute();
+    });
   }
 
   /**
@@ -199,48 +253,42 @@ export class BrandingService {
   // ---------- internals ----------
 
   private readRemoteSnapshot(): BrandingConfig {
-    if (!this.remoteConfig) return {...BRANDING_DEFAULTS};
-    const rc = this.remoteConfig;
-    const str = (key: string, fallback: string): string => {
-      const v = getValue(rc, key).asString();
-      return v === "" ? fallback : v;
-    };
-    const bool = (key: string, fallback: boolean): boolean => {
-      try {
-        return getValue(rc, key).asBoolean();
-      } catch {
-        return fallback;
-      }
-    };
+    const rc = this.remoteConfigService;
     return {
-      enabled: bool("branding_enabled", BRANDING_DEFAULTS.enabled),
-      appName: str("branding_app_name", BRANDING_DEFAULTS.appName),
-      tagline: str("branding_tagline", BRANDING_DEFAULTS.tagline),
-      logoUrl: str("branding_logo_url", BRANDING_DEFAULTS.logoUrl),
-      primaryColor: str(
+      enabled: rc.getBoolean("branding_enabled", BRANDING_DEFAULTS.enabled),
+      appName: rc.getString("branding_app_name", BRANDING_DEFAULTS.appName),
+      tagline: rc.getString("branding_tagline", BRANDING_DEFAULTS.tagline),
+      logoUrl: rc.getString("branding_logo_url", BRANDING_DEFAULTS.logoUrl),
+      primaryColor: rc.getString(
         "branding_primary_color",
         BRANDING_DEFAULTS.primaryColor,
       ),
-      secondaryColor: str(
+      secondaryColor: rc.getString(
         "branding_secondary_color",
         BRANDING_DEFAULTS.secondaryColor,
       ),
-      showAbout: bool("branding_show_about", BRANDING_DEFAULTS.showAbout),
-      showTeam: bool("branding_show_team", BRANDING_DEFAULTS.showTeam),
-      showDonate: bool("branding_show_donate", BRANDING_DEFAULTS.showDonate),
-      showEventCalendar: bool(
+      showAbout: rc.getBoolean(
+        "branding_show_about",
+        BRANDING_DEFAULTS.showAbout,
+      ),
+      showTeam: rc.getBoolean("branding_show_team", BRANDING_DEFAULTS.showTeam),
+      showDonate: rc.getBoolean(
+        "branding_show_donate",
+        BRANDING_DEFAULTS.showDonate,
+      ),
+      showEventCalendar: rc.getBoolean(
         "branding_show_event_calendar",
         BRANDING_DEFAULTS.showEventCalendar,
       ),
-      showThinkTank: bool(
+      showThinkTank: rc.getBoolean(
         "branding_show_think_tank",
         BRANDING_DEFAULTS.showThinkTank,
       ),
-      showServices: bool(
+      showServices: rc.getBoolean(
         "branding_show_services",
         BRANDING_DEFAULTS.showServices,
       ),
-      showStartups: bool(
+      showStartups: rc.getBoolean(
         "branding_show_startups",
         BRANDING_DEFAULTS.showStartups,
       ),

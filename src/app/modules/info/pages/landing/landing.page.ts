@@ -30,6 +30,7 @@ import {ViewDidEnter} from "@ionic/angular";
 import {SwiperOptions} from "swiper/types";
 import {Subscription} from "rxjs";
 import {MetaService} from "../../../../core/services/meta.service";
+import {environment} from "../../../../../environments/environment";
 import {
   BrandingConfig,
   BrandingService,
@@ -98,17 +99,15 @@ export class LandingPage implements ViewDidEnter, OnInit, OnDestroy {
         title: "ASCENDynamics NFP Collaborative Platform",
         description:
           "An open-source collaboration platform connecting volunteers and nonprofits to foster community growth and address fundamental human needs.",
-        url: "https://ascendynamics.org/",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        url: environment.appBaseUrl,
+        image: "/assets/image/icon-512x512.png",
       },
       {
         card: "summary_large_image",
         title: "ASCENDynamics NFP Collaborative Platform",
         description:
           "Connect with nonprofits, volunteer opportunities, and community impact. Build meaningful connections and create positive change together.",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+        image: "/assets/image/icon-512x512.png",
       },
     );
 
@@ -118,8 +117,8 @@ export class LandingPage implements ViewDidEnter, OnInit, OnDestroy {
       "@type": "Organization",
       name: "ASCENDynamics NFP",
       alternateName: "ASCENDynamics Nonprofit",
-      url: "https://ascendynamics.org",
-      logo: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Ficon-512x512.png?alt=media",
+      url: environment.appBaseUrl,
+      logo: "/assets/image/icon-512x512.png",
       description:
         "An open-source collaboration platform connecting volunteers and nonprofits to foster community growth and address fundamental human needs through meaningful partnerships.",
       foundingDate: "2023",
@@ -131,7 +130,7 @@ export class LandingPage implements ViewDidEnter, OnInit, OnDestroy {
         "Community Impact",
         "Social Networking",
       ],
-      sameAs: ["https://ascendynamics.org"],
+      sameAs: [environment.appBaseUrl],
     });
   }
 

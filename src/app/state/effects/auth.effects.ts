@@ -32,6 +32,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
+  OAuthProvider,
   signInWithCredential,
   signOut,
   sendPasswordResetEmail,
@@ -41,8 +42,10 @@ import {
   applyActionCode,
   reload,
   User,
+  UserCredential,
 } from "firebase/auth";
 import {GoogleAuth} from "@southdevs/capacitor-google-auth";
+import {SignInWithApple} from "@capacitor-community/apple-sign-in";
 import {
   catchError,
   from,
@@ -77,6 +80,8 @@ import {Settings} from "@shared/models/account.model";
 import {selectAccountById} from "../selectors/account.selectors";
 import {FirebaseFunctionsService} from "../../core/services/firebase-functions.service";
 import {KeyBackupService} from "../../modules/messaging/services/key-backup.service";
+import {environment} from "../../../environments/environment";
+import capacitorConfig from "../../../../capacitor.config";
 
 @Injectable()
 export class AuthEffects {
@@ -96,6 +101,60 @@ export class AuthEffects {
         : false;
     } catch {
       return false;
+    }
+  }
+
+  private getPlatform(): string {
+    try {
+      const c = (window as any)?.Capacitor;
+      return typeof c?.getPlatform === "function" ? c.getPlatform() : "web";
+    } catch {
+      return "web";
+    }
+  }
+
+  private generateNonce(length: number): string {
+    const charset =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const array = new Uint8Array(length);
+    crypto.getRandomValues(array);
+    return Array.from(array)
+      .map((byte) => charset[byte % charset.length])
+      .join("");
+  }
+
+  private async sha256(message: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(message);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+
+  private async performAppleSignIn(): Promise<UserCredential> {
+    const platform = this.getPlatform();
+    if (platform === "ios") {
+      const rawNonce = this.generateNonce(32);
+      const hashedNonce = await this.sha256(rawNonce);
+      const state = this.generateNonce(32);
+      const result = await SignInWithApple.authorize({
+        clientId: capacitorConfig.appId!,
+        redirectURI: `https://${environment.firebaseConfig.authDomain}/__/auth/handler`,
+        scopes: "email name",
+        state,
+        nonce: hashedNonce,
+      });
+      const provider = new OAuthProvider("apple.com");
+      const credential = provider.credential({
+        idToken: result.response.identityToken,
+        rawNonce,
+      });
+      return signInWithCredential(this.auth, credential);
+    } else {
+      const provider = new OAuthProvider("apple.com");
+      provider.addScope("email");
+      provider.addScope("name");
+      return signInWithPopup(this.auth, provider);
     }
   }
 
@@ -429,6 +488,8 @@ export class AuthEffects {
           return from(
             GoogleAuth.signIn({
               scopes: ["profile", "email"],
+              serverClientId:
+                "1031671694911-3ejesivnlk5fhr8l29ne74fhp0smdltn.apps.googleusercontent.com",
             }),
           ).pipe(
             switchMap(async (result) => {
@@ -526,6 +587,50 @@ export class AuthEffects {
     ),
   );
 
+  // Sign-In with Apple Effect
+  signInWithApple$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.signInWithApple),
+      switchMap(() =>
+        from(this.performAppleSignIn()).pipe(
+          switchMap(async (result) => {
+            const idTokenResult = await result.user.getIdTokenResult();
+            return {user: result.user, claims: idTokenResult.claims};
+          }),
+          switchMap(({user, claims}) =>
+            this.createAuthUserFromClaims(user, claims).pipe(
+              switchMap((authUser) => {
+                if (authUser?.type === "user" && authUser?.uid) {
+                  return this.firebaseFunctionsService
+                    .updateAccount({
+                      accountId: authUser.uid,
+                      updates: {type: "user"},
+                    })
+                    .pipe(
+                      catchError(() => of(null)),
+                      map(() => authUser),
+                    );
+                }
+                return of(authUser);
+              }),
+              map((authUser) => {
+                this.store.dispatch(
+                  AuthActions.updateAuthUser({user: authUser}),
+                );
+                return AuthActions.signInSuccess({uid: authUser.uid});
+              }),
+            ),
+          ),
+          catchError((error) => {
+            console.error("Apple Sign-In Error:", error);
+            this.errorHandler.handleFirebaseAuthError(error);
+            return of(AuthActions.signInWithAppleFailure({error}));
+          }),
+        ),
+      ),
+    ),
+  );
+
   // Sign-In Success Effect: Navigate to Account Page
   // Only navigate on actual sign-in actions, not on auth state rehydration
   signInSuccess$ = createEffect(
@@ -539,6 +644,7 @@ export class AuthEffects {
               AuthActions.signIn,
               AuthActions.signUp,
               AuthActions.signInWithGoogle,
+              AuthActions.signInWithApple,
             ),
           ),
         ),

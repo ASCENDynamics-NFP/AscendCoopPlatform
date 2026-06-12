@@ -22,6 +22,7 @@
 import {Component, OnInit} from "@angular/core";
 import {MetaService} from "../../../../core/services/meta.service";
 
+import {environment} from "../../../../../environments/environment";
 @Component({
   standalone: false,
   selector: "app-about-us",
@@ -42,17 +43,15 @@ export class AboutUsPage implements OnInit {
         title: "About ASCENDynamics NFP | Cooperative Incubator",
         description:
           "Discover the mission and values of ASCENDynamics NFP and our dedication to SEO for social impact.",
-        url: "https://ascendynamics.org/info/about-us",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+        url: `${environment.appBaseUrl}/info/about-us`,
+        image: "/assets/image/icon-512x512.png",
       },
       {
         card: "summary",
         title: "About ASCENDynamics NFP",
         description:
           "ASCENDynamics NFP provides resources and SEO guidance for cooperatives and nonprofits.",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+        image: "/assets/image/icon-512x512.png",
       },
     );
 
@@ -61,16 +60,16 @@ export class AboutUsPage implements OnInit {
       "@context": "https://schema.org",
       "@type": "Organization",
       name: "ASCENDynamics NFP",
-      url: "https://ascendynamics.org",
-      logo: "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/ASCENDynamicsNFP%2Ficon-512x512.png?alt=media",
+      url: environment.appBaseUrl,
+      logo: "/assets/image/icon-512x512.png",
       description:
         "ASCENDynamics NFP is a cooperative incubator that empowers worker-owned cooperatives through SEO-focused strategies and community resources.",
       foundingDate: "2023",
-      sameAs: ["https://ascendynamics.org/info/about-us"],
+      sameAs: [`${environment.appBaseUrl}/info/about-us`],
       contactPoint: {
         "@type": "ContactPoint",
         contactType: "customer service",
-        url: "https://ascendynamics.org",
+        url: environment.appBaseUrl,
       },
     });
   }

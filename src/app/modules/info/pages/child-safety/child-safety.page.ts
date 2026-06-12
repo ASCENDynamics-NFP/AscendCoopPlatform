@@ -20,6 +20,7 @@
 import {Component, OnInit} from "@angular/core";
 import {MetaService} from "../../../../core/services/meta.service";
 
+import {environment} from "../../../../../environments/environment";
 @Component({
   standalone: false,
   selector: "app-child-safety",
@@ -47,7 +48,7 @@ export class ChildSafetyPage implements OnInit {
       {
         title,
         description,
-        url: "https://ascendynamics.org/info/child-safety",
+        url: `${environment.appBaseUrl}/info/child-safety`,
       },
       {
         card: "summary",

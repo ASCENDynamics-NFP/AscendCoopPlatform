@@ -1,0 +1,208 @@
+<!--
+Nonprofit Social Networking Platform: Allowing Users and Organizations to Collaborate.
+Copyright (C) 2023  ASCENDynamics NFP
+
+This file is part of Nonprofit Social Networking Platform.
+
+Nonprofit Social Networking Platform is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nonprofit Social Networking Platform is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>__APP_NAME__</title>
+    <meta
+      name="description"
+      content="__APP_DESCRIPTION__"
+    />
+    <meta
+      name="keywords"
+      content="volunteer, nonprofit, community, collaboration, analytics, volunteer management, social impact, community building, nonprofit platform"
+    />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph tags for social sharing -->
+    <meta
+      property="og:title"
+      content="__APP_NAME__"
+    />
+    <meta
+      property="og:description"
+      content="__APP_DESCRIPTION__"
+    />
+    <meta property="og:url" content="__APP_BASE_URL__/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/assets/image/icon-512x512.png" />
+
+    <!-- Twitter Card metadata -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="__APP_NAME__"
+    />
+    <meta
+      name="twitter:description"
+      content="__APP_DESCRIPTION__"
+    />
+    <meta name="twitter:image" content="/assets/image/icon-512x512.png" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="__APP_BASE_URL__/" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <base href="/" />
+    <link rel="icon" type="image/png" href="assets/icon/logo.png" />
+
+    <!-- add to homescreen for ios -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+    <meta
+      name="google-signin-client_id"
+      content="__GOOGLE_AUTH_WEB_CLIENT_ID__"
+    />
+    <meta name="google-signin-scope" content="profile email" />
+  </head>
+
+  <body>
+    <!--
+      Branding splash — rendered before the Angular bundle loads. Hides
+      the default-brand → operator-brand swap that would otherwise flash
+      while Firebase Remote Config is being fetched. Neutral colors
+      intentionally (we don't know the brand yet).
+      Removed from the DOM by BrandingService once ready$ resolves
+      (Remote Config activated, or 2.5 s fallback timeout).
+    -->
+    <style>
+      #branding-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 2147483647;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        opacity: 1;
+        transition: opacity 0.35s ease;
+      }
+      #branding-splash.splash-hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #branding-splash > .branding-splash__spinner {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 4px solid #e0e0e0;
+        border-top-color: #9e9e9e;
+        animation: branding-spin 0.8s linear infinite;
+      }
+      @keyframes branding-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      #branding-splash > .branding-splash__offline {
+        display: none;
+        max-width: 320px;
+        margin: 0 16px;
+        text-align: center;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: #424242;
+      }
+      #branding-splash.splash-offline > .branding-splash__spinner {
+        display: none;
+      }
+      #branding-splash.splash-offline > .branding-splash__offline {
+        display: block;
+      }
+      #branding-splash .branding-splash__offline h1 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 8px;
+      }
+      #branding-splash .branding-splash__offline p {
+        font-size: 14px;
+        line-height: 1.4;
+        margin: 0 0 20px;
+        color: #757575;
+      }
+      #branding-splash .branding-splash__retry {
+        appearance: none;
+        border: 0;
+        border-radius: 8px;
+        background: #424242;
+        color: #fff;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        padding: 10px 24px;
+        cursor: pointer;
+      }
+      #branding-splash .branding-splash__retry:hover {
+        background: #212121;
+      }
+    </style>
+    <div id="branding-splash" aria-hidden="true">
+      <div class="branding-splash__spinner"></div>
+      <div class="branding-splash__offline" role="alert">
+        <h1>Can&rsquo;t reach the network</h1>
+        <p>
+          You appear to be offline or on a slow connection. Check your
+          connection and try again.
+        </p>
+        <button
+          type="button"
+          class="branding-splash__retry"
+          onclick="location.reload()"
+        >
+          Retry
+        </button>
+      </div>
+    </div>
+    <script>
+      // Offline boot fallback. If the Angular bundle fails to mount within
+      // 8s (typical cause: no network, broken cache, failing CDN), swap the
+      // splash spinner for a friendly "offline" UI with a Retry button.
+      // Also auto-reload when the browser regains connectivity.
+      (function () {
+        var BOOT_TIMEOUT_MS = 8000;
+        var splash = document.getElementById("branding-splash");
+        if (!splash) return;
+        var shown = false;
+        function showOffline() {
+          if (shown) return;
+          shown = true;
+          splash.classList.add("splash-offline");
+          splash.setAttribute("aria-hidden", "false");
+        }
+        function appBooted() {
+          // <app-root> is upgraded by Angular; it gets child nodes once the
+          // app shell renders. Until then it's an empty custom element.
+          var root = document.querySelector("app-root");
+          return !!(root && root.children && root.children.length > 0);
+        }
+        window.setTimeout(function () {
+          if (!appBooted()) showOffline();
+        }, BOOT_TIMEOUT_MS);
+        window.addEventListener("online", function () {
+          if (shown) location.reload();
+        });
+      })();
+    </script>
+
+    <app-root></app-root>
+  </body>
+</html>

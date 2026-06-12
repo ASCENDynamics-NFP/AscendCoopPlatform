@@ -40,6 +40,7 @@ import {
 import {MetaService} from "../../../../core/services/meta.service";
 import {MenuController} from "@ionic/angular";
 
+import {environment} from "../../../../../environments/environment";
 @Component({
   standalone: false,
   selector: "app-registration",
@@ -137,17 +138,15 @@ export class RegistrationPage implements OnInit, OnDestroy {
         title: "Complete Your Registration | ASCENDynamics NFP",
         description:
           "Create your ASCENDynamics NFP profile and connect with meaningful opportunities to make a positive impact.",
-        url: "https://ascendynamics.org/registration",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Fregistration-og.png?alt=media",
+        url: `${environment.appBaseUrl}/registration`,
+        image: "/assets/image/icon-512x512.png",
       },
       {
         card: "summary_large_image",
         title: "Join ASCENDynamics NFP Community",
         description:
           "Create your profile and start connecting with impactful volunteer opportunities.",
-        image:
-          "https://firebasestorage.googleapis.com/v0/b/ascendcoopplatform.appspot.com/o/org%2Fmeta-images%2Fregistration-twitter.png?alt=media",
+        image: "/assets/image/icon-512x512.png",
       },
     );
   }

@@ -15,15 +15,12 @@
         size="small"
         (click)="toggleFilter()"
         class="filter-toggle-btn"
-        >
+      >
         <ion-icon slot="start" name="options-outline"></ion-icon>
         @if (activeFilterCount > 0) {
-          <ion-badge
-            color="primary"
-            class="filter-badge"
-            >
-            {{ activeFilterCount }}
-          </ion-badge>
+        <ion-badge color="primary" class="filter-badge">
+          {{ activeFilterCount }}
+        </ion-badge>
         }
         <ion-icon
           slot="end"
@@ -36,7 +33,7 @@
         size="small"
         (click)="toggleViewMode()"
         class="view-toggle-btn"
-        >
+      >
         <ion-icon
           [name]="viewMode === 'list' ? 'map-outline' : 'list-outline'"
         ></ion-icon>
@@ -46,19 +43,19 @@
 
   <!-- Filter Panel (expands below search bar) -->
   @if (isFilterExpanded) {
-    <ion-toolbar class="filter-panel-toolbar">
-      <app-directory-filter
-        [isExpanded]="isFilterExpanded"
-        [showToggleButton]="false"
-        [initialIncludePrivateGroups]="(includePrivateGroups$ | async) ?? true"
-        [initialOnlyMyGroups]="(onlyMyGroups$ | async) ?? false"
-        [initialOnlyMyConnections]="(onlyMyConnections$ | async) ?? false"
-        [initialSort]="(sort$ | async) ?? 'name-asc'"
-        (filterChange)="onFilterChange($event)"
-        (expandedChange)="onFilterExpandedChange($event)"
-        (activeFilterCountChange)="onActiveFilterCountChange($event)"
-      ></app-directory-filter>
-    </ion-toolbar>
+  <ion-toolbar class="filter-panel-toolbar">
+    <app-directory-filter
+      [isExpanded]="isFilterExpanded"
+      [showToggleButton]="false"
+      [initialIncludePrivateGroups]="(includePrivateGroups$ | async) ?? true"
+      [initialOnlyMyGroups]="(onlyMyGroups$ | async) ?? false"
+      [initialOnlyMyConnections]="(onlyMyConnections$ | async) ?? false"
+      [initialSort]="(sort$ | async) ?? 'name-asc'"
+      (filterChange)="onFilterChange($event)"
+      (expandedChange)="onFilterExpandedChange($event)"
+      (activeFilterCountChange)="onActiveFilterCountChange($event)"
+    ></app-directory-filter>
+  </ion-toolbar>
   }
 
   <!-- Type Segment -->
@@ -67,7 +64,7 @@
       [(ngModel)]="selectedType"
       (ionChange)="setType(selectedType)"
       class="directory-type-segment"
-      >
+    >
       <ion-segment-button value="all" class="segment-all">
         <ion-icon name="albums-outline"></ion-icon>
         <ion-label>{{ "directory.all" | translate }}</ion-label>
@@ -86,126 +83,114 @@
 
 <ion-content [fullscreen]="true">
   <!-- Map View (Organizations only) -->
-  @if (viewMode === 'map') {
-    @if (mapsApiReady) {
-      <app-organizations-map
-        [organizations]="(allOrganizations$ | async) || []"
-        [userLocation]="userLocation"
-        [height]="'calc(100vh - 200px)'"
-        (organizationSelected)="viewOrganization($event)"
-      ></app-organizations-map>
-    }
-    @if (!mapsLoaded) {
-      <div class="map-loading">
-        <ion-spinner name="crescent"></ion-spinner>
-        <p>{{ 'directory.loading_map' | translate }}</p>
-      </div>
-    }
-    @if (mapsLoaded && !mapsApiReady) {
-      <div class="map-loading">
-        <ion-icon name="map-outline" size="large"></ion-icon>
-        <p>{{ 'directory.map_unavailable' | translate }}</p>
-      </div>
-    }
-  }
+  @if (viewMode === 'map') { @if (mapsApiReady) {
+  <app-organizations-map
+    [organizations]="(allOrganizations$ | async) || []"
+    [userLocation]="userLocation"
+    [height]="'calc(100vh - 200px)'"
+    (organizationSelected)="viewOrganization($event)"
+  ></app-organizations-map>
+  } @if (!mapsLoaded) {
+  <div class="map-loading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>{{ 'directory.loading_map' | translate }}</p>
+  </div>
+  } @if (mapsLoaded && !mapsApiReady) {
+  <div class="map-loading">
+    <ion-icon name="map-outline" size="large"></ion-icon>
+    <p>{{ 'directory.map_unavailable' | translate }}</p>
+  </div>
+  } }
 
   <!-- List View -->
   @if (viewMode === 'list') {
-    <!-- Loading State -->
-    @if (loading$ | async) {
-      <ion-list>
-        @for (i of skeletonItems; track i) {
-          <ion-item>
-            <ion-avatar slot="start">
-              <ion-skeleton-text
-                animated
-                style="width: 100%; height: 100%"
-              ></ion-skeleton-text>
-            </ion-avatar>
-            <ion-label>
-              <ion-skeleton-text
-                animated
-                style="width: 60%; height: 16px"
-              ></ion-skeleton-text>
-              <ion-skeleton-text
-                animated
-                style="width: 80%; height: 14px; margin-top: 4px"
-              ></ion-skeleton-text>
-            </ion-label>
-          </ion-item>
-        }
-      </ion-list>
+  <!-- Loading State -->
+  @if (loading$ | async) {
+  <ion-list>
+    @for (i of skeletonItems; track $index) {
+    <ion-item>
+      <ion-avatar slot="start">
+        <ion-skeleton-text
+          animated
+          style="width: 100%; height: 100%"
+        ></ion-skeleton-text>
+      </ion-avatar>
+      <ion-label>
+        <ion-skeleton-text
+          animated
+          style="width: 60%; height: 16px"
+        ></ion-skeleton-text>
+        <ion-skeleton-text
+          animated
+          style="width: 80%; height: 14px; margin-top: 4px"
+        ></ion-skeleton-text>
+      </ion-label>
+    </ion-item>
     }
-    <!-- Results List -->
-    @if (!(loading$ | async)) {
-      <ion-list class="results-list">
-        @if ((paginated$ | async)?.length) {
-          @for (acc of paginated$ | async; track acc) {
-            <ion-item
-              (click)="openAccount(acc)"
-              detail="true"
-              button
-              [class.type-user]="acc.type === 'user'"
-              [class.type-organization]="acc.type === 'group'"
-              >
-              <ion-avatar slot="start">
-                @if (acc.iconImage) {
-                  <img [src]="acc.iconImage" [alt]="acc.name" />
-                }
-                @if (!acc.iconImage) {
-                  <ion-icon
-                    [name]="acc.type === 'group' ? 'people-circle' : 'person-circle'"
-                    size="large"
-                  ></ion-icon>
-                }
-              </ion-avatar>
-              <ion-label>
-                <h3>{{ acc.name }}</h3>
-                <p>{{ acc.tagline || acc.description }}</p>
-              </ion-label>
-              <div slot="end" class="status-icons">
-                @if (getRelStatus(acc.id)==='pending') {
-                  <ion-icon
-                    name="hourglass"
-                    color="warning"
-                  ></ion-icon>
-                }
-                @if (getRelStatus(acc.id)==='accepted') {
-                  <ion-icon
-                    name="checkmark-circle"
-                    color="success"
-                  ></ion-icon>
-                }
-                <ion-badge
-                  class="type-badge"
-                  [class.user-badge]="acc.type === 'user'"
-                  [class.organization-badge]="acc.type === 'group'"
-                  >
-                  {{ getTypeBadgeLabel(acc.type) | translate }}
-                </ion-badge>
-              </div>
-            </ion-item>
-          }
-        } @else {
-          <div class="no-results">
-            <ion-icon name="search-outline" size="large"></ion-icon>
-            <p>{{ "directory.no_results" | translate }}</p>
-          </div>
-        }
-      </ion-list>
-    }
-    <!-- Infinite Scroll -->
-    <ion-infinite-scroll
-      threshold="100px"
-      (ionInfinite)="loadMore($event)"
-      [disabled]="!(hasMoreItems$ | async)"
-      >
-      <ion-infinite-scroll-content
-        loadingSpinner="crescent"
-        [loadingText]="'directory.loading_more' | translate"
-        >
-      </ion-infinite-scroll-content>
-    </ion-infinite-scroll>
-    <!-- No Results Template -->
+  </ion-list>
   }
+  <!-- Results List -->
+  @if (!(loading$ | async)) {
+  <ion-list class="results-list">
+    @if ((paginated$ | async)?.length) { @for (acc of paginated$ | async; track
+    acc.id) {
+    <ion-item
+      (click)="openAccount(acc)"
+      detail="true"
+      button
+      [class.type-user]="acc.type === 'user'"
+      [class.type-organization]="acc.type === 'group'"
+    >
+      <ion-avatar slot="start">
+        @if (acc.iconImage) {
+        <img [src]="acc.iconImage" [alt]="acc.name" />
+        } @if (!acc.iconImage) {
+        <ion-icon
+          [name]="acc.type === 'group' ? 'people-circle' : 'person-circle'"
+          size="large"
+        ></ion-icon>
+        }
+      </ion-avatar>
+      <ion-label>
+        <h3>{{ acc.name }}</h3>
+        <p>{{ acc.tagline || acc.description }}</p>
+      </ion-label>
+      <div slot="end" class="status-icons">
+        @if (getRelStatus(acc.id)==='pending') {
+        <ion-icon name="hourglass" color="warning"></ion-icon>
+        } @if (getRelStatus(acc.id)==='accepted') {
+        <ion-icon name="checkmark-circle" color="success"></ion-icon>
+        }
+        <ion-badge
+          class="type-badge"
+          [class.user-badge]="acc.type === 'user'"
+          [class.organization-badge]="acc.type === 'group'"
+        >
+          {{ getTypeBadgeLabel(acc.type) | translate }}
+        </ion-badge>
+      </div>
+    </ion-item>
+    } } @else {
+    <div class="no-results">
+      <ion-icon name="search-outline" size="large"></ion-icon>
+      <p>{{ "directory.no_results" | translate }}</p>
+    </div>
+    }
+  </ion-list>
+  }
+  <!-- No Results Template -->
+  }
+
+  <!-- Infinite Scroll: must be a direct child of ion-content -->
+  <ion-infinite-scroll
+    threshold="100px"
+    (ionInfinite)="loadMore($event)"
+    [disabled]="viewMode !== 'list' || !(hasMoreItems$ | async)"
+  >
+    <ion-infinite-scroll-content
+      loadingSpinner="crescent"
+      [loadingText]="'directory.loading_more' | translate"
+    >
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>

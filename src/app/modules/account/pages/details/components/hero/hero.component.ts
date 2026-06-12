@@ -19,7 +19,14 @@
 ***********************************************************************************************/
 // src/app/modules/account/pages/details/components/hero/hero.component.ts
 
-import {Component, Input, OnInit, OnChanges, OnDestroy} from "@angular/core";
+import {
+  Component,
+  Input,
+  OnInit,
+  OnChanges,
+  OnDestroy,
+  SimpleChanges,
+} from "@angular/core";
 import {ModalController, ToastController} from "@ionic/angular";
 import {Router} from "@angular/router";
 import {
@@ -80,15 +87,24 @@ export class HeroComponent implements OnInit, OnChanges, OnDestroy {
     this.projectHours$ = new Observable();
   }
 
+  // Tracks whether ngOnInit has fired; used to suppress the first ngOnChanges
+  // call (which Angular issues before ngOnInit) so we do not double-subscribe.
+  private hasInitialized = false;
+
   ngOnInit() {
+    this.hasInitialized = true;
     if (this.account?.id) {
       this.initializeTimeTracking();
       this.subscribeContactInfo();
     }
   }
 
-  ngOnChanges() {
-    if (this.account?.id) {
+  ngOnChanges(changes: SimpleChanges) {
+    // Skip the initial ngOnChanges that fires before ngOnInit — ngOnInit
+    // handles the first subscription.  Only re-subscribe / re-initialize when
+    // the account @Input itself changes (not isProfileOwner etc.).
+    if (!this.hasInitialized) return;
+    if (changes["account"] && this.account?.id) {
       this.initializeTimeTracking();
       this.subscribeContactInfo();
     }

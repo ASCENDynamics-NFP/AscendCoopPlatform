@@ -1,7 +1,7 @@
 import {Injectable, Injector, runInInjectionContext} from "@angular/core";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
 import {Observable, of} from "rxjs";
-import {catchError, first, map} from "rxjs/operators";
+import {catchError, distinctUntilChanged, first, map} from "rxjs/operators";
 import {
   ContactInformation,
   ProfessionalInformation,
@@ -25,6 +25,7 @@ export class AccountSectionsService {
    */
   contactInfo$(accountId: string): Observable<ContactInformation | null> {
     return this.store.select(selectAuthUser).pipe(
+      distinctUntilChanged((a, b) => a?.uid === b?.uid),
       switchMap((user) => {
         if (!user?.uid) {
           return of(null);
@@ -56,6 +57,7 @@ export class AccountSectionsService {
     accountId: string,
   ): Observable<ProfessionalInformation | null> {
     return this.store.select(selectAuthUser).pipe(
+      distinctUntilChanged((a, b) => a?.uid === b?.uid),
       switchMap((user) => {
         if (!user?.uid) {
           return of(null);
@@ -85,6 +87,7 @@ export class AccountSectionsService {
    */
   laborRights$(accountId: string): Observable<any | null> {
     return this.store.select(selectAuthUser).pipe(
+      distinctUntilChanged((a, b) => a?.uid === b?.uid),
       switchMap((user) => {
         if (!user?.uid) {
           return of(null);

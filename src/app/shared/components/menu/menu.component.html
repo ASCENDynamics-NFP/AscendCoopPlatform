@@ -37,7 +37,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
       <ion-list>
         <ion-menu-toggle auto-hide="false">
           <!-- Iterate over menuPages -->
-          @for (item of menuPages; track item) {
+          @for (item of menuPages; track item.url) {
             @if (item.title) {
               <ion-item
                 [routerLink]="item.url"
@@ -95,7 +95,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
           <strong>{{ "info.learn_more" | translate }}</strong>
         </ion-list-header>
         <ion-menu-toggle auto-hide="false">
-          @for (info of infoPages; track info) {
+          @for (info of infoPages; track info.url) {
             <ion-item
               [routerLink]="info.url"
               lines="none"
@@ -118,7 +118,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
         <ion-list-header>
           <strong>{{ "info.links" | translate }}</strong>
         </ion-list-header>
-        @for (p of project; track p) {
+        @for (p of project; track p.url) {
           <ion-item
             lines="none"
             [href]="p.url"

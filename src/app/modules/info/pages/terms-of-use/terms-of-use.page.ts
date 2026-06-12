@@ -1,6 +1,7 @@
 import {Component} from "@angular/core";
 import {MetaService} from "../../../../core/services/meta.service";
 
+import {environment} from "../../../../../environments/environment";
 @Component({
   standalone: false,
   selector: "app-terms-of-use",
@@ -9,6 +10,7 @@ import {MetaService} from "../../../../core/services/meta.service";
 })
 export class TermsOfUsePage {
   currentYear = new Date().getFullYear();
+  supportEmail = environment.supportEmail;
 
   constructor(private metaService: MetaService) {}
 
@@ -21,7 +23,7 @@ export class TermsOfUsePage {
         title: "Terms of Use | ASCENDynamics NFP",
         description:
           "ASCENDynamics NFP's terms of use governing the use of our collaborative platform and services.",
-        url: "https://ascendynamics.org/info/terms-of-use",
+        url: `${environment.appBaseUrl}/info/terms-of-use`,
       },
       {
         card: "summary",

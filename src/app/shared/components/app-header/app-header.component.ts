@@ -48,6 +48,15 @@ export class AppHeaderComponent {
 
   authUser$: Observable<AuthUser | null>; // Declare type for clarity
   logoUrl$: Observable<string>;
+  /**
+   * Avatar image URL stream. Cached as a field (not a getter) because
+   * the template binds it through the async pipe; a getter would
+   * synthesize a new Observable on every change-detection cycle,
+   * causing async to resubscribe and Ionic's Stencil renderer to thrash
+   * (manifests as `createElementNS('[object Object]')` and `nodeType`
+   * null reads in the console).
+   */
+  image$: Observable<string | null | undefined>;
   public popoverEvent: any;
 
   constructor(
@@ -60,10 +69,7 @@ export class AppHeaderComponent {
     this.logoUrl$ = this.brandingService.config$.pipe(
       map((cfg) => cfg.logoUrl || "assets/icon/logo.png"),
     );
-  }
-
-  get image() {
-    return this.authUser$?.pipe(map((user) => user?.iconImage));
+    this.image$ = this.authUser$.pipe(map((user) => user?.iconImage));
   }
 
   async presentPopover(ev: any) {

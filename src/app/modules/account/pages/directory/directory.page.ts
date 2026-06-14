@@ -242,6 +242,9 @@ export class DirectoryPage implements OnInit, OnDestroy {
   searchedValue = "";
   type$ = new BehaviorSubject<DirectoryType>("all");
   selectedType: DirectoryType = "all";
+  /** Remembers which type tab was active before entering map view so it can
+   * be restored when the user switches back to list view. */
+  private typeBeforeMap: DirectoryType = "all";
   includePrivateGroups$ = new BehaviorSubject<boolean>(true); // show groups I'm a member of
   onlyMyGroups$ = new BehaviorSubject<boolean>(false);
   onlyMyConnections$ = new BehaviorSubject<boolean>(false);
@@ -523,11 +526,17 @@ export class DirectoryPage implements OnInit, OnDestroy {
   toggleViewMode() {
     if (this.viewMode === "list") {
       this.viewMode = "map";
+      // Map always shows groups only — remember the current tab so we can
+      // restore it when the user switches back to list view.
+      this.typeBeforeMap = this.selectedType;
+      this.setType("group");
       if (!this.mapsLoaded) {
         this.loadGoogleMaps();
       }
     } else {
       this.viewMode = "list";
+      // Restore the type the user had selected before entering map view.
+      this.setType(this.typeBeforeMap ?? "all");
     }
   }
 

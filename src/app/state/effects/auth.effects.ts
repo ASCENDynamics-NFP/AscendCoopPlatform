@@ -134,22 +134,27 @@ export class AuthEffects {
   private async performAppleSignIn(): Promise<UserCredential> {
     const platform = this.getPlatform();
     if (platform === "ios") {
-      const rawNonce = this.generateNonce(32);
-      const hashedNonce = await this.sha256(rawNonce);
-      const state = this.generateNonce(32);
-      const result = await SignInWithApple.authorize({
-        clientId: capacitorConfig.appId!,
-        redirectURI: `https://${environment.firebaseConfig.authDomain}/__/auth/handler`,
-        scopes: "email name",
-        state,
-        nonce: hashedNonce,
-      });
-      const provider = new OAuthProvider("apple.com");
-      const credential = provider.credential({
-        idToken: result.response.identityToken,
-        rawNonce,
-      });
-      return signInWithCredential(this.auth, credential);
+      try {
+        const rawNonce = this.generateNonce(32);
+        const hashedNonce = await this.sha256(rawNonce);
+        const state = this.generateNonce(32);
+        const result = await SignInWithApple.authorize({
+          clientId: capacitorConfig.appId!,
+          redirectURI: `https://${environment.firebaseConfig.authDomain}/__/auth/handler`,
+          scopes: "email name",
+          state,
+          nonce: hashedNonce,
+        });
+        const provider = new OAuthProvider("apple.com");
+        const credential = provider.credential({
+          idToken: result.response.identityToken,
+          rawNonce,
+        });
+        return signInWithCredential(this.auth, credential);
+      } catch (error) {
+        console.error("Native Apple Sign-In failed:", error);
+        throw error;
+      }
     } else {
       const provider = new OAuthProvider("apple.com");
       provider.addScope("email");
@@ -488,8 +493,7 @@ export class AuthEffects {
           return from(
             GoogleAuth.signIn({
               scopes: ["profile", "email"],
-              serverClientId:
-                "1031671694911-3ejesivnlk5fhr8l29ne74fhp0smdltn.apps.googleusercontent.com",
+              serverClientId: environment.googleAuth.webClientId,
             }),
           ).pipe(
             switchMap(async (result) => {

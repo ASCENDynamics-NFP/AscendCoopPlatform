@@ -30,9 +30,13 @@
 }
 
 // Info Window Styles
+// .info-window sets its own background so the popup is theme-aware
+// regardless of Google Maps' container (which is always white).
 .info-window {
   max-width: 280px;
   padding: 8px;
+  background: var(--app-surface-elevated);
+  border-radius: var(--app-radius-sm);
 
   .info-header {
     display: flex;
@@ -43,7 +47,7 @@
     .info-logo {
       width: 48px;
       height: 48px;
-      border-radius: 8px;
+      border-radius: var(--app-radius-sm);
       object-fit: cover;
       flex-shrink: 0;
     }
@@ -56,14 +60,14 @@
         margin: 0 0 4px 0;
         font-size: 16px;
         font-weight: 600;
-        color: var(--ion-color-dark);
+        color: var(--ion-text-color);
         line-height: 1.2;
       }
 
       .info-org {
         margin: 0;
         font-size: 13px;
-        color: var(--ion-color-medium);
+        color: var(--app-text-muted);
       }
     }
   }
@@ -83,25 +87,59 @@
   .info-description {
     margin: 0 0 8px 0;
     font-size: 13px;
-    color: var(--ion-color-dark-shade);
+    color: var(--app-text-muted);
     line-height: 1.4;
+  }
+
+  .info-meta-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 8px;
   }
 
   .info-meta {
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-bottom: 12px;
     font-size: 12px;
-    color: var(--ion-color-medium);
+    color: var(--app-text-muted);
 
     ion-icon {
-      font-size: 16px;
+      font-size: 14px;
+      flex-shrink: 0;
+      color: var(--ion-color-medium);
+    }
+  }
+
+  .info-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 10px;
+
+    .skill-chip {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: var(--app-radius-pill);
+      background: var(--app-surface-sunken);
+      color: var(--app-text-muted);
+      border: 1px solid var(--app-border-color);
+
+      &.required {
+        background: rgba(var(--ion-color-primary-rgb), 0.15);
+        color: var(--ion-color-primary);
+        border-color: rgba(var(--ion-color-primary-rgb), 0.35);
+      }
+
+      &.more {
+        font-style: italic;
+      }
     }
   }
 
   ion-button {
-    margin: 0;
+    margin: 4px 0 0;
     --padding-top: 8px;
     --padding-bottom: 8px;
   }
@@ -119,8 +157,9 @@
   ion-card {
     margin: 0;
     text-align: center;
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    background: var(--app-surface-elevated);
+    border: 1px solid var(--app-border-color);
+    box-shadow: var(--app-shadow-md);
   }
 
   ion-card-content {
@@ -129,37 +168,18 @@
     ion-icon {
       font-size: 48px;
       margin-bottom: 12px;
+      color: var(--ion-color-medium);
     }
 
     p {
       margin: 0;
-      color: var(--ion-color-dark);
+      color: var(--ion-text-color);
       font-size: 14px;
 
       &.hint {
         margin-top: 8px;
         font-size: 12px;
-        color: var(--ion-color-medium);
-      }
-    }
-  }
-}
-
-// Dark mode adjustments
-@media (prefers-color-scheme: dark) {
-  .no-locations-overlay,
-  .empty-overlay {
-    ion-card {
-      background: rgba(0, 0, 0, 0.95);
-    }
-
-    ion-card-content {
-      p {
-        color: #ffffff;
-
-        &.hint {
-          color: #cccccc;
-        }
+        color: var(--app-text-muted);
       }
     }
   }

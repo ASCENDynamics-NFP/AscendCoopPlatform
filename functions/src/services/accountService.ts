@@ -226,6 +226,9 @@ export class AccountService {
         email: userRecord.email,
         privacySettings: {
           profile: {visibility: "public"},
+          // Default contact info to public so addresses with geopoints appear
+          // in the map view. Owners can restrict this later via privacy settings.
+          contactInformation: {visibility: "public"},
         },
         totalHours: 0,
         legalAgreements: {
@@ -1394,9 +1397,11 @@ export class AccountService {
               const contactInfoVisibility =
                 account.privacySettings?.contactInformation?.visibility;
 
-              // Only include contact info if visibility is explicitly 'public'
-              // Default to NOT including if visibility is missing or set to anything else
-              if (contactInfoVisibility !== "public") {
+              // Include contact info unless it is explicitly restricted.
+              // If visibility is unset (most accounts), treat as 'public' so they
+              // appear on the map by default. Only hide when an owner has set a
+              // more restrictive value (e.g. 'authenticated', 'related', 'private').
+              if (contactInfoVisibility && contactInfoVisibility !== "public") {
                 return account;
               }
 
@@ -1407,10 +1412,22 @@ export class AccountService {
                 .doc("contactInfo")
                 .get();
 
+              const pickAddressFields = (addr: any) => ({
+                street: addr.street,
+                city: addr.city,
+                state: addr.state,
+                country: addr.country,
+                zipcode: addr.zipcode,
+                isPrimaryAddress: addr.isPrimaryAddress,
+                geopoint: addr.geopoint,
+                formatted: addr.formatted,
+              });
+
+              // Primary source: sections/contactInfo subdocument.
+              // This is the canonical location for accounts created/updated
+              // via the createAccount / updateAccount callables.
               if (contactInfoDoc.exists) {
                 const contactData = contactInfoDoc.data();
-                // Only include addresses (with geopoints) for map display
-                // Exclude sensitive data like emails and phone numbers
                 if (
                   contactData?.addresses &&
                   contactData.addresses.length > 0
@@ -1418,19 +1435,24 @@ export class AccountService {
                   return {
                     ...account,
                     contactInformation: {
-                      addresses: contactData.addresses.map((addr: any) => ({
-                        street: addr.street,
-                        city: addr.city,
-                        state: addr.state,
-                        country: addr.country,
-                        zipcode: addr.zipcode,
-                        isPrimaryAddress: addr.isPrimaryAddress,
-                        geopoint: addr.geopoint, // Include geopoint for map
-                        formatted: addr.formatted,
-                      })),
+                      addresses: contactData.addresses.map(pickAddressFields),
                     },
                   };
                 }
+              }
+
+              // Fallback: check addresses already present on the main account
+              // document. This covers accounts seeded directly via the Admin SDK
+              // or created before the sections/contactInfo architecture.
+              const mainAddresses: any[] =
+                account.contactInformation?.addresses || [];
+              if (mainAddresses.length > 0) {
+                return {
+                  ...account,
+                  contactInformation: {
+                    addresses: mainAddresses.map(pickAddressFields),
+                  },
+                };
               }
             } catch (err) {
               // If we can't fetch contact info, just return account without it
@@ -1468,6 +1490,10 @@ export class AccountService {
         tagline: account.tagline, // Add tagline to the returned data
         // Include contactInformation for groups (addresses only, for map display)
         contactInformation: account.contactInformation || null,
+        // Group-specific fields needed for the map info window
+        groupDetails: account.groupDetails || null,
+        groupCategoriesInterests: account.groupCategoriesInterests || null,
+        privacySettings: account.privacySettings || null,
       }));
 
       return {

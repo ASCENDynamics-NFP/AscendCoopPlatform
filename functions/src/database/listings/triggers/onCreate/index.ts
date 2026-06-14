@@ -105,9 +105,10 @@ async function handleListingCreate(
         }),
       );
 
-      // 2) Update the listing doc with geocoded addresses
+      // 2) Update only the addresses field — use dot-notation to avoid
+      // overwriting emails and phoneNumbers already stored in contactInformation.
       await snapshot.ref.update({
-        contactInformation: {addresses: geocodedAddresses},
+        "contactInformation.addresses": geocodedAddresses,
       });
       logger.info(`Successfully geocoded addresses for listing ${listingId}`);
     } else {

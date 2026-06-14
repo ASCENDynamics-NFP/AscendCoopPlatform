@@ -337,36 +337,71 @@ export class ListingsPage implements OnInit, OnDestroy {
   }
 
   private loadGoogleMaps() {
-    // Check if already loaded
-    if (typeof google !== "undefined" && google.maps) {
-      this.mapsApiReady = true;
-      this.mapsLoaded = true;
-      this.cdr.detectChanges();
+    // Already fully loaded — importLibrary is synchronously available.
+    if (
+      typeof google !== "undefined" &&
+      typeof google.maps?.importLibrary === "function"
+    ) {
+      Promise.resolve().then(() => {
+        this.ngZone.run(() => {
+          this.mapsApiReady = true;
+          this.mapsLoaded = true;
+          this.cdr.detectChanges();
+        });
+      });
       return;
     }
 
     const apiKey = environment.googleMapsApiKey;
-    if (!apiKey || apiKey === "YOUR_GOOGLE_MAPS_API_KEY_HERE") {
+    if (!apiKey || apiKey === "YOUR_GOOGLE_MAPS_API_KEY") {
       console.warn("Google Maps API key not configured");
       this.mapsLoaded = true; // mapsApiReady stays false -> show error state
       this.cdr.detectChanges();
       return;
     }
 
-    // Dynamically load Google Maps script
+    // If another page already added the script tag, poll until it finishes.
+    if (document.querySelector('script[src*="maps.googleapis.com"]')) {
+      const poll = setInterval(() => {
+        if (
+          typeof google !== "undefined" &&
+          typeof google.maps?.importLibrary === "function"
+        ) {
+          clearInterval(poll);
+          this.ngZone.run(() => {
+            Promise.resolve().then(() => {
+              this.mapsApiReady = true;
+              this.mapsLoaded = true;
+              this.cdr.detectChanges();
+            });
+          });
+        }
+      }, 100);
+      return;
+    }
+
+    // Load the Maps API WITHOUT loading=async so the full API (including
+    // google.maps.importLibrary) is set up synchronously during script
+    // execution and is available as soon as onload fires.
+    // @angular/google-maps v21 calls importLibrary('marker') during component
+    // init; it must exist by the time mapsApiReady flips to true.
     const script = document.createElement("script");
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=marker`;
-    script.async = true;
-    script.defer = true;
     script.onload = () => {
       this.ngZone.run(() => {
-        this.mapsApiReady = true;
-        this.mapsLoaded = true;
-        this.cdr.detectChanges();
+        // Defer to the next microtask so Angular's current CD cycle finishes
+        // before the map component is created. This prevents NG0100
+        // (ExpressionChangedAfterItHasBeenCheckedError) caused by @angular/
+        // google-maps setting internal attributes (e.g. tabIndex) on init.
+        Promise.resolve().then(() => {
+          this.mapsApiReady = true;
+          this.mapsLoaded = true;
+          this.cdr.detectChanges();
+        });
       });
     };
-    script.onerror = () => {
-      console.error("Failed to load Google Maps");
+    script.onerror = (err) => {
+      console.error("Failed to load Google Maps script", err);
       this.ngZone.run(() => {
         this.mapsLoaded = true; // mapsApiReady stays false -> show error state
         this.cdr.detectChanges();

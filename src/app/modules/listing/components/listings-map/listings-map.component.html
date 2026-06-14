@@ -24,9 +24,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     [zoom]="zoom"
     [options]="mapOptions"
     width="100%"
-    [height]="height"
+    height="100%"
     (idle)="onMapIdle()"
-    >
+  >
     <!-- User location marker -->
     @if (userLocation) {
       <map-marker
@@ -36,16 +36,20 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     }
 
     <!-- Info Window for selected listing -->
-    <map-info-window #infoWindow>
+    <map-info-window
+      #infoWindow
+      [position]="infoWindowPosition"
+      (closeclick)="onInfoWindowClose()"
+    >
       @if (selectedListing) {
         <div class="info-window">
           <div class="info-header">
             @if (selectedListing.iconImage) {
               <img
                 [src]="selectedListing.iconImage"
-                alt="Organization logo"
+                alt="Listing logo"
                 class="info-logo"
-                />
+              />
             }
             <div class="info-titles">
               <h3 class="info-title">{{ selectedListing.title }}</h3>
@@ -57,61 +61,87 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
               {{ selectedListing.type | titlecase }}
             </ion-badge>
             @if (selectedListing.remote) {
-              <ion-badge color="success">
-                Remote
-              </ion-badge>
+              <ion-badge color="success">Remote</ion-badge>
             }
           </div>
           <p class="info-description">
-            {{ selectedListing.description | slice: 0 : 100 }}...
+            {{ selectedListing.description | slice: 0 : 120
+            }}{{ selectedListing.description.length > 120 ? "..." : "" }}
           </p>
-          @if (selectedListing.timeCommitment) {
-            <div class="info-meta">
-              <ion-icon name="time-outline"></ion-icon>
-              <span
-                >{{ selectedListing.timeCommitment.hoursPerWeek }} hrs/week</span
-                >
+          <div class="info-meta-grid">
+            @if (getListingLocation(selectedListing)) {
+              <div class="info-meta">
+                <ion-icon name="location-outline"></ion-icon>
+                <span>{{ getListingLocation(selectedListing) }}</span>
               </div>
             }
-            <ion-button
-              fill="solid"
-              size="small"
-              expand="block"
-              (click)="onViewDetails()"
-              >
-              View Details
-            </ion-button>
+            @if (selectedListing.timeCommitment) {
+              <div class="info-meta">
+                <ion-icon name="time-outline"></ion-icon>
+                <span
+                  >{{ selectedListing.timeCommitment.hoursPerWeek }} hrs/wk
+                  @if (selectedListing.timeCommitment.duration) {
+                    &middot; {{ selectedListing.timeCommitment.duration }}
+                  }
+                </span>
+              </div>
+            }
           </div>
-        }
-      </map-info-window>
-    </google-map>
+          @if (selectedListing.skills.length) {
+            <div class="info-skills">
+              @for (
+                skill of selectedListing.skills | slice: 0 : 3;
+                track skill.name
+              ) {
+                <span class="skill-chip" [class.required]="skill.required">
+                  {{ skill.name }}
+                </span>
+              }
+              @if (selectedListing.skills.length > 3) {
+                <span class="skill-chip more"
+                  >+{{ selectedListing.skills.length - 3 }}</span
+                >
+              }
+            </div>
+          }
+          <ion-button
+            fill="solid"
+            size="small"
+            expand="block"
+            (click)="onViewDetails()"
+          >
+            <ion-icon slot="start" name="open-outline"></ion-icon>
+            View Details
+          </ion-button>
+        </div>
+      }
+    </map-info-window>
+  </google-map>
 
-    <!-- No listings with location message -->
-    @if (listings.length > 0 && listingMarkers.length === 0) {
-      <div
-        class="no-locations-overlay"
-        >
-        <ion-card>
-          <ion-card-content>
-            <ion-icon name="location-outline" color="medium"></ion-icon>
-            <p>No listings have location data available.</p>
-            <p class="hint">
-              Listings need geocoded addresses to appear on the map.
-            </p>
-          </ion-card-content>
-        </ion-card>
-      </div>
-    }
+  <!-- No listings with location message -->
+  @if (listings.length > 0 && listingMarkers.length === 0) {
+    <div class="no-locations-overlay">
+      <ion-card>
+        <ion-card-content>
+          <ion-icon name="location-outline" color="medium"></ion-icon>
+          <p>No listings have location data available.</p>
+          <p class="hint">
+            Listings need geocoded addresses to appear on the map.
+          </p>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  }
 
-    <!-- Empty state -->
-    @if (listings.length === 0) {
-      <div class="empty-overlay">
-        <ion-card>
-          <ion-card-content>
-            <ion-icon name="map-outline" color="medium"></ion-icon>
-            <p>No listings to display.</p>
-          </ion-card-content>
-        </ion-card>
-      </div>
-    }
-  </div>
+  <!-- Empty state -->
+  @if (listings.length === 0) {
+    <div class="empty-overlay">
+      <ion-card>
+        <ion-card-content>
+          <ion-icon name="map-outline" color="medium"></ion-icon>
+          <p>No listings to display.</p>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  }
+</div>

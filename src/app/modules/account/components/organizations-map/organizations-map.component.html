@@ -24,9 +24,9 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     [zoom]="zoom"
     [options]="mapOptions"
     width="100%"
-    [height]="height"
+    height="100%"
     (idle)="onMapIdle()"
-    >
+  >
     <!-- User location marker -->
     @if (userLocation) {
       <map-marker
@@ -36,7 +36,11 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
     }
 
     <!-- Info Window for selected organization -->
-    <map-info-window #infoWindow>
+    <map-info-window
+      #infoWindow
+      [position]="infoWindowPosition"
+      (closeclick)="onInfoWindowClose()"
+    >
       @if (selectedOrganization) {
         <div class="info-window">
           <div class="info-header">
@@ -45,20 +49,15 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
                 [src]="selectedOrganization.iconImage"
                 alt="Organization logo"
                 class="info-logo"
-                />
+              />
             }
             @if (!selectedOrganization.iconImage) {
-              <ion-icon
-                name="business"
-                class="info-icon"
-              ></ion-icon>
+              <ion-icon name="business" class="info-icon"></ion-icon>
             }
             <div class="info-titles">
               <h3 class="info-title">{{ selectedOrganization.name }}</h3>
               @if (selectedOrganization.tagline) {
-                <p class="info-tagline">
-                  {{ selectedOrganization.tagline }}
-                </p>
+                <p class="info-tagline">{{ selectedOrganization.tagline }}</p>
               }
             </div>
           </div>
@@ -66,19 +65,59 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             <ion-badge color="tertiary">
               {{ "directory.groups" | translate }}
             </ion-badge>
+            @if (selectedOrganization.groupDetails?.groupType) {
+              <ion-badge color="medium">
+                {{ selectedOrganization.groupDetails!.groupType }}
+              </ion-badge>
+            }
           </div>
           @if (selectedOrganization.description) {
             <p class="info-description">
-              {{ selectedOrganization.description | slice: 0 : 100
-              }}{{ selectedOrganization.description.length > 100 ? "..." : "" }}
+              {{ selectedOrganization.description | slice: 0 : 120
+              }}{{ selectedOrganization.description.length > 120 ? "..." : "" }}
             </p>
           }
-          @if (getOrganizationLocation(selectedOrganization)) {
-            <div
-              class="info-meta"
+          <div class="info-meta-grid">
+            @if (getOrganizationLocation(selectedOrganization)) {
+              <div class="info-meta">
+                <ion-icon name="location-outline"></ion-icon>
+                <span>{{ getOrganizationLocation(selectedOrganization) }}</span>
+              </div>
+            }
+            @if (
+              selectedOrganization.groupCategoriesInterests?.primaryCategory
+            ) {
+              <div class="info-meta">
+                <ion-icon name="grid-outline"></ion-icon>
+                <span>{{
+                  selectedOrganization.groupCategoriesInterests!.primaryCategory
+                }}</span>
+              </div>
+            }
+          </div>
+          @if (
+            selectedOrganization.groupCategoriesInterests?.tagsKeywords?.length
+          ) {
+            <div class="info-skills">
+              @for (
+                tag of selectedOrganization.groupCategoriesInterests!
+                  .tagsKeywords! | slice: 0 : 3;
+                track tag
+              ) {
+                <span class="skill-chip">{{ tag }}</span>
+              }
+            </div>
+          }
+          @if (getWebsiteUrl(selectedOrganization)) {
+            <div class="info-meta info-website">
+              <ion-icon name="globe-outline"></ion-icon>
+              <a
+                [href]="getWebsiteUrl(selectedOrganization)"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-              <ion-icon name="location-outline"></ion-icon>
-              <span>{{ getOrganizationLocation(selectedOrganization) }}</span>
+                {{ getWebsiteUrl(selectedOrganization) | slice: 8 : 40 }}
+              </a>
             </div>
           }
           <ion-button
@@ -86,7 +125,8 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
             size="small"
             expand="block"
             (click)="onViewDetails()"
-            >
+          >
+            <ion-icon slot="start" name="open-outline"></ion-icon>
             {{ "common.view_details" | translate }}
           </ion-button>
         </div>
@@ -96,9 +136,7 @@ along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.o
 
   <!-- No organizations with location message -->
   @if (organizations.length > 0 && organizationMarkers.length === 0) {
-    <div
-      class="no-locations-overlay"
-      >
+    <div class="no-locations-overlay">
       <ion-card>
         <ion-card-content>
           <ion-icon name="location-outline" color="medium"></ion-icon>

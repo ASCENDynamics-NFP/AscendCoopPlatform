@@ -20,8 +20,10 @@
 // src/app/modules/listing/components/listings-map/listings-map.component.ts
 
 import {
+  ChangeDetectorRef,
   Component,
   Input,
+  NgZone,
   Output,
   EventEmitter,
   OnChanges,
@@ -31,7 +33,7 @@ import {
   OnDestroy,
 } from "@angular/core";
 import {Listing} from "../../../../../../shared/models/listing.model";
-import {GoogleMap} from "@angular/google-maps";
+import {GoogleMap, MapInfoWindow} from "@angular/google-maps";
 import {MarkerClusterer} from "@googlemaps/markerclusterer";
 
 export interface ListingMarker {
@@ -55,6 +57,7 @@ export class ListingsMapComponent
   @Output() mapBoundsChanged = new EventEmitter<google.maps.LatLngBounds>();
 
   @ViewChild(GoogleMap) googleMap!: GoogleMap;
+  @ViewChild(MapInfoWindow) infoWindow!: MapInfoWindow;
 
   // Map configuration
   center: google.maps.LatLngLiteral = {lat: 39.8283, lng: -98.5795}; // Center of US
@@ -69,13 +72,22 @@ export class ListingsMapComponent
   // Markers
   listingMarkers: ListingMarker[] = [];
   selectedListing: Listing | null = null;
-  infoWindowPosition: google.maps.LatLngLiteral | null = null;
+  infoWindowPosition: google.maps.LatLngLiteral = {lat: 39.8283, lng: -98.5795};
 
   // User location marker options (initialized in ngAfterViewInit when google is available)
   userMarkerOptions: google.maps.MarkerOptions = {};
 
   private markerClusterer: MarkerClusterer | null = null;
   private markers: google.maps.Marker[] = [];
+  private markerListeners: google.maps.MapsEventListener[] = [];
+  // Prevent fitBounds() from re-running when Ionic restores the cached view
+  // and the listings$ observable re-emits. Only fit on the very first load.
+  private boundsInitialized = false;
+
+  constructor(
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes["listings"]) {
@@ -177,9 +189,12 @@ export class ListingsMapComponent
         title: marker.listing.title,
       });
 
-      gMarker.addListener("click", () => {
-        this.onMarkerClick(marker);
+      const listener = gMarker.addListener("click", () => {
+        // Marker events fire outside Angular's zone — run() re-enters it
+        // so that change detection updates @if before the info window opens.
+        this.ngZone.run(() => this.onMarkerClick(marker));
       });
+      this.markerListeners.push(listener);
 
       return gMarker;
     });
@@ -190,13 +205,23 @@ export class ListingsMapComponent
       markers: this.markers,
     });
 
-    // Fit bounds to show all markers
-    if (this.listingMarkers.length > 0 && !this.userLocation) {
+    // Fit bounds to show all markers — only on first load so the user's
+    // zoom/pan is preserved when navigating back to this page.
+    if (
+      this.listingMarkers.length > 0 &&
+      !this.userLocation &&
+      !this.boundsInitialized
+    ) {
+      this.boundsInitialized = true;
       this.fitBounds();
     }
   }
 
   private clearClusterer() {
+    if (typeof google !== "undefined") {
+      this.markerListeners.forEach((l) => google.maps.event.removeListener(l));
+    }
+    this.markerListeners = [];
     if (this.markerClusterer) {
       this.markerClusterer.clearMarkers();
       this.markerClusterer = null;
@@ -254,11 +279,17 @@ export class ListingsMapComponent
   onMarkerClick(marker: ListingMarker) {
     this.selectedListing = marker.listing;
     this.infoWindowPosition = marker.position;
+    // detectChanges() ensures @if (selectedListing) renders its content
+    // before the InfoWindow opens — marker events fire outside Angular's
+    // zone so automatic CD would be too late.
+    this.cdr.detectChanges();
+    this.infoWindow?.open();
   }
 
   onInfoWindowClose() {
+    this.infoWindow?.close();
     this.selectedListing = null;
-    this.infoWindowPosition = null;
+    // Keep infoWindowPosition at last location — position binding requires non-null
   }
 
   onViewDetails() {
@@ -266,6 +297,15 @@ export class ListingsMapComponent
       this.listingSelected.emit(this.selectedListing.id);
     }
     this.onInfoWindowClose();
+  }
+
+  getListingLocation(listing: Listing): string {
+    const addresses = listing.contactInformation?.addresses || [];
+    const primary =
+      addresses.find((a: any) => a.isPrimaryAddress) || addresses[0];
+    if (!primary) return "";
+    const parts = [primary.city, primary.state].filter(Boolean);
+    return parts.join(", ");
   }
 
   getListingTypeColor(type: string): string {
@@ -280,6 +320,10 @@ export class ListingsMapComponent
 
   onMapIdle() {
     if (this.googleMap?.googleMap) {
+      // Initialize clusterer here — guaranteed the map instance is ready
+      if (!this.markerClusterer) {
+        this.initializeClusterer();
+      }
       const bounds = this.googleMap.googleMap.getBounds();
       if (bounds) {
         this.mapBoundsChanged.emit(bounds);

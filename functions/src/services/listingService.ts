@@ -185,6 +185,12 @@ export class ListingService {
             zipcode: addr?.zipcode,
             country: addr?.country,
             remote: addr?.remote,
+            isPrimaryAddress: addr?.isPrimaryAddress,
+            // Preserve existing geopoint and formatted address — geocodeAddresses()
+            // skips re-geocoding when geopoint is already present, avoiding
+            // redundant Geocoding API calls on every listing update.
+            geopoint: addr?.geopoint,
+            formatted: addr?.formatted,
           }));
         }
         result.contactInformation = ci;

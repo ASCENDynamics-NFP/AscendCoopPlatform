@@ -19,7 +19,8 @@
     "test": "ng test --watch=false && npm --prefix functions test",
     "test:watch": "ng test --watch",
     "lint": "ng lint",
-    "clean": "rm -rf node_modules package-lock.json"
+    "clean": "rm -rf node_modules package-lock.json",
+    "postinstall": "patch-package"
   },
   "private": true,
   "dependencies": {
@@ -102,6 +103,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "lint-staged": "^15.2.2",
+    "patch-package": "^8.0.1",
     "prettier": "3.3.3",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.0"

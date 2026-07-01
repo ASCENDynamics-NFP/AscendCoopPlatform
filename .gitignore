@@ -93,3 +93,6 @@ ui-debug.log
 
 # === Other ===
 /prod/
+# Android signing — never commit
+android/keystore.properties
+prod/ascend-release.keystore

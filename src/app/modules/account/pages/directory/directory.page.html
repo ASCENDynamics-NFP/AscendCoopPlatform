@@ -58,7 +58,8 @@
   </ion-toolbar>
   }
 
-  <!-- Type Segment -->
+  <!-- Type Segment — hidden in map view (map always shows groups only) -->
+  @if (viewMode === 'list') {
   <ion-toolbar class="segment-toolbar">
     <ion-segment
       [(ngModel)]="selectedType"
@@ -79,6 +80,7 @@
       </ion-segment-button>
     </ion-segment>
   </ion-toolbar>
+  }
 </ion-header>
 
 <ion-content [fullscreen]="true">

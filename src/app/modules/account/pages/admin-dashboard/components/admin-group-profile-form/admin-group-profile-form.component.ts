@@ -18,6 +18,7 @@
 * along with Nonprofit Social Networking Platform.  If not, see <https://www.gnu.org/licenses/>.
 ***********************************************************************************************/
 import {
+  ChangeDetectorRef,
   Component,
   Input,
   OnInit,
@@ -49,61 +50,68 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
   maxLinks = 10; // Maximum number of web links allowed
   maxAddresses = 3; // Maximum number of addresses allowed
   private skipNextContactInfoReload = false; // Flag to prevent reload after save
+  /** Tracks which account ID's contact info has already been fetched so
+   * repeated emissions of the same account (common with NgRx store + Ionic
+   * view caching) don't fire redundant Firestore reads. Reset to null on
+   * component destruction when @if recreates the component. */
+  private loadedContactInfoId: string | null = null;
 
   constructor(
     private fb: FormBuilder,
     private store: Store,
     private sections: AccountSectionsService,
     private accountsService: AccountsService,
+    private cdr: ChangeDetectorRef,
   ) {
     this.profileForm = this.createForm();
   }
 
   ngOnInit() {
-    if (this.account) {
-      this.populateForm(this.account);
-      // Load gated contact info from sections subdoc when available (owner/admin)
-      if (this.account.id) {
-        this.sections
-          .contactInfo$(this.account.id)
-          .pipe(take(1))
-          .subscribe((ci) => {
-            if (ci) {
-              this.populateEmails(ci.emails || []);
-              this.populatePhoneNumbers(ci.phoneNumbers || []);
-              this.populateAddresses(ci.addresses || []);
-            }
-          });
-      }
-    }
+    // populateForm and contactInfo load are both handled by ngOnChanges,
+    // which fires before ngOnInit on first creation with the initial @Input value.
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes["account"] && changes["account"].currentValue) {
-      // Skip if form has unsaved changes (user is editing) or we just saved
+      const acc = changes["account"].currentValue as Account;
+      // Skip if form has unsaved changes (user is editing)
       if (this.profileForm?.dirty) {
         return;
       }
+
       if (this.skipNextContactInfoReload) {
         this.skipNextContactInfoReload = false;
         // Still populate main form fields but not contact info
-        this.populateForm(changes["account"].currentValue);
+        this.populateForm(acc);
         return;
       }
 
-      this.populateForm(changes["account"].currentValue);
-      const acc = changes["account"].currentValue as Account;
-      if (acc?.id) {
+      // Only repopulate the form when the account ID changes (first load per
+      // component instance, or when navigating to a different account).
+      // Subsequent emissions of the same account (store updates, relatedAccounts
+      // load completing, etc.) must NOT call populateForm again — that setTimeout
+      // inside populateForm fires after populateAddresses has already run and
+      // triggers updateValueAndValidity which resets the @for loop rendering.
+      if (acc?.id && acc.id !== this.loadedContactInfoId) {
+        this.loadedContactInfoId = acc.id;
+        this.populateForm(acc);
         this.sections
           .contactInfo$(acc.id)
           .pipe(take(1))
           .subscribe((ci) => {
+            const fallback = acc?.contactInformation;
             if (ci) {
               this.populateEmails(ci.emails || []);
               this.populatePhoneNumbers(ci.phoneNumbers || []);
               this.populateAddresses(ci.addresses || []);
+            } else if (fallback) {
+              this.populateEmails((fallback.emails as any[]) || []);
+              this.populatePhoneNumbers((fallback.phoneNumbers as any[]) || []);
+              this.populateAddresses((fallback.addresses as any[]) || []);
             }
           });
+      } else {
+        // Same account ID — form already populated, no re-fetch needed
       }
     }
   }
@@ -259,86 +267,70 @@ export class AdminGroupProfileFormComponent implements OnInit, OnChanges {
     this.populateWebLinks(account.webLinks || []);
   }
   private populateEmails(emails: any[]) {
-    const emailsArray = this.emailsArray;
-    emailsArray.clear();
-
-    if (emails.length === 0) {
-      emailsArray.push(this.createEmailGroup());
-    } else {
-      emails.forEach((email) => {
-        emailsArray.push(
-          this.fb.group({
-            name: [email.name || ""],
-            email: [email.email || "", [Validators.email]],
-          }),
-        );
-      });
-    }
+    const arr = this.emailsArray;
+    const items = emails.length > 0 ? emails : [{}];
+    while (arr.length < items.length) arr.push(this.createEmailGroup());
+    while (arr.length > items.length) arr.removeAt(arr.length - 1);
+    // detectChanges() creates DOM nodes for any newly-pushed controls so
+    // Stencil's ion-input Shadow DOM is initialized before patchValue runs.
+    this.cdr.detectChanges();
+    items.forEach((email, i) =>
+      arr.at(i).patchValue({name: email.name || "", email: email.email || ""}),
+    );
   }
 
   private populatePhoneNumbers(phoneNumbers: any[]) {
-    const phoneNumbersArray = this.phoneNumbersArray;
-    phoneNumbersArray.clear();
-
-    if (phoneNumbers.length === 0) {
-      phoneNumbersArray.push(this.createPhoneGroup());
-    } else {
-      phoneNumbers.forEach((phone) => {
-        phoneNumbersArray.push(
-          this.fb.group({
-            type: [phone.type || "Mobile"],
-            number: [phone.number || ""],
-          }),
-        );
-      });
-    }
+    const arr = this.phoneNumbersArray;
+    const items = phoneNumbers.length > 0 ? phoneNumbers : [{}];
+    while (arr.length < items.length) arr.push(this.createPhoneGroup());
+    while (arr.length > items.length) arr.removeAt(arr.length - 1);
+    this.cdr.detectChanges();
+    items.forEach((phone, i) =>
+      arr
+        .at(i)
+        .patchValue({type: phone.type || "Mobile", number: phone.number || ""}),
+    );
   }
 
   private populateAddresses(addresses: any[]) {
-    const addressesArray = this.addressesArray;
-    addressesArray.clear();
-
-    if (addresses.length === 0) {
-      addressesArray.push(this.createAddressGroup());
-    } else {
-      addresses.forEach((address) => {
-        addressesArray.push(
-          this.fb.group({
-            name: [address.name || ""],
-            street: [address.street || ""],
-            city: [address.city || ""],
-            state: [address.state || ""],
-            zipcode: [address.zipcode || ""],
-            country: [address.country || ""],
-            isPrimaryAddress: [address.isPrimaryAddress || false],
-          }),
-        );
-      });
-    }
+    const arr = this.addressesArray;
+    const items = addresses.length > 0 ? addresses : [{}];
+    while (arr.length < items.length) arr.push(this.createAddressGroup());
+    while (arr.length > items.length) arr.removeAt(arr.length - 1);
+    this.cdr.detectChanges();
+    items.forEach((address, i) =>
+      arr.at(i).patchValue({
+        name: address.name || "",
+        street: address.street || "",
+        city: address.city || "",
+        state: address.state || "",
+        zipcode: address.zipcode || "",
+        country: address.country || "",
+        isPrimaryAddress: address.isPrimaryAddress || false,
+      }),
+    );
   }
 
   private populateWebLinks(webLinks: any[]) {
-    const webLinksArray = this.profileForm.get("webLinks") as FormArray;
-    if (!webLinksArray) {
-      console.warn("webLinksArray not found");
-      return;
-    }
-
-    webLinksArray.clear();
-
-    webLinks.forEach((link) => {
-      const formGroup = this.fb.group({
+    const arr = this.profileForm.get("webLinks") as FormArray;
+    if (!arr) return;
+    const createLinkGroup = (link: any) =>
+      this.fb.group({
         category: [link.category || "Website"],
         url: [link.url || "", [Validators.pattern(/^https?:\/\/.+/)]],
         name: [link.name || ""],
       });
-      webLinksArray.push(formGroup);
-    });
-
-    // Add empty link if none exist
-    if (webLinks.length === 0) {
-      this.addWebLink();
-    }
+    const items = webLinks.length > 0 ? webLinks : [{}];
+    while (arr.length < items.length)
+      arr.push(createLinkGroup(items[arr.length]));
+    while (arr.length > items.length) arr.removeAt(arr.length - 1);
+    items.forEach((link, i) =>
+      arr.at(i).patchValue({
+        category: link.category || "Website",
+        url: link.url || "",
+        name: link.name || "",
+      }),
+    );
   }
 
   createEmailGroup(): FormGroup {

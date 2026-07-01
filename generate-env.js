@@ -92,6 +92,7 @@ export const environment = {
   googleAuth: {
     webClientId: '${tsEscape(process.env.GOOGLE_AUTH_WEB_CLIENT_ID)}',
     androidClientId: '${tsEscape(process.env.GOOGLE_AUTH_ANDROID_CLIENT_ID)}',
+    iosClientId: '${tsEscape(process.env.GOOGLE_AUTH_IOS_CLIENT_ID)}',
   },
   googleMapsApiKey: '${tsEscape(process.env.GOOGLE_MAPS_API_KEY)}',
   appBaseUrl: '${tsEscape(process.env.APP_BASE_URL)}',

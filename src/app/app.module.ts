@@ -515,7 +515,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [localStorageSyncReducer];
     IonicModule.forRoot({}),
     HttpClientModule,
     TranslateModule.forRoot({
-      defaultLanguage: "en", // Set default language
+      fallbackLang: "en",
     }),
     StoreModule.forRoot(reducers, {metaReducers}),
     EffectsModule.forRoot([AuthEffects, AccountEffects]),

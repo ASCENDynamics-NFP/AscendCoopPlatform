@@ -18,7 +18,7 @@
             [class.error]="isFieldInvalid('name')"
           ></ion-input>
         </ion-item>
-        @if (isFieldInvalid('name')) {
+        @if (isFieldInvalid("name")) {
           <div class="error-message">
             {{ "messaging.group_name_required" | translate }}
           </div>
@@ -44,609 +44,613 @@
             <ion-select
               formControlName="groupType"
               placeholder="Select group type"
-              >
+            >
               <ion-select-option value="Nonprofit">Nonprofit</ion-select-option>
               <ion-select-option value="Community">Community</ion-select-option>
               <ion-select-option value="Business">Business</ion-select-option>
               <ion-select-option value="Educational"
                 >Educational</ion-select-option
+              >
+              <ion-select-option value="Government"
+                >Government</ion-select-option
+              >
+              <ion-select-option value="Other">Other</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked"
+              >{{ "forms.founding_date" | translate }} *</ion-label
+            >
+            <ion-datetime
+              formControlName="foundingDate"
+              presentation="date"
+              display-format="MMM DD, YYYY"
+              placeholder="Select founding date"
+              [showDefaultButtons]="true"
+              [showClearButton]="true"
+              size="cover"
+              id="foundingDatePicker"
+            >
+              <ion-button slot="time-label" fill="outline" size="small">
+                <ion-icon name="calendar-outline" slot="start"></ion-icon>
+                {{ getFormattedFoundingDate() || "Select Date" }}
+              </ion-button>
+            </ion-datetime>
+            @if (
+              profileForm.get("groupDetails.foundingDate")?.invalid &&
+              profileForm.get("groupDetails.foundingDate")?.touched
+            ) {
+              <ion-note slot="error"> Founding date is required </ion-note>
+            }
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">{{
+              "forms.mission_statement" | translate
+            }}</ion-label>
+            <ion-textarea
+              formControlName="groupObjectivesMissionStatement"
+              placeholder="Enter your group's mission statement"
+              rows="3"
+            ></ion-textarea>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">{{
+              "forms.history_background" | translate
+            }}</ion-label>
+            <ion-textarea
+              formControlName="groupHistoryBackground"
+              placeholder="Share your organization's history, founding story, and background"
+              rows="4"
+            ></ion-textarea>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">{{
+              "forms.supported_languages" | translate
+            }}</ion-label>
+            <ion-select
+              formControlName="supportedLanguages"
+              multiple="true"
+              placeholder="Select languages your group supports"
+            >
+              <!-- Top 10 Most Spoken Languages -->
+              <ion-select-option value="English">English</ion-select-option>
+              <ion-select-option value="Mandarin Chinese"
+                >Mandarin Chinese</ion-select-option
+              >
+              <ion-select-option value="Hindi">Hindi</ion-select-option>
+              <ion-select-option value="Spanish">Spanish</ion-select-option>
+              <ion-select-option value="French">French</ion-select-option>
+              <ion-select-option value="Standard Arabic"
+                >Standard Arabic</ion-select-option
+              >
+              <ion-select-option value="Bengali">Bengali</ion-select-option>
+              <ion-select-option value="Russian">Russian</ion-select-option>
+              <ion-select-option value="Portuguese"
+                >Portuguese</ion-select-option
+              >
+              <ion-select-option value="Indonesian"
+                >Indonesian</ion-select-option
+              >
+
+              <!-- Other Major Languages (Alphabetical) -->
+              <ion-select-option value="Afrikaans">Afrikaans</ion-select-option>
+              <ion-select-option value="Albanian">Albanian</ion-select-option>
+              <ion-select-option value="Amharic">Amharic</ion-select-option>
+              <ion-select-option value="Armenian">Armenian</ion-select-option>
+              <ion-select-option value="Azerbaijani"
+                >Azerbaijani</ion-select-option
+              >
+              <ion-select-option value="Basque">Basque</ion-select-option>
+              <ion-select-option value="Belarusian"
+                >Belarusian</ion-select-option
+              >
+              <ion-select-option value="Bosnian">Bosnian</ion-select-option>
+              <ion-select-option value="Bulgarian">Bulgarian</ion-select-option>
+              <ion-select-option value="Burmese">Burmese</ion-select-option>
+              <ion-select-option value="Cantonese">Cantonese</ion-select-option>
+              <ion-select-option value="Catalan">Catalan</ion-select-option>
+              <ion-select-option value="Croatian">Croatian</ion-select-option>
+              <ion-select-option value="Czech">Czech</ion-select-option>
+              <ion-select-option value="Danish">Danish</ion-select-option>
+              <ion-select-option value="Dutch">Dutch</ion-select-option>
+              <ion-select-option value="Estonian">Estonian</ion-select-option>
+              <ion-select-option value="Filipino">Filipino</ion-select-option>
+              <ion-select-option value="Finnish">Finnish</ion-select-option>
+              <ion-select-option value="Georgian">Georgian</ion-select-option>
+              <ion-select-option value="German">German</ion-select-option>
+              <ion-select-option value="Greek">Greek</ion-select-option>
+              <ion-select-option value="Gujarati">Gujarati</ion-select-option>
+              <ion-select-option value="Hebrew">Hebrew</ion-select-option>
+              <ion-select-option value="Hungarian">Hungarian</ion-select-option>
+              <ion-select-option value="Icelandic">Icelandic</ion-select-option>
+              <ion-select-option value="Italian">Italian</ion-select-option>
+              <ion-select-option value="Japanese">Japanese</ion-select-option>
+              <ion-select-option value="Javanese">Javanese</ion-select-option>
+              <ion-select-option value="Kannada">Kannada</ion-select-option>
+              <ion-select-option value="Kazakh">Kazakh</ion-select-option>
+              <ion-select-option value="Khmer">Khmer</ion-select-option>
+              <ion-select-option value="Korean">Korean</ion-select-option>
+              <ion-select-option value="Kurdish">Kurdish</ion-select-option>
+              <ion-select-option value="Lao">Lao</ion-select-option>
+              <ion-select-option value="Latvian">Latvian</ion-select-option>
+              <ion-select-option value="Lithuanian"
+                >Lithuanian</ion-select-option
+              >
+              <ion-select-option value="Macedonian"
+                >Macedonian</ion-select-option
+              >
+              <ion-select-option value="Malay">Malay</ion-select-option>
+              <ion-select-option value="Malayalam">Malayalam</ion-select-option>
+              <ion-select-option value="Marathi">Marathi</ion-select-option>
+              <ion-select-option value="Mongolian">Mongolian</ion-select-option>
+              <ion-select-option value="Nepali">Nepali</ion-select-option>
+              <ion-select-option value="Norwegian">Norwegian</ion-select-option>
+              <ion-select-option value="Pashto">Pashto</ion-select-option>
+              <ion-select-option value="Persian (Farsi)"
+                >Persian (Farsi)</ion-select-option
+              >
+              <ion-select-option value="Polish">Polish</ion-select-option>
+              <ion-select-option value="Punjabi">Punjabi</ion-select-option>
+              <ion-select-option value="Romanian">Romanian</ion-select-option>
+              <ion-select-option value="Serbian">Serbian</ion-select-option>
+              <ion-select-option value="Sinhala">Sinhala</ion-select-option>
+              <ion-select-option value="Slovak">Slovak</ion-select-option>
+              <ion-select-option value="Slovenian">Slovenian</ion-select-option>
+              <ion-select-option value="Swahili">Swahili</ion-select-option>
+              <ion-select-option value="Swedish">Swedish</ion-select-option>
+              <ion-select-option value="Tamil">Tamil</ion-select-option>
+              <ion-select-option value="Telugu">Telugu</ion-select-option>
+              <ion-select-option value="Thai">Thai</ion-select-option>
+              <ion-select-option value="Turkish">Turkish</ion-select-option>
+              <ion-select-option value="Ukrainian">Ukrainian</ion-select-option>
+              <ion-select-option value="Urdu">Urdu</ion-select-option>
+              <ion-select-option value="Uzbek">Uzbek</ion-select-option>
+              <ion-select-option value="Vietnamese"
+                >Vietnamese</ion-select-option
+              >
+              <ion-select-option value="Welsh">Welsh</ion-select-option>
+              <ion-select-option value="Yoruba">Yoruba</ion-select-option>
+              <ion-select-option value="Zulu">Zulu</ion-select-option>
+
+              <!-- Sign Languages -->
+              <ion-select-option value="American Sign Language (ASL)"
+                >American Sign Language (ASL)</ion-select-option
+              >
+              <ion-select-option value="British Sign Language (BSL)"
+                >British Sign Language (BSL)</ion-select-option
+              >
+              <ion-select-option value="International Sign"
+                >International Sign</ion-select-option
+              >
+
+              <ion-select-option value="Other">Other</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">{{
+              "forms.google_calendar_url" | translate
+            }}</ion-label>
+            <ion-input
+              formControlName="googleCalendarUrl"
+              type="url"
+              placeholder="Enter your public Google Calendar embed URL"
+            ></ion-input>
+            <ion-note slot="helper">
+              <small
+                >Share your calendar's public embed URL to display events on
+                your profile</small
+              >
+            </ion-note>
+          </ion-item>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Contact Information Section -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{
+          "forms.contact_information" | translate
+        }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content formGroupName="contactInformation">
+        <!-- Email Addresses -->
+        <div class="section-title">
+          <h3>{{ "common.email_addresses" | translate }}</h3>
+          <ion-button
+            fill="clear"
+            size="small"
+            (click)="addEmail()"
+            aria-label="Add email address"
+          >
+            <ion-icon name="add" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div formArrayName="emails">
+          @for (
+            emailGroup of emailsArray.controls;
+            track $index;
+            let i = $index
+          ) {
+            <div [formGroupName]="i" class="form-array-item email-item">
+              <div class="array-item-header">
+                <span class="item-number">Email {{ i + 1 }}</span>
+                <ion-button
+                  fill="clear"
+                  color="danger"
+                  size="small"
+                  [disabled]="emailsArray.length <= 1"
+                  (click)="removeEmail(i)"
+                  aria-label="Remove email address"
+                  class="remove-button"
                 >
-                <ion-select-option value="Government"
-                  >Government</ion-select-option
+                  <ion-icon name="trash" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+              <div class="form-fields">
+                <ion-item>
+                  <ion-label position="stacked">{{
+                    "forms.label" | translate
+                  }}</ion-label>
+                  <ion-input
+                    formControlName="name"
+                    placeholder="e.g., Work, Personal"
+                    type="text"
                   >
-                  <ion-select-option value="Other">Other</ion-select-option>
-                </ion-select>
-              </ion-item>
+                  </ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label position="stacked">{{
+                    "common.email_address" | translate
+                  }}</ion-label>
+                  <ion-input
+                    formControlName="email"
+                    placeholder="email@example.com"
+                    type="email"
+                  >
+                  </ion-input>
+                </ion-item>
+              </div>
+            </div>
+          }
+        </div>
 
-              <ion-item>
-                <ion-label position="stacked"
-                  >{{ "forms.founding_date" | translate }} *</ion-label
+        <!-- Phone Numbers -->
+        <div class="section-title">
+          <h3>{{ "common.phone_numbers" | translate }}</h3>
+          <ion-button
+            fill="clear"
+            size="small"
+            (click)="addPhoneNumber()"
+            aria-label="Add phone number"
+          >
+            <ion-icon name="add" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div formArrayName="phoneNumbers">
+          @for (
+            phoneGroup of phoneNumbersArray.controls;
+            track $index;
+            let i = $index
+          ) {
+            <div [formGroupName]="i" class="form-array-item phone-item">
+              <div class="array-item-header">
+                <span class="item-number">Phone {{ i + 1 }}</span>
+                <ion-button
+                  fill="clear"
+                  color="danger"
+                  size="small"
+                  [disabled]="phoneNumbersArray.length <= 1"
+                  (click)="removePhoneNumber(i)"
+                  aria-label="Remove phone number"
+                  class="remove-button"
+                >
+                  <ion-icon name="trash" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+              <div class="form-fields">
+                <ion-item>
+                  <ion-label position="stacked">{{
+                    "forms.type" | translate
+                  }}</ion-label>
+                  <ion-select formControlName="type" placeholder="Select type">
+                    <ion-select-option value="Mobile">Mobile</ion-select-option>
+                    <ion-select-option value="Home">Home</ion-select-option>
+                    <ion-select-option value="Work">Work</ion-select-option>
+                    <ion-select-option value="Fax">Fax</ion-select-option>
+                    <ion-select-option value="Other">Other</ion-select-option>
+                  </ion-select>
+                </ion-item>
+                <ion-item>
+                  <ion-label position="stacked">{{
+                    "common.phone_number" | translate
+                  }}</ion-label>
+                  <ion-input
+                    formControlName="number"
+                    placeholder="(555) 123-4567"
+                    type="tel"
+                    (ionInput)="formatPhoneNumber($event, i)"
                   >
-                  <ion-datetime
-                    formControlName="foundingDate"
-                    presentation="date"
-                    display-format="MMM DD, YYYY"
-                    placeholder="Select founding date"
-                    [showDefaultButtons]="true"
-                    [showClearButton]="true"
-                    size="cover"
-                    id="foundingDatePicker"
-                    >
-                    <ion-button slot="time-label" fill="outline" size="small">
-                      <ion-icon name="calendar-outline" slot="start"></ion-icon>
-                      {{ getFormattedFoundingDate() || "Select Date" }}
-                    </ion-button>
-                  </ion-datetime>
-                  @if (
-                    profileForm.get('groupDetails.foundingDate')?.invalid &&
-                    profileForm.get('groupDetails.foundingDate')?.touched
-                    ) {
-                    <ion-note
-                      slot="error"
+                  </ion-input>
+                </ion-item>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Addresses -->
+        <div class="section-title">
+          <h3>Addresses</h3>
+          <ion-button
+            fill="clear"
+            size="small"
+            (click)="addAddress()"
+            [disabled]="addressesArray.length >= maxAddresses"
+            aria-label="Add address"
+          >
+            <ion-icon name="add" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+        <div formArrayName="addresses">
+          @for (
+            addressGroup of addressesArray.controls;
+            track $index;
+            let i = $index
+          ) {
+            <div [formGroupName]="i" class="form-array-item address-item">
+              <div class="array-item-header">
+                <span class="item-number">Address {{ i + 1 }}</span>
+                <ion-button
+                  fill="clear"
+                  color="danger"
+                  size="small"
+                  [disabled]="addressesArray.length <= 1"
+                  (click)="removeAddress(i)"
+                  aria-label="Remove address"
+                  class="remove-button"
+                >
+                  <ion-icon name="trash" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+              <div class="form-fields">
+                <ion-item>
+                  <ion-label position="stacked">{{
+                    "forms.address_name" | translate
+                  }}</ion-label>
+                  <ion-input
+                    formControlName="name"
+                    placeholder="e.g., Main Office, Home"
+                    type="text"
+                  >
+                  </ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label position="stacked">{{
+                    "forms.street_address" | translate
+                  }}</ion-label>
+                  <ion-input
+                    formControlName="street"
+                    placeholder="Enter street address"
+                    type="text"
+                  >
+                  </ion-input>
+                </ion-item>
+                <ion-row>
+                  <ion-col size="6">
+                    <ion-item>
+                      <ion-label position="stacked">{{
+                        "forms.city" | translate
+                      }}</ion-label>
+                      <ion-input
+                        formControlName="city"
+                        placeholder="Enter city"
+                        type="text"
                       >
-                      Founding date is required
-                    </ion-note>
-                  }
-                </ion-item>
-
+                      </ion-input>
+                    </ion-item>
+                  </ion-col>
+                  <ion-col size="6">
+                    <ion-item>
+                      <ion-label position="stacked">{{
+                        "forms.state_province" | translate
+                      }}</ion-label>
+                      <ion-input
+                        formControlName="state"
+                        placeholder="Enter state/province"
+                        type="text"
+                      >
+                      </ion-input>
+                    </ion-item>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="6">
+                    <ion-item>
+                      <ion-label position="stacked">{{
+                        "forms.zip_postal_code" | translate
+                      }}</ion-label>
+                      <ion-input
+                        formControlName="zipcode"
+                        placeholder="Enter ZIP/postal code"
+                        type="text"
+                      >
+                      </ion-input>
+                    </ion-item>
+                  </ion-col>
+                  <ion-col size="6">
+                    <ion-item>
+                      <ion-label position="stacked">{{
+                        "forms.country" | translate
+                      }}</ion-label>
+                      <ion-input
+                        formControlName="country"
+                        placeholder="Enter country"
+                        type="text"
+                      >
+                      </ion-input>
+                    </ion-item>
+                  </ion-col>
+                </ion-row>
                 <ion-item>
-                  <ion-label position="stacked">{{
-                    "forms.mission_statement" | translate
+                  <ion-label>{{
+                    "forms.primary_address" | translate
                   }}</ion-label>
-                  <ion-textarea
-                    formControlName="groupObjectivesMissionStatement"
-                    placeholder="Enter your group's mission statement"
-                    rows="3"
-                  ></ion-textarea>
+                  <ion-checkbox
+                    slot="start"
+                    formControlName="isPrimaryAddress"
+                  ></ion-checkbox>
                 </ion-item>
+              </div>
+            </div>
+          }
+        </div>
 
+        @if (addressesArray.length >= maxAddresses) {
+          <p class="helper-text">
+            Maximum {{ maxAddresses }} addresses allowed
+          </p>
+        }
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Web Links Section -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{ "forms.web_links" | translate }}</ion-card-title>
+        <ion-card-subtitle>
+          Add links to your website, social media, and other online presence
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Web Links -->
+        <div class="section-title">
+          <h3>{{ "forms.web_links" | translate }}</h3>
+          <ion-button
+            fill="clear"
+            size="small"
+            (click)="addWebLink()"
+            [disabled]="webLinksFormArray.length >= maxLinks"
+            aria-label="Add web link"
+          >
+            <ion-icon name="add" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+        <div formArrayName="webLinks">
+          @for (
+            link of webLinksFormArray.controls;
+            track $index;
+            let i = $index
+          ) {
+            <div [formGroupName]="i" class="form-array-item web-link-item">
+              <div class="array-item-header">
+                <span class="item-number">Link {{ i + 1 }}</span>
+                <ion-button
+                  fill="clear"
+                  color="danger"
+                  size="small"
+                  (click)="removeWebLink(i)"
+                  [disabled]="webLinksFormArray.length <= 1"
+                  class="remove-button"
+                  aria-label="Remove web link"
+                >
+                  <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+              <div class="form-fields">
                 <ion-item>
                   <ion-label position="stacked">{{
-                    "forms.history_background" | translate
-                  }}</ion-label>
-                  <ion-textarea
-                    formControlName="groupHistoryBackground"
-                    placeholder="Share your organization's history, founding story, and background"
-                    rows="4"
-                  ></ion-textarea>
-                </ion-item>
-
-                <ion-item>
-                  <ion-label position="stacked">{{
-                    "forms.supported_languages" | translate
+                    "forms.category" | translate
                   }}</ion-label>
                   <ion-select
-                    formControlName="supportedLanguages"
-                    multiple="true"
-                    placeholder="Select languages your group supports"
+                    formControlName="category"
+                    placeholder="Select category"
+                  >
+                    <ion-select-option value="Website"
+                      >Website</ion-select-option
                     >
-                    <!-- Top 10 Most Spoken Languages -->
-                    <ion-select-option value="English">English</ion-select-option>
-                    <ion-select-option value="Mandarin Chinese"
-                      >Mandarin Chinese</ion-select-option
-                      >
-                      <ion-select-option value="Hindi">Hindi</ion-select-option>
-                      <ion-select-option value="Spanish">Spanish</ion-select-option>
-                      <ion-select-option value="French">French</ion-select-option>
-                      <ion-select-option value="Standard Arabic"
-                        >Standard Arabic</ion-select-option
-                        >
-                        <ion-select-option value="Bengali">Bengali</ion-select-option>
-                        <ion-select-option value="Russian">Russian</ion-select-option>
-                        <ion-select-option value="Portuguese"
-                          >Portuguese</ion-select-option
-                          >
-                          <ion-select-option value="Indonesian"
-                            >Indonesian</ion-select-option
-                            >
+                    <ion-select-option value="Social Media"
+                      >Social Media</ion-select-option
+                    >
+                    <ion-select-option value="Donation"
+                      >Donation</ion-select-option
+                    >
+                    <ion-select-option value="Publications"
+                      >Publications</ion-select-option
+                    >
+                    <ion-select-option value="Portfolio"
+                      >Portfolio</ion-select-option
+                    >
+                    <ion-select-option value="Hobbies"
+                      >Hobbies</ion-select-option
+                    >
+                    <ion-select-option value="External Resources"
+                      >External Resources</ion-select-option
+                    >
+                    <ion-select-option value="Other">Other</ion-select-option>
+                  </ion-select>
+                </ion-item>
+                <ion-item>
+                  <ion-label position="stacked">{{
+                    "forms.name_title" | translate
+                  }}</ion-label>
+                  <ion-input
+                    formControlName="name"
+                    type="text"
+                    placeholder="e.g., LinkedIn, Portfolio"
+                  ></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label position="stacked">URL</ion-label>
+                  <ion-input
+                    formControlName="url"
+                    type="url"
+                    placeholder="https://example.com"
+                  ></ion-input>
+                </ion-item>
+              </div>
+            </div>
+          }
+        </div>
 
-                            <!-- Other Major Languages (Alphabetical) -->
-                            <ion-select-option value="Afrikaans">Afrikaans</ion-select-option>
-                            <ion-select-option value="Albanian">Albanian</ion-select-option>
-                            <ion-select-option value="Amharic">Amharic</ion-select-option>
-                            <ion-select-option value="Armenian">Armenian</ion-select-option>
-                            <ion-select-option value="Azerbaijani"
-                              >Azerbaijani</ion-select-option
-                              >
-                              <ion-select-option value="Basque">Basque</ion-select-option>
-                              <ion-select-option value="Belarusian"
-                                >Belarusian</ion-select-option
-                                >
-                                <ion-select-option value="Bosnian">Bosnian</ion-select-option>
-                                <ion-select-option value="Bulgarian">Bulgarian</ion-select-option>
-                                <ion-select-option value="Burmese">Burmese</ion-select-option>
-                                <ion-select-option value="Cantonese">Cantonese</ion-select-option>
-                                <ion-select-option value="Catalan">Catalan</ion-select-option>
-                                <ion-select-option value="Croatian">Croatian</ion-select-option>
-                                <ion-select-option value="Czech">Czech</ion-select-option>
-                                <ion-select-option value="Danish">Danish</ion-select-option>
-                                <ion-select-option value="Dutch">Dutch</ion-select-option>
-                                <ion-select-option value="Estonian">Estonian</ion-select-option>
-                                <ion-select-option value="Filipino">Filipino</ion-select-option>
-                                <ion-select-option value="Finnish">Finnish</ion-select-option>
-                                <ion-select-option value="Georgian">Georgian</ion-select-option>
-                                <ion-select-option value="German">German</ion-select-option>
-                                <ion-select-option value="Greek">Greek</ion-select-option>
-                                <ion-select-option value="Gujarati">Gujarati</ion-select-option>
-                                <ion-select-option value="Hebrew">Hebrew</ion-select-option>
-                                <ion-select-option value="Hungarian">Hungarian</ion-select-option>
-                                <ion-select-option value="Icelandic">Icelandic</ion-select-option>
-                                <ion-select-option value="Italian">Italian</ion-select-option>
-                                <ion-select-option value="Japanese">Japanese</ion-select-option>
-                                <ion-select-option value="Javanese">Javanese</ion-select-option>
-                                <ion-select-option value="Kannada">Kannada</ion-select-option>
-                                <ion-select-option value="Kazakh">Kazakh</ion-select-option>
-                                <ion-select-option value="Khmer">Khmer</ion-select-option>
-                                <ion-select-option value="Korean">Korean</ion-select-option>
-                                <ion-select-option value="Kurdish">Kurdish</ion-select-option>
-                                <ion-select-option value="Lao">Lao</ion-select-option>
-                                <ion-select-option value="Latvian">Latvian</ion-select-option>
-                                <ion-select-option value="Lithuanian"
-                                  >Lithuanian</ion-select-option
-                                  >
-                                  <ion-select-option value="Macedonian"
-                                    >Macedonian</ion-select-option
-                                    >
-                                    <ion-select-option value="Malay">Malay</ion-select-option>
-                                    <ion-select-option value="Malayalam">Malayalam</ion-select-option>
-                                    <ion-select-option value="Marathi">Marathi</ion-select-option>
-                                    <ion-select-option value="Mongolian">Mongolian</ion-select-option>
-                                    <ion-select-option value="Nepali">Nepali</ion-select-option>
-                                    <ion-select-option value="Norwegian">Norwegian</ion-select-option>
-                                    <ion-select-option value="Pashto">Pashto</ion-select-option>
-                                    <ion-select-option value="Persian (Farsi)"
-                                      >Persian (Farsi)</ion-select-option
-                                      >
-                                      <ion-select-option value="Polish">Polish</ion-select-option>
-                                      <ion-select-option value="Punjabi">Punjabi</ion-select-option>
-                                      <ion-select-option value="Romanian">Romanian</ion-select-option>
-                                      <ion-select-option value="Serbian">Serbian</ion-select-option>
-                                      <ion-select-option value="Sinhala">Sinhala</ion-select-option>
-                                      <ion-select-option value="Slovak">Slovak</ion-select-option>
-                                      <ion-select-option value="Slovenian">Slovenian</ion-select-option>
-                                      <ion-select-option value="Swahili">Swahili</ion-select-option>
-                                      <ion-select-option value="Swedish">Swedish</ion-select-option>
-                                      <ion-select-option value="Tamil">Tamil</ion-select-option>
-                                      <ion-select-option value="Telugu">Telugu</ion-select-option>
-                                      <ion-select-option value="Thai">Thai</ion-select-option>
-                                      <ion-select-option value="Turkish">Turkish</ion-select-option>
-                                      <ion-select-option value="Ukrainian">Ukrainian</ion-select-option>
-                                      <ion-select-option value="Urdu">Urdu</ion-select-option>
-                                      <ion-select-option value="Uzbek">Uzbek</ion-select-option>
-                                      <ion-select-option value="Vietnamese"
-                                        >Vietnamese</ion-select-option
-                                        >
-                                        <ion-select-option value="Welsh">Welsh</ion-select-option>
-                                        <ion-select-option value="Yoruba">Yoruba</ion-select-option>
-                                        <ion-select-option value="Zulu">Zulu</ion-select-option>
+        @if (webLinksFormArray.length >= maxLinks) {
+          <p class="helper-text">Maximum {{ maxLinks }} web links allowed</p>
+        }
+      </ion-card-content>
+    </ion-card>
 
-                                        <!-- Sign Languages -->
-                                        <ion-select-option value="American Sign Language (ASL)"
-                                          >American Sign Language (ASL)</ion-select-option
-                                          >
-                                          <ion-select-option value="British Sign Language (BSL)"
-                                            >British Sign Language (BSL)</ion-select-option
-                                            >
-                                            <ion-select-option value="International Sign"
-                                              >International Sign</ion-select-option
-                                              >
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <ion-button
+        type="submit"
+        expand="block"
+        [disabled]="profileForm.invalid || isSubmitting"
+      >
+        @if (isSubmitting) {
+          <ion-spinner name="crescent"></ion-spinner>
+        }
+        @if (!isSubmitting) {
+          <span>Save Changes</span>
+        }
+        @if (isSubmitting) {
+          <span>Saving...</span>
+        }
+      </ion-button>
 
-                                              <ion-select-option value="Other">Other</ion-select-option>
-                                            </ion-select>
-                                          </ion-item>
-
-                                          <ion-item>
-                                            <ion-label position="stacked">{{
-                                              "forms.google_calendar_url" | translate
-                                            }}</ion-label>
-                                            <ion-input
-                                              formControlName="googleCalendarUrl"
-                                              type="url"
-                                              placeholder="Enter your public Google Calendar embed URL"
-                                            ></ion-input>
-                                            <ion-note slot="helper">
-                                              <small
-                                                >Share your calendar's public embed URL to display events on
-                                                your profile</small
-                                                >
-                                              </ion-note>
-                                            </ion-item>
-                                          </div>
-                                        </ion-card-content>
-                                      </ion-card>
-
-                                      <!-- Contact Information Section -->
-                                      <ion-card>
-                                        <ion-card-header>
-                                          <ion-card-title>{{
-                                            "forms.contact_information" | translate
-                                          }}</ion-card-title>
-                                        </ion-card-header>
-                                        <ion-card-content formGroupName="contactInformation">
-                                          <!-- Email Addresses -->
-                                          <div class="section-title">
-                                            <h3>{{ "common.email_addresses" | translate }}</h3>
-                                            <ion-button
-                                              fill="clear"
-                                              size="small"
-                                              (click)="addEmail()"
-                                              aria-label="Add email address"
-                                              >
-                                              <ion-icon name="add" slot="icon-only"></ion-icon>
-                                            </ion-button>
-                                          </div>
-
-                                          <div formArrayName="emails">
-                                            @for (emailGroup of emailsArray.controls; track emailGroup; let i = $index) {
-                                              <div
-                                                [formGroupName]="i"
-                                                class="form-array-item email-item"
-                                                >
-                                                <div class="array-item-header">
-                                                  <span class="item-number">Email {{ i + 1 }}</span>
-                                                  <ion-button
-                                                    fill="clear"
-                                                    color="danger"
-                                                    size="small"
-                                                    [disabled]="emailsArray.length <= 1"
-                                                    (click)="removeEmail(i)"
-                                                    aria-label="Remove email address"
-                                                    class="remove-button"
-                                                    >
-                                                    <ion-icon name="trash" slot="icon-only"></ion-icon>
-                                                  </ion-button>
-                                                </div>
-                                                <div class="form-fields">
-                                                  <ion-item>
-                                                    <ion-label position="stacked">{{
-                                                      "forms.label" | translate
-                                                    }}</ion-label>
-                                                    <ion-input
-                                                      formControlName="name"
-                                                      placeholder="e.g., Work, Personal"
-                                                      type="text"
-                                                      >
-                                                    </ion-input>
-                                                  </ion-item>
-                                                  <ion-item>
-                                                    <ion-label position="stacked">{{
-                                                      "common.email_address" | translate
-                                                    }}</ion-label>
-                                                    <ion-input
-                                                      formControlName="email"
-                                                      placeholder="email@example.com"
-                                                      type="email"
-                                                      >
-                                                    </ion-input>
-                                                  </ion-item>
-                                                </div>
-                                              </div>
-                                            }
-                                          </div>
-
-                                          <!-- Phone Numbers -->
-                                          <div class="section-title">
-                                            <h3>{{ "common.phone_numbers" | translate }}</h3>
-                                            <ion-button
-                                              fill="clear"
-                                              size="small"
-                                              (click)="addPhoneNumber()"
-                                              aria-label="Add phone number"
-                                              >
-                                              <ion-icon name="add" slot="icon-only"></ion-icon>
-                                            </ion-button>
-                                          </div>
-
-                                          <div formArrayName="phoneNumbers">
-                                            @for (phoneGroup of phoneNumbersArray.controls; track phoneGroup; let i = $index) {
-                                              <div
-                                                [formGroupName]="i"
-                                                class="form-array-item phone-item"
-                                                >
-                                                <div class="array-item-header">
-                                                  <span class="item-number">Phone {{ i + 1 }}</span>
-                                                  <ion-button
-                                                    fill="clear"
-                                                    color="danger"
-                                                    size="small"
-                                                    [disabled]="phoneNumbersArray.length <= 1"
-                                                    (click)="removePhoneNumber(i)"
-                                                    aria-label="Remove phone number"
-                                                    class="remove-button"
-                                                    >
-                                                    <ion-icon name="trash" slot="icon-only"></ion-icon>
-                                                  </ion-button>
-                                                </div>
-                                                <div class="form-fields">
-                                                  <ion-item>
-                                                    <ion-label position="stacked">{{
-                                                      "forms.type" | translate
-                                                    }}</ion-label>
-                                                    <ion-select formControlName="type" placeholder="Select type">
-                                                      <ion-select-option value="Mobile">Mobile</ion-select-option>
-                                                      <ion-select-option value="Home">Home</ion-select-option>
-                                                      <ion-select-option value="Work">Work</ion-select-option>
-                                                      <ion-select-option value="Fax">Fax</ion-select-option>
-                                                      <ion-select-option value="Other">Other</ion-select-option>
-                                                    </ion-select>
-                                                  </ion-item>
-                                                  <ion-item>
-                                                    <ion-label position="stacked">{{
-                                                      "common.phone_number" | translate
-                                                    }}</ion-label>
-                                                    <ion-input
-                                                      formControlName="number"
-                                                      placeholder="(555) 123-4567"
-                                                      type="tel"
-                                                      (ionInput)="formatPhoneNumber($event, i)"
-                                                      >
-                                                    </ion-input>
-                                                  </ion-item>
-                                                </div>
-                                              </div>
-                                            }
-                                          </div>
-
-                                          <!-- Addresses -->
-                                          <div class="section-title">
-                                            <h3>Addresses</h3>
-                                            <ion-button
-                                              fill="clear"
-                                              size="small"
-                                              (click)="addAddress()"
-                                              [disabled]="addressesArray.length >= maxAddresses"
-                                              aria-label="Add address"
-                                              >
-                                              <ion-icon name="add" slot="icon-only"></ion-icon>
-                                            </ion-button>
-                                          </div>
-                                          <div formArrayName="addresses">
-                                            @for (addressGroup of addressesArray.controls; track addressGroup; let i = $index) {
-                                              <div
-                                                [formGroupName]="i"
-                                                class="form-array-item address-item"
-                                                >
-                                                <div class="array-item-header">
-                                                  <span class="item-number">Address {{ i + 1 }}</span>
-                                                  <ion-button
-                                                    fill="clear"
-                                                    color="danger"
-                                                    size="small"
-                                                    [disabled]="addressesArray.length <= 1"
-                                                    (click)="removeAddress(i)"
-                                                    aria-label="Remove address"
-                                                    class="remove-button"
-                                                    >
-                                                    <ion-icon name="trash" slot="icon-only"></ion-icon>
-                                                  </ion-button>
-                                                </div>
-                                                <div class="form-fields">
-                                                  <ion-item>
-                                                    <ion-label position="stacked">{{
-                                                      "forms.address_name" | translate
-                                                    }}</ion-label>
-                                                    <ion-input
-                                                      formControlName="name"
-                                                      placeholder="e.g., Main Office, Home"
-                                                      type="text"
-                                                      >
-                                                    </ion-input>
-                                                  </ion-item>
-                                                  <ion-item>
-                                                    <ion-label position="stacked">{{
-                                                      "forms.street_address" | translate
-                                                    }}</ion-label>
-                                                    <ion-input
-                                                      formControlName="street"
-                                                      placeholder="Enter street address"
-                                                      type="text"
-                                                      >
-                                                    </ion-input>
-                                                  </ion-item>
-                                                  <ion-row>
-                                                    <ion-col size="6">
-                                                      <ion-item>
-                                                        <ion-label position="stacked">{{
-                                                          "forms.city" | translate
-                                                        }}</ion-label>
-                                                        <ion-input
-                                                          formControlName="city"
-                                                          placeholder="Enter city"
-                                                          type="text"
-                                                          >
-                                                        </ion-input>
-                                                      </ion-item>
-                                                    </ion-col>
-                                                    <ion-col size="6">
-                                                      <ion-item>
-                                                        <ion-label position="stacked">{{
-                                                          "forms.state_province" | translate
-                                                        }}</ion-label>
-                                                        <ion-input
-                                                          formControlName="state"
-                                                          placeholder="Enter state/province"
-                                                          type="text"
-                                                          >
-                                                        </ion-input>
-                                                      </ion-item>
-                                                    </ion-col>
-                                                  </ion-row>
-                                                  <ion-row>
-                                                    <ion-col size="6">
-                                                      <ion-item>
-                                                        <ion-label position="stacked">{{
-                                                          "forms.zip_postal_code" | translate
-                                                        }}</ion-label>
-                                                        <ion-input
-                                                          formControlName="zipcode"
-                                                          placeholder="Enter ZIP/postal code"
-                                                          type="text"
-                                                          >
-                                                        </ion-input>
-                                                      </ion-item>
-                                                    </ion-col>
-                                                    <ion-col size="6">
-                                                      <ion-item>
-                                                        <ion-label position="stacked">{{
-                                                          "forms.country" | translate
-                                                        }}</ion-label>
-                                                        <ion-input
-                                                          formControlName="country"
-                                                          placeholder="Enter country"
-                                                          type="text"
-                                                          >
-                                                        </ion-input>
-                                                      </ion-item>
-                                                    </ion-col>
-                                                  </ion-row>
-                                                  <ion-item>
-                                                    <ion-label>{{ "forms.primary_address" | translate }}</ion-label>
-                                                    <ion-checkbox
-                                                      slot="start"
-                                                      formControlName="isPrimaryAddress"
-                                                    ></ion-checkbox>
-                                                  </ion-item>
-                                                </div>
-                                              </div>
-                                            }
-                                          </div>
-
-                                          @if (addressesArray.length >= maxAddresses) {
-                                            <p class="helper-text">
-                                              Maximum {{ maxAddresses }} addresses allowed
-                                            </p>
-                                          }
-                                        </ion-card-content>
-                                      </ion-card>
-
-                                      <!-- Web Links Section -->
-                                      <ion-card>
-                                        <ion-card-header>
-                                          <ion-card-title>{{ "forms.web_links" | translate }}</ion-card-title>
-                                          <ion-card-subtitle>
-                                            Add links to your website, social media, and other online presence
-                                          </ion-card-subtitle>
-                                        </ion-card-header>
-                                        <ion-card-content>
-                                          <!-- Web Links -->
-                                          <div class="section-title">
-                                            <h3>{{ "forms.web_links" | translate }}</h3>
-                                            <ion-button
-                                              fill="clear"
-                                              size="small"
-                                              (click)="addWebLink()"
-                                              [disabled]="webLinksFormArray.length >= maxLinks"
-                                              aria-label="Add web link"
-                                              >
-                                              <ion-icon name="add" slot="icon-only"></ion-icon>
-                                            </ion-button>
-                                          </div>
-                                          <div formArrayName="webLinks">
-                                            @for (link of webLinksFormArray.controls; track link; let i = $index) {
-                                              <div
-                                                [formGroupName]="i"
-                                                class="form-array-item web-link-item"
-                                                >
-                                                <div class="array-item-header">
-                                                  <span class="item-number">Link {{ i + 1 }}</span>
-                                                  <ion-button
-                                                    fill="clear"
-                                                    color="danger"
-                                                    size="small"
-                                                    (click)="removeWebLink(i)"
-                                                    [disabled]="webLinksFormArray.length <= 1"
-                                                    class="remove-button"
-                                                    aria-label="Remove web link"
-                                                    >
-                                                    <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-                                                  </ion-button>
-                                                </div>
-                                                <div class="form-fields">
-                                                  <ion-item>
-                                                    <ion-label position="stacked">{{
-                                                      "forms.category" | translate
-                                                    }}</ion-label>
-                                                    <ion-select
-                                                      formControlName="category"
-                                                      placeholder="Select category"
-                                                      >
-                                                      <ion-select-option value="Website">Website</ion-select-option>
-                                                      <ion-select-option value="Social Media"
-                                                        >Social Media</ion-select-option
-                                                        >
-                                                        <ion-select-option value="Donation"
-                                                          >Donation</ion-select-option
-                                                          >
-                                                          <ion-select-option value="Publications"
-                                                            >Publications</ion-select-option
-                                                            >
-                                                            <ion-select-option value="Portfolio"
-                                                              >Portfolio</ion-select-option
-                                                              >
-                                                              <ion-select-option value="Hobbies">Hobbies</ion-select-option>
-                                                              <ion-select-option value="External Resources"
-                                                                >External Resources</ion-select-option
-                                                                >
-                                                                <ion-select-option value="Other">Other</ion-select-option>
-                                                              </ion-select>
-                                                            </ion-item>
-                                                            <ion-item>
-                                                              <ion-label position="stacked">{{
-                                                                "forms.name_title" | translate
-                                                              }}</ion-label>
-                                                              <ion-input
-                                                                formControlName="name"
-                                                                type="text"
-                                                                placeholder="e.g., LinkedIn, Portfolio"
-                                                              ></ion-input>
-                                                            </ion-item>
-                                                            <ion-item>
-                                                              <ion-label position="stacked">URL</ion-label>
-                                                              <ion-input
-                                                                formControlName="url"
-                                                                type="url"
-                                                                placeholder="https://example.com"
-                                                              ></ion-input>
-                                                            </ion-item>
-                                                          </div>
-                                                        </div>
-                                                      }
-                                                    </div>
-
-                                                    @if (webLinksFormArray.length >= maxLinks) {
-                                                      <p class="helper-text">
-                                                        Maximum {{ maxLinks }} web links allowed
-                                                      </p>
-                                                    }
-                                                  </ion-card-content>
-                                                </ion-card>
-
-                                                <!-- Action Buttons -->
-                                                <div class="action-buttons">
-                                                  <ion-button
-                                                    type="submit"
-                                                    expand="block"
-                                                    [disabled]="profileForm.invalid || isSubmitting"
-                                                    >
-                                                    @if (isSubmitting) {
-                                                      <ion-spinner name="crescent"></ion-spinner>
-                                                    }
-                                                    @if (!isSubmitting) {
-                                                      <span>Save Changes</span>
-                                                    }
-                                                    @if (isSubmitting) {
-                                                      <span>Saving...</span>
-                                                    }
-                                                  </ion-button>
-
-                                                  <ion-button
-                                                    fill="outline"
-                                                    expand="block"
-                                                    (click)="onCancel()"
-                                                    [disabled]="isSubmitting"
-                                                    >
-                                                    Cancel
-                                                  </ion-button>
-                                                </div>
-                                              </form>
-                                            </div>
+      <ion-button
+        fill="outline"
+        expand="block"
+        (click)="onCancel()"
+        [disabled]="isSubmitting"
+      >
+        Cancel
+      </ion-button>
+    </div>
+  </form>
+</div>

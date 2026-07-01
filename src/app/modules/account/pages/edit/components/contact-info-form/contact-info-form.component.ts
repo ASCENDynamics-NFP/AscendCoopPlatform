@@ -66,13 +66,20 @@ export class ContactInfoFormComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes["account"] && this.account) {
-      // Load exclusively from sections/contactInfo; no fallback to base account
+      // Load exclusively from sections/contactInfo; fall back to the base
+      // account document for accounts that pre-date the sections architecture.
       this.sections
         .contactInfo$(this.account.id!)
         .pipe(take(1))
-        .subscribe((ci: ContactInformation | null) =>
-          this.loadFormData(ci || null),
-        );
+        .subscribe((ci: ContactInformation | null) => {
+          if (ci) {
+            this.loadFormData(ci);
+          } else if (this.account?.contactInformation) {
+            this.loadFormData(this.account.contactInformation);
+          } else {
+            this.loadFormData(null);
+          }
+        });
     }
   }
 

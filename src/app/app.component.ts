@@ -125,18 +125,16 @@ export class AppComponent implements OnInit {
 
   initializeApp() {
     this.platform.ready().then(() => {
-      // Initialize GoogleAuth
-      // - Web requires clientId
-      // - Native does not require options; initialization without args is sufficient
-      if (Capacitor.isNativePlatform()) {
-        GoogleAuth.initialize();
-      } else {
-        GoogleAuth.initialize({
-          clientId: environment.googleAuth.webClientId,
-          scopes: ["profile", "email"],
-          grantOfflineAccess: true,
-        });
-      }
+      // Initialize GoogleAuth with the web client ID so the plugin uses it
+      // for requestIdToken() on all platforms. On Android the plugin reads
+      // androidClientId from config first (higher priority than clientId),
+      // but requestIdToken() only accepts a web (type-3) client ID —
+      // passing clientId explicitly here overrides that config key.
+      GoogleAuth.initialize({
+        clientId: environment.googleAuth.webClientId,
+        scopes: ["profile", "email"],
+        grantOfflineAccess: true,
+      });
 
       // Set the default language (fallback)
       this.translate.setDefaultLang(DEFAULT_LANGUAGE);

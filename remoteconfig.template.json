@@ -70,7 +70,7 @@
       "valueType": "BOOLEAN"
     },
     "auth_show_google_sign_in": {
-      "defaultValue": {"value": "false"},
+      "defaultValue": {"value": "true"},
       "description": "Show the Sign in with Google button on login/signup pages on native (iOS/Android) builds. Web always shows the button (Firebase popup); Electron always hides it. When false on native, only email/password auth is shown.",
       "valueType": "BOOLEAN"
     },

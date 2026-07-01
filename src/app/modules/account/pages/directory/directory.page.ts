@@ -50,6 +50,181 @@ import {environment} from "../../../../../environments/environment";
 
 type DirectoryType = "all" | "user" | "group";
 
+// ---------------------------------------------------------------------------
+// Dev-only mock organizations — visible on the map in non-production builds.
+// These match the records seeded to ascendcoopplatform-dev Firestore so they
+// are deduped automatically when the real data loads.
+// ---------------------------------------------------------------------------
+const MOCK_ORGANIZATIONS: Account[] = !environment.production
+  ? ([
+      {
+        id: "mock-org-greenroots",
+        type: "group",
+        name: "GreenRoots Chicago",
+        tagline: "Urban sustainability and community gardens",
+        description:
+          "A worker-owned cooperative dedicated to urban farming, composting, and environmental justice in the Chicago Southside.",
+        iconImage: "",
+        heroImage: "",
+        email: "info@greenrootschicago.example",
+        webLinks: [],
+        legalAgreements: null as any,
+        lastLoginAt: null as any,
+        groupDetails: {groupType: "Worker Cooperative"},
+        groupCategoriesInterests: {
+          primaryCategory: "Environment",
+          tagsKeywords: ["urban farming", "sustainability", "composting"],
+        },
+        contactInformation: {
+          phoneNumbers: [],
+          emails: [],
+          preferredMethodOfContact: "Email",
+          addresses: [
+            {
+              city: "Chicago",
+              state: "IL",
+              country: "US",
+              isPrimaryAddress: true,
+              geopoint: {latitude: 41.8827, longitude: -87.6233} as any,
+            },
+          ],
+        },
+      },
+      {
+        id: "mock-org-techbridge",
+        type: "group",
+        name: "TechBridge NYC",
+        tagline: "Digital equity through worker ownership",
+        description:
+          "A nonprofit co-op providing affordable tech education, refurbished hardware, and broadband access to underserved New York communities.",
+        iconImage: "",
+        heroImage: "",
+        email: "hello@techbridgenyc.example",
+        webLinks: [],
+        legalAgreements: null as any,
+        lastLoginAt: null as any,
+        groupDetails: {groupType: "Nonprofit"},
+        groupCategoriesInterests: {
+          primaryCategory: "Technology",
+          tagsKeywords: ["digital equity", "education", "broadband"],
+        },
+        contactInformation: {
+          phoneNumbers: [],
+          emails: [],
+          preferredMethodOfContact: "Email",
+          addresses: [
+            {
+              city: "New York",
+              state: "NY",
+              country: "US",
+              isPrimaryAddress: true,
+              geopoint: {latitude: 40.7128, longitude: -74.006} as any,
+            },
+          ],
+        },
+      },
+      {
+        id: "mock-org-homeward",
+        type: "group",
+        name: "Homeward LA",
+        tagline: "Cooperative housing solutions for all",
+        description:
+          "A community land trust and housing cooperative helping low-income families achieve stable, affordable homeownership in Los Angeles.",
+        iconImage: "",
+        heroImage: "",
+        email: "contact@homewardla.example",
+        webLinks: [],
+        legalAgreements: null as any,
+        lastLoginAt: null as any,
+        groupDetails: {groupType: "Community Land Trust"},
+        groupCategoriesInterests: {
+          primaryCategory: "Housing",
+          tagsKeywords: ["affordable housing", "land trust", "co-op"],
+        },
+        contactInformation: {
+          phoneNumbers: [],
+          emails: [],
+          preferredMethodOfContact: "Email",
+          addresses: [
+            {
+              city: "Los Angeles",
+              state: "CA",
+              country: "US",
+              isPrimaryAddress: true,
+              geopoint: {latitude: 34.0522, longitude: -118.2437} as any,
+            },
+          ],
+        },
+      },
+      {
+        id: "mock-org-brightminds",
+        type: "group",
+        name: "BrightMinds Houston",
+        tagline: "Empowering youth through cooperative learning",
+        description:
+          "An education cooperative running after-school STEM programs, tutoring co-ops, and scholarship funds for underrepresented Houston youth.",
+        iconImage: "",
+        heroImage: "",
+        email: "info@brightmindshouston.example",
+        webLinks: [],
+        legalAgreements: null as any,
+        lastLoginAt: null as any,
+        groupDetails: {groupType: "Education Cooperative"},
+        groupCategoriesInterests: {
+          primaryCategory: "Education",
+          tagsKeywords: ["STEM", "youth", "tutoring", "scholarships"],
+        },
+        contactInformation: {
+          phoneNumbers: [],
+          emails: [],
+          preferredMethodOfContact: "Email",
+          addresses: [
+            {
+              city: "Houston",
+              state: "TX",
+              country: "US",
+              isPrimaryAddress: true,
+              geopoint: {latitude: 29.7604, longitude: -95.3698} as any,
+            },
+          ],
+        },
+      },
+      {
+        id: "mock-org-coopworks",
+        type: "group",
+        name: "CoopWorks Portland",
+        tagline: "Worker-owned gig economy alternative",
+        description:
+          "A platform cooperative connecting freelancers and independent contractors across the Pacific Northwest with fair-pay, worker-owned job matching.",
+        iconImage: "",
+        heroImage: "",
+        email: "hello@coopworkspdx.example",
+        webLinks: [],
+        legalAgreements: null as any,
+        lastLoginAt: null as any,
+        groupDetails: {groupType: "Platform Cooperative"},
+        groupCategoriesInterests: {
+          primaryCategory: "Labor",
+          tagsKeywords: ["gig economy", "freelance", "worker-owned"],
+        },
+        contactInformation: {
+          phoneNumbers: [],
+          emails: [],
+          preferredMethodOfContact: "Email",
+          addresses: [
+            {
+              city: "Portland",
+              state: "OR",
+              country: "US",
+              isPrimaryAddress: true,
+              geopoint: {latitude: 45.5051, longitude: -122.675} as any,
+            },
+          ],
+        },
+      },
+    ] as Account[])
+  : [];
+
 @Component({
   standalone: false,
   selector: "app-directory",
@@ -67,6 +242,9 @@ export class DirectoryPage implements OnInit, OnDestroy {
   searchedValue = "";
   type$ = new BehaviorSubject<DirectoryType>("all");
   selectedType: DirectoryType = "all";
+  /** Remembers which type tab was active before entering map view so it can
+   * be restored when the user switches back to list view. */
+  private typeBeforeMap: DirectoryType = "all";
   includePrivateGroups$ = new BehaviorSubject<boolean>(true); // show groups I'm a member of
   onlyMyGroups$ = new BehaviorSubject<boolean>(false);
   onlyMyConnections$ = new BehaviorSubject<boolean>(false);
@@ -235,9 +413,20 @@ export class DirectoryPage implements OnInit, OnDestroy {
       this.displayedCountSubject,
     ]).pipe(map(([arr, count]) => count < arr.length));
 
-    // All organizations for the map (filtered to only groups)
+    // All organizations for the map (filtered to only groups).
+    // In non-production builds, mock organizations are merged in so the map
+    // always has data to display during development and testing. Real Firestore
+    // records take precedence — mock entries with the same id are excluded.
     this.allOrganizations$ = combined$.pipe(
-      map((arr) => arr.filter((acc) => acc.type === "group")),
+      map((arr) => {
+        const groups = arr.filter((acc) => acc.type === "group");
+        if (MOCK_ORGANIZATIONS.length === 0) {
+          return groups;
+        }
+        const existingIds = new Set(groups.map((g) => g.id));
+        const extras = MOCK_ORGANIZATIONS.filter((m) => !existingIds.has(m.id));
+        return [...groups, ...extras];
+      }),
     );
   }
 
@@ -337,11 +526,17 @@ export class DirectoryPage implements OnInit, OnDestroy {
   toggleViewMode() {
     if (this.viewMode === "list") {
       this.viewMode = "map";
+      // Map always shows groups only — remember the current tab so we can
+      // restore it when the user switches back to list view.
+      this.typeBeforeMap = this.selectedType;
+      this.setType("group");
       if (!this.mapsLoaded) {
         this.loadGoogleMaps();
       }
     } else {
       this.viewMode = "list";
+      // Restore the type the user had selected before entering map view.
+      this.setType(this.typeBeforeMap ?? "all");
     }
   }
 
@@ -356,55 +551,76 @@ export class DirectoryPage implements OnInit, OnDestroy {
   }
 
   private loadGoogleMaps() {
-    // Check if already loaded
-    if (typeof google !== "undefined" && google.maps) {
-      this.mapsApiReady = true;
-      this.mapsLoaded = true;
-      this.cdr.detectChanges();
-      return;
-    }
-
-    // Check if script is already being loaded
-    if (document.querySelector('script[src*="maps.googleapis.com"]')) {
-      // Script is loading, wait for it
-      this.mapsCheckInterval = setInterval(() => {
-        if (typeof google !== "undefined" && google.maps) {
-          if (this.mapsCheckInterval) {
-            clearInterval(this.mapsCheckInterval);
-            this.mapsCheckInterval = null;
-          }
-          this.ngZone.run(() => {
-            this.mapsApiReady = true;
-            this.mapsLoaded = true;
-            this.cdr.detectChanges();
-          });
-        }
-      }, 100);
+    // Already fully loaded — importLibrary is synchronously available.
+    if (
+      typeof google !== "undefined" &&
+      typeof google.maps?.importLibrary === "function"
+    ) {
+      Promise.resolve().then(() => {
+        this.ngZone.run(() => {
+          this.mapsApiReady = true;
+          this.mapsLoaded = true;
+          this.cdr.detectChanges();
+        });
+      });
       return;
     }
 
     const apiKey = environment.googleMapsApiKey;
-    if (!apiKey || apiKey === "YOUR_GOOGLE_MAPS_API_KEY_HERE") {
+    if (!apiKey || apiKey === "YOUR_GOOGLE_MAPS_API_KEY") {
       console.warn("Google Maps API key not configured");
       this.mapsLoaded = true; // mapsApiReady stays false -> show error state
       this.cdr.detectChanges();
       return;
     }
 
-    // Dynamically load Google Maps script
+    // If another page already added the script tag, poll until it finishes.
+    // mapsCheckInterval is cleared in ngOnDestroy if the component is
+    // destroyed before the Maps API finishes loading.
+    if (document.querySelector('script[src*="maps.googleapis.com"]')) {
+      this.mapsCheckInterval = setInterval(() => {
+        if (
+          typeof google !== "undefined" &&
+          typeof google.maps?.importLibrary === "function"
+        ) {
+          if (this.mapsCheckInterval) {
+            clearInterval(this.mapsCheckInterval);
+            this.mapsCheckInterval = null;
+          }
+          this.ngZone.run(() => {
+            Promise.resolve().then(() => {
+              this.mapsApiReady = true;
+              this.mapsLoaded = true;
+              this.cdr.detectChanges();
+            });
+          });
+        }
+      }, 100);
+      return;
+    }
+
+    // Load the Maps API WITHOUT loading=async so the full API (including
+    // google.maps.importLibrary) is set up synchronously during script
+    // execution and is available as soon as onload fires.
+    // @angular/google-maps v21 calls importLibrary('marker') during component
+    // init; it must exist by the time mapsApiReady flips to true.
     const script = document.createElement("script");
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=marker`;
-    script.async = true;
-    script.defer = true;
     script.onload = () => {
       this.ngZone.run(() => {
-        this.mapsApiReady = true;
-        this.mapsLoaded = true;
-        this.cdr.detectChanges();
+        // Defer to the next microtask so Angular's current CD cycle finishes
+        // before the map component is created. This prevents NG0100
+        // (ExpressionChangedAfterItHasBeenCheckedError) caused by @angular/
+        // google-maps setting internal attributes (e.g. tabIndex) on init.
+        Promise.resolve().then(() => {
+          this.mapsApiReady = true;
+          this.mapsLoaded = true;
+          this.cdr.detectChanges();
+        });
       });
     };
-    script.onerror = () => {
-      console.error("Failed to load Google Maps");
+    script.onerror = (err) => {
+      console.error("Failed to load Google Maps script", err);
       this.ngZone.run(() => {
         this.mapsLoaded = true; // mapsApiReady stays false -> show error state
         this.cdr.detectChanges();

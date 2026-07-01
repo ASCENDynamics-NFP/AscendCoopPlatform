@@ -20,8 +20,10 @@
 // src/app/modules/account/components/organizations-map/organizations-map.component.ts
 
 import {
+  ChangeDetectorRef,
   Component,
   Input,
+  NgZone,
   Output,
   EventEmitter,
   OnChanges,
@@ -31,7 +33,7 @@ import {
   OnDestroy,
 } from "@angular/core";
 import {Account} from "../../../../../../shared/models/account.model";
-import {GoogleMap} from "@angular/google-maps";
+import {GoogleMap, MapInfoWindow} from "@angular/google-maps";
 import {MarkerClusterer} from "@googlemaps/markerclusterer";
 
 export interface OrganizationMarker {
@@ -65,6 +67,7 @@ export class OrganizationsMapComponent
   @Output() mapBoundsChanged = new EventEmitter<google.maps.LatLngBounds>();
 
   @ViewChild(GoogleMap) googleMap!: GoogleMap;
+  @ViewChild(MapInfoWindow) infoWindow!: MapInfoWindow;
 
   // Map configuration
   center: google.maps.LatLngLiteral = {lat: 39.8283, lng: -98.5795}; // Center of US
@@ -79,7 +82,7 @@ export class OrganizationsMapComponent
   // Markers
   organizationMarkers: OrganizationMarker[] = [];
   selectedOrganization: Account | null = null;
-  infoWindowPosition: google.maps.LatLngLiteral | null = null;
+  infoWindowPosition: google.maps.LatLngLiteral = {lat: 39.8283, lng: -98.5795};
 
   // User location marker options (initialized in ngAfterViewInit when google is available)
   userMarkerOptions: google.maps.MarkerOptions = {};
@@ -88,6 +91,14 @@ export class OrganizationsMapComponent
   private markers: google.maps.Marker[] = [];
   private markerListeners: google.maps.MapsEventListener[] = [];
   private initTimeout: ReturnType<typeof setTimeout> | null = null;
+  // Prevent fitBounds() from re-running when Ionic restores the cached view
+  // and the organizations observable re-emits. Only fit on the very first load.
+  private boundsInitialized = false;
+
+  constructor(
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes["organizations"]) {
@@ -203,7 +214,9 @@ export class OrganizationsMapComponent
       });
 
       const listener = gMarker.addListener("click", () => {
-        this.onMarkerClick(marker);
+        // Marker events fire outside Angular's zone — run() re-enters it
+        // so that change detection updates @if before the info window opens.
+        this.ngZone.run(() => this.onMarkerClick(marker));
       });
       this.markerListeners.push(listener);
 
@@ -216,8 +229,14 @@ export class OrganizationsMapComponent
       markers: this.markers,
     });
 
-    // Fit bounds to show all markers
-    if (this.organizationMarkers.length > 0 && !this.userLocation) {
+    // Fit bounds to show all markers — only on first load so the user's
+    // zoom/pan is preserved when navigating back to this page.
+    if (
+      this.organizationMarkers.length > 0 &&
+      !this.userLocation &&
+      !this.boundsInitialized
+    ) {
+      this.boundsInitialized = true;
       this.fitBounds();
     }
   }
@@ -282,11 +301,17 @@ export class OrganizationsMapComponent
   onMarkerClick(marker: OrganizationMarker) {
     this.selectedOrganization = marker.organization;
     this.infoWindowPosition = marker.position;
+    // detectChanges() ensures @if (selectedOrganization) renders its content
+    // before the InfoWindow opens — marker events fire outside Angular's
+    // zone so automatic CD would be too late.
+    this.cdr.detectChanges();
+    this.infoWindow?.open();
   }
 
   onInfoWindowClose() {
+    this.infoWindow?.close();
     this.selectedOrganization = null;
-    this.infoWindowPosition = null;
+    // Keep infoWindowPosition at last location — position binding requires non-null
   }
 
   onViewDetails() {
@@ -306,6 +331,13 @@ export class OrganizationsMapComponent
       return `${address.city || ""}${address.city && address.country ? ", " : ""}${address.country || ""}`;
     }
     return "";
+  }
+
+  getWebsiteUrl(organization: Account): string {
+    const link = organization.webLinks?.find(
+      (l) => l.category === "Website" || l.category === "Other",
+    );
+    return link?.url || "";
   }
 
   onMapIdle() {

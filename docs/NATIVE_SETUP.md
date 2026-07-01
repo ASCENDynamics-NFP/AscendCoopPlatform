@@ -32,12 +32,16 @@ capacitor.config.ts  ◄── manually set for native plugin bootstrap
 Keys used **only** in the Angular app (Google Maps, Google Auth web client ID) flow through
 `.env.*` → `generate-env.js` → `environment.ts`.
 
-Keys required by the **Capacitor plugin at plugin-init time** (`iosClientId`,
-`androidClientId`) must be set directly in `capacitor.config.ts`.
+Keys required by the **Capacitor plugin at plugin-init time** (`iosClientId`) must be
+set directly in `capacitor.config.ts`.
 
-> **Tip**: Keep the same value in both places for any key that appears in both
-> (e.g. `androidClientId`). Running `npm run generate-env:dev` will catch
-> any missing env variable with an empty string warning.
+> **Important — do NOT set `androidClientId` in `capacitor.config.ts`.**
+> The `@southdevs/capacitor-google-auth` plugin reads `androidClientId` with higher
+> priority than `clientId` and passes it to `GoogleSignInOptions.requestIdToken()`.
+> However, `requestIdToken()` only accepts a **web (type-3) client ID** — passing an
+> Android (type-1) client ID causes `DEVELOPER_ERROR (status 10)` and a
+> "Something went wrong" toast every time. The app passes the web client ID explicitly
+> in `GoogleAuth.initialize()` to override this behaviour.
 
 ---
 
@@ -133,15 +137,15 @@ Copy the `SHA1:` value.
 GOOGLE_AUTH_ANDROID_CLIENT_ID=XXXXXXXXXX-xxxxxxxxxxxx.apps.googleusercontent.com
 ```
 
-**`capacitor.config.ts`** — the `androidClientId` field:
+> **Do NOT add `androidClientId` to `capacitor.config.ts`.**
+> The plugin misuses that field for `requestIdToken()`, which requires a web client ID.
+> The Android OAuth client is matched automatically by Google Play Services using the
+> app's package name and signing certificate — no extra config key is needed.
+> See the note in the [How configuration flows](#how-configuration-flows) section.
 
-```typescript
-androidClientId: "XXXXXXXXXX-xxxxxxxxxxxx.apps.googleusercontent.com",
-```
-
-> The debug and production Android client IDs are different (different SHA-1s).
-> The commented-out debug line in `capacitor.config.ts` shows the debug client ID.
-> Switch to it when running `ionic capacitor run android` without a signed APK.
+> The debug and production Android client IDs are different (different SHA-1s), but
+> since neither goes into `capacitor.config.ts`, you only need to register each
+> certificate's SHA-1 in Firebase/GCP — the correct client is selected automatically.
 
 ---
 
@@ -260,8 +264,9 @@ When deploying your own instance:
 - [ ] Create a Google Maps API key in GCP Console → restrict it to your domains/bundle IDs.
 - [ ] Create an OAuth 2.0 **Web** client → copy client ID to `GOOGLE_AUTH_WEB_CLIENT_ID`.
 - [ ] Create an OAuth 2.0 **Android** client (with your SHA-1) →
-      copy to `GOOGLE_AUTH_ANDROID_CLIENT_ID` in `.env.*` and `androidClientId` in
-      `capacitor.config.ts`.
+      copy to `GOOGLE_AUTH_ANDROID_CLIENT_ID` in `.env.*`.
+      **Do NOT add `androidClientId` to `capacitor.config.ts`** — see the note in
+      [How configuration flows](#how-configuration-flows).
 - [ ] Create an OAuth 2.0 **iOS** client (with your bundle ID) →
       copy to `GOOGLE_AUTH_IOS_CLIENT_ID` in `.env.*` and `iosClientId` in
       `capacitor.config.ts`.
